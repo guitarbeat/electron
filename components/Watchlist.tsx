@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { Movie } from '../types';
-import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon } from './icons';
+import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
+import SpinWheel from './SpinWheel';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -11,6 +12,17 @@ const Watchlist: React.FC = () => {
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isWheelVisible, setIsWheelVisible] = useState(false);
+
+  const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
+
+  const handleOpenWheel = () => {
+    if (unwatchedMovies.length > 1) {
+        setIsWheelVisible(true);
+    } else {
+        alert("You need at least two unwatched movies to spin the wheel!");
+    }
+  };
 
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,9 +71,10 @@ const Watchlist: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4">
+      {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       <div className="max-w-3xl mx-auto">
         {/* Add Movie Form */}
-        <form onSubmit={handleAddMovie} className="mb-8 cute-card p-4 flex gap-4 items-center">
+        <form onSubmit={handleAddMovie} className="mb-4 cute-card p-4 flex gap-4 items-center">
           <button
             type="button"
             onClick={handleLogout}
@@ -86,6 +99,19 @@ const Watchlist: React.FC = () => {
             {isAdding ? <Spinner className="h-6 w-6" /> : <PlusIcon />}
           </button>
         </form>
+        
+        {/* Spin to Decide card */}
+        <div className="mb-8 cute-card p-4">
+            <button
+                onClick={handleOpenWheel}
+                disabled={unwatchedMovies.length < 2}
+                className="w-full cute-button cute-button-blue flex items-center justify-center gap-2"
+                title={unwatchedMovies.length < 2 ? "Add more unwatched movies to use the wheel" : "Spin the wheel to pick a movie!"}
+            >
+                <DiceIcon />
+                Spin to Decide!
+            </button>
+        </div>
 
         {/* Movie List */}
         <div className="space-y-4">
