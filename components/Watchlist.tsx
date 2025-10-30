@@ -1,56 +1,118 @@
+import React, { useState } from 'react';
+import { useUser } from '../context/UserContext';
+import { useMovies } from '../hooks/useMovies';
+import { Movie } from '../types';
+import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner } from './icons';
 
-import React from 'react';
-import { Movie, User } from '../types';
-import { CheckIcon, EyeIcon, TrashIcon } from './icons';
+const Watchlist: React.FC = () => {
+  const { currentUser } = useUser();
+  // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
+  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie } = useMovies(currentUser!);
 
-interface WatchlistProps {
-  movies: Movie[];
-  user: User;
-  onToggleWatched: (id: number, watched: boolean) => void;
-  onDeleteMovie: (id: number) => void;
-}
+  const [newMovieTitle, setNewMovieTitle] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
-const Watchlist: React.FC<WatchlistProps> = ({ movies, user, onToggleWatched, onDeleteMovie }) => {
+  const handleAddMovie = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMovieTitle.trim() && !isSubmitting) {
+      setIsAdding(true);
+      try {
+        await addMovie(newMovieTitle);
+        setNewMovieTitle('');
+      } finally {
+        setIsAdding(false);
+      }
+    }
+  };
+  
+  const getWatchedStatus = (movie: Movie) => {
+    const aaronWatched = movie.watchedBy.includes('Aaron');
+    const electraWatched = movie.watchedBy.includes('Electra');
+    if (aaronWatched && electraWatched) return "Watched by both";
+    if (aaronWatched) return "Watched by Aaron";
+    if (electraWatched) return "Watched by Electra";
+    return "Not watched yet";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner className="h-12 w-12 text-pink-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 text-center text-red-400">
+        <p>Error loading movies. Please try refreshing the page.</p>
+        <p className="text-sm mt-2">{error.message}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-4 space-y-4">
-      {movies.map((movie) => (
-        <div
-          key={movie.id}
-          className={`cute-card p-4 flex items-center justify-between transition-all duration-300 ${
-            movie.watched ? 'opacity-60 bg-gray-800/50' : ''
-          }`}
-        >
-          <div className="flex flex-col">
-            <h3 className={`text-xl font-bold text-white ${movie.watched ? 'line-through' : ''}`}>{movie.title}</h3>
-            <p className="text-sm text-slate-300">
-              Added by {movie.added_by}
-              {movie.watched && movie.watched_by && ` | Watched by ${movie.watched_by}`}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onToggleWatched(movie.id, !movie.watched)}
-              className={`p-2 rounded-full transition-colors duration-300 text-white ${
-                movie.watched
-                  ? 'bg-green-500/80 hover:bg-green-500'
-                  : 'bg-slate-600/80 hover:bg-slate-500'
-              }`}
-              aria-label={movie.watched ? 'Mark as unwatched' : 'Mark as watched'}
-            >
-              {movie.watched ? <EyeIcon /> : <CheckIcon />}
-            </button>
-            {movie.added_by === user && (
-              <button
-                onClick={() => onDeleteMovie(movie.id)}
-                className="p-2 rounded-full bg-red-500/80 hover:bg-red-500 text-white transition-colors duration-300"
-                aria-label="Delete movie"
-              >
-                <TrashIcon />
-              </button>
-            )}
-          </div>
+    <div className="container mx-auto px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Add Movie Form */}
+        <form onSubmit={handleAddMovie} className="mb-8 cute-card p-4 flex gap-4 items-center">
+          <input
+            type="text"
+            value={newMovieTitle}
+            onChange={(e) => setNewMovieTitle(e.target.value)}
+            placeholder="Add a new movie..."
+            className="flex-grow bg-transparent border-b-2 border-pink-400 focus:outline-none focus:border-pink-300 transition-colors text-white placeholder-gray-400 p-2"
+            disabled={isSubmitting}
+          />
+          <button
+            type="submit"
+            className="bg-pink-500 hover:bg-pink-600 text-white font-bold p-3 rounded-full transition-transform transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+            disabled={!newMovieTitle.trim() || isSubmitting}
+          >
+            {isAdding ? <Spinner className="h-6 w-6" /> : <PlusIcon />}
+          </button>
+        </form>
+
+        {/* Movie List */}
+        <div className="space-y-4">
+          {movies && movies.map((movie) => (
+            <div key={movie.id} className="cute-card p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative">
+              <div className="flex-grow">
+                <h3 className="text-xl font-bold text-white">{movie.title}</h3>
+                <p className="text-sm text-gray-400">
+                  Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                <button
+                  onClick={() => toggleWatched(movie.id)}
+                  disabled={isSubmitting}
+                  className="p-2 rounded-full hover:bg-white/20 transition-colors disabled:opacity-50"
+                  title={movie.watchedBy.includes(currentUser!) ? "Mark as unwatched" : "Mark as watched"}
+                >
+                  {movie.watchedBy.includes(currentUser!) ? 
+                    <EyeIcon /> : 
+                    <EyeOffIcon />}
+                </button>
+                <button
+                  onClick={() => deleteMovie(movie.id)}
+                  disabled={isSubmitting}
+                  className="p-2 rounded-full text-red-400 hover:bg-red-400/20 transition-colors disabled:opacity-50"
+                  title="Delete movie"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
+            </div>
+          ))}
+          {movies?.length === 0 && (
+              <div className="text-center text-gray-400 cute-card p-8">
+                  <p>Your movie list is empty.</p>
+                  <p>Add a movie to get started!</p>
+              </div>
+          )}
         </div>
-      ))}
+      </div>
     </div>
   );
 };

@@ -1,11 +1,9 @@
+export type User = 'Aaron' | 'Electra';
 
 export interface Movie {
-  id: number;
+  id: string;
   title: string;
-  created_at: string;
-  added_by: User;
-  watched: boolean;
-  watched_by: User | null;
+  addedBy: User;
+  watchedBy: User[];
+  createdAt: string;
 }
-
-export type User = 'Aaron' | 'Electra';
