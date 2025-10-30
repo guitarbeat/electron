@@ -16,13 +16,13 @@ const UserSelection: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => handleUserSelect('Aaron')}
-            className="px-8 py-3 text-xl font-bold rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-200 text-white bg-blue-500 hover:bg-blue-600"
+            className="cute-button cute-button-blue text-xl"
           >
             Aaron
           </button>
           <button
             onClick={() => handleUserSelect('Electra')}
-            className="px-8 py-3 text-xl font-bold rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-200 text-white bg-pink-500 hover:bg-pink-600"
+            className="cute-button cute-button-pink text-xl"
           >
             Electra
           </button>
