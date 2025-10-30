@@ -19,7 +19,7 @@
 // 4. Set an expiration date.
 // 5. Check the "gist" scope.
 // 6. Click "Generate token" and paste the token string below.
-const GIST_TOKEN = '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';
+const GIST_TOKEN = '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';
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.

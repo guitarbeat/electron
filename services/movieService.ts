@@ -8,6 +8,7 @@ export const getMovies = async (): Promise<Movie[]> => {
   try {
     const response = await fetch(GIST_API_URL, {
         headers: {
+            'Authorization': `token ${GIST_TOKEN}`,
             'Accept': 'application/vnd.github.v3+json',
         },
         cache: 'no-cache', // Ensure we always get the latest version
