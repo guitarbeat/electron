@@ -1,12 +1,190 @@
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
-    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.77.0"
-  }
-}
-</script>
-full contents of index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aaron & Electra's Movie List</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Starry background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200vw;
+            height: 200vh;
+            background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23fff" cx="25" cy="25" r="0.5"/><circle fill="%23fff" cx="50" cy="50" r="0.5"/><circle fill="%23fff" cx="75" cy="75" r="0.5"/><circle fill="%23fff" cx="10" cy="60" r="0.5"/><circle fill="%23fff" cx="90" cy="30" r="0.5"/><circle fill="%23fff" cx="40" cy="90" r="0.5"/><circle fill="%23fff" cx="60" cy="10" r="0.5"/></svg>');
+            background-size: 100px 100px;
+            animation: starry-sky 200s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes starry-sky {
+            from { transform: translate(0, 0); }
+            to { transform: translate(-100vw, -100vh); }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #162447;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #e43f5a, #1f4068);
+            border-radius: 6px;
+            border: 2px solid #162447;
+        }
+
+        /* Global font styles */
+        .font-heading { font-family: 'Pacifico', cursive; }
+        .font-body { font-family: 'VT323', monospace; letter-spacing: 0.05em; }
+        .bg-main { background-color: transparent; }
+
+        /* Cute "glassmorphism" card style */
+        .cute-card {
+            background: rgba(27, 40, 69, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 2px solid;
+            border-image-source: linear-gradient(to bottom right, rgba(255, 105, 180, 0.7), rgba(123, 104, 238, 0.7));
+            border-image-slice: 1;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 105, 180, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cute-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
+            transform: rotate(30deg);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 3D Button Style */
+        .cute-button {
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 0 #000, 0 3px 0 rgba(255,255,255,0.2) inset;
+            color: white;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            padding: 0.75rem 1rem;
+            position: relative;
+            text-shadow: 1px 1px 1px #000;
+            top: 0;
+            transition: all 0.1s ease-in-out;
+        }
+
+        .cute-button:hover:not(:disabled) {
+            top: 1px;
+            box-shadow: 0 1px 0 #000, 0 2px 0 rgba(255,255,255,0.2) inset;
+        }
+
+        .cute-button:active:not(:disabled) {
+            top: 2px;
+            box-shadow: 0 0 0 #000, 0 1px 0 rgba(255,255,255,0.2) inset;
+        }
+
+        .cute-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .border-outset {
+            border-style: outset;
+        }
+
+        .bg-main-pink { background-color: #ff69b4; } /* Hot Pink */
+        .bg-main-blue { background-color: #87cefa; } /* Light Sky Blue */
+
+        /* Animation for fade-in */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+
+        /* Glow animation for movies watched by both */
+        @keyframes pink-glow {
+            0%, 100% { box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 105, 180, 0.3); }
+            50% { box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 105, 180, 0.8); }
+        }
+        .animate-pink-glow {
+            animation: pink-glow 3s infinite;
+        }
+    </style>
+</head>
+<body class="font-body">
+    <div id="sparkle-container"></div>
+    <div id="root"></div>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/"
+      }
+    }
+    </script>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+        // Sparkle cursor effect
+        (function() {
+            const sparkleContainer = document.getElementById('sparkle-container');
+            if (!sparkleContainer) return;
+            
+            const colors = ['#ff69b4', '#87cefa', '#9370db', '#ffffff'];
+            
+            document.addEventListener('mousemove', function(e) {
+                createSparkle(e.clientX, e.clientY);
+            });
+
+            function createSparkle(x, y) {
+                const sparkle = document.createElement('div');
+                sparkle.style.position = 'fixed';
+                sparkle.style.left = `${x}px`;
+                sparkle.style.top = `${y}px`;
+                sparkle.style.width = '10px';
+                sparkle.style.height = '10px';
+                sparkle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.style.borderRadius = '50%';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '9999';
+                sparkle.style.transition = 'all 0.5s ease-out';
+                sparkle.style.opacity = '1';
+                sparkle.style.transform = 'scale(1)';
+
+                sparkleContainer.appendChild(sparkle);
+
+                setTimeout(() => {
+                    sparkle.style.opacity = '0';
+                    sparkle.style.transform = 'scale(0)';
+                    sparkle.remove();
+                }, 500);
+            }
+        })();
+    </script>
+</body>
+</html>

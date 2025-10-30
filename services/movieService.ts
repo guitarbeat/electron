@@ -1,59 +1,66 @@
+import { GIST_ID, GIST_FILENAME, GIST_TOKEN } from '../gistConfig';
+import { Movie } from '../types';
 
-import { supabase } from '../supabaseClient';
-import { Movie, User } from '../types';
+const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
+// Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
-  const { data, error } = await supabase
-    .from('movies')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const response = await fetch(GIST_API_URL, {
+        headers: {
+            'Accept': 'application/vnd.github.v3+json',
+        },
+        cache: 'no-cache', // Ensure we always get the latest version
+    });
 
-  if (error) {
-    console.error('Error fetching movies:', error);
-    throw error;
-  }
-  return data || [];
-};
+    if (!response.ok) {
+        throw new Error(`GitHub API responded with ${response.status}`);
+    }
 
-export const addMovie = async (title: string, user: User): Promise<Movie> => {
-  const { data, error } = await supabase
-    .from('movies')
-    .insert([{ title, added_by: user, watched: false }])
-    .select()
-    .single();
+    const gist = await response.json();
+    const file = gist.files[GIST_FILENAME];
 
-  if (error) {
-    console.error('Error adding movie:', error);
-    throw error;
-  }
-  return data;
-};
-
-export const toggleWatched = async (id: number, watched: boolean, user: User): Promise<Movie> => {
-    const watched_by = watched ? user : null;
-    const { data, error } = await supabase
-        .from('movies')
-        .update({ watched, watched_by })
-        .eq('id', id)
-        .select()
-        .single();
+    if (!file) {
+      console.error(`File "${GIST_FILENAME}" not found in Gist.`);
+      return [];
+    }
     
-    if (error) {
-        console.error('Error updating movie:', error);
+    if (!file.content) {
+        return [];
+    }
+
+    return JSON.parse(file.content);
+  } catch (error) {
+    console.error('Error fetching movies from Gist:', error);
+    throw error;
+  }
+};
+
+// Saves the entire movie list back to the Gist, overwriting the previous content.
+export const saveMovies = async (movies: Movie[]): Promise<void> => {
+    try {
+        const response = await fetch(GIST_API_URL, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${GIST_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+            },
+            body: JSON.stringify({
+                files: {
+                    [GIST_FILENAME]: {
+                        content: JSON.stringify(movies, null, 2), // Pretty-print the JSON
+                    },
+                },
+            }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json();
+            console.error('GitHub API error details:', errorBody);
+            throw new Error(`GitHub API responded with ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error saving movies to Gist:', error);
         throw error;
     }
-    return data;
-};
-
-
-export const deleteMovie = async (id: number): Promise<void> => {
-  const { error } = await supabase
-    .from('movies')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting movie:', error);
-    throw error;
-  }
 };
