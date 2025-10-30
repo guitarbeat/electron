@@ -7,6 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['Pacifico', 'cursive'],
+                        body: ['VT323', 'monospace'],
+                    },
+                },
+            },
+        };
+    </script>
     <style>
         /* Base styles */
         body {
@@ -14,6 +27,7 @@
             color: #e0e0e0;
             margin: 0;
             overflow-x: hidden;
+            letter-spacing: 0.05em; /* From .font-body */
         }
 
         /* Starry background */
@@ -49,8 +63,6 @@
         }
 
         /* Global font styles */
-        .font-heading { font-family: 'Pacifico', cursive; }
-        .font-body { font-family: 'VT323', monospace; letter-spacing: 0.05em; }
         .bg-main { background-color: transparent; }
 
         /* Cute "glassmorphism" card style */
