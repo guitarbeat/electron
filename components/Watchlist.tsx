@@ -37,6 +37,8 @@ const Watchlist: React.FC = () => {
     if (electraWatched) return "Watched by Electra";
     return "Not watched yet";
   };
+  
+  const firstWatchedIndex = movies ? movies.findIndex(m => m.watchedBy.length === 2) : -1;
 
   if (isLoading) {
     return (
@@ -87,40 +89,62 @@ const Watchlist: React.FC = () => {
 
         {/* Movie List */}
         <div className="space-y-4">
-          {movies && movies.map((movie) => {
+          {movies && movies.map((movie, index) => {
+            const watchedByCurrentUser = movie.watchedBy.includes(currentUser!);
             const watchedByBoth = movie.watchedBy.length === 2;
+
+            const cardClasses = [
+              'cute-card p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative transition-all duration-300',
+              watchedByBoth ? 'animate-pink-glow' : '',
+              watchedByCurrentUser && !watchedByBoth ? 'opacity-60' : ''
+            ].filter(Boolean).join(' ');
+
+            const titleClasses = [
+              'text-xl font-bold text-white transition-colors duration-300',
+              watchedByBoth ? 'line-through text-gray-400' : ''
+            ].filter(Boolean).join(' ');
+
             return (
-                <div key={movie.id} className={`cute-card p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative transition-all duration-300 ${watchedByBoth ? 'animate-pink-glow' : ''}`}>
-                <div className="flex-grow flex items-center gap-4">
-                    {watchedByBoth && <SparkleHeartIcon />}
-                    <div>
-                        <h3 className="text-xl font-bold text-white">{movie.title}</h3>
-                        <p className="text-sm text-gray-400">
-                        Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
-                        </p>
+              <React.Fragment key={movie.id}>
+                {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
+                    <div className="flex items-center my-6 animate-fade-in">
+                        <hr className="flex-grow border-pink-400 border-dashed" />
+                        <span className="px-4 text-pink-300 font-heading">Watched Together</span>
+                        <hr className="flex-grow border-pink-400 border-dashed" />
                     </div>
+                )}
+                <div className={cardClasses}>
+                  <div className="flex-grow flex items-center gap-4">
+                      {watchedByBoth && <SparkleHeartIcon />}
+                      <div>
+                          <h3 className={titleClasses}>{movie.title}</h3>
+                          <p className="text-sm text-gray-400">
+                          Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
+                          </p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-3 self-end sm:self-center">
+                      <button
+                          onClick={() => toggleWatched(movie.id)}
+                          disabled={isSubmitting}
+                          className="icon-button disabled:opacity-50"
+                          title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
+                      >
+                      {watchedByCurrentUser ? 
+                          <EyeIcon /> : 
+                          <EyeOffIcon />}
+                      </button>
+                      <button
+                          onClick={() => deleteMovie(movie.id)}
+                          disabled={isSubmitting}
+                          className="icon-button text-red-400 disabled:opacity-50"
+                          title="Delete movie"
+                      >
+                      <TrashIcon />
+                      </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 self-end sm:self-center">
-                    <button
-                        onClick={() => toggleWatched(movie.id)}
-                        disabled={isSubmitting}
-                        className="icon-button disabled:opacity-50"
-                        title={movie.watchedBy.includes(currentUser!) ? "Mark as unwatched" : "Mark as watched"}
-                    >
-                    {movie.watchedBy.includes(currentUser!) ? 
-                        <EyeIcon /> : 
-                        <EyeOffIcon />}
-                    </button>
-                    <button
-                        onClick={() => deleteMovie(movie.id)}
-                        disabled={isSubmitting}
-                        className="icon-button text-red-400 disabled:opacity-50"
-                        title="Delete movie"
-                    >
-                    <TrashIcon />
-                    </button>
-                </div>
-                </div>
+              </React.Fragment>
             )
           })}
           {movies?.length === 0 && (

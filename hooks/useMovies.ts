@@ -93,7 +93,20 @@ export const useMovies = (currentUser: User) => {
   }, [performMutation]);
   
   const sortedMovies = movies
-    ? [...movies].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    ? [...movies].sort((a, b) => {
+        const aWatchedByBoth = a.watchedBy.length === 2;
+        const bWatchedByBoth = b.watchedBy.length === 2;
+
+        if (aWatchedByBoth && !bWatchedByBoth) {
+          return 1; // a (watched) comes after b (unwatched)
+        }
+        if (!aWatchedByBoth && bWatchedByBoth) {
+          return -1; // a (unwatched) comes before b (watched)
+        }
+        
+        // For movies in the same group (both watched or both unwatched), sort by creation date
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
     : [];
 
   return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie };
