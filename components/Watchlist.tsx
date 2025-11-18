@@ -4,6 +4,7 @@ import { useMovies } from '../hooks/useMovies';
 import { Movie } from '../types';
 import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
 import SpinWheel from './SpinWheel';
+import Header from './Header';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -92,6 +93,7 @@ const Watchlist: React.FC = () => {
     <div className="container mx-auto px-4">
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       <div className="max-w-3xl mx-auto">
+        <Header />
         {/* Add Movie Form */}
         <form onSubmit={handleAddMovie} className="mb-4 cute-card p-4 flex gap-4 items-center">
           <button
