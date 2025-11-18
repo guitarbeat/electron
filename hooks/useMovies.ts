@@ -61,10 +61,9 @@ export const useMovies = (currentUser: User) => {
     }
   }, [isSubmitting, refresh]);
 
-  const addMovie = useCallback(async (title: string) => {
+  const addMovie = useCallback(async (movie: Omit<Movie, 'addedBy' | 'watchedBy' | 'createdAt'>) => {
     const newMovie: Movie = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
+      ...movie,
       addedBy: currentUser,
       watchedBy: [],
       createdAt: new Date().toISOString(),
