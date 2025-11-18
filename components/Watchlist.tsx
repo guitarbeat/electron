@@ -114,7 +114,7 @@ const Watchlist: React.FC = () => {
           />
           <button
             type="submit"
-            className="cute-button cute-button-pink p-3 !rounded-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed"
+            className="cute-button cute-button-pink p-3 !rounded-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             disabled={!newMovieTitle.trim() || isSubmitting}
           >
             {isAdding ? <Spinner className="h-6 w-6" /> : <PlusIcon />}
