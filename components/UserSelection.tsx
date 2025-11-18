@@ -25,7 +25,7 @@ const UserSelection: React.FC = () => {
             className="max-h-full rounded-lg border-4 border-pink-300 shadow-lg object-contain animate-fade-in"
           />
         </div>
-        <h2 className="text-3xl font-heading mb-6 text-pink-300" style={{textShadow: '1px 1px 2px #ff69b4'}}>Who are you?</h2>
+        <h2 className="text-3xl font-heading mb-6 text-pink-300" style={{textShadow: '1px 1px 2px #ff69b4'}}>who dis b?</h2>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => handleUserSelect('Aaron')}
