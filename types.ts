@@ -6,7 +6,11 @@ export interface Movie {
   addedBy: User;
   watchedBy: User[];
   createdAt: string;
-  poster_path?: string;
-  release_date?: string;
-  overview?: string;
+}
+
+export interface Message {
+  id: string;
+  author: string;
+  content: string;
+  createdAt: string;
 }

@@ -3,6 +3,7 @@ import { useUser } from './context/UserContext';
 import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import Header from './components/Header';
+import MessageBoard from './components/MessageBoard';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -12,6 +13,7 @@ const App: React.FC = () => {
       <Header />
       <main className="pt-32 pb-12">
         {!currentUser ? <UserSelection /> : <Watchlist />}
+        <MessageBoard />
       </main>
     </div>
   );
