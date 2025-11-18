@@ -145,7 +145,7 @@ const Watchlist: React.FC = () => {
             ].filter(Boolean).join(' ');
 
             const titleClasses = [
-              'text-xl font-bold text-white transition-colors duration-300',
+              'text-xl font-bold text-white transition-colors duration-300 break-words',
               watchedByBoth ? 'line-through text-gray-400' : ''
             ].filter(Boolean).join(' ');
 

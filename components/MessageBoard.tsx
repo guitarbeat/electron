@@ -62,13 +62,13 @@ const MessageBoard: React.FC = () => {
                 
                 {/* Post Message Form */}
                 <form onSubmit={handleSubmit} className="mb-8 cute-card p-4 space-y-3">
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <input
                             type="text"
                             value={author}
                             onChange={(e) => setAuthor(e.target.value)}
                             placeholder="Your name"
-                            className="w-1/3 bg-transparent focus:outline-none placeholder-gray-400 cute-input"
+                            className="w-full sm:w-1/3 bg-transparent focus:outline-none placeholder-gray-400 cute-input"
                             disabled={isSubmitting}
                         />
                          <input
@@ -76,7 +76,7 @@ const MessageBoard: React.FC = () => {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Leave a note for everyone..."
-                            className="flex-grow bg-transparent focus:outline-none placeholder-gray-400 cute-input"
+                            className="w-full sm:w-auto sm:flex-grow bg-transparent focus:outline-none placeholder-gray-400 cute-input"
                             disabled={isSubmitting}
                         />
                     </div>
@@ -99,7 +99,7 @@ const MessageBoard: React.FC = () => {
                         <div key={msg.id} className="cute-card p-4 animate-fade-in flex justify-between items-start gap-4">
                            <div>
                                 <p className="text-white whitespace-pre-wrap break-words">{msg.content}</p>
-                                <p className="text-sm text-pink-300 mt-2">
+                                <p className="text-sm text-pink-300 mt-2 break-words">
                                     &mdash; {msg.author} <span className="text-gray-400">({timeAgo(msg.createdAt)})</span>
                                 </p>
                            </div>

@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Movie } from '../types';
 
-const FRICTION = 0.995; // How quickly the wheel slows down
+const FRICTION = 0.988; // How quickly the wheel slows down. Closer to 1 is less friction.
 const MIN_VELOCITY_TO_SPIN = 0.5; // Requires a minimum flick speed to start a spin
 const MIN_VELOCITY_TO_STOP = 0.05; // Below this angular velocity, the wheel stops
 const POINTER_HISTORY_LIMIT = 5; // Track last 5 pointer moves for velocity calculation
@@ -10,6 +10,7 @@ export const useSpinWheel = (movies: Movie[], wheelRef: React.RefObject<HTMLDivE
   const [status, setStatus] = useState<'idle' | 'spinning' | 'result'>('idle');
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentRotation, setCurrentRotation] = useState(0);
 
   const rotationRef = useRef(0);
   const velocityRef = useRef(0);
@@ -40,6 +41,7 @@ export const useSpinWheel = (movies: Movie[], wheelRef: React.RefObject<HTMLDivE
         wheelRef.current.style.transition = 'none'; // Ensure no CSS transition interferes
     }
     rotationRef.current = angle;
+    setCurrentRotation(angle);
   }, [wheelRef]);
 
   const spinLoop = useCallback(() => {
@@ -174,6 +176,7 @@ export const useSpinWheel = (movies: Movie[], wheelRef: React.RefObject<HTMLDivE
   return {
     status,
     selectedMovie,
+    currentRotation,
     getPointerHandlers: () => ({
         onMouseDown: handlePointerDown,
         onTouchStart: handlePointerDown,
