@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { Movie } from '../types';
-import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
 import SpinWheel from './SpinWheel';
+import MovieSearch from './MovieSearch';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
   const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie } = useMovies(currentUser!);
 
-  const [newMovieTitle, setNewMovieTitle] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
   const [isWheelVisible, setIsWheelVisible] = useState(false);
 
   const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
@@ -24,16 +23,9 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  const handleAddMovie = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMovieTitle.trim() && !isSubmitting) {
-      setIsAdding(true);
-      try {
-        await addMovie(newMovieTitle);
-        setNewMovieTitle('');
-      } finally {
-        setIsAdding(false);
-      }
+  const handleAddMovie = async (movie: Movie) => {
+    if (!isSubmitting) {
+      await addMovie(movie);
     }
   };
 
@@ -74,7 +66,7 @@ const Watchlist: React.FC = () => {
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       <div className="max-w-3xl mx-auto">
         {/* Add Movie Form */}
-        <form onSubmit={handleAddMovie} className="mb-4 cute-card p-4 flex gap-4 items-center">
+        <div className="mb-4 cute-card p-4 flex gap-4 items-center">
           <button
             type="button"
             onClick={handleLogout}
@@ -83,22 +75,8 @@ const Watchlist: React.FC = () => {
           >
             <LogoutIcon />
           </button>
-          <input
-            type="text"
-            value={newMovieTitle}
-            onChange={(e) => setNewMovieTitle(e.target.value)}
-            placeholder="Add a new movie..."
-            className="flex-grow bg-transparent focus:outline-none text-white placeholder-gray-400 cute-input"
-            disabled={isSubmitting}
-          />
-          <button
-            type="submit"
-            className="cute-button cute-button-pink p-3 !rounded-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!newMovieTitle.trim() || isSubmitting}
-          >
-            {isAdding ? <Spinner className="h-6 w-6" /> : <PlusIcon />}
-          </button>
-        </form>
+          <MovieSearch onAddMovie={handleAddMovie} isSubmitting={isSubmitting} />
+        </div>
         
         {/* Spin to Decide card */}
         <div className="mb-8 cute-card p-4">
@@ -140,12 +118,28 @@ const Watchlist: React.FC = () => {
                     </div>
                 )}
                 <div className={cardClasses}>
-                  <div className="flex-grow flex items-center gap-4">
-                      {watchedByBoth && <SparkleHeartIcon />}
-                      <div>
+                  <div className="flex-grow flex items-start gap-4">
+                      {movie.poster_path ? (
+                          <img
+                              src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
+                              alt={movie.title}
+                              className="w-20 rounded-md shadow-lg"
+                          />
+                      ) : (
+                          <div className="w-20 h-30 bg-gray-700 rounded-md flex items-center justify-center text-xs text-gray-400">
+                              No Image
+                          </div>
+                      )}
+                      <div className="flex-grow">
                           <h3 className={titleClasses}>{movie.title}</h3>
-                          <p className="text-sm text-gray-400">
-                          Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
+                          {movie.release_date && (
+                              <p className="text-sm text-gray-400 mb-1">{movie.release_date.substring(0, 4)}</p>
+                          )}
+                          <p className="text-sm text-gray-400 mb-2">
+                              Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
+                          </p>
+                          <p className="text-xs text-gray-500 max-h-16 overflow-y-auto pr-2 custom-scrollbar">
+                              {movie.overview}
                           </p>
                       </div>
                   </div>
