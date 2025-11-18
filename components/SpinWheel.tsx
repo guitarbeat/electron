@@ -6,8 +6,10 @@ const COLORS = ['#2E3B4E', '#E74C3C', '#AF7AC5', '#5DADE2', '#FADBD8', '#C39BD3'
 
 const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies, onClose }) => {
   const wheelRef = useRef<HTMLDivElement>(null);
+
   const { 
-    status, 
+    status,
+    currentRotation,
     selectedMovie, 
     handlePrimarySpin,
     handleSpinAgain,
@@ -40,62 +42,57 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     };
   }, [movies, segmentAngle]);
 
+  const currentMovie = useMemo(() => {
+      if (movies.length === 0) return null;
+      // The marker is at the top (270deg from the positive x-axis), so we adjust the angle
+      // to calculate the currently selected segment based on rotation.
+      const normalizedRotation = currentRotation % 360;
+      const selectionAngle = (360 + 270 - normalizedRotation) % 360;
+      const currentIndex = Math.floor(selectionAngle / segmentAngle);
+      return movies[currentIndex];
+  }, [currentRotation, movies, segmentAngle]);
+
+
   return (
     <div className="wheel-modal-overlay" onClick={onClose}>
       <div 
         className="modal-content-wrapper"
         onClick={e => e.stopPropagation()}
       >
-        <div className={`w-full max-w-4xl flex flex-col md:flex-row items-center md:items-start justify-center gap-4 md:gap-8`}>
-            <div 
-              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''}`}
-              {...getPointerHandlers()}
-            >
-              <div className="spin-wheel-container">
-                <div className="spin-marker"></div>
-                <div 
-                  ref={wheelRef} 
-                  className="spin-wheel" 
-                  style={wheelBackgroundStyle}
-                ></div>
-                <div className="spin-hub"></div>
-              </div>
-              {status === 'idle' && (
-                <div className="spin-content">
-                  <button 
-                    onClick={handlePrimarySpin}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    className="cute-button cute-button-blue text-4xl font-heading !w-32 !h-32 !rounded-full"
-                  >
-                    Spin!
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            <div className="movie-list-container md:w-80">
-                <h2 className="text-xl font-bold mb-4 text-center text-pink-300 font-heading" style={{textShadow: '1px 1px 2px #000'}}>
-                    On the Wheel
-                </h2>
-                <ul className="movie-list">
-                    {movies.map((movie, index) => {
-                        const isWinner = status === 'result' && selectedMovie?.id === movie.id;
-                        return (
-                            <li key={movie.id} className={`movie-list-item ${isWinner ? 'winner' : ''}`}>
-                                <span
-                                className="movie-list-swatch"
-                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                                ></span>
-                                <span className="truncate">{movie.title}</span>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
+
+        <div className="current-movie-display cute-card">
+            <h3 className="current-movie-title break-words">
+                {currentMovie ? currentMovie.title : 'Ready to spin?'}
+            </h3>
         </div>
 
-
+        <div 
+          className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''}`}
+          {...getPointerHandlers()}
+        >
+          <div className="spin-wheel-container">
+            <div className="spin-marker"></div>
+            <div 
+              ref={wheelRef} 
+              className="spin-wheel" 
+              style={wheelBackgroundStyle}
+            ></div>
+            <div className="spin-hub"></div>
+          </div>
+          {status === 'idle' && (
+            <div className="spin-content">
+              <button 
+                onClick={handlePrimarySpin}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                className="cute-button cute-button-blue text-4xl font-heading !w-32 !h-32 !rounded-full"
+              >
+                Spin!
+              </button>
+            </div>
+          )}
+        </div>
+        
         {/* Result Display */}
         {status === 'result' && selectedMovie && (
           <div 
@@ -103,7 +100,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-gray-300">Tonight's Movie:</h2>
-            <h3 className="font-heading text-pink-300" style={{textShadow: '1px 1px 2px #000'}}>
+            <h3 className="font-heading text-pink-300 break-words" style={{textShadow: '1px 1px 2px #000'}}>
               {selectedMovie.title}
             </h3>
             <div className="flex flex-col sm:flex-row gap-4 w-full">
