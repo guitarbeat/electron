@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { Movie } from '../types';
-import { TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
+import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
 import SpinWheel from './SpinWheel';
-import MovieSearch from './MovieSearch';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
   const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie } = useMovies(currentUser!);
 
+  const [newMovieTitle, setNewMovieTitle] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
   const [isWheelVisible, setIsWheelVisible] = useState(false);
 
   const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
@@ -23,11 +24,37 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  const handleAddMovie = async (movie: Movie) => {
-    if (!isSubmitting) {
-      await addMovie(movie);
+  const handleAddMovie = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMovieTitle.trim() && !isSubmitting) {
+      setIsAdding(true);
+      try {
+        await addMovie(newMovieTitle);
+        setNewMovieTitle('');
+      } catch (err: any) {
+        alert(`Error adding movie: ${err.message}`);
+      }
+      finally {
+        setIsAdding(false);
+      }
     }
   };
+
+  const handleToggleWatched = async (movieId: string) => {
+    try {
+      await toggleWatched(movieId);
+    } catch (err: any) {
+      alert(`Error updating movie status: ${err.message}`);
+    }
+  }
+
+  const handleDeleteMovie = async (movieId: string) => {
+    try {
+      await deleteMovie(movieId);
+    } catch (err: any) {
+      alert(`Error deleting movie: ${err.message}`);
+    }
+  }
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -66,7 +93,7 @@ const Watchlist: React.FC = () => {
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       <div className="max-w-3xl mx-auto">
         {/* Add Movie Form */}
-        <div className="mb-4 cute-card p-4 flex gap-4 items-center">
+        <form onSubmit={handleAddMovie} className="mb-4 cute-card p-4 flex gap-4 items-center">
           <button
             type="button"
             onClick={handleLogout}
@@ -75,8 +102,22 @@ const Watchlist: React.FC = () => {
           >
             <LogoutIcon />
           </button>
-          <MovieSearch onAddMovie={handleAddMovie} isSubmitting={isSubmitting} />
-        </div>
+          <input
+            type="text"
+            value={newMovieTitle}
+            onChange={(e) => setNewMovieTitle(e.target.value)}
+            placeholder="Add a new movie..."
+            className="flex-grow bg-transparent focus:outline-none text-white placeholder-gray-400 cute-input"
+            disabled={isSubmitting}
+          />
+          <button
+            type="submit"
+            className="cute-button cute-button-pink p-3 !rounded-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!newMovieTitle.trim() || isSubmitting}
+          >
+            {isAdding ? <Spinner className="h-6 w-6" /> : <PlusIcon />}
+          </button>
+        </form>
         
         {/* Spin to Decide card */}
         <div className="mb-8 cute-card p-4">
@@ -118,34 +159,18 @@ const Watchlist: React.FC = () => {
                     </div>
                 )}
                 <div className={cardClasses}>
-                  <div className="flex-grow flex items-start gap-4">
-                      {movie.poster_path ? (
-                          <img
-                              src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-                              alt={movie.title}
-                              className="w-20 rounded-md shadow-lg"
-                          />
-                      ) : (
-                          <div className="w-20 h-30 bg-gray-700 rounded-md flex items-center justify-center text-xs text-gray-400">
-                              No Image
-                          </div>
-                      )}
-                      <div className="flex-grow">
+                  <div className="flex-grow flex items-center gap-4">
+                      {watchedByBoth && <SparkleHeartIcon />}
+                      <div>
                           <h3 className={titleClasses}>{movie.title}</h3>
-                          {movie.release_date && (
-                              <p className="text-sm text-gray-400 mb-1">{movie.release_date.substring(0, 4)}</p>
-                          )}
-                          <p className="text-sm text-gray-400 mb-2">
-                              Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
-                          </p>
-                          <p className="text-xs text-gray-500 max-h-16 overflow-y-auto pr-2 custom-scrollbar">
-                              {movie.overview}
+                          <p className="text-sm text-gray-400">
+                          Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
                           </p>
                       </div>
                   </div>
                   <div className="flex items-center gap-3 self-end sm:self-center">
                       <button
-                          onClick={() => toggleWatched(movie.id)}
+                          onClick={() => handleToggleWatched(movie.id)}
                           disabled={isSubmitting}
                           className="icon-button disabled:opacity-50"
                           title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
@@ -155,7 +180,7 @@ const Watchlist: React.FC = () => {
                           <EyeOffIcon />}
                       </button>
                       <button
-                          onClick={() => deleteMovie(movie.id)}
+                          onClick={() => handleDeleteMovie(movie.id)}
                           disabled={isSubmitting}
                           className="icon-button text-red-400 disabled:opacity-50"
                           title="Delete movie"

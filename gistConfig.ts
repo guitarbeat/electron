@@ -28,4 +28,8 @@ const GIST_ID = 'ba250f944e3e9e71c0d669060254eab2';
 // The filename inside your Gist that contains the movie data.
 const GIST_FILENAME = 'movielist.json';
 
-export { GIST_TOKEN, GIST_ID, GIST_FILENAME };
+// The filename for the message board data.
+const GIST_MESSAGES_FILENAME = 'messages.json';
+
+
+export { GIST_TOKEN, GIST_ID, GIST_FILENAME, GIST_MESSAGES_FILENAME };

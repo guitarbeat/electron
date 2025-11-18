@@ -55,15 +55,17 @@ export const useMovies = (currentUser: User) => {
       refresh();
     } catch (err) {
       console.error("Mutation failed:", err);
-      // Optionally show an error message to the user
+      // Re-throw the error so the calling component can handle it
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
   }, [isSubmitting, refresh]);
 
-  const addMovie = useCallback(async (movie: Omit<Movie, 'addedBy' | 'watchedBy' | 'createdAt'>) => {
+  const addMovie = useCallback(async (title: string) => {
     const newMovie: Movie = {
-      ...movie,
+      id: crypto.randomUUID(),
+      title: title.trim(),
       addedBy: currentUser,
       watchedBy: [],
       createdAt: new Date().toISOString(),
