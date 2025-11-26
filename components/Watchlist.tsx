@@ -139,12 +139,13 @@ const Watchlist: React.FC = () => {
         </Card>
         
         {/* Spin to Decide card */}
-        <Card variant="default" style={{ marginBottom: spacing['2xl'] }}>
+        <Card variant="elevated" style={{ marginBottom: spacing['2xl'] }}>
           <div style={{ padding: spacing.md }}>
             <Button
               onClick={handleOpenWheel}
               disabled={unwatchedMovies.length < 2}
               variant="secondary"
+              size="lg"
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
               title={unwatchedMovies.length < 2 ? "Add more unwatched movies to use the wheel" : "Spin the wheel to pick a movie!"}
             >
@@ -165,7 +166,14 @@ const Watchlist: React.FC = () => {
                 {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
                     <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing.xl} 0` }}>
                         <hr className="flex-grow border-pink-400 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.accent, borderStyle: 'dashed' }} />
-                        <span className="px-4 text-pink-300 font-heading" style={{ padding: `0 ${spacing.md}`, color: colors.accent, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium }}>
+                        <span className="px-4 text-pink-300 font-heading" style={{ 
+                          padding: `0 ${spacing.md}`, 
+                          color: colors.accent, 
+                          fontSize: typography.fontSize.sm, 
+                          fontWeight: typography.fontWeight.medium,
+                          textShadow: shadows.textGlow,
+                          letterSpacing: '0.05em',
+                        }}>
                           Watched Together
                         </span>
                         <hr className="flex-grow border-pink-400 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.accent, borderStyle: 'dashed' }} />
@@ -195,6 +203,8 @@ const Watchlist: React.FC = () => {
                           margin: 0,
                           marginBottom: spacing.xs,
                           wordBreak: 'break-word',
+                          textShadow: watchedByBoth ? 'none' : '1px 1px 2px rgba(0,0,0,0.5)',
+                          transition: 'all 0.2s ease-out',
                         }}>
                           {movie.title}
                         </h3>

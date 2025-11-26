@@ -59,6 +59,11 @@ export const colors = {
   // Special retro colors
   yellow: '#ffeb3b',
   khaki: '#f0e68c',
+  // Gradients
+  gradientPink: 'linear-gradient(135deg, #ff69b4 0%, #ff8bb3 100%)',
+  gradientBlue: 'linear-gradient(135deg, #87cefa 0%, #a0d8ff 100%)',
+  gradientPurple: 'linear-gradient(135deg, #9370db 0%, #ab87e8 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(27, 40, 69, 0.95) 0%, rgba(27, 40, 69, 0.85) 100%)',
 } as const;
 
 // * Typography scale (Retro with Papyrus)
@@ -127,20 +132,26 @@ export const borders = {
   inputInset: '2px inset',
 } as const;
 
-// * Shadows (Retro 3D effects)
+// * Shadows (Retro 3D effects - Enhanced)
 export const shadows = {
-  // Card shadows
-  card: '5px 5px 0px rgba(0,0,0,0.3)',
-  cardHover: '8px 8px 15px rgba(0,0,0,0.4), 0 0 10px rgba(255, 105, 180, 0.5)',
-  // Button shadows (3D effect)
-  button: '0 4px 0 #000, 0 5px 0 rgba(255,255,255,0.3) inset',
-  buttonHover: '0 2px 0 #000, 0 3px 0 rgba(255,255,255,0.3) inset',
-  buttonActive: '0 0px 0 #000, 0 1px 0 rgba(255,255,255,0.3) inset',
-  buttonLarge: '0 6px 0 #000, 0 8px 0 rgba(255,255,255,0.3) inset, 0 0 20px rgba(0,0,0,0.5)',
-  // Glow effects
-  glow: '0 0 15px rgba(255, 105, 180, 0.4)',
-  glowStrong: '0 0 30px rgba(255, 105, 180, 1)',
-  glowBlue: '0 0 20px rgba(135, 206, 250, 0.7)',
+  // Card shadows (enhanced depth)
+  card: '5px 5px 0px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2)',
+  cardHover: '8px 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(255, 105, 180, 0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
+  cardElevated: '6px 6px 0px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3)',
+  // Button shadows (3D effect - enhanced)
+  button: '0 4px 0 rgba(0,0,0,0.5), 0 5px 0 rgba(255,255,255,0.3) inset, 0 2px 4px rgba(0,0,0,0.3)',
+  buttonHover: '0 2px 0 rgba(0,0,0,0.5), 0 3px 0 rgba(255,255,255,0.3) inset, 0 1px 2px rgba(0,0,0,0.3)',
+  buttonActive: '0 0px 0 rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.3) inset',
+  buttonLarge: '0 6px 0 rgba(0,0,0,0.6), 0 8px 0 rgba(255,255,255,0.3) inset, 0 0 25px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
+  // Glow effects (enhanced)
+  glow: '0 0 20px rgba(255, 105, 180, 0.5), 0 0 40px rgba(255, 105, 180, 0.2)',
+  glowStrong: '0 0 30px rgba(255, 105, 180, 0.8), 0 0 60px rgba(255, 105, 180, 0.4)',
+  glowBlue: '0 0 25px rgba(135, 206, 250, 0.8), 0 0 50px rgba(135, 206, 250, 0.3)',
+  glowYellow: '0 0 20px rgba(255, 235, 59, 0.6), 0 0 40px rgba(255, 235, 59, 0.3)',
+  // Text shadows
+  textGlow: '2px 2px 4px rgba(255, 105, 180, 0.8), 0 0 8px rgba(255, 105, 180, 0.4)',
+  textGlowBlue: '2px 2px 4px rgba(135, 206, 250, 0.8), 0 0 8px rgba(135, 206, 250, 0.4)',
+  textGlowYellow: '2px 2px 4px rgba(255, 235, 59, 0.8), 0 0 8px rgba(255, 235, 59, 0.4)',
 } as const;
 
 // * Z-index scale

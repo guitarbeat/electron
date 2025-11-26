@@ -11,7 +11,7 @@ const Header: React.FC = () => {
 
   return (
     <div style={{ marginBottom: spacing['2xl'] }}>
-      <Card variant="elevated">
+      <Card variant="elevated" className="animate-fade-in">
         <div
           style={{
             display: 'flex',
@@ -26,8 +26,20 @@ const Header: React.FC = () => {
             style={{
               width: '80px',
               height: '80px',
+              position: 'relative',
             }}
           >
+            <div
+              style={{
+                position: 'absolute',
+                inset: '-4px',
+                borderRadius: '50%',
+                background: colors.gradientPink,
+                opacity: 0.3,
+                filter: 'blur(8px)',
+                zIndex: -1,
+              }}
+            />
             <ImageWithFallback
               key={currentUser || 'default'}
               sources={sources}
@@ -37,7 +49,8 @@ const Header: React.FC = () => {
                 height: '100%',
                 borderRadius: '50%',
                 objectFit: 'cover',
-                border: `2px solid ${colors.accent}`,
+                border: `3px solid ${colors.accent}`,
+                boxShadow: shadows.glow,
               }}
             />
           </div>
@@ -50,7 +63,8 @@ const Header: React.FC = () => {
               textAlign: 'center',
               lineHeight: typography.lineHeight.tight,
               margin: 0,
-              textShadow: '2px 2px 4px #ff69b4',
+              textShadow: shadows.textGlow,
+              letterSpacing: '0.02em',
             }}
           >
             Aaron &amp; Electra's Movie List

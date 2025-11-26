@@ -73,20 +73,22 @@
             }
         }
         
-        /* Glow and pulse animation for movies watched by both */
+        /* Glow and pulse animation for movies watched by both (Enhanced) */
         @keyframes pink-glow {
             0%, 100% { 
-                box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 15px rgba(255, 105, 180, 0.4);
+                box-shadow: 5px 5px 0px rgba(0,0,0,0.4), 0 0 20px rgba(255, 105, 180, 0.5), 0 0 40px rgba(255, 105, 180, 0.2);
                 transform: scale(1);
+                border-color: #ff69b4;
             }
             50% { 
-                box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 30px rgba(255, 105, 180, 1);
+                box-shadow: 5px 5px 0px rgba(0,0,0,0.4), 0 0 35px rgba(255, 105, 180, 0.9), 0 0 70px rgba(255, 105, 180, 0.4);
                 transform: scale(1.02);
+                border-color: #fff;
             }
         }
         .animate-pink-glow {
-            border-color: #fff;
-            animation: pink-glow 2.5s infinite;
+            border-color: #ff69b4;
+            animation: pink-glow 2.5s ease-in-out infinite;
         }
         
         /* Screen reader only */

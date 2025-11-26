@@ -26,7 +26,7 @@ const UserSelection: React.FC = () => {
         textAlign: 'center',
       }}
     >
-      <Card variant="elevated">
+      <Card variant="elevated" className="animate-fade-in">
         <div style={{ padding: spacing['2xl'] }}>
           <div
             style={{
@@ -35,8 +35,21 @@ const UserSelection: React.FC = () => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
+              position: 'relative',
             }}
           >
+            <div
+              style={{
+                position: 'absolute',
+                inset: '-8px',
+                borderRadius: '12px',
+                background: colors.gradientPink,
+                opacity: hoveredUser ? 0.4 : 0.2,
+                filter: 'blur(12px)',
+                transition: 'opacity 0.3s ease-out',
+                zIndex: -1,
+              }}
+            />
             <ImageWithFallback
               key={hoveredUser || 'default'}
               sources={sources}
@@ -44,8 +57,11 @@ const UserSelection: React.FC = () => {
               style={{
                 maxHeight: '100%',
                 borderRadius: '8px',
-                border: `2px solid ${colors.accent}`,
+                border: `3px solid ${colors.accent}`,
                 objectFit: 'contain',
+                boxShadow: shadows.glow,
+                transition: 'all 0.3s ease-out',
+                transform: hoveredUser ? 'scale(1.05)' : 'scale(1)',
               }}
             />
           </div>
@@ -56,7 +72,8 @@ const UserSelection: React.FC = () => {
               color: colors.accent,
               marginBottom: spacing.xl,
               marginTop: 0,
-              textShadow: '1px 1px 2px #ff69b4',
+              textShadow: shadows.textGlow,
+              letterSpacing: '0.02em',
             }}
           >
             Select User
