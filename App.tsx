@@ -75,10 +75,11 @@ const App: React.FC = () => {
       }}
     >
       <main className="main-container" style={{ 
-        paddingTop: spacing['2xl'], 
+        paddingTop: spacing.xl, 
         paddingBottom: spacing['3xl'],
         paddingLeft: spacing.lg,
         paddingRight: spacing.lg,
+        maxWidth: '100%',
       }}>
         <div className="transition-container">
           {!displayUser ? (

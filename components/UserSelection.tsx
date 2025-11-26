@@ -75,20 +75,35 @@ const UserSelection: React.FC = () => {
             style={{
               fontSize: typography.fontSize['2xl'],
               fontWeight: typography.fontWeight.semibold,
-              color: colors.accent,
+              color: colors.accent, // * Fallback for browsers without gradient support
+              background: shadows.textGradientPink,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               marginBottom: spacing.xl,
               marginTop: 0,
-              textShadow: shadows.textGlow,
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
               letterSpacing: '0.02em',
+              filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
             }}
           >
-            Select User
+            Who's Watching?
           </h2>
+          <p style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.textSecondary,
+            marginBottom: spacing.xl,
+            marginTop: 0,
+            textAlign: 'center',
+            lineHeight: typography.lineHeight.relaxed,
+          }}>
+            Select your profile to view and manage your shared movie watchlist
+          </p>
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: spacing.md,
+              gap: spacing.lg,
             }}
           >
             <Button
@@ -97,7 +112,8 @@ const UserSelection: React.FC = () => {
               onClick={() => handleUserSelect('Aaron')}
               onMouseEnter={() => setHoveredUser('Aaron')}
               onMouseLeave={() => setHoveredUser(null)}
-              style={{ width: '100%' }}
+              style={{ width: '100%', fontSize: typography.fontSize.xl }}
+              aria-label="Select Aaron as user"
             >
               Aaron
             </Button>
@@ -107,7 +123,8 @@ const UserSelection: React.FC = () => {
               onClick={() => handleUserSelect('Electra')}
               onMouseEnter={() => setHoveredUser('Electra')}
               onMouseLeave={() => setHoveredUser(null)}
-              style={{ width: '100%' }}
+              style={{ width: '100%', fontSize: typography.fontSize.xl }}
+              aria-label="Select Electra as user"
             >
               Electra
             </Button>

@@ -41,11 +41,11 @@ const Card: React.FC<CardProps> = ({
     boxShadow: variant === 'elevated' ? shadows.cardElevated : shadows.card,
     position: 'relative',
     overflow: 'hidden',
-    transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out',
+    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     // Add subtle inner highlight
     backgroundImage: variant === 'elevated' 
-      ? 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%)'
-      : 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 50%)',
+      ? 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 50%, transparent 100%)'
+      : 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, transparent 100%)',
   };
 
   return (
@@ -55,9 +55,12 @@ const Card: React.FC<CardProps> = ({
       onClick={onClick}
       onMouseEnter={(e) => {
         if (!isMobile && (onClick || variant === 'elevated')) {
-          e.currentTarget.style.transform = 'translateY(-6px) scale(1.01)';
+          e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
           e.currentTarget.style.boxShadow = shadows.cardHover;
           e.currentTarget.style.borderColor = colors.accentLight;
+          e.currentTarget.style.backgroundImage = variant === 'elevated'
+            ? 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)'
+            : 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 50%, transparent 100%)';
         }
       }}
       onMouseLeave={(e) => {
@@ -65,6 +68,9 @@ const Card: React.FC<CardProps> = ({
           e.currentTarget.style.transform = 'translateY(0) scale(1)';
           e.currentTarget.style.boxShadow = variant === 'elevated' ? shadows.cardElevated : shadows.card;
           e.currentTarget.style.borderColor = colors.border;
+          e.currentTarget.style.backgroundImage = variant === 'elevated'
+            ? 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 50%, transparent 100%)'
+            : 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, transparent 100%)';
         }
       }}
     >
