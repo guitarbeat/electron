@@ -14,3 +14,11 @@ export interface Message {
   content: string;
   createdAt: string;
 }
+
+export interface DailySpin {
+  date: string; // ISO date string (YYYY-MM-DD)
+  movieId: string;
+  movieTitle: string;
+  spunBy: User;
+  createdAt: string; // ISO timestamp
+}
