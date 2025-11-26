@@ -523,20 +523,20 @@ const MessageBoard: React.FC = () => {
                     ))}
                     {messages?.length === 0 && !isLoading && (
                         <Card variant="elevated">
-                            <div style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }} role="status">
+                            <div style={{ textAlign: 'center', padding: spacing.xl, color: colors.textSecondary }} role="status">
                                 <MessageIcon style={{ 
-                                    width: '80px', 
-                                    height: '80px', 
+                                    width: '60px', 
+                                    height: '60px', 
                                     margin: '0 auto', 
-                                    marginBottom: spacing.xl, 
+                                    marginBottom: spacing.md, 
                                     opacity: 0.6, 
                                     color: colors.secondary,
                                     filter: 'drop-shadow(0 0 10px rgba(135, 206, 250, 0.3))',
                                 }} />
                                 <p style={{ 
-                                    fontSize: typography.fontSize.xl, 
+                                    fontSize: typography.fontSize.lg, 
                                     margin: 0, 
-                                    marginBottom: spacing.md,
+                                    marginBottom: spacing.sm,
                                     color: colors.textPrimary,
                                     fontWeight: typography.fontWeight.semibold,
                                     textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
@@ -545,9 +545,9 @@ const MessageBoard: React.FC = () => {
                                 </p>
                                 <p style={{ 
                                     margin: 0,
-                                    fontSize: typography.fontSize.base,
+                                    fontSize: typography.fontSize.sm,
                                     color: colors.textSecondary,
-                                    lineHeight: typography.lineHeight.relaxed,
+                                    lineHeight: typography.lineHeight.normal,
                                 }}>
                                     Be the first to leave a note for everyone!
                                 </p>
