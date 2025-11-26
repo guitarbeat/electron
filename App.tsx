@@ -77,6 +77,8 @@ const App: React.FC = () => {
       <main style={{ 
         paddingTop: spacing['2xl'], 
         paddingBottom: spacing['3xl'],
+        paddingLeft: spacing.lg,
+        paddingRight: spacing.lg,
       }}>
         <div className="transition-container">
           {!displayUser ? (
