@@ -13,18 +13,36 @@ const MAX_MESSAGE_LENGTH = 500;
 const MAX_AUTHOR_LENGTH = 50;
 
 const timeAgo = (date: string) => {
-    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutes ago";
-    return "Just now";
+    try {
+        const dateObj = new Date(date);
+        const now = new Date();
+        
+        // * Handle invalid dates
+        if (isNaN(dateObj.getTime()) || isNaN(now.getTime())) {
+            return "Recently";
+        }
+        
+        const seconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+        
+        // * Handle future dates (shouldn't happen, but safety check)
+        if (seconds < 0) {
+            return "Just now";
+        }
+        
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return "Just now";
+    } catch {
+        return "Recently";
+    }
 };
 
 
@@ -314,7 +332,7 @@ const MessageBoard: React.FC = () => {
                                     rows={4}
                                     disabled={isSubmitting}
                                     aria-label="Message content"
-                                    aria-describedby="content-length content-help"
+                                    aria-describedby="content-help"
                                     aria-invalid={submitError ? 'true' : 'false'}
                                     aria-errormessage={submitError ? 'submit-error' : undefined}
                                     error={submitError || undefined}
