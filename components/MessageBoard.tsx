@@ -113,11 +113,11 @@ const MessageBoard: React.FC = () => {
     };
 
     return (
-        <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}`, marginTop: spacing['3xl'] }}>
+        <div style={{ maxWidth: '48rem', margin: '0 auto', marginTop: spacing['3xl'] }}>
             <div>
                 <div className="flex items-center gap-4 mb-4" style={{ display: 'flex', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.xl }}>
                     <hr className="flex-grow border-blue-300 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.borderSecondary, borderStyle: 'dashed' }} />
-                    <h2 className="text-2xl font-heading text-blue-200 flex items-center gap-2" style={{
+                    <h2 className="text-2xl font-heading text-blue-200 flex items-center gap-2 message-board-title" style={{
                         fontSize: typography.fontSize['2xl'],
                         fontWeight: typography.fontWeight.semibold,
                         color: colors.secondary,

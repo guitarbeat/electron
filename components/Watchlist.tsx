@@ -87,7 +87,7 @@ const Watchlist: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}`, textAlign: 'center', color: colors.error }}>
+      <div style={{ maxWidth: '48rem', margin: '0 auto', textAlign: 'center', color: colors.error }}>
         <p>Error loading movies. Please try refreshing the page.</p>
         <p style={{ fontSize: typography.fontSize.sm, marginTop: spacing.sm }}>{error.message}</p>
       </div>
@@ -95,14 +95,14 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}` }}>
+    <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       <div>
         <Header />
         
         {/* Add Movie Form */}
         <Card variant="default" style={{ marginBottom: spacing.lg }}>
-          <form onSubmit={handleAddMovie} style={{ display: 'flex', gap: spacing.md, alignItems: 'center', padding: spacing.md }}>
+          <form onSubmit={handleAddMovie} style={{ display: 'flex', gap: spacing.md, alignItems: 'center', padding: spacing.md }} className="add-movie-form">
             <IconButton
               type="button"
               onClick={handleLogout}
@@ -195,7 +195,7 @@ const Watchlist: React.FC = () => {
                         </div>
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 style={{
+                        <h3 className="movie-title" style={{
                           fontSize: typography.fontSize.xl,
                           fontWeight: typography.fontWeight.bold,
                           color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
