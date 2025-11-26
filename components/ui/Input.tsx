@@ -41,10 +41,11 @@ const Input: React.FC<InputProps> = ({
           border: `${borders.inputInset} ${colors.borderInset}`,
           borderRadius: radius.sm,
           color: colors.textPrimary,
-          fontSize: typography.fontSize.base,
+          fontSize: typography.fontSize.base, // * 16px prevents iOS zoom
           fontFamily: typography.fontFamily.body.join(', '),
           transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
           outline: 'none',
+          WebkitAppearance: 'none', // * Prevent iOS default styling
           ...style,
         }}
         onFocus={(e) => {

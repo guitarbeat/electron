@@ -54,8 +54,13 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ sources, alt, cla
       src={sources[currentSourceIndex]}
       alt={alt}
       className={className}
-      style={style}
+      style={{
+        maxWidth: '100%',
+        height: 'auto',
+        ...style,
+      }}
       onError={handleError}
+      loading="lazy"
     />
   );
 };

@@ -203,6 +203,8 @@ const Watchlist: React.FC = () => {
                           margin: 0,
                           marginBottom: spacing.xs,
                           wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                          hyphens: 'auto',
                           textShadow: watchedByBoth ? 'none' : '1px 1px 2px rgba(0,0,0,0.5)',
                           transition: 'all 0.2s ease-out',
                         }}>
