@@ -375,12 +375,14 @@ const MessageBoard: React.FC = () => {
                 {/* Message List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }} role="log" aria-label="Message board messages" aria-live="polite" aria-atomic="false">
                     {isLoading && !messages && (
-                        <Card variant="default">
-                            <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }} role="status" aria-live="polite">
-                                <Spinner style={{ width: '24px', height: '24px', margin: '0 auto', marginBottom: spacing.sm, color: colors.accent }} />
-                                <p style={{ margin: 0 }}>Loading messages...</p>
-                            </div>
-                        </Card>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                            {[1, 2].map((i) => (
+                                <Card key={i} variant="default" className="skeleton" style={{ 
+                                    padding: spacing.xl,
+                                    height: '150px',
+                                }} />
+                            ))}
+                        </div>
                     )}
                     {error && (
                         <Card variant="default">
@@ -394,7 +396,7 @@ const MessageBoard: React.FC = () => {
                         <Card 
                             key={msg.id} 
                             variant="default"
-                            className="animate-fade-in message-card"
+                            className="message-card slide-up"
                             style={{ 
                               padding: spacing.xl,
                               animationDelay: `${index * 0.05}s`,
