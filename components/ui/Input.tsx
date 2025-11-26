@@ -39,20 +39,27 @@ const Input: React.FC<InputProps> = ({
           padding: spacing.md,
           backgroundColor: '#162447',
           border: `${borders.inputInset} ${colors.borderInset}`,
-          borderRadius: radius.sm,
+          borderRadius: radius.md,
           color: colors.textPrimary,
           fontSize: typography.fontSize.base, // * 16px prevents iOS zoom
           fontFamily: typography.fontFamily.body.join(', '),
           transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
           outline: 'none',
           WebkitAppearance: 'none', // * Prevent iOS default styling
+          textAlign: 'center',
+          letterSpacing: '0.02em',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
           ...style,
         }}
         onFocus={(e) => {
           e.currentTarget.style.outline = `2px solid ${colors.accent}`;
+          e.currentTarget.style.boxShadow = `inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px ${colors.accent}40`;
+          e.currentTarget.style.borderColor = colors.accent;
         }}
         onBlur={(e) => {
           e.currentTarget.style.outline = 'none';
+          e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.3)';
+          e.currentTarget.style.borderColor = colors.borderInset;
         }}
         {...props}
       />

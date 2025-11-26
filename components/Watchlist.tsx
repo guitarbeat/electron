@@ -101,40 +101,47 @@ const Watchlist: React.FC = () => {
         <Header />
         
         {/* Add Movie Form */}
-        <Card variant="default" style={{ marginBottom: spacing.lg }}>
-          <form onSubmit={handleAddMovie} style={{ display: 'flex', gap: spacing.md, alignItems: 'center', padding: spacing.md }} className="add-movie-form">
-            <IconButton
-              type="button"
-              onClick={handleLogout}
-              title="Switch User"
-              variant="ghost"
-            >
-              <LogoutIcon />
-            </IconButton>
-            <Input
-              type="text"
-              value={newMovieTitle}
-              onChange={(e) => setNewMovieTitle(e.target.value)}
-              placeholder="Add a new movie..."
-              disabled={isSubmitting}
-              style={{ flex: 1, margin: 0 }}
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isAdding}
-              disabled={!newMovieTitle.trim() || isSubmitting}
-              style={{ 
-                padding: spacing.md,
-                borderRadius: '50%',
-                aspectRatio: '1',
-                minWidth: '48px',
-                width: '48px',
-                height: '48px',
-              }}
-            >
-              {!isAdding && <PlusIcon />}
-            </Button>
+        <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
+          <form onSubmit={handleAddMovie} style={{ padding: spacing.lg }} className="add-movie-form">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center', width: '100%' }}>
+                <IconButton
+                  type="button"
+                  onClick={handleLogout}
+                  title="Switch User"
+                  variant="ghost"
+                  style={{ flexShrink: 0 }}
+                >
+                  <LogoutIcon />
+                </IconButton>
+                <Input
+                  type="text"
+                  value={newMovieTitle}
+                  onChange={(e) => setNewMovieTitle(e.target.value)}
+                  placeholder="Enter movie title..."
+                  disabled={isSubmitting}
+                  style={{ flex: 1, margin: 0 }}
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isAdding}
+                  disabled={!newMovieTitle.trim() || isSubmitting}
+                  style={{ 
+                    padding: spacing.md,
+                    borderRadius: '50%',
+                    aspectRatio: '1',
+                    minWidth: '56px',
+                    width: '56px',
+                    height: '56px',
+                    flexShrink: 0,
+                  }}
+                  title="Add movie"
+                >
+                  {!isAdding && <PlusIcon />}
+                </Button>
+              </div>
+            </div>
           </form>
         </Card>
         
@@ -187,25 +194,27 @@ const Watchlist: React.FC = () => {
                     opacity: watchedByCurrentUser && !watchedByBoth ? 0.6 : 1,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
                     {watchedByBoth && (
-                      <div style={{ color: colors.accent, marginTop: '2px', flexShrink: 0 }}>
+                      <div style={{ color: colors.accent, flexShrink: 0 }}>
                         <SparkleHeartIcon />
                       </div>
                     )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
                       <h3 className="movie-title" style={{
                         fontSize: typography.fontSize.xl,
                         fontWeight: typography.fontWeight.bold,
                         color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
                         textDecoration: watchedByBoth ? 'line-through' : 'none',
                         margin: 0,
-                        marginBottom: spacing.xs,
+                        marginBottom: spacing.sm,
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word',
                         hyphens: 'auto',
                         textShadow: watchedByBoth ? 'none' : '1px 1px 2px rgba(0,0,0,0.5)',
                         transition: 'all 0.2s ease-out',
+                        letterSpacing: '0.02em',
+                        lineHeight: typography.lineHeight.normal,
                       }}>
                         {movie.title}
                       </h3>
@@ -213,6 +222,7 @@ const Watchlist: React.FC = () => {
                         fontSize: typography.fontSize.sm,
                         color: colors.textSecondary,
                         margin: 0,
+                        letterSpacing: '0.01em',
                       }}>
                         Added by {movie.addedBy} • {getWatchedStatus(movie)}
                       </p>
