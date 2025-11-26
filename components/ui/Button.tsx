@@ -38,12 +38,12 @@ const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary: {
-      backgroundColor: colors.accent,
+      background: colors.gradientPink,
       color: colors.textPrimary,
       border: `${borders.buttonOutset} #fff`,
     },
     secondary: {
-      backgroundColor: colors.secondary,
+      background: colors.gradientBlue,
       color: colors.textPrimary,
       border: `${borders.buttonOutset} #fff`,
     },
@@ -75,9 +75,13 @@ const Button: React.FC<ButtonProps> = ({
         justifyContent: 'center',
         gap: spacing.sm,
         boxShadow: variant === 'ghost' ? 'none' : (isLarge ? shadows.buttonLarge : shadows.button),
-        textShadow: variant === 'ghost' ? 'none' : '1px 1px 2px #000',
+        textShadow: variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
         position: 'relative',
         top: 0,
+        // Add subtle inner highlight
+        backgroundImage: variant !== 'ghost' 
+          ? `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`
+          : 'none',
         ...style,
       }}
       onMouseDown={(e) => {

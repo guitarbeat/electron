@@ -125,7 +125,8 @@ const MessageBoard: React.FC = () => {
                         alignItems: 'center',
                         gap: spacing.sm,
                         margin: 0,
-                        textShadow: '2px 2px 4px #87cefa',
+                        textShadow: shadows.textGlowBlue,
+                        letterSpacing: '0.02em',
                     }}>
                         <MessageIcon style={{ width: '24px', height: '24px' }} />
                         Message Board
@@ -144,7 +145,7 @@ const MessageBoard: React.FC = () => {
                 </div>
                 
                 {/* Post Message Form */}
-                <Card variant="default" style={{ marginBottom: spacing['2xl'] }}>
+                <Card variant="elevated" style={{ marginBottom: spacing['2xl'] }}>
                     <form onSubmit={handleSubmit} aria-label="Post a new message" style={{ padding: spacing.lg }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
                             <div>
@@ -262,11 +263,15 @@ const MessageBoard: React.FC = () => {
                         </Card>
                     )}
                     
-                    {messages && messages.map((msg) => (
+                    {messages && messages.map((msg, index) => (
                         <Card 
                             key={msg.id} 
                             variant="default"
-                            style={{ padding: spacing.lg }}
+                            className="animate-fade-in"
+                            style={{ 
+                              padding: spacing.lg,
+                              animationDelay: `${index * 0.05}s`,
+                            }}
                         >
                             <article 
                                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.lg }}
@@ -280,6 +285,7 @@ const MessageBoard: React.FC = () => {
                                         margin: 0,
                                         marginBottom: spacing.sm,
                                         lineHeight: typography.lineHeight.relaxed,
+                                        textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
                                     }}>
                                         {msg.content}
                                     </p>

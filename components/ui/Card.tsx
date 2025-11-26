@@ -18,13 +18,17 @@ const Card: React.FC<CardProps> = ({
   onClick 
 }) => {
   const baseStyles: React.CSSProperties = {
-    backgroundColor: colors.surface,
+    background: variant === 'elevated' ? colors.gradientCard : colors.surface,
     borderRadius: radius.card,
     border: `${borders.cardOutset} ${colors.border}`,
-    boxShadow: shadows.card,
+    boxShadow: variant === 'elevated' ? shadows.cardElevated : shadows.card,
     position: 'relative',
     overflow: 'hidden',
     transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out',
+    // Add subtle inner highlight
+    backgroundImage: variant === 'elevated' 
+      ? 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%)'
+      : 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 50%)',
   };
 
   return (
@@ -34,15 +38,15 @@ const Card: React.FC<CardProps> = ({
       onClick={onClick}
       onMouseEnter={(e) => {
         if (onClick || variant === 'elevated') {
-          e.currentTarget.style.transform = 'translateY(-5px)';
+          e.currentTarget.style.transform = 'translateY(-6px) scale(1.01)';
           e.currentTarget.style.boxShadow = shadows.cardHover;
           e.currentTarget.style.borderColor = colors.accentLight;
         }
       }}
       onMouseLeave={(e) => {
         if (onClick || variant === 'elevated') {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = shadows.card;
+          e.currentTarget.style.transform = 'translateY(0) scale(1)';
+          e.currentTarget.style.boxShadow = variant === 'elevated' ? shadows.cardElevated : shadows.card;
           e.currentTarget.style.borderColor = colors.border;
         }
       }}
