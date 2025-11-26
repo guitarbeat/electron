@@ -4,7 +4,7 @@ import { User } from './types';
 import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import MessageBoard from './components/MessageBoard';
-import { spacing } from './design-system/tokens';
+import { spacing, colors, typography } from './design-system/tokens';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -66,7 +66,14 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   return (
-    <div className="bg-main text-white min-h-screen font-body">
+    <div 
+      className="bg-main"
+      style={{
+        color: colors.textPrimary,
+        minHeight: '100vh',
+        fontFamily: typography.fontFamily.body.join(', '),
+      }}
+    >
       <main style={{ 
         paddingTop: spacing['2xl'], 
         paddingBottom: spacing['3xl'],
