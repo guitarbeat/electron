@@ -75,11 +75,16 @@ const UserSelection: React.FC = () => {
             style={{
               fontSize: typography.fontSize['2xl'],
               fontWeight: typography.fontWeight.semibold,
-              color: colors.accent,
+              color: colors.accent, // * Fallback for browsers without gradient support
+              background: shadows.textGradientPink,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               marginBottom: spacing.xl,
               marginTop: 0,
-              textShadow: shadows.textGlow,
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
               letterSpacing: '0.02em',
+              filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
             }}
           >
             Who's Watching?

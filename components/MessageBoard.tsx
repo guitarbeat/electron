@@ -217,15 +217,20 @@ const MessageBoard: React.FC = () => {
                     <h2 className="text-2xl font-heading text-blue-200 flex items-center gap-2 message-board-title" style={{
                         fontSize: typography.fontSize['2xl'],
                         fontWeight: typography.fontWeight.semibold,
-                        color: colors.secondary,
+                        color: colors.secondary, // * Fallback for browsers without gradient support
+                        background: shadows.textGradientBlue,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
                         display: 'flex',
                         alignItems: 'center',
                         gap: spacing.sm,
                         margin: 0,
-                        textShadow: shadows.textGlowBlue,
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(135, 206, 250, 0.3)',
                         letterSpacing: '0.02em',
                         flexWrap: 'wrap',
                         justifyContent: 'center',
+                        filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
                     }}>
                         <MessageIcon style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 0 4px rgba(135, 206, 250, 0.6))' }} />
                         Message Board
@@ -238,6 +243,7 @@ const MessageBoard: React.FC = () => {
                                 backgroundColor: colors.secondaryMuted,
                                 padding: `${spacing.xs} ${spacing.sm}`,
                                 borderRadius: radius.full,
+                                border: `1px solid ${colors.secondary}40`,
                             }}>
                                 {messages.length}
                             </span>
