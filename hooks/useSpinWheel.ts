@@ -12,12 +12,13 @@ export const useSpinWheel = (
   wheelRef: React.RefObject<HTMLDivElement>,
   currentUser: User | null
 ) => {
-  const [status, setStatus] = useState<'idle' | 'spinning' | 'result' | 'loading'>('loading');
+  const [status, setStatus] = useState<'idle' | 'spinning' | 'result' | 'loading' | 'saving'>('loading');
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [currentRotation, setCurrentRotation] = useState(0);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const rotationRef = useRef(0);
   const velocityRef = useRef(0);
@@ -77,6 +78,8 @@ export const useSpinWheel = (
 
       // * Save the daily spin result to Gist
       if (currentUser && winner) {
+        setStatus('saving');
+        setSaveError(null);
         try {
           const today = new Date().toISOString().split('T')[0];
           const dailySpin: DailySpin = {
@@ -89,10 +92,11 @@ export const useSpinWheel = (
           await saveDailySpin(dailySpin);
           setTodaySpinData(dailySpin);
           setHasSpunToday(true);
+          setStatus('result');
         } catch (error) {
           console.error('Error saving daily spin:', error);
-          // * Show error to user - don't prevent them from seeing the result
-          alert('Warning: Could not save daily spin. The result may not sync properly.');
+          setSaveError('Could not save daily spin. The result may not sync properly.');
+          setStatus('result'); // * Still show the result even if save failed
         }
       }
     }
@@ -245,7 +249,9 @@ export const useSpinWheel = (
       } catch (error) {
         console.error('Error checking today\'s spin:', error);
         if (isMounted) {
+          // * On error, allow user to try spinning (they might be offline)
           setStatus('idle');
+          setSaveError('Could not check for existing spin. You can still spin, but results may not sync.');
         }
       }
     };
@@ -263,6 +269,7 @@ export const useSpinWheel = (
     currentRotation,
     hasSpunToday,
     todaySpinData,
+    saveError,
     getPointerHandlers: () => ({
         onMouseDown: handlePointerDown,
         onTouchStart: handlePointerDown,
