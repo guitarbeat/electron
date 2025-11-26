@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useMessages } from '../hooks/useMessages';
 import { useUser } from '../context/UserContext';
 import { MessageIcon, SendIcon, Spinner, TrashIcon, CheckIcon } from './icons';
@@ -8,40 +8,68 @@ import Input from './ui/Input';
 import Textarea from './ui/Textarea';
 import IconButton from './ui/IconButton';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
+import { Message } from '../types';
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_AUTHOR_LENGTH = 50;
 
-const timeAgo = (date: string) => {
+// * Retro iMessage-style color palette for different senders
+const SENDER_COLORS = [
+    '#007AFF', // iOS Blue
+    '#34C759', // iOS Green
+    '#FF9500', // iOS Orange
+    '#FF2D55', // iOS Pink
+    '#5856D6', // iOS Purple
+    '#FF3B30', // iOS Red
+    '#5AC8FA', // iOS Light Blue
+    '#AF52DE', // iOS Purple Pink
+    '#FF9500', // iOS Orange
+    '#FFCC00', // iOS Yellow
+];
+
+// * Generate consistent color for a sender based on their name
+const getSenderColor = (author: string, isCurrentUser: boolean): string => {
+    if (isCurrentUser) {
+        return '#007AFF'; // * Current user always gets blue (like iMessage)
+    }
+    
+    // * Generate a consistent color based on the author's name
+    let hash = 0;
+    for (let i = 0; i < author.length; i++) {
+        hash = author.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % SENDER_COLORS.length;
+    return SENDER_COLORS[index];
+};
+
+// * Format time for display (simpler format for chat)
+const formatTime = (date: string): string => {
     try {
         const dateObj = new Date(date);
         const now = new Date();
         
-        // * Handle invalid dates
         if (isNaN(dateObj.getTime()) || isNaN(now.getTime())) {
-            return "Recently";
+            return "";
         }
         
         const seconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
         
-        // * Handle future dates (shouldn't happen, but safety check)
         if (seconds < 0) {
-            return "Just now";
+            return "";
         }
         
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " years ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " months ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " days ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " hours ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " minutes ago";
-        return "Just now";
+        // * Show time if less than 24 hours, otherwise show date
+        if (seconds < 86400) {
+            const hours = dateObj.getHours();
+            const minutes = dateObj.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        } else {
+            return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
     } catch {
-        return "Recently";
+        return "";
     }
 };
 
@@ -170,8 +198,10 @@ const MessageBoard: React.FC = () => {
             style={{ 
                 maxWidth: '48rem', 
                 margin: '0 auto', 
-                marginTop: spacing.xl, // * Reduced from 3xl for more condensed feel
-                paddingBottom: 'env(safe-area-inset-bottom)', // * Safe area for iPhone home indicator
+                marginTop: spacing.lg,
+                paddingBottom: 'env(safe-area-inset-bottom)',
+                paddingLeft: spacing.md,
+                paddingRight: spacing.md,
             }}
         >
             {/* Toast Notification */}
@@ -283,7 +313,7 @@ const MessageBoard: React.FC = () => {
                 </div>
                 
                 {/* Post Message Form */}
-                <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
+                <Card variant="elevated" style={{ marginBottom: spacing.md }}>
                     <form onSubmit={handleSubmit} aria-label="Post a new message" style={{ padding: spacing.md }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
                             <div>
@@ -396,14 +426,28 @@ const MessageBoard: React.FC = () => {
                     </form>
                 </Card>
 
-                {/* Message List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }} role="log" aria-label="Message board messages" aria-live="polite" aria-atomic="false">
+                {/* Message List - Retro iMessage Style */}
+                <div 
+                    style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: spacing.xs,
+                        paddingBottom: spacing.md,
+                    }} 
+                    role="log" 
+                    aria-label="Message board messages" 
+                    aria-live="polite" 
+                    aria-atomic="false"
+                >
                     {isLoading && !messages && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
                             {[1, 2, 3].map((i) => (
-                                <Card key={i} variant="default" className="skeleton" style={{ 
+                                <div key={i} style={{ 
                                     padding: `${spacing.sm} ${spacing.md}`,
-                                    height: '60px',
+                                    height: '50px',
+                                    background: colors.surface,
+                                    borderRadius: radius.lg,
+                                    opacity: 0.5,
                                 }} />
                             ))}
                         </div>
@@ -416,105 +460,168 @@ const MessageBoard: React.FC = () => {
                         </Card>
                     )}
                     
-                    {messages && messages.map((msg, index) => (
-                        <div
-                            key={msg.id}
-                            className="message-bubble slide-up"
-                            style={{
-                                animationDelay: `${index * 0.05}s`,
-                                marginBottom: 0,
-                            }}
-                        >
-                            {/* Author and time header - above bubble */}
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: spacing.xs,
-                                marginBottom: spacing.xs,
-                                paddingLeft: spacing.xs,
-                                flexWrap: 'wrap',
-                            }}>
-                                <strong style={{
-                                    fontWeight: typography.fontWeight.semibold,
-                                    color: colors.secondary,
-                                    fontSize: typography.fontSize.sm,
-                                }}>
-                                    {msg.author || 'Anonymous'}
-                                </strong>
-                                <span
-                                    style={{
-                                        color: colors.textTertiary,
-                                        fontSize: typography.fontSize.xs,
-                                    }}
-                                    aria-label={`Posted ${timeAgo(msg.createdAt)}`}
-                                >
-                                    · {timeAgo(msg.createdAt)}
-                                </span>
-                            </div>
-                            
-                            {/* Message bubble */}
+                    {messages && [...messages].reverse().map((msg, index, reversedArray) => {
+                        const authorName = msg.author || 'Anonymous';
+                        const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
+                        const senderColor = getSenderColor(authorName, !!isCurrentUser);
+                        const prevMsg = index > 0 ? reversedArray[index - 1] : null;
+                        const isSameSender = prevMsg && (prevMsg.author || 'Anonymous') === authorName;
+                        const showSenderName = !isSameSender || index === 0;
+                        
+                        return (
                             <div
+                                key={msg.id}
                                 style={{
-                                    background: colors.surface,
-                                    borderRadius: radius.lg, // * More rounded like iMessage bubbles
-                                    padding: `${spacing.md} ${spacing.lg}`,
-                                    border: `1px solid ${colors.borderSecondary}40`, // * Subtle border
-                                    boxShadow: '0 1px 2px rgba(0,0,0,0.1), 0 0 8px rgba(135, 206, 250, 0.1)', // * Softer shadow
-                                    position: 'relative',
-                                    transition: 'all 0.2s ease',
-                                    wordWrap: 'break-word',
-                                    overflowWrap: 'break-word',
-                                    wordBreak: 'break-word',
-                                }}
-                                aria-label={`Message from ${msg.author}`}
-                            >
-                                {/* Message content */}
-                                <p style={{
-                                    color: colors.textPrimary,
-                                    whiteSpace: 'pre-wrap',
-                                    wordBreak: 'break-word',
-                                    overflowWrap: 'break-word',
-                                    hyphens: 'auto',
-                                    margin: 0,
-                                    marginBottom: spacing.xs,
-                                    lineHeight: typography.lineHeight.normal,
-                                    textShadow: '0 1px 1px rgba(0,0,0,0.2)',
-                                    letterSpacing: '0.01em',
-                                    fontSize: typography.fontSize.base,
-                                }}>
-                                    {msg.content}
-                                </p>
-                                
-                                {/* Delete button - subtle, inline */}
-                                <div style={{
                                     display: 'flex',
-                                    justifyContent: 'flex-end',
-                                    marginTop: spacing.xs,
-                                    opacity: 0.6,
-                                    transition: 'opacity 0.2s ease',
+                                    flexDirection: 'column',
+                                    alignItems: isCurrentUser ? 'flex-end' : 'flex-start',
+                                    marginBottom: showSenderName ? spacing.sm : spacing.xs,
+                                    maxWidth: '85%',
+                                    marginLeft: isCurrentUser ? 'auto' : 0,
+                                    marginRight: isCurrentUser ? 0 : 'auto',
                                 }}
-                                className="message-actions"
+                            >
+                                {/* Sender name and time - only show if different sender */}
+                                {showSenderName && (
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: spacing.xs,
+                                        marginBottom: spacing.xs / 2,
+                                        paddingLeft: isCurrentUser ? 0 : spacing.sm,
+                                        paddingRight: isCurrentUser ? spacing.sm : 0,
+                                        alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+                                    }}>
+                                        <span style={{
+                                            fontSize: typography.fontSize.xs,
+                                            fontWeight: typography.fontWeight.medium,
+                                            color: senderColor,
+                                            textShadow: `0 0 8px ${senderColor}40`,
+                                        }}>
+                                            {authorName}
+                                        </span>
+                                        {formatTime(msg.createdAt) && (
+                                            <span style={{
+                                                fontSize: typography.fontSize.xs,
+                                                color: colors.textTertiary,
+                                                opacity: 0.7,
+                                            }}>
+                                                {formatTime(msg.createdAt)}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                {/* Speech bubble */}
+                                <div
+                                    style={{
+                                        position: 'relative',
+                                        background: isCurrentUser 
+                                            ? senderColor 
+                                            : `linear-gradient(135deg, ${senderColor}dd 0%, ${senderColor}cc 100%)`,
+                                        borderRadius: isCurrentUser 
+                                            ? `${radius.lg} ${radius.lg} ${radius.xs} ${radius.lg}` 
+                                            : `${radius.lg} ${radius.lg} ${radius.lg} ${radius.xs}`,
+                                        padding: `${spacing.sm} ${spacing.md}`,
+                                        paddingBottom: spacing.sm,
+                                        boxShadow: `0 2px 4px rgba(0,0,0,0.2), 0 0 12px ${senderColor}30`,
+                                        maxWidth: '100%',
+                                        wordWrap: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    aria-label={`Message from ${authorName}`}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.02)';
+                                        e.currentTarget.style.boxShadow = `0 4px 8px rgba(0,0,0,0.3), 0 0 16px ${senderColor}50`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = `0 2px 4px rgba(0,0,0,0.2), 0 0 12px ${senderColor}30`;
+                                    }}
                                 >
-                                    <IconButton
-                                        onClick={() => handleDelete(msg.id)}
-                                        disabled={isSubmitting}
-                                        variant="danger"
-                                        title={`Delete message from ${msg.author}`}
-                                        aria-label={`Delete message from ${msg.author}`}
+                                    {/* Speech bubble tail */}
+                                    <div
                                         style={{
-                                            flexShrink: 0,
-                                            padding: spacing.xs,
-                                            minWidth: '28px',
-                                            minHeight: '28px',
-                                            opacity: 0.7,
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            [isCurrentUser ? 'right' : 'left']: '-6px',
+                                            width: 0,
+                                            height: 0,
+                                            borderStyle: 'solid',
+                                            ...(isCurrentUser ? {
+                                                borderWidth: '0 0 12px 12px',
+                                                borderColor: `transparent transparent ${senderColor} transparent`,
+                                            } : {
+                                                borderWidth: '0 12px 12px 0',
+                                                borderColor: `transparent ${senderColor}dd transparent transparent`,
+                                            }),
                                         }}
+                                    />
+                                    
+                                    {/* Message content */}
+                                    <p style={{
+                                        color: isCurrentUser 
+                                            ? '#ffffff' 
+                                            : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
+                                                ? '#000000'
+                                                : colors.textPrimary,
+                                        whiteSpace: 'pre-wrap',
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        margin: 0,
+                                        lineHeight: typography.lineHeight.normal,
+                                        fontSize: typography.fontSize.base,
+                                        textShadow: isCurrentUser 
+                                            ? '0 1px 2px rgba(0,0,0,0.3)' 
+                                            : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
+                                                ? '0 1px 1px rgba(255,255,255,0.3)'
+                                                : '0 1px 1px rgba(0,0,0,0.2)',
+                                    }}>
+                                        {msg.content}
+                                    </p>
+                                    
+                                    {/* Delete button - appears on hover */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: spacing.xs,
+                                        [isCurrentUser ? 'left' : 'right']: spacing.xs,
+                                        opacity: 0,
+                                        transition: 'opacity 0.2s ease',
+                                    }}
+                                    className="message-actions"
                                     >
-                                        <TrashIcon style={{ width: '12px', height: '12px' }} />
-                                    </IconButton>
+                                        <IconButton
+                                            onClick={() => handleDelete(msg.id)}
+                                            disabled={isSubmitting}
+                                            variant="danger"
+                                            title={`Delete message from ${authorName}`}
+                                            aria-label={`Delete message from ${authorName}`}
+                                            style={{
+                                                padding: spacing.xs,
+                                                minWidth: '24px',
+                                                minHeight: '24px',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                backdropFilter: 'blur(4px)',
+                                            }}
+                                        >
+                                            <TrashIcon style={{ width: '10px', height: '10px' }} />
+                                        </IconButton>
+                                    </div>
                                 </div>
+                                
+                                {/* Show delete button on hover */}
+                                <style>{`
+                                    .message-actions {
+                                        opacity: 0;
+                                    }
+                                    div[aria-label*="Message from"]:hover .message-actions {
+                                        opacity: 1;
+                                    }
+                                `}</style>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                     {messages?.length === 0 && !isLoading && (
                         <Card variant="elevated">
                             <div style={{ textAlign: 'center', padding: spacing.xl, color: colors.textSecondary }} role="status">
