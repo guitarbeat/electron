@@ -3,6 +3,9 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import ImageWithFallback from './ImageWithFallback';
 import { userImageSources, defaultImageSources } from '../config/imageConfig';
+import Card from './ui/Card';
+import Button from './ui/Button';
+import { spacing, typography, colors } from '../design-system/tokens';
 
 const UserSelection: React.FC = () => {
   const { setCurrentUser } = useUser();
@@ -15,36 +18,96 @@ const UserSelection: React.FC = () => {
   const sources = hoveredUser ? userImageSources[hoveredUser] : defaultImageSources;
 
   return (
-    <div className="container mx-auto px-4 text-center">
-      <div className="max-w-md mx-auto cute-card p-8">
-        <div className="h-32 mb-4 flex justify-center items-center">
-          <ImageWithFallback
-            key={hoveredUser || 'default'}
-            sources={sources}
-            alt={`A meme representing ${hoveredUser || 'no one'}`}
-            className="max-h-full rounded-lg border-4 border-pink-300 shadow-lg object-contain animate-fade-in"
-          />
-        </div>
-        <h2 className="text-3xl font-heading mb-6 text-pink-300" style={{textShadow: '1px 1px 2px #ff69b4'}}>who dis b?</h2>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => handleUserSelect('Aaron')}
-            onMouseEnter={() => setHoveredUser('Aaron')}
-            onMouseLeave={() => setHoveredUser(null)}
-            className="cute-button cute-button-blue text-xl"
+    <div
+      style={{
+        maxWidth: '28rem',
+        margin: '0 auto',
+        padding: `0 ${spacing.lg}`,
+        textAlign: 'center',
+      }}
+    >
+      <Card variant="elevated" className="animate-fade-in">
+        <div style={{ padding: spacing['2xl'] }}>
+          <div
+            style={{
+              height: '128px',
+              marginBottom: spacing.xl,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              position: 'relative',
+            }}
           >
-            Aaron
-          </button>
-          <button
-            onClick={() => handleUserSelect('Electra')}
-            onMouseEnter={() => setHoveredUser('Electra')}
-            onMouseLeave={() => setHoveredUser(null)}
-            className="cute-button cute-button-pink text-xl"
+            <div
+              style={{
+                position: 'absolute',
+                inset: '-8px',
+                borderRadius: '12px',
+                background: colors.gradientPink,
+                opacity: hoveredUser ? 0.4 : 0.2,
+                filter: 'blur(12px)',
+                transition: 'opacity 0.3s ease-out',
+                zIndex: -1,
+              }}
+            />
+            <ImageWithFallback
+              key={hoveredUser || 'default'}
+              sources={sources}
+              alt={`A meme representing ${hoveredUser || 'no one'}`}
+              style={{
+                maxHeight: '100%',
+                borderRadius: '8px',
+                border: `3px solid ${colors.accent}`,
+                objectFit: 'contain',
+                boxShadow: shadows.glow,
+                transition: 'all 0.3s ease-out',
+                transform: hoveredUser ? 'scale(1.05)' : 'scale(1)',
+              }}
+            />
+          </div>
+          <h2
+            style={{
+              fontSize: typography.fontSize['2xl'],
+              fontWeight: typography.fontWeight.semibold,
+              color: colors.accent,
+              marginBottom: spacing.xl,
+              marginTop: 0,
+              textShadow: shadows.textGlow,
+              letterSpacing: '0.02em',
+            }}
           >
-            Electra
-          </button>
+            Select User
+          </h2>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.md,
+            }}
+          >
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => handleUserSelect('Aaron')}
+              onMouseEnter={() => setHoveredUser('Aaron')}
+              onMouseLeave={() => setHoveredUser(null)}
+              style={{ width: '100%' }}
+            >
+              Aaron
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => handleUserSelect('Electra')}
+              onMouseEnter={() => setHoveredUser('Electra')}
+              onMouseLeave={() => setHoveredUser(null)}
+              style={{ width: '100%' }}
+            >
+              Electra
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

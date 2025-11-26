@@ -3,6 +3,9 @@ import { Movie } from '../types';
 import { useSpinWheel } from '../hooks/useSpinWheel';
 import { useUser } from '../context/UserContext';
 import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from './icons';
+import Card from './ui/Card';
+import Button from './ui/Button';
+import { spacing, typography, colors } from '../design-system/tokens';
 
 const COLORS = ['#2E3B4E', '#E74C3C', '#AF7AC5', '#5DADE2', '#FADBD8', '#C39BD3', '#A9CCE3', '#F5B7B1'];
 
@@ -74,42 +77,80 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
   };
 
   return (
-    <div className="wheel-modal-overlay" onClick={handleOverlayClick}>
+    <div 
+      className="wheel-modal-overlay" 
+      onClick={handleOverlayClick}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: colors.overlay,
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        zIndex: 50,
+        padding: spacing.md,
+        overflowY: 'auto',
+      }}
+    >
       <div 
         className="modal-content-wrapper"
         onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: `${spacing.md} 0`,
+          maxWidth: '500px',
+        }}
       >
 
         {status === 'loading' && (
-          <div className="flex flex-col items-center justify-center gap-4 py-12">
-            <Spinner className="h-12 w-12 text-pink-400" />
-            <p className="text-gray-300 text-lg font-heading">Checking today's spin...</p>
-            <p className="text-gray-500 text-sm">Please wait...</p>
-          </div>
+          <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
+            <Spinner style={{ width: '48px', height: '48px', color: colors.accent, margin: '0 auto', marginBottom: spacing.lg }} />
+            <p style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.medium, color: colors.textPrimary, margin: 0, marginBottom: spacing.sm }}>
+              Checking today's spin...
+            </p>
+            <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0 }}>
+              Please wait...
+            </p>
+          </Card>
         )}
 
         {status === 'saving' && (
-          <div className="flex flex-col items-center justify-center gap-4 py-12">
-            <Spinner className="h-12 w-12 text-blue-400" />
-            <p className="text-gray-300 text-lg font-heading">Saving your spin...</p>
-            <p className="text-gray-500 text-sm">Syncing with your partner...</p>
-          </div>
+          <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
+            <Spinner style={{ width: '48px', height: '48px', color: colors.secondary, margin: '0 auto', marginBottom: spacing.lg }} />
+            <p style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.medium, color: colors.textPrimary, margin: 0, marginBottom: spacing.sm }}>
+              Saving your spin...
+            </p>
+            <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0 }}>
+              Syncing with your partner...
+            </p>
+          </Card>
         )}
 
         {status !== 'loading' && movies.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-4 py-12">
-            <p className="text-gray-300 text-lg font-heading">No movies available</p>
-            <p className="text-gray-400 text-sm">Add some movies to your watchlist first!</p>
-            <button onClick={onClose} className="cute-button cute-button-pink mt-4">
+          <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
+            <p style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.medium, color: colors.textPrimary, margin: 0, marginBottom: spacing.sm }}>
+              No movies available
+            </p>
+            <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0, marginBottom: spacing.lg }}>
+              Add some movies to your watchlist first!
+            </p>
+            <Button variant="primary" onClick={onClose}>
               Close
-            </button>
-          </div>
+            </Button>
+          </Card>
         )}
 
         {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
           <>
-            <div className="current-movie-display cute-card">
-                <h3 className="current-movie-title break-words">
+            <Card variant="default" className="current-movie-display">
+                <h3 className="current-movie-title" style={{ wordBreak: 'break-word' }}>
                     {status === 'result' && selectedMovie 
                       ? selectedMovie.title 
                       : currentMovie 
@@ -117,14 +158,24 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                         : 'Ready to spin?'}
                 </h3>
                 {status === 'result' && selectedMovie && (
-                  <div className="mt-2 flex items-center justify-center gap-2">
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-900/30 border border-green-500/50">
-                      <CheckIcon className="h-3 w-3 text-green-400" />
-                      <span className="text-xs text-green-300 font-heading">Today's Pick</span>
+                  <div style={{ marginTop: spacing.sm, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.xs }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: spacing.xs,
+                      padding: `${spacing.xs} ${spacing.sm}`,
+                      borderRadius: '9999px',
+                      backgroundColor: colors.success + '20',
+                      border: `1px solid ${colors.success}80`,
+                    }}>
+                      <CheckIcon style={{ width: '12px', height: '12px', color: colors.success }} />
+                      <span style={{ fontSize: typography.fontSize.xs, color: colors.success, fontWeight: typography.fontWeight.medium }}>
+                        Today's Pick
+                      </span>
                     </div>
                   </div>
                 )}
-            </div>
+            </Card>
 
             <div 
               className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
@@ -134,7 +185,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                 {hasSpunToday && (
                   <div className="lock-overlay">
                     <div className="lock-icon-wrapper">
-                      <LockIcon />
+                      <LockIcon style={{ width: '32px', height: '32px' }} />
                     </div>
                   </div>
                 )}
@@ -148,68 +199,106 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
               </div>
               {status === 'idle' && !hasSpunToday && (
                 <div className="spin-content">
-                  <button 
+                  <Button 
+                    variant="secondary"
+                    size="lg"
                     onClick={handlePrimarySpin}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    className="cute-button cute-button-blue text-4xl font-heading !w-32 !h-32 !rounded-full animate-pulse"
+                    style={{
+                      width: '128px',
+                      height: '128px',
+                      borderRadius: '50%',
+                      fontSize: typography.fontSize['2xl'],
+                      fontWeight: typography.fontWeight.bold,
+                    }}
                   >
                     Spin!
-                  </button>
+                  </Button>
                 </div>
               )}
               {hasSpunToday && status === 'idle' && (
                 <div className="spin-content locked-content">
-                  <div className="flex flex-col items-center gap-3">
-                    <LockIcon />
-                    <p className="text-gray-300 text-center font-heading text-lg">Already spun today!</p>
-                    <p className="text-gray-400 text-sm">Come back tomorrow for another spin</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: spacing.md }}>
+                    <LockIcon style={{ width: '48px', height: '48px', color: colors.accent }} />
+                    <p style={{ fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.medium, color: colors.textPrimary, textAlign: 'center', margin: 0 }}>
+                      Already spun today!
+                    </p>
+                    <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0 }}>
+                      Come back tomorrow for another spin
+                    </p>
                   </div>
                 </div>
               )}
             </div>
             
-            {/* Result Display - Always show when there's a result */}
+            {/* Result Display */}
             {status === 'result' && selectedMovie && (
-              <div 
-                className="result-display-container animate-fade-in"
+              <Card 
+                variant="elevated"
+                className="result-display-container"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <CheckIcon className="h-6 w-6 text-green-400 animate-pulse" />
-                  <h2 className="text-gray-300 font-heading text-lg sm:text-xl">Tonight's Movie:</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.md }}>
+                  <CheckIcon style={{ width: '24px', height: '24px', color: colors.success }} />
+                  <h2 style={{
+                    fontSize: typography.fontSize.xl,
+                    fontWeight: typography.fontWeight.semibold,
+                    color: colors.textPrimary,
+                    margin: 0,
+                  }}>
+                    Tonight's Movie:
+                  </h2>
                 </div>
-                <h3 className="font-heading text-pink-300 break-words text-2xl sm:text-3xl mb-4 animate-fade-in" style={{textShadow: '1px 1px 2px #000'}}>
+                <h3 style={{
+                  fontSize: typography.fontSize['3xl'],
+                  fontWeight: typography.fontWeight.bold,
+                  color: colors.accent,
+                  wordBreak: 'break-word',
+                  margin: 0,
+                  marginBottom: spacing.xl,
+                }}>
                   {selectedMovie.title}
                 </h3>
                 {saveError && (
-                  <div className="mb-4 p-3 rounded-lg bg-yellow-900/30 border border-yellow-500/50">
-                    <p className="text-yellow-300 text-sm text-center">{saveError}</p>
-                  </div>
+                  <Card variant="outlined" style={{
+                    marginBottom: spacing.lg,
+                    padding: spacing.md,
+                    backgroundColor: colors.warning + '20',
+                    borderColor: colors.warning + '80',
+                  }}>
+                    <p style={{ color: colors.warning, fontSize: typography.fontSize.sm, textAlign: 'center', margin: 0 }}>
+                      {saveError}
+                    </p>
+                  </Card>
                 )}
                 {todaySpinData && (
-                  <div className="flex flex-col gap-2 mb-4 w-full">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <SyncIcon className="h-4 w-4 text-blue-400" />
-                      <span className="text-gray-400">Synced for both of you</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, marginBottom: spacing.lg, width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, fontSize: typography.fontSize.sm }}>
+                      <SyncIcon style={{ width: '16px', height: '16px', color: colors.secondary }} />
+                      <span style={{ color: colors.textSecondary }}>Synced for both of you</span>
                     </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
-                        todaySpinData.spunBy === currentUser
-                          ? 'bg-green-900/30 border-green-500/50'
-                          : 'bg-pink-900/30 border-pink-500/50'
-                      }`}>
-                        <span className={`font-heading text-sm ${
-                          todaySpinData.spunBy === currentUser
-                            ? 'text-green-300'
-                            : 'text-pink-300'
-                        }`}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: spacing.sm,
+                        padding: `${spacing.xs} ${spacing.md}`,
+                        borderRadius: '9999px',
+                        border: `1px solid ${todaySpinData.spunBy === currentUser ? colors.success + '80' : colors.accent + '80'}`,
+                        backgroundColor: todaySpinData.spunBy === currentUser ? colors.success + '20' : colors.accentMuted,
+                      }}>
+                        <span style={{
+                          fontWeight: typography.fontWeight.medium,
+                          fontSize: typography.fontSize.sm,
+                          color: todaySpinData.spunBy === currentUser ? colors.success : colors.accent,
+                        }}>
                           {todaySpinData.spunBy === currentUser ? '✓ You spun it!' : `Spun by ${todaySpinData.spunBy}`}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                      <CalendarIcon className="h-3 w-3" />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
+                      <CalendarIcon style={{ width: '12px', height: '12px' }} />
                       <span>
                         {(() => {
                           try {
@@ -229,17 +318,17 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     </div>
                   </div>
                 )}
-                <div className="flex flex-col sm:flex-row gap-4 w-full mt-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, width: '100%', marginTop: spacing.lg }}>
                   {!hasSpunToday && (
-                    <button onClick={handleSpinAgain} className="cute-button cute-button-blue w-full">
+                    <Button onClick={handleSpinAgain} variant="secondary" style={{ width: '100%' }}>
                       Spin Again
-                    </button>
+                    </Button>
                   )}
-                  <button onClick={onClose} className="cute-button cute-button-pink w-full">
+                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }}>
                     Close
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             )}
           </>
         )}
