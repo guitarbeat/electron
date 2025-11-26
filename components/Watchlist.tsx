@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { Movie } from '../types';
-import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
+import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon, CheckIcon, FilmIcon } from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
 import Card from './ui/Card';
@@ -19,14 +19,33 @@ const Watchlist: React.FC = () => {
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isWheelVisible, setIsWheelVisible] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
+  const watchedMovies = movies ? movies.filter(movie => movie.watchedBy.length === 2) : [];
+  
+  // * Auto-focus input after successful add
+  useEffect(() => {
+    if (!isAdding && newMovieTitle === '' && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAdding, newMovieTitle]);
+
+  // * Auto-hide toast
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const handleOpenWheel = () => {
     if (unwatchedMovies.length > 1) {
         setIsWheelVisible(true);
     } else {
-        alert("You need at least two unwatched movies to spin the wheel!");
+        setToast({ message: "You need at least two unwatched movies to spin the wheel!", type: 'info' });
     }
   };
 
@@ -34,11 +53,15 @@ const Watchlist: React.FC = () => {
     e.preventDefault();
     if (newMovieTitle.trim() && !isSubmitting) {
       setIsAdding(true);
+      const movieTitle = newMovieTitle.trim();
       try {
-        await addMovie(newMovieTitle);
+        await addMovie(movieTitle);
         setNewMovieTitle('');
+        setToast({ message: `"${movieTitle}" added successfully!`, type: 'success' });
+        setSuccessMovieId(movieTitle);
+        setTimeout(() => setSuccessMovieId(null), 2000);
       } catch (err: any) {
-        alert(`Error adding movie: ${err.message}`);
+        setToast({ message: `Error adding movie: ${err.message}`, type: 'error' });
       }
       finally {
         setIsAdding(false);
@@ -49,16 +72,32 @@ const Watchlist: React.FC = () => {
   const handleToggleWatched = async (movieId: string) => {
     try {
       await toggleWatched(movieId);
+      const movie = movies?.find(m => m.id === movieId);
+      if (movie) {
+        const watchedByCurrentUser = movie.watchedBy.includes(currentUser!);
+        setToast({ 
+          message: watchedByCurrentUser 
+            ? `Marked "${movie.title}" as watched!` 
+            : `Marked "${movie.title}" as unwatched`,
+          type: 'success' 
+        });
+      }
     } catch (err: any) {
-      alert(`Error updating movie status: ${err.message}`);
+      setToast({ message: `Error updating movie status: ${err.message}`, type: 'error' });
     }
   }
 
   const handleDeleteMovie = async (movieId: string) => {
+    const movie = movies?.find(m => m.id === movieId);
+    if (!movie) return;
+    
+    if (!window.confirm(`Are you sure you want to delete "${movie.title}"?`)) return;
+    
     try {
       await deleteMovie(movieId);
+      setToast({ message: `"${movie.title}" deleted`, type: 'success' });
     } catch (err: any) {
-      alert(`Error deleting movie: ${err.message}`);
+      setToast({ message: `Error deleting movie: ${err.message}`, type: 'error' });
     }
   }
 
@@ -97,8 +136,65 @@ const Watchlist: React.FC = () => {
   return (
     <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
+      
+      {/* Toast Notification */}
+      {toast && (
+        <Card 
+          variant="elevated" 
+          style={{ 
+            position: 'fixed',
+            top: spacing.lg,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            maxWidth: '90%',
+            padding: spacing.md,
+            backgroundColor: toast.type === 'error' ? colors.error + '20' : toast.type === 'success' ? colors.success + '20' : colors.secondary + '20',
+            borderColor: toast.type === 'error' ? colors.error : toast.type === 'success' ? colors.success : colors.secondary,
+            animation: 'fade-in 0.3s ease-out',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, color: colors.textPrimary }}>
+            {toast.type === 'success' && <CheckIcon style={{ color: colors.success, flexShrink: 0 }} />}
+            <span style={{ fontSize: typography.fontSize.sm, textAlign: 'center' }}>{toast.message}</span>
+          </div>
+        </Card>
+      )}
+      
       <div>
         <Header />
+        
+        {/* Movie Statistics */}
+        {movies && movies.length > 0 && (
+          <Card variant="default" style={{ marginBottom: spacing.lg, padding: spacing.md }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: spacing.lg, flexWrap: 'wrap', textAlign: 'center' }}>
+              <div>
+                <div style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.accent }}>
+                  {movies.length}
+                </div>
+                <div style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                  {movies.length === 1 ? 'Movie' : 'Movies'}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.secondary }}>
+                  {unwatchedMovies.length}
+                </div>
+                <div style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                  Unwatched
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.accent }}>
+                  {watchedMovies.length}
+                </div>
+                <div style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                  Watched Together
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
         
         {/* Add Movie Form */}
         <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
@@ -115,12 +211,19 @@ const Watchlist: React.FC = () => {
                   <LogoutIcon />
                 </IconButton>
                 <Input
+                  ref={inputRef}
                   type="text"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="Enter movie title..."
                   disabled={isSubmitting}
                   style={{ flex: 1, margin: 0 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setNewMovieTitle('');
+                      inputRef.current?.blur();
+                    }
+                  }}
                 />
                 <Button
                   type="submit"
@@ -192,6 +295,7 @@ const Watchlist: React.FC = () => {
                   style={{
                     padding: spacing.lg,
                     opacity: watchedByCurrentUser && !watchedByBoth ? 0.6 : 1,
+                    transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
@@ -253,11 +357,12 @@ const Watchlist: React.FC = () => {
           {movies?.length === 0 && (
               <Card variant="default">
                 <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
-                  <p style={{ margin: 0, marginBottom: spacing.sm, fontSize: typography.fontSize.base }}>
+                  <FilmIcon style={{ width: '64px', height: '64px', margin: '0 auto', marginBottom: spacing.lg, opacity: 0.5, color: colors.textTertiary }} />
+                  <p style={{ margin: 0, marginBottom: spacing.sm, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
                     Your movie list is empty
                   </p>
                   <p style={{ margin: 0, fontSize: typography.fontSize.sm }}>
-                    Add a movie to get started
+                    Add a movie above to get started!
                   </p>
                 </div>
               </Card>

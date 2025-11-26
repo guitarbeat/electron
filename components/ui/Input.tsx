@@ -9,13 +9,13 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 /**
  * Input component with retro inset styling.
  */
-const Input: React.FC<InputProps> = ({
+const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   label,
   error,
   className = '',
   style,
   ...props
-}) => {
+}, ref) => {
   return (
     <div style={{ width: '100%' }}>
       {label && (
@@ -33,6 +33,7 @@ const Input: React.FC<InputProps> = ({
         </label>
       )}
       <input
+        ref={ref}
         className={className}
         style={{
           width: '100%',
@@ -77,6 +78,8 @@ const Input: React.FC<InputProps> = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 export default Input;
