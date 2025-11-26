@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import { Movie } from '../types';
 import { useSpinWheel } from '../hooks/useSpinWheel';
 import { useUser } from '../context/UserContext';
+import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from './icons';
 
 const COLORS = ['#2E3B4E', '#E74C3C', '#AF7AC5', '#5DADE2', '#FADBD8', '#C39BD3', '#A9CCE3', '#F5B7B1'];
 
@@ -65,8 +66,9 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
       >
 
         {status === 'loading' && (
-          <div className="text-center text-gray-300">
-            <p>Loading...</p>
+          <div className="flex flex-col items-center justify-center gap-4 py-12">
+            <Spinner className="h-12 w-12 text-pink-400" />
+            <p className="text-gray-300 text-lg font-heading">Checking today's spin...</p>
           </div>
         )}
 
@@ -79,14 +81,21 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
             </div>
 
             <div 
-              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''}`}
+              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
               {...(hasSpunToday ? {} : getPointerHandlers())}
             >
               <div className="spin-wheel-container">
+                {hasSpunToday && (
+                  <div className="lock-overlay">
+                    <div className="lock-icon-wrapper">
+                      <LockIcon />
+                    </div>
+                  </div>
+                )}
                 <div className="spin-marker"></div>
                 <div 
                   ref={wheelRef} 
-                  className="spin-wheel" 
+                  className={`spin-wheel ${hasSpunToday ? 'grayscale' : ''}`}
                   style={wheelBackgroundStyle}
                 ></div>
                 <div className="spin-hub"></div>
@@ -97,15 +106,19 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     onClick={handlePrimarySpin}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    className="cute-button cute-button-blue text-4xl font-heading !w-32 !h-32 !rounded-full"
+                    className="cute-button cute-button-blue text-4xl font-heading !w-32 !h-32 !rounded-full animate-pulse"
                   >
                     Spin!
                   </button>
                 </div>
               )}
               {hasSpunToday && status === 'idle' && (
-                <div className="spin-content">
-                  <p className="text-gray-300 text-center">Already spun today!</p>
+                <div className="spin-content locked-content">
+                  <div className="flex flex-col items-center gap-3">
+                    <LockIcon />
+                    <p className="text-gray-300 text-center font-heading text-lg">Already spun today!</p>
+                    <p className="text-gray-400 text-sm">Come back tomorrow for another spin</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -116,14 +129,31 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                 className="result-display-container animate-fade-in"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h2 className="text-gray-300">Tonight's Movie:</h2>
-                <h3 className="font-heading text-pink-300 break-words" style={{textShadow: '1px 1px 2px #000'}}>
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckIcon className="h-5 w-5 text-green-400" />
+                  <h2 className="text-gray-300 font-heading">Tonight's Movie:</h2>
+                </div>
+                <h3 className="font-heading text-pink-300 break-words text-2xl sm:text-3xl mb-4" style={{textShadow: '1px 1px 2px #000'}}>
                   {selectedMovie.title}
                 </h3>
                 {todaySpinData && (
-                  <p className="text-sm text-gray-400 mt-2">
-                    Spun by {todaySpinData.spunBy} today
-                  </p>
+                  <div className="flex flex-col gap-2 mb-4 w-full">
+                    <div className="flex items-center justify-center gap-2 text-sm">
+                      <SyncIcon className="h-4 w-4 text-blue-400" />
+                      <span className="text-gray-400">Synced for both of you</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-pink-900/30 border border-pink-500/50">
+                        <span className="text-pink-300 font-heading text-sm">
+                          Spun by {todaySpinData.spunBy}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                      <CalendarIcon className="h-3 w-3" />
+                      <span>{new Date(todaySpinData.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                    </div>
+                  </div>
                 )}
                 <div className="flex flex-col sm:flex-row gap-4 w-full mt-4">
                   {!hasSpunToday && (
