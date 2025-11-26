@@ -7,7 +7,7 @@ import Button from './ui/Button';
 import Input from './ui/Input';
 import Textarea from './ui/Textarea';
 import IconButton from './ui/IconButton';
-import { spacing, typography, colors } from '../design-system/tokens';
+import { spacing, typography, colors, shadows } from '../design-system/tokens';
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_AUTHOR_LENGTH = 50;
