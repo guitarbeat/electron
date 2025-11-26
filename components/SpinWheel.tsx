@@ -159,6 +159,9 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                   hyphens: 'auto',
+                  maxWidth: '100%',
+                  padding: '0 0.5rem', // * Add horizontal padding to prevent edge cutoff
+                  boxSizing: 'border-box',
                 }}>
                     {status === 'result' && selectedMovie 
                       ? selectedMovie.title 
@@ -270,6 +273,9 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                   hyphens: 'auto',
                   margin: 0,
                   marginBottom: spacing.xl,
+                  maxWidth: '100%',
+                  padding: '0 0.5rem', // * Add horizontal padding to prevent edge cutoff
+                  boxSizing: 'border-box',
                 }}>
                   {selectedMovie.title}
                 </h3>

@@ -204,6 +204,12 @@ const Watchlist: React.FC = () => {
               fontSize: typography.fontSize.base, 
               textAlign: 'center',
               fontWeight: typography.fontWeight.medium,
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              hyphens: 'auto',
+              maxWidth: '100%',
+              flex: '1 1 auto', // * Allow flex item to grow and shrink
+              minWidth: 0, // * Allow shrinking below content size for proper wrapping
             }}>
               {toast.message}
             </span>
@@ -220,7 +226,7 @@ const Watchlist: React.FC = () => {
             marginBottom: spacing.xl, 
             padding: spacing.xl,
             position: 'relative',
-            overflow: 'hidden',
+            // * overflow handled by Card component - decorative background will be clipped properly
           }}>
             {/* Decorative background pattern */}
             <div style={{
@@ -451,7 +457,9 @@ const Watchlist: React.FC = () => {
                           fontWeight: typography.fontWeight.semibold,
                           textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
                           letterSpacing: '0.05em',
-                          whiteSpace: 'nowrap',
+                          whiteSpace: 'normal', // * Changed from 'nowrap' to allow wrapping on small screens
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
                           filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
                         }}>
                           Watched Together ✨
