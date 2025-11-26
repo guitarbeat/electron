@@ -76,8 +76,20 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
           <>
             <div className="current-movie-display cute-card">
                 <h3 className="current-movie-title break-words">
-                    {currentMovie ? currentMovie.title : 'Ready to spin?'}
+                    {status === 'result' && selectedMovie 
+                      ? selectedMovie.title 
+                      : currentMovie 
+                        ? currentMovie.title 
+                        : 'Ready to spin?'}
                 </h3>
+                {status === 'result' && selectedMovie && (
+                  <div className="mt-2 flex items-center justify-center gap-2">
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-900/30 border border-green-500/50">
+                      <CheckIcon className="h-3 w-3 text-green-400" />
+                      <span className="text-xs text-green-300 font-heading">Today's Pick</span>
+                    </div>
+                  </div>
+                )}
             </div>
 
             <div 
@@ -123,17 +135,17 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
               )}
             </div>
             
-            {/* Result Display */}
+            {/* Result Display - Always show when there's a result */}
             {status === 'result' && selectedMovie && (
               <div 
                 className="result-display-container animate-fade-in"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckIcon className="h-5 w-5 text-green-400" />
-                  <h2 className="text-gray-300 font-heading">Tonight's Movie:</h2>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <CheckIcon className="h-6 w-6 text-green-400 animate-pulse" />
+                  <h2 className="text-gray-300 font-heading text-lg sm:text-xl">Tonight's Movie:</h2>
                 </div>
-                <h3 className="font-heading text-pink-300 break-words text-2xl sm:text-3xl mb-4" style={{textShadow: '1px 1px 2px #000'}}>
+                <h3 className="font-heading text-pink-300 break-words text-2xl sm:text-3xl mb-4 animate-fade-in" style={{textShadow: '1px 1px 2px #000'}}>
                   {selectedMovie.title}
                 </h3>
                 {todaySpinData && (
