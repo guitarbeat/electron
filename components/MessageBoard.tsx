@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useMessages } from '../hooks/useMessages';
 import { useUser } from '../context/UserContext';
-import { MessageIcon, SendIcon, Spinner, TrashIcon, CheckIcon } from './icons';
+import { MessageIcon, SendIcon, Spinner, TrashIcon, CheckIcon, ChevronDownIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -81,7 +81,9 @@ const MessageBoard: React.FC = () => {
     const [content, setContent] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
     const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
     const previousMessagesLengthRef = useRef<number>(0);
     
@@ -97,22 +99,63 @@ const MessageBoard: React.FC = () => {
         }
     }, [toast]);
 
-    // * Auto-scroll to bottom when new messages arrive
+    // * Check scroll position to show/hide scroll-to-bottom button
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        const checkScrollPosition = () => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100; // * 100px threshold
+            setShowScrollToBottom(!isNearBottom);
+        };
+
+        container.addEventListener('scroll', checkScrollPosition);
+        checkScrollPosition(); // * Initial check
+
+        return () => container.removeEventListener('scroll', checkScrollPosition);
+    }, [messages]);
+
+    // * Auto-scroll to bottom when new messages arrive (only if already near bottom)
     useEffect(() => {
         if (messages && messages.length > previousMessagesLengthRef.current) {
-            // * Use requestAnimationFrame for better iOS compatibility
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    messagesEndRef.current?.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'nearest',
-                        inline: 'nearest'
+            const container = messagesContainerRef.current;
+            if (container) {
+                const { scrollTop, scrollHeight, clientHeight } = container;
+                const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+                
+                if (isNearBottom) {
+                    // * Use requestAnimationFrame for better iOS compatibility
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            container.scrollTo({
+                                top: container.scrollHeight,
+                                behavior: 'smooth',
+                            });
+                        }, 100);
                     });
-                }, 100);
-            });
+                }
+            }
         }
         previousMessagesLengthRef.current = messages?.length || 0;
     }, [messages]);
+
+    // * Scroll to bottom function
+    const scrollToBottom = () => {
+        const container = messagesContainerRef.current;
+        if (container) {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth',
+            });
+        } else {
+            messagesEndRef.current?.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest',
+                inline: 'nearest'
+            });
+        }
+    };
 
     // * Auto-resize textarea based on content
     useEffect(() => {
@@ -160,6 +203,10 @@ const MessageBoard: React.FC = () => {
                 await addMessage(author, content);
                 setContent('');
                 setToast({ message: 'Message posted successfully!', type: 'success' });
+                // * Scroll to bottom after posting
+                setTimeout(() => {
+                    scrollToBottom();
+                }, 200);
                 // * Delay focus to allow keyboard to dismiss on iOS after submission
                 setTimeout(() => {
                     contentTextareaRef.current?.focus();
@@ -312,133 +359,87 @@ const MessageBoard: React.FC = () => {
                     }} />
                 </div>
                 
-                {/* Post Message Form */}
-                <Card variant="elevated" style={{ marginBottom: spacing.md }}>
-                    <form onSubmit={handleSubmit} aria-label="Post a new message" style={{ padding: spacing.md }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-                            <div>
-                                <label htmlFor="message-author" className="sr-only">Your name</label>
-                                <Input
-                                    id="message-author"
-                                    type="text"
-                                    value={author}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(0, MAX_AUTHOR_LENGTH);
-                                        setAuthor(value);
-                                        setSubmitError(null);
-                                    }}
-                                    placeholder="Your name (optional)"
-                                    maxLength={MAX_AUTHOR_LENGTH}
-                                    disabled={isSubmitting}
-                                    aria-label="Your name"
-                                    aria-describedby="author-length"
-                                    style={{ margin: 0 }}
-                                />
-                                {author.length > 0 && (
-                                    <div id="author-length" style={{
-                                        fontSize: typography.fontSize.xs,
-                                        color: colors.textTertiary,
-                                        marginTop: spacing.xs,
-                                        textAlign: 'right',
-                                    }}>
-                                        {author.length}/{MAX_AUTHOR_LENGTH}
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <label htmlFor="message-content" className="sr-only">Message content</label>
-                                <Textarea
-                                    id="message-content"
-                                    ref={contentTextareaRef}
-                                    value={content}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
-                                        setContent(value);
-                                        setSubmitError(null);
-                                    }}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Share your thoughts, suggestions, or just say hello..."
-                                    maxLength={MAX_MESSAGE_LENGTH}
-                                    rows={4}
-                                    disabled={isSubmitting}
-                                    aria-label="Message content"
-                                    aria-describedby="content-help"
-                                    aria-invalid={submitError ? 'true' : 'false'}
-                                    aria-errormessage={submitError ? 'submit-error' : undefined}
-                                    error={submitError || undefined}
-                                    style={{ margin: 0 }}
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs }}>
-                                    <div id="content-help" style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
-                                        {content.length > 0 && (
-                                            <span style={{ color: colors.textSecondary }}>
-                                                {content.length}/{MAX_MESSAGE_LENGTH} characters
-                                            </span>
-                                        )}
-                                        {content.length === 0 && (
-                                            <span>Tip: Press Ctrl+Enter or Cmd+Enter to submit quickly</span>
-                                        )}
-                                    </div>
-                                    {content.length > MAX_MESSAGE_LENGTH * 0.9 && (
-                                        <div style={{
-                                            fontSize: typography.fontSize.xs,
-                                            color: content.length >= MAX_MESSAGE_LENGTH ? colors.error : colors.warning,
-                                            fontWeight: typography.fontWeight.medium,
-                                        }}>
-                                            {MAX_MESSAGE_LENGTH - content.length} remaining
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        {submitError && (
-                            <div id="submit-error" style={{
-                                color: colors.error,
-                                fontSize: typography.fontSize.sm,
-                                marginTop: spacing.sm,
-                                padding: spacing.xs,
-                                backgroundColor: colors.error + '20',
-                                borderRadius: radius.sm,
-                                border: `1px solid ${colors.error}40`,
-                            }} role="alert" aria-live="polite">
-                                {submitError}
-                            </div>
-                        )}
-                        <Button
-                            type="submit"
-                            variant="secondary"
-                            isLoading={isSubmitting}
-                            disabled={!content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
-                            aria-label="Post message"
-                            style={{ 
-                                width: '100%', 
-                                marginTop: spacing.md, 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center', 
-                                gap: spacing.sm,
-                                fontSize: typography.fontSize.base,
-                            }}
-                        >
-                            {!isSubmitting && <SendIcon style={{ width: '22px', height: '22px' }} />}
-                            {isSubmitting ? 'Posting...' : 'Post Message'}
-                        </Button>
-                    </form>
-                </Card>
-
-                {/* Message List - Retro iMessage Style */}
-                <div 
-                    style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: spacing.xs,
-                        paddingBottom: spacing.md,
-                    }} 
-                    role="log" 
-                    aria-label="Message board messages" 
-                    aria-live="polite" 
-                    aria-atomic="false"
+                {/* Messages Container - Scrollable */}
+                <div
+                    ref={messagesContainerRef}
+                    style={{
+                        maxHeight: '60vh',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        paddingRight: spacing.xs,
+                        marginBottom: spacing.md,
+                        position: 'relative',
+                        // * Custom scrollbar styling
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: `${colors.secondary}40 transparent`,
+                    }}
+                    className="messages-container"
                 >
+                    <style>{`
+                        .messages-container::-webkit-scrollbar {
+                            width: 8px;
+                        }
+                        .messages-container::-webkit-scrollbar-track {
+                            background: transparent;
+                        }
+                        .messages-container::-webkit-scrollbar-thumb {
+                            background: ${colors.secondary}40;
+                            border-radius: ${radius.full};
+                        }
+                        .messages-container::-webkit-scrollbar-thumb:hover {
+                            background: ${colors.secondary}60;
+                        }
+                    `}</style>
+                    {/* Scroll to Bottom Button */}
+                    {showScrollToBottom && (
+                        <div style={{
+                            position: 'absolute',
+                            bottom: spacing.md,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 10,
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}>
+                            <IconButton
+                                onClick={scrollToBottom}
+                                aria-label="Scroll to bottom"
+                                style={{
+                                    background: colors.secondary,
+                                    boxShadow: shadows.card,
+                                    borderRadius: radius.full,
+                                    padding: spacing.sm,
+                                    minWidth: '48px',
+                                    minHeight: '48px',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.1)';
+                                    e.currentTarget.style.boxShadow = shadows.glowBlue;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.boxShadow = shadows.card;
+                                }}
+                            >
+                                <ChevronDownIcon style={{ width: '24px', height: '24px', color: '#ffffff' }} />
+                            </IconButton>
+                        </div>
+                    )}
+
+                    {/* Message List - Retro iMessage Style */}
+                    <div 
+                        style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: spacing.xs,
+                            paddingBottom: spacing.md,
+                        }} 
+                        role="log" 
+                        aria-label="Message board messages" 
+                        aria-live="polite" 
+                        aria-atomic="false"
+                    >
                     {isLoading && !messages && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
                             {[1, 2, 3].map((i) => (
@@ -656,7 +657,122 @@ const MessageBoard: React.FC = () => {
                         </Card>
                     )}
                     <div ref={messagesEndRef} aria-hidden="true" />
+                    </div>
                 </div>
+
+                {/* Post Message Form - At Bottom */}
+                <Card variant="elevated">
+                    <form onSubmit={handleSubmit} aria-label="Post a new message" style={{ padding: spacing.md }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                            <div>
+                                <label htmlFor="message-author" className="sr-only">Your name</label>
+                                <Input
+                                    id="message-author"
+                                    type="text"
+                                    value={author}
+                                    onChange={(e) => {
+                                        const value = e.target.value.slice(0, MAX_AUTHOR_LENGTH);
+                                        setAuthor(value);
+                                        setSubmitError(null);
+                                    }}
+                                    placeholder="Your name (optional)"
+                                    maxLength={MAX_AUTHOR_LENGTH}
+                                    disabled={isSubmitting}
+                                    aria-label="Your name"
+                                    aria-describedby="author-length"
+                                    style={{ margin: 0 }}
+                                />
+                                {author.length > 0 && (
+                                    <div id="author-length" style={{
+                                        fontSize: typography.fontSize.xs,
+                                        color: colors.textTertiary,
+                                        marginTop: spacing.xs,
+                                        textAlign: 'right',
+                                    }}>
+                                        {author.length}/{MAX_AUTHOR_LENGTH}
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label htmlFor="message-content" className="sr-only">Message content</label>
+                                <Textarea
+                                    id="message-content"
+                                    ref={contentTextareaRef}
+                                    value={content}
+                                    onChange={(e) => {
+                                        const value = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
+                                        setContent(value);
+                                        setSubmitError(null);
+                                    }}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Share your thoughts, suggestions, or just say hello..."
+                                    maxLength={MAX_MESSAGE_LENGTH}
+                                    rows={4}
+                                    disabled={isSubmitting}
+                                    aria-label="Message content"
+                                    aria-describedby="content-help"
+                                    aria-invalid={submitError ? 'true' : 'false'}
+                                    aria-errormessage={submitError ? 'submit-error' : undefined}
+                                    error={submitError || undefined}
+                                    style={{ margin: 0 }}
+                                />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs }}>
+                                    <div id="content-help" style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
+                                        {content.length > 0 && (
+                                            <span style={{ color: colors.textSecondary }}>
+                                                {content.length}/{MAX_MESSAGE_LENGTH} characters
+                                            </span>
+                                        )}
+                                        {content.length === 0 && (
+                                            <span>Tip: Press Ctrl+Enter or Cmd+Enter to submit quickly</span>
+                                        )}
+                                    </div>
+                                    {content.length > MAX_MESSAGE_LENGTH * 0.9 && (
+                                        <div style={{
+                                            fontSize: typography.fontSize.xs,
+                                            color: content.length >= MAX_MESSAGE_LENGTH ? colors.error : colors.warning,
+                                            fontWeight: typography.fontWeight.medium,
+                                        }}>
+                                            {MAX_MESSAGE_LENGTH - content.length} remaining
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        {submitError && (
+                            <div id="submit-error" style={{
+                                color: colors.error,
+                                fontSize: typography.fontSize.sm,
+                                marginTop: spacing.sm,
+                                padding: spacing.xs,
+                                backgroundColor: colors.error + '20',
+                                borderRadius: radius.sm,
+                                border: `1px solid ${colors.error}40`,
+                            }} role="alert" aria-live="polite">
+                                {submitError}
+                            </div>
+                        )}
+                        <Button
+                            type="submit"
+                            variant="secondary"
+                            isLoading={isSubmitting}
+                            disabled={!content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
+                            aria-label="Post message"
+                            style={{ 
+                                width: '100%', 
+                                marginTop: spacing.md, 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: spacing.sm,
+                                fontSize: typography.fontSize.base,
+                            }}
+                        >
+                            {!isSubmitting && <SendIcon style={{ width: '22px', height: '22px' }} />}
+                            {isSubmitting ? 'Posting...' : 'Post Message'}
+                        </Button>
+                    </form>
+                </Card>
             </div>
         </div>
     );
