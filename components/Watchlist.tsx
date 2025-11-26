@@ -202,10 +202,15 @@ const Watchlist: React.FC = () => {
                 <div style={{ 
                   fontSize: typography.fontSize['3xl'], 
                   fontWeight: typography.fontWeight.bold, 
-                  color: colors.accent,
-                  textShadow: shadows.textGlow,
+                  color: colors.accent, // * Fallback for browsers without gradient support
+                  background: shadows.textGradientPink,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 105, 180, 0.3)',
                   lineHeight: typography.lineHeight.tight,
                   marginBottom: spacing.xs,
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
                 }}>
                   {movies.length}
                 </div>
@@ -222,10 +227,15 @@ const Watchlist: React.FC = () => {
                 <div style={{ 
                   fontSize: typography.fontSize['3xl'], 
                   fontWeight: typography.fontWeight.bold, 
-                  color: colors.secondary,
-                  textShadow: shadows.textGlowBlue,
+                  color: colors.secondary, // * Fallback for browsers without gradient support
+                  background: shadows.textGradientBlue,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(135, 206, 250, 0.3)',
                   lineHeight: typography.lineHeight.tight,
                   marginBottom: spacing.xs,
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
                 }}>
                   {unwatchedMovies.length}
                 </div>
@@ -242,10 +252,15 @@ const Watchlist: React.FC = () => {
                 <div style={{ 
                   fontSize: typography.fontSize['3xl'], 
                   fontWeight: typography.fontWeight.bold, 
-                  color: colors.accent,
-                  textShadow: shadows.textGlow,
+                  color: colors.accent, // * Fallback for browsers without gradient support
+                  background: shadows.textGradientPink,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 105, 180, 0.3)',
                   lineHeight: typography.lineHeight.tight,
                   marginBottom: spacing.xs,
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
                 }}>
                   {watchedMovies.length}
                 </div>
@@ -377,12 +392,17 @@ const Watchlist: React.FC = () => {
                         }} />
                         <span className="px-4 text-pink-300 font-heading" style={{ 
                           padding: `0 ${spacing.lg}`, 
-                          color: colors.accent, 
+                          color: colors.accent, // * Fallback for browsers without gradient support
+                          background: shadows.textGradientPink,
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
                           fontSize: typography.fontSize.base, 
                           fontWeight: typography.fontWeight.semibold,
-                          textShadow: shadows.textGlow,
+                          textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
                           letterSpacing: '0.05em',
                           whiteSpace: 'nowrap',
+                          filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
                         }}>
                           Watched Together ✨
                         </span>

@@ -148,10 +148,18 @@ export const shadows = {
   glowStrong: '0 0 30px rgba(255, 105, 180, 0.8), 0 0 60px rgba(255, 105, 180, 0.4)',
   glowBlue: '0 0 25px rgba(135, 206, 250, 0.8), 0 0 50px rgba(135, 206, 250, 0.3)',
   glowYellow: '0 0 20px rgba(255, 235, 59, 0.6), 0 0 40px rgba(255, 235, 59, 0.3)',
-  // Text shadows
-  textGlow: '2px 2px 4px rgba(255, 105, 180, 0.8), 0 0 8px rgba(255, 105, 180, 0.4)',
-  textGlowBlue: '2px 2px 4px rgba(135, 206, 250, 0.8), 0 0 8px rgba(135, 206, 250, 0.4)',
-  textGlowYellow: '2px 2px 4px rgba(255, 235, 59, 0.8), 0 0 8px rgba(255, 235, 59, 0.4)',
+  // Text shadows - Multi-layered for depth
+  textGlow: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 105, 180, 0.5), 0 0 24px rgba(255, 105, 180, 0.3)',
+  textGlowBlue: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(135, 206, 250, 0.5), 0 0 24px rgba(135, 206, 250, 0.3)',
+  textGlowYellow: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 235, 59, 0.5), 0 0 24px rgba(255, 235, 59, 0.3)',
+  
+  // Text gradients
+  textGradientPink: 'linear-gradient(135deg, #ff69b4 0%, #ff8bb3 50%, #fff 100%)',
+  textGradientBlue: 'linear-gradient(135deg, #87cefa 0%, #a0d8ff 50%, #fff 100%)',
+  textGradientYellow: 'linear-gradient(135deg, #ffeb3b 0%, #fff9c4 50%, #fff 100%)',
+  
+  // Text outline effects
+  textOutline: '0 0 1px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.6), 0 0 4px rgba(0, 0, 0, 0.4)',
 } as const;
 
 // * Z-index scale
