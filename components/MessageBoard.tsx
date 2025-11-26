@@ -303,10 +303,10 @@ const MessageBoard: React.FC = () => {
                             }}
                         >
                             <article 
-                                style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md }}
+                                style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}
                                 aria-label={`Message from ${msg.author}`}
                             >
-                                <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
                                     <p style={{
                                         color: colors.textPrimary,
                                         whiteSpace: 'pre-wrap',
@@ -317,6 +317,7 @@ const MessageBoard: React.FC = () => {
                                         marginBottom: spacing.sm,
                                         lineHeight: typography.lineHeight.relaxed,
                                         textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                                        letterSpacing: '0.02em',
                                     }}>
                                         {msg.content}
                                     </p>
@@ -325,6 +326,7 @@ const MessageBoard: React.FC = () => {
                                         color: colors.accent,
                                         wordBreak: 'break-word',
                                         overflowWrap: 'break-word',
+                                        letterSpacing: '0.01em',
                                     }}>
                                         <span className="sr-only">Posted by </span>
                                         <strong>{msg.author || 'Anonymous'}</strong>
