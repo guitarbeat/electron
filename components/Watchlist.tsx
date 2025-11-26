@@ -148,15 +148,45 @@ const Watchlist: React.FC = () => {
             transform: 'translateX(-50%)',
             zIndex: 1000,
             maxWidth: '90%',
-            padding: spacing.md,
-            backgroundColor: toast.type === 'error' ? colors.error + '20' : toast.type === 'success' ? colors.success + '20' : colors.secondary + '20',
+            padding: spacing.lg,
+            backgroundColor: toast.type === 'error' ? colors.error + '30' : toast.type === 'success' ? colors.success + '30' : colors.secondary + '30',
             borderColor: toast.type === 'error' ? colors.error : toast.type === 'success' ? colors.success : colors.secondary,
-            animation: 'fade-in 0.3s ease-out',
+            borderWidth: '2px',
+            animation: 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            boxShadow: toast.type === 'error' 
+              ? `0 4px 12px ${colors.error}40, ${shadows.card}` 
+              : toast.type === 'success' 
+                ? `0 4px 12px ${colors.success}40, ${shadows.card}` 
+                : `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, color: colors.textPrimary }}>
-            {toast.type === 'success' && <CheckIcon style={{ color: colors.success, flexShrink: 0 }} />}
-            <span style={{ fontSize: typography.fontSize.sm, textAlign: 'center' }}>{toast.message}</span>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: spacing.md, 
+            color: colors.textPrimary,
+            justifyContent: 'center',
+          }}>
+            {toast.type === 'success' && (
+              <CheckIcon style={{ 
+                color: colors.success, 
+                flexShrink: 0,
+                filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
+              }} />
+            )}
+            {toast.type === 'error' && (
+              <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
+            )}
+            {toast.type === 'info' && (
+              <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>
+            )}
+            <span style={{ 
+              fontSize: typography.fontSize.base, 
+              textAlign: 'center',
+              fontWeight: typography.fontWeight.medium,
+            }}>
+              {toast.message}
+            </span>
           </div>
         </Card>
       )}
@@ -166,29 +196,65 @@ const Watchlist: React.FC = () => {
         
         {/* Movie Statistics */}
         {movies && movies.length > 0 && (
-          <Card variant="default" style={{ marginBottom: spacing.lg, padding: spacing.md }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: spacing.lg, flexWrap: 'wrap', textAlign: 'center' }}>
-              <div>
-                <div style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.accent }}>
+          <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: spacing.lg }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: spacing.xl, flexWrap: 'wrap', textAlign: 'center' }}>
+              <div style={{ minWidth: '80px' }}>
+                <div style={{ 
+                  fontSize: typography.fontSize['3xl'], 
+                  fontWeight: typography.fontWeight.bold, 
+                  color: colors.accent,
+                  textShadow: shadows.textGlow,
+                  lineHeight: typography.lineHeight.tight,
+                  marginBottom: spacing.xs,
+                }}>
                   {movies.length}
                 </div>
-                <div style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                <div style={{ 
+                  fontSize: typography.fontSize.sm, 
+                  color: colors.textSecondary,
+                  fontWeight: typography.fontWeight.medium,
+                  letterSpacing: '0.05em',
+                }}>
                   {movies.length === 1 ? 'Movie' : 'Movies'}
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.secondary }}>
+              <div style={{ minWidth: '80px' }}>
+                <div style={{ 
+                  fontSize: typography.fontSize['3xl'], 
+                  fontWeight: typography.fontWeight.bold, 
+                  color: colors.secondary,
+                  textShadow: shadows.textGlowBlue,
+                  lineHeight: typography.lineHeight.tight,
+                  marginBottom: spacing.xs,
+                }}>
                   {unwatchedMovies.length}
                 </div>
-                <div style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                <div style={{ 
+                  fontSize: typography.fontSize.sm, 
+                  color: colors.textSecondary,
+                  fontWeight: typography.fontWeight.medium,
+                  letterSpacing: '0.05em',
+                }}>
                   Unwatched
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.accent }}>
+              <div style={{ minWidth: '80px' }}>
+                <div style={{ 
+                  fontSize: typography.fontSize['3xl'], 
+                  fontWeight: typography.fontWeight.bold, 
+                  color: colors.accent,
+                  textShadow: shadows.textGlow,
+                  lineHeight: typography.lineHeight.tight,
+                  marginBottom: spacing.xs,
+                }}>
                   {watchedMovies.length}
                 </div>
-                <div style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+                <div style={{ 
+                  fontSize: typography.fontSize.sm, 
+                  color: colors.textSecondary,
+                  fontWeight: typography.fontWeight.medium,
+                  letterSpacing: '0.05em',
+                }}>
                   Watched Together
                 </div>
               </div>
@@ -197,14 +263,20 @@ const Watchlist: React.FC = () => {
         )}
         
         {/* Add Movie Form */}
-        <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
+        <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
           <form onSubmit={handleAddMovie} style={{ padding: spacing.lg }} className="add-movie-form">
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, alignItems: 'stretch' }}>
-              <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center', width: '100%' }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: spacing.md, 
+                alignItems: 'center', 
+                width: '100%',
+                flexWrap: 'wrap',
+              }}>
                 <IconButton
                   type="button"
                   onClick={handleLogout}
-                  title="Switch User"
+                  title={`Switch User (Currently: ${currentUser})`}
                   variant="ghost"
                   style={{ flexShrink: 0 }}
                 >
@@ -215,9 +287,9 @@ const Watchlist: React.FC = () => {
                   type="text"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
-                  placeholder="Enter movie title..."
+                  placeholder="What movie should we watch?"
                   disabled={isSubmitting}
-                  style={{ flex: 1, margin: 0 }}
+                  style={{ flex: 1, margin: 0, minWidth: '200px' }}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
                       setNewMovieTitle('');
@@ -239,7 +311,8 @@ const Watchlist: React.FC = () => {
                     height: '56px',
                     flexShrink: 0,
                   }}
-                  title="Add movie"
+                  title="Add movie to watchlist"
+                  aria-label="Add movie to watchlist"
                 >
                   {!isAdding && <PlusIcon />}
                 </Button>
@@ -250,18 +323,38 @@ const Watchlist: React.FC = () => {
         
         {/* Spin to Decide card */}
         <Card variant="elevated" style={{ marginBottom: spacing['2xl'] }}>
-          <div style={{ padding: spacing.md }}>
+          <div style={{ padding: spacing.lg }}>
             <Button
               onClick={handleOpenWheel}
               disabled={unwatchedMovies.length < 2}
               variant="secondary"
               size="lg"
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
-              title={unwatchedMovies.length < 2 ? "Add more unwatched movies to use the wheel" : "Spin the wheel to pick a movie!"}
+              style={{ 
+                width: '100%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: spacing.sm,
+                fontSize: typography.fontSize.xl,
+              }}
+              title={unwatchedMovies.length < 2 ? "Add at least 2 unwatched movies to use the wheel" : "Spin the wheel to randomly pick a movie!"}
             >
               <DiceIcon />
               Spin to Decide
             </Button>
+            {unwatchedMovies.length < 2 && (
+              <p style={{
+                marginTop: spacing.sm,
+                fontSize: typography.fontSize.xs,
+                color: colors.textTertiary,
+                textAlign: 'center',
+                fontStyle: 'italic',
+              }}>
+                {unwatchedMovies.length === 0 
+                  ? "Add movies to your watchlist to use the wheel"
+                  : "Add one more movie to use the wheel"}
+              </p>
+            )}
           </div>
         </Card>
 
@@ -274,33 +367,51 @@ const Watchlist: React.FC = () => {
             return (
               <React.Fragment key={movie.id}>
                 {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                    <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing.xl} 0` }}>
-                        <hr className="flex-grow border-pink-400 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.accent, borderStyle: 'dashed' }} />
+                    <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing['2xl']} 0 ${spacing.xl} 0` }}>
+                        <hr className="flex-grow border-pink-400 border-dashed" style={{ 
+                          flex: 1, 
+                          height: '2px', 
+                          borderColor: colors.accent, 
+                          borderStyle: 'dashed',
+                          opacity: 0.5,
+                        }} />
                         <span className="px-4 text-pink-300 font-heading" style={{ 
-                          padding: `0 ${spacing.md}`, 
+                          padding: `0 ${spacing.lg}`, 
                           color: colors.accent, 
-                          fontSize: typography.fontSize.sm, 
-                          fontWeight: typography.fontWeight.medium,
+                          fontSize: typography.fontSize.base, 
+                          fontWeight: typography.fontWeight.semibold,
                           textShadow: shadows.textGlow,
                           letterSpacing: '0.05em',
+                          whiteSpace: 'nowrap',
                         }}>
-                          Watched Together
+                          Watched Together ✨
                         </span>
-                        <hr className="flex-grow border-pink-400 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.accent, borderStyle: 'dashed' }} />
+                        <hr className="flex-grow border-pink-400 border-dashed" style={{ 
+                          flex: 1, 
+                          height: '2px', 
+                          borderColor: colors.accent, 
+                          borderStyle: 'dashed',
+                          opacity: 0.5,
+                        }} />
                     </div>
                 )}
                 <Card 
                   variant={watchedByBoth ? 'elevated' : 'default'}
                   className={watchedByBoth ? 'animate-pink-glow' : ''}
                   style={{
-                    padding: spacing.lg,
-                    opacity: watchedByCurrentUser && !watchedByBoth ? 0.6 : 1,
-                    transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                    padding: spacing.xl,
+                    opacity: watchedByCurrentUser && !watchedByBoth ? 0.7 : 1,
+                    transition: 'transform 0.3s ease-out, opacity 0.3s ease-out, box-shadow 0.3s ease-out',
+                    marginBottom: spacing.sm,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.lg }}>
                     {watchedByBoth && (
-                      <div style={{ color: colors.accent, flexShrink: 0 }}>
+                      <div style={{ 
+                        color: colors.accent, 
+                        flexShrink: 0,
+                        filter: 'drop-shadow(0 0 8px rgba(255, 105, 180, 0.6))',
+                      }}>
                         <SparkleHeartIcon />
                       </div>
                     )}
@@ -324,9 +435,10 @@ const Watchlist: React.FC = () => {
                       </h3>
                       <p style={{
                         fontSize: typography.fontSize.sm,
-                        color: colors.textSecondary,
+                        color: watchedByBoth ? colors.textTertiary : colors.textSecondary,
                         margin: 0,
                         letterSpacing: '0.01em',
+                        lineHeight: typography.lineHeight.normal,
                       }}>
                         Added by {movie.addedBy} • {getWatchedStatus(movie)}
                       </p>
@@ -337,6 +449,7 @@ const Watchlist: React.FC = () => {
                         disabled={isSubmitting}
                         variant="ghost"
                         title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
+                        aria-label={watchedByCurrentUser ? `Mark "${movie.title}" as unwatched` : `Mark "${movie.title}" as watched`}
                       >
                         {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
                       </IconButton>
@@ -344,7 +457,8 @@ const Watchlist: React.FC = () => {
                         onClick={() => handleDeleteMovie(movie.id)}
                         disabled={isSubmitting}
                         variant="danger"
-                        title="Delete movie"
+                        title={`Delete "${movie.title}"`}
+                        aria-label={`Delete "${movie.title}"`}
                       >
                         <TrashIcon />
                       </IconButton>
@@ -355,14 +469,34 @@ const Watchlist: React.FC = () => {
             )
           })}
           {movies?.length === 0 && (
-              <Card variant="default">
-                <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
-                  <FilmIcon style={{ width: '64px', height: '64px', margin: '0 auto', marginBottom: spacing.lg, opacity: 0.5, color: colors.textTertiary }} />
-                  <p style={{ margin: 0, marginBottom: spacing.sm, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
+              <Card variant="elevated">
+                <div style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}>
+                  <FilmIcon style={{ 
+                    width: '80px', 
+                    height: '80px', 
+                    margin: '0 auto', 
+                    marginBottom: spacing.xl, 
+                    opacity: 0.6, 
+                    color: colors.accent,
+                    filter: 'drop-shadow(0 0 10px rgba(255, 105, 180, 0.3))',
+                  }} />
+                  <p style={{ 
+                    margin: 0, 
+                    marginBottom: spacing.md, 
+                    fontSize: typography.fontSize.xl, 
+                    color: colors.textPrimary,
+                    fontWeight: typography.fontWeight.semibold,
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                  }}>
                     Your movie list is empty
                   </p>
-                  <p style={{ margin: 0, fontSize: typography.fontSize.sm }}>
-                    Add a movie above to get started!
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: typography.fontSize.base,
+                    color: colors.textSecondary,
+                    lineHeight: typography.lineHeight.relaxed,
+                  }}>
+                    Start building your watchlist by adding a movie above!
                   </p>
                 </div>
               </Card>
