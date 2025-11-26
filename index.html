@@ -289,6 +289,52 @@
             }
         }
         
+        /* Tablet and Medium Screens */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .main-container {
+                padding-left: 2rem !important;
+                padding-right: 2rem !important;
+            }
+            
+            .header-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Large Screens */
+        @media (min-width: 1025px) {
+            .main-container {
+                padding-left: 3rem !important;
+                padding-right: 3rem !important;
+            }
+        }
+        
+        /* Ensure images don't overflow containers */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* Prevent horizontal overflow */
+        body {
+            overflow-x: hidden;
+        }
+        
+        /* Better text wrapping for long words */
+        p, h1, h2, h3, h4, h5, h6, span, div {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+        
+        /* Ensure containers don't overflow */
+        .main-container, 
+        .modal-content-wrapper,
+        .spin-wheel-container {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
         /* Main Container Mobile Padding */
         @media (max-width: 640px) {
             .main-container {
@@ -419,6 +465,8 @@
             height: min(85vw, 450px);
             max-width: 450px;
             max-height: 450px;
+            min-width: 280px;
+            min-height: 280px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -431,6 +479,19 @@
                 height: min(80vw, 400px);
                 max-width: 400px;
                 max-height: 400px;
+                min-width: 250px;
+                min-height: 250px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .spin-wheel-container {
+                width: min(75vw, 350px);
+                height: min(75vw, 350px);
+                max-width: 350px;
+                max-height: 350px;
+                min-width: 200px;
+                min-height: 200px;
             }
         }
 
@@ -586,6 +647,7 @@
             .result-display-container {
                 padding: 1.25rem;
                 margin-top: -3rem;
+                max-width: 95vw;
             }
         }
         
@@ -593,6 +655,13 @@
             .result-display-container {
                 padding: 1.5rem;
                 margin-top: -6rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .result-display-container {
+                padding: 1rem;
+                margin-top: -2rem;
             }
         }
         

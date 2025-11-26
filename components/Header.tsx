@@ -27,7 +27,12 @@ const Header: React.FC = () => {
             style={{
               width: '80px',
               height: '80px',
+              minWidth: '64px',
+              minHeight: '64px',
+              maxWidth: '120px',
+              maxHeight: '120px',
               position: 'relative',
+              flexShrink: 0,
             }}
             className="header-avatar"
           >
@@ -53,6 +58,7 @@ const Header: React.FC = () => {
                 objectFit: 'cover',
                 border: `3px solid ${colors.accent}`,
                 boxShadow: shadows.glow,
+                display: 'block',
               }}
             />
           </div>

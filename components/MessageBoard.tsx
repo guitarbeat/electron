@@ -311,6 +311,8 @@ const MessageBoard: React.FC = () => {
                                         color: colors.textPrimary,
                                         whiteSpace: 'pre-wrap',
                                         wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        hyphens: 'auto',
                                         margin: 0,
                                         marginBottom: spacing.sm,
                                         lineHeight: typography.lineHeight.relaxed,
@@ -322,6 +324,7 @@ const MessageBoard: React.FC = () => {
                                         fontSize: typography.fontSize.sm,
                                         color: colors.accent,
                                         wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
                                     }}>
                                         <span className="sr-only">Posted by </span>
                                         <strong>{msg.author || 'Anonymous'}</strong>

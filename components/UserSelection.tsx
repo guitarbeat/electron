@@ -27,16 +27,19 @@ const UserSelection: React.FC = () => {
     >
       <Card variant="elevated" className="animate-fade-in">
         <div style={{ padding: spacing['2xl'] }}>
-          <div
-            style={{
-              height: '128px',
-              marginBottom: spacing.xl,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-            }}
-          >
+            <div
+              style={{
+                height: '128px',
+                minHeight: '128px',
+                maxHeight: '200px',
+                marginBottom: spacing.xl,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'relative',
+                width: '100%',
+              }}
+            >
             <div
               style={{
                 position: 'absolute',
@@ -55,6 +58,9 @@ const UserSelection: React.FC = () => {
               alt={`A meme representing ${hoveredUser || 'no one'}`}
               style={{
                 maxHeight: '100%',
+                maxWidth: '100%',
+                width: 'auto',
+                height: 'auto',
                 borderRadius: '8px',
                 border: `3px solid ${colors.accent}`,
                 objectFit: 'contain',
