@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Movie, User, DailySpin } from '../types';
 import { getTodaySpin, saveDailySpin } from '../services/dailySpinService';
 
