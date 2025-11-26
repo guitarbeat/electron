@@ -50,6 +50,8 @@ const IconButton: React.FC<IconButtonProps> = ({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
+        minWidth: '44px', // * Better touch target for mobile
+        minHeight: '44px',
         ...variantStyles[variant],
         ...style,
       }}

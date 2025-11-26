@@ -74,7 +74,7 @@ const App: React.FC = () => {
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-      <main style={{ 
+      <main className="main-container" style={{ 
         paddingTop: spacing['2xl'], 
         paddingBottom: spacing['3xl'],
         paddingLeft: spacing.lg,

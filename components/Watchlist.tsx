@@ -102,7 +102,7 @@ const Watchlist: React.FC = () => {
         
         {/* Add Movie Form */}
         <Card variant="default" style={{ marginBottom: spacing.lg }}>
-          <form onSubmit={handleAddMovie} style={{ display: 'flex', gap: spacing.md, alignItems: 'center', padding: spacing.md }}>
+          <form onSubmit={handleAddMovie} style={{ display: 'flex', gap: spacing.md, alignItems: 'center', padding: spacing.md }} className="add-movie-form">
             <IconButton
               type="button"
               onClick={handleLogout}
@@ -195,7 +195,7 @@ const Watchlist: React.FC = () => {
                         </div>
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 style={{
+                        <h3 className="movie-title" style={{
                           fontSize: typography.fontSize.xl,
                           fontWeight: typography.fontWeight.bold,
                           color: watchedByBoth ? colors.textSecondary : colors.textPrimary,

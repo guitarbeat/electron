@@ -78,6 +78,7 @@ const Button: React.FC<ButtonProps> = ({
         textShadow: variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
         position: 'relative',
         top: 0,
+        minHeight: size === 'lg' ? '48px' : size === 'md' ? '44px' : '36px', // * Better touch targets
         // Add subtle inner highlight
         backgroundImage: variant !== 'ghost' 
           ? `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`
