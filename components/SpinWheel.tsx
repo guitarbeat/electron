@@ -155,7 +155,11 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
         {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
           <>
             <Card variant="default" className="current-movie-display">
-                <h3 className="current-movie-title" style={{ wordBreak: 'break-word' }}>
+                <h3 className="current-movie-title" style={{ 
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
+                }}>
                     {status === 'result' && selectedMovie 
                       ? selectedMovie.title 
                       : currentMovie 
@@ -211,8 +215,10 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
                     style={{
-                      width: '128px',
-                      height: '128px',
+                      width: 'min(128px, 20vw)',
+                      height: 'min(128px, 20vw)',
+                      minWidth: '80px',
+                      minHeight: '80px',
                       borderRadius: '50%',
                       fontSize: typography.fontSize['2xl'],
                       fontWeight: typography.fontWeight.bold,
@@ -260,6 +266,8 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                   fontWeight: typography.fontWeight.bold,
                   color: colors.accent,
                   wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
                   margin: 0,
                   marginBottom: spacing.xl,
                 }}>
