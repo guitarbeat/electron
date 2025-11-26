@@ -5,7 +5,7 @@ import ImageWithFallback from './ImageWithFallback';
 import { userImageSources, defaultImageSources } from '../config/imageConfig';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import { spacing, typography, colors } from '../design-system/tokens';
+import { spacing, typography, colors, shadows } from '../design-system/tokens';
 
 const UserSelection: React.FC = () => {
   const { setCurrentUser } = useUser();
