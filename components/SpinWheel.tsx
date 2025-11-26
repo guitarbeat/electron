@@ -16,6 +16,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     selectedMovie,
     hasSpunToday,
     todaySpinData,
+    saveError,
     handlePrimarySpin,
     handleSpinAgain,
     getPointerHandlers
@@ -27,6 +28,10 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // * Don't allow closing during spin, loading, or saving
+        if (status === 'spinning' || status === 'loading' || status === 'saving') {
+          return;
+        }
         onClose();
       }
     };
@@ -34,7 +39,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, status]);
 
   const wheelBackgroundStyle = useMemo(() => {
     if (movies.length === 0) return {};
@@ -59,8 +64,17 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
   }, [currentRotation, movies, segmentAngle]);
 
 
+  // * Prevent closing during critical states
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // * Don't allow closing during spin, loading, or while saving
+    if (status === 'spinning' || status === 'loading' || status === 'saving') {
+      return;
+    }
+    onClose();
+  };
+
   return (
-    <div className="wheel-modal-overlay" onClick={onClose}>
+    <div className="wheel-modal-overlay" onClick={handleOverlayClick}>
       <div 
         className="modal-content-wrapper"
         onClick={e => e.stopPropagation()}
@@ -70,10 +84,29 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
           <div className="flex flex-col items-center justify-center gap-4 py-12">
             <Spinner className="h-12 w-12 text-pink-400" />
             <p className="text-gray-300 text-lg font-heading">Checking today's spin...</p>
+            <p className="text-gray-500 text-sm">Please wait...</p>
           </div>
         )}
 
-        {status !== 'loading' && (
+        {status === 'saving' && (
+          <div className="flex flex-col items-center justify-center gap-4 py-12">
+            <Spinner className="h-12 w-12 text-blue-400" />
+            <p className="text-gray-300 text-lg font-heading">Saving your spin...</p>
+            <p className="text-gray-500 text-sm">Syncing with your partner...</p>
+          </div>
+        )}
+
+        {status !== 'loading' && movies.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-4 py-12">
+            <p className="text-gray-300 text-lg font-heading">No movies available</p>
+            <p className="text-gray-400 text-sm">Add some movies to your watchlist first!</p>
+            <button onClick={onClose} className="cute-button cute-button-pink mt-4">
+              Close
+            </button>
+          </div>
+        )}
+
+        {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
           <>
             <div className="current-movie-display cute-card">
                 <h3 className="current-movie-title break-words">
@@ -149,6 +182,11 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                 <h3 className="font-heading text-pink-300 break-words text-2xl sm:text-3xl mb-4 animate-fade-in" style={{textShadow: '1px 1px 2px #000'}}>
                   {selectedMovie.title}
                 </h3>
+                {saveError && (
+                  <div className="mb-4 p-3 rounded-lg bg-yellow-900/30 border border-yellow-500/50">
+                    <p className="text-yellow-300 text-sm text-center">{saveError}</p>
+                  </div>
+                )}
                 {todaySpinData && (
                   <div className="flex flex-col gap-2 mb-4 w-full">
                     <div className="flex items-center justify-center gap-2 text-sm">
@@ -156,9 +194,17 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                       <span className="text-gray-400">Synced for both of you</span>
                     </div>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-pink-900/30 border border-pink-500/50">
-                        <span className="text-pink-300 font-heading text-sm">
-                          Spun by {todaySpinData.spunBy}
+                      <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
+                        todaySpinData.spunBy === currentUser
+                          ? 'bg-green-900/30 border-green-500/50'
+                          : 'bg-pink-900/30 border-pink-500/50'
+                      }`}>
+                        <span className={`font-heading text-sm ${
+                          todaySpinData.spunBy === currentUser
+                            ? 'text-green-300'
+                            : 'text-pink-300'
+                        }`}>
+                          {todaySpinData.spunBy === currentUser ? '✓ You spun it!' : `Spun by ${todaySpinData.spunBy}`}
                         </span>
                       </div>
                     </div>
@@ -171,7 +217,10 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                             if (isNaN(date.getTime())) {
                               return todaySpinData.date;
                             }
-                            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                            const today = new Date().toISOString().split('T')[0];
+                            const isToday = todaySpinData.date === today;
+                            const formatted = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                            return isToday ? `Today (${formatted})` : formatted;
                           } catch {
                             return todaySpinData.date;
                           }
