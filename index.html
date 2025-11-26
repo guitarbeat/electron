@@ -211,13 +211,45 @@
             }
             50% { 
                 box-shadow: 5px 5px 0px rgba(0,0,0,0.4), 0 0 35px rgba(255, 105, 180, 0.9), 0 0 70px rgba(255, 105, 180, 0.4);
-                transform: scale(1.02);
+                transform: scale(1.01);
                 border-color: #fff;
             }
         }
         .animate-pink-glow {
             border-color: #ff69b4;
             animation: pink-glow 2.5s ease-in-out infinite;
+        }
+        
+        /* Pulse glow for icons */
+        @keyframes pulse-glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 8px rgba(255, 105, 180, 0.6));
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 16px rgba(255, 105, 180, 1));
+                transform: scale(1.05);
+            }
+        }
+        
+        /* Movie card hover effect */
+        .movie-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3), 0 0 20px rgba(255, 105, 180, 0.2);
+        }
+        
+        /* Message card hover effect */
+        .message-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3), 0 0 20px rgba(135, 206, 250, 0.2);
+            border-color: #87cefa;
+        }
+        
+        @media (max-width: 640px) {
+            .movie-card:hover,
+            .message-card:hover {
+                transform: none;
+            }
         }
         
         /* Screen reader only */
