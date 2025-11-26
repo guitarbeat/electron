@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import ImageWithFallback from './ImageWithFallback';
 import { userImageSources, defaultImageSources } from '../config/imageConfig';
 import Card from './ui/Card';
-import { spacing, typography, colors } from '../design-system/tokens';
+import { spacing, typography, colors, shadows } from '../design-system/tokens';
 
 const Header: React.FC = () => {
   const { currentUser } = useUser();
