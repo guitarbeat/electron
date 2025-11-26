@@ -21,6 +21,7 @@ const Header: React.FC = () => {
             gap: spacing.lg,
             padding: spacing.xl,
           }}
+          className="header-content"
         >
           <div
             style={{
@@ -28,6 +29,7 @@ const Header: React.FC = () => {
               height: '80px',
               position: 'relative',
             }}
+            className="header-avatar"
           >
             <div
               style={{
@@ -66,6 +68,7 @@ const Header: React.FC = () => {
               textShadow: shadows.textGlow,
               letterSpacing: '0.02em',
             }}
+            className="header-title"
           >
             Aaron &amp; Electra's Movie List
           </h1>

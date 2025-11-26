@@ -22,7 +22,6 @@ const UserSelection: React.FC = () => {
       style={{
         maxWidth: '28rem',
         margin: '0 auto',
-        padding: `0 ${spacing.lg}`,
         textAlign: 'center',
       }}
     >
@@ -66,6 +65,7 @@ const UserSelection: React.FC = () => {
             />
           </div>
           <h2
+            className="user-selection-title"
             style={{
               fontSize: typography.fontSize['2xl'],
               fontWeight: typography.fontWeight.semibold,
