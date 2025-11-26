@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { colors, radius, shadows, borders } from '../../design-system/tokens';
 
 interface CardProps {
@@ -17,6 +17,23 @@ const Card: React.FC<CardProps> = ({
   variant = 'default',
   onClick 
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // * Detect mobile devices to disable hover effects
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia('(max-width: 640px)').matches);
+    };
+    
+    checkMobile();
+    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    mediaQuery.addEventListener('change', checkMobile);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', checkMobile);
+    };
+  }, []);
+
   const baseStyles: React.CSSProperties = {
     background: variant === 'elevated' ? colors.gradientCard : colors.surface,
     borderRadius: radius.card,
@@ -37,14 +54,14 @@ const Card: React.FC<CardProps> = ({
       style={baseStyles}
       onClick={onClick}
       onMouseEnter={(e) => {
-        if (onClick || variant === 'elevated') {
+        if (!isMobile && (onClick || variant === 'elevated')) {
           e.currentTarget.style.transform = 'translateY(-6px) scale(1.01)';
           e.currentTarget.style.boxShadow = shadows.cardHover;
           e.currentTarget.style.borderColor = colors.accentLight;
         }
       }}
       onMouseLeave={(e) => {
-        if (onClick || variant === 'elevated') {
+        if (!isMobile && (onClick || variant === 'elevated')) {
           e.currentTarget.style.transform = 'translateY(0) scale(1)';
           e.currentTarget.style.boxShadow = variant === 'elevated' ? shadows.cardElevated : shadows.card;
           e.currentTarget.style.borderColor = colors.border;

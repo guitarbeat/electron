@@ -65,6 +65,7 @@ const UserSelection: React.FC = () => {
             />
           </div>
           <h2
+            className="user-selection-title"
             style={{
               fontSize: typography.fontSize['2xl'],
               fontWeight: typography.fontWeight.semibold,

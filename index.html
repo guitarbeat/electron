@@ -195,6 +195,113 @@
             white-space: nowrap;
             border-width: 0;
         }
+        
+        /* Mobile Responsive Typography */
+        .header-title {
+            font-size: 1.875rem;
+        }
+        
+        @media (max-width: 640px) {
+            .header-title {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+            
+            .header-content {
+                padding: 1.25rem !important;
+                gap: 1rem !important;
+            }
+            
+            .header-avatar {
+                width: 64px !important;
+                height: 64px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 1.25rem;
+            }
+            
+            .header-content {
+                padding: 1rem !important;
+            }
+        }
+        
+        /* Mobile Form Improvements */
+        @media (max-width: 640px) {
+            input, textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+            
+            button {
+                min-height: 44px; /* Better touch target */
+            }
+            
+            .add-movie-form {
+                flex-wrap: wrap;
+                gap: 0.75rem !important;
+            }
+            
+            .add-movie-form > * {
+                flex-shrink: 0;
+            }
+            
+            .message-board-title {
+                font-size: 1.25rem !important;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .user-selection-title {
+                font-size: 1.5rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .user-selection-title {
+                font-size: 1.25rem !important;
+            }
+        }
+        
+        /* Movie Card Title Responsive */
+        @media (max-width: 640px) {
+            .movie-title {
+                font-size: 1.125rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .movie-title {
+                font-size: 1rem !important;
+            }
+        }
+        
+        /* Main Container Mobile Padding */
+        @media (max-width: 640px) {
+            .main-container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                padding-top: 1.5rem !important;
+                padding-bottom: 2rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+        }
+        
+        /* Card Mobile Improvements */
+        @media (max-width: 640px) {
+            /* Disable hover effects on mobile */
+            .card-mobile-disable-hover:hover {
+                transform: none !important;
+                box-shadow: inherit !important;
+            }
+        }
 
 
         /* Spin Wheel Modal */
