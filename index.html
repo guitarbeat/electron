@@ -195,7 +195,7 @@
         }
 
         .spin-wheel-wrapper {
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease-in-out;
             position: relative;
             display: flex;
             justify-content: center;
@@ -254,6 +254,76 @@
             box-shadow: 0 0 20px rgba(255, 235, 59, 0.7), 0 0 30px rgba(0,0,0,0.6) inset;
             overflow: hidden;
             will-change: transform;
+            transition: filter 0.3s ease-in-out;
+        }
+        
+        .spin-wheel.grayscale {
+            filter: grayscale(0.8) brightness(0.7);
+        }
+        
+        .spin-wheel-wrapper.locked-state {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+        
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 8;
+            pointer-events: none;
+        }
+        
+        .lock-icon-wrapper {
+            background: rgba(26, 26, 46, 0.9);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 4px solid #ff69b4;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
+            animation: lock-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes lock-pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 20px rgba(0,0,0,0.3);
+            }
+        }
+        
+        .lock-icon-wrapper svg {
+            color: #ff69b4;
+            filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.8));
+        }
+        
+        .locked-content {
+            pointer-events: auto;
+        }
+        
+        .locked-content svg {
+            color: #ff69b4;
+            animation: lock-bounce 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes lock-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
         
         .spin-hub {
