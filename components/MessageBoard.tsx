@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMessages } from '../hooks/useMessages';
 import { useUser } from '../context/UserContext';
-import { MessageIcon, SendIcon, Spinner, TrashIcon } from './icons';
+import { MessageIcon, SendIcon, Spinner, TrashIcon, CheckIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -34,6 +34,7 @@ const MessageBoard: React.FC = () => {
     const [author, setAuthor] = useState('');
     const [content, setContent] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
     const previousMessagesLengthRef = useRef<number>(0);
@@ -41,6 +42,14 @@ const MessageBoard: React.FC = () => {
     useEffect(() => {
         setAuthor(currentUser || '');
     }, [currentUser]);
+
+    // * Auto-hide toast
+    useEffect(() => {
+        if (toast) {
+            const timer = setTimeout(() => setToast(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast]);
 
     // * Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -104,12 +113,15 @@ const MessageBoard: React.FC = () => {
             try {
                 await addMessage(author, content);
                 setContent('');
+                setToast({ message: 'Message posted successfully!', type: 'success' });
                 // * Delay focus to allow keyboard to dismiss on iOS after submission
                 setTimeout(() => {
                     contentTextareaRef.current?.focus();
                 }, 300);
             } catch (err: any) {
-                setSubmitError(err.message || 'Failed to post message. Please try again.');
+                const errorMessage = err.message || 'Failed to post message. Please try again.';
+                setSubmitError(errorMessage);
+                setToast({ message: errorMessage, type: 'error' });
             }
         }
     };
@@ -118,8 +130,9 @@ const MessageBoard: React.FC = () => {
         if (!window.confirm("Are you sure you want to delete this message?")) return;
         try {
             await deleteMessage(id);
+            setToast({ message: 'Message deleted', type: 'success' });
         } catch (err: any) {
-            alert(`Error deleting message: ${err.message}`);
+            setToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
         }
     }
     
@@ -143,6 +156,30 @@ const MessageBoard: React.FC = () => {
                 paddingBottom: 'env(safe-area-inset-bottom)', // * Safe area for iPhone home indicator
             }}
         >
+            {/* Toast Notification */}
+            {toast && (
+                <Card 
+                    variant="elevated" 
+                    style={{ 
+                        position: 'fixed',
+                        top: spacing.lg,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 1000,
+                        maxWidth: '90%',
+                        padding: spacing.md,
+                        backgroundColor: toast.type === 'error' ? colors.error + '20' : colors.success + '20',
+                        borderColor: toast.type === 'error' ? colors.error : colors.success,
+                        animation: 'fade-in 0.3s ease-out',
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, color: colors.textPrimary }}>
+                        {toast.type === 'success' && <CheckIcon style={{ color: colors.success, flexShrink: 0 }} />}
+                        <span style={{ fontSize: typography.fontSize.sm, textAlign: 'center' }}>{toast.message}</span>
+                    </div>
+                </Card>
+            )}
+            
             <div>
                 <div className="flex items-center gap-4 mb-4" style={{ display: 'flex', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.xl }}>
                     <hr className="flex-grow border-blue-300 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.borderSecondary, borderStyle: 'dashed' }} />
@@ -303,10 +340,10 @@ const MessageBoard: React.FC = () => {
                             }}
                         >
                             <article 
-                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.lg }}
+                                style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}
                                 aria-label={`Message from ${msg.author}`}
                             >
-                                <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
                                     <p style={{
                                         color: colors.textPrimary,
                                         whiteSpace: 'pre-wrap',
@@ -317,6 +354,7 @@ const MessageBoard: React.FC = () => {
                                         marginBottom: spacing.sm,
                                         lineHeight: typography.lineHeight.relaxed,
                                         textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                                        letterSpacing: '0.02em',
                                     }}>
                                         {msg.content}
                                     </p>
@@ -325,6 +363,7 @@ const MessageBoard: React.FC = () => {
                                         color: colors.accent,
                                         wordBreak: 'break-word',
                                         overflowWrap: 'break-word',
+                                        letterSpacing: '0.01em',
                                     }}>
                                         <span className="sr-only">Posted by </span>
                                         <strong>{msg.author || 'Anonymous'}</strong>
@@ -339,6 +378,7 @@ const MessageBoard: React.FC = () => {
                                     variant="danger"
                                     title="Delete message"
                                     aria-label={`Delete message from ${msg.author}`}
+                                    style={{ flexShrink: 0 }}
                                 >
                                     <TrashIcon />
                                 </IconButton>
