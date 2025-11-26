@@ -82,13 +82,23 @@ const UserSelection: React.FC = () => {
               letterSpacing: '0.02em',
             }}
           >
-            Select User
+            Who's Watching?
           </h2>
+          <p style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.textSecondary,
+            marginBottom: spacing.xl,
+            marginTop: 0,
+            textAlign: 'center',
+            lineHeight: typography.lineHeight.relaxed,
+          }}>
+            Select your profile to view and manage your shared movie watchlist
+          </p>
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: spacing.md,
+              gap: spacing.lg,
             }}
           >
             <Button
@@ -97,7 +107,8 @@ const UserSelection: React.FC = () => {
               onClick={() => handleUserSelect('Aaron')}
               onMouseEnter={() => setHoveredUser('Aaron')}
               onMouseLeave={() => setHoveredUser(null)}
-              style={{ width: '100%' }}
+              style={{ width: '100%', fontSize: typography.fontSize.xl }}
+              aria-label="Select Aaron as user"
             >
               Aaron
             </Button>
@@ -107,7 +118,8 @@ const UserSelection: React.FC = () => {
               onClick={() => handleUserSelect('Electra')}
               onMouseEnter={() => setHoveredUser('Electra')}
               onMouseLeave={() => setHoveredUser(null)}
-              style={{ width: '100%' }}
+              style={{ width: '100%', fontSize: typography.fontSize.xl }}
+              aria-label="Select Electra as user"
             >
               Electra
             </Button>
