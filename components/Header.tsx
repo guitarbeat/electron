@@ -67,17 +67,33 @@ const Header: React.FC = () => {
             style={{
               fontSize: typography.fontSize['3xl'],
               fontWeight: typography.fontWeight.bold,
-              color: colors.textPrimary,
+              color: colors.accent, // * Fallback for browsers without gradient support
+              background: shadows.textGradientPink,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               textAlign: 'center',
               lineHeight: typography.lineHeight.tight,
               margin: 0,
-              textShadow: shadows.textGlow,
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 105, 180, 0.3)',
               letterSpacing: '0.02em',
+              filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
             }}
             className="header-title"
           >
             Aaron &amp; Electra's Movie List
           </h1>
+          <p style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.textSecondary,
+            textAlign: 'center',
+            margin: 0,
+            marginTop: spacing.sm,
+            letterSpacing: '0.05em',
+            opacity: 0.9,
+          }}>
+            Your shared watchlist
+          </p>
         </div>
       </Card>
     </div>
