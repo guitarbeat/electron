@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, shadows } from '../../design-system/tokens';
+import { colors, radius, shadows, borders } from '../../design-system/tokens';
 
 interface CardProps {
   children: React.ReactNode;
@@ -9,7 +9,7 @@ interface CardProps {
 }
 
 /**
- * Card component providing consistent surface styling.
+ * Card component with retro 3D outset styling.
  */
 const Card: React.FC<CardProps> = ({ 
   children, 
@@ -17,42 +17,33 @@ const Card: React.FC<CardProps> = ({
   variant = 'default',
   onClick 
 }) => {
-  const baseStyles = {
-    backgroundColor: variant === 'elevated' ? colors.surfaceElevated : colors.surface,
-    borderRadius: radius.lg,
-    border: variant === 'outlined' ? `1px solid ${colors.border}` : 'none',
-    boxShadow: variant === 'elevated' ? shadows.md : shadows.sm,
-    transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+  const baseStyles: React.CSSProperties = {
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    border: `${borders.cardOutset} ${colors.border}`,
+    boxShadow: shadows.card,
+    position: 'relative',
+    overflow: 'hidden',
+    transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out',
   };
-
-  const interactiveStyles = onClick ? {
-    cursor: 'pointer',
-    ':hover': {
-      boxShadow: shadows.lg,
-      borderColor: colors.borderHover,
-    },
-  } : {};
 
   return (
     <div
       className={className}
-      style={{
-        ...baseStyles,
-        ...(onClick && {
-          cursor: 'pointer',
-        }),
-      }}
+      style={baseStyles}
       onClick={onClick}
       onMouseEnter={(e) => {
-        if (onClick) {
-          e.currentTarget.style.boxShadow = shadows.lg;
-          e.currentTarget.style.borderColor = colors.borderHover;
+        if (onClick || variant === 'elevated') {
+          e.currentTarget.style.transform = 'translateY(-5px)';
+          e.currentTarget.style.boxShadow = shadows.cardHover;
+          e.currentTarget.style.borderColor = colors.accentLight;
         }
       }}
       onMouseLeave={(e) => {
-        if (onClick) {
-          e.currentTarget.style.boxShadow = variant === 'elevated' ? shadows.md : shadows.sm;
-          e.currentTarget.style.borderColor = variant === 'outlined' ? colors.border : 'transparent';
+        if (onClick || variant === 'elevated') {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = shadows.card;
+          e.currentTarget.style.borderColor = colors.border;
         }
       }}
     >

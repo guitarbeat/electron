@@ -15,27 +15,32 @@ export const spacing = {
   '3xl': '4rem',    // 64px
 } as const;
 
-// * Color palette
+// * Color palette (Retro theme)
 export const colors = {
   // Base
-  background: '#0a0a0f',
-  surface: '#14141f',
-  surfaceElevated: '#1a1a28',
+  background: '#1a1a2e',
+  surface: 'rgba(27, 40, 69, 0.85)',
+  surfaceElevated: 'rgba(27, 40, 69, 0.95)',
   
   // Text
   textPrimary: '#ffffff',
-  textSecondary: '#a0a0b0',
-  textTertiary: '#606070',
+  textSecondary: '#e0e0e0',
+  textTertiary: '#a0a0b0',
   
-  // Accent
-  accent: '#ff6b9d',
+  // Accent (Hot Pink)
+  accent: '#ff69b4',
   accentHover: '#ff8bb3',
-  accentMuted: '#ff6b9d40',
+  accentMuted: '#ff69b440',
+  accentLight: '#fca5d3',
   
-  // Secondary accent
-  secondary: '#6b9fff',
-  secondaryHover: '#8bb3ff',
-  secondaryMuted: '#6b9fff40',
+  // Secondary accent (Light Sky Blue)
+  secondary: '#87cefa',
+  secondaryHover: '#a0d8ff',
+  secondaryMuted: '#87cefa40',
+  
+  // Tertiary (Medium Purple)
+  tertiary: '#9370db',
+  tertiaryHover: '#ab87e8',
   
   // Status
   success: '#4ade80',
@@ -43,17 +48,25 @@ export const colors = {
   error: '#f87171',
   
   // Border
-  border: '#2a2a3a',
-  borderHover: '#3a3a4a',
+  border: '#ff69b4',
+  borderSecondary: '#87cefa',
+  borderTertiary: '#9370db',
+  borderInset: '#1f4068',
   
   // Overlay
-  overlay: 'rgba(10, 10, 15, 0.85)',
+  overlay: 'rgba(26, 26, 46, 0.8)',
+  
+  // Special retro colors
+  yellow: '#ffeb3b',
+  khaki: '#f0e68c',
 } as const;
 
-// * Typography scale
+// * Typography scale (Retro with Papyrus)
 export const typography = {
   fontFamily: {
-    sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+    heading: ['Papyrus', 'fantasy'],
+    body: ['Papyrus', 'fantasy'],
+    sans: ['Papyrus', 'fantasy'],
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {
@@ -79,36 +92,55 @@ export const typography = {
   },
 } as const;
 
-// * Motion/Animation
+// * Motion/Animation (Retro feel)
 export const motion = {
   duration: {
-    fast: '150ms',
-    normal: '250ms',
-    slow: '350ms',
+    fast: '100ms',
+    normal: '200ms',
+    slow: '300ms',
+    button: '50ms', // Fast for 3D button press
   },
   easing: {
-    ease: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-    easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
-    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    ease: 'ease-out',
+    easeIn: 'ease-in',
+    easeOut: 'ease-out',
+    easeInOut: 'ease-in-out',
+    linear: 'linear',
   },
 } as const;
 
-// * Border radius
+// * Border radius (Retro style)
 export const radius = {
   none: '0',
   sm: '0.25rem',   // 4px
   md: '0.5rem',    // 8px
   lg: '0.75rem',   // 12px
+  card: '8px',     // Card border radius
   full: '9999px',
 } as const;
 
-// * Shadows
+// * Border styles (Retro 3D)
+export const borders = {
+  cardOutset: '4px outset',
+  buttonOutset: '2px outset',
+  iconOutset: '2px outset',
+  inputInset: '2px inset',
+} as const;
+
+// * Shadows (Retro 3D effects)
 export const shadows = {
-  sm: '0 1px 2px rgba(0, 0, 0, 0.3)',
-  md: '0 4px 8px rgba(0, 0, 0, 0.4)',
-  lg: '0 8px 16px rgba(0, 0, 0, 0.5)',
-  glow: '0 0 20px rgba(255, 107, 157, 0.3)',
+  // Card shadows
+  card: '5px 5px 0px rgba(0,0,0,0.3)',
+  cardHover: '8px 8px 15px rgba(0,0,0,0.4), 0 0 10px rgba(255, 105, 180, 0.5)',
+  // Button shadows (3D effect)
+  button: '0 4px 0 #000, 0 5px 0 rgba(255,255,255,0.3) inset',
+  buttonHover: '0 2px 0 #000, 0 3px 0 rgba(255,255,255,0.3) inset',
+  buttonActive: '0 0px 0 #000, 0 1px 0 rgba(255,255,255,0.3) inset',
+  buttonLarge: '0 6px 0 #000, 0 8px 0 rgba(255,255,255,0.3) inset, 0 0 20px rgba(0,0,0,0.5)',
+  // Glow effects
+  glow: '0 0 15px rgba(255, 105, 180, 0.4)',
+  glowStrong: '0 0 30px rgba(255, 105, 180, 1)',
+  glowBlue: '0 0 20px rgba(135, 206, 250, 0.7)',
 } as const;
 
 // * Z-index scale

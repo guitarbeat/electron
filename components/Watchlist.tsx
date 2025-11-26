@@ -163,23 +163,20 @@ const Watchlist: React.FC = () => {
             return (
               <React.Fragment key={movie.id}>
                 {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                    <div style={{ display: 'flex', alignItems: 'center', margin: `${spacing.xl} 0`, gap: spacing.md }}>
-                        <div style={{ flex: 1, height: '1px', background: `linear-gradient(to right, transparent, ${colors.border}, transparent)` }} />
-                        <span style={{ padding: `0 ${spacing.md}`, color: colors.accent, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium }}>
+                    <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing.xl} 0` }}>
+                        <hr className="flex-grow border-pink-400 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.accent, borderStyle: 'dashed' }} />
+                        <span className="px-4 text-pink-300 font-heading" style={{ padding: `0 ${spacing.md}`, color: colors.accent, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium }}>
                           Watched Together
                         </span>
-                        <div style={{ flex: 1, height: '1px', background: `linear-gradient(to right, transparent, ${colors.border}, transparent)` }} />
+                        <hr className="flex-grow border-pink-400 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.accent, borderStyle: 'dashed' }} />
                     </div>
                 )}
                 <Card 
                   variant={watchedByBoth ? 'elevated' : 'default'}
+                  className={watchedByBoth ? 'animate-pink-glow' : ''}
                   style={{
                     padding: spacing.lg,
                     opacity: watchedByCurrentUser && !watchedByBoth ? 0.6 : 1,
-                    ...(watchedByBoth && {
-                      boxShadow: shadows.glow,
-                      borderColor: colors.accent,
-                    }),
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
