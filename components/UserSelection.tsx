@@ -22,7 +22,6 @@ const UserSelection: React.FC = () => {
       style={{
         maxWidth: '28rem',
         margin: '0 auto',
-        padding: `0 ${spacing.lg}`,
         textAlign: 'center',
       }}
     >

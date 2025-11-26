@@ -92,7 +92,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
         justifyContent: 'center',
         alignItems: 'flex-start',
         zIndex: 50,
-        padding: spacing.md,
+        padding: spacing.lg,
         overflowY: 'auto',
       }}
     >
@@ -104,7 +104,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: `${spacing.md} 0`,
+          padding: `${spacing.lg} 0`,
           maxWidth: '500px',
         }}
       >

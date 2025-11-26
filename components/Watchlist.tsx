@@ -87,7 +87,7 @@ const Watchlist: React.FC = () => {
 
   if (error) {
     return (
-      <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}`, textAlign: 'center', color: colors.error }}>
+      <div style={{ maxWidth: '48rem', margin: '0 auto', textAlign: 'center', color: colors.error }}>
         <p>Error loading movies. Please try refreshing the page.</p>
         <p style={{ fontSize: typography.fontSize.sm, marginTop: spacing.sm }}>{error.message}</p>
       </div>
@@ -95,7 +95,7 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}` }}>
+    <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       <div>
         <Header />
