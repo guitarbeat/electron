@@ -66,7 +66,13 @@ export const useSpinWheel = (
       // The marker is at the top (270deg in a typical coordinate system), so we adjust
       const winningAngle = (360 + 270 - finalAngle) % 360;
       const winnerIndex = Math.floor(winningAngle / segmentAngle);
-      const winner = movies[winnerIndex];
+      // * Ensure winnerIndex is within bounds
+      const safeIndex = Math.max(0, Math.min(winnerIndex, movies.length - 1));
+      const winner = movies[safeIndex];
+      if (!winner) {
+        console.error('No winner found, movies array might be empty');
+        return;
+      }
       setSelectedMovie(winner);
 
       // * Save the daily spin result to Gist
@@ -85,6 +91,8 @@ export const useSpinWheel = (
           setHasSpunToday(true);
         } catch (error) {
           console.error('Error saving daily spin:', error);
+          // * Show error to user - don't prevent them from seeing the result
+          alert('Warning: Could not save daily spin. The result may not sync properly.');
         }
       }
     }
@@ -187,10 +195,10 @@ export const useSpinWheel = (
   }, []);
 
   const handleButtonClick = useCallback(() => {
-    if (status === 'spinning' || hasSpunToday) return;
+    if (status === 'spinning' || hasSpunToday || movies.length === 0) return;
     velocityRef.current = 15 + Math.random() * 10;
     startSpinAnimation();
-  }, [status, hasSpunToday, startSpinAnimation]);
+  }, [status, hasSpunToday, startSpinAnimation, movies.length]);
 
   const resetAndSpin = () => {
     if (hasSpunToday) return; // * Prevent spinning again if already spun today
@@ -203,9 +211,13 @@ export const useSpinWheel = (
 
   // * Effect to check for existing daily spin on mount
   useEffect(() => {
+    let isMounted = true;
+    
     const checkTodaySpin = async () => {
       try {
         const todaySpin = await getTodaySpin();
+        if (!isMounted) return;
+        
         if (todaySpin) {
           // * Find the movie in the current movies list
           const movie = movies.find(m => m.id === todaySpin.movieId);
@@ -232,11 +244,17 @@ export const useSpinWheel = (
         }
       } catch (error) {
         console.error('Error checking today\'s spin:', error);
-        setStatus('idle');
+        if (isMounted) {
+          setStatus('idle');
+        }
       }
     };
 
     checkTodaySpin();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [movies]);
 
   return {

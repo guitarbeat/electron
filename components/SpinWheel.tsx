@@ -21,7 +21,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     getPointerHandlers
   } = useSpinWheel(movies, wheelRef, currentUser);
 
-  const segmentAngle = 360 / movies.length;
+  const segmentAngle = movies.length > 0 ? 360 / movies.length : 0;
 
   // Effect to close the modal on 'Escape' key press
   useEffect(() => {
@@ -48,13 +48,14 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
   }, [movies, segmentAngle]);
 
   const currentMovie = useMemo(() => {
-      if (movies.length === 0) return null;
+      if (movies.length === 0 || segmentAngle === 0) return null;
       // The marker is at the top (270deg from the positive x-axis), so we adjust the angle
       // to calculate the currently selected segment based on rotation.
       const normalizedRotation = currentRotation % 360;
       const selectionAngle = (360 + 270 - normalizedRotation) % 360;
       const currentIndex = Math.floor(selectionAngle / segmentAngle);
-      return movies[currentIndex];
+      const safeIndex = Math.max(0, Math.min(currentIndex, movies.length - 1));
+      return movies[safeIndex];
   }, [currentRotation, movies, segmentAngle]);
 
 
@@ -163,7 +164,19 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     </div>
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                       <CalendarIcon className="h-3 w-3" />
-                      <span>{new Date(todaySpinData.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                      <span>
+                        {(() => {
+                          try {
+                            const date = new Date(todaySpinData.date + 'T00:00:00');
+                            if (isNaN(date.getTime())) {
+                              return todaySpinData.date;
+                            }
+                            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                          } catch {
+                            return todaySpinData.date;
+                          }
+                        })()}
+                      </span>
                     </div>
                   </div>
                 )}
