@@ -137,6 +137,11 @@ export const useSpinWheel = (
     ownerDoc.body.classList.add('grabbing');
 
     const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      // * Prevent default scroll behavior during drag on mobile
+      if ('touches' in e) {
+        e.preventDefault();
+      }
+      
       const currentPointerAngle = getPointerAngle(e, element);
       const deltaAngle = currentPointerAngle - dragStartAngleRef.current;
       const newRotation = rotationRef.current + deltaAngle;

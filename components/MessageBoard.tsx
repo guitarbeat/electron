@@ -45,9 +45,16 @@ const MessageBoard: React.FC = () => {
     // * Auto-scroll to bottom when new messages arrive
     useEffect(() => {
         if (messages && messages.length > previousMessagesLengthRef.current) {
-            setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 100);
+            // * Use requestAnimationFrame for better iOS compatibility
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            });
         }
         previousMessagesLengthRef.current = messages?.length || 0;
     }, [messages]);
@@ -56,8 +63,11 @@ const MessageBoard: React.FC = () => {
     useEffect(() => {
         const textarea = contentTextareaRef.current;
         if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+            // * Use requestAnimationFrame to prevent layout shifts on iOS
+            requestAnimationFrame(() => {
+                textarea.style.height = 'auto';
+                textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+            });
         }
     }, [content]);
 
@@ -65,9 +75,18 @@ const MessageBoard: React.FC = () => {
         e.preventDefault();
         setSubmitError(null);
         
+        // * Blur active element to dismiss iOS keyboard before validation
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && activeElement.blur) {
+            activeElement.blur();
+        }
+        
         if (!content.trim()) {
             setSubmitError('Please enter a message');
-            contentTextareaRef.current?.focus();
+            // * Delay focus to allow keyboard to dismiss on iOS
+            setTimeout(() => {
+                contentTextareaRef.current?.focus();
+            }, 100);
             return;
         }
         
@@ -85,7 +104,10 @@ const MessageBoard: React.FC = () => {
             try {
                 await addMessage(author, content);
                 setContent('');
-                contentTextareaRef.current?.focus();
+                // * Delay focus to allow keyboard to dismiss on iOS after submission
+                setTimeout(() => {
+                    contentTextareaRef.current?.focus();
+                }, 300);
             } catch (err: any) {
                 setSubmitError(err.message || 'Failed to post message. Please try again.');
             }
@@ -113,7 +135,14 @@ const MessageBoard: React.FC = () => {
     };
 
     return (
-        <div style={{ maxWidth: '48rem', margin: '0 auto', marginTop: spacing['3xl'] }}>
+        <div 
+            style={{ 
+                maxWidth: '48rem', 
+                margin: '0 auto', 
+                marginTop: spacing['3xl'],
+                paddingBottom: 'env(safe-area-inset-bottom)', // * Safe area for iPhone home indicator
+            }}
+        >
             <div>
                 <div className="flex items-center gap-4 mb-4" style={{ display: 'flex', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.xl }}>
                     <hr className="flex-grow border-blue-300 border-dashed" style={{ flex: 1, height: '1px', borderColor: colors.borderSecondary, borderStyle: 'dashed' }} />

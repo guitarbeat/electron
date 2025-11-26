@@ -42,13 +42,14 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({
           border: `${borders.inputInset} ${colors.borderInset}`,
           borderRadius: radius.sm,
           color: colors.textPrimary,
-          fontSize: typography.fontSize.base,
+          fontSize: typography.fontSize.base, // * 16px prevents iOS zoom
           fontFamily: typography.fontFamily.body.join(', '),
           lineHeight: typography.lineHeight.relaxed,
           transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
           outline: 'none',
           resize: 'vertical',
           minHeight: '100px',
+          WebkitAppearance: 'none', // * Prevent iOS default styling
           ...style,
         }}
         onFocus={(e) => {

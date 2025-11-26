@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Aaron & Electra's Movie List</title>
     <style>
         /* Base styles */
@@ -232,10 +234,20 @@
         @media (max-width: 640px) {
             input, textarea {
                 font-size: 16px !important; /* Prevents zoom on iOS */
+                -webkit-appearance: none; /* Prevent iOS default styling */
+                border-radius: 4px; /* Ensure consistent border radius */
             }
             
             button {
                 min-height: 44px; /* Better touch target */
+                -webkit-tap-highlight-color: transparent; /* Remove iOS tap highlight */
+            }
+            
+            /* Prevent iOS from zooming on input focus */
+            @supports (-webkit-touch-callout: none) {
+                input, textarea, select {
+                    font-size: 16px !important;
+                }
             }
             
             .add-movie-form {
@@ -313,18 +325,47 @@
             bottom: 0;
             background-color: rgba(26, 26, 46, 0.8);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); /* Safari support */
             display: flex;
             justify-content: center;
             align-items: flex-start;
             z-index: 50;
             padding: 1.5rem;
+            padding-top: max(1.5rem, env(safe-area-inset-top)); /* Safe area for iPhone notch */
+            padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
             animation: fade-in 0.3s ease-out;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            overscroll-behavior: contain; /* Prevent scroll chaining */
         }
         
         @media (max-width: 640px) {
             .wheel-modal-overlay {
                 padding: 1rem;
+                padding-top: max(1rem, env(safe-area-inset-top));
+                padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            /* Prevent iOS bounce scroll */
+            overscroll-behavior: none;
+        }
+        
+        /* Fix for iOS Safari address bar */
+        @supports (-webkit-touch-callout: none) {
+            body.modal-open {
+                /* Store scroll position before fixing */
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
             }
         }
         
@@ -351,6 +392,8 @@
             align-items: center;
             flex-shrink: 0;
             touch-action: none; /* Prevent scrolling on mobile */
+            -webkit-touch-callout: none; /* Prevent iOS callout menu */
+            -webkit-user-select: none; /* Prevent text selection on iOS */
             user-select: none; /* Prevent text selection */
             cursor: grab;
             margin-bottom: 1.5rem;
@@ -358,6 +401,7 @@
         }
         body.grabbing, body.grabbing * {
             cursor: grabbing !important;
+            touch-action: none !important; /* Prevent all touch actions during drag */
         }
 
         .spin-wheel-wrapper.result-state {
