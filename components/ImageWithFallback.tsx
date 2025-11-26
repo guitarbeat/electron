@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { colors, radius } from '../design-system/tokens';
 
 interface ImageWithFallbackProps {
   sources: string[];
   alt: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ sources, alt, className }) => {
+const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ sources, alt, className, style }) => {
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [hasError, setHasError] = useState(false);
 
@@ -29,8 +31,20 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ sources, alt, cla
   if (hasError || !sources || sources.length === 0 || !sources[currentSourceIndex]) {
     // Render a placeholder if all images fail or if there are no sources
     return (
-        <div className={`flex items-center justify-center w-full h-full bg-gray-800/50 rounded-lg ${className}`}>
-            <span className="text-4xl text-gray-500" role="img" aria-label="Image failed to load">?</span>
+        <div
+          className={className}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            backgroundColor: colors.surfaceElevated,
+            borderRadius: radius.md,
+            ...style,
+          }}
+        >
+            <span style={{ fontSize: '2rem', color: colors.textTertiary }} role="img" aria-label="Image failed to load">?</span>
         </div>
     );
   }
@@ -40,6 +54,7 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ sources, alt, cla
       src={sources[currentSourceIndex]}
       alt={alt}
       className={className}
+      style={style}
       onError={handleError}
     />
   );

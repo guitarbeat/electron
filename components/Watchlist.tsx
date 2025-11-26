@@ -5,6 +5,11 @@ import { Movie } from '../types';
 import { PlusIcon, TrashIcon, EyeIcon, EyeOffIcon, Spinner, SparkleHeartIcon, LogoutIcon, DiceIcon } from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
+import Card from './ui/Card';
+import Button from './ui/Button';
+import Input from './ui/Input';
+import IconButton from './ui/IconButton';
+import { spacing, typography, colors, shadows } from '../design-system/tokens';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -64,7 +69,7 @@ const Watchlist: React.FC = () => {
   const getWatchedStatus = (movie: Movie) => {
     const aaronWatched = movie.watchedBy.includes('Aaron');
     const electraWatched = movie.watchedBy.includes('Electra');
-    if (aaronWatched && electraWatched) return "Watched by both!";
+    if (aaronWatched && electraWatched) return "Watched by both";
     if (aaronWatched) return "Watched by Aaron";
     if (electraWatched) return "Watched by Electra";
     return "Not watched yet";
@@ -74,131 +79,171 @@ const Watchlist: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Spinner className="h-12 w-12 text-pink-400" />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '256px' }}>
+        <Spinner style={{ width: '48px', height: '48px', color: colors.accent }} />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 text-center text-red-400">
+      <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}`, textAlign: 'center', color: colors.error }}>
         <p>Error loading movies. Please try refreshing the page.</p>
-        <p className="text-sm mt-2">{error.message}</p>
+        <p style={{ fontSize: typography.fontSize.sm, marginTop: spacing.sm }}>{error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4">
+    <div style={{ maxWidth: '48rem', margin: '0 auto', padding: `0 ${spacing.lg}` }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
-      <div className="max-w-3xl mx-auto">
+      <div>
         <Header />
+        
         {/* Add Movie Form */}
-        <form onSubmit={handleAddMovie} className="mb-4 cute-card p-4 flex gap-4 items-center">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="icon-button"
-            title="Switch User"
-          >
-            <LogoutIcon />
-          </button>
-          <input
-            type="text"
-            value={newMovieTitle}
-            onChange={(e) => setNewMovieTitle(e.target.value)}
-            placeholder="Add a new movie..."
-            className="flex-grow bg-transparent focus:outline-none text-white placeholder-gray-400 cute-input"
-            disabled={isSubmitting}
-          />
-          <button
-            type="submit"
-            className="cute-button cute-button-pink p-3 !rounded-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            disabled={!newMovieTitle.trim() || isSubmitting}
-          >
-            {isAdding ? <Spinner className="h-6 w-6" /> : <PlusIcon />}
-          </button>
-        </form>
+        <Card variant="default" style={{ marginBottom: spacing.lg }}>
+          <form onSubmit={handleAddMovie} style={{ display: 'flex', gap: spacing.md, alignItems: 'center', padding: spacing.md }}>
+            <IconButton
+              type="button"
+              onClick={handleLogout}
+              title="Switch User"
+              variant="ghost"
+            >
+              <LogoutIcon />
+            </IconButton>
+            <Input
+              type="text"
+              value={newMovieTitle}
+              onChange={(e) => setNewMovieTitle(e.target.value)}
+              placeholder="Add a new movie..."
+              disabled={isSubmitting}
+              style={{ flex: 1, margin: 0 }}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isAdding}
+              disabled={!newMovieTitle.trim() || isSubmitting}
+              style={{ 
+                padding: spacing.md,
+                borderRadius: '50%',
+                aspectRatio: '1',
+                minWidth: '48px',
+                width: '48px',
+                height: '48px',
+              }}
+            >
+              {!isAdding && <PlusIcon />}
+            </Button>
+          </form>
+        </Card>
         
         {/* Spin to Decide card */}
-        <div className="mb-8 cute-card p-4">
-            <button
-                onClick={handleOpenWheel}
-                disabled={unwatchedMovies.length < 2}
-                className="w-full cute-button cute-button-blue flex items-center justify-center gap-2"
-                title={unwatchedMovies.length < 2 ? "Add more unwatched movies to use the wheel" : "Spin the wheel to pick a movie!"}
+        <Card variant="default" style={{ marginBottom: spacing['2xl'] }}>
+          <div style={{ padding: spacing.md }}>
+            <Button
+              onClick={handleOpenWheel}
+              disabled={unwatchedMovies.length < 2}
+              variant="secondary"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
+              title={unwatchedMovies.length < 2 ? "Add more unwatched movies to use the wheel" : "Spin the wheel to pick a movie!"}
             >
-                <DiceIcon />
-                Spin to Decide!
-            </button>
-        </div>
+              <DiceIcon />
+              Spin to Decide
+            </Button>
+          </div>
+        </Card>
 
         {/* Movie List */}
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
           {movies && movies.map((movie, index) => {
             const watchedByCurrentUser = movie.watchedBy.includes(currentUser!);
             const watchedByBoth = movie.watchedBy.length === 2;
 
-            const cardClasses = [
-              'cute-card p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative transition-all duration-300',
-              watchedByBoth ? 'animate-pink-glow' : '',
-              watchedByCurrentUser && !watchedByBoth ? 'opacity-60' : ''
-            ].filter(Boolean).join(' ');
-
-            const titleClasses = [
-              'text-xl font-bold text-white transition-colors duration-300 break-words',
-              watchedByBoth ? 'line-through text-gray-400' : ''
-            ].filter(Boolean).join(' ');
-
             return (
               <React.Fragment key={movie.id}>
                 {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                    <div className="flex items-center my-6 animate-fade-in">
-                        <hr className="flex-grow border-pink-400 border-dashed" />
-                        <span className="px-4 text-pink-300 font-heading">Watched Together</span>
-                        <hr className="flex-grow border-pink-400 border-dashed" />
+                    <div style={{ display: 'flex', alignItems: 'center', margin: `${spacing.xl} 0`, gap: spacing.md }}>
+                        <div style={{ flex: 1, height: '1px', background: `linear-gradient(to right, transparent, ${colors.border}, transparent)` }} />
+                        <span style={{ padding: `0 ${spacing.md}`, color: colors.accent, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium }}>
+                          Watched Together
+                        </span>
+                        <div style={{ flex: 1, height: '1px', background: `linear-gradient(to right, transparent, ${colors.border}, transparent)` }} />
                     </div>
                 )}
-                <div className={cardClasses}>
-                  <div className="flex-grow flex items-center gap-4">
-                      {watchedByBoth && <SparkleHeartIcon />}
-                      <div>
-                          <h3 className={titleClasses}>{movie.title}</h3>
-                          <p className="text-sm text-gray-400">
-                          Added by {movie.addedBy} &bull; {getWatchedStatus(movie)}
-                          </p>
+                <Card 
+                  variant={watchedByBoth ? 'elevated' : 'default'}
+                  style={{
+                    padding: spacing.lg,
+                    opacity: watchedByCurrentUser && !watchedByBoth ? 0.6 : 1,
+                    ...(watchedByBoth && {
+                      boxShadow: shadows.glow,
+                      borderColor: colors.accent,
+                    }),
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md, flex: 1 }}>
+                      {watchedByBoth && (
+                        <div style={{ color: colors.accent, marginTop: '2px' }}>
+                          <SparkleHeartIcon />
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h3 style={{
+                          fontSize: typography.fontSize.xl,
+                          fontWeight: typography.fontWeight.bold,
+                          color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
+                          textDecoration: watchedByBoth ? 'line-through' : 'none',
+                          margin: 0,
+                          marginBottom: spacing.xs,
+                          wordBreak: 'break-word',
+                        }}>
+                          {movie.title}
+                        </h3>
+                        <p style={{
+                          fontSize: typography.fontSize.sm,
+                          color: colors.textSecondary,
+                          margin: 0,
+                        }}>
+                          Added by {movie.addedBy} • {getWatchedStatus(movie)}
+                        </p>
                       </div>
-                  </div>
-                  <div className="flex items-center gap-3 self-end sm:self-center">
-                      <button
-                          onClick={() => handleToggleWatched(movie.id)}
-                          disabled={isSubmitting}
-                          className="icon-button disabled:opacity-50"
-                          title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, alignSelf: 'flex-end' }}>
+                      <IconButton
+                        onClick={() => handleToggleWatched(movie.id)}
+                        disabled={isSubmitting}
+                        variant="ghost"
+                        title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
                       >
-                      {watchedByCurrentUser ? 
-                          <EyeIcon /> : 
-                          <EyeOffIcon />}
-                      </button>
-                      <button
-                          onClick={() => handleDeleteMovie(movie.id)}
-                          disabled={isSubmitting}
-                          className="icon-button text-red-400 disabled:opacity-50"
-                          title="Delete movie"
+                        {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
+                      </IconButton>
+                      <IconButton
+                        onClick={() => handleDeleteMovie(movie.id)}
+                        disabled={isSubmitting}
+                        variant="danger"
+                        title="Delete movie"
                       >
-                      <TrashIcon />
-                      </button>
+                        <TrashIcon />
+                      </IconButton>
+                    </div>
                   </div>
-                </div>
+                </Card>
               </React.Fragment>
             )
           })}
           {movies?.length === 0 && (
-              <div className="text-center text-gray-400 cute-card p-8">
-                  <p>Your movie list is empty!</p>
-                  <p>Add a movie to get started~</p>
-              </div>
+              <Card variant="default">
+                <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
+                  <p style={{ margin: 0, marginBottom: spacing.sm, fontSize: typography.fontSize.base }}>
+                    Your movie list is empty
+                  </p>
+                  <p style={{ margin: 0, fontSize: typography.fontSize.sm }}>
+                    Add a movie to get started
+                  </p>
+                </div>
+              </Card>
           )}
         </div>
       </div>
