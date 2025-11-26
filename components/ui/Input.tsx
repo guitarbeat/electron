@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing, typography, motion } from '../../design-system/tokens';
+import { colors, radius, spacing, typography, motion, borders } from '../../design-system/tokens';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,7 +7,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 /**
- * Input component with consistent styling.
+ * Input component with retro inset styling.
  */
 const Input: React.FC<InputProps> = ({
   label,
@@ -26,6 +26,7 @@ const Input: React.FC<InputProps> = ({
             fontSize: typography.fontSize.sm,
             fontWeight: typography.fontWeight.medium,
             color: colors.textSecondary,
+            fontFamily: typography.fontFamily.body.join(', '),
           }}
         >
           {label}
@@ -36,23 +37,21 @@ const Input: React.FC<InputProps> = ({
         style={{
           width: '100%',
           padding: spacing.md,
-          backgroundColor: colors.surfaceElevated,
-          border: `1px solid ${error ? colors.error : colors.border}`,
-          borderRadius: radius.md,
+          backgroundColor: '#162447',
+          border: `${borders.inputInset} ${colors.borderInset}`,
+          borderRadius: radius.sm,
           color: colors.textPrimary,
           fontSize: typography.fontSize.base,
-          fontFamily: typography.fontFamily.sans.join(', '),
+          fontFamily: typography.fontFamily.body.join(', '),
           transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
           outline: 'none',
           ...style,
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = error ? colors.error : colors.accent;
-          e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.accentMuted}`;
+          e.currentTarget.style.outline = `2px solid ${colors.accent}`;
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = error ? colors.error : colors.border;
-          e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.outline = 'none';
         }}
         {...props}
       />
@@ -62,6 +61,7 @@ const Input: React.FC<InputProps> = ({
             marginTop: spacing.xs,
             fontSize: typography.fontSize.sm,
             color: colors.error,
+            fontFamily: typography.fontFamily.body.join(', '),
           }}
         >
           {error}

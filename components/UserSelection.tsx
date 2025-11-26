@@ -56,6 +56,7 @@ const UserSelection: React.FC = () => {
               color: colors.accent,
               marginBottom: spacing.xl,
               marginTop: 0,
+              textShadow: '1px 1px 2px #ff69b4',
             }}
           >
             Select User

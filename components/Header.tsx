@@ -50,6 +50,7 @@ const Header: React.FC = () => {
               textAlign: 'center',
               lineHeight: typography.lineHeight.tight,
               margin: 0,
+              textShadow: '2px 2px 4px #ff69b4',
             }}
           >
             Aaron &amp; Electra's Movie List

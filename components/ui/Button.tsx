@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing, typography, motion } from '../../design-system/tokens';
+import { colors, radius, spacing, typography, motion, shadows, borders } from '../../design-system/tokens';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost';
@@ -9,7 +9,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * Button component with consistent styling and interaction states.
+ * Button component with retro 3D press effect.
  */
 const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
@@ -40,31 +40,22 @@ const Button: React.FC<ButtonProps> = ({
     primary: {
       backgroundColor: colors.accent,
       color: colors.textPrimary,
-      border: 'none',
-      ':hover': {
-        backgroundColor: colors.accentHover,
-      },
+      border: `${borders.buttonOutset} #fff`,
     },
     secondary: {
       backgroundColor: colors.secondary,
       color: colors.textPrimary,
-      border: 'none',
-      ':hover': {
-        backgroundColor: colors.secondaryHover,
-      },
+      border: `${borders.buttonOutset} #fff`,
     },
     ghost: {
       backgroundColor: 'transparent',
       color: colors.textSecondary,
-      border: `1px solid ${colors.border}`,
-      ':hover': {
-        backgroundColor: colors.surfaceElevated,
-        color: colors.textPrimary,
-      },
+      border: 'none',
     },
   };
 
   const isDisabled = disabled || isLoading;
+  const isLarge = size === 'lg';
 
   return (
     <button
@@ -74,32 +65,39 @@ const Button: React.FC<ButtonProps> = ({
         ...sizeStyles[size],
         ...variantStyles[variant],
         borderRadius: radius.md,
-        fontWeight: typography.fontWeight.medium,
-        fontFamily: typography.fontFamily.sans.join(', '),
+        fontWeight: typography.fontWeight.normal,
+        fontFamily: typography.fontFamily.heading.join(', '),
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled ? 0.5 : 1,
-        transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
+        transition: `all ${motion.duration.button} ${motion.easing.linear}`,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: spacing.sm,
-        border: variantStyles[variant].border || 'none',
+        boxShadow: variant === 'ghost' ? 'none' : (isLarge ? shadows.buttonLarge : shadows.button),
+        textShadow: variant === 'ghost' ? 'none' : '1px 1px 2px #000',
+        position: 'relative',
+        top: 0,
         ...style,
       }}
-      onMouseEnter={(e) => {
-        if (!isDisabled) {
-          e.currentTarget.style.backgroundColor = variantStyles[variant][':hover'].backgroundColor;
-          if (variant === 'ghost') {
-            e.currentTarget.style.color = colors.textPrimary;
-          }
+      onMouseDown={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.top = isLarge ? '6px' : '4px';
+          e.currentTarget.style.boxShadow = isLarge 
+            ? '0 0px 0 #000, 0 2px 0 rgba(255,255,255,0.3) inset, 0 0 20px rgba(0,0,0,0.5)'
+            : shadows.buttonActive;
+        }
+      }}
+      onMouseUp={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.top = '0';
+          e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
         }
       }}
       onMouseLeave={(e) => {
-        if (!isDisabled) {
-          e.currentTarget.style.backgroundColor = variantStyles[variant].backgroundColor || 'transparent';
-          if (variant === 'ghost') {
-            e.currentTarget.style.color = colors.textSecondary;
-          }
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.top = '0';
+          e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
         }
       }}
       {...props}

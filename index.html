@@ -11,28 +11,26 @@
         }
         
         body {
-            background-color: #0a0a0f;
-            color: #ffffff;
+            background-color: #1a1a2e;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z' fill='%23ff69b4' opacity='0.1'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat;
+            color: #e0e0e0;
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            line-height: 1.5;
+            font-family: 'Papyrus', fantasy;
+            letter-spacing: 0.05em;
         }
 
-        /* Custom scrollbar */
+        /* Custom scrollbar (Retro style) */
         ::-webkit-scrollbar {
-            width: 12px;
+            width: 16px;
         }
         ::-webkit-scrollbar-track {
-            background: #14141f;
+            background: #162447;
+            border: 2px solid #87cefa;
         }
         ::-webkit-scrollbar-thumb {
-            background: #2a2a3a;
-            border-radius: 6px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3a3a4a;
+            background: linear-gradient(45deg, #e43f5a, #87cefa);
+            border: 2px outset #162447;
         }
 
         /* Global font styles */
@@ -40,11 +38,11 @@
         
         /* Utility animations */
         @keyframes fade-in {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
-            animation: fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: fade-in 0.5s ease-out forwards;
         }
         
         @keyframes spin {
@@ -53,6 +51,42 @@
         }
         .animate-spin {
             animation: spin 1s linear infinite;
+        }
+        
+        /* Sparkle Trail Effect */
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            animation: sparkle-trail var(--sparkle-duration, 0.7s) ease-out forwards;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes sparkle-trail {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--sparkle-x-end, 0), var(--sparkle-y-end, 0)) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        /* Glow and pulse animation for movies watched by both */
+        @keyframes pink-glow {
+            0%, 100% { 
+                box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 15px rgba(255, 105, 180, 0.4);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 30px rgba(255, 105, 180, 1);
+                transform: scale(1.02);
+            }
+        }
+        .animate-pink-glow {
+            border-color: #fff;
+            animation: pink-glow 2.5s infinite;
         }
         
         /* Screen reader only */
@@ -76,14 +110,14 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(8px);
+            background-color: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(5px);
             display: flex;
             justify-content: center;
             align-items: flex-start;
             z-index: 50;
             padding: 1rem;
-            animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fade-in 0.3s ease-out;
             overflow-y: auto;
         }
         
@@ -182,31 +216,32 @@
         }
         
         .lock-icon-wrapper {
-            background: rgba(10, 10, 15, 0.95);
+            background: rgba(26, 26, 46, 0.9);
             border-radius: 50%;
             width: 100px;
             height: 100px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 3px solid #ff6b9d;
-            box-shadow: 0 0 20px rgba(255, 107, 157, 0.4);
+            border: 4px solid #ff69b4;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
             animation: lock-pulse 2s ease-in-out infinite;
         }
         
         @keyframes lock-pulse {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 20px rgba(255, 107, 157, 0.4);
+                box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(0,0,0,0.3);
             }
             50% {
                 transform: scale(1.05);
-                box-shadow: 0 0 30px rgba(255, 107, 157, 0.6);
+                box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 20px rgba(0,0,0,0.3);
             }
         }
         
         .lock-icon-wrapper svg {
-            color: #ff6b9d;
+            color: #ff69b4;
+            filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.8));
         }
         
         .locked-content {
@@ -214,7 +249,17 @@
         }
         
         .locked-content svg {
-            color: #ff6b9d;
+            color: #ff69b4;
+            animation: lock-bounce 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes lock-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
         
         .spin-hub {
@@ -248,21 +293,31 @@
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
-            background: #1a1a28;
+            background: rgba(27, 40, 69, 0.95);
             border-radius: 12px;
-            border: 1px solid #2a2a3a;
+            border: 4px outset #ff69b4;
             width: 90%;
             max-width: 450px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 107, 157, 0.2);
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 20px rgba(255, 105, 180, 0.3);
             text-align: center;
             z-index: 51;
             margin-top: -5rem;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: margin-top 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
+            animation: result-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes result-glow {
+            0%, 100% {
+                box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 20px rgba(255, 105, 180, 0.3);
+            }
+            50% {
+                box-shadow: 5px 5px 0px rgba(0,0,0,0.3), 0 0 30px rgba(255, 105, 180, 0.5);
+            }
         }
         
         @media (min-width: 640px) {
             .result-display-container {
-                padding: 2rem;
+                padding: 1.5rem;
                 margin-top: -8rem;
             }
         }
@@ -272,9 +327,8 @@
             padding: 1rem;
             margin-bottom: 1rem;
             text-align: center;
-            background: #1a1a28;
-            border-radius: 12px;
-            border: 1px solid #2a2a3a;
+            border-color: #87cefa;
+            background: rgba(27, 40, 69, 0.95);
             min-height: 4.5rem;
             display: flex;
             flex-direction: column;
@@ -283,9 +337,11 @@
         }
 
         .current-movie-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #ffffff;
+            font-size: 1.75rem;
+            font-weight: bold;
+            font-family: 'Papyrus', fantasy;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 3px #000;
             line-height: 1.2;
             margin: 0;
         }
@@ -297,7 +353,8 @@
 
     </style>
 </head>
-<body>
+<body class="font-body">
+    <div id="sparkle-container"></div>
     <div id="root"></div>
 
     <script type="importmap">
@@ -310,5 +367,54 @@
     }
     </script>
     <script type="module" src="/index.tsx"></script>
+    <script>
+        // Sparkle cursor effect
+        (function() {
+            const sparkleContainer = document.getElementById('sparkle-container');
+            if (!sparkleContainer) return;
+
+            const colors = ['#ff69b4', '#87cefa', '#9370db', '#ffffff', '#f0e68c'];
+
+            const throttle = (func, limit) => {
+                let inThrottle;
+                return function() {
+                    const args = arguments;
+                    const context = this;
+                    if (!inThrottle) {
+                        func.apply(context, args);
+                        inThrottle = true;
+                        setTimeout(() => (inThrottle = false), limit);
+                    }
+                };
+            };
+
+            const createSparkle = (x, y) => {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = `${x}px`;
+                sparkle.style.top = `${y}px`;
+                
+                sparkle.innerHTML = '&#10024;'; // ✨
+                sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                
+                const size = Math.random() * 20 + 8;
+                sparkle.style.fontSize = `${size}px`;
+                
+                const xEnd = (Math.random() - 0.5) * 100;
+                const yEnd = (Math.random() - 0.5) * 100;
+                sparkle.style.setProperty('--sparkle-x-end', `${xEnd}px`);
+                sparkle.style.setProperty('--sparkle-y-end', `${yEnd}px`);
+                sparkle.style.setProperty('--sparkle-duration', `${Math.random() * 0.5 + 0.5}s`);
+
+                sparkleContainer.appendChild(sparkle);
+                
+                sparkle.addEventListener('animationend', () => {
+                    sparkle.remove();
+                });
+            };
+            
+            document.addEventListener('mousemove', throttle(e => createSparkle(e.clientX, e.clientY), 50));
+        })();
+    </script>
 </body>
 </html>
