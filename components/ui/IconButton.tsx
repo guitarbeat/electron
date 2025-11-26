@@ -62,6 +62,9 @@ const IconButton: React.FC<IconButtonProps> = ({
           } else if (variant === 'ghost') {
             e.currentTarget.style.backgroundColor = colors.surfaceElevated;
             e.currentTarget.style.color = colors.textPrimary;
+          } else if (variant === 'danger') {
+            e.currentTarget.style.backgroundColor = colors.error + '20';
+            e.currentTarget.style.opacity = '0.9';
           }
         }
       }}
@@ -69,6 +72,9 @@ const IconButton: React.FC<IconButtonProps> = ({
         if (!isDisabled) {
           e.currentTarget.style.backgroundColor = variantStyles[variant].backgroundColor;
           e.currentTarget.style.color = variantStyles[variant].color;
+          if (variant === 'danger') {
+            e.currentTarget.style.opacity = '1';
+          }
         }
       }}
       onMouseDown={(e) => {
