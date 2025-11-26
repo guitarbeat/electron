@@ -394,18 +394,40 @@ const MessageBoard: React.FC = () => {
                         <Card 
                             key={msg.id} 
                             variant="default"
-                            className="animate-fade-in"
+                            className="animate-fade-in message-card"
                             style={{ 
                               padding: spacing.xl,
                               animationDelay: `${index * 0.05}s`,
-                              marginBottom: spacing.md,
+                              marginBottom: spacing.lg,
+                              borderWidth: '2px',
+                              borderColor: colors.borderSecondary,
+                              position: 'relative',
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}
                         >
+                            {/* Decorative accent */}
+                            <div style={{
+                              position: 'absolute',
+                              left: 0,
+                              top: spacing.md,
+                              bottom: spacing.md,
+                              width: '4px',
+                              background: colors.gradientBlue,
+                              borderRadius: `0 ${radius.sm} ${radius.sm} 0`,
+                              opacity: 0.6,
+                            }} />
+                            
                             <article 
-                                style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.lg }}
+                                style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'flex-start', 
+                                  gap: spacing.lg,
+                                  position: 'relative',
+                                  paddingLeft: spacing.md,
+                                }}
                                 aria-label={`Message from ${msg.author}`}
                             >
-                                <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
                                     <p style={{
                                         color: colors.textPrimary,
                                         whiteSpace: 'pre-wrap',
@@ -413,43 +435,70 @@ const MessageBoard: React.FC = () => {
                                         overflowWrap: 'break-word',
                                         hyphens: 'auto',
                                         margin: 0,
-                                        marginBottom: spacing.md,
+                                        marginBottom: spacing.lg,
                                         lineHeight: typography.lineHeight.relaxed,
-                                        textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.4)',
                                         letterSpacing: '0.02em',
                                         fontSize: typography.fontSize.base,
+                                        padding: `${spacing.sm} 0`,
                                     }}>
                                         {msg.content}
                                     </p>
                                     <footer style={{
-                                        fontSize: typography.fontSize.sm,
-                                        color: colors.accent,
-                                        wordBreak: 'break-word',
-                                        overflowWrap: 'break-word',
-                                        letterSpacing: '0.01em',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: spacing.xs,
+                                        justifyContent: 'space-between',
+                                        gap: spacing.md,
                                         flexWrap: 'wrap',
+                                        paddingTop: spacing.md,
+                                        borderTop: `1px solid ${colors.borderInset}`,
                                     }}>
-                                        <span className="sr-only">Posted by </span>
-                                        <strong style={{ fontWeight: typography.fontWeight.semibold }}>{msg.author || 'Anonymous'}</strong>
-                                        <span style={{ color: colors.textSecondary }} aria-label={`Posted ${timeAgo(msg.createdAt)}`}>
-                                            • {timeAgo(msg.createdAt)}
-                                        </span>
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: spacing.sm,
+                                          flexWrap: 'wrap',
+                                        }}>
+                                            <span className="sr-only">Posted by </span>
+                                            <div style={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: spacing.xs,
+                                              padding: `${spacing.xs} ${spacing.sm}`,
+                                              backgroundColor: colors.secondaryMuted,
+                                              borderRadius: radius.full,
+                                              border: `1px solid ${colors.secondary}40`,
+                                            }}>
+                                                <strong style={{ 
+                                                  fontWeight: typography.fontWeight.semibold,
+                                                  color: colors.secondary,
+                                                  fontSize: typography.fontSize.sm,
+                                                }}>
+                                                  {msg.author || 'Anonymous'}
+                                                </strong>
+                                            </div>
+                                            <span 
+                                              style={{ 
+                                                color: colors.textTertiary,
+                                                fontSize: typography.fontSize.xs,
+                                              }} 
+                                              aria-label={`Posted ${timeAgo(msg.createdAt)}`}
+                                            >
+                                              {timeAgo(msg.createdAt)}
+                                            </span>
+                                        </div>
+                                        <IconButton
+                                            onClick={() => handleDelete(msg.id)}
+                                            disabled={isSubmitting}
+                                            variant="danger"
+                                            title={`Delete message from ${msg.author}`}
+                                            aria-label={`Delete message from ${msg.author}`}
+                                            style={{ flexShrink: 0 }}
+                                        >
+                                            <TrashIcon />
+                                        </IconButton>
                                     </footer>
                                 </div>
-                                <IconButton
-                                    onClick={() => handleDelete(msg.id)}
-                                    disabled={isSubmitting}
-                                    variant="danger"
-                                    title={`Delete message from ${msg.author}`}
-                                    aria-label={`Delete message from ${msg.author}`}
-                                    style={{ flexShrink: 0, marginTop: spacing.xs }}
-                                >
-                                    <TrashIcon />
-                                </IconButton>
                             </article>
                         </Card>
                     ))}
