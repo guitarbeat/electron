@@ -238,16 +238,18 @@
             box-shadow: 6px 6px 0px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3), 0 0 20px rgba(255, 105, 180, 0.2);
         }
         
-        /* Message card hover effect */
-        .message-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3), 0 0 20px rgba(135, 206, 250, 0.2);
-            border-color: #87cefa;
+        /* Message bubble hover effect - subtle like iMessage */
+        .message-bubble:hover .message-actions {
+            opacity: 1 !important;
+        }
+        
+        .message-bubble:hover > div:last-child {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 0 12px rgba(135, 206, 250, 0.2);
+            transform: translateY(-1px);
         }
         
         @media (max-width: 640px) {
-            .movie-card:hover,
-            .message-card:hover {
+            .movie-card:hover {
                 transform: none;
             }
         }
