@@ -59,7 +59,7 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={className}
+      className={`${className} ripple-effect`}
       disabled={isDisabled}
       style={{
         ...sizeStyles[size],
@@ -79,6 +79,7 @@ const Button: React.FC<ButtonProps> = ({
         position: 'relative',
         top: 0,
         minHeight: size === 'lg' ? '48px' : size === 'md' ? '44px' : '36px', // * Better touch targets
+        overflow: 'hidden',
         // Add subtle inner highlight
         backgroundImage: variant !== 'ghost' 
           ? `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`

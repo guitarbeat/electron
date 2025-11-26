@@ -118,8 +118,28 @@ const Watchlist: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '256px' }}>
-        <Spinner style={{ width: '48px', height: '48px', color: colors.accent }} />
+      <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+        <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: spacing.lg }}>
+          <div className="skeleton" style={{ 
+            height: '60px', 
+            borderRadius: radius.md,
+            marginBottom: spacing.md,
+          }} />
+          <div className="skeleton" style={{ 
+            height: '40px', 
+            borderRadius: radius.md,
+            width: '70%',
+            margin: '0 auto',
+          }} />
+        </Card>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+          {[1, 2, 3].map((i) => (
+            <Card key={i} variant="default" className="skeleton" style={{ 
+              padding: spacing.xl,
+              height: '120px',
+            }} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -196,9 +216,33 @@ const Watchlist: React.FC = () => {
         
         {/* Movie Statistics */}
         {movies && movies.length > 0 && (
-          <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: spacing.lg }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: spacing.xl, flexWrap: 'wrap', textAlign: 'center' }}>
-              <div style={{ minWidth: '80px' }}>
+          <Card variant="elevated" className="scale-in" style={{ 
+            marginBottom: spacing.xl, 
+            padding: spacing.xl,
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Decorative background pattern */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '100%',
+              background: 'radial-gradient(circle at 20% 50%, rgba(255, 105, 180, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(135, 206, 250, 0.1) 0%, transparent 50%)',
+              pointerEvents: 'none',
+            }} />
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              gap: spacing.xl, 
+              flexWrap: 'wrap', 
+              textAlign: 'center',
+              position: 'relative',
+              zIndex: 1,
+            }}>
+              <div style={{ minWidth: '80px', animationDelay: '0.1s' }} className="bounce-in">
                 <div style={{ 
                   fontSize: typography.fontSize['3xl'], 
                   fontWeight: typography.fontWeight.bold, 
@@ -211,7 +255,9 @@ const Watchlist: React.FC = () => {
                   lineHeight: typography.lineHeight.tight,
                   marginBottom: spacing.xs,
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-                }}>
+                  transition: 'transform 0.3s ease-out',
+                  animationDelay: '0s',
+                }} className="float">
                   {movies.length}
                 </div>
                 <div style={{ 
@@ -223,7 +269,7 @@ const Watchlist: React.FC = () => {
                   {movies.length === 1 ? 'Movie' : 'Movies'}
                 </div>
               </div>
-              <div style={{ minWidth: '80px' }}>
+              <div style={{ minWidth: '80px', animationDelay: '0.2s' }} className="bounce-in">
                 <div style={{ 
                   fontSize: typography.fontSize['3xl'], 
                   fontWeight: typography.fontWeight.bold, 
@@ -236,7 +282,9 @@ const Watchlist: React.FC = () => {
                   lineHeight: typography.lineHeight.tight,
                   marginBottom: spacing.xs,
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-                }}>
+                  transition: 'transform 0.3s ease-out',
+                  animationDelay: '0.3s',
+                }} className="float">
                   {unwatchedMovies.length}
                 </div>
                 <div style={{ 
@@ -248,7 +296,7 @@ const Watchlist: React.FC = () => {
                   Unwatched
                 </div>
               </div>
-              <div style={{ minWidth: '80px' }}>
+              <div style={{ minWidth: '80px', animationDelay: '0.3s' }} className="bounce-in">
                 <div style={{ 
                   fontSize: typography.fontSize['3xl'], 
                   fontWeight: typography.fontWeight.bold, 
@@ -261,7 +309,9 @@ const Watchlist: React.FC = () => {
                   lineHeight: typography.lineHeight.tight,
                   marginBottom: spacing.xs,
                   filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-                }}>
+                  transition: 'transform 0.3s ease-out',
+                  animationDelay: '0.6s',
+                }} className="float">
                   {watchedMovies.length}
                 </div>
                 <div style={{ 
@@ -417,7 +467,7 @@ const Watchlist: React.FC = () => {
                 )}
                 <Card 
                   variant={watchedByBoth ? 'elevated' : 'default'}
-                  className={watchedByBoth ? 'animate-pink-glow' : 'movie-card'}
+                  className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up`}
                   style={{
                     padding: spacing.xl,
                     opacity: watchedByCurrentUser && !watchedByBoth ? 0.75 : 1,
@@ -427,6 +477,7 @@ const Watchlist: React.FC = () => {
                     borderColor: watchedByBoth ? colors.accent : colors.border,
                     position: 'relative',
                     overflow: 'visible',
+                    animationDelay: `${index * 0.05}s`,
                   }}
                 >
                   {/* Status indicator bar */}
