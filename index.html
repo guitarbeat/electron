@@ -45,6 +45,98 @@
             animation: fade-in 0.5s ease-out forwards;
         }
         
+        /* Login/Logout transition animations */
+        @keyframes slide-out-left {
+            from { 
+                opacity: 1; 
+                transform: translateX(0) scale(1); 
+            }
+            to { 
+                opacity: 0; 
+                transform: translateX(-100px) scale(0.9); 
+            }
+        }
+        
+        @keyframes slide-out-right {
+            from { 
+                opacity: 1; 
+                transform: translateX(0) scale(1); 
+            }
+            to { 
+                opacity: 0; 
+                transform: translateX(100px) scale(0.9); 
+            }
+        }
+        
+        @keyframes slide-in-right {
+            from { 
+                opacity: 0; 
+                transform: translateX(100px) scale(0.9) rotateY(-15deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) scale(1) rotateY(0deg); 
+            }
+        }
+        
+        @keyframes slide-in-left {
+            from { 
+                opacity: 0; 
+                transform: translateX(-100px) scale(0.9) rotateY(15deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) scale(1) rotateY(0deg); 
+            }
+        }
+        
+        @keyframes zoom-out {
+            from { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            to { 
+                opacity: 0; 
+                transform: scale(0.8); 
+            }
+        }
+        
+        @keyframes zoom-in {
+            from { 
+                opacity: 0; 
+                transform: scale(0.8) rotateZ(-5deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1) rotateZ(0deg); 
+            }
+        }
+        
+        .animate-login-exit {
+            animation: slide-out-left 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        .animate-login-enter {
+            animation: slide-in-right 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .animate-logout-exit {
+            animation: zoom-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        .animate-logout-enter {
+            animation: zoom-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .transition-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .transition-container > * {
+            will-change: transform, opacity;
+        }
+        
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
