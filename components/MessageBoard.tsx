@@ -198,6 +198,12 @@ const MessageBoard: React.FC = () => {
                             fontSize: typography.fontSize.base, 
                             textAlign: 'center',
                             fontWeight: typography.fontWeight.medium,
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
+                            hyphens: 'auto',
+                            maxWidth: '100%',
+                            flex: '1 1 auto', // * Allow flex item to grow and shrink
+                            minWidth: 0, // * Allow shrinking below content size for proper wrapping
                         }}>
                             {toast.message}
                         </span>
