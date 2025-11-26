@@ -152,3 +152,12 @@ export const CheckIcon: React.FC<{ className?: string; style?: React.CSSProperti
     </svg>
   );
 };
+
+export const ChevronDownIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+};
