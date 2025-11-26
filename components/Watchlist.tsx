@@ -187,39 +187,37 @@ const Watchlist: React.FC = () => {
                     opacity: watchedByCurrentUser && !watchedByBoth ? 0.6 : 1,
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md, flex: 1 }}>
-                      {watchedByBoth && (
-                        <div style={{ color: colors.accent, marginTop: '2px' }}>
-                          <SparkleHeartIcon />
-                        </div>
-                      )}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 className="movie-title" style={{
-                          fontSize: typography.fontSize.xl,
-                          fontWeight: typography.fontWeight.bold,
-                          color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
-                          textDecoration: watchedByBoth ? 'line-through' : 'none',
-                          margin: 0,
-                          marginBottom: spacing.xs,
-                          wordBreak: 'break-word',
-                          overflowWrap: 'break-word',
-                          hyphens: 'auto',
-                          textShadow: watchedByBoth ? 'none' : '1px 1px 2px rgba(0,0,0,0.5)',
-                          transition: 'all 0.2s ease-out',
-                        }}>
-                          {movie.title}
-                        </h3>
-                        <p style={{
-                          fontSize: typography.fontSize.sm,
-                          color: colors.textSecondary,
-                          margin: 0,
-                        }}>
-                          Added by {movie.addedBy} • {getWatchedStatus(movie)}
-                        </p>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md }}>
+                    {watchedByBoth && (
+                      <div style={{ color: colors.accent, marginTop: '2px', flexShrink: 0 }}>
+                        <SparkleHeartIcon />
                       </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 className="movie-title" style={{
+                        fontSize: typography.fontSize.xl,
+                        fontWeight: typography.fontWeight.bold,
+                        color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
+                        textDecoration: watchedByBoth ? 'line-through' : 'none',
+                        margin: 0,
+                        marginBottom: spacing.xs,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                        hyphens: 'auto',
+                        textShadow: watchedByBoth ? 'none' : '1px 1px 2px rgba(0,0,0,0.5)',
+                        transition: 'all 0.2s ease-out',
+                      }}>
+                        {movie.title}
+                      </h3>
+                      <p style={{
+                        fontSize: typography.fontSize.sm,
+                        color: colors.textSecondary,
+                        margin: 0,
+                      }}>
+                        Added by {movie.addedBy} • {getWatchedStatus(movie)}
+                      </p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, alignSelf: 'flex-end' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, flexShrink: 0 }}>
                       <IconButton
                         onClick={() => handleToggleWatched(movie.id)}
                         disabled={isSubmitting}

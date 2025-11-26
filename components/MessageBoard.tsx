@@ -303,7 +303,7 @@ const MessageBoard: React.FC = () => {
                             }}
                         >
                             <article 
-                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.lg }}
+                                style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md }}
                                 aria-label={`Message from ${msg.author}`}
                             >
                                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -339,6 +339,7 @@ const MessageBoard: React.FC = () => {
                                     variant="danger"
                                     title="Delete message"
                                     aria-label={`Delete message from ${msg.author}`}
+                                    style={{ flexShrink: 0 }}
                                 >
                                     <TrashIcon />
                                 </IconButton>
