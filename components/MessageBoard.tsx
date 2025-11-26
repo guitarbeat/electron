@@ -152,7 +152,7 @@ const MessageBoard: React.FC = () => {
             style={{ 
                 maxWidth: '48rem', 
                 margin: '0 auto', 
-                marginTop: spacing['3xl'],
+                marginTop: spacing.xl, // * Reduced from 3xl for more condensed feel
                 paddingBottom: 'env(safe-area-inset-bottom)', // * Safe area for iPhone home indicator
             }}
         >
@@ -212,7 +212,7 @@ const MessageBoard: React.FC = () => {
             )}
             
             <div>
-                <div className="flex items-center gap-4 mb-4" style={{ display: 'flex', alignItems: 'center', gap: spacing.lg, marginBottom: spacing['2xl'] }}>
+                <div className="flex items-center gap-4 mb-4" style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg }}>
                     <hr className="flex-grow border-blue-300 border-dashed" style={{ 
                         flex: 1, 
                         height: '2px', 
@@ -265,9 +265,9 @@ const MessageBoard: React.FC = () => {
                 </div>
                 
                 {/* Post Message Form */}
-                <Card variant="elevated" style={{ marginBottom: spacing['2xl'] }}>
-                    <form onSubmit={handleSubmit} aria-label="Post a new message" style={{ padding: spacing.xl }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+                <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
+                    <form onSubmit={handleSubmit} aria-label="Post a new message" style={{ padding: spacing.md }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
                             <div>
                                 <label htmlFor="message-author" className="sr-only">Your name</label>
                                 <Input
@@ -320,7 +320,7 @@ const MessageBoard: React.FC = () => {
                                     error={submitError || undefined}
                                     style={{ margin: 0 }}
                                 />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs }}>
                                     <div id="content-help" style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
                                         {content.length > 0 && (
                                             <span style={{ color: colors.textSecondary }}>
@@ -347,8 +347,8 @@ const MessageBoard: React.FC = () => {
                             <div id="submit-error" style={{
                                 color: colors.error,
                                 fontSize: typography.fontSize.sm,
-                                marginTop: spacing.md,
-                                padding: spacing.sm,
+                                marginTop: spacing.sm,
+                                padding: spacing.xs,
                                 backgroundColor: colors.error + '20',
                                 borderRadius: radius.sm,
                                 border: `1px solid ${colors.error}40`,
@@ -364,12 +364,12 @@ const MessageBoard: React.FC = () => {
                             aria-label="Post message"
                             style={{ 
                                 width: '100%', 
-                                marginTop: spacing.lg, 
+                                marginTop: spacing.md, 
                                 display: 'flex', 
                                 alignItems: 'center', 
                                 justifyContent: 'center', 
                                 gap: spacing.sm,
-                                fontSize: typography.fontSize.lg,
+                                fontSize: typography.fontSize.base,
                             }}
                         >
                             {!isSubmitting && <SendIcon style={{ width: '22px', height: '22px' }} />}
@@ -379,13 +379,13 @@ const MessageBoard: React.FC = () => {
                 </Card>
 
                 {/* Message List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }} role="log" aria-label="Message board messages" aria-live="polite" aria-atomic="false">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }} role="log" aria-label="Message board messages" aria-live="polite" aria-atomic="false">
                     {isLoading && !messages && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-                            {[1, 2].map((i) => (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                            {[1, 2, 3].map((i) => (
                                 <Card key={i} variant="default" className="skeleton" style={{ 
-                                    padding: spacing.xl,
-                                    height: '150px',
+                                    padding: `${spacing.sm} ${spacing.md}`,
+                                    height: '60px',
                                 }} />
                             ))}
                         </div>
@@ -404,22 +404,22 @@ const MessageBoard: React.FC = () => {
                             variant="default"
                             className="message-card slide-up"
                             style={{ 
-                              padding: spacing.xl,
+                              padding: `${spacing.sm} ${spacing.md}`, // * More compact padding
                               animationDelay: `${index * 0.05}s`,
-                              marginBottom: spacing.lg,
+                              marginBottom: 0, // * No margin, gap handles spacing
                               borderWidth: '2px',
                               borderColor: colors.borderSecondary,
                               position: 'relative',
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}
                         >
-                            {/* Decorative accent */}
+                            {/* Decorative accent - thinner for chat feel */}
                             <div style={{
                               position: 'absolute',
                               left: 0,
-                              top: spacing.md,
-                              bottom: spacing.md,
-                              width: '4px',
+                              top: spacing.xs,
+                              bottom: spacing.xs,
+                              width: '3px',
                               background: colors.gradientBlue,
                               borderRadius: `0 ${radius.sm} ${radius.sm} 0`,
                               opacity: 0.6,
@@ -429,13 +429,39 @@ const MessageBoard: React.FC = () => {
                                 style={{ 
                                   display: 'flex', 
                                   alignItems: 'flex-start', 
-                                  gap: spacing.lg,
+                                  gap: spacing.sm,
                                   position: 'relative',
-                                  paddingLeft: spacing.md,
+                                  paddingLeft: spacing.sm,
                                 }}
                                 aria-label={`Message from ${msg.author}`}
                             >
                                 <div style={{ flex: 1, minWidth: 0 }}>
+                                    {/* Inline author and time header */}
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: spacing.xs,
+                                      marginBottom: spacing.xs,
+                                      flexWrap: 'wrap',
+                                    }}>
+                                        <strong style={{ 
+                                          fontWeight: typography.fontWeight.semibold,
+                                          color: colors.secondary,
+                                          fontSize: typography.fontSize.sm,
+                                        }}>
+                                          {msg.author || 'Anonymous'}
+                                        </strong>
+                                        <span 
+                                          style={{ 
+                                            color: colors.textTertiary,
+                                            fontSize: typography.fontSize.xs,
+                                          }} 
+                                          aria-label={`Posted ${timeAgo(msg.createdAt)}`}
+                                        >
+                                          · {timeAgo(msg.createdAt)}
+                                        </span>
+                                    </div>
+                                    {/* Message content */}
                                     <p style={{
                                         color: colors.textPrimary,
                                         whiteSpace: 'pre-wrap',
@@ -443,69 +469,36 @@ const MessageBoard: React.FC = () => {
                                         overflowWrap: 'break-word',
                                         hyphens: 'auto',
                                         margin: 0,
-                                        marginBottom: spacing.lg,
-                                        lineHeight: typography.lineHeight.relaxed,
+                                        marginBottom: spacing.xs,
+                                        lineHeight: typography.lineHeight.normal, // * Tighter line height
                                         textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-                                        letterSpacing: '0.02em',
+                                        letterSpacing: '0.01em',
                                         fontSize: typography.fontSize.base,
-                                        padding: `${spacing.sm} 0`,
                                     }}>
                                         {msg.content}
                                     </p>
-                                    <footer style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        gap: spacing.md,
-                                        flexWrap: 'wrap',
-                                        paddingTop: spacing.md,
-                                        borderTop: `1px solid ${colors.borderInset}`,
+                                    {/* Delete button - smaller and inline */}
+                                    <div style={{
+                                      display: 'flex',
+                                      justifyContent: 'flex-end',
+                                      marginTop: spacing.xs,
                                     }}>
-                                        <div style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: spacing.sm,
-                                          flexWrap: 'wrap',
-                                        }}>
-                                            <span className="sr-only">Posted by </span>
-                                            <div style={{
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: spacing.xs,
-                                              padding: `${spacing.xs} ${spacing.sm}`,
-                                              backgroundColor: colors.secondaryMuted,
-                                              borderRadius: radius.full,
-                                              border: `1px solid ${colors.secondary}40`,
-                                            }}>
-                                                <strong style={{ 
-                                                  fontWeight: typography.fontWeight.semibold,
-                                                  color: colors.secondary,
-                                                  fontSize: typography.fontSize.sm,
-                                                }}>
-                                                  {msg.author || 'Anonymous'}
-                                                </strong>
-                                            </div>
-                                            <span 
-                                              style={{ 
-                                                color: colors.textTertiary,
-                                                fontSize: typography.fontSize.xs,
-                                              }} 
-                                              aria-label={`Posted ${timeAgo(msg.createdAt)}`}
-                                            >
-                                              {timeAgo(msg.createdAt)}
-                                            </span>
-                                        </div>
                                         <IconButton
                                             onClick={() => handleDelete(msg.id)}
                                             disabled={isSubmitting}
                                             variant="danger"
                                             title={`Delete message from ${msg.author}`}
                                             aria-label={`Delete message from ${msg.author}`}
-                                            style={{ flexShrink: 0 }}
+                                            style={{ 
+                                              flexShrink: 0,
+                                              padding: spacing.xs,
+                                              minWidth: '32px',
+                                              minHeight: '32px',
+                                            }}
                                         >
-                                            <TrashIcon />
+                                            <TrashIcon style={{ width: '14px', height: '14px' }} />
                                         </IconButton>
-                                    </footer>
+                                    </div>
                                 </div>
                             </article>
                         </Card>
