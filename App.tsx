@@ -4,6 +4,8 @@ import { User } from './types';
 import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import MessageBoard from './components/MessageBoard';
+import IntroScreen from './components/IntroScreen';
+import QuizFlow from './components/QuizFlow';
 import { spacing, colors, typography } from './design-system/tokens';
 
 const App: React.FC = () => {
@@ -13,6 +15,13 @@ const App: React.FC = () => {
   const [animationClass, setAnimationClass] = useState<string>('animate-fade-in');
   const prevUserRef = useRef<User | null>(currentUser);
   const isInitialMount = useRef(true);
+
+  // Quiz state
+  const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
+    return localStorage.getItem('quizCompleted') === 'true';
+  });
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [showIntro, setShowIntro] = useState(!quizCompleted);
 
   useEffect(() => {
     // * Skip animation on initial mount
@@ -65,6 +74,24 @@ const App: React.FC = () => {
     prevUserRef.current = currentUser;
   }, [currentUser]);
 
+  // Quiz handlers
+  const handleStartQuiz = () => {
+    setShowIntro(false);
+    setShowQuiz(true);
+  };
+
+  const handleSkipQuiz = () => {
+    setShowIntro(false);
+    setQuizCompleted(true);
+    localStorage.setItem('quizCompleted', 'true');
+  };
+
+  const handleQuizComplete = () => {
+    setShowQuiz(false);
+    setQuizCompleted(true);
+    localStorage.setItem('quizCompleted', 'true');
+  };
+
   return (
     <div 
       className="bg-main"
@@ -82,7 +109,15 @@ const App: React.FC = () => {
         maxWidth: '100%',
       }}>
         <div className="transition-container">
-          {!displayUser ? (
+          {showIntro ? (
+            <div className={animationClass}>
+              <IntroScreen onStartQuiz={handleStartQuiz} onSkip={handleSkipQuiz} />
+            </div>
+          ) : showQuiz ? (
+            <div className={animationClass}>
+              <QuizFlow onComplete={handleQuizComplete} />
+            </div>
+          ) : !displayUser ? (
             <div className={animationClass}>
               <UserSelection />
             </div>
@@ -92,7 +127,7 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
-        <MessageBoard />
+        {!showIntro && !showQuiz && <MessageBoard />}
       </main>
     </div>
   );
