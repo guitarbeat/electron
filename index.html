@@ -699,6 +699,7 @@
             cursor: grab;
             margin-bottom: 1.5rem;
             width: 100%;
+            /* pointer-events: none; - Do not set this to none, we need to drag the wrapper! */
         }
         body.grabbing, body.grabbing * {
             cursor: grabbing !important;
@@ -726,6 +727,7 @@
             justify-content: center;
             align-items: center;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+            pointer-events: none; /* Let clicks pass through to content */
         }
         
         @media (max-width: 640px) {
@@ -774,6 +776,7 @@
             overflow: hidden;
             will-change: transform;
             transition: filter 0.3s ease-in-out;
+            pointer-events: none; /* Let clicks pass through to the button */
         }
         
         .spin-wheel.grayscale {
@@ -854,6 +857,7 @@
             z-index: 6;
             position: relative;
             box-shadow: 0 0 15px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
         }
 
         .spin-content {
@@ -865,8 +869,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 7;
+            z-index: 50;
             pointer-events: none;
+            /* Ensure the content is clickable where pointer-events are auto */
         }
 
         .result-display-container {
