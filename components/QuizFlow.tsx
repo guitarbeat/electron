@@ -101,8 +101,13 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
       'Nosferatu/Smeemo': Math.round((scores['Nosferatu/Smeemo'] / totalScore) * 100) || 0,
     };
 
+    // Determine if result is "Neither"
+    // If the top character has less than 35% of the total score, it's a weak match
+    const topScore = scores[topCharacter];
+    const isNeither = totalScore > 0 && (topScore / totalScore) < 0.35;
+
     const result: QuizResult = {
-      character: topCharacter,
+      character: isNeither ? 'Neither' : topCharacter,
       scores,
       percentages,
     };
