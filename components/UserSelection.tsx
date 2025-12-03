@@ -7,7 +7,11 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import { spacing, typography, colors, shadows } from '../design-system/tokens';
 
-const UserSelection: React.FC = () => {
+interface UserSelectionProps {
+  onTakeQuiz: () => void;
+}
+
+const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
   const { setCurrentUser } = useUser();
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
 
@@ -104,6 +108,7 @@ const UserSelection: React.FC = () => {
               display: 'flex',
               flexDirection: 'column',
               gap: spacing.lg,
+              marginBottom: spacing.xl,
             }}
           >
             <Button
@@ -127,6 +132,39 @@ const UserSelection: React.FC = () => {
               aria-label="Select Electra as user"
             >
               Electra
+            </Button>
+          </div>
+
+          <div
+            style={{
+              borderTop: `1px solid ${colors.borderSecondary}`,
+              paddingTop: spacing.lg,
+              marginTop: spacing.lg,
+            }}
+          >
+            <p
+              style={{
+                fontSize: typography.fontSize.xs,
+                color: colors.textSecondary,
+                marginBottom: spacing.md,
+              }}
+            >
+              Don't know who you are?
+            </p>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={onTakeQuiz}
+              style={{
+                width: '100%',
+                fontSize: typography.fontSize.base,
+                backgroundColor: 'transparent',
+                border: `1px solid ${colors.accent}`,
+                color: colors.accent,
+              }}
+              aria-label="Take the personality quiz"
+            >
+              ✨ Take Personality Quiz
             </Button>
           </div>
         </div>

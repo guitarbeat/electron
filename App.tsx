@@ -120,7 +120,7 @@ const App: React.FC = () => {
             </div>
           ) : !displayUser ? (
             <div className={animationClass}>
-              <UserSelection />
+              <UserSelection onTakeQuiz={handleStartQuiz} />
             </div>
           ) : (
             <div className={animationClass}>
