@@ -8,23 +8,40 @@ interface AgreeDisagreeQuestionProps {
   onSelect: (value: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree') => void;
 }
 
-const scaleOptions: Array<{
-  value: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree';
-  label: string;
-  shortLabel: string;
-}> = [
-  { value: 'stronglyDisagree', label: 'Strongly Disagree', shortLabel: 'SD' },
-  { value: 'disagree', label: 'Disagree', shortLabel: 'D' },
-  { value: 'neutral', label: 'Neutral', shortLabel: 'N' },
-  { value: 'agree', label: 'Agree', shortLabel: 'A' },
-  { value: 'stronglyAgree', label: 'Strongly Agree', shortLabel: 'SA' },
-];
-
 const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
   question,
   selectedValue,
   onSelect,
 }) => {
+  // Convert symbolic value to numeric for slider (default to 50/Neutral if null)
+  const getNumericValue = (val: string | null) => {
+    switch (val) {
+      case 'stronglyDisagree': return 0;
+      case 'disagree': return 25;
+      case 'neutral': return 50;
+      case 'agree': return 75;
+      case 'stronglyAgree': return 100;
+      default: return 50;
+    }
+  };
+
+  // Convert numeric slider value to symbolic value
+  const getSymbolicValue = (val: number) => {
+    if (val <= 20) return 'stronglyDisagree';
+    if (val <= 40) return 'disagree';
+    if (val <= 60) return 'neutral';
+    if (val <= 80) return 'agree';
+    return 'stronglyAgree';
+  };
+
+  const [sliderValue, setSliderValue] = React.useState(getNumericValue(selectedValue));
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value);
+    setSliderValue(val);
+    onSelect(getSymbolicValue(val));
+  };
+
   return (
     <div className="animate-fade-in">
       <h3
@@ -40,108 +57,106 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
         {question.question}
       </h3>
       
-      {/* Desktop view */}
       <div
         style={{
-          display: 'flex',
-          gap: spacing.sm,
-          justifyContent: 'center',
-          marginBottom: spacing.lg,
+          padding: `0 ${spacing.lg}`,
+          marginBottom: spacing.xl,
         }}
-        className="scale-desktop"
       >
-        {scaleOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => onSelect(option.value)}
-            style={{
-              flex: 1,
-              maxWidth: '120px',
-              padding: `${spacing.lg} ${spacing.sm}`,
-              backgroundColor: selectedValue === option.value ? colors.accent : colors.surface,
-              border: `3px solid ${selectedValue === option.value ? colors.accent : colors.borderSecondary}`,
-              borderRadius: '8px',
-              color: colors.textPrimary,
-              fontSize: typography.fontSize.sm,
-              fontWeight: typography.fontWeight.semibold,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: selectedValue === option.value ? shadows.glow : shadows.card,
-              fontFamily: typography.fontFamily.body.join(', '),
-            }}
-            onMouseEnter={(e) => {
-              if (selectedValue !== option.value) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.borderColor = colors.accent;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (selectedValue !== option.value) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = colors.borderSecondary;
-              }
-            }}
-            aria-pressed={selectedValue === option.value}
-          >
-            <div style={{ marginBottom: spacing.xs, fontSize: typography.fontSize.lg }}>
-              {option.shortLabel}
-            </div>
-            <div style={{ fontSize: typography.fontSize.xs, opacity: 0.8 }}>
-              {option.label}
-            </div>
-          </button>
-        ))}
-      </div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: spacing.md,
+            color: colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+            fontWeight: typography.fontWeight.semibold,
+          }}
+        >
+          <span>Strongly Disagree</span>
+          <span>Strongly Agree</span>
+        </div>
 
-      {/* Mobile view */}
-      <div
-        style={{
-          display: 'none',
-          flexDirection: 'column',
-          gap: spacing.md,
-        }}
-        className="scale-mobile"
-      >
-        {scaleOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => onSelect(option.value)}
+        <div style={{ position: 'relative', height: '40px', display: 'flex', alignItems: 'center' }}>
+          {/* Custom Track */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              height: '8px',
+              backgroundColor: colors.surface,
+              borderRadius: '4px',
+              border: `1px solid ${colors.borderSecondary}`,
+            }}
+          />
+          
+          {/* Filled Track */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              width: `${sliderValue}%`,
+              height: '8px',
+              backgroundColor: colors.accent,
+              borderRadius: '4px',
+              transition: 'width 0.1s ease-out',
+            }}
+          />
+
+          {/* Range Input */}
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={sliderValue}
+            onChange={handleSliderChange}
             style={{
               width: '100%',
-              padding: spacing.lg,
-              backgroundColor: selectedValue === option.value ? colors.accent : colors.surface,
-              border: `3px solid ${selectedValue === option.value ? colors.accent : colors.borderSecondary}`,
-              borderRadius: '8px',
-              color: colors.textPrimary,
-              fontSize: typography.fontSize.lg,
-              fontWeight: typography.fontWeight.semibold,
+              position: 'absolute',
+              opacity: 0, // Hide default input
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: selectedValue === option.value ? shadows.glow : shadows.card,
-              fontFamily: typography.fontFamily.body.join(', '),
-              textAlign: 'left',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              height: '40px',
+              zIndex: 10,
             }}
-            aria-pressed={selectedValue === option.value}
-          >
-            <span>{option.label}</span>
-            {selectedValue === option.value && <span>✓</span>}
-          </button>
-        ))}
-      </div>
+            aria-label="Agree/Disagree scale"
+          />
 
-      <style>{`
-        @media (max-width: 640px) {
-          .scale-desktop {
-            display: none !important;
-          }
-          .scale-mobile {
-            display: flex !important;
-          }
-        }
-      `}</style>
+          {/* Custom Thumb */}
+          <div
+            style={{
+              position: 'absolute',
+              left: `${sliderValue}%`,
+              transform: 'translateX(-50%)',
+              width: '24px',
+              height: '24px',
+              backgroundColor: colors.accent,
+              borderRadius: '50%',
+              border: `2px solid #fff`,
+              boxShadow: shadows.glow,
+              pointerEvents: 'none', // Let clicks pass to input
+              transition: 'left 0.1s ease-out',
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: spacing.md,
+            color: colors.textPrimary,
+            fontSize: typography.fontSize.lg,
+            fontWeight: typography.fontWeight.bold,
+            minHeight: '2rem',
+          }}
+        >
+          {sliderValue <= 20 && 'Strongly Disagree'}
+          {sliderValue > 20 && sliderValue <= 40 && 'Disagree'}
+          {sliderValue > 40 && sliderValue <= 60 && 'Neutral'}
+          {sliderValue > 60 && sliderValue <= 80 && 'Agree'}
+          {sliderValue > 80 && 'Strongly Agree'}
+        </div>
+      </div>
     </div>
   );
 };

@@ -14,10 +14,26 @@ export const quizQuestions: QuizQuestion[] = [
         type: 'multiple-choice',
         question: 'What\'s your ideal Friday night?',
         options: [
-            { text: 'Watching movies at home', scores: { 'Aaron': 2, 'Electra': 1 } },
-            { text: 'Going out to a party', scores: { 'Madeleine': 2, 'Nosferatu/Smeemo': 1 } },
-            { text: 'Reading a book alone', scores: { 'Aaron': 1, 'Nosferatu/Smeemo': 2 } },
-            { text: 'Hanging with close friends', scores: { 'Electra': 2, 'Madeleine': 1 } },
+            // SCORING GUIDE:
+            // 2 = Strong match
+            // 1 = Partial match
+            // 0 = No match
+            {
+                text: 'Watching movies at home',
+                scores: { 'Aaron': 2, 'Electra': 1, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
+            },
+            {
+                text: 'Going out to a party',
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 1 }
+            },
+            {
+                text: 'Reading a book alone',
+                scores: { 'Aaron': 1, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 }
+            },
+            {
+                text: 'Hanging with close friends',
+                scores: { 'Aaron': 0, 'Electra': 2, 'Madeleine': 1, 'Nosferatu/Smeemo': 0 }
+            },
         ],
     },
     {
@@ -25,10 +41,22 @@ export const quizQuestions: QuizQuestion[] = [
         type: 'multiple-choice',
         question: 'Pick your favorite color palette:',
         options: [
-            { text: 'Warm and vibrant', scores: { 'Electra': 2 } },
-            { text: 'Cool and calming', scores: { 'Aaron': 2 } },
-            { text: 'Bold and dramatic', scores: { 'Madeleine': 2 } },
-            { text: 'Dark and mysterious', scores: { 'Nosferatu/Smeemo': 2 } },
+            {
+                text: 'Warm and vibrant',
+                scores: { 'Aaron': 0, 'Electra': 2, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
+            },
+            {
+                text: 'Cool and calming',
+                scores: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
+            },
+            {
+                text: 'Bold and dramatic',
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 0 }
+            },
+            {
+                text: 'Dark and mysterious',
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 }
+            },
         ],
     },
     {
@@ -36,10 +64,22 @@ export const quizQuestions: QuizQuestion[] = [
         type: 'multiple-choice',
         question: 'How do you handle stress?',
         options: [
-            { text: 'Talk it out with friends', scores: { 'Electra': 2, 'Madeleine': 1 } },
-            { text: 'Process it internally', scores: { 'Aaron': 2, 'Nosferatu/Smeemo': 1 } },
-            { text: 'Distract myself with activities', scores: { 'Madeleine': 2 } },
-            { text: 'Embrace the chaos', scores: { 'Nosferatu/Smeemo': 2 } },
+            {
+                text: 'Talk it out with friends',
+                scores: { 'Aaron': 0, 'Electra': 2, 'Madeleine': 1, 'Nosferatu/Smeemo': 0 }
+            },
+            {
+                text: 'Process it internally',
+                scores: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 1 }
+            },
+            {
+                text: 'Distract myself with activities',
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 0 }
+            },
+            {
+                text: 'Embrace the chaos',
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 }
+            },
         ],
     },
 
@@ -49,11 +89,11 @@ export const quizQuestions: QuizQuestion[] = [
         type: 'agree-disagree',
         question: 'I prefer spontaneity over planning.',
         scores: {
-            stronglyDisagree: { 'Aaron': 2 },
-            disagree: { 'Aaron': 1, 'Electra': 1 },
-            neutral: { 'Madeleine': 1 },
-            agree: { 'Electra': 1, 'Nosferatu/Smeemo': 1 },
-            stronglyAgree: { 'Nosferatu/Smeemo': 2 },
+            stronglyDisagree: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 },
+            disagree: { 'Aaron': 1, 'Electra': 1, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 },
+            neutral: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 1, 'Nosferatu/Smeemo': 0 },
+            agree: { 'Aaron': 0, 'Electra': 1, 'Madeleine': 0, 'Nosferatu/Smeemo': 1 },
+            stronglyAgree: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 },
         },
     },
     {
@@ -61,11 +101,11 @@ export const quizQuestions: QuizQuestion[] = [
         type: 'agree-disagree',
         question: 'I\'m more of a night owl than an early bird.',
         scores: {
-            stronglyDisagree: { 'Aaron': 2 },
-            disagree: { 'Aaron': 1 },
-            neutral: { 'Electra': 1, 'Madeleine': 1 },
-            agree: { 'Nosferatu/Smeemo': 1 },
-            stronglyAgree: { 'Nosferatu/Smeemo': 2 },
+            stronglyDisagree: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 },
+            disagree: { 'Aaron': 1, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 },
+            neutral: { 'Aaron': 0, 'Electra': 1, 'Madeleine': 1, 'Nosferatu/Smeemo': 0 },
+            agree: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 1 },
+            stronglyAgree: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 },
         },
     },
     {
@@ -73,11 +113,11 @@ export const quizQuestions: QuizQuestion[] = [
         type: 'agree-disagree',
         question: 'I enjoy being the center of attention.',
         scores: {
-            stronglyDisagree: { 'Aaron': 2, 'Nosferatu/Smeemo': 1 },
-            disagree: { 'Aaron': 1 },
-            neutral: { 'Electra': 1 },
-            agree: { 'Madeleine': 1, 'Electra': 1 },
-            stronglyAgree: { 'Madeleine': 2 },
+            stronglyDisagree: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 1 },
+            disagree: { 'Aaron': 1, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 },
+            neutral: { 'Aaron': 0, 'Electra': 1, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 },
+            agree: { 'Aaron': 0, 'Electra': 1, 'Madeleine': 1, 'Nosferatu/Smeemo': 0 },
+            stronglyAgree: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 0 },
         },
     },
 
@@ -88,24 +128,24 @@ export const quizQuestions: QuizQuestion[] = [
         question: 'Which aesthetic speaks to you?',
         options: [
             {
-                imageUrl: 'https://via.placeholder.com/300x200/ff69b4/ffffff?text=Vibrant+%26+Fun',
+                imageUrl: '/quiz-photos/quiz-img-1.png',
                 alt: 'Vibrant and fun aesthetic',
-                scores: { 'Electra': 2 }
+                scores: { 'Aaron': 0, 'Electra': 2, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/87cefa/ffffff?text=Calm+%26+Serene',
+                imageUrl: '/quiz-photos/quiz-img-2.png',
                 alt: 'Calm and serene aesthetic',
-                scores: { 'Aaron': 2 }
+                scores: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/9370db/ffffff?text=Bold+%26+Artistic',
+                imageUrl: '/quiz-photos/quiz-img-3.png',
                 alt: 'Bold and artistic aesthetic',
-                scores: { 'Madeleine': 2 }
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/1a1a2e/ffffff?text=Dark+%26+Edgy',
+                imageUrl: '/quiz-photos/quiz-img-4.png',
                 alt: 'Dark and edgy aesthetic',
-                scores: { 'Nosferatu/Smeemo': 2 }
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 }
             },
         ],
     },
@@ -115,24 +155,24 @@ export const quizQuestions: QuizQuestion[] = [
         question: 'Pick your ideal vacation spot:',
         options: [
             {
-                imageUrl: 'https://via.placeholder.com/300x200/ffeb3b/000000?text=Beach+Paradise',
+                imageUrl: '/quiz-photos/quiz-img-5.png',
                 alt: 'Beach paradise',
-                scores: { 'Electra': 2, 'Madeleine': 1 }
+                scores: { 'Aaron': 0, 'Electra': 2, 'Madeleine': 1, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/4ade80/ffffff?text=Mountain+Retreat',
+                imageUrl: '/quiz-photos/quiz-img-6.png',
                 alt: 'Mountain retreat',
-                scores: { 'Aaron': 2 }
+                scores: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/f87171/ffffff?text=City+Adventure',
+                imageUrl: '/quiz-photos/quiz-img-7.png',
                 alt: 'City adventure',
-                scores: { 'Madeleine': 2 }
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/374151/ffffff?text=Remote+Cabin',
+                imageUrl: '/quiz-photos/quiz-img-8.png',
                 alt: 'Remote cabin',
-                scores: { 'Nosferatu/Smeemo': 2, 'Aaron': 1 }
+                scores: { 'Aaron': 1, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 }
             },
         ],
     },
@@ -142,24 +182,24 @@ export const quizQuestions: QuizQuestion[] = [
         question: 'Choose your spirit animal:',
         options: [
             {
-                imageUrl: 'https://via.placeholder.com/300x200/ff69b4/ffffff?text=Butterfly',
+                imageUrl: '/quiz-photos/quiz-img-9.png',
                 alt: 'Butterfly',
-                scores: { 'Electra': 2 }
+                scores: { 'Aaron': 0, 'Electra': 2, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/87cefa/ffffff?text=Owl',
+                imageUrl: '/quiz-photos/quiz-img-10.png',
                 alt: 'Owl',
-                scores: { 'Aaron': 2 }
+                scores: { 'Aaron': 2, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/9370db/ffffff?text=Lion',
+                imageUrl: '/quiz-photos/quiz-img-11.png',
                 alt: 'Lion',
-                scores: { 'Madeleine': 2 }
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 2, 'Nosferatu/Smeemo': 0 }
             },
             {
-                imageUrl: 'https://via.placeholder.com/300x200/1a1a2e/ffffff?text=Raven',
+                imageUrl: '/quiz-photos/quiz-img-12.png',
                 alt: 'Raven',
-                scores: { 'Nosferatu/Smeemo': 2 }
+                scores: { 'Aaron': 0, 'Electra': 0, 'Madeleine': 0, 'Nosferatu/Smeemo': 2 }
             },
         ],
     },
@@ -171,3 +211,5 @@ export const characterDescriptions: Record<QuizCharacter, string> = {
     'Madeleine': 'You\'re bold, confident, and love to stand out. You\'re not afraid to take the spotlight.',
     'Nosferatu/Smeemo': 'You\'re mysterious, unique, and march to the beat of your own drum. You embrace the unconventional.',
 };
+
+export const neitherDescription = "You're a unique enigma! Your personality doesn't fit neatly into any of our boxes. You're truly one of a kind.";

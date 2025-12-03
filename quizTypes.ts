@@ -65,7 +65,7 @@ export type CharacterScores = Record<QuizCharacter, number>;
 
 // Quiz result
 export interface QuizResult {
-  character: QuizCharacter;
+  character: QuizCharacter | 'Neither';
   scores: CharacterScores;
   percentages: Record<QuizCharacter, number>;
 }

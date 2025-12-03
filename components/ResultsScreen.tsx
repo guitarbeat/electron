@@ -1,6 +1,6 @@
 import React from 'react';
 import { QuizResult, QuizCharacter } from '../quizTypes';
-import { characterDescriptions } from '../quizData';
+import { characterDescriptions, neitherDescription } from '../quizData';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { spacing, typography, colors, shadows } from '../design-system/tokens';
@@ -11,24 +11,28 @@ interface ResultsScreenProps {
   onRetake: () => void;
 }
 
-const characterEmojis: Record<QuizCharacter, string> = {
+const characterEmojis: Record<string, string> = {
   'Electra': '💖',
   'Aaron': '🦉',
   'Madeleine': '👑',
   'Nosferatu/Smeemo': '🦇',
+  'Neither': '🤷',
 };
 
-const characterColors: Record<QuizCharacter, string> = {
+const characterColors: Record<string, string> = {
   'Electra': colors.accent,
   'Aaron': colors.secondary,
   'Madeleine': colors.tertiary,
   'Nosferatu/Smeemo': colors.yellow,
+  'Neither': colors.textSecondary,
 };
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onContinue, onRetake }) => {
   const characterColor = characterColors[result.character];
   const characterEmoji = characterEmojis[result.character];
-  const description = characterDescriptions[result.character];
+  const description = result.character === 'Neither' 
+    ? neitherDescription 
+    : characterDescriptions[result.character as QuizCharacter];
 
   return (
     <div
