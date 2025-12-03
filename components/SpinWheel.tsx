@@ -85,6 +85,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     <div 
       className="wheel-modal-overlay" 
       onClick={handleOverlayClick}
+      tabIndex={-1}
       style={{
         position: 'fixed',
         top: 0,
@@ -146,7 +147,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
             <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0, marginBottom: spacing.lg }}>
               Add some movies to your watchlist first!
             </p>
-            <Button variant="primary" onClick={onClose}>
+            <Button variant="primary" onClick={onClose} autoFocus>
               Close
             </Button>
           </Card>
@@ -217,6 +218,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     onClick={handlePrimarySpin}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
+                    autoFocus
                     style={{
                       width: 'min(128px, 20vw)',
                       height: 'min(128px, 20vw)',
@@ -225,6 +227,9 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                       borderRadius: '50%',
                       fontSize: typography.fontSize['2xl'],
                       fontWeight: typography.fontWeight.bold,
+                      pointerEvents: 'auto',
+                      position: 'relative',
+                      zIndex: 60,
                     }}
                   >
                     Spin!
@@ -339,11 +344,11 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, width: '100%', marginTop: spacing.lg }}>
                   {!hasSpunToday && (
-                    <Button onClick={handleSpinAgain} variant="secondary" style={{ width: '100%' }}>
+                    <Button onClick={handleSpinAgain} variant="secondary" style={{ width: '100%' }} autoFocus>
                       Spin Again
                     </Button>
                   )}
-                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }}>
+                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }} autoFocus={hasSpunToday}>
                     Close
                   </Button>
                 </div>
