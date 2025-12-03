@@ -7,7 +7,7 @@ import Button from './ui/Button';
 import Input from './ui/Input';
 import Textarea from './ui/Textarea';
 import IconButton from './ui/IconButton';
-import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
+import { spacing, typography, colors, shadows, radius, borders } from '../design-system/tokens';
 import { Message } from '../types';
 
 const MAX_MESSAGE_LENGTH = 500;
@@ -82,6 +82,7 @@ const MessageBoard: React.FC = () => {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(false); // New state for minimize
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -244,15 +245,14 @@ const MessageBoard: React.FC = () => {
     return (
         <div 
             style={{ 
-                maxWidth: '48rem', 
+                maxWidth: '64rem', // Wider for chat window
                 margin: '0 auto', 
-                paddingTop: spacing.md,
-                paddingLeft: spacing.md,
-                paddingRight: spacing.md,
+                padding: spacing.md,
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                height: '100%',
             }}
+            className="message-board-container"
         >
             {/* Toast Notification */}
             {toast && (
@@ -309,538 +309,744 @@ const MessageBoard: React.FC = () => {
                 </Card>
             )}
             
-            {/* Streamlined Header */}
-            <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                marginBottom: spacing.md,
-                paddingBottom: spacing.sm,
-                borderBottom: `1px solid ${colors.borderInset}`,
+            {/* Retro Window Container */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: isMinimized ? 'auto' : '100%', // Auto height when minimized
+                backgroundColor: '#c0c0c0', // Classic Windows Gray
+                border: '2px solid #dfdfdf',
+                borderRightColor: '#404040',
+                borderBottomColor: '#404040',
+                boxShadow: '4px 4px 10px rgba(0,0,0,0.5)',
+                fontFamily: 'Tahoma, sans-serif', // Fallback for UI elements
+                transition: 'height 0.3s ease',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                    <MessageIcon style={{ 
-                        width: '24px', 
-                        height: '24px', 
-                        color: colors.secondary,
-                        filter: 'drop-shadow(0 0 4px rgba(135, 206, 250, 0.6))',
-                    }} />
-                    <h2 style={{
-                        fontSize: typography.fontSize.xl,
-                        fontWeight: typography.fontWeight.semibold,
-                        color: colors.textPrimary,
-                        margin: 0,
+                {/* Title Bar */}
+                <div 
+                    onDoubleClick={() => setIsMinimized(!isMinimized)}
+                    style={{
+                        background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)', // Classic Blue Gradient
+                        padding: `${spacing.xs} ${spacing.sm}`,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: spacing.xs,
-                    }}>
-                        Messages
-                        {messages && messages.length > 0 && (
-                            <span style={{
-                                fontSize: typography.fontSize.sm,
-                                fontWeight: typography.fontWeight.normal,
-                                color: colors.textTertiary,
-                                backgroundColor: colors.surface,
-                                padding: `${spacing.xs / 2} ${spacing.sm}`,
-                                borderRadius: radius.full,
-                            }}>
-                                {messages.length}
-                            </span>
-                        )}
-                    </h2>
-                </div>
-            </div>
-            
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                
-                {/* Messages Container - Scrollable */}
-                <div
-                    ref={messagesContainerRef}
-                    style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        overflowX: 'hidden',
-                        paddingRight: spacing.xs,
-                        marginBottom: spacing.sm,
-                        position: 'relative',
-                        minHeight: 0, // * Important for flex children
-                        // * Custom scrollbar styling
-                        scrollbarWidth: 'thin',
-                        scrollbarColor: `${colors.secondary}40 transparent`,
+                        justifyContent: 'space-between',
+                        color: '#ffffff',
+                        height: '32px',
+                        cursor: 'default',
+                        userSelect: 'none',
                     }}
-                    className="messages-container"
                 >
-                    <style>{`
-                        .messages-container::-webkit-scrollbar {
-                            width: 8px;
-                        }
-                        .messages-container::-webkit-scrollbar-track {
-                            background: transparent;
-                        }
-                        .messages-container::-webkit-scrollbar-thumb {
-                            background: ${colors.secondary}40;
-                            border-radius: ${radius.full};
-                        }
-                        .messages-container::-webkit-scrollbar-thumb:hover {
-                            background: ${colors.secondary}60;
-                        }
-                    `}</style>
-                    {/* Scroll to Bottom Button */}
-                    {showScrollToBottom && (
-                        <div style={{
-                            position: 'absolute',
-                            bottom: spacing.md,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            zIndex: 10,
-                            display: 'flex',
-                            justifyContent: 'center',
+                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                        <MessageIcon style={{ width: '16px', height: '16px', color: '#ffffff' }} />
+                        <span style={{ 
+                            fontWeight: 'bold', 
+                            fontSize: '13px', 
+                            letterSpacing: '0.5px',
+                            textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
                         }}>
-                            <IconButton
-                                onClick={scrollToBottom}
-                                aria-label="Scroll to bottom"
-                                style={{
-                                    background: colors.secondary,
-                                    boxShadow: shadows.card,
-                                    borderRadius: radius.full,
-                                    padding: spacing.sm,
-                                    minWidth: '48px',
-                                    minHeight: '48px',
-                                    transition: 'all 0.2s ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1.1)';
-                                    e.currentTarget.style.boxShadow = shadows.glowBlue;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                    e.currentTarget.style.boxShadow = shadows.card;
-                                }}
-                            >
-                                <ChevronDownIcon style={{ width: '24px', height: '24px', color: '#ffffff' }} />
-                            </IconButton>
-                        </div>
-                    )}
-
-                    {/* Message List - Retro iMessage Style */}
-                    <div 
-                        style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            gap: spacing.xs,
-                            paddingBottom: spacing.md,
-                        }} 
-                        role="log" 
-                        aria-label="Message board messages" 
-                        aria-live="polite" 
-                        aria-atomic="false"
-                    >
-                    {isLoading && !messages && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} style={{ 
-                                    padding: `${spacing.sm} ${spacing.md}`,
-                                    height: '50px',
-                                    background: colors.surface,
-                                    borderRadius: radius.lg,
-                                    opacity: 0.5,
-                                }} />
-                            ))}
-                        </div>
-                    )}
-                    {error && (
-                        <Card variant="default">
-                            <div style={{ textAlign: 'center', padding: spacing.lg, color: colors.error }} role="alert" aria-live="assertive">
-                                <p style={{ margin: 0 }}>Error loading messages. Please refresh the page.</p>
-                            </div>
-                        </Card>
-                    )}
+                            Electra & Aaron's Chat Room v1.0
+                        </span>
+                    </div>
                     
-                    {messages && [...messages].reverse().map((msg, index, reversedArray) => {
-                        const authorName = msg.author || 'Anonymous';
-                        const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
-                        const senderColor = getSenderColor(authorName, !!isCurrentUser);
-                        const prevMsg = index > 0 ? reversedArray[index - 1] : null;
-                        const isSameSender = prevMsg && (prevMsg.author || 'Anonymous') === authorName;
-                        const showSenderName = !isSameSender || index === 0;
-                        
-                        return (
-                            <div
-                                key={msg.id}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: isCurrentUser ? 'flex-end' : 'flex-start',
-                                    marginBottom: showSenderName ? spacing.sm : spacing.xs,
-                                    maxWidth: '85%',
-                                    marginLeft: isCurrentUser ? 'auto' : 0,
-                                    marginRight: isCurrentUser ? 0 : 'auto',
-                                }}
-                            >
-                                {/* Sender name and time - only show if different sender */}
-                                {showSenderName && (
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: spacing.xs,
-                                        marginBottom: spacing.xs / 2,
-                                        paddingLeft: isCurrentUser ? 0 : spacing.sm,
-                                        paddingRight: isCurrentUser ? spacing.sm : 0,
-                                        alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
-                                    }}>
-                                        <span style={{
-                                            fontSize: typography.fontSize.xs,
-                                            fontWeight: typography.fontWeight.medium,
-                                            color: senderColor,
-                                            textShadow: `0 0 8px ${senderColor}40`,
-                                        }}>
-                                            {authorName}
-                                        </span>
-                                        {formatTime(msg.createdAt) && (
-                                            <span style={{
-                                                fontSize: typography.fontSize.xs,
-                                                color: colors.textTertiary,
-                                                opacity: 0.7,
-                                            }}>
-                                                {formatTime(msg.createdAt)}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                                
-                                {/* Speech bubble */}
-                                <div
-                                    style={{
-                                        position: 'relative',
-                                        background: isCurrentUser 
-                                            ? senderColor 
-                                            : `linear-gradient(135deg, ${senderColor}dd 0%, ${senderColor}cc 100%)`,
-                                        borderRadius: isCurrentUser 
-                                            ? `${radius.lg} ${radius.lg} ${radius.xs} ${radius.lg}` 
-                                            : `${radius.lg} ${radius.lg} ${radius.lg} ${radius.xs}`,
-                                        padding: `${spacing.sm} ${spacing.md}`,
-                                        paddingBottom: spacing.sm,
-                                        boxShadow: `0 2px 4px rgba(0,0,0,0.2), 0 0 12px ${senderColor}30`,
-                                        maxWidth: '100%',
-                                        wordWrap: 'break-word',
-                                        overflowWrap: 'break-word',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                    aria-label={`Message from ${authorName}`}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1.02)';
-                                        e.currentTarget.style.boxShadow = `0 4px 8px rgba(0,0,0,0.3), 0 0 16px ${senderColor}50`;
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1)';
-                                        e.currentTarget.style.boxShadow = `0 2px 4px rgba(0,0,0,0.2), 0 0 12px ${senderColor}30`;
-                                    }}
-                                >
-                                    {/* Speech bubble tail */}
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            bottom: 0,
-                                            [isCurrentUser ? 'right' : 'left']: '-6px',
-                                            width: 0,
-                                            height: 0,
-                                            borderStyle: 'solid',
-                                            ...(isCurrentUser ? {
-                                                borderWidth: '0 0 12px 12px',
-                                                borderColor: `transparent transparent ${senderColor} transparent`,
-                                            } : {
-                                                borderWidth: '0 12px 12px 0',
-                                                borderColor: `transparent ${senderColor}dd transparent transparent`,
-                                            }),
-                                        }}
-                                    />
-                                    
-                                    {/* Message content */}
-                                    <p style={{
-                                        color: isCurrentUser 
-                                            ? '#ffffff' 
-                                            : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
-                                                ? '#000000'
-                                                : colors.textPrimary,
-                                        whiteSpace: 'pre-wrap',
-                                        wordBreak: 'break-word',
-                                        overflowWrap: 'break-word',
-                                        margin: 0,
-                                        lineHeight: typography.lineHeight.normal,
-                                        fontSize: typography.fontSize.base,
-                                        textShadow: isCurrentUser 
-                                            ? '0 1px 2px rgba(0,0,0,0.3)' 
-                                            : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
-                                                ? '0 1px 1px rgba(255,255,255,0.3)'
-                                                : '0 1px 1px rgba(0,0,0,0.2)',
-                                    }}>
-                                        {msg.content}
-                                    </p>
-                                    
-                                    {/* Delete button - appears on hover */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: spacing.xs,
-                                        [isCurrentUser ? 'left' : 'right']: spacing.xs,
-                                        opacity: 0,
-                                        transition: 'opacity 0.2s ease',
-                                    }}
-                                    className="message-actions"
-                                    >
-                                        <IconButton
-                                            onClick={() => handleDelete(msg.id)}
-                                            disabled={isSubmitting}
-                                            variant="danger"
-                                            title={`Delete message from ${authorName}`}
-                                            aria-label={`Delete message from ${authorName}`}
-                                            style={{
-                                                padding: spacing.xs,
-                                                minWidth: '24px',
-                                                minHeight: '24px',
-                                                background: 'rgba(0,0,0,0.3)',
-                                                backdropFilter: 'blur(4px)',
-                                            }}
-                                        >
-                                            <TrashIcon style={{ width: '10px', height: '10px' }} />
-                                        </IconButton>
-                                    </div>
-                                </div>
-                                
-                                {/* Show delete button on hover */}
-                                <style>{`
-                                    .message-actions {
-                                        opacity: 0;
-                                    }
-                                    div[aria-label*="Message from"]:hover .message-actions {
-                                        opacity: 1;
-                                    }
-                                `}</style>
-                            </div>
-                        );
-                    })}
-                    {messages?.length === 0 && !isLoading && (
-                        <div style={{ 
-                            textAlign: 'center', 
-                            padding: spacing.xl, 
-                            color: colors.textTertiary,
-                            opacity: 0.7,
-                        }} role="status">
-                            <MessageIcon style={{ 
-                                width: '48px', 
-                                height: '48px', 
-                                margin: '0 auto', 
-                                marginBottom: spacing.sm, 
-                                opacity: 0.5, 
-                                color: colors.secondary,
-                            }} />
-                            <p style={{ 
-                                fontSize: typography.fontSize.base, 
-                                margin: 0,
-                                color: colors.textSecondary,
-                            }}>
-                                No messages yet. Start the conversation!
-                            </p>
-                        </div>
-                    )}
-                    <div ref={messagesEndRef} aria-hidden="true" />
+                    {/* Window Controls */}
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                        <button 
+                            onClick={() => setIsMinimized(!isMinimized)}
+                            aria-label={isMinimized ? "Restore" : "Minimize"}
+                            style={{
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: '#c0c0c0',
+                                border: '1px solid #fff',
+                                borderRightColor: '#404040',
+                                borderBottomColor: '#404040',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                lineHeight: 1,
+                                padding: 0,
+                                cursor: 'pointer',
+                                color: '#000',
+                                boxShadow: 'inset 1px 1px 0px #fff',
+                            }}
+                        >
+                            <span style={{ marginTop: '-6px' }}>_</span>
+                        </button>
+                        <button style={{
+                            width: '20px',
+                            height: '20px',
+                            backgroundColor: '#c0c0c0',
+                            border: '1px solid #fff',
+                            borderRightColor: '#404040',
+                            borderBottomColor: '#404040',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            lineHeight: 1,
+                            padding: 0,
+                            cursor: 'default',
+                            color: '#808080', // Disabled look
+                            boxShadow: 'inset 1px 1px 0px #fff',
+                        }}>
+                            <span>□</span>
+                        </button>
+                        <button style={{
+                            width: '20px',
+                            height: '20px',
+                            backgroundColor: '#c0c0c0',
+                            border: '1px solid #fff',
+                            borderRightColor: '#404040',
+                            borderBottomColor: '#404040',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            lineHeight: 1,
+                            padding: 0,
+                            cursor: 'default',
+                            color: '#000',
+                            boxShadow: 'inset 1px 1px 0px #fff',
+                        }}>
+                            <span>×</span>
+                        </button>
                     </div>
                 </div>
 
-                {/* Post Message Form - Streamlined Chat Input */}
-                <div style={{
-                    background: colors.background,
-                    paddingTop: spacing.md,
-                    paddingBottom: 'env(safe-area-inset-bottom)',
-                    zIndex: 5,
-                }}>
-                    <form 
-                        onSubmit={handleSubmit} 
-                        aria-label="Post a new message"
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: spacing.sm,
-                        }}
-                    >
-                        {/* Author field - compact inline */}
-                        {!currentUser && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
-                                <label htmlFor="message-author" style={{
-                                    fontSize: typography.fontSize.xs,
-                                    color: colors.textTertiary,
-                                    whiteSpace: 'nowrap',
-                                }}>
-                                    From:
-                                </label>
-                                <input
-                                    id="message-author"
-                                    type="text"
-                                    value={author}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(0, MAX_AUTHOR_LENGTH);
-                                        setAuthor(value);
-                                        setSubmitError(null);
-                                    }}
-                                    placeholder="Your name"
-                                    maxLength={MAX_AUTHOR_LENGTH}
-                                    disabled={isSubmitting}
-                                    aria-label="Your name"
-                                    style={{
-                                        flex: 1,
-                                        padding: `${spacing.xs} ${spacing.sm}`,
-                                        backgroundColor: colors.surface,
-                                        border: `1px solid ${colors.borderInset}`,
-                                        borderRadius: radius.md,
-                                        color: colors.textPrimary,
-                                        fontSize: typography.fontSize.sm,
-                                        fontFamily: typography.fontFamily.body.join(', '),
-                                        outline: 'none',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                    onFocus={(e) => {
-                                        e.currentTarget.style.borderColor = colors.secondary;
-                                        e.currentTarget.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
-                                    }}
-                                    onBlur={(e) => {
-                                        e.currentTarget.style.borderColor = colors.borderInset;
-                                        e.currentTarget.style.boxShadow = 'none';
-                                    }}
-                                />
-                            </div>
-                        )}
-                        
-                        {/* Message input and send button - chat bar style */}
-                        <div style={{
-                            display: 'flex',
-                            gap: spacing.sm,
-                            alignItems: 'flex-end',
+                {/* Window Body */}
+                {!isMinimized && (
+                    <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        padding: '2px',
+                        gap: '2px',
+                        overflow: 'hidden', // Contain children
+                    }}>
+                    {/* Main Chat Area */}
+                    <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        backgroundColor: colors.background, // Keep dark theme for chat content
+                        border: '2px solid #808080', // Inset border
+                        borderRightColor: '#fff',
+                        borderBottomColor: '#fff',
+                        overflow: 'hidden',
+                    }}>
+                        {/* Messages Header (Inside Window) */}
+                        <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            padding: spacing.sm,
+                            borderBottom: `1px solid ${colors.borderInset}`,
+                            backgroundColor: colors.surface,
                         }}>
-                            <div style={{ flex: 1, position: 'relative' }}>
-                                <label htmlFor="message-content" className="sr-only">Message content</label>
-                                <textarea
-                                    id="message-content"
-                                    ref={contentTextareaRef}
-                                    value={content}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
-                                        setContent(value);
-                                        setSubmitError(null);
-                                    }}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Type a message..."
-                                    maxLength={MAX_MESSAGE_LENGTH}
-                                    rows={1}
-                                    disabled={isSubmitting}
-                                    aria-label="Message content"
-                                    aria-invalid={submitError ? 'true' : 'false'}
-                                    style={{
-                                        width: '100%',
-                                        padding: `${spacing.sm} ${spacing.md}`,
-                                        backgroundColor: colors.surface,
-                                        border: `1px solid ${colors.borderInset}`,
-                                        borderRadius: radius.lg,
-                                        color: colors.textPrimary,
-                                        fontSize: typography.fontSize.base,
-                                        fontFamily: typography.fontFamily.body.join(', '),
-                                        lineHeight: typography.lineHeight.normal,
-                                        resize: 'none',
-                                        minHeight: '44px',
-                                        maxHeight: '120px',
-                                        outline: 'none',
-                                        transition: 'all 0.2s ease',
-                                        overflow: 'hidden',
-                                    }}
-                                    onFocus={(e) => {
-                                        e.currentTarget.style.borderColor = colors.secondary;
-                                        e.currentTarget.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
-                                    }}
-                                    onBlur={(e) => {
-                                        e.currentTarget.style.borderColor = colors.borderInset;
-                                        e.currentTarget.style.boxShadow = 'none';
-                                    }}
-                                />
-                                
-                                {/* Character count - subtle */}
-                                {content.length > 0 && (
+                            <h2 style={{
+                                fontSize: typography.fontSize.lg,
+                                fontWeight: typography.fontWeight.bold,
+                                color: colors.textPrimary,
+                                margin: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: spacing.xs,
+                                textShadow: shadows.textGlowBlue,
+                            }}>
+                                #general
+                            </h2>
+                            <span style={{
+                                fontSize: typography.fontSize.xs,
+                                color: colors.textTertiary,
+                            }}>
+                                Topic: Movie Night Planning 🍿
+                            </span>
+                        </div>
+            
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                            
+                            {/* Messages Container - Scrollable */}
+                            <div
+                                ref={messagesContainerRef}
+                                style={{
+                                    flex: 1,
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
+                                    padding: spacing.md,
+                                    position: 'relative',
+                                    minHeight: 0,
+                                    // * Custom scrollbar styling
+                                    scrollbarWidth: 'thin',
+                                    scrollbarColor: `${colors.secondary}40 transparent`,
+                                }}
+                                className="messages-container"
+                            >
+                                <style>{`
+                                    .messages-container::-webkit-scrollbar {
+                                        width: 12px;
+                                    }
+                                    .messages-container::-webkit-scrollbar-track {
+                                        background: #1a1a2e;
+                                        border-left: 1px solid #333;
+                                    }
+                                    .messages-container::-webkit-scrollbar-thumb {
+                                        background: #404040;
+                                        border: 1px solid #808080;
+                                        border-radius: 0;
+                                    }
+                                    .messages-container::-webkit-scrollbar-thumb:hover {
+                                        background: #505050;
+                                    }
+                                    @keyframes pulse-glow {
+                                        0% { filter: drop-shadow(0 0 10px ${colors.secondary}40); transform: scale(1); }
+                                        50% { filter: drop-shadow(0 0 20px ${colors.secondary}80); transform: scale(1.05); }
+                                        100% { filter: drop-shadow(0 0 10px ${colors.secondary}40); transform: scale(1); }
+                                    }
+                                `}</style>
+                                {/* Scroll to Bottom Button */}
+                                {showScrollToBottom && (
                                     <div style={{
                                         position: 'absolute',
-                                        bottom: spacing.xs,
-                                        right: spacing.sm,
-                                        fontSize: typography.fontSize.xs,
-                                        color: content.length > MAX_MESSAGE_LENGTH * 0.9 
-                                            ? (content.length >= MAX_MESSAGE_LENGTH ? colors.error : colors.warning)
-                                            : colors.textTertiary,
-                                        pointerEvents: 'none',
-                                        opacity: 0.6,
+                                        bottom: spacing.md,
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        zIndex: 10,
+                                        display: 'flex',
+                                        justifyContent: 'center',
                                     }}>
-                                        {content.length}/{MAX_MESSAGE_LENGTH}
+                                        <IconButton
+                                            onClick={scrollToBottom}
+                                            aria-label="Scroll to bottom"
+                                            style={{
+                                                background: colors.secondary,
+                                                boxShadow: shadows.card,
+                                                borderRadius: radius.full,
+                                                padding: spacing.sm,
+                                                minWidth: '40px',
+                                                minHeight: '40px',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                        >
+                                            <ChevronDownIcon style={{ width: '20px', height: '20px', color: '#ffffff' }} />
+                                        </IconButton>
                                     </div>
                                 )}
-                            </div>
-                            
-                            {/* Send button - circular chat style */}
-                            <button
-                                type="submit"
-                                disabled={!content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
-                                aria-label="Send message"
-                                style={{
-                                    width: '44px',
-                                    height: '44px',
-                                    minWidth: '44px',
-                                    minHeight: '44px',
-                                    borderRadius: radius.full,
-                                    backgroundColor: content.trim() && content.length <= MAX_MESSAGE_LENGTH 
-                                        ? colors.secondary 
-                                        : colors.borderInset,
-                                    border: 'none',
-                                    color: '#ffffff',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: (content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting) ? 'pointer' : 'not-allowed',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: content.trim() && content.length <= MAX_MESSAGE_LENGTH
-                                        ? `0 2px 8px ${colors.secondary}40`
-                                        : 'none',
-                                    opacity: (content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting) ? 1 : 0.5,
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting) {
-                                        e.currentTarget.style.transform = 'scale(1.1)';
-                                        e.currentTarget.style.boxShadow = `0 4px 12px ${colors.secondary}60`;
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                    e.currentTarget.style.boxShadow = content.trim() && content.length <= MAX_MESSAGE_LENGTH
-                                        ? `0 2px 8px ${colors.secondary}40`
-                                        : 'none';
-                                }}
-                            >
-                                {isSubmitting ? (
-                                    <Spinner style={{ width: '20px', height: '20px', color: '#ffffff' }} />
-                                ) : (
-                                    <SendIcon style={{ width: '20px', height: '20px', color: '#ffffff' }} />
+
+                                {/* Message List - Retro iMessage Style */}
+                                <div 
+                                    style={{ 
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        gap: spacing.md,
+                                    }} 
+                                    role="log" 
+                                    aria-label="Message board messages" 
+                                    aria-live="polite" 
+                                    aria-atomic="false"
+                                >
+                                {isLoading && !messages && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+                                        {[1, 2, 3].map((i) => (
+                                            <div key={i} style={{ 
+                                                padding: `${spacing.sm} ${spacing.md}`,
+                                                height: '50px',
+                                                background: colors.surface,
+                                                borderRadius: radius.lg,
+                                                opacity: 0.5,
+                                            }} />
+                                        ))}
+                                    </div>
                                 )}
-                            </button>
-                        </div>
-                        
-                        {/* Error message */}
-                        {submitError && (
-                            <div id="submit-error" style={{
-                                color: colors.error,
-                                fontSize: typography.fontSize.xs,
-                                padding: `${spacing.xs} ${spacing.sm}`,
-                                backgroundColor: colors.error + '20',
-                                borderRadius: radius.sm,
-                                border: `1px solid ${colors.error}40`,
-                            }} role="alert" aria-live="polite">
-                                {submitError}
+                                {error && (
+                                    <Card variant="default">
+                                        <div style={{ textAlign: 'center', padding: spacing.lg, color: colors.error }} role="alert" aria-live="assertive">
+                                            <p style={{ margin: 0 }}>Error loading messages. Please refresh the page.</p>
+                                        </div>
+                                    </Card>
+                                )}
+                                
+                                {messages && [...messages].reverse().map((msg, index, reversedArray) => {
+                                    const authorName = msg.author || 'Anonymous';
+                                    const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
+                                    const senderColor = getSenderColor(authorName, !!isCurrentUser);
+                                    const prevMsg = index > 0 ? reversedArray[index - 1] : null;
+                                    const isSameSender = prevMsg && (prevMsg.author || 'Anonymous') === authorName;
+                                    const showSenderName = !isSameSender || index === 0;
+                                    
+                                    return (
+                                        <div
+                                            key={msg.id}
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: isCurrentUser ? 'flex-end' : 'flex-start',
+                                                marginBottom: showSenderName ? spacing.sm : spacing.xs,
+                                                maxWidth: '85%',
+                                                marginLeft: isCurrentUser ? 'auto' : 0,
+                                                marginRight: isCurrentUser ? 0 : 'auto',
+                                            }}
+                                        >
+                                            {/* Sender name and time - only show if different sender */}
+                                            {showSenderName && (
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: spacing.xs,
+                                                    marginBottom: '2px',
+                                                    paddingLeft: isCurrentUser ? 0 : spacing.sm,
+                                                    paddingRight: isCurrentUser ? spacing.sm : 0,
+                                                    alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+                                                }}>
+                                                    <span style={{
+                                                        fontSize: typography.fontSize.xs,
+                                                        fontWeight: typography.fontWeight.bold,
+                                                        color: senderColor,
+                                                        textShadow: `0 0 8px ${senderColor}80`,
+                                                        letterSpacing: '0.05em',
+                                                    }}>
+                                                        {authorName}
+                                                    </span>
+                                                    {formatTime(msg.createdAt) && (
+                                                        <span style={{
+                                                            fontSize: typography.fontSize.xs,
+                                                            color: colors.textTertiary,
+                                                            opacity: 0.7,
+                                                            fontFamily: 'monospace',
+                                                        }}>
+                                                            [{formatTime(msg.createdAt)}]
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            
+                                            {/* Speech bubble */}
+                                            <div
+                                                style={{
+                                                    position: 'relative',
+                                                    background: isCurrentUser 
+                                                        ? senderColor 
+                                                        : `linear-gradient(135deg, ${senderColor}dd 0%, ${senderColor}cc 100%)`,
+                                                    borderRadius: isCurrentUser 
+                                                        ? `${radius.lg} ${radius.lg} 2px ${radius.lg}` 
+                                                        : `${radius.lg} ${radius.lg} ${radius.lg} 2px`,
+                                                    padding: `${spacing.sm} ${spacing.md}`,
+                                                    paddingBottom: spacing.sm,
+                                                    boxShadow: shadows.card,
+                                                    border: `1px solid rgba(255,255,255,0.15)`,
+                                                    maxWidth: '100%',
+                                                    wordWrap: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                                aria-label={`Message from ${authorName}`}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.transform = 'scale(1.02) translateY(-2px)';
+                                                    e.currentTarget.style.boxShadow = `0 8px 16px rgba(0,0,0,0.3), 0 0 20px ${senderColor}60`;
+                                                    e.currentTarget.style.zIndex = '1';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.transform = 'scale(1)';
+                                                    e.currentTarget.style.boxShadow = shadows.card;
+                                                    e.currentTarget.style.zIndex = 'auto';
+                                                }}
+                                            >
+                                                {/* Speech bubble tail */}
+                                                <div
+                                                    style={{
+                                                        position: 'absolute',
+                                                        bottom: 0,
+                                                        [isCurrentUser ? 'right' : 'left']: '-6px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        borderStyle: 'solid',
+                                                        ...(isCurrentUser ? {
+                                                            borderWidth: '0 0 12px 12px',
+                                                            borderColor: `transparent transparent ${senderColor} transparent`,
+                                                        } : {
+                                                            borderWidth: '0 12px 12px 0',
+                                                            borderColor: `transparent ${senderColor}dd transparent transparent`,
+                                                        }),
+                                                        filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.1))',
+                                                    }}
+                                                />
+                                                
+                                                {/* Message content */}
+                                                <p style={{
+                                                    color: isCurrentUser 
+                                                        ? '#ffffff' 
+                                                        : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
+                                                            ? '#000000'
+                                                            : colors.textPrimary,
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                    margin: 0,
+                                                    lineHeight: typography.lineHeight.normal,
+                                                    fontSize: typography.fontSize.base,
+                                                    textShadow: isCurrentUser 
+                                                        ? '0 1px 2px rgba(0,0,0,0.3)' 
+                                                        : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
+                                                            ? '0 1px 1px rgba(255,255,255,0.3)'
+                                                            : '0 1px 1px rgba(0,0,0,0.2)',
+                                                }}>
+                                                    {msg.content}
+                                                </p>
+                                                
+                                                {/* Delete button - appears on hover */}
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: -spacing.xs,
+                                                    [isCurrentUser ? 'left' : 'right']: -spacing.xs,
+                                                    opacity: 0,
+                                                    transition: 'all 0.2s ease',
+                                                    transform: 'scale(0.8)',
+                                                }}
+                                                className="message-actions"
+                                                >
+                                                    <IconButton
+                                                        onClick={() => handleDelete(msg.id)}
+                                                        disabled={isSubmitting}
+                                                        variant="danger"
+                                                        title={`Delete message from ${authorName}`}
+                                                        aria-label={`Delete message from ${authorName}`}
+                                                        style={{
+                                                            padding: spacing.xs,
+                                                            minWidth: '24px',
+                                                            minHeight: '24px',
+                                                            background: colors.error,
+                                                            color: '#fff',
+                                                            boxShadow: shadows.button,
+                                                            borderRadius: radius.full,
+                                                        }}
+                                                    >
+                                                        <TrashIcon style={{ width: '12px', height: '12px' }} />
+                                                    </IconButton>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Show delete button on hover */}
+                                            <style>{`
+                                                .message-actions {
+                                                    opacity: 0;
+                                                }
+                                                div[aria-label*="Message from"]:hover .message-actions {
+                                                    opacity: 1;
+                                                    transform: scale(1);
+                                                }
+                                            `}</style>
+                                        </div>
+                                    );
+                                })}
+                                {messages?.length === 0 && !isLoading && (
+                                    <div style={{ 
+                                        textAlign: 'center', 
+                                        padding: spacing['2xl'], 
+                                        color: colors.textTertiary,
+                                        opacity: 0.8,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        height: '100%',
+                                    }} role="status">
+                                        <div style={{
+                                            animation: 'pulse-glow 3s infinite ease-in-out',
+                                        }}>
+                                            <MessageIcon style={{ 
+                                                width: '64px', 
+                                                height: '64px', 
+                                                marginBottom: spacing.md, 
+                                                color: colors.secondary,
+                                            }} />
+                                        </div>
+                                        <p style={{ 
+                                            fontSize: typography.fontSize.lg, 
+                                            margin: 0,
+                                            color: colors.textSecondary,
+                                            textShadow: shadows.textGlowBlue,
+                                        }}>
+                                            No messages yet...
+                                        </p>
+                                        <p style={{
+                                            fontSize: typography.fontSize.sm,
+                                            color: colors.textTertiary,
+                                            marginTop: spacing.xs,
+                                        }}>
+                                            Be the first to start the conversation!
+                                        </p>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} aria-hidden="true" />
+                                </div>
                             </div>
-                        )}
-                    </form>
+
+                            {/* Post Message Form - Streamlined Chat Input */}
+                            <div style={{
+                                background: colors.surface,
+                                padding: spacing.sm,
+                                borderTop: `1px solid ${colors.borderInset}`,
+                            }}>
+                                <form 
+                                    onSubmit={handleSubmit} 
+                                    aria-label="Post a new message"
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: spacing.sm,
+                                    }}
+                                >
+                                    {/* Author field - compact inline */}
+                                    {!currentUser && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                                            <label htmlFor="message-author" style={{
+                                                fontSize: typography.fontSize.xs,
+                                                color: colors.textTertiary,
+                                                whiteSpace: 'nowrap',
+                                                fontWeight: typography.fontWeight.bold,
+                                            }}>
+                                                FROM:
+                                            </label>
+                                            <input
+                                                id="message-author"
+                                                type="text"
+                                                value={author}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.slice(0, MAX_AUTHOR_LENGTH);
+                                                    setAuthor(value);
+                                                    setSubmitError(null);
+                                                }}
+                                                placeholder="YOUR NAME"
+                                                maxLength={MAX_AUTHOR_LENGTH}
+                                                disabled={isSubmitting}
+                                                aria-label="Your name"
+                                                style={{
+                                                    flex: 1,
+                                                    padding: `${spacing.xs} ${spacing.sm}`,
+                                                    backgroundColor: '#000',
+                                                    border: borders.inputInset,
+                                                    borderRadius: 0, // Retro sharp corners
+                                                    color: colors.secondary,
+                                                    fontSize: typography.fontSize.sm,
+                                                    fontFamily: typography.fontFamily.mono.join(', '),
+                                                    outline: 'none',
+                                                    transition: 'all 0.2s ease',
+                                                    letterSpacing: '0.05em',
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.currentTarget.style.borderColor = colors.secondary;
+                                                    e.currentTarget.style.boxShadow = `0 0 8px ${colors.secondary}40`;
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.currentTarget.style.borderColor = colors.borderInset;
+                                                    e.currentTarget.style.boxShadow = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    
+                                    {/* Message input and send button - chat bar style */}
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: spacing.sm,
+                                        alignItems: 'flex-end',
+                                    }}>
+                                        <div style={{ flex: 1, position: 'relative' }}>
+                                            <label htmlFor="message-content" className="sr-only">Message content</label>
+                                            <textarea
+                                                id="message-content"
+                                                ref={contentTextareaRef}
+                                                value={content}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
+                                                    setContent(value);
+                                                    setSubmitError(null);
+                                                }}
+                                                onKeyDown={handleKeyDown}
+                                                placeholder="Type a message..."
+                                                maxLength={MAX_MESSAGE_LENGTH}
+                                                rows={1}
+                                                disabled={isSubmitting}
+                                                aria-label="Message content"
+                                                aria-invalid={submitError ? 'true' : 'false'}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: `${spacing.sm} ${spacing.md}`,
+                                                    backgroundColor: '#fff', // White background for classic chat feel
+                                                    border: borders.inputInset,
+                                                    borderRadius: 0, // Sharp corners
+                                                    color: '#000', // Black text
+                                                    fontSize: typography.fontSize.base,
+                                                    fontFamily: 'Arial, sans-serif', // Classic chat font
+                                                    lineHeight: typography.lineHeight.normal,
+                                                    resize: 'none',
+                                                    minHeight: '44px',
+                                                    maxHeight: '120px',
+                                                    outline: 'none',
+                                                    transition: 'all 0.2s ease',
+                                                    overflow: 'hidden',
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.currentTarget.style.borderColor = colors.accent;
+                                                    e.currentTarget.style.boxShadow = `inset 0 0 4px rgba(0,0,0,0.2)`;
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.currentTarget.style.borderColor = colors.borderInset;
+                                                    e.currentTarget.style.boxShadow = 'none';
+                                                }}
+                                            />
+                                            
+                                            {/* Character count - subtle */}
+                                            {content.length > 0 && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    bottom: spacing.xs,
+                                                    right: spacing.sm,
+                                                    fontSize: typography.fontSize.xs,
+                                                    color: content.length > MAX_MESSAGE_LENGTH * 0.9 
+                                                        ? (content.length >= MAX_MESSAGE_LENGTH ? colors.error : colors.warning)
+                                                        : '#666',
+                                                    pointerEvents: 'none',
+                                                    opacity: 0.6,
+                                                    fontFamily: typography.fontFamily.mono.join(', '),
+                                                }}>
+                                                    {content.length}/{MAX_MESSAGE_LENGTH}
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Send button - Retro Windows Button */}
+                                        <button
+                                            type="submit"
+                                            disabled={!content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
+                                            aria-label="Send message"
+                                            style={{
+                                                width: '60px',
+                                                height: '44px',
+                                                borderRadius: 0, // Sharp corners
+                                                backgroundColor: '#c0c0c0',
+                                                border: '2px outset #fff',
+                                                borderRightColor: '#404040',
+                                                borderBottomColor: '#404040',
+                                                color: '#000',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: (content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting) ? 'pointer' : 'not-allowed',
+                                                boxShadow: '1px 1px 0px #000',
+                                                transition: 'all 0.1s ease',
+                                                fontWeight: 'bold',
+                                                fontSize: '14px',
+                                            }}
+                                            onMouseDown={(e) => {
+                                                if (!e.currentTarget.disabled) {
+                                                    e.currentTarget.style.border = '2px inset #fff';
+                                                    e.currentTarget.style.borderRightColor = '#dfdfdf';
+                                                    e.currentTarget.style.borderBottomColor = '#dfdfdf';
+                                                    e.currentTarget.style.transform = 'translate(1px, 1px)';
+                                                }
+                                            }}
+                                            onMouseUp={(e) => {
+                                                if (!e.currentTarget.disabled) {
+                                                    e.currentTarget.style.border = '2px outset #fff';
+                                                    e.currentTarget.style.borderRightColor = '#404040';
+                                                    e.currentTarget.style.borderBottomColor = '#404040';
+                                                    e.currentTarget.style.transform = 'translate(0, 0)';
+                                                }
+                                            }}
+                                        >
+                                            {isSubmitting ? (
+                                                <Spinner style={{ width: '16px', height: '16px', color: '#000' }} />
+                                            ) : (
+                                                'Send'
+                                            )}
+                                        </button>
+                                    </div>
+                                    
+                                    {/* Error message */}
+                                    {submitError && (
+                                        <div id="submit-error" style={{
+                                            color: colors.error,
+                                            fontSize: typography.fontSize.xs,
+                                            padding: `${spacing.xs} ${spacing.sm}`,
+                                            backgroundColor: colors.error + '20',
+                                            borderRadius: radius.sm,
+                                            border: `1px solid ${colors.error}40`,
+                                        }} role="alert" aria-live="polite">
+                                            {submitError}
+                                        </div>
+                                    )}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Online Users Sidebar - Hidden on very small screens if needed, but keeping simple for now */}
+                    <div 
+                        className="online-users-sidebar"
+                        style={{
+                        width: '180px',
+                        backgroundColor: '#fff',
+                        border: '2px inset #dfdfdf',
+                        borderRightColor: '#fff',
+                        borderBottomColor: '#fff',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        fontFamily: 'Tahoma, sans-serif',
+                        marginLeft: '2px',
+                    }}>
+                        <div style={{
+                            padding: '4px',
+                            backgroundColor: '#c0c0c0',
+                            borderBottom: '1px solid #808080',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            color: '#000',
+                        }}>
+                            Online Users (3)
+                        </div>
+                        <div style={{ padding: '4px', overflowY: 'auto', flex: 1, backgroundColor: '#fff' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00ff00', border: '1px solid #008000' }}></span>
+                                <span style={{ fontSize: '12px', color: '#000' }}>Electra (Admin)</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00ff00', border: '1px solid #008000' }}></span>
+                                <span style={{ fontSize: '12px', color: '#000' }}>Aaron (Admin)</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00ff00', border: '1px solid #008000' }}></span>
+                                <span style={{ fontSize: '12px', color: '#000' }}>Guest_123</span>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                )}
                 </div>
-            </div>
+
+            
+            <style>{`
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes toast-slide-in {
+                    from { transform: translate(-50%, -100%); opacity: 0; }
+                    to { transform: translate(-50%, 0); opacity: 1; }
+                }
+
+                @media (max-width: 768px) {
+                    .online-users-sidebar {
+                        display: none !important;
+                    }
+                    .message-board-container {
+                        padding: 0.5rem !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 };
