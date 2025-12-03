@@ -49,33 +49,6 @@ export const getDailySpin = async (): Promise<DailySpin | null> => {
  */
 export const saveDailySpin = async (spin: DailySpin): Promise<void> => {
   try {
-    // * First, get the current Gist to preserve other files
-    const getResponse = await fetch(GIST_API_URL, {
-      headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-      },
-    });
-
-    if (!getResponse.ok) {
-      throw new Error(`GitHub API responded with ${getResponse.status}`);
-    }
-
-    const gist = await getResponse.json();
-    const files: Record<string, { content: string }> = {};
-
-    // * Preserve existing files
-    Object.keys(gist.files).forEach((filename) => {
-      if (filename !== DAILY_SPIN_FILENAME) {
-        files[filename] = { content: gist.files[filename].content };
-      }
-    });
-
-    // * Add or update the daily spin file
-    files[DAILY_SPIN_FILENAME] = {
-      content: JSON.stringify(spin, null, 2),
-    };
-
     const response = await fetch(GIST_API_URL, {
       method: 'PATCH',
       headers: {
@@ -83,7 +56,11 @@ export const saveDailySpin = async (spin: DailySpin): Promise<void> => {
         'Accept': 'application/vnd.github.v3+json',
       },
       body: JSON.stringify({
-        files,
+        files: {
+          [DAILY_SPIN_FILENAME]: {
+            content: JSON.stringify(spin, null, 2),
+          },
+        },
       }),
     });
 
