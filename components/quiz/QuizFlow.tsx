@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { QuizQuestion, QuizAnswer, QuizResult, QuizCharacter, CharacterScores } from '../quizTypes';
-import { quizQuestions } from '../quizData';
-import MultipleChoiceQuestion from './quiz/MultipleChoiceQuestion';
-import AgreeDisagreeQuestion from './quiz/AgreeDisagreeQuestion';
-import ImageChoiceQuestion from './quiz/ImageChoiceQuestion';
+import { QuizQuestion, QuizAnswer, CharacterScores, QuizResult, QuizCharacter } from './types';
+import { quizQuestions } from './data';
+import MultipleChoiceQuestion from './MultipleChoiceQuestion';
+import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
+import ImageChoiceQuestion from './ImageChoiceQuestion';
 import ResultsScreen from './ResultsScreen';
-import Card from './ui/Card';
-import Button from './ui/Button';
-import { spacing, typography, colors, shadows } from '../design-system/tokens';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import { spacing, colors, typography, shadows } from '../../design-system/tokens';
 
 interface QuizFlowProps {
   onComplete: () => void;

@@ -1,6 +1,7 @@
+
 import React from 'react';
-import { AgreeDisagreeQuestion as AgreeDisagreeQuestionType } from '../../quizTypes';
-import { spacing, typography, colors, shadows } from '../../design-system/tokens';
+import { AgreeDisagreeQuestion as AgreeDisagreeQuestionType } from './types';
+import { spacing, colors, typography, shadows } from '../../design-system/tokens';
 
 interface AgreeDisagreeQuestionProps {
   question: AgreeDisagreeQuestionType;
