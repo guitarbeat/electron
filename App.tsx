@@ -4,8 +4,9 @@ import { User } from './types';
 import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import MessageBoard from './components/MessageBoard';
-import IntroScreen from './components/IntroScreen';
-import QuizFlow from './components/QuizFlow';
+import IntroScreen from './components/quiz/IntroScreen';
+import QuizFlow from './components/quiz/QuizFlow';
+import { QuizResult } from './components/quiz/types';
 import { spacing, colors, typography } from './design-system/tokens';
 
 const App: React.FC = () => {
