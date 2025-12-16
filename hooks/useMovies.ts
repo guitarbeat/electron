@@ -4,7 +4,11 @@ import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 
 export const useMovies = (currentUser: User) => {
-  const { data: movies, error, isLoading, refresh } = usePolling(getMovies, 5000);
+  const { data: movies, error, isLoading, refresh } = usePolling(
+    getMovies,
+    5000,
+    (a, b) => JSON.stringify(a) === JSON.stringify(b)
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Effect to seed the initial movies if the Gist is empty

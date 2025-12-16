@@ -4,16 +4,22 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 export const usePolling = <T>(
   fetchFn: () => Promise<T>,
   interval: number | null,
+  equalityFn?: (a: T, b: T) => boolean
 ) => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const savedFetchFn = useRef(fetchFn);
+  const savedEqualityFn = useRef(equalityFn);
 
   useEffect(() => {
     savedFetchFn.current = fetchFn;
   }, [fetchFn]);
+
+  useEffect(() => {
+    savedEqualityFn.current = equalityFn;
+  }, [equalityFn]);
 
   const execute = useCallback(async (isInitialLoad: boolean) => {
     if (isInitialLoad) {
@@ -22,7 +28,12 @@ export const usePolling = <T>(
     setError(null);
     try {
       const result = await savedFetchFn.current();
-      setData(result);
+      setData((prev) => {
+        if (savedEqualityFn.current && prev && savedEqualityFn.current(prev, result)) {
+          return prev;
+        }
+        return result;
+      });
     } catch (e) {
       setError(e);
     } finally {
