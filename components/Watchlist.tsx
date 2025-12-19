@@ -358,6 +358,10 @@ const Watchlist: React.FC = () => {
                   type="text"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
+                  onClear={() => {
+                    setNewMovieTitle('');
+                    inputRef.current?.focus();
+                  }}
                   placeholder="What movie should we watch?"
                   disabled={isSubmitting}
                   style={{ flex: 1, margin: 0, minWidth: '200px' }}

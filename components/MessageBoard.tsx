@@ -810,7 +810,7 @@ const MessageBoard: React.FC = () => {
                                             }}>
                                                 FROM:
                                             </label>
-                                            <input
+                                            <Input
                                                 id="message-author"
                                                 type="text"
                                                 value={author}
@@ -819,6 +819,7 @@ const MessageBoard: React.FC = () => {
                                                     setAuthor(value);
                                                     setSubmitError(null);
                                                 }}
+                                                onClear={() => setAuthor('')}
                                                 placeholder="YOUR NAME"
                                                 maxLength={MAX_AUTHOR_LENGTH}
                                                 disabled={isSubmitting}
