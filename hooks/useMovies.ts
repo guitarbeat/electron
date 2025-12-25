@@ -89,7 +89,6 @@ export const useMovies = (currentUser: User) => {
   }, [currentUser, performMutation]);
 
   const deleteMovie = useCallback(async (movieId: string) => {
-    if (!window.confirm("Are you sure you want to delete this movie?")) return;
     await performMutation(latestMovies => latestMovies.filter(movie => movie.id !== movieId));
   }, [performMutation]);
   
