@@ -348,6 +348,7 @@ const Watchlist: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   title={`Switch User (Currently: ${currentUser})`}
+                  aria-label={`Switch User (Currently: ${currentUser})`}
                   variant="ghost"
                   style={{ flexShrink: 0 }}
                 >
