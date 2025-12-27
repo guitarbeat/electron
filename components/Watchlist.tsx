@@ -160,7 +160,9 @@ const Watchlist: React.FC = () => {
       {/* Toast Notification */}
       {toast && (
         <Card 
-          variant="elevated" 
+          variant="elevated"
+          role={toast.type === 'error' ? 'alert' : 'status'}
+          aria-live="polite"
           style={{ 
             position: 'fixed',
             top: spacing.lg,
@@ -348,6 +350,7 @@ const Watchlist: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   title={`Switch User (Currently: ${currentUser})`}
+                  aria-label="Switch user"
                   variant="ghost"
                   style={{ flexShrink: 0 }}
                 >
@@ -359,6 +362,7 @@ const Watchlist: React.FC = () => {
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="What movie should we watch?"
+                  aria-label="New movie title"
                   disabled={isSubmitting}
                   style={{ flex: 1, margin: 0, minWidth: '200px' }}
                   onKeyDown={(e) => {
@@ -509,7 +513,7 @@ const Watchlist: React.FC = () => {
                         flexShrink: 0,
                         filter: 'drop-shadow(0 0 12px rgba(255, 105, 180, 0.8))',
                         animation: 'pulse-glow 2s ease-in-out infinite',
-                      }}>
+                      }} aria-hidden="true">
                         <SparkleHeartIcon style={{ width: '32px', height: '32px' }} />
                       </div>
                     )}

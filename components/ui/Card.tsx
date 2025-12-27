@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { colors, radius, shadows, borders } from '../../design-system/tokens';
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
-  className?: string;
   variant?: 'default' | 'elevated' | 'outlined';
-  onClick?: () => void;
 }
 
 /**
@@ -15,7 +13,9 @@ const Card: React.FC<CardProps> = ({
   children, 
   className = '', 
   variant = 'default',
-  onClick 
+  onClick,
+  style,
+  ...props
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -57,8 +57,9 @@ const Card: React.FC<CardProps> = ({
   return (
     <div
       className={className}
-      style={baseStyles}
+      style={{ ...baseStyles, ...style }}
       onClick={onClick}
+      {...props}
       onMouseEnter={(e) => {
         if (!isMobile && (onClick || variant === 'elevated')) {
           e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
