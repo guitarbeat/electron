@@ -348,6 +348,7 @@ const Watchlist: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   title={`Switch User (Currently: ${currentUser})`}
+                  aria-label={`Switch user (currently logged in as ${currentUser})`}
                   variant="ghost"
                   style={{ flexShrink: 0 }}
                 >
@@ -356,6 +357,7 @@ const Watchlist: React.FC = () => {
                 <Input
                   ref={inputRef}
                   type="text"
+                  aria-label="New movie title"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="What movie should we watch?"
