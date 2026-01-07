@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility Patterns for Inputs
+**Learning:** `placeholder` attributes are not sufficient for accessibility on input fields, especially those without visible labels. Screen readers may not announce placeholders reliably, or users might clear them. Explicit `aria-label` attributes are required for inputs and icon-only buttons to ensure they are accessible.
+**Action:** When using the custom `Input` or `IconButton` components without visible text labels, always provide a descriptive `aria-label`. For example, `<Input aria-label="New movie title" ... />` and `<IconButton aria-label="Delete movie" ... />`.
