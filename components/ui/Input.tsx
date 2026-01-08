@@ -14,12 +14,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   error,
   className = '',
   style,
+  id,
   ...props
 }, ref) => {
+  // Generate a unique ID for the error message if needed
+  const uniqueId = React.useId();
+  const inputId = id || `input-${uniqueId}`;
+  const errorId = `${inputId}-error`;
+
   return (
     <div style={{ width: '100%' }}>
       {label && (
         <label
+          htmlFor={inputId}
           style={{
             display: 'block',
             marginBottom: spacing.xs,
@@ -34,7 +41,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
       )}
       <input
         ref={ref}
+        id={inputId}
         className={className}
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
         style={{
           width: '100%',
           padding: spacing.md,
@@ -66,6 +76,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
       />
       {error && (
         <div
+          id={errorId}
+          aria-live="polite"
           style={{
             marginTop: spacing.xs,
             fontSize: typography.fontSize.sm,
