@@ -22,7 +22,16 @@ export const usePolling = <T>(
     setError(null);
     try {
       const result = await savedFetchFn.current();
-      setData(result);
+
+      setData(prev => {
+        // ⚡ Bolt Optimization: Deep comparison to avoid unnecessary re-renders
+        // If the new data is identical to the previous data, return the previous reference
+        // to prevent React state updates from triggering re-renders in consuming components.
+        if (prev !== undefined && JSON.stringify(prev) === JSON.stringify(result)) {
+          return prev;
+        }
+        return result;
+      });
     } catch (e) {
       setError(e);
     } finally {
