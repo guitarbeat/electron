@@ -360,6 +360,7 @@ const Watchlist: React.FC = () => {
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="What movie should we watch?"
                   disabled={isSubmitting}
+                  aria-label="New movie title"
                   style={{ flex: 1, margin: 0, minWidth: '200px' }}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
@@ -372,6 +373,7 @@ const Watchlist: React.FC = () => {
                   type="submit"
                   variant="primary"
                   isLoading={isAdding}
+                  loadingText=""
                   disabled={!newMovieTitle.trim() || isSubmitting}
                   style={{ 
                     padding: spacing.md,
