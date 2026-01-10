@@ -359,6 +359,7 @@ const Watchlist: React.FC = () => {
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="What movie should we watch?"
+                  aria-label="New movie title"
                   disabled={isSubmitting}
                   style={{ flex: 1, margin: 0, minWidth: '200px' }}
                   onKeyDown={(e) => {
@@ -400,6 +401,7 @@ const Watchlist: React.FC = () => {
               disabled={unwatchedMovies.length < 2}
               variant="secondary"
               size="lg"
+              aria-describedby={unwatchedMovies.length < 2 ? "spin-wheel-disabled-reason" : undefined}
               style={{ 
                 width: '100%', 
                 display: 'flex', 
@@ -414,13 +416,16 @@ const Watchlist: React.FC = () => {
               Spin to Decide
             </Button>
             {unwatchedMovies.length < 2 && (
-              <p style={{
-                marginTop: spacing.sm,
-                fontSize: typography.fontSize.xs,
-                color: colors.textTertiary,
-                textAlign: 'center',
-                fontStyle: 'italic',
-              }}>
+              <p
+                id="spin-wheel-disabled-reason"
+                style={{
+                  marginTop: spacing.sm,
+                  fontSize: typography.fontSize.xs,
+                  color: colors.textTertiary,
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                }}
+              >
                 {unwatchedMovies.length === 0 
                   ? "Add movies to your watchlist to use the wheel"
                   : "Add one more movie to use the wheel"}
