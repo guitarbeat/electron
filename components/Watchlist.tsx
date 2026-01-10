@@ -361,6 +361,7 @@ const Watchlist: React.FC = () => {
                   type="submit"
                   variant="primary"
                   isLoading={isAdding}
+                  loadingText=""
                   disabled={!newMovieTitle.trim() || isSubmitting}
                   style={{ 
                     padding: spacing.md,
