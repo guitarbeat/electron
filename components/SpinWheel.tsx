@@ -84,6 +84,9 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
   return (
     <div 
       className="wheel-modal-overlay" 
+      role="dialog"
+      aria-modal="true"
+      aria-label="Spin the Wheel"
       onClick={handleOverlayClick}
       tabIndex={-1}
       style={{
