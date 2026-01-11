@@ -112,7 +112,9 @@ export const useMovies = (currentUser: User) => {
         }
         
         // For movies in the same group (both watched or both unwatched), sort by creation date
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (b.createdAt > a.createdAt) return 1;
+        if (b.createdAt < a.createdAt) return -1;
+        return 0;
       })
     : [], [movies]);
 
