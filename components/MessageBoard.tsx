@@ -1,78 +1,14 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useMessages } from '../hooks/useMessages';
 import { useUser } from '../context/UserContext';
-import { MessageIcon, SendIcon, Spinner, TrashIcon, CheckIcon, ChevronDownIcon } from './icons';
+import { MessageIcon, Spinner, CheckIcon, ChevronDownIcon } from './icons';
 import Card from './ui/Card';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Textarea from './ui/Textarea';
 import IconButton from './ui/IconButton';
+import MessageItem from './MessageItem';
 import { spacing, typography, colors, shadows, radius, borders } from '../design-system/tokens';
-import { Message } from '../types';
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_AUTHOR_LENGTH = 50;
-
-// * Retro iMessage-style color palette for different senders
-const SENDER_COLORS = [
-    '#007AFF', // iOS Blue
-    '#34C759', // iOS Green
-    '#FF9500', // iOS Orange
-    '#FF2D55', // iOS Pink
-    '#5856D6', // iOS Purple
-    '#FF3B30', // iOS Red
-    '#5AC8FA', // iOS Light Blue
-    '#AF52DE', // iOS Purple Pink
-    '#FF9500', // iOS Orange
-    '#FFCC00', // iOS Yellow
-];
-
-// * Generate consistent color for a sender based on their name
-const getSenderColor = (author: string, isCurrentUser: boolean): string => {
-    if (isCurrentUser) {
-        return '#007AFF'; // * Current user always gets blue (like iMessage)
-    }
-    
-    // * Generate a consistent color based on the author's name
-    let hash = 0;
-    for (let i = 0; i < author.length; i++) {
-        hash = author.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % SENDER_COLORS.length;
-    return SENDER_COLORS[index];
-};
-
-// * Format time for display (simpler format for chat)
-const formatTime = (date: string): string => {
-    try {
-        const dateObj = new Date(date);
-        const now = new Date();
-        
-        if (isNaN(dateObj.getTime()) || isNaN(now.getTime())) {
-            return "";
-        }
-        
-        const seconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
-        
-        if (seconds < 0) {
-            return "";
-        }
-        
-        // * Show time if less than 24 hours, otherwise show date
-        if (seconds < 86400) {
-            const hours = dateObj.getHours();
-            const minutes = dateObj.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const displayHours = hours % 12 || 12;
-            return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-        } else {
-            return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-    } catch {
-        return "";
-    }
-};
-
 
 const MessageBoard: React.FC = () => {
     const { currentUser } = useUser();
@@ -221,7 +157,7 @@ const MessageBoard: React.FC = () => {
         }
     };
     
-    const handleDelete = async (id: string) => {
+    const handleDelete = useCallback(async (id: string) => {
         if (!window.confirm("Are you sure you want to delete this message?")) return;
         try {
             await deleteMessage(id);
@@ -229,7 +165,7 @@ const MessageBoard: React.FC = () => {
         } catch (err: any) {
             setToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
         }
-    }
+    }, [deleteMessage]);
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // * Allow submitting with Ctrl+Enter or Cmd+Enter
@@ -241,6 +177,11 @@ const MessageBoard: React.FC = () => {
             }
         }
     };
+
+    // * Memoize the reversed messages array to avoid re-reversing on every render
+    const reversedMessages = useMemo(() => {
+        return messages ? [...messages].reverse() : [];
+    }, [messages]);
 
     return (
         <div 
@@ -569,176 +510,21 @@ const MessageBoard: React.FC = () => {
                                     </Card>
                                 )}
                                 
-                                {messages && [...messages].reverse().map((msg, index, reversedArray) => {
+                                {reversedMessages.map((msg, index) => {
                                     const authorName = msg.author || 'Anonymous';
-                                    const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
-                                    const senderColor = getSenderColor(authorName, !!isCurrentUser);
-                                    const prevMsg = index > 0 ? reversedArray[index - 1] : null;
+                                    const prevMsg = index > 0 ? reversedMessages[index - 1] : null;
                                     const isSameSender = prevMsg && (prevMsg.author || 'Anonymous') === authorName;
                                     const showSenderName = !isSameSender || index === 0;
                                     
                                     return (
-                                        <div
+                                        <MessageItem
                                             key={msg.id}
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: isCurrentUser ? 'flex-end' : 'flex-start',
-                                                marginBottom: showSenderName ? spacing.sm : spacing.xs,
-                                                maxWidth: '85%',
-                                                marginLeft: isCurrentUser ? 'auto' : 0,
-                                                marginRight: isCurrentUser ? 0 : 'auto',
-                                            }}
-                                        >
-                                            {/* Sender name and time - only show if different sender */}
-                                            {showSenderName && (
-                                                <div style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: spacing.xs,
-                                                    marginBottom: '2px',
-                                                    paddingLeft: isCurrentUser ? 0 : spacing.sm,
-                                                    paddingRight: isCurrentUser ? spacing.sm : 0,
-                                                    alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
-                                                }}>
-                                                    <span style={{
-                                                        fontSize: typography.fontSize.xs,
-                                                        fontWeight: typography.fontWeight.bold,
-                                                        color: senderColor,
-                                                        textShadow: `0 0 8px ${senderColor}80`,
-                                                        letterSpacing: '0.05em',
-                                                    }}>
-                                                        {authorName}
-                                                    </span>
-                                                    {formatTime(msg.createdAt) && (
-                                                        <span style={{
-                                                            fontSize: typography.fontSize.xs,
-                                                            color: colors.textTertiary,
-                                                            opacity: 0.7,
-                                                            fontFamily: 'monospace',
-                                                        }}>
-                                                            [{formatTime(msg.createdAt)}]
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                            
-                                            {/* Speech bubble */}
-                                            <div
-                                                style={{
-                                                    position: 'relative',
-                                                    background: isCurrentUser 
-                                                        ? senderColor 
-                                                        : `linear-gradient(135deg, ${senderColor}dd 0%, ${senderColor}cc 100%)`,
-                                                    borderRadius: isCurrentUser 
-                                                        ? `${radius.lg} ${radius.lg} 2px ${radius.lg}` 
-                                                        : `${radius.lg} ${radius.lg} ${radius.lg} 2px`,
-                                                    padding: `${spacing.sm} ${spacing.md}`,
-                                                    paddingBottom: spacing.sm,
-                                                    boxShadow: shadows.card,
-                                                    border: `1px solid rgba(255,255,255,0.15)`,
-                                                    maxWidth: '100%',
-                                                    wordWrap: 'break-word',
-                                                    overflowWrap: 'break-word',
-                                                    transition: 'all 0.2s ease',
-                                                }}
-                                                aria-label={`Message from ${authorName}`}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.transform = 'scale(1.02) translateY(-2px)';
-                                                    e.currentTarget.style.boxShadow = `0 8px 16px rgba(0,0,0,0.3), 0 0 20px ${senderColor}60`;
-                                                    e.currentTarget.style.zIndex = '1';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.transform = 'scale(1)';
-                                                    e.currentTarget.style.boxShadow = shadows.card;
-                                                    e.currentTarget.style.zIndex = 'auto';
-                                                }}
-                                            >
-                                                {/* Speech bubble tail */}
-                                                <div
-                                                    style={{
-                                                        position: 'absolute',
-                                                        bottom: 0,
-                                                        [isCurrentUser ? 'right' : 'left']: '-6px',
-                                                        width: 0,
-                                                        height: 0,
-                                                        borderStyle: 'solid',
-                                                        ...(isCurrentUser ? {
-                                                            borderWidth: '0 0 12px 12px',
-                                                            borderColor: `transparent transparent ${senderColor} transparent`,
-                                                        } : {
-                                                            borderWidth: '0 12px 12px 0',
-                                                            borderColor: `transparent ${senderColor}dd transparent transparent`,
-                                                        }),
-                                                        filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.1))',
-                                                    }}
-                                                />
-                                                
-                                                {/* Message content */}
-                                                <p style={{
-                                                    color: isCurrentUser 
-                                                        ? '#ffffff' 
-                                                        : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
-                                                            ? '#000000'
-                                                            : colors.textPrimary,
-                                                    whiteSpace: 'pre-wrap',
-                                                    wordBreak: 'break-word',
-                                                    overflowWrap: 'break-word',
-                                                    margin: 0,
-                                                    lineHeight: typography.lineHeight.normal,
-                                                    fontSize: typography.fontSize.base,
-                                                    textShadow: isCurrentUser 
-                                                        ? '0 1px 2px rgba(0,0,0,0.3)' 
-                                                        : (senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C')
-                                                            ? '0 1px 1px rgba(255,255,255,0.3)'
-                                                            : '0 1px 1px rgba(0,0,0,0.2)',
-                                                }}>
-                                                    {msg.content}
-                                                </p>
-                                                
-                                                {/* Delete button - appears on hover */}
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: -spacing.xs,
-                                                    [isCurrentUser ? 'left' : 'right']: -spacing.xs,
-                                                    opacity: 0,
-                                                    transition: 'all 0.2s ease',
-                                                    transform: 'scale(0.8)',
-                                                }}
-                                                className="message-actions"
-                                                >
-                                                    <IconButton
-                                                        onClick={() => handleDelete(msg.id)}
-                                                        disabled={isSubmitting}
-                                                        variant="danger"
-                                                        title={`Delete message from ${authorName}`}
-                                                        aria-label={`Delete message from ${authorName}`}
-                                                        style={{
-                                                            padding: spacing.xs,
-                                                            minWidth: '24px',
-                                                            minHeight: '24px',
-                                                            background: colors.error,
-                                                            color: '#fff',
-                                                            boxShadow: shadows.button,
-                                                            borderRadius: radius.full,
-                                                        }}
-                                                    >
-                                                        <TrashIcon style={{ width: '12px', height: '12px' }} />
-                                                    </IconButton>
-                                                </div>
-                                            </div>
-                                            
-                                            {/* Show delete button on hover */}
-                                            <style>{`
-                                                .message-actions {
-                                                    opacity: 0;
-                                                }
-                                                div[aria-label*="Message from"]:hover .message-actions {
-                                                    opacity: 1;
-                                                    transform: scale(1);
-                                                }
-                                            `}</style>
-                                        </div>
+                                            msg={msg}
+                                            currentUser={currentUser}
+                                            showSenderName={showSenderName}
+                                            isSubmitting={isSubmitting}
+                                            onDelete={handleDelete}
+                                        />
                                     );
                                 })}
                                 {messages?.length === 0 && !isLoading && (
