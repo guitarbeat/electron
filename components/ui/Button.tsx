@@ -2,7 +2,7 @@ import React from 'react';
 import { colors, radius, spacing, typography, motion, shadows, borders } from '../../design-system/tokens';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   loadingText?: string;
@@ -46,6 +46,11 @@ const Button: React.FC<ButtonProps> = ({
     },
     secondary: {
       background: colors.gradientBlue,
+      color: colors.textPrimary,
+      border: `${borders.buttonOutset} #fff`,
+    },
+    danger: {
+      background: colors.error,
       color: colors.textPrimary,
       border: `${borders.buttonOutset} #fff`,
     },
