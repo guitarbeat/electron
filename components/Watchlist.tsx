@@ -9,6 +9,7 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import IconButton from './ui/IconButton';
+import ConfirmDialog from './ui/ConfirmDialog';
 import MovieItem from './MovieItem';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 
@@ -20,6 +21,7 @@ const Watchlist: React.FC = () => {
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isWheelVisible, setIsWheelVisible] = useState(false);
+  const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -86,16 +88,21 @@ const Watchlist: React.FC = () => {
     }
   }, [toggleWatched, currentUser]);
 
-  const handleDeleteMovie = useCallback(async (movie: Movie) => {
-    if (!window.confirm(`Are you sure you want to delete "${movie.title}"?`)) return;
+  const handleDeleteMovie = useCallback((movie: Movie) => {
+    setMovieToDelete(movie);
+  }, []);
+
+  const confirmDeleteMovie = useCallback(async () => {
+    if (!movieToDelete) return;
     
     try {
-      await deleteMovie(movie.id);
-      setToast({ message: `"${movie.title}" deleted`, type: 'success' });
+      await deleteMovie(movieToDelete.id);
+      setToast({ message: `"${movieToDelete.title}" deleted`, type: 'success' });
+      setMovieToDelete(null);
     } catch (err: any) {
       setToast({ message: `Error deleting movie: ${err.message}`, type: 'error' });
     }
-  }, [deleteMovie]);
+  }, [deleteMovie, movieToDelete]);
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -144,6 +151,16 @@ const Watchlist: React.FC = () => {
     <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       
+      <ConfirmDialog
+        isOpen={!!movieToDelete}
+        title="Delete Movie"
+        message={`Are you sure you want to delete "${movieToDelete?.title}"?`}
+        confirmText="Delete"
+        onConfirm={confirmDeleteMovie}
+        onCancel={() => setMovieToDelete(null)}
+        isLoading={isSubmitting}
+      />
+
       {/* Toast Notification */}
       {toast && (
         <Card 
@@ -344,11 +361,10 @@ const Watchlist: React.FC = () => {
                 <Input
                   ref={inputRef}
                   type="text"
-                  aria-label="New movie title"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="What movie should we watch?"
-                  aria-label="Movie title"
+                  aria-label="New movie title"
                   disabled={isSubmitting}
                   style={{ flex: 1, margin: 0, minWidth: '200px' }}
                   onKeyDown={(e) => {
