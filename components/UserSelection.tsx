@@ -117,6 +117,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
               onClick={() => handleUserSelect('Aaron')}
               onMouseEnter={() => setHoveredUser('Aaron')}
               onMouseLeave={() => setHoveredUser(null)}
+              onFocus={() => setHoveredUser('Aaron')}
+              onBlur={() => setHoveredUser(null)}
               style={{ width: '100%', fontSize: typography.fontSize.xl }}
               aria-label="Select Aaron as user"
             >
@@ -128,6 +130,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
               onClick={() => handleUserSelect('Electra')}
               onMouseEnter={() => setHoveredUser('Electra')}
               onMouseLeave={() => setHoveredUser(null)}
+              onFocus={() => setHoveredUser('Electra')}
+              onBlur={() => setHoveredUser(null)}
               style={{ width: '100%', fontSize: typography.fontSize.xl }}
               aria-label="Select Electra as user"
             >
