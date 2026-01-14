@@ -183,6 +183,9 @@ const Watchlist: React.FC = () => {
                 ? `0 4px 12px ${colors.success}40, ${shadows.card}` 
                 : `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
           }}
+          role={toast.type === 'error' ? 'alert' : 'status'}
+          aria-live="polite"
+          aria-atomic="true"
         >
           <div style={{ 
             display: 'flex', 
