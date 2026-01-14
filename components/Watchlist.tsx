@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { Movie } from '../types';
@@ -26,8 +26,8 @@ const Watchlist: React.FC = () => {
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
-  const watchedMovies = movies ? movies.filter(movie => movie.watchedBy.length === 2) : [];
+  const unwatchedMovies = useMemo(() => movies ? movies.filter(movie => movie.watchedBy.length < 2) : [], [movies]);
+  const watchedMovies = useMemo(() => movies ? movies.filter(movie => movie.watchedBy.length === 2) : [], [movies]);
   
   // * Auto-focus input after successful add
   useEffect(() => {
@@ -108,7 +108,7 @@ const Watchlist: React.FC = () => {
     setCurrentUser(null);
   };
   
-  const firstWatchedIndex = movies ? movies.findIndex(m => m.watchedBy.length === 2) : -1;
+  const firstWatchedIndex = useMemo(() => movies ? movies.findIndex(m => m.watchedBy.length === 2) : -1, [movies]);
 
   if (isLoading) {
     return (
