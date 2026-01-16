@@ -69,7 +69,7 @@ interface MessageItemProps {
     currentUser: string | null;
     showSenderName: boolean;
     isSubmitting: boolean;
-    onDelete: (id: string) => void;
+    onDelete: (msg: Message) => void;
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({
@@ -213,7 +213,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 className="message-actions"
                 >
                     <IconButton
-                        onClick={() => onDelete(msg.id)}
+                        onClick={() => onDelete(msg)}
                         disabled={isSubmitting}
                         variant="danger"
                         title={`Delete message from ${authorName}`}

@@ -4,8 +4,10 @@ import { useUser } from '../context/UserContext';
 import { MessageIcon, Spinner, CheckIcon, ChevronDownIcon } from './icons';
 import Card from './ui/Card';
 import IconButton from './ui/IconButton';
+import ConfirmDialog from './ui/ConfirmDialog';
 import MessageItem from './MessageItem';
 import { spacing, typography, colors, shadows, radius, borders } from '../design-system/tokens';
+import { Message } from '../types';
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_AUTHOR_LENGTH = 50;
@@ -19,6 +21,7 @@ const MessageBoard: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false); // New state for minimize
+    const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -157,15 +160,21 @@ const MessageBoard: React.FC = () => {
         }
     };
     
-    const handleDelete = useCallback(async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this message?")) return;
+    const handleDelete = useCallback((msg: Message) => {
+        setMessageToDelete(msg);
+    }, []);
+
+    const confirmDeleteMessage = useCallback(async () => {
+        if (!messageToDelete) return;
+
         try {
-            await deleteMessage(id);
+            await deleteMessage(messageToDelete.id);
             setToast({ message: 'Message deleted', type: 'success' });
+            setMessageToDelete(null);
         } catch (err: any) {
             setToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
         }
-    }, [deleteMessage]);
+    }, [deleteMessage, messageToDelete]);
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // * Allow submitting with Ctrl+Enter or Cmd+Enter
@@ -195,6 +204,16 @@ const MessageBoard: React.FC = () => {
             }}
             className="message-board-container"
         >
+            <ConfirmDialog
+                isOpen={!!messageToDelete}
+                title="Delete Message"
+                message={`Are you sure you want to delete this message from ${messageToDelete?.author || 'Anonymous'}?`}
+                confirmText="Delete"
+                onConfirm={confirmDeleteMessage}
+                onCancel={() => setMessageToDelete(null)}
+                isLoading={isSubmitting}
+            />
+
             {/* Toast Notification */}
             {toast && (
                 <Card 
