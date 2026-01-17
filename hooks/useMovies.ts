@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
@@ -89,26 +89,27 @@ export const useMovies = (currentUser: User) => {
   }, [currentUser, performMutation]);
 
   const deleteMovie = useCallback(async (movieId: string) => {
-    if (!window.confirm("Are you sure you want to delete this movie?")) return;
     await performMutation(latestMovies => latestMovies.filter(movie => movie.id !== movieId));
   }, [performMutation]);
   
-  const sortedMovies = movies
-    ? [...movies].sort((a, b) => {
-        const aWatchedByBoth = a.watchedBy.length === 2;
-        const bWatchedByBoth = b.watchedBy.length === 2;
+  const sortedMovies = useMemo(() => {
+    return movies
+      ? [...movies].sort((a, b) => {
+          const aWatchedByBoth = a.watchedBy.length === 2;
+          const bWatchedByBoth = b.watchedBy.length === 2;
 
-        if (aWatchedByBoth && !bWatchedByBoth) {
-          return 1; // a (watched) comes after b (unwatched)
-        }
-        if (!aWatchedByBoth && bWatchedByBoth) {
-          return -1; // a (unwatched) comes before b (watched)
-        }
-        
-        // For movies in the same group (both watched or both unwatched), sort by creation date
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      })
-    : [];
+          if (aWatchedByBoth && !bWatchedByBoth) {
+            return 1; // a (watched) comes after b (unwatched)
+          }
+          if (!aWatchedByBoth && bWatchedByBoth) {
+            return -1; // a (unwatched) comes before b (watched)
+          }
+
+          // For movies in the same group (both watched or both unwatched), sort by creation date
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })
+      : [];
+  }, [movies]);
 
   return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie };
 };
