@@ -1,0 +1,3 @@
+## 2025-12-20 - Decorative Icons Accessibility
+**Learning:** The application uses many SVG icons purely for decoration or within buttons that already have text or aria-labels. These icons were missing `aria-hidden="true"`, which could cause screen readers to announce them as "graphic" or read their internal paths, creating noise.
+**Action:** When adding new icons to `components/icons.tsx`, always include `aria-hidden="true"` by default unless the icon is standalone and meaningful (in which case it needs a `title` or `role="img"` with label). Updated all existing icons to include this attribute.
