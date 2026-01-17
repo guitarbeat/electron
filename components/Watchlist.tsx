@@ -344,11 +344,10 @@ const Watchlist: React.FC = () => {
                 <Input
                   ref={inputRef}
                   type="text"
-                  aria-label="New movie title"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
                   placeholder="What movie should we watch?"
-                  aria-label="Movie title"
+                  aria-label="New movie title"
                   disabled={isSubmitting}
                   style={{ flex: 1, margin: 0, minWidth: '200px' }}
                   onKeyDown={(e) => {
