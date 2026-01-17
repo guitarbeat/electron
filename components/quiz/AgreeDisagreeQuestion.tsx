@@ -14,6 +14,9 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
   selectedValue,
   onSelect,
 }) => {
+  // Generate unique ID for accessibility label
+  const labelId = React.useId();
+
   // Convert symbolic value to numeric for slider (default to 50/Neutral if null)
   const getNumericValue = (val: string | null) => {
     switch (val) {
@@ -35,6 +38,15 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
     return 'stronglyAgree';
   };
 
+  // Get human-readable label for value
+  const getLabelText = (val: number) => {
+    if (val <= 20) return 'Strongly Disagree';
+    if (val <= 40) return 'Disagree';
+    if (val <= 60) return 'Neutral';
+    if (val <= 80) return 'Agree';
+    return 'Strongly Agree';
+  };
+
   const [sliderValue, setSliderValue] = React.useState(getNumericValue(selectedValue));
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +58,7 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
   return (
     <div className="animate-fade-in">
       <h3
+        id={labelId}
         style={{
           fontSize: typography.fontSize['2xl'],
           fontWeight: typography.fontWeight.semibold,
@@ -120,7 +133,8 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
               height: '40px',
               zIndex: 10,
             }}
-            aria-label="Agree/Disagree scale"
+            aria-labelledby={labelId}
+            aria-valuetext={getLabelText(sliderValue)}
           />
 
           {/* Custom Thumb */}
@@ -150,12 +164,9 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
             fontWeight: typography.fontWeight.bold,
             minHeight: '2rem',
           }}
+          aria-hidden="true" // Hide from screen readers since input announces value
         >
-          {sliderValue <= 20 && 'Strongly Disagree'}
-          {sliderValue > 20 && sliderValue <= 40 && 'Disagree'}
-          {sliderValue > 40 && sliderValue <= 60 && 'Neutral'}
-          {sliderValue > 60 && sliderValue <= 80 && 'Agree'}
-          {sliderValue > 80 && 'Strongly Agree'}
+          {getLabelText(sliderValue)}
         </div>
       </div>
     </div>
