@@ -8,7 +8,6 @@ import { spacing, typography, colors, radius } from '../design-system/tokens';
 interface MovieItemProps {
   movie: Movie;
   currentUser: User;
-  isSubmitting: boolean;
   onToggle: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
   animationDelay: string;
@@ -17,7 +16,6 @@ interface MovieItemProps {
 const MovieItem: React.FC<MovieItemProps> = ({
   movie,
   currentUser,
-  isSubmitting,
   onToggle,
   onDelete,
   animationDelay,
@@ -137,7 +135,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
         }}>
           <IconButton
             onClick={() => onToggle(movie)}
-            disabled={isSubmitting}
             variant="ghost"
             title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
             aria-label={watchedByCurrentUser ? `Mark "${movie.title}" as unwatched` : `Mark "${movie.title}" as watched`}
@@ -150,7 +147,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
           </IconButton>
           <IconButton
             onClick={() => onDelete(movie)}
-            disabled={isSubmitting}
             variant="danger"
             title={`Delete "${movie.title}"`}
             aria-label={`Delete "${movie.title}"`}

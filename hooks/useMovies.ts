@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
@@ -10,6 +10,7 @@ export const useMovies = (currentUser: User) => {
     (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   // Effect to seed the initial movies if the Gist is empty
   useEffect(() => {
@@ -35,6 +36,7 @@ export const useMovies = (currentUser: User) => {
             }));
             
             try {
+                isSubmittingRef.current = true;
                 setIsSubmitting(true);
                 await saveMovies(moviesToSave);
                 localStorage.setItem('movieListSeeded_gist_refactored', 'true');
@@ -42,6 +44,7 @@ export const useMovies = (currentUser: User) => {
             } catch (err) {
                 console.error('Failed to seed movies:', err);
             } finally {
+                isSubmittingRef.current = false;
                 setIsSubmitting(false);
             }
         }
@@ -50,7 +53,8 @@ export const useMovies = (currentUser: User) => {
   }, [movies, isLoading, refresh]);
 
   const performMutation = useCallback(async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
       const latestMovies = await getMovies();
@@ -62,9 +66,10 @@ export const useMovies = (currentUser: User) => {
       // Re-throw the error so the calling component can handle it
       throw err;
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [isSubmitting, refresh]);
+  }, [refresh]);
 
   const addMovie = useCallback(async (title: string) => {
     const newMovie: Movie = {

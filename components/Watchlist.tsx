@@ -483,7 +483,6 @@ const Watchlist: React.FC = () => {
                 <MovieItem
                   movie={movie}
                   currentUser={currentUser!}
-                  isSubmitting={isSubmitting}
                   onToggle={handleToggleWatched}
                   onDelete={handleDeleteMovie}
                   animationDelay={`${index * 0.05}s`}
