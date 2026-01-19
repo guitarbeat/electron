@@ -87,6 +87,30 @@ const IconButton: React.FC<IconButtonProps> = ({
           e.currentTarget.style.borderStyle = 'outset';
         }
       }}
+      onFocus={(e) => {
+        if (!isDisabled) {
+          if (variant === 'default') {
+            e.currentTarget.style.backgroundColor = colors.tertiaryHover + '40';
+          } else if (variant === 'ghost') {
+            e.currentTarget.style.backgroundColor = colors.surfaceElevated;
+            e.currentTarget.style.color = colors.textPrimary;
+          } else if (variant === 'danger') {
+            e.currentTarget.style.backgroundColor = colors.error + '20';
+            e.currentTarget.style.opacity = '0.9';
+          }
+        }
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        if (!isDisabled) {
+          e.currentTarget.style.backgroundColor = variantStyles[variant].backgroundColor;
+          e.currentTarget.style.color = variantStyles[variant].color;
+          if (variant === 'danger') {
+            e.currentTarget.style.opacity = '1';
+          }
+        }
+        props.onBlur?.(e);
+      }}
       {...props}
     >
       {children}
