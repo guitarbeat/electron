@@ -440,7 +440,14 @@ const Watchlist: React.FC = () => {
         </Card>
 
         {/* Movie List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.md,
+          opacity: isSubmitting ? 0.5 : 1,
+          pointerEvents: isSubmitting ? 'none' : 'auto',
+          transition: 'opacity 0.2s ease',
+        }}>
           {movies && movies.map((movie, index) => {
             return (
               <React.Fragment key={movie.id}>
@@ -483,7 +490,6 @@ const Watchlist: React.FC = () => {
                 <MovieItem
                   movie={movie}
                   currentUser={currentUser!}
-                  isSubmitting={isSubmitting}
                   onToggle={handleToggleWatched}
                   onDelete={handleDeleteMovie}
                   animationDelay={`${index * 0.05}s`}
