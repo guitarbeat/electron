@@ -522,7 +522,6 @@ const MessageBoard: React.FC = () => {
                                             msg={msg}
                                             currentUser={currentUser}
                                             showSenderName={showSenderName}
-                                            isSubmitting={isSubmitting}
                                             onDelete={handleDelete}
                                         />
                                     );
