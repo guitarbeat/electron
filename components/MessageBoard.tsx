@@ -658,6 +658,7 @@ const MessageBoard: React.FC = () => {
                                                 disabled={isSubmitting}
                                                 aria-label="Message content"
                                                 aria-invalid={submitError ? 'true' : 'false'}
+                                                aria-describedby={submitError ? "submit-error" : undefined}
                                                 style={{
                                                     width: '100%',
                                                     padding: `${spacing.sm} ${spacing.md}`,
