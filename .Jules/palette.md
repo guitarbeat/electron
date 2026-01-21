@@ -5,3 +5,7 @@
 ## 2026-01-14 - Keyboard Feedback for Visual States
 **Learning:** Interactive elements that change visually on hover (like `UserSelection` buttons) must also change on focus. Otherwise, keyboard users miss out on the same visual feedback that mouse users get.
 **Action:** Always pair `onMouseEnter`/`onMouseLeave` with `onFocus`/`onBlur` handlers that trigger the same state changes.
+
+## 2026-02-20 - Hidden Actions Accessibility
+**Learning:** Action buttons hidden by default (e.g., show on hover) must be revealed when they or their container receive focus. Inline styles like `opacity: 0` override CSS pseudo-classes (`:hover`, `:focus-within`), breaking this behavior.
+**Action:** Use CSS classes instead of inline styles for default hidden states, and use `:focus-within` alongside `:hover` to reveal actions for keyboard users.
