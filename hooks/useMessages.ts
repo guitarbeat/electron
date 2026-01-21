@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Message } from '../types';
 import { usePolling } from './usePolling';
 import { getMessages, saveMessages } from '../services/messageService';
@@ -6,9 +6,11 @@ import { getMessages, saveMessages } from '../services/messageService';
 export const useMessages = () => {
   const { data: messages, error, isLoading, refresh } = usePolling(getMessages, 5000);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const performMutation = useCallback(async (mutationFn: (latestMessages: Message[]) => Message[]) => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
       const latestMessages = await getMessages();
@@ -19,9 +21,10 @@ export const useMessages = () => {
       console.error("Message mutation failed:", err);
       throw err;
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [isSubmitting, refresh]);
+  }, [refresh]);
 
   const addMessage = useCallback(async (author: string, content: string) => {
     const newMessage: Message = {

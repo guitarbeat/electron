@@ -483,6 +483,9 @@ const MessageBoard: React.FC = () => {
                                         display: 'flex', 
                                         flexDirection: 'column', 
                                         gap: spacing.md,
+                                        opacity: isSubmitting ? 0.5 : 1,
+                                        pointerEvents: isSubmitting ? 'none' : 'auto',
+                                        transition: 'opacity 0.2s ease',
                                     }} 
                                     role="log" 
                                     aria-label="Message board messages" 
@@ -522,7 +525,6 @@ const MessageBoard: React.FC = () => {
                                             msg={msg}
                                             currentUser={currentUser}
                                             showSenderName={showSenderName}
-                                            isSubmitting={isSubmitting}
                                             onDelete={handleDelete}
                                         />
                                     );
