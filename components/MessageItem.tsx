@@ -233,12 +233,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 </div>
             </div>
 
-            {/* Show delete button on hover */}
+            {/* Show delete button on hover or focus */}
             <style>{`
                 .message-actions {
                     opacity: 0;
                 }
-                div[aria-label*="Message from"]:hover .message-actions {
+                div[aria-label*="Message from"]:hover .message-actions,
+                div[aria-label*="Message from"]:focus-within .message-actions {
                     opacity: 1;
                     transform: scale(1);
                 }
