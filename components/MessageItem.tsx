@@ -204,9 +204,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                     position: 'absolute',
                     top: -spacing.xs,
                     [isCurrentUser ? 'left' : 'right']: -spacing.xs,
-                    opacity: 0,
                     transition: 'all 0.2s ease',
-                    transform: 'scale(0.8)',
                 }}
                 className="message-actions"
                 >
@@ -234,8 +232,10 @@ const MessageItem: React.FC<MessageItemProps> = ({
             <style>{`
                 .message-actions {
                     opacity: 0;
+                    transform: scale(0.8);
                 }
-                div[aria-label*="Message from"]:hover .message-actions {
+                div[aria-label*="Message from"]:hover .message-actions,
+                div[aria-label*="Message from"]:focus-within .message-actions {
                     opacity: 1;
                     transform: scale(1);
                 }
