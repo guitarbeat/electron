@@ -36,6 +36,7 @@ export const useMovies = (currentUser: User) => {
             }));
             
             try {
+                isSubmittingRef.current = true;
                 setIsSubmitting(true);
                 await saveMovies(moviesToSave);
                 localStorage.setItem('movieListSeeded_gist_refactored', 'true');
@@ -43,6 +44,7 @@ export const useMovies = (currentUser: User) => {
             } catch (err) {
                 console.error('Failed to seed movies:', err);
             } finally {
+                isSubmittingRef.current = false;
                 setIsSubmitting(false);
             }
         }
