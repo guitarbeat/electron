@@ -93,6 +93,8 @@ const App: React.FC = () => {
     localStorage.setItem('quizCompleted', 'true');
   };
 
+  const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
+
   return (
     <div 
       className="bg-main"
@@ -102,13 +104,43 @@ const App: React.FC = () => {
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-      <main className="main-container" style={{ 
-        paddingTop: spacing.xl, 
-        paddingBottom: spacing['3xl'],
-        paddingLeft: spacing.lg,
-        paddingRight: spacing.lg,
-        maxWidth: '100%',
-      }}>
+      <a
+        href="#main-content"
+        style={{
+          position: 'absolute',
+          top: isSkipLinkFocused ? '0' : '-100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: colors.surfaceElevated,
+          color: colors.accent,
+          padding: `${spacing.sm} ${spacing.lg}`,
+          zIndex: 9999,
+          transition: 'top 0.2s',
+          borderRadius: `0 0 ${spacing.md} ${spacing.md}`,
+          textDecoration: 'none',
+          border: `2px solid ${colors.accent}`,
+          borderTop: 'none',
+          boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+          outline: 'none',
+        }}
+        onFocus={() => setIsSkipLinkFocused(true)}
+        onBlur={() => setIsSkipLinkFocused(false)}
+      >
+        Skip to content
+      </a>
+      <main
+        id="main-content"
+        className="main-container"
+        style={{
+          paddingTop: spacing.xl,
+          paddingBottom: spacing['3xl'],
+          paddingLeft: spacing.lg,
+          paddingRight: spacing.lg,
+          maxWidth: '100%',
+          outline: 'none', // Ensure programmatic focus doesn't show default ring unless needed
+        }}
+        tabIndex={-1} // Allow programmatic focus
+      >
         <div className="transition-container">
           {showIntro ? (
             <div className={animationClass}>
