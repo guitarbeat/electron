@@ -4,7 +4,13 @@ import { usePolling } from './usePolling';
 import { getMessages, saveMessages } from '../services/messageService';
 
 export const useMessages = () => {
-  const { data: messages, error, isLoading, refresh } = usePolling(getMessages, 5000);
+  const messagesEqualityFn = useCallback((prev: Message[] | undefined, next: Message[]) => {
+    if (!prev) return false;
+    if (prev.length !== next.length) return false;
+    return JSON.stringify(prev) === JSON.stringify(next);
+  }, []);
+
+  const { data: messages, error, isLoading, refresh } = usePolling(getMessages, 5000, messagesEqualityFn);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
