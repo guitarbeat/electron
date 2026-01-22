@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { colors, radius, spacing, typography, motion, borders } from '../../design-system/tokens';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -14,12 +14,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   error,
   className = '',
   style,
+  id: providedId,
   ...props
 }, ref) => {
+  const generatedId = useId();
+  const id = providedId || generatedId;
+  const errorId = `${id}-error`;
+
   return (
     <div style={{ width: '100%' }}>
       {label && (
         <label
+          htmlFor={id}
           style={{
             display: 'block',
             marginBottom: spacing.xs,
@@ -34,7 +40,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
       )}
       <input
         ref={ref}
+        id={id}
         className={className}
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
         style={{
           width: '100%',
           padding: spacing.md,
@@ -66,6 +75,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
       />
       {error && (
         <div
+          id={errorId}
+          role="alert"
           style={{
             marginTop: spacing.xs,
             fontSize: typography.fontSize.sm,
