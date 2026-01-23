@@ -1,9 +1,12 @@
 import React from 'react';
 import { colors, radius, spacing, motion, borders } from '../../design-system/tokens';
+import { Spinner } from '../icons';
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'default' | 'ghost' | 'danger';
+  isLoading?: boolean;
+  'aria-label': string;
 }
 
 /**
@@ -15,6 +18,8 @@ const IconButton: React.FC<IconButtonProps> = ({
   className = '',
   disabled,
   style,
+  isLoading = false,
+  type = 'button',
   ...props
 }) => {
   const variantStyles = {
@@ -35,10 +40,11 @@ const IconButton: React.FC<IconButtonProps> = ({
     },
   };
 
-  const isDisabled = disabled;
+  const isDisabled = disabled || isLoading;
 
   return (
     <button
+      type={type}
       className={className}
       disabled={isDisabled}
       style={{
@@ -89,7 +95,7 @@ const IconButton: React.FC<IconButtonProps> = ({
       }}
       {...props}
     >
-      {children}
+      {isLoading ? <Spinner /> : children}
     </button>
   );
 };
