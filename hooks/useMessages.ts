@@ -37,7 +37,6 @@ export const useMessages = () => {
   }, [performMutation]);
 
   const deleteMessage = useCallback(async (messageId: string) => {
-    if (!window.confirm("Are you sure you want to delete this message?")) return;
     await performMutation(latestMessages => latestMessages.filter(msg => msg.id !== messageId));
   }, [performMutation]);
   

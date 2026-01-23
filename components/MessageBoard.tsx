@@ -4,6 +4,7 @@ import { useUser } from '../context/UserContext';
 import { MessageIcon, Spinner, CheckIcon, ChevronDownIcon } from './icons';
 import Card from './ui/Card';
 import IconButton from './ui/IconButton';
+import ConfirmDialog from './ui/ConfirmDialog';
 import MessageItem from './MessageItem';
 import { spacing, typography, colors, shadows, radius, borders } from '../design-system/tokens';
 
@@ -17,6 +18,7 @@ const MessageBoard: React.FC = () => {
     const [content, setContent] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false); // New state for minimize
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -157,15 +159,20 @@ const MessageBoard: React.FC = () => {
         }
     };
     
-    const handleDelete = useCallback(async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this message?")) return;
+    const handleDelete = useCallback((id: string) => {
+        setMessageToDelete(id);
+    }, []);
+
+    const confirmDeleteMessage = useCallback(async () => {
+        if (!messageToDelete) return;
         try {
-            await deleteMessage(id);
+            await deleteMessage(messageToDelete);
             setToast({ message: 'Message deleted', type: 'success' });
+            setMessageToDelete(null);
         } catch (err: any) {
             setToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
         }
-    }, [deleteMessage]);
+    }, [deleteMessage, messageToDelete]);
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // * Allow submitting with Ctrl+Enter or Cmd+Enter
@@ -183,6 +190,11 @@ const MessageBoard: React.FC = () => {
         return messages ? [...messages].reverse() : [];
     }, [messages]);
 
+    const messageObjectToDelete = useMemo(() =>
+        messages?.find(m => m.id === messageToDelete),
+        [messages, messageToDelete]
+    );
+
     return (
         <div 
             style={{ 
@@ -195,6 +207,18 @@ const MessageBoard: React.FC = () => {
             }}
             className="message-board-container"
         >
+            <ConfirmDialog
+                isOpen={!!messageToDelete}
+                title="Delete Message"
+                message={messageObjectToDelete
+                    ? `Are you sure you want to delete this message from ${messageObjectToDelete.author}?`
+                    : "Are you sure you want to delete this message?"}
+                confirmText="Delete"
+                onConfirm={confirmDeleteMessage}
+                onCancel={() => setMessageToDelete(null)}
+                isLoading={isSubmitting}
+            />
+
             {/* Toast Notification */}
             {toast && (
                 <Card 
