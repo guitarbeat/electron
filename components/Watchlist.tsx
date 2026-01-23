@@ -18,6 +18,7 @@ const Watchlist: React.FC = () => {
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [submittingAction, setSubmittingAction] = useState<{ id: string, action: 'toggle' | 'delete' } | null>(null);
   const [isWheelVisible, setIsWheelVisible] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
@@ -70,6 +71,7 @@ const Watchlist: React.FC = () => {
   };
 
   const handleToggleWatched = async (movieId: string) => {
+    setSubmittingAction({ id: movieId, action: 'toggle' });
     try {
       await toggleWatched(movieId);
       const movie = movies?.find(m => m.id === movieId);
@@ -84,6 +86,8 @@ const Watchlist: React.FC = () => {
       }
     } catch (err: any) {
       setToast({ message: `Error updating movie status: ${err.message}`, type: 'error' });
+    } finally {
+      setSubmittingAction(null);
     }
   }
 
@@ -93,11 +97,14 @@ const Watchlist: React.FC = () => {
     
     if (!window.confirm(`Are you sure you want to delete "${movie.title}"?`)) return;
     
+    setSubmittingAction({ id: movieId, action: 'delete' });
     try {
       await deleteMovie(movieId);
       setToast({ message: `"${movie.title}" deleted`, type: 'success' });
     } catch (err: any) {
       setToast({ message: `Error deleting movie: ${err.message}`, type: 'error' });
+    } finally {
+      setSubmittingAction(null);
     }
   }
 
@@ -576,9 +583,11 @@ const Watchlist: React.FC = () => {
                       <IconButton
                         onClick={() => handleToggleWatched(movie.id)}
                         disabled={isSubmitting}
+                        isLoading={submittingAction?.id === movie.id && submittingAction?.action === 'toggle'}
                         variant="ghost"
                         title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
                         aria-label={watchedByCurrentUser ? `Mark "${movie.title}" as unwatched` : `Mark "${movie.title}" as watched`}
+                        aria-pressed={watchedByCurrentUser}
                         style={{
                           backgroundColor: watchedByCurrentUser ? colors.success + '20' : 'transparent',
                           border: watchedByCurrentUser ? `1px solid ${colors.success}40` : 'none',
@@ -589,6 +598,7 @@ const Watchlist: React.FC = () => {
                       <IconButton
                         onClick={() => handleDeleteMovie(movie.id)}
                         disabled={isSubmitting}
+                        isLoading={submittingAction?.id === movie.id && submittingAction?.action === 'delete'}
                         variant="danger"
                         title={`Delete "${movie.title}"`}
                         aria-label={`Delete "${movie.title}"`}
