@@ -1,3 +1,7 @@
-## 2024-05-23 - Prevent List Re-renders on Mutation
-**Learning:** Passing global loading state (like `isSubmitting`) to every item in a large list forces the entire list to re-render whenever a mutation starts or ends. This is an O(N) performance hit for a simple action.
-**Action:** Use `useRef` to track submission state for mutation guards in hooks, and remove `isSubmitting` props from list items. If button disabling is needed, rely on the guard or manage UI feedback more locally/optimistically, or accept that removing "disabled" visual state during short mutations is a worthy trade-off for performance.
+## 2024-05-23 - Redundant Confirmation Anti-Pattern
+**Learning:** Logic for user confirmation (e.g., `window.confirm`) should live in the UI layer (components), not the data layer (hooks), especially when custom UI dialogs are used. Putting it in the hook forces a specific interaction model and can lead to double-confirmations if the UI also implements a check.
+**Action:** Keep data hooks pure (just perform the mutation). Let the component decide how/when to ask for confirmation.
+
+## 2024-05-23 - Derived State in Interactive Components
+**Learning:** In components with frequent state updates (like controlled inputs), derived calculations (filtering/sorting lists) run on every render.
+**Action:** Use `useMemo` for derived data, especially list transformations, to decouple list processing from input state updates.
