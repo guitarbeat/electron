@@ -1,0 +1,3 @@
+## 2024-05-22 - [Optimizing List Rendering with React.memo]
+**Learning:** Extracting list items into a separate memoized component (`MovieItem`) is a highly effective pattern for preventing unnecessary re-renders in React when parent state (like input fields) changes frequently. However, for `React.memo` to work, all props passed to the child component must be referentially stable. This necessitates wrapping event handlers (like `onToggle` and `onDelete`) in `useCallback` in the parent component.
+**Action:** When optimizing list performance, always audit the props passed to list items. If function props are passed, ensure they are memoized with `useCallback` to avoid negating the benefits of `React.memo`.
