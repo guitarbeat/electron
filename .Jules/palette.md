@@ -9,3 +9,7 @@
 ## 2026-02-20 - Hidden Actions Accessibility
 **Learning:** Action buttons hidden by default (e.g., show on hover) must be revealed when they or their container receive focus. Inline styles like `opacity: 0` override CSS pseudo-classes (`:hover`, `:focus-within`), breaking this behavior.
 **Action:** Use CSS classes instead of inline styles for default hidden states, and use `:focus-within` alongside `:hover` to reveal actions for keyboard users.
+
+## 2026-02-27 - Actionable Empty States
+**Learning:** Empty states that only describe the problem ("List is empty") leave the user to figure out the solution. A "dead end" empty state increases cognitive load.
+**Action:** Always include a primary Call-to-Action (CTA) button in empty states that programmatically focuses the input field or initiates the creation flow.
