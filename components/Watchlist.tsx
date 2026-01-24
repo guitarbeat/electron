@@ -527,6 +527,19 @@ const Watchlist: React.FC = () => {
                   }}>
                     Start building your watchlist by adding a movie above!
                   </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => inputRef.current?.focus()}
+                    style={{
+                      marginTop: spacing.xl,
+                      marginLeft: 'auto',
+                      marginRight: 'auto',
+                    }}
+                    aria-label="Add your first movie (focuses input field)"
+                  >
+                    <PlusIcon />
+                    Add Your First Movie
+                  </Button>
                 </div>
               </Card>
           )}
