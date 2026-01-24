@@ -2,10 +2,10 @@ import React from 'react';
 import { colors, radius, shadows, borders } from '../../design-system/tokens';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   variant?: 'default' | 'elevated' | 'outlined';
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 /**

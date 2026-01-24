@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageChoiceQuestion as ImageChoiceQuestionType } from '../../quizTypes';
+import { ImageChoiceQuestion as ImageChoiceQuestionType } from './types';
 import { spacing, typography, colors, shadows } from '../../design-system/tokens';
 
 interface ImageChoiceQuestionProps {
