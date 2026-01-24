@@ -5,7 +5,7 @@
  * USER WILL REPLACE THESE WITH ACTUAL CONTENT
  */
 
-import { QuizQuestion, QuizCharacter } from './quizTypes';
+import { QuizQuestion, QuizCharacter } from './types';
 
 export const quizQuestions: QuizQuestion[] = [
     // Multiple Choice Questions (3)
