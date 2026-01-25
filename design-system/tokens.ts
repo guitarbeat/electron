@@ -75,14 +75,14 @@ export const typography = {
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {
-    xs: '0.75rem',    // 12px
-    sm: '0.875rem',   // 14px
-    base: '1rem',     // 16px
-    lg: '1.125rem',   // 18px
-    xl: '1.25rem',    // 20px
-    '2xl': '1.5rem',  // 24px
-    '3xl': '1.875rem', // 30px
-    '4xl': '2.25rem',  // 36px
+    xs: '0.875rem',   // 14px (was 12px)
+    sm: '1rem',       // 16px (was 14px)
+    base: '1.125rem', // 18px (was 16px)
+    lg: '1.25rem',    // 20px (was 18px)
+    xl: '1.5rem',     // 24px (was 20px)
+    '2xl': '1.75rem', // 28px (was 24px)
+    '3xl': '2.125rem', // 34px (was 30px)
+    '4xl': '2.5rem',  // 40px (was 36px)
   },
   fontWeight: {
     normal: 400,
