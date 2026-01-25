@@ -22,10 +22,10 @@ export const colors = {
   surface: 'rgba(27, 40, 69, 0.85)',
   surfaceElevated: 'rgba(27, 40, 69, 0.95)',
   
-  // Text
+  // Text (improved contrast for readability)
   textPrimary: '#ffffff',
-  textSecondary: '#e0e0e0',
-  textTertiary: '#a0a0b0',
+  textSecondary: '#f0f0f5',    // Brighter for better contrast
+  textTertiary: '#c8c8d8',     // Increased brightness for legibility
   
   // Accent (Hot Pink)
   accent: '#ff69b4',
@@ -91,9 +91,15 @@ export const typography = {
     bold: 700,
   },
   lineHeight: {
-    tight: 1.2,
-    normal: 1.5,
-    relaxed: 1.75,
+    tight: 1.3,         // Slightly more breathing room
+    normal: 1.6,        // Better for body text readability
+    relaxed: 1.85,      // More generous for dense content
+  },
+  letterSpacing: {
+    tight: '-0.01em',
+    normal: '0.02em',   // Slight spacing improves Papyrus readability
+    wide: '0.05em',
+    wider: '0.08em',
   },
 } as const;
 
