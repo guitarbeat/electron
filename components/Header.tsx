@@ -84,15 +84,15 @@ const Header: React.FC = () => {
             Aaron &amp; Electra's Movie List
           </h1>
           <p style={{
-            fontSize: typography.fontSize.sm,
+            fontSize: typography.fontSize.base,
             color: colors.textSecondary,
             textAlign: 'center',
             margin: 0,
-            marginTop: spacing.sm,
-            letterSpacing: '0.05em',
-            opacity: 0.9,
+            marginTop: spacing.md,
+            letterSpacing: '0.04em',
+            lineHeight: typography.lineHeight.relaxed,
           }}>
-            Your shared watchlist
+            Your shared watchlist ✨
           </p>
         </div>
       </Card>
