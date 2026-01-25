@@ -1,6 +1,5 @@
 import React from 'react';
 import { QuizResult, QuizCharacter } from './types';
-import { characterDescriptions, neitherDescription } from './data';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { spacing, typography, colors, shadows } from '../../design-system/tokens';
@@ -9,6 +8,8 @@ interface ResultsScreenProps {
   result: QuizResult;
   onContinue: () => void;
   onRetake: () => void;
+  characterDescriptions: Record<QuizCharacter, string>;
+  neitherDescription: string;
 }
 
 const characterEmojis: Record<string, string> = {
@@ -27,7 +28,13 @@ const characterColors: Record<string, string> = {
   'Neither': colors.textSecondary,
 };
 
-const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onContinue, onRetake }) => {
+const ResultsScreen: React.FC<ResultsScreenProps> = ({ 
+  result, 
+  onContinue, 
+  onRetake,
+  characterDescriptions,
+  neitherDescription 
+}) => {
   const characterColor = characterColors[result.character];
   const characterEmoji = characterEmojis[result.character];
   const description = result.character === 'Neither' 

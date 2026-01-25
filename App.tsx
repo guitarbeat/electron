@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from './context/UserContext';
 import { User } from './types';
+import { useQuiz } from './hooks/useQuiz';
 import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import MessageBoard from './components/MessageBoard';
 import IntroScreen from './components/quiz/IntroScreen';
 import QuizFlow from './components/quiz/QuizFlow';
+import QuizEditor from './components/quiz/QuizEditor';
 import { QuizResult } from './components/quiz/types';
 import { spacing, colors, typography } from './design-system/tokens';
+import Button from './components/ui/Button';
+import { SettingsIcon } from './components/icons';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
+  const { quizData, isLoading: isQuizLoading } = useQuiz();
   const [displayUser, setDisplayUser] = useState<User | null>(currentUser);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationClass, setAnimationClass] = useState<string>('animate-fade-in');
@@ -23,6 +28,7 @@ const App: React.FC = () => {
   });
   const [showQuiz, setShowQuiz] = useState(false);
   const [showIntro, setShowIntro] = useState(!quizCompleted);
+  const [showQuizEditor, setShowQuizEditor] = useState(false);
 
   useEffect(() => {
     // * Skip animation on initial mount
@@ -95,6 +101,32 @@ const App: React.FC = () => {
 
   const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
 
+  // Show quiz editor
+  if (showQuizEditor) {
+    return (
+      <div 
+        className="bg-main"
+        style={{
+          color: colors.textPrimary,
+          minHeight: '100vh',
+          fontFamily: typography.fontFamily.body.join(', '),
+        }}
+      >
+        <main
+          style={{
+            paddingTop: spacing.xl,
+            paddingBottom: spacing['3xl'],
+            paddingLeft: spacing.lg,
+            paddingRight: spacing.lg,
+            maxWidth: '100%',
+          }}
+        >
+          <QuizEditor onClose={() => setShowQuizEditor(false)} />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="bg-main"
@@ -104,6 +136,29 @@ const App: React.FC = () => {
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
+      {/* Quiz Editor Button - Only visible when logged in */}
+      {displayUser && !showIntro && !showQuiz && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: spacing.lg,
+            right: spacing.lg,
+            zIndex: 100,
+          }}
+        >
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={() => setShowQuizEditor(true)}
+            aria-label="Edit Quiz"
+            style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}
+          >
+            <SettingsIcon style={{ width: '1rem', height: '1rem' }} />
+            Edit Quiz
+          </Button>
+        </div>
+      )}
+
       <a
         href="#main-content"
         style={{
@@ -148,7 +203,13 @@ const App: React.FC = () => {
             </div>
           ) : showQuiz ? (
             <div className={animationClass}>
-              <QuizFlow onComplete={handleQuizComplete} />
+              {isQuizLoading || !quizData ? (
+                <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
+                  Loading quiz...
+                </div>
+              ) : (
+                <QuizFlow onComplete={handleQuizComplete} quizData={quizData} />
+              )}
             </div>
           ) : !displayUser ? (
             <div className={animationClass}>
