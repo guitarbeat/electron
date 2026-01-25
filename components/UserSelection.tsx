@@ -94,12 +94,13 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
             Who's Watching?
           </h2>
           <p style={{
-            fontSize: typography.fontSize.sm,
+            fontSize: typography.fontSize.base,
             color: colors.textSecondary,
             marginBottom: spacing.xl,
             marginTop: 0,
             textAlign: 'center',
             lineHeight: typography.lineHeight.relaxed,
+            letterSpacing: '0.02em',
           }}>
             Select your profile to view and manage your shared movie watchlist
           </p>
