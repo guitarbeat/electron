@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { QuizQuestion, QuizAnswer, CharacterScores, QuizResult, QuizCharacter } from './types';
-import { quizQuestions } from './data';
+import { QuizData } from '../../services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
 import ImageChoiceQuestion from './ImageChoiceQuestion';
@@ -11,16 +11,18 @@ import { spacing, colors, typography, shadows } from '../../design-system/tokens
 
 interface QuizFlowProps {
   onComplete: () => void;
+  quizData: QuizData;
 }
 
-const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
+const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-  const totalQuestions = quizQuestions.length;
+  const questions = quizData.questions;
+  const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   // Get current answer for this question
@@ -65,7 +67,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
 
     // Calculate scores from answers
     answers.forEach(answer => {
-      const question = quizQuestions.find(q => q.id === answer.questionId);
+      const question = questions.find(q => q.id === answer.questionId);
       if (!question) return;
 
       if (question.type === 'multiple-choice' && answer.answerIndex !== undefined) {
@@ -124,7 +126,15 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
   };
 
   if (showResults && quizResult) {
-    return <ResultsScreen result={quizResult} onContinue={onComplete} onRetake={handleRetake} />;
+    return (
+      <ResultsScreen 
+        result={quizResult} 
+        onContinue={onComplete} 
+        onRetake={handleRetake}
+        characterDescriptions={quizData.characterDescriptions}
+        neitherDescription={quizData.neitherDescription}
+      />
+    );
   }
 
   const canProceed = currentAnswer !== undefined;

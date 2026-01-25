@@ -31,5 +31,8 @@ const GIST_FILENAME = 'movielist.json';
 // The filename for the message board data.
 const GIST_MESSAGES_FILENAME = 'messages.json';
 
+// The filename for the quiz data.
+const GIST_QUIZ_FILENAME = 'quiz.json';
 
-export { GIST_TOKEN, GIST_ID, GIST_FILENAME, GIST_MESSAGES_FILENAME };
+
+export { GIST_TOKEN, GIST_ID, GIST_FILENAME, GIST_MESSAGES_FILENAME, GIST_QUIZ_FILENAME };
