@@ -1,0 +1,655 @@
+/**
+ * QuizEditor Component
+ * 
+ * Full editor UI for managing quiz questions and character descriptions
+ */
+
+import React, { useState, useEffect } from 'react';
+import { useQuiz } from '../../hooks/useQuiz';
+import { QuizData } from '../../services/quizService';
+import { QuizQuestion, QuizCharacter, MultipleChoiceQuestion, AgreeDisagreeQuestion, ImageChoiceQuestion } from './types';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import Textarea from '../ui/Textarea';
+import { spacing, colors, typography, radius } from '../../design-system/tokens';
+import { ArrowLeftIcon } from '../icons';
+
+interface QuizEditorProps {
+  onClose: () => void;
+}
+
+const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo'];
+
+const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
+  const { quizData, isLoading, isSaving, saveAllData, refresh } = useQuiz();
+  const [localData, setLocalData] = useState<QuizData | null>(null);
+  const [activeTab, setActiveTab] = useState<'questions' | 'descriptions'>('questions');
+  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    if (quizData && !localData) {
+      setLocalData(quizData);
+    }
+  }, [quizData, localData]);
+
+  const handleSave = async () => {
+    if (!localData) return;
+    await saveAllData(localData);
+    setHasChanges(false);
+    refresh();
+  };
+
+  const updateLocalData = (updates: Partial<QuizData>) => {
+    if (!localData) return;
+    setLocalData({ ...localData, ...updates });
+    setHasChanges(true);
+  };
+
+  if (isLoading || !localData) {
+    return (
+      <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
+        Loading quiz data...
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xl }}>
+        <Button variant="ghost" size="sm" onClick={onClose} aria-label="Back">
+          <ArrowLeftIcon style={{ width: '1.25rem', height: '1.25rem' }} />
+        </Button>
+        <h1 style={{ 
+          fontSize: typography.fontSize['2xl'], 
+          fontWeight: typography.fontWeight.bold,
+          fontFamily: typography.fontFamily.heading.join(', '),
+          flex: 1
+        }}>
+          Quiz Editor
+        </h1>
+        <Button 
+          variant="primary" 
+          size="md" 
+          onClick={handleSave} 
+          disabled={!hasChanges || isSaving}
+          isLoading={isSaving}
+          loadingText="Saving..."
+        >
+          Save Changes
+        </Button>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.xl }}>
+        <Button 
+          variant={activeTab === 'questions' ? 'primary' : 'secondary'}
+          size="sm"
+          onClick={() => setActiveTab('questions')}
+        >
+          Questions ({localData.questions.length})
+        </Button>
+        <Button 
+          variant={activeTab === 'descriptions' ? 'primary' : 'secondary'}
+          size="sm"
+          onClick={() => setActiveTab('descriptions')}
+        >
+          Character Descriptions
+        </Button>
+      </div>
+
+      {activeTab === 'questions' && (
+        <QuestionsTab 
+          questions={localData.questions}
+          editingQuestion={editingQuestion}
+          setEditingQuestion={setEditingQuestion}
+          onUpdateQuestions={(questions) => updateLocalData({ questions })}
+        />
+      )}
+
+      {activeTab === 'descriptions' && (
+        <DescriptionsTab
+          characterDescriptions={localData.characterDescriptions}
+          neitherDescription={localData.neitherDescription}
+          onUpdateDescriptions={(characterDescriptions) => updateLocalData({ characterDescriptions })}
+          onUpdateNeither={(neitherDescription) => updateLocalData({ neitherDescription })}
+        />
+      )}
+    </div>
+  );
+};
+
+// Questions Tab Component
+interface QuestionsTabProps {
+  questions: QuizQuestion[];
+  editingQuestion: QuizQuestion | null;
+  setEditingQuestion: (q: QuizQuestion | null) => void;
+  onUpdateQuestions: (questions: QuizQuestion[]) => void;
+}
+
+const QuestionsTab: React.FC<QuestionsTabProps> = ({ 
+  questions, 
+  editingQuestion, 
+  setEditingQuestion, 
+  onUpdateQuestions 
+}) => {
+  const addNewQuestion = (type: QuizQuestion['type']) => {
+    const newId = `q_${Date.now()}`;
+    let newQuestion: QuizQuestion;
+
+    if (type === 'multiple-choice') {
+      newQuestion = {
+        id: newId,
+        type: 'multiple-choice',
+        question: 'New question?',
+        options: [
+          { text: 'Option 1', scores: {} },
+          { text: 'Option 2', scores: {} },
+        ],
+      };
+    } else if (type === 'agree-disagree') {
+      newQuestion = {
+        id: newId,
+        type: 'agree-disagree',
+        question: 'New agree/disagree statement',
+        scores: {
+          stronglyDisagree: {},
+          disagree: {},
+          neutral: {},
+          agree: {},
+          stronglyAgree: {},
+        },
+      };
+    } else {
+      newQuestion = {
+        id: newId,
+        type: 'image-choice',
+        question: 'Choose an image:',
+        options: [
+          { imageUrl: '/quiz-photos/quiz-img-1.png', alt: 'Image 1', scores: {} },
+          { imageUrl: '/quiz-photos/quiz-img-2.png', alt: 'Image 2', scores: {} },
+        ],
+      };
+    }
+
+    onUpdateQuestions([...questions, newQuestion]);
+    setEditingQuestion(newQuestion);
+  };
+
+  const deleteQuestion = (id: string) => {
+    if (!window.confirm('Delete this question?')) return;
+    onUpdateQuestions(questions.filter(q => q.id !== id));
+    if (editingQuestion?.id === id) setEditingQuestion(null);
+  };
+
+  const saveQuestion = (updated: QuizQuestion) => {
+    onUpdateQuestions(questions.map(q => q.id === updated.id ? updated : q));
+    setEditingQuestion(null);
+  };
+
+  if (editingQuestion) {
+    return (
+      <QuestionEditor 
+        question={editingQuestion} 
+        onSave={saveQuestion}
+        onCancel={() => setEditingQuestion(null)}
+      />
+    );
+  }
+
+  return (
+    <div>
+      {/* Add Question Buttons */}
+      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.lg, flexWrap: 'wrap' }}>
+        <Button variant="secondary" size="sm" onClick={() => addNewQuestion('multiple-choice')}>
+          + Multiple Choice
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => addNewQuestion('agree-disagree')}>
+          + Agree/Disagree
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => addNewQuestion('image-choice')}>
+          + Image Choice
+        </Button>
+      </div>
+
+      {/* Questions List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        {questions.map((q, index) => (
+          <Card key={q.id} variant="default">
+            <div style={{ 
+              padding: spacing.lg, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              gap: spacing.md
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: spacing.sm,
+                  marginBottom: spacing.xs 
+                }}>
+                  <span style={{ 
+                    fontSize: typography.fontSize.sm, 
+                    color: colors.accent,
+                    fontWeight: typography.fontWeight.bold
+                  }}>
+                    #{index + 1}
+                  </span>
+                  <span style={{ 
+                    fontSize: typography.fontSize.xs, 
+                    color: colors.textTertiary,
+                    backgroundColor: colors.surface,
+                    padding: `${spacing.xs} ${spacing.sm}`,
+                    borderRadius: radius.sm,
+                    textTransform: 'uppercase'
+                  }}>
+                    {q.type}
+                  </span>
+                </div>
+                <p style={{ 
+                  fontSize: typography.fontSize.base, 
+                  color: colors.textPrimary,
+                  margin: 0 
+                }}>
+                  {q.question}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: spacing.sm }}>
+                <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)}>
+                  Edit
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => deleteQuestion(q.id)}>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Question Editor Component
+interface QuestionEditorProps {
+  question: QuizQuestion;
+  onSave: (q: QuizQuestion) => void;
+  onCancel: () => void;
+}
+
+const QuestionEditor: React.FC<QuestionEditorProps> = ({ question, onSave, onCancel }) => {
+  const [local, setLocal] = useState<QuizQuestion>(question);
+
+  const updateField = <K extends keyof QuizQuestion>(field: K, value: QuizQuestion[K]) => {
+    setLocal({ ...local, [field]: value } as QuizQuestion);
+  };
+
+  return (
+    <Card variant="elevated">
+      <div style={{ padding: spacing.xl }}>
+        <h2 style={{ 
+          fontSize: typography.fontSize.xl, 
+          marginBottom: spacing.lg,
+          fontFamily: typography.fontFamily.heading.join(', ')
+        }}>
+          Edit Question
+        </h2>
+
+        <div style={{ marginBottom: spacing.lg }}>
+          <Textarea
+            label="Question Text"
+            value={local.question}
+            onChange={(e) => updateField('question', e.target.value)}
+            style={{ textAlign: 'left' }}
+          />
+        </div>
+
+        {local.type === 'multiple-choice' && (
+          <MultipleChoiceEditor 
+            question={local as MultipleChoiceQuestion} 
+            onChange={(q) => setLocal(q)} 
+          />
+        )}
+
+        {local.type === 'agree-disagree' && (
+          <AgreeDisagreeEditor 
+            question={local as AgreeDisagreeQuestion} 
+            onChange={(q) => setLocal(q)} 
+          />
+        )}
+
+        {local.type === 'image-choice' && (
+          <ImageChoiceEditor 
+            question={local as ImageChoiceQuestion} 
+            onChange={(q) => setLocal(q)} 
+          />
+        )}
+
+        <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.xl }}>
+          <Button variant="primary" onClick={() => onSave(local)}>
+            Save Question
+          </Button>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+// Multiple Choice Editor
+interface MultipleChoiceEditorProps {
+  question: MultipleChoiceQuestion;
+  onChange: (q: MultipleChoiceQuestion) => void;
+}
+
+const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, onChange }) => {
+  const updateOption = (index: number, field: 'text' | 'scores', value: string | Partial<Record<QuizCharacter, number>>) => {
+    const newOptions = [...question.options];
+    newOptions[index] = { ...newOptions[index], [field]: value };
+    onChange({ ...question, options: newOptions });
+  };
+
+  const updateScore = (optionIndex: number, character: QuizCharacter, score: number) => {
+    const newOptions = [...question.options];
+    newOptions[optionIndex] = {
+      ...newOptions[optionIndex],
+      scores: { ...newOptions[optionIndex].scores, [character]: score }
+    };
+    onChange({ ...question, options: newOptions });
+  };
+
+  const addOption = () => {
+    onChange({
+      ...question,
+      options: [...question.options, { text: 'New option', scores: {} }]
+    });
+  };
+
+  const removeOption = (index: number) => {
+    if (question.options.length <= 2) return;
+    onChange({
+      ...question,
+      options: question.options.filter((_, i) => i !== index)
+    });
+  };
+
+  return (
+    <div>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Options</h3>
+      {question.options.map((option, idx) => (
+        <div key={idx} style={{ 
+          marginBottom: spacing.lg, 
+          padding: spacing.md, 
+          backgroundColor: colors.surface,
+          borderRadius: radius.md
+        }}>
+          <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm }}>
+            <div style={{ flex: 1 }}>
+              <Input
+                value={option.text}
+                onChange={(e) => updateOption(idx, 'text', e.target.value)}
+                placeholder="Option text"
+                style={{ textAlign: 'left' }}
+              />
+            </div>
+            <Button variant="danger" size="sm" onClick={() => removeOption(idx)} disabled={question.options.length <= 2}>
+              ✕
+            </Button>
+          </div>
+          <ScoreEditor 
+            scores={option.scores} 
+            onChange={(scores) => {
+              const newOptions = [...question.options];
+              newOptions[idx] = { ...newOptions[idx], scores };
+              onChange({ ...question, options: newOptions });
+            }}
+          />
+        </div>
+      ))}
+      <Button variant="secondary" size="sm" onClick={addOption}>
+        + Add Option
+      </Button>
+    </div>
+  );
+};
+
+// Agree/Disagree Editor
+interface AgreeDisagreeEditorProps {
+  question: AgreeDisagreeQuestion;
+  onChange: (q: AgreeDisagreeQuestion) => void;
+}
+
+const AgreeDisagreeEditor: React.FC<AgreeDisagreeEditorProps> = ({ question, onChange }) => {
+  const levels = ['stronglyDisagree', 'disagree', 'neutral', 'agree', 'stronglyAgree'] as const;
+  const levelLabels = {
+    stronglyDisagree: 'Strongly Disagree',
+    disagree: 'Disagree',
+    neutral: 'Neutral',
+    agree: 'Agree',
+    stronglyAgree: 'Strongly Agree',
+  };
+
+  return (
+    <div>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Scoring by Response</h3>
+      {levels.map((level) => (
+        <div key={level} style={{ 
+          marginBottom: spacing.md, 
+          padding: spacing.md, 
+          backgroundColor: colors.surface,
+          borderRadius: radius.md
+        }}>
+          <div style={{ marginBottom: spacing.sm, fontWeight: typography.fontWeight.medium, color: colors.textSecondary }}>
+            {levelLabels[level]}
+          </div>
+          <ScoreEditor 
+            scores={question.scores[level]} 
+            onChange={(scores) => {
+              onChange({
+                ...question,
+                scores: { ...question.scores, [level]: scores }
+              });
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Image Choice Editor
+interface ImageChoiceEditorProps {
+  question: ImageChoiceQuestion;
+  onChange: (q: ImageChoiceQuestion) => void;
+}
+
+const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChange }) => {
+  const updateOption = (index: number, field: 'imageUrl' | 'alt', value: string) => {
+    const newOptions = [...question.options];
+    newOptions[index] = { ...newOptions[index], [field]: value };
+    onChange({ ...question, options: newOptions });
+  };
+
+  const addOption = () => {
+    onChange({
+      ...question,
+      options: [...question.options, { imageUrl: '/quiz-photos/quiz-img-1.png', alt: 'New image', scores: {} }]
+    });
+  };
+
+  const removeOption = (index: number) => {
+    if (question.options.length <= 2) return;
+    onChange({
+      ...question,
+      options: question.options.filter((_, i) => i !== index)
+    });
+  };
+
+  return (
+    <div>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Image Options</h3>
+      {question.options.map((option, idx) => (
+        <div key={idx} style={{ 
+          marginBottom: spacing.lg, 
+          padding: spacing.md, 
+          backgroundColor: colors.surface,
+          borderRadius: radius.md
+        }}>
+          <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '150px' }}>
+              <Input
+                label="Image URL"
+                value={option.imageUrl}
+                onChange={(e) => updateOption(idx, 'imageUrl', e.target.value)}
+                placeholder="/quiz-photos/quiz-img-1.png"
+                style={{ textAlign: 'left' }}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: '150px' }}>
+              <Input
+                label="Alt Text"
+                value={option.alt}
+                onChange={(e) => updateOption(idx, 'alt', e.target.value)}
+                placeholder="Description"
+                style={{ textAlign: 'left' }}
+              />
+            </div>
+            <Button variant="danger" size="sm" onClick={() => removeOption(idx)} disabled={question.options.length <= 2} style={{ alignSelf: 'flex-end' }}>
+              ✕
+            </Button>
+          </div>
+          {option.imageUrl && (
+            <div style={{ marginBottom: spacing.sm }}>
+              <img 
+                src={option.imageUrl} 
+                alt={option.alt} 
+                style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  objectFit: 'cover', 
+                  borderRadius: radius.md,
+                  border: `2px solid ${colors.borderSecondary}`
+                }} 
+              />
+            </div>
+          )}
+          <ScoreEditor 
+            scores={option.scores} 
+            onChange={(scores) => {
+              const newOptions = [...question.options];
+              newOptions[idx] = { ...newOptions[idx], scores };
+              onChange({ ...question, options: newOptions });
+            }}
+          />
+        </div>
+      ))}
+      <Button variant="secondary" size="sm" onClick={addOption}>
+        + Add Image Option
+      </Button>
+    </div>
+  );
+};
+
+// Shared Score Editor Component
+interface ScoreEditorProps {
+  scores: Partial<Record<QuizCharacter, number>>;
+  onChange: (scores: Partial<Record<QuizCharacter, number>>) => void;
+}
+
+const ScoreEditor: React.FC<ScoreEditorProps> = ({ scores, onChange }) => {
+  return (
+    <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+      {CHARACTERS.map((char) => (
+        <div key={char} style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+          <label style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary, minWidth: '80px' }}>
+            {char}:
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="5"
+            value={scores[char] ?? 0}
+            onChange={(e) => onChange({ ...scores, [char]: parseInt(e.target.value) || 0 })}
+            style={{
+              width: '50px',
+              padding: spacing.xs,
+              backgroundColor: colors.background,
+              border: `1px solid ${colors.borderSecondary}`,
+              borderRadius: radius.sm,
+              color: colors.textPrimary,
+              fontSize: typography.fontSize.sm,
+              textAlign: 'center',
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Descriptions Tab Component
+interface DescriptionsTabProps {
+  characterDescriptions: Record<QuizCharacter, string>;
+  neitherDescription: string;
+  onUpdateDescriptions: (descriptions: Record<QuizCharacter, string>) => void;
+  onUpdateNeither: (description: string) => void;
+}
+
+const DescriptionsTab: React.FC<DescriptionsTabProps> = ({ 
+  characterDescriptions, 
+  neitherDescription,
+  onUpdateDescriptions,
+  onUpdateNeither
+}) => {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+      {CHARACTERS.map((char) => (
+        <Card key={char} variant="default">
+          <div style={{ padding: spacing.lg }}>
+            <h3 style={{ 
+              fontSize: typography.fontSize.lg, 
+              marginBottom: spacing.md,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              color: colors.accent
+            }}>
+              {char}
+            </h3>
+            <Textarea
+              value={characterDescriptions[char]}
+              onChange={(e) => onUpdateDescriptions({ ...characterDescriptions, [char]: e.target.value })}
+              rows={3}
+              style={{ textAlign: 'left' }}
+            />
+          </div>
+        </Card>
+      ))}
+
+      <Card variant="default">
+        <div style={{ padding: spacing.lg }}>
+          <h3 style={{ 
+            fontSize: typography.fontSize.lg, 
+            marginBottom: spacing.md,
+            fontFamily: typography.fontFamily.heading.join(', '),
+            color: colors.textSecondary
+          }}>
+            "Neither" Result
+          </h3>
+          <Textarea
+            value={neitherDescription}
+            onChange={(e) => onUpdateNeither(e.target.value)}
+            rows={3}
+            style={{ textAlign: 'left' }}
+          />
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default QuizEditor;
