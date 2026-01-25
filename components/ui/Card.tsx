@@ -27,18 +27,17 @@ const Card: React.FC<CardProps> = ({
     border: `${borders.cardOutset} ${colors.border}`,
     boxShadow: variant === 'elevated' ? shadows.cardElevated : shadows.card,
     position: 'relative',
-    overflow: 'hidden', // * Keep hidden for decorative element clipping
-    overflowY: 'auto', // * Allow vertical scrolling if content exceeds height, but prefer wrapping
-    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    // Add subtle inner highlight
+    overflow: 'hidden',
+    overflowY: 'auto',
+    transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease-out, border-color 0.25s ease-out',
     backgroundImage: variant === 'elevated' 
-      ? 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 50%, transparent 100%)'
-      : 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 50%, transparent 100%)',
-    // * Ensure text wrapping - text should wrap within the card's width
+      ? 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 50%, transparent 100%)'
+      : 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, transparent 100%)',
     wordWrap: 'break-word',
     overflowWrap: 'break-word',
     wordBreak: 'break-word',
-    minHeight: 'auto', // * Allow card to grow to fit content
+    minHeight: 'auto',
+    backdropFilter: 'blur(8px)',
     ...style
   };
 

@@ -72,11 +72,11 @@ const Button: React.FC<ButtonProps> = ({
         ...sizeStyles[size],
         ...variantStyles[variant],
         borderRadius: radius.md,
-        fontWeight: typography.fontWeight.normal,
+        fontWeight: typography.fontWeight.medium,
         fontFamily: typography.fontFamily.heading.join(', '),
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled ? 0.5 : 1,
-        transition: `all ${motion.duration.button} ${motion.easing.linear}`,
+        transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -85,17 +85,32 @@ const Button: React.FC<ButtonProps> = ({
         textShadow: variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
         position: 'relative',
         top: 0,
-        minHeight: size === 'lg' ? '48px' : size === 'md' ? '44px' : '36px', // * Better touch targets
+        minHeight: size === 'lg' ? '52px' : size === 'md' ? '48px' : '40px',
         overflow: 'hidden',
-        // Add subtle inner highlight
+        letterSpacing: '0.03em',
         backgroundImage: variant !== 'ghost' 
-          ? `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`
+          ? `linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`
           : 'none',
         ...style,
+      }}
+      onMouseEnter={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.filter = 'brightness(1.1)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.filter = 'brightness(1)';
+          e.currentTarget.style.top = '0';
+          e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
+        }
       }}
       onMouseDown={(e) => {
         if (!isDisabled && variant !== 'ghost') {
           e.currentTarget.style.top = isLarge ? '6px' : '4px';
+          e.currentTarget.style.transform = 'translateY(0) scale(0.98)';
           e.currentTarget.style.boxShadow = isLarge 
             ? '0 0px 0 #000, 0 2px 0 rgba(255,255,255,0.3) inset, 0 0 20px rgba(0,0,0,0.5)'
             : shadows.buttonActive;
@@ -104,12 +119,7 @@ const Button: React.FC<ButtonProps> = ({
       onMouseUp={(e) => {
         if (!isDisabled && variant !== 'ghost') {
           e.currentTarget.style.top = '0';
-          e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isDisabled && variant !== 'ghost') {
-          e.currentTarget.style.top = '0';
+          e.currentTarget.style.transform = 'translateY(-2px) scale(1)';
           e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
         }
       }}
