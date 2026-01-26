@@ -16,8 +16,8 @@ interface MasonryGridProps {
  */
 const MasonryGrid: React.FC<MasonryGridProps> = ({ 
   children, 
-  columns = { mobile: 1, tablet: 2, desktop: 3 },
-  gap = spacing.md
+  columns = { mobile: 2, tablet: 3, desktop: 5 },
+  gap = spacing.sm
 }) => {
   return (
     <div 
