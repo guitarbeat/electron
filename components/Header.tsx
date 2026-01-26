@@ -10,27 +10,25 @@ const Header: React.FC = () => {
   const sources = currentUser ? userImageSources[currentUser] : defaultImageSources;
 
   return (
-    <div style={{ marginBottom: spacing['2xl'] }}>
+    <div style={{ marginBottom: spacing.xl }}>
       <Card variant="elevated" className="animate-fade-in">
         <div
           style={{
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
             width: '100%',
             gap: spacing.lg,
-            padding: spacing.xl,
+            padding: `${spacing.md} ${spacing.lg}`,
           }}
           className="header-content"
         >
           <div
             style={{
-              width: '80px',
-              height: '80px',
-              minWidth: '64px',
-              minHeight: '64px',
-              maxWidth: '120px',
-              maxHeight: '120px',
+              width: '48px',
+              height: '48px',
+              minWidth: '48px',
+              minHeight: '48px',
               position: 'relative',
               flexShrink: 0,
             }}
@@ -39,11 +37,11 @@ const Header: React.FC = () => {
             <div
               style={{
                 position: 'absolute',
-                inset: '-4px',
+                inset: '-2px',
                 borderRadius: '50%',
                 background: colors.gradientPink,
                 opacity: 0.3,
-                filter: 'blur(8px)',
+                filter: 'blur(4px)',
                 zIndex: -1,
               }}
             />
@@ -56,44 +54,45 @@ const Header: React.FC = () => {
                 height: '100%',
                 borderRadius: '50%',
                 objectFit: 'cover',
-                border: `3px solid ${colors.accent}`,
+                border: `2px solid ${colors.accent}`,
                 boxShadow: shadows.glow,
                 display: 'block',
               }}
             />
           </div>
 
-          <h1
-            style={{
-              fontSize: typography.fontSize['3xl'],
-              fontWeight: typography.fontWeight.bold,
-              color: colors.accent, // * Fallback for browsers without gradient support
-              background: shadows.textGradientPink,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              textAlign: 'center',
-              lineHeight: typography.lineHeight.tight,
+          <div style={{ flex: 1, textAlign: 'left' }}>
+            <h1
+              style={{
+                fontSize: typography.fontSize.xl,
+                fontWeight: typography.fontWeight.bold,
+                color: colors.accent, // * Fallback for browsers without gradient support
+                background: shadows.textGradientPink,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                lineHeight: typography.lineHeight.tight,
+                margin: 0,
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 105, 180, 0.3)',
+                letterSpacing: '0.01em',
+                filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))',
+              }}
+              className="header-title"
+            >
+              Aaron &amp; Electra
+            </h1>
+            <p style={{
+              fontSize: typography.fontSize.xs,
+              color: colors.textSecondary,
               margin: 0,
-              textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 105, 180, 0.3)',
+              marginTop: spacing.xs,
               letterSpacing: '0.02em',
-              filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-            }}
-            className="header-title"
-          >
-            Aaron &amp; Electra's Movie List
-          </h1>
-          <p style={{
-            fontSize: typography.fontSize.base,
-            color: colors.textSecondary,
-            textAlign: 'center',
-            margin: 0,
-            marginTop: spacing.md,
-            letterSpacing: '0.04em',
-            lineHeight: typography.lineHeight.relaxed,
-          }}>
-            Your shared watchlist ✨
-          </p>
+              lineHeight: typography.lineHeight.normal,
+              opacity: 0.8,
+            }}>
+              Shared Watchlist ✨
+            </p>
+          </div>
         </div>
       </Card>
     </div>

@@ -25,16 +25,16 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   const sizeStyles = {
     sm: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      fontSize: typography.fontSize.sm,
+      padding: `${spacing.xs} ${spacing.md}`,
+      fontSize: typography.fontSize.xs,
     },
     md: {
-      padding: `${spacing.md} ${spacing.lg}`,
-      fontSize: typography.fontSize.base,
+      padding: `${spacing.sm} ${spacing.lg}`,
+      fontSize: typography.fontSize.sm,
     },
     lg: {
-      padding: `${spacing.lg} ${spacing.xl}`,
-      fontSize: typography.fontSize.lg,
+      padding: `${spacing.md} ${spacing.xl}`,
+      fontSize: typography.fontSize.base,
     },
   };
 
@@ -85,7 +85,7 @@ const Button: React.FC<ButtonProps> = ({
         textShadow: variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
         position: 'relative',
         top: 0,
-        minHeight: size === 'lg' ? '52px' : size === 'md' ? '48px' : '40px',
+        minHeight: size === 'lg' ? '44px' : size === 'md' ? '36px' : '32px',
         overflow: 'hidden',
         letterSpacing: '0.03em',
         backgroundImage: variant !== 'ghost' 

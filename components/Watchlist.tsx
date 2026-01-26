@@ -222,7 +222,7 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '42rem', margin: '0 auto', padding: `0 ${spacing.md}` }}>
+    <div style={{ maxWidth: '44rem', margin: '0 auto', padding: `${spacing.lg} ${spacing.md}` }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       
       <ConfirmDialog
@@ -437,7 +437,6 @@ const Watchlist: React.FC = () => {
           </Card>
         )}
         
-        {/* Add Movie Form */}
         <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
           <form onSubmit={handleAddMovie} style={{ padding: spacing.md }} className="add-movie-form">
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, alignItems: 'stretch' }}>
@@ -454,9 +453,9 @@ const Watchlist: React.FC = () => {
                   title={`Switch User (Currently: ${currentUser})`}
                   aria-label={`Switch user (currently logged in as ${currentUser})`}
                   variant="ghost"
-                  style={{ flexShrink: 0 }}
+                  style={{ flexShrink: 0, width: '36px', height: '36px' }}
                 >
-                  <LogoutIcon />
+                  <LogoutIcon style={{ width: '18px', height: '18px' }} />
                 </IconButton>
                 <IconButton
                   type="button"
@@ -465,11 +464,11 @@ const Watchlist: React.FC = () => {
                   aria-label={userHasPin(currentUser!) ? 'Change PIN' : 'Set PIN'}
                   variant="ghost"
                   disabled={isPinsLoading}
-                  style={{ flexShrink: 0 }}
+                  style={{ flexShrink: 0, width: '36px', height: '36px' }}
                 >
                   <LockIcon style={{ 
-                    width: '1rem', 
-                    height: '1rem',
+                    width: '0.875rem', 
+                    height: '0.875rem',
                     color: userHasPin(currentUser!) ? colors.success : colors.textSecondary,
                   }} />
                 </IconButton>
@@ -481,7 +480,7 @@ const Watchlist: React.FC = () => {
                   placeholder="What movie should we watch?"
                   aria-label="New movie title"
                   disabled={isSubmitting}
-                  style={{ flex: 1, margin: 0, minWidth: '150px' }}
+                  style={{ flex: 1, margin: 0, minWidth: '150px', padding: '0.4rem 0.75rem', height: '36px' }}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
                       setNewMovieTitle('');
@@ -496,18 +495,18 @@ const Watchlist: React.FC = () => {
                   loadingText=""
                   disabled={!newMovieTitle.trim() || isSubmitting}
                   style={{ 
-                    padding: spacing.sm,
+                    padding: 0,
                     borderRadius: '50%',
                     aspectRatio: '1',
-                    minWidth: '40px',
-                    width: '40px',
-                    height: '40px',
+                    minWidth: '36px',
+                    width: '36px',
+                    height: '36px',
                     flexShrink: 0,
                   }}
                   title="Add movie to watchlist"
                   aria-label="Add movie to watchlist"
                 >
-                  {!isAdding && <PlusIcon />}
+                  {!isAdding && <PlusIcon style={{ width: '18px', height: '18px' }} />}
                 </Button>
               </div>
             </div>
