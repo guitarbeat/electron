@@ -6,6 +6,7 @@ import { userImageSources, defaultImageSources } from '../config/imageConfig';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import PinDialog from './PinDialog';
+import SuggestionForm from './SuggestionForm';
 import { usePins } from '../hooks/usePins';
 import { spacing, typography, colors, shadows } from '../design-system/tokens';
 import { LockIcon } from './icons';
@@ -224,6 +225,11 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
           </div>
         </div>
       </Card>
+
+      {/* Movie Suggestion Form for Visitors */}
+      <div style={{ marginTop: spacing.xl }}>
+        <SuggestionForm />
+      </div>
     </div>
   );
 };
