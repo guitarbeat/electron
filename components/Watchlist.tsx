@@ -222,7 +222,7 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+    <div style={{ maxWidth: '42rem', margin: '0 auto', padding: `0 ${spacing.md}` }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       
       <ConfirmDialog
@@ -327,8 +327,8 @@ const Watchlist: React.FC = () => {
         {/* Movie Statistics */}
         {movies && movies.length > 0 && (
           <Card variant="elevated" className="scale-in" style={{ 
-            marginBottom: spacing.xl, 
-            padding: spacing.xl,
+            marginBottom: spacing.lg, 
+            padding: spacing.md,
             position: 'relative',
             // * overflow handled by Card component - decorative background will be clipped properly
           }}>
@@ -346,15 +346,15 @@ const Watchlist: React.FC = () => {
             <div style={{ 
               display: 'flex', 
               justifyContent: 'center', 
-              gap: spacing.xl, 
+              gap: spacing.lg, 
               flexWrap: 'wrap', 
               textAlign: 'center',
               position: 'relative',
               zIndex: 1,
             }}>
-              <div style={{ minWidth: '80px', animationDelay: '0.1s' }} className="bounce-in">
+              <div style={{ minWidth: '60px', animationDelay: '0.1s' }} className="bounce-in">
                 <div style={{ 
-                  fontSize: typography.fontSize['3xl'], 
+                  fontSize: typography.fontSize['2xl'], 
                   fontWeight: typography.fontWeight.bold, 
                   color: colors.accent, // * Fallback for browsers without gradient support
                   background: shadows.textGradientPink,
@@ -371,7 +371,7 @@ const Watchlist: React.FC = () => {
                   {movies.length}
                 </div>
                 <div style={{ 
-                  fontSize: typography.fontSize.sm, 
+                  fontSize: typography.fontSize.xs, 
                   color: colors.textSecondary,
                   fontWeight: typography.fontWeight.medium,
                   letterSpacing: '0.05em',
@@ -379,9 +379,9 @@ const Watchlist: React.FC = () => {
                   {movies.length === 1 ? 'Movie' : 'Movies'}
                 </div>
               </div>
-              <div style={{ minWidth: '80px', animationDelay: '0.2s' }} className="bounce-in">
+              <div style={{ minWidth: '60px', animationDelay: '0.2s' }} className="bounce-in">
                 <div style={{ 
-                  fontSize: typography.fontSize['3xl'], 
+                  fontSize: typography.fontSize['2xl'], 
                   fontWeight: typography.fontWeight.bold, 
                   color: colors.secondary, // * Fallback for browsers without gradient support
                   background: shadows.textGradientBlue,
@@ -398,7 +398,7 @@ const Watchlist: React.FC = () => {
                   {unwatchedMovies.length}
                 </div>
                 <div style={{ 
-                  fontSize: typography.fontSize.sm, 
+                  fontSize: typography.fontSize.xs, 
                   color: colors.textSecondary,
                   fontWeight: typography.fontWeight.medium,
                   letterSpacing: '0.05em',
@@ -406,9 +406,9 @@ const Watchlist: React.FC = () => {
                   Unwatched
                 </div>
               </div>
-              <div style={{ minWidth: '80px', animationDelay: '0.3s' }} className="bounce-in">
+              <div style={{ minWidth: '60px', animationDelay: '0.3s' }} className="bounce-in">
                 <div style={{ 
-                  fontSize: typography.fontSize['3xl'], 
+                  fontSize: typography.fontSize['2xl'], 
                   fontWeight: typography.fontWeight.bold, 
                   color: colors.accent, // * Fallback for browsers without gradient support
                   background: shadows.textGradientPink,
@@ -425,12 +425,12 @@ const Watchlist: React.FC = () => {
                   {watchedMovies.length}
                 </div>
                 <div style={{ 
-                  fontSize: typography.fontSize.sm, 
+                  fontSize: typography.fontSize.xs, 
                   color: colors.textSecondary,
                   fontWeight: typography.fontWeight.medium,
                   letterSpacing: '0.05em',
                 }}>
-                  Watched Together
+                  Watched
                 </div>
               </div>
             </div>
@@ -438,12 +438,12 @@ const Watchlist: React.FC = () => {
         )}
         
         {/* Add Movie Form */}
-        <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
-          <form onSubmit={handleAddMovie} style={{ padding: spacing.lg }} className="add-movie-form">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, alignItems: 'stretch' }}>
+        <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
+          <form onSubmit={handleAddMovie} style={{ padding: spacing.md }} className="add-movie-form">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, alignItems: 'stretch' }}>
               <div style={{ 
                 display: 'flex', 
-                gap: spacing.md, 
+                gap: spacing.sm, 
                 alignItems: 'center', 
                 width: '100%',
                 flexWrap: 'wrap',
@@ -468,8 +468,8 @@ const Watchlist: React.FC = () => {
                   style={{ flexShrink: 0 }}
                 >
                   <LockIcon style={{ 
-                    width: '1.25rem', 
-                    height: '1.25rem',
+                    width: '1rem', 
+                    height: '1rem',
                     color: userHasPin(currentUser!) ? colors.success : colors.textSecondary,
                   }} />
                 </IconButton>
@@ -481,7 +481,7 @@ const Watchlist: React.FC = () => {
                   placeholder="What movie should we watch?"
                   aria-label="New movie title"
                   disabled={isSubmitting}
-                  style={{ flex: 1, margin: 0, minWidth: '200px' }}
+                  style={{ flex: 1, margin: 0, minWidth: '150px' }}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
                       setNewMovieTitle('');
@@ -496,12 +496,12 @@ const Watchlist: React.FC = () => {
                   loadingText=""
                   disabled={!newMovieTitle.trim() || isSubmitting}
                   style={{ 
-                    padding: spacing.md,
+                    padding: spacing.sm,
                     borderRadius: '50%',
                     aspectRatio: '1',
-                    minWidth: '56px',
-                    width: '56px',
-                    height: '56px',
+                    minWidth: '40px',
+                    width: '40px',
+                    height: '40px',
                     flexShrink: 0,
                   }}
                   title="Add movie to watchlist"
@@ -515,26 +515,28 @@ const Watchlist: React.FC = () => {
         </Card>
         
         {/* Spin to Decide card */}
-        <Card variant="elevated" style={{ marginBottom: spacing['2xl'] }}>
-          <div style={{ padding: spacing.lg }}>
+        <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
+          <div style={{ padding: spacing.md }}>
             <Button
               onClick={handleOpenWheel}
               disabled={unwatchedMovies.length < 2}
               variant="secondary"
-              size="lg"
+              size="sm"
               style={{ 
                 width: '100%', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                gap: spacing.sm,
-                fontSize: typography.fontSize.xl,
+                gap: spacing.xs,
+                fontSize: typography.fontSize.lg,
               }}
               title={unwatchedMovies.length < 2 ? "Add at least 2 unwatched movies to use the wheel" : "Spin the wheel to randomly pick a movie!"}
             >
               <DiceIcon />
               Spin to Decide
             </Button>
+          </div>
+        </Card>
             {unwatchedMovies.length < 2 && (
               <p style={{
                 marginTop: spacing.sm,

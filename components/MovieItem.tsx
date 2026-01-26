@@ -37,10 +37,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
       variant={watchedByBoth ? 'elevated' : 'default'}
       className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up`}
       style={{
-        padding: spacing.xl,
+        padding: spacing.md,
         opacity: watchedByCurrentUser && !watchedByBoth ? 0.75 : 1,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        marginBottom: spacing.md,
+        marginBottom: spacing.sm,
         borderWidth: watchedByBoth ? '3px' : '2px',
         borderColor: watchedByBoth ? colors.accent : colors.border,
         position: 'relative',
@@ -73,14 +73,14 @@ const MovieItem: React.FC<MovieItemProps> = ({
             <SparkleHeartIcon style={{ width: '32px', height: '32px' }} />
           </div>
         )}
-        <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+        <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
           <h3 className="movie-title" style={{
-            fontSize: typography.fontSize.xl,
+            fontSize: typography.fontSize.lg,
             fontWeight: typography.fontWeight.bold,
             color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
             textDecoration: watchedByBoth ? 'line-through' : 'none',
             margin: 0,
-            marginBottom: spacing.md,
+            marginBottom: spacing.xs,
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
             hyphens: 'auto',
@@ -89,7 +89,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               : '0 1px 2px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.3)',
             transition: 'all 0.2s ease-out',
             letterSpacing: '0.02em',
-            lineHeight: typography.lineHeight.normal,
+            lineHeight: typography.lineHeight.tight,
             padding: watchedByBoth ? `${spacing.xs} 0` : '0',
           }}>
             {movie.title}
@@ -97,7 +97,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             gap: spacing.sm,
             flexWrap: 'wrap',
           }}>
@@ -129,9 +129,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: spacing.xs,
+          gap: spacing.sm,
           flexShrink: 0,
-          flexDirection: 'column',
+          flexDirection: 'row',
         }}>
           <IconButton
             onClick={() => onToggle(movie)}
