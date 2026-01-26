@@ -5,7 +5,10 @@ import ImageWithFallback from './ImageWithFallback';
 import { userImageSources, defaultImageSources } from '../config/imageConfig';
 import Card from './ui/Card';
 import Button from './ui/Button';
+import PinDialog from './PinDialog';
+import { usePins } from '../hooks/usePins';
 import { spacing, typography, colors, shadows } from '../design-system/tokens';
+import { LockIcon } from './icons';
 
 interface UserSelectionProps {
   onTakeQuiz: () => void;
@@ -13,10 +16,41 @@ interface UserSelectionProps {
 
 const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
   const { setCurrentUser } = useUser();
+  const { userHasPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showPinDialog, setShowPinDialog] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleUserSelect = (user: User) => {
-    setCurrentUser(user);
+    if (userHasPin(user)) {
+      setSelectedUser(user);
+      setShowPinDialog(true);
+    } else {
+      setCurrentUser(user);
+    }
+  };
+
+  const handlePinSubmit = async (pin: string): Promise<boolean> => {
+    if (!selectedUser) return false;
+    setIsVerifying(true);
+    try {
+      const isValid = await verifyUserPin(selectedUser, pin);
+      if (isValid) {
+        setShowPinDialog(false);
+        setCurrentUser(selectedUser);
+        setSelectedUser(null);
+        return true;
+      }
+      return false;
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handlePinCancel = () => {
+    setShowPinDialog(false);
+    setSelectedUser(null);
   };
 
   const sources = hoveredUser ? userImageSources[hoveredUser] : defaultImageSources;
@@ -120,10 +154,12 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
               onMouseLeave={() => setHoveredUser(null)}
               onFocus={() => setHoveredUser('Aaron')}
               onBlur={() => setHoveredUser(null)}
-              style={{ width: '100%', fontSize: typography.fontSize.xl }}
+              style={{ width: '100%', fontSize: typography.fontSize.xl, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
               aria-label="Select Aaron as user"
+              disabled={isPinsLoading}
             >
               Aaron
+              {userHasPin('Aaron') && <LockIcon style={{ width: '1rem', height: '1rem' }} />}
             </Button>
             <Button
               variant="primary"
@@ -133,12 +169,26 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
               onMouseLeave={() => setHoveredUser(null)}
               onFocus={() => setHoveredUser('Electra')}
               onBlur={() => setHoveredUser(null)}
-              style={{ width: '100%', fontSize: typography.fontSize.xl }}
+              style={{ width: '100%', fontSize: typography.fontSize.xl, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
               aria-label="Select Electra as user"
+              disabled={isPinsLoading}
             >
               Electra
+              {userHasPin('Electra') && <LockIcon style={{ width: '1rem', height: '1rem' }} />}
             </Button>
           </div>
+
+          {/* PIN Dialog */}
+          {selectedUser && (
+            <PinDialog
+              isOpen={showPinDialog}
+              user={selectedUser}
+              mode="enter"
+              onSubmit={handlePinSubmit}
+              onCancel={handlePinCancel}
+              isLoading={isVerifying}
+            />
+          )}
 
           <div
             style={{
