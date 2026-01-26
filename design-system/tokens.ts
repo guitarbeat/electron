@@ -4,15 +4,15 @@
  * Centralized design tokens for consistent spacing, colors, typography, and motion.
  */
 
-// * Spacing scale (8px base unit)
+// * Spacing scale (Reduced for "tight" feel)
 export const spacing = {
-  xs: '0.25rem',    // 4px
-  sm: '0.5rem',     // 8px
-  md: '1rem',       // 16px
-  lg: '1.5rem',     // 24px
-  xl: '2rem',       // 32px
-  '2xl': '3rem',    // 48px
-  '3xl': '4rem',    // 64px
+  xs: '0.125rem',    // 2px
+  sm: '0.25rem',     // 4px
+  md: '0.5rem',      // 8px
+  lg: '0.75rem',     // 12px
+  xl: '1rem',        // 16px
+  '2xl': '1.5rem',   // 24px
+  '3xl': '2rem',     // 32px
 } as const;
 
 // * Color palette (Retro theme)
@@ -66,7 +66,7 @@ export const colors = {
   gradientCard: 'linear-gradient(180deg, rgba(27, 40, 69, 0.95) 0%, rgba(27, 40, 69, 0.85) 100%)',
 } as const;
 
-// * Typography scale (Retro with Papyrus)
+// * Typography scale (Slightly reduced for "tight" feel)
 export const typography = {
   fontFamily: {
     heading: ['Papyrus', 'fantasy'],
@@ -75,14 +75,14 @@ export const typography = {
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {
-    xs: '0.875rem',   // 14px (was 12px)
-    sm: '1rem',       // 16px (was 14px)
-    base: '1.125rem', // 18px (was 16px)
-    lg: '1.25rem',    // 20px (was 18px)
-    xl: '1.5rem',     // 24px (was 20px)
-    '2xl': '1.75rem', // 28px (was 24px)
-    '3xl': '2.125rem', // 34px (was 30px)
-    '4xl': '2.5rem',  // 40px (was 36px)
+    xs: '0.75rem',    // 12px
+    sm: '0.875rem',   // 14px
+    base: '1rem',     // 16px
+    lg: '1.125rem',   // 18px
+    xl: '1.25rem',    // 20px
+    '2xl': '1.5rem',   // 24px
+    '3xl': '1.875rem', // 30px
+    '4xl': '2.25rem',  // 36px
   },
   fontWeight: {
     normal: 400,
