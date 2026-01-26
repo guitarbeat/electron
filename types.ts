@@ -22,3 +22,14 @@ export interface DailySpin {
   spunBy: User;
   createdAt: string; // ISO timestamp
 }
+
+export interface MovieSuggestion {
+  id: string;
+  title: string;
+  suggestedBy: string;      // Any name (not restricted to User type)
+  reason?: string;          // Optional: "You'd love this because..."
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+  respondedAt?: string;
+  respondedBy?: User;       // Aaron or Electra
+}

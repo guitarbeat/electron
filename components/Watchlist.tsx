@@ -13,12 +13,13 @@ import IconButton from './ui/IconButton';
 import ConfirmDialog from './ui/ConfirmDialog';
 import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
+import SuggestionList from './SuggestionList';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
-  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie } = useMovies(currentUser!);
+  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh: refreshMovies } = useMovies(currentUser!);
   const { userHasPin, setUserPin, removeUserPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
@@ -549,6 +550,9 @@ const Watchlist: React.FC = () => {
             )}
           </div>
         </Card>
+
+        {/* Movie Suggestions Section */}
+        <SuggestionList currentUser={currentUser!} onMovieAdded={refreshMovies} />
 
         {/* Movie List */}
         <div style={{
