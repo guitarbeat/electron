@@ -535,8 +535,6 @@ const Watchlist: React.FC = () => {
               <DiceIcon />
               Spin to Decide
             </Button>
-          </div>
-        </Card>
             {unwatchedMovies.length < 2 && (
               <p style={{
                 marginTop: spacing.sm,
