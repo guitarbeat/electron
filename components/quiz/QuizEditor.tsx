@@ -56,38 +56,42 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   }
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
+    <div style={{ maxWidth: '64rem', margin: '0 auto', padding: spacing.md }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xl }}>
-        <Button variant="ghost" size="sm" onClick={onClose} aria-label="Back">
-          <ArrowLeftIcon style={{ width: '1.25rem', height: '1.25rem' }} />
-        </Button>
-        <h1 style={{ 
-          fontSize: typography.fontSize['2xl'], 
-          fontWeight: typography.fontWeight.bold,
-          fontFamily: typography.fontFamily.heading.join(', '),
-          flex: 1
-        }}>
-          Quiz Editor
-        </h1>
-        <Button 
-          variant="primary" 
-          size="md" 
-          onClick={handleSave} 
-          disabled={!hasChanges || isSaving}
-          isLoading={isSaving}
-          loadingText="Saving..."
-        >
-          Save Changes
-        </Button>
-      </div>
+      <Card variant="elevated" style={{ marginBottom: spacing.lg, padding: spacing.md }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Back">
+            <ArrowLeftIcon style={{ width: '1.25rem', height: '1.25rem' }} />
+          </Button>
+          <h1 style={{ 
+            fontSize: typography.fontSize.xl, 
+            fontWeight: typography.fontWeight.bold,
+            fontFamily: typography.fontFamily.heading.join(', '),
+            margin: 0,
+            flex: 1
+          }}>
+            Quiz Editor
+          </h1>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            onClick={handleSave} 
+            disabled={!hasChanges || isSaving}
+            isLoading={isSaving}
+            loadingText="Saving..."
+          >
+            Save Changes
+          </Button>
+        </div>
+      </Card>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.xl }}>
+      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.lg }}>
         <Button 
           variant={activeTab === 'questions' ? 'primary' : 'secondary'}
           size="sm"
           onClick={() => setActiveTab('questions')}
+          style={{ flex: 1 }}
         >
           Questions ({localData.questions.length})
         </Button>
@@ -95,8 +99,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           variant={activeTab === 'descriptions' ? 'primary' : 'secondary'}
           size="sm"
           onClick={() => setActiveTab('descriptions')}
+          style={{ flex: 1 }}
         >
-          Character Descriptions
+          Characters
         </Button>
       </div>
 
@@ -215,17 +220,16 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       </div>
 
       {/* Questions List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
         {questions.map((q, index) => (
-          <Card key={q.id} variant="default">
+          <Card key={q.id} variant="default" style={{ padding: spacing.md }}>
             <div style={{ 
-              padding: spacing.lg, 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
               gap: spacing.md
             }}>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -233,37 +237,41 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   marginBottom: spacing.xs 
                 }}>
                   <span style={{ 
-                    fontSize: typography.fontSize.sm, 
+                    fontSize: typography.fontSize.xs, 
                     color: colors.accent,
                     fontWeight: typography.fontWeight.bold
                   }}>
                     #{index + 1}
                   </span>
                   <span style={{ 
-                    fontSize: typography.fontSize.xs, 
+                    fontSize: '0.7rem', 
                     color: colors.textTertiary,
-                    backgroundColor: colors.surface,
-                    padding: `${spacing.xs} ${spacing.sm}`,
-                    borderRadius: radius.sm,
-                    textTransform: 'uppercase'
+                    backgroundColor: colors.surfaceElevated,
+                    padding: `2px ${spacing.sm}`,
+                    borderRadius: radius.full,
+                    textTransform: 'uppercase',
+                    border: `1px solid ${colors.borderInset}`
                   }}>
                     {q.type}
                   </span>
                 </div>
                 <p style={{ 
-                  fontSize: typography.fontSize.base, 
+                  fontSize: typography.fontSize.sm, 
                   color: colors.textPrimary,
-                  margin: 0 
+                  margin: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}>
                   {q.question}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: spacing.sm }}>
-                <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)}>
+              <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
+                <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)} style={{ minWidth: '60px' }}>
                   Edit
                 </Button>
-                <Button variant="danger" size="sm" onClick={() => deleteQuestion(q.id)}>
-                  Delete
+                <Button variant="danger" size="sm" onClick={() => deleteQuestion(q.id)} style={{ padding: spacing.xs }}>
+                  ✕
                 </Button>
               </div>
             </div>
@@ -289,53 +297,56 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({ question, onSave, onCan
   };
 
   return (
-    <Card variant="elevated">
-      <div style={{ padding: spacing.xl }}>
-        <h2 style={{ 
-          fontSize: typography.fontSize.xl, 
-          marginBottom: spacing.lg,
-          fontFamily: typography.fontFamily.heading.join(', ')
-        }}>
-          Edit Question
-        </h2>
+    <Card variant="elevated" style={{ padding: spacing.md }}>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md }}>
+          <h2 style={{ 
+            fontSize: typography.fontSize.lg, 
+            margin: 0,
+            fontFamily: typography.fontFamily.heading.join(', ')
+          }}>
+            Edit Question
+          </h2>
+          <div style={{ display: 'flex', gap: spacing.sm }}>
+            <Button variant="primary" size="sm" onClick={() => onSave(local)}>
+              Save
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
 
-        <div style={{ marginBottom: spacing.lg }}>
+        <div style={{ marginBottom: spacing.md }}>
           <Textarea
             label="Question Text"
             value={local.question}
             onChange={(e) => updateField('question', e.target.value)}
-            style={{ textAlign: 'left' }}
+            style={{ textAlign: 'left', minHeight: '80px' }}
           />
         </div>
 
-        {local.type === 'multiple-choice' && (
-          <MultipleChoiceEditor 
-            question={local as MultipleChoiceQuestion} 
-            onChange={(q) => setLocal(q)} 
-          />
-        )}
+        <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: spacing.xs }}>
+          {local.type === 'multiple-choice' && (
+            <MultipleChoiceEditor 
+              question={local as MultipleChoiceQuestion} 
+              onChange={(q) => setLocal(q)} 
+            />
+          )}
 
-        {local.type === 'agree-disagree' && (
-          <AgreeDisagreeEditor 
-            question={local as AgreeDisagreeQuestion} 
-            onChange={(q) => setLocal(q)} 
-          />
-        )}
+          {local.type === 'agree-disagree' && (
+            <AgreeDisagreeEditor 
+              question={local as AgreeDisagreeQuestion} 
+              onChange={(q) => setLocal(q)} 
+            />
+          )}
 
-        {local.type === 'image-choice' && (
-          <ImageChoiceEditor 
-            question={local as ImageChoiceQuestion} 
-            onChange={(q) => setLocal(q)} 
-          />
-        )}
-
-        <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.xl }}>
-          <Button variant="primary" onClick={() => onSave(local)}>
-            Save Question
-          </Button>
-          <Button variant="secondary" onClick={onCancel}>
-            Cancel
-          </Button>
+          {local.type === 'image-choice' && (
+            <ImageChoiceEditor 
+              question={local as ImageChoiceQuestion} 
+              onChange={(q) => setLocal(q)} 
+            />
+          )}
         </div>
       </div>
     </Card>
