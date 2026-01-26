@@ -15,7 +15,7 @@ import {
   RefreshIcon,
   LayoutGridIcon,
   LayoutListIcon,
-  SparkleHeartIcon,
+  TicketIcon,
   EyeIcon,
   EyeOffIcon,
   TrashIcon
