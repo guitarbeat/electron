@@ -62,7 +62,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
         }} />
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.lg }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
         {watchedByBoth && (
           <div style={{
             color: colors.accent,
@@ -70,12 +70,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
             filter: 'drop-shadow(0 0 12px rgba(255, 105, 180, 0.8))',
             animation: 'pulse-glow 2s ease-in-out infinite',
           }}>
-            <SparkleHeartIcon style={{ width: '32px', height: '32px' }} />
+            <SparkleHeartIcon style={{ width: '28px', height: '28px' }} />
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
           <h3 className="movie-title" style={{
-            fontSize: typography.fontSize.lg,
+            fontSize: typography.fontSize.base,
             fontWeight: typography.fontWeight.bold,
             color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
             textDecoration: watchedByBoth ? 'line-through' : 'none',
@@ -102,12 +102,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
             flexWrap: 'wrap',
           }}>
             <span style={{
-              fontSize: typography.fontSize.xs,
+              fontSize: '0.7rem',
               color: colors.textTertiary,
               fontWeight: typography.fontWeight.medium,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              padding: `${spacing.xs} ${spacing.sm}`,
+              padding: `1px ${spacing.sm}`,
               backgroundColor: colors.surfaceElevated,
               borderRadius: radius.full,
               border: `1px solid ${colors.borderInset}`,
@@ -115,7 +115,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               {movie.addedBy}
             </span>
             <span style={{
-              fontSize: typography.fontSize.sm,
+              fontSize: typography.fontSize.xs,
               color: watchedByBoth ? colors.textTertiary : colors.textSecondary,
               margin: 0,
               letterSpacing: '0.01em',
