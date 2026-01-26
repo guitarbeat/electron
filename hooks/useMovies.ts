@@ -145,6 +145,18 @@ export const useMovies = (currentUser: User) => {
     }
   }, [performMutation]);
 
+  const manualMetadataUpdate = useCallback(async (movie: Movie, metadata: any) => {
+    try {
+      await performMutation(latestMovies =>
+        latestMovies.map(m => m.id === movie.id ? { ...m, ...metadata } : m)
+      );
+      return true;
+    } catch (error) {
+      console.error("Failed to manual metadata update:", error);
+      return false;
+    }
+  }, [performMutation]);
+
   const refreshAllMetadata = useCallback(async () => {
     if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
@@ -256,5 +268,5 @@ export const useMovies = (currentUser: User) => {
     })
     : [], [movies]);
 
-  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh, updateMovieMetadata, refreshAllMetadata };
+  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh, updateMovieMetadata, manualMetadataUpdate, refreshAllMetadata };
 };

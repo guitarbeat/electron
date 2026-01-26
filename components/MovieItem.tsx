@@ -186,6 +186,24 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
               </Button>
               
+              <IconButton
+                onClick={(e) => { e.stopPropagation(); onFixMatch?.(movie); }}
+                variant="ghost"
+                size="sm"
+                title="Fix Metadata Match"
+                style={{ 
+                  padding: 0, 
+                  width: '28px', 
+                  height: '28px', 
+                  backgroundColor: 'rgba(0,0,0,0.6)', 
+                  borderRadius: radius.md,
+                  color: colors.accent,
+                  border: `1px solid ${colors.accent}40`,
+                }}
+              >
+                <MagicWandIcon style={{width: '14px', height: '14px'}} />
+              </IconButton>
+              
               <Menu 
                 trigger={
                   <IconButton variant="ghost" size="sm" style={{ padding: 0, width: '28px', height: '28px', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: radius.md }}>
@@ -194,12 +212,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 }
                 align="right"
               >
-                <MenuItem 
-                   onClick={() => onFixMatch?.(movie)}
-                   icon={isUpdating ? <Spinner style={{width: '14px', height: '14px'}} /> : <MagicWandIcon style={{width: '14px', height: '14px'}} />}
-                >
-                  Fix Match
-                </MenuItem>
                 <MenuItem 
                   onClick={() => onDelete(movie)}
                   variant="danger"
@@ -358,6 +370,18 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
               </IconButton>
 
+              <IconButton
+                onClick={() => onFixMatch?.(movie)}
+                variant="ghost"
+                title="Fix Incorrect Match"
+                style={{
+                  border: `1px solid ${colors.borderSecondary}40`,
+                  color: colors.accent,
+                }}
+              >
+                <MagicWandIcon />
+              </IconButton>
+
               <Menu 
                 trigger={
                   <IconButton variant="ghost" aria-label="More options">
@@ -366,12 +390,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 }
                 align="right"
               >
-                <MenuItem 
-                  onClick={() => onFixMatch?.(movie)}
-                  icon={isUpdating ? <Spinner style={{width: '16px', height: '16px'}} /> : <MagicWandIcon style={{width: '16px', height: '16px'}} />}
-                >
-                  {isUpdating ? 'Updating...' : 'Fix Incorrect Match'}
-                </MenuItem>
                 <MenuItem 
                   onClick={() => onDelete(movie)}
                   variant="danger"
