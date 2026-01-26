@@ -2,6 +2,7 @@ import React from 'react';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
+import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import { DiceIcon, SparkleHeartIcon, CheckIcon, TrashIcon } from './icons';
 import { User, MovieSuggestion } from '../types';
 
@@ -22,6 +23,7 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
   variant = 'primary',
   actionLabel = 'Go'
 }) => {
+  const isMobile = useMediaQuery(breakpoints.sm);
   const getGradient = () => {
     switch (variant) {
       case 'accent': return colors.gradientPink;
@@ -36,9 +38,9 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
     <Card
       onClick={onClick}
       style={{
-        padding: spacing.lg,
+        padding: isMobile ? spacing.md : spacing.lg,
         height: '100%',
-        minHeight: '240px',
+        minHeight: isMobile ? '180px' : '240px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -122,10 +124,11 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
   onReject,
   isProcessing
 }) => {
+  const isMobile = useMediaQuery(breakpoints.sm);
   return (
     <Card
       style={{
-        padding: spacing.md,
+        padding: isMobile ? spacing.sm : spacing.md,
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -133,7 +136,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
         border: `1px solid ${colors.borderSecondary}20`,
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '180px',
+        minHeight: isMobile ? '160px' : '180px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
