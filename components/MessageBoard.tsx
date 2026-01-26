@@ -189,9 +189,11 @@ const MessageBoard: React.FC = () => {
                 maxWidth: '64rem', // Wider for chat window
                 margin: '0 auto', 
                 padding: spacing.md,
-                height: '100%',
+                height: '400px', // Fixed height for chat room
+                maxHeight: '70vh', // Responsive max height
                 display: 'flex',
                 flexDirection: 'column',
+                marginBottom: spacing.xl,
             }}
             className="message-board-container"
         >
