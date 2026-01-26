@@ -251,3 +251,29 @@ export const LayoutListIcon: React.FC<{ className?: string; style?: React.CSSPro
     </svg>
   );
 };
+export const StarIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+    </svg>
+  );
+};
+
+export const TicketIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+    </svg>
+  );
+};
+
+export const SparklesIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+    </svg>
+  );
+};

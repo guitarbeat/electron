@@ -3,7 +3,7 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { DiceIcon, SparkleHeartIcon, CheckIcon, TrashIcon } from './icons';
+import { DiceIcon, TicketIcon, CheckIcon, TrashIcon } from './icons';
 import { User, MovieSuggestion } from '../types';
 
 interface DashboardItemProps {
@@ -152,7 +152,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
           backgroundColor: colors.accent + '20',
           color: colors.accent,
         }}>
-          <SparkleHeartIcon style={{ width: '16px', height: '16px' }} />
+          <TicketIcon style={{ width: '16px', height: '16px' }} />
         </div>
         <span style={{ fontSize: '0.65rem', fontWeight: typography.fontWeight.bold, color: colors.textTertiary, textTransform: 'uppercase' }}>
           Suggestion

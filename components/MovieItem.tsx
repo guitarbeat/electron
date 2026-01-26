@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Movie, User } from '../types';
-import { TrashIcon, EyeIcon, EyeOffIcon, SparkleHeartIcon, MagicWandIcon, Spinner, FilmIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, Spinner, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
@@ -316,7 +316,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   filter: 'drop-shadow(0 0 8px rgba(255, 105, 180, 0.6))',
                   animation: 'pulse-glow 2s ease-in-out infinite',
                 }}>
-                  <SparkleHeartIcon style={{ width: '24px', height: '24px' }} />
+                  <TicketIcon style={{ width: '24px', height: '24px' }} />
                 </div>
               )}
             </div>
