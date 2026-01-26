@@ -59,17 +59,17 @@ const MessageBoard: React.FC = () => {
             const container = messagesContainerRef.current;
             if (container) {
                 const { scrollTop, scrollHeight, clientHeight } = container;
-                const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+                // Increased threshold slightly and added a small delay to ensure DOM is ready
+                const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
                 
                 if (isNearBottom) {
-                    // * Use requestAnimationFrame for better iOS compatibility
                     requestAnimationFrame(() => {
                         setTimeout(() => {
                             container.scrollTo({
                                 top: container.scrollHeight,
                                 behavior: 'smooth',
                             });
-                        }, 100);
+                        }, 50); // Faster response
                     });
                 }
             }

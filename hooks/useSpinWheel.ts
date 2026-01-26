@@ -233,25 +233,22 @@ export const useSpinWheel = (
         if (!isMounted) return;
 
         if (todaySpin) {
-          // * Find the movie in the current movies list
+          // * Find the movie in the current movies list (using a local search when data arrives)
+          setTodaySpinData(todaySpin);
+          setHasSpunToday(true);
+          setStatus('result');
+
           const movie = movies.find(m => m.id === todaySpin.movieId);
           if (movie) {
             setSelectedMovie(movie);
-            setStatus('result');
-            setHasSpunToday(true);
-            setTodaySpinData(todaySpin);
           } else {
-            // * Movie not found in current list, but still show the result
             setSelectedMovie({
               id: todaySpin.movieId,
               title: todaySpin.movieTitle,
-              addedBy: 'Aaron', // * Fallback values
+              addedBy: 'Aaron',
               watchedBy: [],
               createdAt: todaySpin.createdAt,
             });
-            setStatus('result');
-            setHasSpunToday(true);
-            setTodaySpinData(todaySpin);
           }
         } else {
           setStatus('idle');
@@ -259,7 +256,6 @@ export const useSpinWheel = (
       } catch (error) {
         console.error('Error checking today\'s spin:', error);
         if (isMounted) {
-          // * On error, allow user to try spinning (they might be offline)
           setStatus('idle');
           setSaveError('Could not check for existing spin. You can still spin, but results may not sync.');
         }
@@ -271,7 +267,18 @@ export const useSpinWheel = (
     return () => {
       isMounted = false;
     };
-  }, [movies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // * Only run on mount. Subsequent updates handled by saveDailySpin.
+
+  // * Sync selectedMovie if movies list updates and we have todaySpinData
+  useEffect(() => {
+    if (todaySpinData && !selectedMovie) {
+      const movie = movies.find(m => m.id === todaySpinData.movieId);
+      if (movie) {
+        setSelectedMovie(movie);
+      }
+    }
+  }, [movies, todaySpinData, selectedMovie]);
 
   return {
     status,
