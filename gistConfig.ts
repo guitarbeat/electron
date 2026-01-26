@@ -34,5 +34,8 @@ const GIST_MESSAGES_FILENAME = 'messages.json';
 // The filename for the quiz data.
 const GIST_QUIZ_FILENAME = 'quiz.json';
 
+// The filename for movie suggestions data.
+const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
 
-export { GIST_TOKEN, GIST_ID, GIST_FILENAME, GIST_MESSAGES_FILENAME, GIST_QUIZ_FILENAME };
+
+export { GIST_TOKEN, GIST_ID, GIST_FILENAME, GIST_MESSAGES_FILENAME, GIST_QUIZ_FILENAME, GIST_SUGGESTIONS_FILENAME };
