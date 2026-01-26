@@ -5,7 +5,6 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 import FixMatchDialog from './FixMatchDialog';
-import { Menu, MenuItem } from './ui/Menu';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 
 interface MovieItemProps {
@@ -204,22 +203,23 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <MagicWandIcon style={{width: '14px', height: '14px'}} />
               </IconButton>
               
-              <Menu 
-                trigger={
-                  <IconButton variant="ghost" size="sm" style={{ padding: 0, width: '28px', height: '28px', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: radius.md }}>
-                    <DotsVerticalIcon style={{width: '14px', color: colors.textPrimary}} />
-                  </IconButton>
-                }
-                align="right"
+              <IconButton
+                onClick={(e) => { e.stopPropagation(); onDelete(movie); }}
+                variant="ghost"
+                size="sm"
+                title="Delete Movie"
+                style={{ 
+                  padding: 0, 
+                  width: '28px', 
+                  height: '28px', 
+                  backgroundColor: 'rgba(0,0,0,0.6)', 
+                  borderRadius: radius.md,
+                  color: colors.error,
+                  border: `1px solid ${colors.error}40`,
+                }}
               >
-                <MenuItem 
-                  onClick={() => onDelete(movie)}
-                  variant="danger"
-                  icon={<TrashIcon style={{width: '14px', height: '14px'}} />}
-                >
-                  Delete
-                </MenuItem>
-              </Menu>
+                <TrashIcon style={{width: '14px', height: '14px'}} />
+              </IconButton>
             </div>
             </div>
           </div>
@@ -382,22 +382,17 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <MagicWandIcon />
               </IconButton>
 
-              <Menu 
-                trigger={
-                  <IconButton variant="ghost" aria-label="More options">
-                    <DotsVerticalIcon />
-                  </IconButton>
-                }
-                align="right"
+              <IconButton
+                onClick={() => onDelete(movie)}
+                variant="ghost"
+                title="Delete Movie"
+                style={{
+                  border: `1px solid ${colors.error}40`,
+                  color: colors.error,
+                }}
               >
-                <MenuItem 
-                  onClick={() => onDelete(movie)}
-                  variant="danger"
-                  icon={<TrashIcon style={{width: '16px', height: '16px'}} />}
-                >
-                  Delete Movie
-                </MenuItem>
-              </Menu>
+                <TrashIcon />
+              </IconButton>
             </div>
           </div>
         </div>
