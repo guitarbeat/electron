@@ -5,8 +5,26 @@ import { userImageSources, defaultImageSources } from '../config/imageConfig';
 import Card from './ui/Card';
 import { spacing, typography, colors, shadows } from '../design-system/tokens';
 
-const Header: React.FC = () => {
-  const { currentUser } = useUser();
+import { User } from '../types';
+import { LogoutIcon, LockIcon, TrashIcon } from './icons';
+import Button from './ui/Button';
+import IconButton from './ui/IconButton';
+
+interface HeaderProps {
+  currentUser: User;
+  onLogout: () => void;
+  onPinAction: () => void;
+  onRemovePin: () => void;
+  hasPin: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ 
+  currentUser, 
+  onLogout, 
+  onPinAction, 
+  onRemovePin, 
+  hasPin 
+}) => {
   const sources = currentUser ? userImageSources[currentUser] : defaultImageSources;
 
   return (
@@ -90,8 +108,57 @@ const Header: React.FC = () => {
               lineHeight: typography.lineHeight.normal,
               opacity: 0.8,
             }}>
-              Shared Watchlist ✨
+              Shared Watchlist • <span style={{ color: colors.accent, fontWeight: typography.fontWeight.bold }}>{currentUser}</span>
             </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+            <div style={{ display: 'flex', gap: spacing.sm }}>
+              <IconButton
+                onClick={onPinAction}
+                variant="ghost"
+                size="sm"
+                title={hasPin ? "Change PIN" : "Set PIN"}
+                style={{ 
+                  color: hasPin ? colors.success : colors.textTertiary,
+                  borderColor: hasPin ? `${colors.success}40` : `${colors.borderSecondary}40`,
+                  border: '1px solid'
+                }}
+              >
+                <LockIcon />
+              </IconButton>
+              {hasPin && (
+                <IconButton
+                  onClick={onRemovePin}
+                  variant="ghost"
+                  size="sm"
+                  title="Remove PIN"
+                  style={{ 
+                    color: colors.error,
+                    borderColor: `${colors.error}40`,
+                    border: '1px solid'
+                  }}
+                >
+                  <TrashIcon />
+                </IconButton>
+              )}
+            </div>
+            
+            <Button 
+              onClick={onLogout}
+              variant="secondary"
+              size="sm"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: spacing.xs,
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderColor: 'rgba(255,255,255,0.1)'
+              }}
+            >
+              <LogoutIcon style={{ width: '1.25rem', height: '1.5rem' }} />
+              Logout
+            </Button>
           </div>
         </div>
       </Card>
