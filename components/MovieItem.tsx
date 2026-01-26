@@ -13,7 +13,7 @@ interface MovieItemProps {
   currentUser: User;
   onToggle: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
-  onUpdateMetadata?: (movie: Movie, searchTerm?: string) => Promise<boolean>;
+  onFixMatch?: (movie: Movie) => void;
   animationDelay: string;
   layout?: 'list' | 'grid';
 }
@@ -32,14 +32,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
   currentUser,
   onToggle,
   onDelete,
-  onUpdateMetadata,
+  onFixMatch,
   animationDelay,
   layout = 'list',
 }) => {
   const watchedByCurrentUser = movie.watchedBy.includes(currentUser);
   const watchedByBoth = movie.watchedBy.length === 2;
   const [isUpdating, setIsUpdating] = React.useState(false);
-  const [showFixDialog, setShowFixDialog] = React.useState(false);
 
   return (
     <Card
@@ -196,7 +195,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 align="right"
               >
                 <MenuItem 
-                   onClick={() => setShowFixDialog(true)}
+                   onClick={() => onFixMatch?.(movie)}
                    icon={isUpdating ? <Spinner style={{width: '14px', height: '14px'}} /> : <MagicWandIcon style={{width: '14px', height: '14px'}} />}
                 >
                   Fix Match
@@ -368,7 +367,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 align="right"
               >
                 <MenuItem 
-                  onClick={() => setShowFixDialog(true)}
+                  onClick={() => onFixMatch?.(movie)}
                   icon={isUpdating ? <Spinner style={{width: '16px', height: '16px'}} /> : <MagicWandIcon style={{width: '16px', height: '16px'}} />}
                 >
                   {isUpdating ? 'Updating...' : 'Fix Incorrect Match'}
@@ -386,17 +385,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
         </div>
       )}
 
-      {onUpdateMetadata && (
-        <FixMatchDialog
-          isOpen={showFixDialog}
-          movieTitle={movie.title}
-          onClose={() => setShowFixDialog(false)}
-          onSearch={async (term) => {
-            setIsUpdating(true);
-            return onUpdateMetadata(movie, term).finally(() => setIsUpdating(false));
-          }}
-        />
-      )}
     </Card>
   );
 };

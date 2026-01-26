@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
+import FixMatchDialog from './FixMatchDialog';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { usePins } from '../hooks/usePins';
@@ -50,6 +51,7 @@ const Watchlist: React.FC = () => {
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
   const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
+  const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -197,7 +199,7 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !movies) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: colors.background }}>
         <div style={{ color: colors.textSecondary }}>Loading watchlist...</div>
@@ -350,17 +352,7 @@ const Watchlist: React.FC = () => {
                   currentUser={currentUser!}
                   onToggle={handleToggleWatched}
                   onDelete={handleDeleteMovie}
-                  onUpdateMetadata={async (movie, searchTerm) => {
-                    const termToCheck = searchTerm || movie.title;
-                    setToast({ message: `Fetching details for "${termToCheck}"...`, type: 'info' });
-                    const success = await updateMovieMetadata(movie, searchTerm);
-                    if (success) {
-                        setToast({ message: `Updated details for "${movie.title}"!`, type: 'success' });
-                    } else {
-                        setToast({ message: `Could not find details for "${termToCheck}"`, type: 'error' });
-                    }
-                    return success;
-                  }}
+                  onFixMatch={(movie) => setMovieToFix(movie)}
                   animationDelay="0s"
                   layout="grid"
                 />
@@ -384,7 +376,7 @@ const Watchlist: React.FC = () => {
                     currentUser={currentUser!}
                     onToggle={handleToggleWatched}
                     onDelete={handleDeleteMovie}
-                    onUpdateMetadata={async (m, s) => updateMovieMetadata(m, s)}
+                    onFixMatch={(movie) => setMovieToFix(movie)}
                     animationDelay={`${index * 0.05}s`}
                     layout="list"
                   />
@@ -428,6 +420,24 @@ const Watchlist: React.FC = () => {
         onSubmit={handlePinSubmit}
         mode={pinMode}
         isLoading={isPinLoading}
+      />
+
+      <FixMatchDialog
+        isOpen={!!movieToFix}
+        movieTitle={movieToFix?.title || ''}
+        onClose={() => setMovieToFix(null)}
+        onSearch={async (term) => {
+          if (!movieToFix) return false;
+          const termToCheck = term || movieToFix.title;
+          setToast({ message: `Fetching details for "${termToCheck}"...`, type: 'info' });
+          const success = await updateMovieMetadata(movieToFix, term);
+          if (success) {
+            setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
+          } else {
+            setToast({ message: `Could not find details for "${termToCheck}"`, type: 'error' });
+          }
+          return success;
+        }}
       />
 
       <ConfirmDialog
