@@ -4,6 +4,22 @@ const OMDB_API_KEY = 'trilogy';
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
+const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise<Response> => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok && retries > 0) {
+            throw new Error(`Fetch failed with status ${response.status}`);
+        }
+        return response;
+    } catch (error) {
+        if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, backoff));
+            return fetchWithRetry(url, retries - 1, backoff * 2);
+        }
+        throw error;
+    }
+};
+
 interface MetadataResult {
     posterUrl?: string;
     year?: string;
@@ -18,7 +34,7 @@ export const fetchMovieMetadata = async (title: string): Promise<MetadataResult>
     try {
         // 1. Try OMDb first (Best for Movies)
         const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`;
-        const omdbRes = await fetch(omdbUrl);
+        const omdbRes = await fetchWithRetry(omdbUrl);
         const omdbData = await omdbRes.json();
 
         if (omdbData.Response === 'True') {
@@ -35,7 +51,7 @@ export const fetchMovieMetadata = async (title: string): Promise<MetadataResult>
 
         // 2. If OMDb fails or not found, try TVMaze (Best for TV Shows)
         const tvmazeUrl = `${TVMAZE_BASE_URL}/search/shows?q=${encodeURIComponent(title)}`;
-        const tvmazeRes = await fetch(tvmazeUrl);
+        const tvmazeRes = await fetchWithRetry(tvmazeUrl);
         const tvmazeData = await tvmazeRes.json();
 
         if (tvmazeData && tvmazeData.length > 0) {
