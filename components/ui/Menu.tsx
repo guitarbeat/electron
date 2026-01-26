@@ -39,21 +39,23 @@ export const Menu: React.FC<MenuProps> = ({ trigger, children, align = 'right' }
         {trigger}
       </div>
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          [align]: 0,
-          marginTop: spacing.xs,
-          minWidth: '180px',
-          backgroundColor: colors.surfaceElevated,
-          borderRadius: radius.md,
-          boxShadow: shadows.cardElevated,
-          border: `1px solid ${colors.borderInset}`,
-          zIndex: zIndex.dropdown,
-          overflow: 'hidden',
-          animation: 'scale-in 0.15s ease-out',
-          transformOrigin: align === 'right' ? 'top right' : 'top left',
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            [align]: 0,
+            marginTop: spacing.xs,
+            minWidth: '180px',
+            backgroundColor: colors.surfaceElevated,
+            borderRadius: radius.md,
+            boxShadow: shadows.cardElevated,
+            border: `1px solid ${colors.borderInset}`,
+            zIndex: zIndex.dropdown,
+            overflow: 'hidden',
+            animation: 'scale-in 0.15s ease-out',
+            transformOrigin: align === 'right' ? 'top right' : 'top left',
+          }}
+        >
           {children}
         </div>
       )}
@@ -61,7 +63,12 @@ export const Menu: React.FC<MenuProps> = ({ trigger, children, align = 'right' }
   );
 };
 
-export const MenuItem: React.FC<MenuItemProps> = ({ onClick, children, variant = 'default', icon }) => {
+export const MenuItem: React.FC<MenuItemProps> = ({
+  onClick,
+  children,
+  variant = 'default',
+  icon,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -75,8 +82,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({ onClick, children, variant =
         width: '100%',
         textAlign: 'left',
         padding: `${spacing.sm} ${spacing.md}`,
-        background: isHovered 
-          ? (variant === 'danger' ? colors.error + '20' : colors.surface) 
+        background: isHovered
+          ? variant === 'danger'
+            ? colors.error + '20'
+            : colors.surface
           : 'transparent',
         border: 'none',
         color: variant === 'danger' ? colors.error : colors.textPrimary,

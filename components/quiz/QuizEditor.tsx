@@ -1,13 +1,19 @@
 /**
  * QuizEditor Component
- * 
+ *
  * Full editor UI for managing quiz questions and character descriptions
  */
 
 import React, { useState, useEffect } from 'react';
 import { useQuiz } from '../../hooks/useQuiz';
 import { QuizData } from '../../services/quizService';
-import { QuizQuestion, QuizCharacter, MultipleChoiceQuestion, AgreeDisagreeQuestion, ImageChoiceQuestion } from './types';
+import {
+  QuizQuestion,
+  QuizCharacter,
+  MultipleChoiceQuestion,
+  AgreeDisagreeQuestion,
+  ImageChoiceQuestion,
+} from './types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -63,19 +69,21 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Back">
             <ArrowLeftIcon style={{ width: '1.25rem', height: '1.25rem' }} />
           </Button>
-          <h1 style={{ 
-            fontSize: typography.fontSize.xl, 
-            fontWeight: typography.fontWeight.bold,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            margin: 0,
-            flex: 1
-          }}>
+          <h1
+            style={{
+              fontSize: typography.fontSize.xl,
+              fontWeight: typography.fontWeight.bold,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              margin: 0,
+              flex: 1,
+            }}
+          >
             Quiz Editor
           </h1>
-          <Button 
-            variant="primary" 
-            size="sm" 
-            onClick={handleSave} 
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleSave}
             disabled={!hasChanges || isSaving}
             isLoading={isSaving}
             loadingText="Saving..."
@@ -86,17 +94,19 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
       </Card>
 
       {/* Tabs - Modern Segmented Control */}
-      <div style={{ 
-        display: 'flex', 
-        backgroundColor: 'rgba(255, 255, 255, 0.05)', 
-        padding: '4px', 
-        borderRadius: radius.lg, 
-        marginBottom: spacing.xl,
-        border: `1px solid ${colors.borderSecondary}10`,
-      }}>
-        <button 
+      <div
+        style={{
+          display: 'flex',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          padding: '4px',
+          borderRadius: radius.lg,
+          marginBottom: spacing.xl,
+          border: `1px solid ${colors.borderSecondary}10`,
+        }}
+      >
+        <button
           onClick={() => setActiveTab('questions')}
-          style={{ 
+          style={{
             flex: 1,
             padding: `${spacing.sm} ${spacing.md}`,
             border: 'none',
@@ -112,9 +122,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         >
           Questions ({localData.questions.length})
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('descriptions')}
-          style={{ 
+          style={{
             flex: 1,
             padding: `${spacing.sm} ${spacing.md}`,
             border: 'none',
@@ -133,7 +143,7 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
       </div>
 
       {activeTab === 'questions' && (
-        <QuestionsTab 
+        <QuestionsTab
           questions={localData.questions}
           editingQuestion={editingQuestion}
           setEditingQuestion={setEditingQuestion}
@@ -145,7 +155,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         <DescriptionsTab
           characterDescriptions={localData.characterDescriptions}
           neitherDescription={localData.neitherDescription}
-          onUpdateDescriptions={(characterDescriptions) => updateLocalData({ characterDescriptions })}
+          onUpdateDescriptions={(characterDescriptions) =>
+            updateLocalData({ characterDescriptions })
+          }
           onUpdateNeither={(neitherDescription) => updateLocalData({ neitherDescription })}
         />
       )}
@@ -161,11 +173,11 @@ interface QuestionsTabProps {
   onUpdateQuestions: (questions: QuizQuestion[]) => void;
 }
 
-const QuestionsTab: React.FC<QuestionsTabProps> = ({ 
-  questions, 
-  editingQuestion, 
-  setEditingQuestion, 
-  onUpdateQuestions 
+const QuestionsTab: React.FC<QuestionsTabProps> = ({
+  questions,
+  editingQuestion,
+  setEditingQuestion,
+  onUpdateQuestions,
 }) => {
   const addNewQuestion = (type: QuizQuestion['type']) => {
     const newId = `q_${Date.now()}`;
@@ -212,19 +224,19 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
 
   const deleteQuestion = (id: string) => {
     if (!window.confirm('Delete this question?')) return;
-    onUpdateQuestions(questions.filter(q => q.id !== id));
+    onUpdateQuestions(questions.filter((q) => q.id !== id));
     if (editingQuestion?.id === id) setEditingQuestion(null);
   };
 
   const saveQuestion = (updated: QuizQuestion) => {
-    onUpdateQuestions(questions.map(q => q.id === updated.id ? updated : q));
+    onUpdateQuestions(questions.map((q) => (q.id === updated.id ? updated : q)));
     setEditingQuestion(null);
   };
 
   if (editingQuestion) {
     return (
-      <QuestionEditor 
-        question={editingQuestion} 
+      <QuestionEditor
+        question={editingQuestion}
         onSave={saveQuestion}
         onCancel={() => setEditingQuestion(null)}
       />
@@ -249,10 +261,10 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       {/* Questions List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
         {questions.map((q, index) => (
-          <Card 
-            key={q.id} 
-            variant="default" 
-            style={{ 
+          <Card
+            key={q.id}
+            variant="default"
+            style={{
               padding: spacing.md,
               backgroundColor: colors.surfaceElevated,
               border: `1px solid ${colors.borderSecondary}10`,
@@ -271,64 +283,74 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
               e.currentTarget.style.backgroundColor = colors.surfaceElevated;
             }}
           >
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              gap: spacing.md
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: spacing.md,
+              }}
+            >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: spacing.sm,
-                  marginBottom: spacing.xs 
-                }}>
-                  <span style={{ 
-                    fontSize: '10px', 
-                    color: colors.accent,
-                    fontWeight: typography.fontWeight.bold,
-                    backgroundColor: `${colors.accent}20`,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                  }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    marginBottom: spacing.xs,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      color: colors.accent,
+                      fontWeight: typography.fontWeight.bold,
+                      backgroundColor: `${colors.accent}20`,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                    }}
+                  >
                     #{index + 1}
                   </span>
-                  <span style={{ 
-                    fontSize: '9px', 
-                    color: colors.textTertiary,
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    padding: `2px 6px`,
-                    borderRadius: radius.full,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    fontWeight: typography.fontWeight.bold,
-                  }}>
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      color: colors.textTertiary,
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      padding: `2px 6px`,
+                      borderRadius: radius.full,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      fontWeight: typography.fontWeight.bold,
+                    }}
+                  >
                     {q.type.replace('-', ' ')}
                   </span>
                 </div>
-                <p style={{ 
-                  fontSize: typography.fontSize.sm, 
-                  color: colors.textPrimary,
-                  margin: 0,
-                  fontWeight: typography.fontWeight.semibold,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '-0.01em',
-                }}>
+                <p
+                  style={{
+                    fontSize: typography.fontSize.sm,
+                    color: colors.textPrimary,
+                    margin: 0,
+                    fontWeight: typography.fontWeight.semibold,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
                   {q.question}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteQuestion(q.id);
-                  }} 
-                  style={{ 
+                  }}
+                  style={{
                     color: colors.error,
                     opacity: 0.6,
                     padding: spacing.xs,
@@ -362,12 +384,21 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({ question, onSave, onCan
   return (
     <Card variant="elevated" style={{ padding: spacing.md }}>
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md }}>
-          <h2 style={{ 
-            fontSize: typography.fontSize.lg, 
-            margin: 0,
-            fontFamily: typography.fontFamily.heading.join(', ')
-          }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: spacing.md,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: typography.fontSize.lg,
+              margin: 0,
+              fontFamily: typography.fontFamily.heading.join(', '),
+            }}
+          >
             Edit Question
           </h2>
           <div style={{ display: 'flex', gap: spacing.sm }}>
@@ -391,23 +422,23 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({ question, onSave, onCan
 
         <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: spacing.xs }}>
           {local.type === 'multiple-choice' && (
-            <MultipleChoiceEditor 
-              question={local as MultipleChoiceQuestion} 
-              onChange={(q) => setLocal(q)} 
+            <MultipleChoiceEditor
+              question={local as MultipleChoiceQuestion}
+              onChange={(q) => setLocal(q)}
             />
           )}
 
           {local.type === 'agree-disagree' && (
-            <AgreeDisagreeEditor 
-              question={local as AgreeDisagreeQuestion} 
-              onChange={(q) => setLocal(q)} 
+            <AgreeDisagreeEditor
+              question={local as AgreeDisagreeQuestion}
+              onChange={(q) => setLocal(q)}
             />
           )}
 
           {local.type === 'image-choice' && (
-            <ImageChoiceEditor 
-              question={local as ImageChoiceQuestion} 
-              onChange={(q) => setLocal(q)} 
+            <ImageChoiceEditor
+              question={local as ImageChoiceQuestion}
+              onChange={(q) => setLocal(q)}
             />
           )}
         </div>
@@ -423,7 +454,11 @@ interface MultipleChoiceEditorProps {
 }
 
 const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, onChange }) => {
-  const updateOption = (index: number, field: 'text' | 'scores', value: string | Partial<Record<QuizCharacter, number>>) => {
+  const updateOption = (
+    index: number,
+    field: 'text' | 'scores',
+    value: string | Partial<Record<QuizCharacter, number>>
+  ) => {
     const newOptions = [...question.options];
     newOptions[index] = { ...newOptions[index], [field]: value };
     onChange({ ...question, options: newOptions });
@@ -433,7 +468,7 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
     const newOptions = [...question.options];
     newOptions[optionIndex] = {
       ...newOptions[optionIndex],
-      scores: { ...newOptions[optionIndex].scores, [character]: score }
+      scores: { ...newOptions[optionIndex].scores, [character]: score },
     };
     onChange({ ...question, options: newOptions });
   };
@@ -441,7 +476,7 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
   const addOption = () => {
     onChange({
       ...question,
-      options: [...question.options, { text: 'New option', scores: {} }]
+      options: [...question.options, { text: 'New option', scores: {} }],
     });
   };
 
@@ -449,7 +484,7 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
     if (question.options.length <= 2) return;
     onChange({
       ...question,
-      options: question.options.filter((_, i) => i !== index)
+      options: question.options.filter((_, i) => i !== index),
     });
   };
 
@@ -457,12 +492,15 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
     <div>
       <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Options</h3>
       {question.options.map((option, idx) => (
-        <div key={idx} style={{ 
-          marginBottom: spacing.lg, 
-          padding: spacing.md, 
-          backgroundColor: colors.surface,
-          borderRadius: radius.md
-        }}>
+        <div
+          key={idx}
+          style={{
+            marginBottom: spacing.lg,
+            padding: spacing.md,
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+          }}
+        >
           <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm }}>
             <div style={{ flex: 1 }}>
               <Input
@@ -472,12 +510,17 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
                 style={{ textAlign: 'left' }}
               />
             </div>
-            <Button variant="danger" size="sm" onClick={() => removeOption(idx)} disabled={question.options.length <= 2}>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => removeOption(idx)}
+              disabled={question.options.length <= 2}
+            >
               ✕
             </Button>
           </div>
-          <ScoreEditor 
-            scores={option.scores} 
+          <ScoreEditor
+            scores={option.scores}
             onChange={(scores) => {
               const newOptions = [...question.options];
               newOptions[idx] = { ...newOptions[idx], scores };
@@ -511,23 +554,34 @@ const AgreeDisagreeEditor: React.FC<AgreeDisagreeEditorProps> = ({ question, onC
 
   return (
     <div>
-      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Scoring by Response</h3>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>
+        Scoring by Response
+      </h3>
       {levels.map((level) => (
-        <div key={level} style={{ 
-          marginBottom: spacing.md, 
-          padding: spacing.md, 
-          backgroundColor: colors.surface,
-          borderRadius: radius.md
-        }}>
-          <div style={{ marginBottom: spacing.sm, fontWeight: typography.fontWeight.medium, color: colors.textSecondary }}>
+        <div
+          key={level}
+          style={{
+            marginBottom: spacing.md,
+            padding: spacing.md,
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+          }}
+        >
+          <div
+            style={{
+              marginBottom: spacing.sm,
+              fontWeight: typography.fontWeight.medium,
+              color: colors.textSecondary,
+            }}
+          >
             {levelLabels[level]}
           </div>
-          <ScoreEditor 
-            scores={question.scores[level]} 
+          <ScoreEditor
+            scores={question.scores[level]}
             onChange={(scores) => {
               onChange({
                 ...question,
-                scores: { ...question.scores, [level]: scores }
+                scores: { ...question.scores, [level]: scores },
               });
             }}
           />
@@ -570,10 +624,10 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
       const newOptions = [...question.options];
-      newOptions[index] = { 
-        ...newOptions[index], 
+      newOptions[index] = {
+        ...newOptions[index],
         imageUrl: base64,
-        alt: newOptions[index].alt || file.name.replace(/\.[^/.]+$/, '')
+        alt: newOptions[index].alt || file.name.replace(/\.[^/.]+$/, ''),
       };
       onChange({ ...question, options: newOptions });
     };
@@ -583,7 +637,7 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
   const addOption = () => {
     onChange({
       ...question,
-      options: [...question.options, { imageUrl: '', alt: 'New image', scores: {} }]
+      options: [...question.options, { imageUrl: '', alt: 'New image', scores: {} }],
     });
   };
 
@@ -591,7 +645,7 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
     if (question.options.length <= 2) return;
     onChange({
       ...question,
-      options: question.options.filter((_, i) => i !== index)
+      options: question.options.filter((_, i) => i !== index),
     });
   };
 
@@ -600,28 +654,39 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
   return (
     <div>
       <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Image Options</h3>
-      <p style={{ fontSize: typography.fontSize.sm, color: colors.textTertiary, marginBottom: spacing.lg }}>
+      <p
+        style={{
+          fontSize: typography.fontSize.sm,
+          color: colors.textTertiary,
+          marginBottom: spacing.lg,
+        }}
+      >
         Upload images (under 500KB) or enter URLs to existing images in /quiz-photos/
       </p>
       {question.options.map((option, idx) => (
-        <div key={idx} style={{ 
-          marginBottom: spacing.lg, 
-          padding: spacing.md, 
-          backgroundColor: colors.surface,
-          borderRadius: radius.md
-        }}>
+        <div
+          key={idx}
+          style={{
+            marginBottom: spacing.lg,
+            padding: spacing.md,
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+          }}
+        >
           {/* Image Preview & Upload */}
-          <div style={{ 
-            display: 'flex', 
-            gap: spacing.md, 
-            marginBottom: spacing.md,
-            alignItems: 'flex-start'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: spacing.md,
+              marginBottom: spacing.md,
+              alignItems: 'flex-start',
+            }}
+          >
             {/* Preview */}
-            <div 
-              style={{ 
-                width: '100px', 
-                height: '100px', 
+            <div
+              style={{
+                width: '100px',
+                height: '100px',
                 borderRadius: radius.md,
                 border: `2px dashed ${colors.borderSecondary}`,
                 display: 'flex',
@@ -635,22 +700,24 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
               onClick={() => fileInputRefs.current[idx]?.click()}
             >
               {option.imageUrl ? (
-                <img 
-                  src={option.imageUrl} 
-                  alt={option.alt} 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
+                <img
+                  src={option.imageUrl}
+                  alt={option.alt}
+                  style={{
+                    width: '100%',
+                    height: '100%',
                     objectFit: 'cover',
-                  }} 
+                  }}
                 />
               ) : (
-                <div style={{ 
-                  textAlign: 'center', 
-                  padding: spacing.sm,
-                  color: colors.textTertiary,
-                  fontSize: typography.fontSize.xs
-                }}>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: spacing.sm,
+                    color: colors.textTertiary,
+                    fontSize: typography.fontSize.xs,
+                  }}
+                >
                   Click to upload
                 </div>
               )}
@@ -660,7 +727,9 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
             <div style={{ flex: 1 }}>
               {/* Hidden file input */}
               <input
-                ref={(el) => { fileInputRefs.current[idx] = el; }}
+                ref={(el) => {
+                  fileInputRefs.current[idx] = el;
+                }}
                 type="file"
                 accept="image/*"
                 style={{ display: 'none' }}
@@ -672,9 +741,9 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
 
               {/* Upload button */}
               <div style={{ marginBottom: spacing.sm }}>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => fileInputRefs.current[idx]?.click()}
                   style={{ width: '100%' }}
                 >
@@ -693,9 +762,9 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
               />
 
               {isBase64Image(option.imageUrl) && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => updateOption(idx, 'imageUrl', '')}
                   style={{ marginTop: spacing.xs, fontSize: typography.fontSize.xs }}
                 >
@@ -705,10 +774,10 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
             </div>
 
             {/* Delete button */}
-            <Button 
-              variant="danger" 
-              size="sm" 
-              onClick={() => removeOption(idx)} 
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => removeOption(idx)}
               disabled={question.options.length <= 2}
               style={{ flexShrink: 0 }}
             >
@@ -728,8 +797,8 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
           </div>
 
           {/* Scores */}
-          <ScoreEditor 
-            scores={option.scores} 
+          <ScoreEditor
+            scores={option.scores}
             onChange={(scores) => {
               const newOptions = [...question.options];
               newOptions[idx] = { ...newOptions[idx], scores };
@@ -753,29 +822,36 @@ interface ScoreEditorProps {
 
 const ScoreEditor: React.FC<ScoreEditorProps> = ({ scores, onChange }) => {
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(2, 1fr)', 
-      gap: spacing.md,
-      marginTop: spacing.sm
-    }}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: spacing.md,
+        marginTop: spacing.sm,
+      }}
+    >
       {CHARACTERS.map((char) => (
-        <div key={char} style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          gap: spacing.xs,
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          padding: spacing.sm,
-          borderRadius: radius.md,
-          border: `1px solid ${colors.borderSecondary}10`,
-        }}>
-          <label style={{ 
-            fontSize: '10px', 
-            color: colors.textTertiary, 
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            fontWeight: typography.fontWeight.bold
-          }}>
+        <div
+          key={char}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.xs,
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            padding: spacing.sm,
+            borderRadius: radius.md,
+            border: `1px solid ${colors.borderSecondary}10`,
+          }}
+        >
+          <label
+            style={{
+              fontSize: '10px',
+              color: colors.textTertiary,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontWeight: typography.fontWeight.bold,
+            }}
+          >
             {char}
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
@@ -812,28 +888,32 @@ interface DescriptionsTabProps {
   onUpdateNeither: (description: string) => void;
 }
 
-const DescriptionsTab: React.FC<DescriptionsTabProps> = ({ 
-  characterDescriptions, 
+const DescriptionsTab: React.FC<DescriptionsTabProps> = ({
+  characterDescriptions,
   neitherDescription,
   onUpdateDescriptions,
-  onUpdateNeither
+  onUpdateNeither,
 }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
       {CHARACTERS.map((char) => (
         <Card key={char} variant="default">
           <div style={{ padding: spacing.lg }}>
-            <h3 style={{ 
-              fontSize: typography.fontSize.lg, 
-              marginBottom: spacing.md,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              color: colors.accent
-            }}>
+            <h3
+              style={{
+                fontSize: typography.fontSize.lg,
+                marginBottom: spacing.md,
+                fontFamily: typography.fontFamily.heading.join(', '),
+                color: colors.accent,
+              }}
+            >
               {char}
             </h3>
             <Textarea
               value={characterDescriptions[char]}
-              onChange={(e) => onUpdateDescriptions({ ...characterDescriptions, [char]: e.target.value })}
+              onChange={(e) =>
+                onUpdateDescriptions({ ...characterDescriptions, [char]: e.target.value })
+              }
               rows={3}
               style={{ textAlign: 'left' }}
             />
@@ -843,12 +923,14 @@ const DescriptionsTab: React.FC<DescriptionsTabProps> = ({
 
       <Card variant="default">
         <div style={{ padding: spacing.lg }}>
-          <h3 style={{ 
-            fontSize: typography.fontSize.lg, 
-            marginBottom: spacing.md,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            color: colors.textSecondary
-          }}>
+          <h3
+            style={{
+              fontSize: typography.fontSize.lg,
+              marginBottom: spacing.md,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              color: colors.textSecondary,
+            }}
+          >
             "Neither" Result
           </h3>
           <Textarea

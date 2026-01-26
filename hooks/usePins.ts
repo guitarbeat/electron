@@ -22,25 +22,34 @@ export const usePins = () => {
     refresh();
   }, [refresh]);
 
-  const userHasPin = useCallback((user: User): boolean => {
-    return !!pins[user];
-  }, [pins]);
+  const userHasPin = useCallback(
+    (user: User): boolean => {
+      return !!pins[user];
+    },
+    [pins]
+  );
 
-  const setUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {
-    const success = await setPin(user, pin);
-    if (success) {
-      await refresh();
-    }
-    return success;
-  }, [refresh]);
+  const setUserPin = useCallback(
+    async (user: User, pin: string): Promise<boolean> => {
+      const success = await setPin(user, pin);
+      if (success) {
+        await refresh();
+      }
+      return success;
+    },
+    [refresh]
+  );
 
-  const removeUserPin = useCallback(async (user: User): Promise<boolean> => {
-    const success = await removePin(user);
-    if (success) {
-      await refresh();
-    }
-    return success;
-  }, [refresh]);
+  const removeUserPin = useCallback(
+    async (user: User): Promise<boolean> => {
+      const success = await removePin(user);
+      if (success) {
+        await refresh();
+      }
+      return success;
+    },
+    [refresh]
+  );
 
   const verifyUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {
     return verifyPin(user, pin);

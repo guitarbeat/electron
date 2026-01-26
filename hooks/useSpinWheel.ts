@@ -13,7 +13,9 @@ export const useSpinWheel = (
   currentUser: User | null,
   onWinner?: (movie: Movie) => void
 ) => {
-  const [status, setStatus] = useState<'idle' | 'spinning' | 'result' | 'loading' | 'saving'>('loading');
+  const [status, setStatus] = useState<'idle' | 'spinning' | 'result' | 'loading' | 'saving'>(
+    'loading'
+  );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [currentRotation, setCurrentRotation] = useState(0);
@@ -44,14 +46,17 @@ export const useSpinWheel = (
     return angle;
   }, []);
 
-  const updateWheelRotation = useCallback((angle: number) => {
-    if (wheelRef.current) {
-      wheelRef.current.style.transform = `rotate(${angle}deg)`;
-      wheelRef.current.style.transition = 'none'; // Ensure no CSS transition interferes
-    }
-    rotationRef.current = angle;
-    setCurrentRotation(angle);
-  }, [wheelRef]);
+  const updateWheelRotation = useCallback(
+    (angle: number) => {
+      if (wheelRef.current) {
+        wheelRef.current.style.transform = `rotate(${angle}deg)`;
+        wheelRef.current.style.transition = 'none'; // Ensure no CSS transition interferes
+      }
+      rotationRef.current = angle;
+      setCurrentRotation(angle);
+    },
+    [wheelRef]
+  );
 
   const spinLoop = useCallback(async () => {
     velocityRef.current *= FRICTION;
@@ -116,20 +121,23 @@ export const useSpinWheel = (
     animationFrameRef.current = requestAnimationFrame(spinLoop);
   }, [spinLoop]);
 
-  const handlePointerDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if (status === 'spinning' || hasSpunToday || !e.currentTarget) return;
+  const handlePointerDown = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if (status === 'spinning' || hasSpunToday || !e.currentTarget) return;
 
-    interactionElementRef.current = e.currentTarget as HTMLElement;
+      interactionElementRef.current = e.currentTarget as HTMLElement;
 
-    dragStartAngleRef.current = getPointerAngle(e.nativeEvent, interactionElementRef.current);
-    pointerHistoryRef.current = [{ angle: rotationRef.current, timestamp: Date.now() }];
+      dragStartAngleRef.current = getPointerAngle(e.nativeEvent, interactionElementRef.current);
+      pointerHistoryRef.current = [{ angle: rotationRef.current, timestamp: Date.now() }];
 
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    setIsDragging(true);
-  }, [status, hasSpunToday, getPointerAngle]);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      setIsDragging(true);
+    },
+    [status, hasSpunToday, getPointerAngle]
+  );
 
   // Effect to handle drag logic using document-level event listeners
   useEffect(() => {
@@ -166,7 +174,7 @@ export const useSpinWheel = (
       if (history.length > 1) {
         const first = history[0];
         const last = history[history.length - 1];
-        const deltaTime = (last.timestamp - first.timestamp);
+        const deltaTime = last.timestamp - first.timestamp;
 
         if (deltaTime > 0) {
           const deltaAngle = last.angle - first.angle;
@@ -192,9 +200,8 @@ export const useSpinWheel = (
       ownerDoc.removeEventListener('touchmove', handlePointerMove);
       ownerDoc.removeEventListener('mouseup', handlePointerUp);
       ownerDoc.removeEventListener('touchend', handlePointerUp);
-    }
+    };
   }, [isDragging, getPointerAngle, updateWheelRotation, startSpinAnimation]);
-
 
   // Cleanup effect for animation frame and timeouts
   useEffect(() => {
@@ -238,7 +245,7 @@ export const useSpinWheel = (
           setHasSpunToday(true);
           setStatus('result');
 
-          const movie = movies.find(m => m.id === todaySpin.movieId);
+          const movie = movies.find((m) => m.id === todaySpin.movieId);
           if (movie) {
             setSelectedMovie(movie);
           } else {
@@ -254,10 +261,12 @@ export const useSpinWheel = (
           setStatus('idle');
         }
       } catch (error) {
-        console.error('Error checking today\'s spin:', error);
+        console.error("Error checking today's spin:", error);
         if (isMounted) {
           setStatus('idle');
-          setSaveError('Could not check for existing spin. You can still spin, but results may not sync.');
+          setSaveError(
+            'Could not check for existing spin. You can still spin, but results may not sync.'
+          );
         }
       }
     };
@@ -273,7 +282,7 @@ export const useSpinWheel = (
   // * Sync selectedMovie if movies list updates and we have todaySpinData
   useEffect(() => {
     if (todaySpinData && !selectedMovie) {
-      const movie = movies.find(m => m.id === todaySpinData.movieId);
+      const movie = movies.find((m) => m.id === todaySpinData.movieId);
       if (movie) {
         setSelectedMovie(movie);
       }

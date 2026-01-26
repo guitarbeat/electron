@@ -1,6 +1,6 @@
 /**
  * useQuiz Hook
- * 
+ *
  * Provides quiz data with polling and mutation support
  */
 
@@ -10,74 +10,99 @@ import { getQuizData, saveQuizData, QuizData } from '../services/quizService';
 import { QuizQuestion, QuizCharacter } from '../components/quiz/types';
 
 export const useQuiz = () => {
-  const { data: quizData, error, isLoading, refresh } = usePolling(
-    getQuizData,
-    5000,
-    (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
-  );
+  const {
+    data: quizData,
+    error,
+    isLoading,
+    refresh,
+  } = usePolling(getQuizData, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
   const [isSaving, setIsSaving] = useState(false);
   const isSavingRef = useRef(false);
 
-  const performMutation = useCallback(async (mutationFn: (data: QuizData) => QuizData) => {
-    if (isSavingRef.current) return;
-    isSavingRef.current = true;
-    setIsSaving(true);
-    try {
-      const latestData = await getQuizData();
-      const updatedData = mutationFn(latestData);
-      await saveQuizData(updatedData);
-      refresh();
-    } catch (err) {
-      console.error("Quiz mutation failed:", err);
-      throw err;
-    } finally {
-      isSavingRef.current = false;
-      setIsSaving(false);
-    }
-  }, [refresh]);
+  const performMutation = useCallback(
+    async (mutationFn: (data: QuizData) => QuizData) => {
+      if (isSavingRef.current) return;
+      isSavingRef.current = true;
+      setIsSaving(true);
+      try {
+        const latestData = await getQuizData();
+        const updatedData = mutationFn(latestData);
+        await saveQuizData(updatedData);
+        refresh();
+      } catch (err) {
+        console.error('Quiz mutation failed:', err);
+        throw err;
+      } finally {
+        isSavingRef.current = false;
+        setIsSaving(false);
+      }
+    },
+    [refresh]
+  );
 
-  const updateQuestions = useCallback(async (questions: QuizQuestion[]) => {
-    await performMutation(data => ({ ...data, questions }));
-  }, [performMutation]);
+  const updateQuestions = useCallback(
+    async (questions: QuizQuestion[]) => {
+      await performMutation((data) => ({ ...data, questions }));
+    },
+    [performMutation]
+  );
 
-  const addQuestion = useCallback(async (question: QuizQuestion) => {
-    await performMutation(data => ({
-      ...data,
-      questions: [...data.questions, question],
-    }));
-  }, [performMutation]);
+  const addQuestion = useCallback(
+    async (question: QuizQuestion) => {
+      await performMutation((data) => ({
+        ...data,
+        questions: [...data.questions, question],
+      }));
+    },
+    [performMutation]
+  );
 
-  const updateQuestion = useCallback(async (questionId: string, updatedQuestion: QuizQuestion) => {
-    await performMutation(data => ({
-      ...data,
-      questions: data.questions.map(q => q.id === questionId ? updatedQuestion : q),
-    }));
-  }, [performMutation]);
+  const updateQuestion = useCallback(
+    async (questionId: string, updatedQuestion: QuizQuestion) => {
+      await performMutation((data) => ({
+        ...data,
+        questions: data.questions.map((q) => (q.id === questionId ? updatedQuestion : q)),
+      }));
+    },
+    [performMutation]
+  );
 
-  const deleteQuestion = useCallback(async (questionId: string) => {
-    await performMutation(data => ({
-      ...data,
-      questions: data.questions.filter(q => q.id !== questionId),
-    }));
-  }, [performMutation]);
+  const deleteQuestion = useCallback(
+    async (questionId: string) => {
+      await performMutation((data) => ({
+        ...data,
+        questions: data.questions.filter((q) => q.id !== questionId),
+      }));
+    },
+    [performMutation]
+  );
 
-  const updateCharacterDescription = useCallback(async (character: QuizCharacter, description: string) => {
-    await performMutation(data => ({
-      ...data,
-      characterDescriptions: { ...data.characterDescriptions, [character]: description },
-    }));
-  }, [performMutation]);
+  const updateCharacterDescription = useCallback(
+    async (character: QuizCharacter, description: string) => {
+      await performMutation((data) => ({
+        ...data,
+        characterDescriptions: { ...data.characterDescriptions, [character]: description },
+      }));
+    },
+    [performMutation]
+  );
 
-  const updateNeitherDescription = useCallback(async (description: string) => {
-    await performMutation(data => ({
-      ...data,
-      neitherDescription: description,
-    }));
-  }, [performMutation]);
+  const updateNeitherDescription = useCallback(
+    async (description: string) => {
+      await performMutation((data) => ({
+        ...data,
+        neitherDescription: description,
+      }));
+    },
+    [performMutation]
+  );
 
-  const saveAllData = useCallback(async (data: QuizData) => {
-    await performMutation(() => data);
-  }, [performMutation]);
+  const saveAllData = useCallback(
+    async (data: QuizData) => {
+      await performMutation(() => data);
+    },
+    [performMutation]
+  );
 
   return {
     quizData,

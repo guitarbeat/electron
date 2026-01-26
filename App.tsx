@@ -54,7 +54,7 @@ const App: React.FC = () => {
 
     if (isLogin || isLogout) {
       setIsTransitioning(true);
-      
+
       if (isLogin) {
         // * Login: UserSelection exits left, Watchlist enters from right
         setAnimationClass('animate-login-exit');
@@ -106,7 +106,7 @@ const App: React.FC = () => {
   // Show quiz editor
   if (showQuizEditor) {
     return (
-      <div 
+      <div
         className="bg-main"
         style={{
           color: colors.textPrimary,
@@ -130,7 +130,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div 
+    <div
       className="bg-main"
       style={{
         color: colors.textPrimary,
@@ -148,21 +148,26 @@ const App: React.FC = () => {
             zIndex: 100,
           }}
         >
-          <Button 
-            variant="secondary" 
-            size={isMobile ? "xs" : "sm"} 
+          <Button
+            variant="secondary"
+            size={isMobile ? 'xs' : 'sm'}
             onClick={() => setShowQuizEditor(true)}
             aria-label="Edit Quiz"
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
               gap: spacing.xs,
               padding: isMobile ? '8px 12px' : undefined,
               fontSize: isMobile ? '12px' : undefined,
               boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
             }}
           >
-            <SettingsIcon style={{ width: isMobile ? '0.875rem' : '1rem', height: isMobile ? '0.875rem' : '1rem' }} />
+            <SettingsIcon
+              style={{
+                width: isMobile ? '0.875rem' : '1rem',
+                height: isMobile ? '0.875rem' : '1rem',
+              }}
+            />
             Edit Quiz
           </Button>
         </div>
@@ -213,7 +218,13 @@ const App: React.FC = () => {
           ) : showQuiz ? (
             <div className={animationClass}>
               {isQuizLoading || !quizData ? (
-                <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: spacing['2xl'],
+                    color: colors.textSecondary,
+                  }}
+                >
                   Loading quiz...
                 </div>
               ) : (

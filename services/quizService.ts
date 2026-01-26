@@ -1,12 +1,16 @@
 /**
  * Quiz Service
- * 
+ *
  * Handles fetching and saving quiz data from/to GitHub Gist
  */
 
 import { GIST_TOKEN, GIST_ID, GIST_QUIZ_FILENAME } from '../gistConfig';
 import { QuizQuestion, QuizCharacter } from '../components/quiz/types';
-import { quizQuestions as defaultQuestions, characterDescriptions as defaultDescriptions, neitherDescription as defaultNeither } from '../components/quiz/data';
+import {
+  quizQuestions as defaultQuestions,
+  characterDescriptions as defaultDescriptions,
+  neitherDescription as defaultNeither,
+} from '../components/quiz/data';
 
 const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
@@ -26,8 +30,8 @@ export const getQuizData = async (): Promise<QuizData> => {
   try {
     const response = await fetch(GIST_API_URL, {
       headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
       },
       cache: 'no-cache',
     });
@@ -57,8 +61,8 @@ export const saveQuizData = async (data: QuizData): Promise<void> => {
     const response = await fetch(GIST_API_URL, {
       method: 'PATCH',
       headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
       },
       body: JSON.stringify({
         files: {

@@ -19,8 +19,8 @@ export const getDailySpin = async (): Promise<DailySpin | null> => {
   try {
     const response = await fetch(GIST_API_URL, {
       headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
       },
       cache: 'no-cache',
     });
@@ -52,8 +52,8 @@ export const saveDailySpin = async (spin: DailySpin): Promise<void> => {
     const response = await fetch(GIST_API_URL, {
       method: 'PATCH',
       headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
       },
       body: JSON.stringify({
         files: {

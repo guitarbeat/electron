@@ -30,7 +30,10 @@ const ImageChoiceQuestion: React.FC<ImageChoiceQuestionProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: question.options.length === 2 ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns:
+            question.options.length === 2
+              ? 'repeat(2, 1fr)'
+              : 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: spacing.lg,
         }}
       >

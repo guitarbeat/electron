@@ -20,7 +20,7 @@ const SuggestionForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim() || !suggestedBy.trim()) {
       setError('Please fill in all required fields');
       return;
@@ -51,39 +51,41 @@ const SuggestionForm: React.FC = () => {
     return (
       <Card variant="elevated" className="animate-fade-in">
         <div style={{ padding: spacing['2xl'], textAlign: 'center' }}>
-          <div style={{ 
-            fontSize: '3rem', 
-            marginBottom: spacing.lg,
-            animation: 'bounce 0.5s ease-out',
-          }}>
+          <div
+            style={{
+              fontSize: '3rem',
+              marginBottom: spacing.lg,
+              animation: 'bounce 0.5s ease-out',
+            }}
+          >
             🎬
           </div>
-          <h3 style={{
-            fontSize: typography.fontSize.xl,
-            fontWeight: typography.fontWeight.semibold,
-            color: colors.accent,
-            background: shadows.textGradientPink,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: spacing.md,
-            filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
-          }}>
+          <h3
+            style={{
+              fontSize: typography.fontSize.xl,
+              fontWeight: typography.fontWeight.semibold,
+              color: colors.accent,
+              background: shadows.textGradientPink,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: spacing.md,
+              filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
+            }}
+          >
             Thanks for your suggestion!
           </h3>
-          <p style={{
-            fontSize: typography.fontSize.base,
-            color: colors.textSecondary,
-            marginBottom: spacing.xl,
-            lineHeight: typography.lineHeight.relaxed,
-          }}>
+          <p
+            style={{
+              fontSize: typography.fontSize.base,
+              color: colors.textSecondary,
+              marginBottom: spacing.xl,
+              lineHeight: typography.lineHeight.relaxed,
+            }}
+          >
             Aaron & Electra will review it soon.
           </p>
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={handleReset}
-          >
+          <Button variant="secondary" size="md" onClick={handleReset}>
             Suggest Another Movie
           </Button>
         </div>
@@ -93,7 +95,10 @@ const SuggestionForm: React.FC = () => {
 
   return (
     <Card variant="elevated" className="animate-fade-in" style={{ padding: spacing.sm }}>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}
+      >
         <div style={{ flex: 2, position: 'relative' }}>
           <Input
             placeholder="Movie you suggest..."
@@ -101,11 +106,11 @@ const SuggestionForm: React.FC = () => {
             onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
             disabled={isSubmitting}
             aria-label="Movie title"
-            style={{ 
+            style={{
               borderRadius: `${radius.md} 0 0 ${radius.md}`,
               borderRight: 'none',
               height: '44px',
-              textAlign: 'left'
+              textAlign: 'left',
             }}
           />
         </div>
@@ -116,11 +121,11 @@ const SuggestionForm: React.FC = () => {
             onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
             disabled={isSubmitting}
             aria-label="Your name"
-            style={{ 
+            style={{
               borderRadius: 0,
               borderLeft: `1px solid ${colors.borderSecondary}40`,
               height: '44px',
-              textAlign: 'left'
+              textAlign: 'left',
             }}
           />
         </div>
@@ -129,21 +134,24 @@ const SuggestionForm: React.FC = () => {
           variant="primary"
           disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
           isLoading={isSubmitting}
-          style={{ 
+          style={{
             borderRadius: `0 ${radius.md} ${radius.md} 0`,
             minWidth: '60px',
             height: '44px',
             fontSize: '1.25rem',
-            padding: 0
+            padding: 0,
           }}
         >
           {isSubmitting ? '' : '+'}
         </Button>
       </form>
-      
+
       {/* Optional Reason field - only shows if title is being typed */}
       {title.trim() && !submitted && (
-        <div className="animate-slide-down" style={{ marginTop: spacing.xs, padding: `0 ${spacing.xs}` }}>
+        <div
+          className="animate-slide-down"
+          style={{ marginTop: spacing.xs, padding: `0 ${spacing.xs}` }}
+        >
           <input
             type="text"
             placeholder="Add a quick note why... (optional)"
@@ -159,20 +167,22 @@ const SuggestionForm: React.FC = () => {
               fontSize: typography.fontSize.xs,
               padding: `${spacing.xs} 0`,
               outline: 'none',
-              fontStyle: 'italic'
+              fontStyle: 'italic',
             }}
           />
         </div>
       )}
 
       {error && (
-        <div style={{
-          marginTop: spacing.sm,
-          color: colors.error,
-          fontSize: '10px',
-          textAlign: 'center',
-          fontWeight: typography.fontWeight.bold
-        }}>
+        <div
+          style={{
+            marginTop: spacing.sm,
+            color: colors.error,
+            fontSize: '10px',
+            textAlign: 'center',
+            fontWeight: typography.fontWeight.bold,
+          }}
+        >
           ⚠️ {error}
         </div>
       )}

@@ -79,7 +79,11 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
                 lineHeight: typography.lineHeight.relaxed,
               }}
             >
-              Answer 9 fun questions to find out if you're <strong style={{ color: colors.accent }}>Electra</strong>, <strong style={{ color: colors.secondary }}>Aaron</strong>, <strong style={{ color: colors.tertiary }}>Madeleine</strong>, or <strong style={{ color: colors.yellow }}>Nosferatu/Smeemo</strong>!
+              Answer 9 fun questions to find out if you're{' '}
+              <strong style={{ color: colors.accent }}>Electra</strong>,{' '}
+              <strong style={{ color: colors.secondary }}>Aaron</strong>,{' '}
+              <strong style={{ color: colors.tertiary }}>Madeleine</strong>, or{' '}
+              <strong style={{ color: colors.yellow }}>Nosferatu/Smeemo</strong>!
             </p>
           </div>
 
