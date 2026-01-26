@@ -77,6 +77,9 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
         color: colors.textPrimary,
         margin: 0,
         marginBottom: spacing.sm,
+        whiteSpace: 'normal',
+        wordBreak: 'normal',
+        overflowWrap: 'break-word',
       }}>
         {title}
       </h3>
@@ -88,6 +91,9 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
           margin: 0,
           marginBottom: spacing.lg,
           lineHeight: 1.4,
+          whiteSpace: 'normal',
+          wordBreak: 'normal',
+          overflowWrap: 'break-word',
         }}>
           {description}
         </p>
@@ -160,6 +166,9 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
         margin: 0,
         marginBottom: spacing.xs,
         lineHeight: 1.2,
+        whiteSpace: 'normal',
+        wordBreak: 'normal',
+        overflowWrap: 'break-word',
       }}>
         {suggestion.title}
       </h3>
