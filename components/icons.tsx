@@ -183,3 +183,71 @@ export const SettingsIcon: React.FC<{ className?: string; style?: React.CSSPrope
     </svg>
   );
 };
+
+export const MagicWandIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.25rem', height: '1.25rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+       {/* Better Wand Icon */}
+       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" style={{display: 'none'}} /> 
+       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 4v2m-2-2h2m2 0H15m-1 11l-4 4m0 0l-4-4m4 4V10" style={{display: 'none'}} />
+       
+       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  );
+};
+
+export const XIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+};
+
+export const SearchIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  );
+};
+
+export const RefreshIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  );
+};
+
+export const DotsVerticalIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+    </svg>
+  );
+};
+
+export const LayoutGridIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  );
+};
+
+export const LayoutListIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => {
+  const defaultStyle: React.CSSProperties = { width: '1.5rem', height: '1.5rem', ...style };
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} style={defaultStyle} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+    </svg>
+  );
+};

@@ -1,16 +1,20 @@
 import React, { memo } from 'react';
 import { Movie, User } from '../types';
-import { TrashIcon, EyeIcon, EyeOffIcon, SparkleHeartIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, SparkleHeartIcon, MagicWandIcon, Spinner, DotsVerticalIcon } from './icons';
 import Card from './ui/Card';
 import IconButton from './ui/IconButton';
-import { spacing, typography, colors, radius } from '../design-system/tokens';
+import FixMatchDialog from './FixMatchDialog';
+import { Menu, MenuItem } from './ui/Menu';
+import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 
 interface MovieItemProps {
   movie: Movie;
   currentUser: User;
   onToggle: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
+  onUpdateMetadata?: (movie: Movie, searchTerm?: string) => Promise<boolean>;
   animationDelay: string;
+  layout?: 'list' | 'grid';
 }
 
 const MovieItem: React.FC<MovieItemProps> = ({
@@ -18,10 +22,14 @@ const MovieItem: React.FC<MovieItemProps> = ({
   currentUser,
   onToggle,
   onDelete,
+  onUpdateMetadata,
   animationDelay,
+  layout = 'list',
 }) => {
   const watchedByCurrentUser = movie.watchedBy.includes(currentUser);
   const watchedByBoth = movie.watchedBy.length === 2;
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [showFixDialog, setShowFixDialog] = React.useState(false);
 
   const getWatchedStatus = (movie: Movie) => {
     const aaronWatched = movie.watchedBy.includes('Aaron');
@@ -37,18 +45,21 @@ const MovieItem: React.FC<MovieItemProps> = ({
       variant={watchedByBoth ? 'elevated' : 'default'}
       className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up`}
       style={{
-        padding: spacing.md,
-        opacity: watchedByCurrentUser && !watchedByBoth ? 0.75 : 1,
+        padding: 0, // Removed padding to let image bleed to edge if desired, or handle internal padding
+        opacity: 1,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        marginBottom: spacing.sm,
+        marginBottom: spacing.md,
         borderWidth: watchedByBoth ? '3px' : '2px',
         borderColor: watchedByBoth ? colors.accent : colors.border,
         position: 'relative',
-        overflow: 'visible',
+        overflow: 'hidden',
         animationDelay,
+        display: 'flex',
+        flexDirection: layout === 'grid' ? 'column' : 'row',
+        minHeight: layout === 'grid' ? 'auto' : '160px', // Adjust height for grid
       }}
     >
-      {/* Status indicator bar */}
+      {/* Status indicator bar for Watched By Both */}
       {watchedByBoth && (
         <div style={{
           position: 'absolute',
@@ -57,103 +68,233 @@ const MovieItem: React.FC<MovieItemProps> = ({
           right: 0,
           height: '4px',
           background: colors.gradientPink,
-          borderRadius: `${radius.card} ${radius.card} 0 0`,
+          zIndex: 10,
           boxShadow: `0 0 12px ${colors.accent}60`,
         }} />
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
-        {watchedByBoth && (
+      {/* Poster Image (Left Side) - Only if available */}
+      {movie.posterUrl && (
+        <div style={{
+          width: layout === 'grid' ? '100%' : '110px',
+          height: layout === 'grid' ? 'auto' : 'auto',
+          aspectRatio: layout === 'grid' ? '2/3' : 'unset',
+          flexShrink: 0,
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundColor: '#000',
+        }}>
+          <img
+            src={movie.posterUrl}
+            alt={`${movie.title} poster`}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.5s ease',
+            }}
+            // Simple zoom effect on hover could be added via CSS class, 
+            // but inline styles are tricky for hover. 
+          />
+          {/* Gradient overlay on the image to blend it with content on small screens if needed, 
+              but for a side-by-side layout, raw image is usually fine.
+              Let's add a subtle inner shadow. */}
           <div style={{
-            color: colors.accent,
-            flexShrink: 0,
-            filter: 'drop-shadow(0 0 12px rgba(255, 105, 180, 0.8))',
-            animation: 'pulse-glow 2s ease-in-out infinite',
-          }}>
-            <SparkleHeartIcon style={{ width: '28px', height: '28px' }} />
+            position: 'absolute',
+            inset: 0,
+            boxShadow: 'inset -5px 0 10px rgba(0,0,0,0.5)',
+            pointerEvents: 'none',
+          }} />
+        </div>
+      )}
+
+      {/* Content Side (Right) */}
+      <div style={{
+        flex: 1,
+        padding: spacing.md,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
+        minWidth: 0, 
+        zIndex: 2
+      }}>
+        
+        {/* Top Row: Title + Heart */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.sm }}>
+              <h3 className="movie-title" style={{
+                fontSize: typography.fontSize.xl,
+                fontWeight: typography.fontWeight.bold,
+                color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
+                textDecoration: watchedByBoth ? 'line-through' : 'none',
+                margin: 0,
+                marginBottom: spacing.xs,
+                wordBreak: 'break-word',
+                lineHeight: typography.lineHeight.tight,
+                textShadow: watchedByBoth ? 'none' : shadows.textGlow,
+                maxWidth: '90%',
+              }}>
+                {movie.title}
+              </h3>
+             {watchedByBoth && (
+              <div style={{
+                color: colors.accent,
+                flexShrink: 0,
+                filter: 'drop-shadow(0 0 8px rgba(255, 105, 180, 0.6))',
+                animation: 'pulse-glow 2s ease-in-out infinite',
+              }}>
+                <SparkleHeartIcon style={{ width: '24px', height: '24px' }} />
+              </div>
+            )}
           </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-          <h3 className="movie-title" style={{
-            fontSize: typography.fontSize.base,
-            fontWeight: typography.fontWeight.bold,
-            color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
-            textDecoration: watchedByBoth ? 'line-through' : 'none',
-            margin: 0,
-            marginBottom: spacing.xs,
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            hyphens: 'auto',
-            textShadow: watchedByBoth
-              ? 'none'
-              : '0 1px 2px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.3)',
-            transition: 'all 0.2s ease-out',
-            letterSpacing: '0.02em',
-            lineHeight: typography.lineHeight.tight,
-            padding: watchedByBoth ? `${spacing.xs} 0` : '0',
-          }}>
-            {movie.title}
-          </h3>
+            
+          {/* Metadata Row: Year • Rating • Runtime */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-start',
             gap: spacing.sm,
+            fontSize: typography.fontSize.sm,
+            color: colors.textTertiary,
+            marginBottom: spacing.md,
             flexWrap: 'wrap',
+            fontWeight: typography.fontWeight.medium,
           }}>
-            <span style={{
-              fontSize: '0.7rem',
-              color: colors.textTertiary,
-              fontWeight: typography.fontWeight.medium,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              padding: `1px ${spacing.sm}`,
-              backgroundColor: colors.surfaceElevated,
-              borderRadius: radius.full,
-              border: `1px solid ${colors.borderInset}`,
-            }}>
-              {movie.addedBy}
-            </span>
-            <span style={{
-              fontSize: typography.fontSize.xs,
-              color: watchedByBoth ? colors.textTertiary : colors.textSecondary,
-              margin: 0,
-              letterSpacing: '0.01em',
-              lineHeight: typography.lineHeight.normal,
-              fontStyle: watchedByBoth ? 'italic' : 'normal',
-            }}>
-              {getWatchedStatus(movie)}
-            </span>
+            {movie.year && (
+              <span style={{ color: colors.textSecondary }}>
+                {movie.year}
+              </span>
+            )}
+            {movie.year && (movie.imdbRating || movie.runtime) && <span>•</span>}
+            
+            {movie.imdbRating && (
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '4px',
+                color: colors.yellow, 
+                fontWeight: typography.fontWeight.bold,
+                textShadow: '0 0 10px rgba(255, 235, 59, 0.3)',
+              }}>
+                ★ {movie.imdbRating}
+              </span>
+            )}
+              {movie.imdbRating && movie.runtime && <span style={{ color: colors.textTertiary }}>•</span>}
+              
+              {movie.runtime && (
+                <span>{movie.runtime}</span>
+              )}
           </div>
+
+          {/* Plot Summary (Truncated) */}
+          {movie.plot && (
+            <p style={{
+              fontSize: typography.fontSize.base,
+              color: colors.textSecondary,
+              opacity: 0.9,
+              margin: 0,
+              marginBottom: spacing.lg,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: typography.lineHeight.normal,
+            }}>
+              {movie.plot}
+            </p>
+          )}
         </div>
+
+        {/* Footer: Added By / Status / Buttons */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: spacing.sm,
-          flexShrink: 0,
-          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: 'auto', // Push to bottom
+          flexWrap: 'wrap',
+          gap: spacing.md,
+          borderTop: `1px solid ${colors.borderInset}`,
+          paddingTop: spacing.sm,
         }}>
-          <IconButton
-            onClick={() => onToggle(movie)}
-            variant="ghost"
-            title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
-            aria-label={watchedByCurrentUser ? `Mark "${movie.title}" as unwatched` : `Mark "${movie.title}" as watched`}
-            style={{
-              backgroundColor: watchedByCurrentUser ? colors.success + '20' : 'transparent',
-              border: watchedByCurrentUser ? `1px solid ${colors.success}40` : 'none',
-            }}
-          >
-            {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
-          </IconButton>
-          <IconButton
-            onClick={() => onDelete(movie)}
-            variant="danger"
-            title={`Delete "${movie.title}"`}
-            aria-label={`Delete "${movie.title}"`}
-          >
-            <TrashIcon />
-          </IconButton>
+          {/* User Status Pills */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                 <span style={{
+                    fontSize: '0.65rem',
+                    color: colors.textTertiary,
+                    fontWeight: typography.fontWeight.bold,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    padding: `2px 6px`,
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    borderRadius: radius.md,
+                    border: `1px solid ${colors.borderInset}`,
+                  }}>
+                    {movie.addedBy}
+                  </span>
+                  <span style={{
+                    fontSize: typography.fontSize.xs,
+                    color: watchedByBoth ? colors.textTertiary : colors.secondary,
+                    fontStyle: watchedByBoth ? 'italic' : 'normal',
+                    fontWeight: typography.fontWeight.medium,
+                  }}>
+                    {getWatchedStatus(movie)}
+                  </span>
+              </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+            <IconButton
+              onClick={() => onToggle(movie)}
+              variant="ghost"
+              title={watchedByCurrentUser ? "Mark as unwatched" : "Mark as watched"}
+              aria-label={watchedByCurrentUser ? `Mark "${movie.title}" as unwatched` : `Mark "${movie.title}" as watched`}
+              style={{
+                backgroundColor: watchedByCurrentUser ? colors.success + '20' : 'transparent',
+                border: watchedByCurrentUser ? `1px solid ${colors.success}40` : '1px solid transparent',
+              }}
+            >
+              {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
+            </IconButton>
+
+            <Menu 
+              trigger={
+                <IconButton variant="ghost" aria-label="More options">
+                  <DotsVerticalIcon />
+                </IconButton>
+              }
+              align="right"
+            >
+              <MenuItem 
+                onClick={() => setShowFixDialog(true)}
+                icon={isUpdating ? <Spinner style={{width: '16px', height: '16px'}} /> : <MagicWandIcon style={{width: '16px', height: '16px'}} />}
+              >
+                {isUpdating ? 'Updating...' : 'Fix Incorrect Match'}
+              </MenuItem>
+              <MenuItem 
+                onClick={() => onDelete(movie)}
+                variant="danger"
+                icon={<TrashIcon style={{width: '16px', height: '16px'}} />}
+              >
+                Delete Movie
+              </MenuItem>
+            </Menu>
+
+            {onUpdateMetadata && (
+              <FixMatchDialog
+                isOpen={showFixDialog}
+                movieTitle={movie.title}
+                onClose={() => setShowFixDialog(false)}
+                onSearch={async (term) => {
+                  setIsUpdating(true);
+                  return onUpdateMetadata(movie, term).finally(() => setIsUpdating(false));
+                }}
+              />
+            )}
+          </div>
         </div>
+        
       </div>
     </Card>
   );

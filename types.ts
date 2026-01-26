@@ -6,6 +6,15 @@ export interface Movie {
   addedBy: User;
   watchedBy: User[];
   createdAt: string;
+  
+  // Metadata
+  posterUrl?: string;
+  year?: string;
+  plot?: string;
+  imdbRating?: string;
+  runtime?: string;
+  genre?: string;
+  director?: string;
 }
 
 export interface Message {
