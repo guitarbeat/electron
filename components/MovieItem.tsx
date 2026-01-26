@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Movie, User } from '../types';
-import { TrashIcon, EyeIcon, EyeOffIcon, SparkleHeartIcon, MagicWandIcon, Spinner, DotsVerticalIcon, FilmIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, SparkleHeartIcon, MagicWandIcon, Spinner, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';

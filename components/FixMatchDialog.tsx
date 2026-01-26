@@ -140,6 +140,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
             onClick={onClose}
             variant="ghost"
             size="sm"
+            aria-label="Close"
             style={{ 
               color: colors.textTertiary,
               transition: 'all 0.2s ease',
