@@ -62,16 +62,17 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
         maxWidth: '28rem',
         margin: '0 auto',
         textAlign: 'center',
+        padding: spacing.sm,
       }}
     >
       <Card variant="elevated" className="animate-fade-in">
-        <div style={{ padding: spacing['2xl'] }}>
+        <div style={{ padding: `${spacing.xl} ${spacing.md}` }}>
             <div
               style={{
-                height: '128px',
-                minHeight: '128px',
-                maxHeight: '200px',
-                marginBottom: spacing.xl,
+                height: 'min(128px, 25vh)',
+                minHeight: '100px',
+                maxHeight: '160px',
+                marginBottom: spacing.lg,
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',

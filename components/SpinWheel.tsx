@@ -110,7 +110,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: `${spacing.lg} 0`,
+          padding: `${spacing.md} 0`,
           maxWidth: '500px',
         }}
       >
@@ -155,14 +155,16 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
 
         {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
           <>
-            <Card variant="default" className="current-movie-display">
+            <Card variant="default" className="current-movie-display" style={{ marginBottom: spacing.md, padding: `${spacing.sm} ${spacing.md}` }}>
                 <h3 className="current-movie-title" style={{ 
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
                   hyphens: 'auto',
                   maxWidth: '100%',
-                  padding: '0 0.5rem', // * Add horizontal padding to prevent edge cutoff
+                  padding: '0',
                   boxSizing: 'border-box',
+                  fontSize: typography.fontSize.base,
+                  margin: 0,
                 }}>
                     {status === 'result' && selectedMovie 
                       ? selectedMovie.title 
@@ -342,13 +344,13 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     </div>
                   </div>
                 )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, width: '100%', marginTop: spacing.lg }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, width: '100%', marginTop: spacing.md }}>
                   {!hasSpunToday && (
-                    <Button onClick={handleSpinAgain} variant="secondary" style={{ width: '100%' }} autoFocus>
+                    <Button onClick={handleSpinAgain} variant="secondary" style={{ width: '100%' }} size="md" autoFocus>
                       Spin Again
                     </Button>
                   )}
-                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }} autoFocus={hasSpunToday}>
+                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }} size="md" autoFocus={hasSpunToday}>
                     Close
                   </Button>
                 </div>
