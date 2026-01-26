@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { usePins } from '../hooks/usePins';
-import { Movie } from '../types';
+import { useSuggestions } from '../hooks/useSuggestions';
+import { Movie, MovieSuggestion } from '../types';
 import { 
   PlusIcon, 
   LogoutIcon, 
@@ -12,7 +13,11 @@ import {
   LockIcon, 
   RefreshIcon,
   LayoutGridIcon,
-  LayoutListIcon
+  LayoutListIcon,
+  SparkleHeartIcon,
+  EyeIcon,
+  EyeOffIcon,
+  TrashIcon
 } from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
@@ -23,15 +28,15 @@ import IconButton from './ui/IconButton';
 import ConfirmDialog from './ui/ConfirmDialog';
 import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
-import SuggestionList from './SuggestionList';
 import MasonryGrid from './ui/MasonryGrid';
+import { DashboardCard, SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
-  // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
-  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh: refreshMovies, updateMovieMetadata, refreshAllMetadata } = useMovies(currentUser!);
-  const { userHasPin, setUserPin, removeUserPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
+  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh: refreshMovies, updateMovieMetadata } = useMovies(currentUser!);
+  const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
+  const { pendingSuggestions, acceptSuggestion, rejectSuggestion, isLoading: isSuggestionsLoading } = useSuggestions();
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -39,26 +44,19 @@ const Watchlist: React.FC = () => {
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // PIN management state
+  const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
   const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-
-  const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
-  const watchedMovies = movies ? movies.filter(movie => movie.watchedBy.length === 2) : [];
   
-  // * Auto-focus input after successful add
-  useEffect(() => {
-    if (!isAdding && newMovieTitle === '' && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isAdding, newMovieTitle]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // * Auto-hide toast
+  const unwatchedMovies = useMemo(() => movies ? movies.filter(movie => movie.watchedBy.length < 2) : [], [movies]);
+  const watchedMovies = useMemo(() => movies ? movies.filter(movie => movie.watchedBy.length === 2) : [], [movies]);
+  
+  // TOAST management
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3000);
@@ -68,9 +66,9 @@ const Watchlist: React.FC = () => {
 
   const handleOpenWheel = () => {
     if (unwatchedMovies.length > 1) {
-        setIsWheelVisible(true);
+      setIsWheelVisible(true);
     } else {
-        setToast({ message: "You need at least two unwatched movies to spin the wheel!", type: 'info' });
+      setToast({ message: "You need at least two unwatched movies to spin the wheel!", type: 'info' });
     }
   };
 
@@ -78,17 +76,16 @@ const Watchlist: React.FC = () => {
     e.preventDefault();
     if (newMovieTitle.trim() && !isSubmitting) {
       setIsAdding(true);
-      const movieTitle = newMovieTitle.trim();
+      const title = newMovieTitle.trim();
       try {
-        await addMovie(movieTitle);
+        await addMovie(title);
         setNewMovieTitle('');
-        setToast({ message: `"${movieTitle}" added successfully!`, type: 'success' });
-        setSuccessMovieId(movieTitle);
+        setToast({ message: `"${title}" added successfully!`, type: 'success' });
+        setSuccessMovieId(title);
         setTimeout(() => setSuccessMovieId(null), 2000);
       } catch (err: any) {
         setToast({ message: `Error adding movie: ${err.message}`, type: 'error' });
-      }
-      finally {
+      } finally {
         setIsAdding(false);
       }
     }
@@ -96,42 +93,63 @@ const Watchlist: React.FC = () => {
 
   const handleToggleWatched = useCallback(async (movie: Movie) => {
     try {
+      const wasWatched = movie.watchedBy.includes(currentUser!);
       await toggleWatched(movie.id);
-      const watchedByCurrentUser = movie.watchedBy.includes(currentUser!);
-      // Note: Logic inverted because we are showing the NEW state's toast
-      setToast({
-        message: !watchedByCurrentUser
-          ? `Marked "${movie.title}" as watched!`
-          : `Marked "${movie.title}" as unwatched`,
-        type: 'success'
+      setToast({ 
+        message: wasWatched ? `Marked "${movie.title}" as unwatched` : `Marked "${movie.title}" as watched!`, 
+        type: 'success' 
       });
     } catch (err: any) {
-      setToast({ message: `Error updating movie status: ${err.message}`, type: 'error' });
+      setToast({ message: `Error: ${err.message}`, type: 'error' });
     }
   }, [toggleWatched, currentUser]);
 
-  const handleDeleteMovie = useCallback((movie: Movie) => {
+  const handleDeleteMovie = (movie: Movie) => {
     setMovieToDelete(movie);
-  }, []);
+  };
 
-  const confirmDeleteMovie = useCallback(async () => {
-    if (!movieToDelete) return;
-    
-    try {
-      await deleteMovie(movieToDelete.id);
-      setToast({ message: `"${movieToDelete.title}" deleted`, type: 'success' });
-      setMovieToDelete(null);
-    } catch (err: any) {
-      setToast({ message: `Error deleting movie: ${err.message}`, type: 'error' });
+  const confirmDelete = async () => {
+    if (movieToDelete) {
+      try {
+        await deleteMovie(movieToDelete.id);
+        setToast({ message: `"${movieToDelete.title}" removed`, type: 'info' });
+        setMovieToDelete(null);
+      } catch (err: any) {
+        setToast({ message: `Error: ${err.message}`, type: 'error' });
+      }
     }
-  }, [deleteMovie, movieToDelete]);
+  };
+
+  const handleAcceptSuggestion = async (suggestion: MovieSuggestion) => {
+    setProcessingSuggestionId(suggestion.id);
+    try {
+      await acceptSuggestion(suggestion.id, currentUser!);
+      setToast({ message: `"${suggestion.title}" added to watchlist!`, type: 'success' });
+      refreshMovies();
+    } catch (err: any) {
+      setToast({ message: `Failed to accept suggestion: ${err.message}`, type: 'error' });
+    } finally {
+      setProcessingSuggestionId(null);
+    }
+  };
+
+  const handleRejectSuggestion = async (suggestion: MovieSuggestion) => {
+    setProcessingSuggestionId(suggestion.id);
+    try {
+      await rejectSuggestion(suggestion.id, currentUser!);
+      setToast({ message: "Suggestion rejected", type: 'info' });
+    } catch (err: any) {
+      setToast({ message: `Failed to reject suggestion: ${err.message}`, type: 'error' });
+    } finally {
+      setProcessingSuggestionId(null);
+    }
+  };
 
   const handleLogout = () => {
     setCurrentUser(null);
   };
 
-  // PIN management handlers
-  const handleOpenPinSettings = () => {
+  const handlePinAction = () => {
     if (userHasPin(currentUser!)) {
       setPinMode('change');
     } else {
@@ -140,473 +158,164 @@ const Watchlist: React.FC = () => {
     setShowPinDialog(true);
   };
 
-  const handlePinSubmit = async (pin: string, newPin?: string): Promise<boolean> => {
-    if (!currentUser) return false;
+  const handlePinSubmit = async (pin: string) => {
+    if (!currentUser) return;
     setIsPinLoading(true);
     try {
       if (pinMode === 'set') {
-        const success = await setUserPin(currentUser, pin);
-        if (success) {
-          setShowPinDialog(false);
-          setToast({ message: 'PIN set successfully!', type: 'success' });
-        }
-        return success;
-      } else if (pinMode === 'change') {
-        // First verify the current PIN
-        if (!newPin) {
-          // Step 1: Verify current PIN
-          const isValid = await verifyUserPin(currentUser, pin);
-          return isValid;
+        await setUserPin(currentUser, pin);
+        setShowPinDialog(false);
+        setToast({ message: 'PIN set successfully!', type: 'success' });
+      } else {
+        // change mode
+        const isValid = await verifyUserPin(currentUser, pin);
+        if (isValid) {
+          setPinMode('set'); // Reuse set mode for the new pin
         } else {
-          // Step 2: Set new PIN
-          const success = await setUserPin(currentUser, newPin);
-          if (success) {
-            setShowPinDialog(false);
-            setToast({ message: 'PIN changed successfully!', type: 'success' });
-          }
-          return success;
+          setToast({ message: 'Incorrect PIN', type: 'error' });
         }
       }
-      return false;
+    } catch (err: any) {
+      setToast({ message: `Error: ${err.message}`, type: 'error' });
     } finally {
       setIsPinLoading(false);
     }
   };
 
-  const handleRemovePin = () => {
-    setShowPinDialog(false);
-    setShowRemovePinConfirm(true);
-  };
-
-  const confirmRemovePin = async () => {
+  const handleRemovePin = async () => {
     if (!currentUser) return;
     setIsPinLoading(true);
     try {
-      const success = await removeUserPin(currentUser);
-      if (success) {
-        setToast({ message: 'PIN removed successfully', type: 'success' });
-      } else {
-        setToast({ message: 'Failed to remove PIN', type: 'error' });
-      }
+      await removeUserPin(currentUser);
+      setToast({ message: 'PIN removed', type: 'info' });
+    } catch (err: any) {
+      setToast({ message: `Error: ${err.message}`, type: 'error' });
     } finally {
       setIsPinLoading(false);
       setShowRemovePinConfirm(false);
     }
   };
-  
-  const firstWatchedIndex = movies ? movies.findIndex(m => m.watchedBy.length === 2) : -1;
 
   if (isLoading) {
     return (
-      <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
-        <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: spacing.lg }}>
-          <div className="skeleton" style={{ 
-            height: '60px', 
-            borderRadius: radius.md,
-            marginBottom: spacing.md,
-          }} />
-          <div className="skeleton" style={{ 
-            height: '40px', 
-            borderRadius: radius.md,
-            width: '70%',
-            margin: '0 auto',
-          }} />
-        </Card>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-          {[1, 2, 3].map((i) => (
-            <Card key={i} variant="default" className="skeleton" style={{ 
-              padding: spacing.xl,
-              height: '120px',
-            }} />
-          ))}
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: colors.background }}>
+        <div style={{ color: colors.textSecondary }}>Loading watchlist...</div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div style={{ maxWidth: '48rem', margin: '0 auto', textAlign: 'center', color: colors.error }}>
-        <p>Error loading movies. Please try refreshing the page.</p>
-        <p style={{ fontSize: typography.fontSize.sm, marginTop: spacing.sm }}>{error.message}</p>
-      </div>
-    );
-  }
+  const firstWatchedIndex = useMemo(() => movies.findIndex(m => m.watchedBy.length === 2), [movies]);
 
   return (
-    <div style={{ maxWidth: viewMode === 'grid' ? '64rem' : '44rem', margin: '0 auto', padding: `${spacing.lg} ${spacing.md}`, transition: 'max-width 0.3s ease' }}>
-      {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
-      
-      <ConfirmDialog
-        isOpen={!!movieToDelete}
-        title="Delete Movie"
-        message={`Are you sure you want to delete "${movieToDelete?.title}"?`}
-        confirmText="Delete"
-        onConfirm={confirmDeleteMovie}
-        onCancel={() => setMovieToDelete(null)}
-        isLoading={isSubmitting}
+    <div style={{ minHeight: '100vh', background: colors.background }}>
+      <Header 
+        currentUser={currentUser!}
+        onLogout={handleLogout}
+        onPinAction={handlePinAction}
+        onRemovePin={() => setShowRemovePinConfirm(true)}
+        hasPin={userHasPin(currentUser!)}
       />
 
-      <ConfirmDialog
-        isOpen={showRemovePinConfirm}
-        title="Remove PIN"
-        message="Are you sure you want to remove your PIN? Anyone will be able to access your account."
-        confirmText="Remove PIN"
-        onConfirm={confirmRemovePin}
-        onCancel={() => setShowRemovePinConfirm(false)}
-        isLoading={isPinLoading}
-      />
-
-      {/* PIN Dialog */}
-      {currentUser && (
-        <PinDialog
-          isOpen={showPinDialog}
-          user={currentUser}
-          mode={pinMode}
-          onSubmit={handlePinSubmit}
-          onCancel={() => setShowPinDialog(false)}
-          onRemove={pinMode === 'change' ? handleRemovePin : undefined}
-          isLoading={isPinLoading}
-        />
-      )}
-
-      {/* Toast Notification */}
-      {toast && (
-        <Card 
-          variant="elevated" 
-          style={{ 
+      <div style={{ 
+        maxWidth: viewMode === 'grid' ? '1200px' : '44rem', 
+        margin: '0 auto', 
+        padding: `${spacing.lg} ${spacing.md}`,
+        transition: 'max-width 0.3s ease'
+      }}>
+        {/* Toast Notification */}
+        {toast && (
+          <div style={{
             position: 'fixed',
             top: spacing.lg,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1000,
-            maxWidth: '90%',
-            padding: spacing.lg,
-            backgroundColor: toast.type === 'error' ? colors.error + '30' : toast.type === 'success' ? colors.success + '30' : colors.secondary + '30',
-            borderColor: toast.type === 'error' ? colors.error : toast.type === 'success' ? colors.success : colors.secondary,
-            borderWidth: '2px',
-            animation: 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-            boxShadow: toast.type === 'error' 
-              ? `0 4px 12px ${colors.error}40, ${shadows.card}` 
-              : toast.type === 'success' 
-                ? `0 4px 12px ${colors.success}40, ${shadows.card}` 
-                : `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
-          }}
-          role={toast.type === 'error' ? 'alert' : 'status'}
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: spacing.md, 
+            right: spacing.lg,
+            padding: `${spacing.md} ${spacing.xl}`,
+            backgroundColor: toast.type === 'error' ? colors.error : toast.type === 'success' ? colors.success : colors.secondary,
             color: colors.textPrimary,
-            justifyContent: 'center',
+            borderRadius: radius.md,
+            boxShadow: shadows.card,
+            zIndex: 1000,
+            animation: 'slide-in 0.3s ease-out',
+            fontSize: typography.fontSize.base,
+            fontWeight: typography.fontWeight.semibold,
           }}>
-            {toast.type === 'success' && (
-              <CheckIcon style={{ 
-                color: colors.success, 
-                flexShrink: 0,
-                filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
-              }} />
-            )}
-            {toast.type === 'error' && (
-              <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
-            )}
-            {toast.type === 'info' && (
-              <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>
-            )}
-            <span style={{ 
-              fontSize: typography.fontSize.base, 
-              textAlign: 'center',
-              fontWeight: typography.fontWeight.medium,
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              hyphens: 'auto',
-              maxWidth: '100%',
-              flex: '1 1 auto', // * Allow flex item to grow and shrink
-              minWidth: 0, // * Allow shrinking below content size for proper wrapping
-            }}>
-              {toast.message}
-            </span>
+            {toast.message}
           </div>
-        </Card>
-      )}
-      
-      <div>
-        <Header />
-        
-        {/* Movie Statistics */}
-        {movies && movies.length > 0 && (
-          <Card variant="elevated" className="scale-in" style={{ 
-            marginBottom: spacing.lg, 
-            padding: spacing.md,
-            position: 'relative',
-            // * overflow handled by Card component - decorative background will be clipped properly
-          }}>
-            {/* Decorative background pattern */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '100%',
-              background: 'radial-gradient(circle at 20% 50%, rgba(255, 105, 180, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(135, 206, 250, 0.1) 0%, transparent 50%)',
-              pointerEvents: 'none',
-            }} />
-            
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              gap: spacing.lg, 
-              flexWrap: 'wrap', 
-              textAlign: 'center',
-              position: 'relative',
-              zIndex: 1,
-            }}>
-              <div style={{ minWidth: '60px', animationDelay: '0.1s' }} className="bounce-in">
-                <div style={{ 
-                  fontSize: typography.fontSize['2xl'], 
-                  fontWeight: typography.fontWeight.bold, 
-                  color: colors.accent, // * Fallback for browsers without gradient support
-                  background: shadows.textGradientPink,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 105, 180, 0.3)',
-                  lineHeight: typography.lineHeight.tight,
-                  marginBottom: spacing.xs,
-                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-                  transition: 'transform 0.3s ease-out',
-                  animationDelay: '0s',
-                }} className="float">
-                  {movies.length}
-                </div>
-                <div style={{ 
-                  fontSize: typography.fontSize.xs, 
-                  color: colors.textSecondary,
-                  fontWeight: typography.fontWeight.medium,
-                  letterSpacing: '0.05em',
-                }}>
-                  {movies.length === 1 ? 'Movie' : 'Movies'}
-                </div>
-              </div>
-              <div style={{ minWidth: '60px', animationDelay: '0.2s' }} className="bounce-in">
-                <div style={{ 
-                  fontSize: typography.fontSize['2xl'], 
-                  fontWeight: typography.fontWeight.bold, 
-                  color: colors.secondary, // * Fallback for browsers without gradient support
-                  background: shadows.textGradientBlue,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(135, 206, 250, 0.3)',
-                  lineHeight: typography.lineHeight.tight,
-                  marginBottom: spacing.xs,
-                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-                  transition: 'transform 0.3s ease-out',
-                  animationDelay: '0.3s',
-                }} className="float">
-                  {unwatchedMovies.length}
-                </div>
-                <div style={{ 
-                  fontSize: typography.fontSize.xs, 
-                  color: colors.textSecondary,
-                  fontWeight: typography.fontWeight.medium,
-                  letterSpacing: '0.05em',
-                }}>
-                  Unwatched
-                </div>
-              </div>
-              <div style={{ minWidth: '60px', animationDelay: '0.3s' }} className="bounce-in">
-                <div style={{ 
-                  fontSize: typography.fontSize['2xl'], 
-                  fontWeight: typography.fontWeight.bold, 
-                  color: colors.accent, // * Fallback for browsers without gradient support
-                  background: shadows.textGradientPink,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 105, 180, 0.3)',
-                  lineHeight: typography.lineHeight.tight,
-                  marginBottom: spacing.xs,
-                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))',
-                  transition: 'transform 0.3s ease-out',
-                  animationDelay: '0.6s',
-                }} className="float">
-                  {watchedMovies.length}
-                </div>
-                <div style={{ 
-                  fontSize: typography.fontSize.xs, 
-                  color: colors.textSecondary,
-                  fontWeight: typography.fontWeight.medium,
-                  letterSpacing: '0.05em',
-                }}>
-                  Watched
-                </div>
-              </div>
-            </div>
-          </Card>
         )}
-        
-        <Card variant="elevated" style={{ marginBottom: spacing.lg }}>
-          <form onSubmit={handleAddMovie} style={{ padding: spacing.md }} className="add-movie-form">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, alignItems: 'stretch' }}>
-              <div style={{ 
-                display: 'flex', 
-                gap: spacing.sm, 
-                alignItems: 'center', 
-                width: '100%',
-                flexWrap: 'wrap',
-              }}>
-                <IconButton
-                  type="button"
-                  onClick={handleLogout}
-                  title={`Switch User (Currently: ${currentUser})`}
-                  aria-label={`Switch user (currently logged in as ${currentUser})`}
-                  variant="ghost"
-                  style={{ flexShrink: 0, width: '36px', height: '36px' }}
-                >
-                  <LogoutIcon style={{ width: '18px', height: '18px' }} />
-                </IconButton>
-                <IconButton
-                  type="button"
-                  onClick={async () => {
-                    const confirm = window.confirm("Refresh metadata for ALL movies? This may take a moment.");
-                    if (confirm) {
-                        setToast({ message: "Refreshing all movie metadata...", type: 'info' });
-                        try {
-                            await refreshAllMetadata();
-                            setToast({ message: "All movies refreshed!", type: 'success' });
-                        } catch (e) {
-                            setToast({ message: "Failed to refresh all movies", type: 'error' });
-                        }
-                    }
-                  }}
-                  title="Refresh metadata for all movies"
-                  aria-label="Refresh all"
-                  variant="ghost"
-                  disabled={isSubmitting}
-                  style={{ flexShrink: 0, width: '36px', height: '36px' }}
-                >
-                  <RefreshIcon style={{ width: '18px', height: '18px' }} />
-                </IconButton>
-                <IconButton
-                  type="button"
-                  onClick={handleOpenPinSettings}
-                  title={userHasPin(currentUser!) ? 'Change or remove your PIN' : 'Set a PIN to lock your account'}
-                  aria-label={userHasPin(currentUser!) ? 'Change PIN' : 'Set PIN'}
-                  variant="ghost"
-                  disabled={isPinsLoading}
-                  style={{ flexShrink: 0, width: '36px', height: '36px' }}
-                >
-                  <LockIcon style={{ 
-                    width: '0.875rem', 
-                    height: '0.875rem',
-                    color: userHasPin(currentUser!) ? colors.success : colors.textSecondary,
-                  }} />
-                </IconButton>
-                <IconButton
-                  type="button"
-                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                  title={viewMode === 'list' ? 'Switch to Grid View' : 'Switch to List View'}
-                  aria-label={viewMode === 'list' ? 'Grid view' : 'List view'}
-                  variant="ghost"
-                  style={{ 
-                    flexShrink: 0, 
-                    width: '36px', 
-                    height: '36px',
-                    color: colors.accent,
-                  }}
-                >
-                  {viewMode === 'list' ? (
-                    <LayoutGridIcon style={{ width: '18px', height: '18px' }} />
-                  ) : (
-                    <LayoutListIcon style={{ width: '18px', height: '18px' }} />
-                  )}
-                </IconButton>
+
+        <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
+          <form onSubmit={handleAddMovie} style={{ padding: spacing.md }}>
+            <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
                 <Input
                   ref={inputRef}
-                  type="text"
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
-                  placeholder="What movie should we watch?"
-                  aria-label="New movie title"
+                  placeholder="Enter movie or show title..."
                   disabled={isSubmitting}
-                  style={{ flex: 1, margin: 0, minWidth: '150px', padding: '0.4rem 0.75rem', height: '36px' }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                      setNewMovieTitle('');
-                      inputRef.current?.blur();
-                    }
+                  aria-label="New movie title"
+                  style={{ 
+                    paddingRight: '120px',
+                    borderColor: successMovieId ? colors.success : undefined,
+                    transition: 'border-color 0.3s ease'
                   }}
                 />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isLoading={isAdding}
-                  loadingText=""
-                  disabled={!newMovieTitle.trim() || isSubmitting}
-                  style={{ 
-                    padding: 0,
-                    borderRadius: '50%',
-                    aspectRatio: '1',
-                    minWidth: '36px',
-                    width: '36px',
-                    height: '36px',
-                    flexShrink: 0,
-                  }}
-                  title="Add movie to watchlist"
-                  aria-label="Add movie to watchlist"
-                >
-                  {!isAdding && <PlusIcon style={{ width: '18px', height: '18px' }} />}
-                </Button>
+                <div style={{ 
+                  position: 'absolute', 
+                  right: spacing.sm, 
+                  top: '50%', 
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  gap: spacing.sm,
+                  alignItems: 'center'
+                }}>
+                   <IconButton
+                    onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                    variant="ghost"
+                    size="sm"
+                    title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                  >
+                    {viewMode === 'list' ? <LayoutGridIcon /> : <LayoutListIcon />}
+                  </IconButton>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={!newMovieTitle.trim() || isSubmitting}
+                    isLoading={isAdding}
+                    style={{ 
+                      padding: 0,
+                      borderRadius: '50%',
+                      aspectRatio: '1',
+                      minWidth: '36px',
+                      width: '36px',
+                      height: '36px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {!isAdding && <PlusIcon style={{ width: '18px', height: '18px' }} />}
+                  </Button>
+                </div>
               </div>
             </div>
           </form>
         </Card>
-        
-        {/* Spin to Decide card */}
-        <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
-          <div style={{ padding: spacing.md }}>
-            <Button
-              onClick={handleOpenWheel}
-              disabled={unwatchedMovies.length < 2}
-              variant="secondary"
-              size="sm"
-              style={{ 
-                width: '100%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: spacing.xs,
-                fontSize: typography.fontSize.lg,
-              }}
-              title={unwatchedMovies.length < 2 ? "Add at least 2 unwatched movies to use the wheel" : "Spin the wheel to randomly pick a movie!"}
-            >
-              <DiceIcon />
-              Spin to Decide
-            </Button>
-            {unwatchedMovies.length < 2 && (
-              <p style={{
-                marginTop: spacing.sm,
-                fontSize: typography.fontSize.xs,
-                color: colors.textTertiary,
-                textAlign: 'center',
-                fontStyle: 'italic',
-              }}>
-                {unwatchedMovies.length === 0 
-                  ? "Add movies to your watchlist to use the wheel"
-                  : "Add one more movie to use the wheel"}
-              </p>
-            )}
+
+        {/* Action Grid (Only in List View) */}
+        {viewMode === 'list' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.md, marginBottom: spacing.xl }}>
+             <Button
+                onClick={handleOpenWheel}
+                disabled={unwatchedMovies.length < 2}
+                variant="secondary"
+                size="sm"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.xs }}
+              >
+                <DiceIcon />
+                Spin to Decide
+              </Button>
           </div>
-        </Card>
+        )}
 
-        {/* Movie Suggestions Section */}
-        <SuggestionList currentUser={currentUser!} onMovieAdded={refreshMovies} />
-
-        {/* Movie List */}
         <div style={{
           opacity: isSubmitting ? 0.5 : 1,
           pointerEvents: isSubmitting ? 'none' : 'auto',
@@ -614,6 +323,27 @@ const Watchlist: React.FC = () => {
         }}>
           {viewMode === 'grid' ? (
             <MasonryGrid>
+              {/* Primary Action Card */}
+              <DashboardCard 
+                title="Spin to Decide"
+                icon={<DiceIcon style={{ width: '32px', height: '32px' }} />}
+                description={unwatchedMovies.length < 2 ? "Needs 2+ movies" : "Pick a random movie!"}
+                onClick={handleOpenWheel}
+                variant="accent"
+                actionLabel="Spin Wheel"
+              />
+
+              {/* Individual Suggestions */}
+              {pendingSuggestions.map(suggestion => (
+                <SuggestionItemCard 
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  onAccept={handleAcceptSuggestion}
+                  onReject={handleRejectSuggestion}
+                  isProcessing={processingSuggestionId === suggestion.id}
+                />
+              ))}
+
               {movies && movies.map((movie) => (
                 <MovieItem
                   key={movie.id}
@@ -638,111 +368,76 @@ const Watchlist: React.FC = () => {
               ))}
             </MasonryGrid>
           ) : (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: spacing.md,
-            }}>
-              {movies && movies.map((movie, index) => {
-                return (
-                  <React.Fragment key={movie.id}>
-                    {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                        <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing['2xl']} 0 ${spacing.xl} 0` }}>
-                            <hr className="flex-grow border-pink-400 border-dashed" style={{ 
-                              flex: 1, 
-                              height: '2px', 
-                              borderColor: colors.accent, 
-                              borderStyle: 'dashed',
-                              opacity: 0.5,
-                            }} />
-                            <span className="px-4 text-pink-300 font-heading" style={{ 
-                              padding: `0 ${spacing.lg}`, 
-                              color: colors.accent, // * Fallback for browsers without gradient support
-                              background: shadows.textGradientPink,
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text',
-                              fontSize: typography.fontSize.base, 
-                              fontWeight: typography.fontWeight.semibold,
-                              textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
-                              letterSpacing: '0.05em',
-                              whiteSpace: 'normal', // * Changed from 'nowrap' to allow wrapping on small screens
-                              wordBreak: 'break-word',
-                              overflowWrap: 'break-word',
-                              filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
-                            }}>
-                              Watched Together ✨
-                            </span>
-                            <hr className="flex-grow border-pink-400 border-dashed" style={{ 
-                              flex: 1, 
-                              height: '2px', 
-                              borderColor: colors.accent, 
-                              borderStyle: 'dashed',
-                              opacity: 0.5, 
-                            }} />
-                        </div>
-                    )}
-                    <MovieItem
-                      movie={movie}
-                      currentUser={currentUser!}
-                      onToggle={handleToggleWatched}
-                      onDelete={handleDeleteMovie}
-                      onUpdateMetadata={async (movie, searchTerm) => {
-                        const termToCheck = searchTerm || movie.title;
-                        setToast({ message: `Fetching details for "${termToCheck}"...`, type: 'info' });
-                        const success = await updateMovieMetadata(movie, searchTerm);
-                        if (success) {
-                            setToast({ message: `Updated details for "${movie.title}"!`, type: 'success' });
-                        } else {
-                            setToast({ message: `Could not find details for "${termToCheck}"`, type: 'error' });
-                        }
-                        return success;
-                      }}
-                      animationDelay={`${index * 0.05}s`}
-                      layout="list"
-                    />
-                  </React.Fragment>
-                );
-              })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+              {movies && movies.map((movie, index) => (
+                <React.Fragment key={movie.id}>
+                  {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
+                    <div style={{ margin: `${spacing.xl} 0`, display: 'flex', alignItems: 'center', gap: spacing.md }}>
+                      <hr style={{ flex: 1, border: 'none', borderTop: `1px dashed ${colors.accent}`, opacity: 0.5 }} />
+                      <span style={{ color: colors.accent, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold }}>
+                        Watched Together ✨
+                      </span>
+                      <hr style={{ flex: 1, border: 'none', borderTop: `1px dashed ${colors.accent}`, opacity: 0.5 }} />
+                    </div>
+                  )}
+                  <MovieItem
+                    movie={movie}
+                    currentUser={currentUser!}
+                    onToggle={handleToggleWatched}
+                    onDelete={handleDeleteMovie}
+                    onUpdateMetadata={async (m, s) => updateMovieMetadata(m, s)}
+                    animationDelay={`${index * 0.05}s`}
+                    layout="list"
+                  />
+                </React.Fragment>
+              ))}
             </div>
           )}
-          {movies?.length === 0 && (
-              <Card variant="elevated">
-                <div style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}>
-                  <FilmIcon style={{ 
-                    width: '80px', 
-                    height: '80px', 
-                    margin: '0 auto', 
-                    marginBottom: spacing.xl, 
-                    opacity: 0.6, 
-                    color: colors.accent,
-                    filter: 'drop-shadow(0 0 10px rgba(255, 105, 180, 0.3))',
-                  }} />
-                  <p style={{ 
-                    margin: 0, 
-                    marginBottom: spacing.md, 
-                    fontSize: typography.fontSize.xl, 
-                    color: colors.textPrimary,
-                    fontWeight: typography.fontWeight.semibold,
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                  }}>
-                    Your movie list is empty
-                  </p>
-                  <p style={{ 
-                    margin: 0, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.textSecondary,
-                    lineHeight: typography.lineHeight.relaxed,
-                  }}>
-                    Start building your watchlist by adding a movie above!
-                  </p>
-                </div>
-              </Card>
+
+          {movies?.length === 0 && !isSuggestionsLoading && (
+            <div style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}>
+              <FilmIcon style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }} />
+              <p>Your watchlist is empty. Add a movie to start!</p>
+            </div>
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!movieToDelete}
+        title="Delete Movie"
+        message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setMovieToDelete(null)}
+      />
+
+      <SpinWheel
+        isOpen={isWheelVisible}
+        onClose={() => setIsWheelVisible(false)}
+        movies={unwatchedMovies}
+        onWinner={(movie) => {
+          setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
+          setIsWheelVisible(false);
+        }}
+      />
+
+      <PinDialog
+        isOpen={showPinDialog}
+        onClose={() => setShowPinDialog(false)}
+        onSubmit={handlePinSubmit}
+        mode={pinMode}
+        isLoading={isPinLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={showRemovePinConfirm}
+        title="Remove PIN"
+        message="Are you sure you want to remove your PIN? Anyone will be able to mark movies as watched for you."
+        onConfirm={handleRemovePin}
+        onCancel={() => setShowRemovePinConfirm(false)}
+      />
     </div>
   );
 };
 
-export default Watchlist;
+export default memo(Watchlist);

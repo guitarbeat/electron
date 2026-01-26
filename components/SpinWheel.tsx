@@ -5,7 +5,7 @@ import { useUser } from '../context/UserContext';
 import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import { spacing, typography, colors } from '../design-system/tokens';
+import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 
 const COLORS = ['#2E3B4E', '#E74C3C', '#AF7AC5', '#5DADE2', '#FADBD8', '#C39BD3', '#A9CCE3', '#F5B7B1'];
 
@@ -194,6 +194,8 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
 
             <div 
               className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
+              role="img"
+              aria-label="Movie selection wheel"
               {...(hasSpunToday ? {} : getPointerHandlers())}
             >
               <div className="spin-wheel-container">
@@ -271,21 +273,49 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
                     Tonight's Movie:
                   </h2>
                 </div>
-                <h3 style={{
-                  fontSize: typography.fontSize['3xl'],
-                  fontWeight: typography.fontWeight.bold,
-                  color: colors.accent,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  hyphens: 'auto',
-                  margin: 0,
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  gap: spacing.md, 
                   marginBottom: spacing.xl,
-                  maxWidth: '100%',
-                  padding: '0 0.5rem', // * Add horizontal padding to prevent edge cutoff
-                  boxSizing: 'border-box',
+                  width: '100%' 
                 }}>
-                  {selectedMovie.title}
-                </h3>
+                  {selectedMovie.posterUrl && (
+                    <div style={{
+                      width: '180px',
+                      aspectRatio: '2/3',
+                      borderRadius: radius.md,
+                      overflow: 'hidden',
+                      boxShadow: shadows.glow,
+                      marginBottom: spacing.sm,
+                      animation: 'scale-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                      border: `2px solid ${colors.accent}`,
+                    }}>
+                      <img 
+                        src={selectedMovie.posterUrl} 
+                        alt={selectedMovie.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                  )}
+                  <h3 style={{
+                    fontSize: typography.fontSize['3xl'],
+                    fontWeight: typography.fontWeight.bold,
+                    color: colors.accent,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    hyphens: 'auto',
+                    margin: 0,
+                    maxWidth: '100%',
+                    padding: '0 0.5rem',
+                    boxSizing: 'border-box',
+                    textAlign: 'center',
+                    textShadow: '0 0 15px rgba(255, 105, 180, 0.4)',
+                  }}>
+                    {selectedMovie.title}
+                  </h3>
+                </div>
                 {saveError && (
                   <Card variant="outlined" style={{
                     marginBottom: spacing.lg,
