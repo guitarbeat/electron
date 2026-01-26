@@ -32,9 +32,11 @@ import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import { DashboardCard, SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
+import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
+  const isMobile = useMediaQuery(breakpoints.sm);
   const { 
     movies, 
     isLoading, 
@@ -263,11 +265,11 @@ const Watchlist: React.FC = () => {
                   ref={inputRef}
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
-                  placeholder="Enter movie or show title..."
+                  placeholder={isMobile ? "Add movie..." : "Enter movie or show title..."}
                   disabled={isSubmitting}
                   aria-label="New movie title"
                   style={{ 
-                    paddingRight: '120px',
+                    paddingRight: isMobile ? '80px' : '120px',
                     borderColor: successMovieId ? colors.success : undefined,
                     transition: 'border-color 0.3s ease'
                   }}
@@ -278,7 +280,7 @@ const Watchlist: React.FC = () => {
                   top: '50%', 
                   transform: 'translateY(-50%)',
                   display: 'flex',
-                  gap: spacing.sm,
+                  gap: isMobile ? spacing.xs : spacing.sm,
                   alignItems: 'center'
                 }}>
                    <IconButton
@@ -286,8 +288,9 @@ const Watchlist: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                    style={{ padding: isMobile ? '4px' : undefined }}
                   >
-                    {viewMode === 'list' ? <LayoutGridIcon /> : <LayoutListIcon />}
+                    {viewMode === 'list' ? <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} /> : <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />}
                   </IconButton>
 
                   <Button
@@ -299,13 +302,13 @@ const Watchlist: React.FC = () => {
                       padding: 0,
                       borderRadius: '50%',
                       aspectRatio: '1',
-                      minWidth: '36px',
-                      width: '36px',
-                      height: '36px',
+                      minWidth: isMobile ? '32px' : '36px',
+                      width: isMobile ? '32px' : '36px',
+                      height: isMobile ? '32px' : '36px',
                       flexShrink: 0,
                     }}
                   >
-                    {!isAdding && <PlusIcon style={{ width: '18px', height: '18px' }} />}
+                    {!isAdding && <PlusIcon style={{ width: isMobile ? '16px' : '18px', height: isMobile ? '16px' : '18px' }} />}
                   </Button>
                 </div>
               </div>

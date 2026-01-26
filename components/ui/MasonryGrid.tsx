@@ -13,7 +13,7 @@ interface MasonryGridProps {
 
 const MasonryGrid: React.FC<MasonryGridProps> = ({ 
   children, 
-  columns = { mobile: 2, tablet: 3, desktop: 5 },
+  columns = { mobile: 1, tablet: 2, desktop: 4 },
   gap = spacing.sm
 }) => {
   const gridStyles = React.useMemo(() => `
