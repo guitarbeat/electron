@@ -12,6 +12,7 @@ export const useMovies = (currentUser: User) => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
+  const mutationLockRef = useRef<Promise<void> | null>(null);
   const hasAutoSyncedRef = useRef(false);
 
   // Effect to seed the initial movies if the Gist is empty
@@ -56,22 +57,30 @@ export const useMovies = (currentUser: User) => {
 
 
   const performMutation = useCallback(async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
-    try {
-      const latestMovies = await getMovies();
-      const updatedMovies = mutationFn(latestMovies);
-      await saveMovies(updatedMovies);
-      refresh();
-    } catch (err) {
-      console.error("Mutation failed:", err);
-      // Re-throw the error so the calling component can handle it
-      throw err;
-    } finally {
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
-    }
+    // Chain mutations to prevent race conditions
+    const mutation = (async () => {
+      try {
+        await mutationLockRef.current;
+      } catch (e) { }
+
+      setIsSubmitting(true);
+      isSubmittingRef.current = true;
+      try {
+        const latestMovies = await getMovies();
+        const updatedMovies = mutationFn(latestMovies);
+        await saveMovies(updatedMovies);
+        refresh();
+      } catch (err) {
+        console.error("Mutation failed:", err);
+        throw err;
+      } finally {
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
+      }
+    })();
+
+    mutationLockRef.current = mutation;
+    return mutation;
   }, [refresh]);
 
   const addMovie = useCallback(async (title: string) => {

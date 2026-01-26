@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { colors, radius, spacing, typography, zIndex, shadows, motion } from '../design-system/tokens';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -21,6 +22,20 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
   const [searchTerm, setSearchTerm] = useState(movieTitle);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.classList.remove('modal-open');
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -45,7 +60,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed',
       top: 0,
@@ -164,7 +179,8 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
           </div>
         </form>
       </Card>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -11,14 +11,33 @@ interface MasonryGridProps {
   gap?: string;
 }
 
-/**
- * A CSS-based masonry grid layout using column-count.
- */
 const MasonryGrid: React.FC<MasonryGridProps> = ({ 
   children, 
   columns = { mobile: 2, tablet: 3, desktop: 5 },
   gap = spacing.sm
 }) => {
+  const gridStyles = React.useMemo(() => `
+    .masonry-grid {
+      column-count: ${columns.desktop};
+    }
+    @media (max-width: 1024px) {
+      .masonry-grid {
+        column-count: ${columns.tablet};
+      }
+    }
+    @media (max-width: 640px) {
+      .masonry-grid {
+        column-count: ${columns.mobile};
+      }
+    }
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: ${gap};
+      display: inline-block;
+      width: 100%;
+    }
+  `, [columns.desktop, columns.tablet, columns.mobile, gap]);
+
   return (
     <div 
       className="masonry-grid"
@@ -28,27 +47,7 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
         width: '100%',
       }}
     >
-      <style>{`
-        .masonry-grid {
-          column-count: ${columns.desktop};
-        }
-        @media (max-width: 1024px) {
-          .masonry-grid {
-            column-count: ${columns.tablet};
-          }
-        }
-        @media (max-width: 640px) {
-          .masonry-grid {
-            column-count: ${columns.mobile};
-          }
-        }
-        .masonry-item {
-          break-inside: avoid;
-          margin-bottom: ${gap};
-          display: inline-block;
-          width: 100%;
-        }
-      `}</style>
+      <style>{gridStyles}</style>
       {React.Children.map(children, (child) => (
         <div className="masonry-item">
           {child}
