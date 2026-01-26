@@ -21,41 +21,41 @@ export const colors = {
   background: '#1a1a2e',
   surface: 'rgba(27, 40, 69, 0.85)',
   surfaceElevated: 'rgba(27, 40, 69, 0.95)',
-  
+
   // Text (improved contrast for readability)
   textPrimary: '#ffffff',
   textSecondary: '#f0f0f5',    // Brighter for better contrast
   textTertiary: '#c8c8d8',     // Increased brightness for legibility
-  
+
   // Accent (Hot Pink)
   accent: '#ff69b4',
   accentHover: '#ff8bb3',
   accentMuted: '#ff69b440',
   accentLight: '#fca5d3',
-  
+
   // Secondary accent (Light Sky Blue)
   secondary: '#87cefa',
   secondaryHover: '#a0d8ff',
   secondaryMuted: '#87cefa40',
-  
+
   // Tertiary (Medium Purple)
   tertiary: '#9370db',
   tertiaryHover: '#ab87e8',
-  
+
   // Status
   success: '#4ade80',
   warning: '#fbbf24',
   error: '#f87171',
-  
+
   // Border
   border: '#ff69b4',
   borderSecondary: '#87cefa',
   borderTertiary: '#9370db',
   borderInset: '#1f4068',
-  
+
   // Overlay
   overlay: 'rgba(26, 26, 46, 0.8)',
-  
+
   // Special retro colors
   yellow: '#ffeb3b',
   khaki: '#f0e68c',
@@ -127,7 +127,7 @@ export const radius = {
   md: '0.5rem',    // 8px
   lg: '0.75rem',   // 12px
   // Card border radius (optimized for mobile)
-  card: '12px',     
+  card: '12px',
   full: '9999px',
 } as const;
 
@@ -159,12 +159,12 @@ export const shadows = {
   textGlow: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 105, 180, 0.5), 0 0 24px rgba(255, 105, 180, 0.3)',
   textGlowBlue: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(135, 206, 250, 0.5), 0 0 24px rgba(135, 206, 250, 0.3)',
   textGlowYellow: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 235, 59, 0.5), 0 0 24px rgba(255, 235, 59, 0.3)',
-  
+
   // Text gradients
   textGradientPink: 'linear-gradient(135deg, #ff69b4 0%, #ff8bb3 50%, #fff 100%)',
   textGradientBlue: 'linear-gradient(135deg, #87cefa 0%, #a0d8ff 50%, #fff 100%)',
   textGradientYellow: 'linear-gradient(135deg, #ffeb3b 0%, #fff9c4 50%, #fff 100%)',
-  
+
   // Text outline effects
   textOutline: '0 0 1px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.6), 0 0 4px rgba(0, 0, 0, 0.4)',
 } as const;

@@ -202,8 +202,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 {/* Delete button - appears on hover */}
                 <div style={{
                     position: 'absolute',
-                    top: -spacing.xs,
-                    [isCurrentUser ? 'left' : 'right']: -spacing.xs,
+                    top: `-${spacing.xs}`,
+                    [isCurrentUser ? 'left' : 'right']: `-${spacing.xs}`,
                     transition: 'all 0.2s ease',
                 }}
                 className="message-actions"

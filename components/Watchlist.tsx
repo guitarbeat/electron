@@ -3,7 +3,17 @@ import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { usePins } from '../hooks/usePins';
 import { Movie } from '../types';
-import { PlusIcon, LogoutIcon, DiceIcon, CheckIcon, FilmIcon, LockIcon } from './icons';
+import { 
+  PlusIcon, 
+  LogoutIcon, 
+  DiceIcon, 
+  CheckIcon, 
+  FilmIcon, 
+  LockIcon, 
+  RefreshIcon,
+  LayoutGridIcon,
+  LayoutListIcon
+} from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
 import Card from './ui/Card';
@@ -14,12 +24,13 @@ import ConfirmDialog from './ui/ConfirmDialog';
 import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import SuggestionList from './SuggestionList';
+import MasonryGrid from './ui/MasonryGrid';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
-  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh: refreshMovies } = useMovies(currentUser!);
+  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh: refreshMovies, updateMovieMetadata, refreshAllMetadata } = useMovies(currentUser!);
   const { userHasPin, setUserPin, removeUserPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
@@ -35,6 +46,7 @@ const Watchlist: React.FC = () => {
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
   const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
   const watchedMovies = movies ? movies.filter(movie => movie.watchedBy.length === 2) : [];
@@ -222,7 +234,7 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '44rem', margin: '0 auto', padding: `${spacing.lg} ${spacing.md}` }}>
+    <div style={{ maxWidth: viewMode === 'grid' ? '64rem' : '44rem', margin: '0 auto', padding: `${spacing.lg} ${spacing.md}`, transition: 'max-width 0.3s ease' }}>
       {isWheelVisible && <SpinWheel movies={unwatchedMovies} onClose={() => setIsWheelVisible(false)} />}
       
       <ConfirmDialog
@@ -459,6 +471,28 @@ const Watchlist: React.FC = () => {
                 </IconButton>
                 <IconButton
                   type="button"
+                  onClick={async () => {
+                    const confirm = window.confirm("Refresh metadata for ALL movies? This may take a moment.");
+                    if (confirm) {
+                        setToast({ message: "Refreshing all movie metadata...", type: 'info' });
+                        try {
+                            await refreshAllMetadata();
+                            setToast({ message: "All movies refreshed!", type: 'success' });
+                        } catch (e) {
+                            setToast({ message: "Failed to refresh all movies", type: 'error' });
+                        }
+                    }
+                  }}
+                  title="Refresh metadata for all movies"
+                  aria-label="Refresh all"
+                  variant="ghost"
+                  disabled={isSubmitting}
+                  style={{ flexShrink: 0, width: '36px', height: '36px' }}
+                >
+                  <RefreshIcon style={{ width: '18px', height: '18px' }} />
+                </IconButton>
+                <IconButton
+                  type="button"
                   onClick={handleOpenPinSettings}
                   title={userHasPin(currentUser!) ? 'Change or remove your PIN' : 'Set a PIN to lock your account'}
                   aria-label={userHasPin(currentUser!) ? 'Change PIN' : 'Set PIN'}
@@ -471,6 +505,25 @@ const Watchlist: React.FC = () => {
                     height: '0.875rem',
                     color: userHasPin(currentUser!) ? colors.success : colors.textSecondary,
                   }} />
+                </IconButton>
+                <IconButton
+                  type="button"
+                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                  title={viewMode === 'list' ? 'Switch to Grid View' : 'Switch to List View'}
+                  aria-label={viewMode === 'list' ? 'Grid view' : 'List view'}
+                  variant="ghost"
+                  style={{ 
+                    flexShrink: 0, 
+                    width: '36px', 
+                    height: '36px',
+                    color: colors.accent,
+                  }}
+                >
+                  {viewMode === 'list' ? (
+                    <LayoutGridIcon style={{ width: '18px', height: '18px' }} />
+                  ) : (
+                    <LayoutListIcon style={{ width: '18px', height: '18px' }} />
+                  )}
                 </IconButton>
                 <Input
                   ref={inputRef}
@@ -555,62 +608,104 @@ const Watchlist: React.FC = () => {
 
         {/* Movie List */}
         <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
           opacity: isSubmitting ? 0.5 : 1,
           pointerEvents: isSubmitting ? 'none' : 'auto',
           transition: 'opacity 0.2s ease',
         }}>
-          {movies && movies.map((movie, index) => {
-            return (
-              <React.Fragment key={movie.id}>
-                {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                    <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing['2xl']} 0 ${spacing.xl} 0` }}>
-                        <hr className="flex-grow border-pink-400 border-dashed" style={{ 
-                          flex: 1, 
-                          height: '2px', 
-                          borderColor: colors.accent, 
-                          borderStyle: 'dashed',
-                          opacity: 0.5,
-                        }} />
-                        <span className="px-4 text-pink-300 font-heading" style={{ 
-                          padding: `0 ${spacing.lg}`, 
-                          color: colors.accent, // * Fallback for browsers without gradient support
-                          background: shadows.textGradientPink,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                          fontSize: typography.fontSize.base, 
-                          fontWeight: typography.fontWeight.semibold,
-                          textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
-                          letterSpacing: '0.05em',
-                          whiteSpace: 'normal', // * Changed from 'nowrap' to allow wrapping on small screens
-                          wordBreak: 'break-word',
-                          overflowWrap: 'break-word',
-                          filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
-                        }}>
-                          Watched Together ✨
-                        </span>
-                        <hr className="flex-grow border-pink-400 border-dashed" style={{ 
-                          flex: 1, 
-                          height: '2px', 
-                          borderColor: colors.accent, 
-                          borderStyle: 'dashed',
-                          opacity: 0.5,
-                        }} />
-                    </div>
-                )}
+          {viewMode === 'grid' ? (
+            <MasonryGrid>
+              {movies && movies.map((movie) => (
                 <MovieItem
+                  key={movie.id}
                   movie={movie}
                   currentUser={currentUser!}
                   onToggle={handleToggleWatched}
                   onDelete={handleDeleteMovie}
-                  animationDelay={`${index * 0.05}s`}
+                  onUpdateMetadata={async (movie, searchTerm) => {
+                    const termToCheck = searchTerm || movie.title;
+                    setToast({ message: `Fetching details for "${termToCheck}"...`, type: 'info' });
+                    const success = await updateMovieMetadata(movie, searchTerm);
+                    if (success) {
+                        setToast({ message: `Updated details for "${movie.title}"!`, type: 'success' });
+                    } else {
+                        setToast({ message: `Could not find details for "${termToCheck}"`, type: 'error' });
+                    }
+                    return success;
+                  }}
+                  animationDelay="0s"
+                  layout="grid"
                 />
-              </React.Fragment>
-            )
-          })}
+              ))}
+            </MasonryGrid>
+          ) : (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.md,
+            }}>
+              {movies && movies.map((movie, index) => {
+                return (
+                  <React.Fragment key={movie.id}>
+                    {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
+                        <div className="flex items-center my-6 animate-fade-in" style={{ margin: `${spacing['2xl']} 0 ${spacing.xl} 0` }}>
+                            <hr className="flex-grow border-pink-400 border-dashed" style={{ 
+                              flex: 1, 
+                              height: '2px', 
+                              borderColor: colors.accent, 
+                              borderStyle: 'dashed',
+                              opacity: 0.5,
+                            }} />
+                            <span className="px-4 text-pink-300 font-heading" style={{ 
+                              padding: `0 ${spacing.lg}`, 
+                              color: colors.accent, // * Fallback for browsers without gradient support
+                              background: shadows.textGradientPink,
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              backgroundClip: 'text',
+                              fontSize: typography.fontSize.base, 
+                              fontWeight: typography.fontWeight.semibold,
+                              textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
+                              letterSpacing: '0.05em',
+                              whiteSpace: 'normal', // * Changed from 'nowrap' to allow wrapping on small screens
+                              wordBreak: 'break-word',
+                              overflowWrap: 'break-word',
+                              filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
+                            }}>
+                              Watched Together ✨
+                            </span>
+                            <hr className="flex-grow border-pink-400 border-dashed" style={{ 
+                              flex: 1, 
+                              height: '2px', 
+                              borderColor: colors.accent, 
+                              borderStyle: 'dashed',
+                              opacity: 0.5, 
+                            }} />
+                        </div>
+                    )}
+                    <MovieItem
+                      movie={movie}
+                      currentUser={currentUser!}
+                      onToggle={handleToggleWatched}
+                      onDelete={handleDeleteMovie}
+                      onUpdateMetadata={async (movie, searchTerm) => {
+                        const termToCheck = searchTerm || movie.title;
+                        setToast({ message: `Fetching details for "${termToCheck}"...`, type: 'info' });
+                        const success = await updateMovieMetadata(movie, searchTerm);
+                        if (success) {
+                            setToast({ message: `Updated details for "${movie.title}"!`, type: 'success' });
+                        } else {
+                            setToast({ message: `Could not find details for "${termToCheck}"`, type: 'error' });
+                        }
+                        return success;
+                      }}
+                      animationDelay={`${index * 0.05}s`}
+                      layout="list"
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
           {movies?.length === 0 && (
               <Card variant="elevated">
                 <div style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}>

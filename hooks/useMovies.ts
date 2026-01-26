@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
+import { fetchMovieMetadata } from '../services/metadataService';
 
 export const useMovies = (currentUser: User) => {
   const { data: movies, error, isLoading, refresh } = usePolling(
@@ -11,46 +12,48 @@ export const useMovies = (currentUser: User) => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
+  const hasAutoSyncedRef = useRef(false);
 
   // Effect to seed the initial movies if the Gist is empty
   useEffect(() => {
     const seedMovies = async () => {
-        const hasBeenSeeded = localStorage.getItem('movieListSeeded_gist_refactored');
-        if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
-            console.log('Gist is empty, seeding initial movies...');
-            const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
-                { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'Renfield', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'Sinister', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'Creep', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'Easy A', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [] },
-                { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [] },
-            ];
+      const hasBeenSeeded = localStorage.getItem('movieListSeeded_gist_refactored');
+      if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
+        console.log('Gist is empty, seeding initial movies...');
+        const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
+          { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'Renfield', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'Sinister', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'Creep', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'Easy A', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [] },
+        ];
 
-            const moviesToSave: Movie[] = defaultMovies.map((movie) => ({
-                ...movie,
-                id: crypto.randomUUID(),
-                createdAt: new Date().toISOString(),
-            }));
-            
-            try {
-                isSubmittingRef.current = true;
-                setIsSubmitting(true);
-                await saveMovies(moviesToSave);
-                localStorage.setItem('movieListSeeded_gist_refactored', 'true');
-                refresh();
-            } catch (err) {
-                console.error('Failed to seed movies:', err);
-            } finally {
-                isSubmittingRef.current = false;
-                setIsSubmitting(false);
-            }
+        const moviesToSave: Movie[] = defaultMovies.map((movie) => ({
+          ...movie,
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+        }));
+
+        try {
+          isSubmittingRef.current = true;
+          setIsSubmitting(true);
+          await saveMovies(moviesToSave);
+          localStorage.setItem('movieListSeeded_gist_refactored', 'true');
+          refresh();
+        } catch (err) {
+          console.error('Failed to seed movies:', err);
+        } finally {
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
         }
+      }
     };
     seedMovies();
   }, [movies, isLoading, refresh]);
+
 
   const performMutation = useCallback(async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
     if (isSubmittingRef.current) return;
@@ -72,18 +75,32 @@ export const useMovies = (currentUser: User) => {
   }, [refresh]);
 
   const addMovie = useCallback(async (title: string) => {
-    const newMovie: Movie = {
+    // 1. Create the basic movie object
+    const baseMovie: Movie = {
       id: crypto.randomUUID(),
       title: title.trim(),
       addedBy: currentUser,
       watchedBy: [],
       createdAt: new Date().toISOString(),
     };
+
+    // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible, 
+    //    but here we do it inside performMutation logic effectively by prepping it first)
+    //    However, to keep UI responsive, we'll do it here.
+    let metadata = {};
+    try {
+      metadata = await fetchMovieMetadata(title.trim());
+    } catch (error) {
+      console.error("Failed to fetch metadata, continuing without it:", error);
+    }
+
+    const newMovie = { ...baseMovie, ...metadata };
+
     await performMutation(latestMovies => [...latestMovies, newMovie]);
   }, [currentUser, performMutation]);
 
   const toggleWatched = useCallback(async (movieId: string) => {
-    await performMutation(latestMovies => 
+    await performMutation(latestMovies =>
       latestMovies.map(movie => {
         if (movie.id === movieId) {
           const isWatched = movie.watchedBy.includes(currentUser);
@@ -101,27 +118,134 @@ export const useMovies = (currentUser: User) => {
     if (!window.confirm("Are you sure you want to delete this movie?")) return;
     await performMutation(latestMovies => latestMovies.filter(movie => movie.id !== movieId));
   }, [performMutation]);
-  
+
+  const updateMovieMetadata = useCallback(async (movie: Movie, searchTerm?: string) => {
+    try {
+      const metadata = await fetchMovieMetadata(searchTerm || movie.title);
+      // Only update if we actually found something useful
+      if (metadata.posterUrl || metadata.plot || metadata.year) {
+        await performMutation(latestMovies =>
+          latestMovies.map(m => m.id === movie.id ? { ...m, ...metadata } : m)
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to manual update metadata:", error);
+      return false;
+    }
+  }, [performMutation]);
+
+  const refreshAllMetadata = useCallback(async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      const latestMovies = await getMovies();
+      // Fetch metadata for all movies in parallel (with some concurrency limit if needed, but for now simple)
+      console.log("Refreshing all metadata...");
+
+      const updatedMovies = await Promise.all(latestMovies.map(async (movie) => {
+        try {
+          // Add a small delay to avoid rate limits if any
+          await new Promise(r => setTimeout(r, Math.random() * 1000));
+          const metadata = await fetchMovieMetadata(movie.title);
+          // Merge mostly to keep existing IDs/User data, but overwrite metadata
+          // Only overwrite if we got data back
+          if (metadata.posterUrl) {
+            return { ...movie, ...metadata };
+          }
+          return movie;
+        } catch (e) {
+          console.error(`Failed to refresh metadata for ${movie.title}`, e);
+          return movie;
+        }
+      }));
+
+      await saveMovies(updatedMovies);
+      refresh();
+      return true;
+    } catch (error) {
+      console.error("Failed to refresh all metadata:", error);
+      throw error;
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }, [refresh]);
+
+  const autoSyncMetadata = useCallback(async () => {
+    if (hasAutoSyncedRef.current || !movies || movies.length === 0 || isSubmittingRef.current) return;
+
+    const moviesMissingMetadata = movies.filter(m => !m.posterUrl || !m.plot || !m.year);
+    if (moviesMissingMetadata.length === 0) {
+      hasAutoSyncedRef.current = true;
+      return;
+    }
+
+    console.log(`Auto-sync: Found ${moviesMissingMetadata.length} movies missing metadata. Starting background sync...`);
+    hasAutoSyncedRef.current = true;
+
+    try {
+      // Small delay before starting to not interfere with initial load
+      await new Promise(r => setTimeout(r, 2000));
+
+      let syncOccurred = false;
+      const updatedMovies = await Promise.all(movies.map(async (movie) => {
+        const needsSync = !movie.posterUrl || !movie.plot || !movie.year;
+        if (needsSync) {
+          try {
+            // Random delay to spread out requests
+            await new Promise(r => setTimeout(r, Math.random() * 2000));
+            const metadata = await fetchMovieMetadata(movie.title);
+            if (metadata.posterUrl || metadata.plot || metadata.year) {
+              syncOccurred = true;
+              return { ...movie, ...metadata };
+            }
+          } catch (e) {
+            console.warn(`Auto-sync failed for ${movie.title}:`, e);
+          }
+        }
+        return movie;
+      }));
+
+      if (syncOccurred) {
+        await performMutation(() => updatedMovies);
+        console.log("Auto-sync: Successfully updated missing metadata.");
+      }
+    } catch (error) {
+      console.error("Auto-sync: Failed background metadata update:", error);
+    }
+  }, [movies, performMutation]);
+
+  // Trigger auto-sync once movies are loaded
+  useEffect(() => {
+    if (!isLoading && movies && movies.length > 0 && !hasAutoSyncedRef.current) {
+      autoSyncMetadata();
+    }
+  }, [isLoading, movies, autoSyncMetadata]);
+
   // Memoize sortedMovies to prevent unnecessary re-renders in consumers (like Watchlist)
   // when other states in Watchlist change (e.g. input field typing)
   const sortedMovies = useMemo(() => movies
     ? [...movies].sort((a, b) => {
-        const aWatchedByBoth = a.watchedBy.length === 2;
-        const bWatchedByBoth = b.watchedBy.length === 2;
+      const aWatchedByBoth = a.watchedBy.length === 2;
+      const bWatchedByBoth = b.watchedBy.length === 2;
 
-        if (aWatchedByBoth && !bWatchedByBoth) {
-          return 1; // a (watched) comes after b (unwatched)
-        }
-        if (!aWatchedByBoth && bWatchedByBoth) {
-          return -1; // a (unwatched) comes before b (watched)
-        }
-        
-        // For movies in the same group (both watched or both unwatched), sort by creation date
-        if (b.createdAt > a.createdAt) return 1;
-        if (b.createdAt < a.createdAt) return -1;
-        return 0;
-      })
+      if (aWatchedByBoth && !bWatchedByBoth) {
+        return 1; // a (watched) comes after b (unwatched)
+      }
+      if (!aWatchedByBoth && bWatchedByBoth) {
+        return -1; // a (unwatched) comes before b (watched)
+      }
+
+      // For movies in the same group (both watched or both unwatched), sort by creation date
+      if (b.createdAt > a.createdAt) return 1;
+      if (b.createdAt < a.createdAt) return -1;
+      return 0;
+    })
     : [], [movies]);
 
-  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh };
+  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh, updateMovieMetadata, refreshAllMetadata };
 };
