@@ -19,12 +19,12 @@ interface HeaderProps {
   hasPin: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  currentUser, 
-  onLogout, 
-  onPinAction, 
-  onRemovePin, 
-  hasPin 
+const Header: React.FC<HeaderProps> = ({
+  currentUser,
+  onLogout,
+  onPinAction,
+  onRemovePin,
+  hasPin,
 }) => {
   const sources = currentUser ? userImageSources[currentUser] : defaultImageSources;
   const isMobile = useMediaQuery(breakpoints.sm);
@@ -43,14 +43,16 @@ const Header: React.FC<HeaderProps> = ({
           }}
           className="header-content"
         >
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            gap: spacing.md, 
-            width: '100%',
-            flex: 1 
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing.md,
+              width: '100%',
+              flex: 1,
+            }}
+          >
             <div
               style={{
                 width: '48px',
@@ -111,39 +113,46 @@ const Header: React.FC<HeaderProps> = ({
               >
                 Aaron &amp; Electra
               </h1>
-              <p style={{
-                fontSize: typography.fontSize.xs,
-                color: colors.textSecondary,
-                margin: 0,
-                marginTop: spacing.xs,
-                letterSpacing: '0.02em',
-                lineHeight: typography.lineHeight.normal,
-                opacity: 0.8,
-              }}>
-                Shared Watchlist • <span style={{ color: colors.accent, fontWeight: typography.fontWeight.bold }}>{currentUser}</span>
+              <p
+                style={{
+                  fontSize: typography.fontSize.xs,
+                  color: colors.textSecondary,
+                  margin: 0,
+                  marginTop: spacing.xs,
+                  letterSpacing: '0.02em',
+                  lineHeight: typography.lineHeight.normal,
+                  opacity: 0.8,
+                }}
+              >
+                Shared Watchlist •{' '}
+                <span style={{ color: colors.accent, fontWeight: typography.fontWeight.bold }}>
+                  {currentUser}
+                </span>
               </p>
             </div>
           </div>
 
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: spacing.md,
-            width: isMobile ? '100%' : 'auto',
-            justifyContent: isMobile ? 'space-between' : 'flex-end',
-            paddingTop: isMobile ? spacing.sm : 0,
-            borderTop: isMobile ? `1px solid ${colors.borderSecondary}20` : 'none',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.md,
+              width: isMobile ? '100%' : 'auto',
+              justifyContent: isMobile ? 'space-between' : 'flex-end',
+              paddingTop: isMobile ? spacing.sm : 0,
+              borderTop: isMobile ? `1px solid ${colors.borderSecondary}20` : 'none',
+            }}
+          >
             <div style={{ display: 'flex', gap: spacing.sm }}>
               <IconButton
                 onClick={onPinAction}
                 variant="ghost"
                 size="sm"
-                title={hasPin ? "Change PIN" : "Set PIN"}
-                style={{ 
+                title={hasPin ? 'Change PIN' : 'Set PIN'}
+                style={{
                   color: hasPin ? colors.success : colors.textTertiary,
                   borderColor: hasPin ? `${colors.success}40` : `${colors.borderSecondary}40`,
-                  border: '1px solid'
+                  border: '1px solid',
                 }}
               >
                 <LockIcon />
@@ -154,27 +163,27 @@ const Header: React.FC<HeaderProps> = ({
                   variant="ghost"
                   size="sm"
                   title="Remove PIN"
-                  style={{ 
+                  style={{
                     color: colors.error,
                     borderColor: `${colors.error}40`,
-                    border: '1px solid'
+                    border: '1px solid',
                   }}
                 >
                   <TrashIcon />
                 </IconButton>
               )}
             </div>
-            
-            <Button 
+
+            <Button
               onClick={onLogout}
               variant="secondary"
               size="sm"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: spacing.xs,
                 backgroundColor: 'rgba(0,0,0,0.3)',
-                borderColor: 'rgba(255,255,255,0.1)'
+                borderColor: 'rgba(255,255,255,0.1)',
               }}
             >
               <LogoutIcon style={{ width: '1.25rem', height: '1.5rem' }} />

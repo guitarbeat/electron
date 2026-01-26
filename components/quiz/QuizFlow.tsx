@@ -26,9 +26,12 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   // Get current answer for this question
-  const currentAnswer = answers.find(a => a.questionId === currentQuestion.id);
+  const currentAnswer = answers.find((a) => a.questionId === currentQuestion.id);
 
-  const handleAnswer = (answerIndex?: number, scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree') => {
+  const handleAnswer = (
+    answerIndex?: number,
+    scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree'
+  ) => {
     const newAnswer: QuizAnswer = {
       questionId: currentQuestion.id,
       answerIndex,
@@ -36,15 +39,15 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     };
 
     // Update or add answer
-    setAnswers(prev => {
-      const filtered = prev.filter(a => a.questionId !== currentQuestion.id);
+    setAnswers((prev) => {
+      const filtered = prev.filter((a) => a.questionId !== currentQuestion.id);
       return [...filtered, newAnswer];
     });
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       // Calculate results
       calculateResults();
@@ -53,37 +56,37 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
 
   const calculateResults = () => {
     const scores: CharacterScores = {
-      'Electra': 0,
-      'Aaron': 0,
-      'Madeleine': 0,
+      Electra: 0,
+      Aaron: 0,
+      Madeleine: 0,
       'Nosferatu/Smeemo': 0,
     };
 
     // Calculate scores from answers
-    answers.forEach(answer => {
-      const question = questions.find(q => q.id === answer.questionId);
+    answers.forEach((answer) => {
+      const question = questions.find((q) => q.id === answer.questionId);
       if (!question) return;
 
       if (question.type === 'multiple-choice' && answer.answerIndex !== undefined) {
         const option = question.options[answer.answerIndex];
         Object.entries(option.scores).forEach(([char, score]) => {
-          scores[char as QuizCharacter] += (score as number);
+          scores[char as QuizCharacter] += score as number;
         });
       } else if (question.type === 'agree-disagree' && answer.scaleValue) {
         const scaleScores = question.scores[answer.scaleValue];
         Object.entries(scaleScores).forEach(([char, score]) => {
-          scores[char as QuizCharacter] += (score as number);
+          scores[char as QuizCharacter] += score as number;
         });
       } else if (question.type === 'image-choice' && answer.answerIndex !== undefined) {
         const option = question.options[answer.answerIndex];
         Object.entries(option.scores).forEach(([char, score]) => {
-          scores[char as QuizCharacter] += (score as number);
+          scores[char as QuizCharacter] += score as number;
         });
       }
     });
@@ -97,16 +100,16 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     // Calculate percentages
     const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
     const percentages: Record<QuizCharacter, number> = {
-      'Electra': Math.round((scores['Electra'] / totalScore) * 100) || 0,
-      'Aaron': Math.round((scores['Aaron'] / totalScore) * 100) || 0,
-      'Madeleine': Math.round((scores['Madeleine'] / totalScore) * 100) || 0,
+      Electra: Math.round((scores['Electra'] / totalScore) * 100) || 0,
+      Aaron: Math.round((scores['Aaron'] / totalScore) * 100) || 0,
+      Madeleine: Math.round((scores['Madeleine'] / totalScore) * 100) || 0,
       'Nosferatu/Smeemo': Math.round((scores['Nosferatu/Smeemo'] / totalScore) * 100) || 0,
     };
 
     // Determine if result is "Neither"
     // If the top character has less than 35% of the total score, it's a weak match
     const topScore = scores[topCharacter];
-    const isNeither = totalScore > 0 && (topScore / totalScore) < 0.35;
+    const isNeither = totalScore > 0 && topScore / totalScore < 0.35;
 
     const result: QuizResult = {
       character: isNeither ? 'Neither' : topCharacter,
@@ -127,9 +130,9 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
 
   if (showResults && quizResult) {
     return (
-      <ResultsScreen 
-        result={quizResult} 
-        onContinue={onComplete} 
+      <ResultsScreen
+        result={quizResult}
+        onContinue={onComplete}
         onRetake={handleRetake}
         characterDescriptions={quizData.characterDescriptions}
         neitherDescription={quizData.neitherDescription}

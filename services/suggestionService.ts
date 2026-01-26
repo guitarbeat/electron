@@ -7,8 +7,8 @@ export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   try {
     const response = await fetch(GIST_API_URL, {
       headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
       },
       cache: 'no-cache',
     });
@@ -36,8 +36,8 @@ export const saveSuggestions = async (suggestions: MovieSuggestion[]): Promise<v
     const response = await fetch(GIST_API_URL, {
       method: 'PATCH',
       headers: {
-        'Authorization': `token ${GIST_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
       },
       body: JSON.stringify({
         files: {
@@ -65,7 +65,7 @@ export const addSuggestion = async (
   reason?: string
 ): Promise<MovieSuggestion> => {
   const suggestions = await getSuggestions();
-  
+
   const newSuggestion: MovieSuggestion = {
     id: `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: title.trim(),
@@ -74,9 +74,9 @@ export const addSuggestion = async (
     status: 'pending',
     createdAt: new Date().toISOString(),
   };
-  
+
   suggestions.push(newSuggestion);
   await saveSuggestions(suggestions);
-  
+
   return newSuggestion;
 };

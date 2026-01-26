@@ -15,20 +15,23 @@ interface DashboardItemProps {
   actionLabel?: string;
 }
 
-export const DashboardCard: React.FC<DashboardItemProps> = ({ 
-  title, 
-  icon, 
-  description, 
-  onClick, 
+export const DashboardCard: React.FC<DashboardItemProps> = ({
+  title,
+  icon,
+  description,
+  onClick,
   variant = 'primary',
-  actionLabel = 'Go'
+  actionLabel = 'Go',
 }) => {
   const isMobile = useMediaQuery(breakpoints.sm);
   const getGradient = () => {
     switch (variant) {
-      case 'accent': return colors.gradientPink;
-      case 'secondary': return colors.gradientBlue;
-      default: return 'linear-gradient(135deg, rgba(27, 40, 69, 0.8) 0%, rgba(13, 20, 38, 0.9) 100%)';
+      case 'accent':
+        return colors.gradientPink;
+      case 'secondary':
+        return colors.gradientBlue;
+      default:
+        return 'linear-gradient(135deg, rgba(27, 40, 69, 0.8) 0%, rgba(13, 20, 38, 0.9) 100%)';
     }
   };
 
@@ -53,61 +56,71 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
         position: 'relative',
         overflow: 'hidden',
       }}
-      role={onClick ? "button" : undefined}
+      role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick();
-        }
-      } : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
       className="dashboard-card-hover"
     >
-      <div style={{
-        marginBottom: spacing.md,
-        color: variant === 'accent' ? colors.textPrimary : colors.accent,
-        filter: shadows.glow ? shadows.glow : 'none',
-      }}>
+      <div
+        style={{
+          marginBottom: spacing.md,
+          color: variant === 'accent' ? colors.textPrimary : colors.accent,
+          filter: shadows.glow ? shadows.glow : 'none',
+        }}
+      >
         {icon}
       </div>
-      
-      <h3 style={{
-        fontSize: typography.fontSize.lg,
-        fontWeight: typography.fontWeight.bold,
-        color: colors.textPrimary,
-        margin: 0,
-        marginBottom: spacing.sm,
-        whiteSpace: 'normal',
-        wordBreak: 'normal',
-        overflowWrap: 'break-word',
-      }}>
-        {title}
-      </h3>
-      
-      {description && (
-        <p style={{
-          fontSize: typography.fontSize.sm,
-          color: colors.textSecondary,
+
+      <h3
+        style={{
+          fontSize: typography.fontSize.lg,
+          fontWeight: typography.fontWeight.bold,
+          color: colors.textPrimary,
           margin: 0,
-          marginBottom: spacing.lg,
-          lineHeight: 1.4,
+          marginBottom: spacing.sm,
           whiteSpace: 'normal',
           wordBreak: 'normal',
           overflowWrap: 'break-word',
-        }}>
+        }}
+      >
+        {title}
+      </h3>
+
+      {description && (
+        <p
+          style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.textSecondary,
+            margin: 0,
+            marginBottom: spacing.lg,
+            lineHeight: 1.4,
+            whiteSpace: 'normal',
+            wordBreak: 'normal',
+            overflowWrap: 'break-word',
+          }}
+        >
           {description}
         </p>
       )}
-      
+
       {onClick && (
-        <Button 
-          variant={variant === 'accent' ? 'secondary' : 'primary'} 
+        <Button
+          variant={variant === 'accent' ? 'secondary' : 'primary'}
           size="md"
-          style={{ 
+          style={{
             marginTop: 'auto',
             width: '100%',
             fontWeight: typography.fontWeight.bold,
-            letterSpacing: '0.05em'
+            letterSpacing: '0.05em',
           }}
         >
           {actionLabel}
@@ -128,7 +141,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
   suggestion,
   onAccept,
   onReject,
-  isProcessing
+  isProcessing,
 }) => {
   const isMobile = useMediaQuery(breakpoints.sm);
   return (
@@ -145,56 +158,73 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
         minHeight: isMobile ? '160px' : '180px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}>
-        <div style={{
-          padding: '6px',
-          borderRadius: radius.full,
-          backgroundColor: colors.accent + '20',
-          color: colors.accent,
-        }}>
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}
+      >
+        <div
+          style={{
+            padding: '6px',
+            borderRadius: radius.full,
+            backgroundColor: colors.accent + '20',
+            color: colors.accent,
+          }}
+        >
           <TicketIcon style={{ width: '16px', height: '16px' }} />
         </div>
-        <span style={{ fontSize: '0.65rem', fontWeight: typography.fontWeight.bold, color: colors.textTertiary, textTransform: 'uppercase' }}>
+        <span
+          style={{
+            fontSize: '0.65rem',
+            fontWeight: typography.fontWeight.bold,
+            color: colors.textTertiary,
+            textTransform: 'uppercase',
+          }}
+        >
           Suggestion
         </span>
       </div>
 
-      <h3 style={{
-        fontSize: typography.fontSize.base,
-        fontWeight: typography.fontWeight.bold,
-        color: colors.textPrimary,
-        margin: 0,
-        marginBottom: spacing.xs,
-        lineHeight: 1.2,
-        whiteSpace: 'normal',
-        wordBreak: 'normal',
-        overflowWrap: 'break-word',
-      }}>
+      <h3
+        style={{
+          fontSize: typography.fontSize.base,
+          fontWeight: typography.fontWeight.bold,
+          color: colors.textPrimary,
+          margin: 0,
+          marginBottom: spacing.xs,
+          lineHeight: 1.2,
+          whiteSpace: 'normal',
+          wordBreak: 'normal',
+          overflowWrap: 'break-word',
+        }}
+      >
         {suggestion.title}
       </h3>
 
-      <p style={{
-        fontSize: typography.fontSize.xs,
-        color: colors.textSecondary,
-        margin: 0,
-        marginBottom: spacing.sm,
-      }}>
+      <p
+        style={{
+          fontSize: typography.fontSize.xs,
+          color: colors.textSecondary,
+          margin: 0,
+          marginBottom: spacing.sm,
+        }}
+      >
         By <span style={{ color: colors.accent }}>{suggestion.suggestedBy}</span>
       </p>
 
       {suggestion.reason && (
-        <p style={{
-          fontSize: typography.fontSize.xs,
-          color: colors.textTertiary,
-          fontStyle: 'italic',
-          lineHeight: 1.4,
-          margin: 0,
-          marginBottom: spacing.md,
-          display: '-webkit-box',
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}>
+        <p
+          style={{
+            fontSize: typography.fontSize.xs,
+            color: colors.textTertiary,
+            fontStyle: 'italic',
+            lineHeight: 1.4,
+            margin: 0,
+            marginBottom: spacing.md,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
           "{suggestion.reason}"
         </p>
       )}
@@ -206,7 +236,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
           onClick={() => onAccept(suggestion)}
           disabled={isProcessing}
           isLoading={isProcessing}
-          style={{ 
+          style={{
             flex: 1,
             backgroundColor: colors.success,
             fontSize: '11px',
@@ -224,7 +254,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
           size="sm"
           onClick={() => onReject(suggestion)}
           disabled={isProcessing}
-          style={{ 
+          style={{
             flex: 1,
             fontSize: '11px',
             height: '32px',

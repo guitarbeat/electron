@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AgreeDisagreeQuestion as AgreeDisagreeQuestionType } from './types';
 import { spacing, colors, typography, shadows } from '../../design-system/tokens';
@@ -6,7 +5,9 @@ import { spacing, colors, typography, shadows } from '../../design-system/tokens
 interface AgreeDisagreeQuestionProps {
   question: AgreeDisagreeQuestionType;
   selectedValue: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree' | null;
-  onSelect: (value: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree') => void;
+  onSelect: (
+    value: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree'
+  ) => void;
 }
 
 const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
@@ -17,12 +18,18 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
   // Convert symbolic value to numeric for slider (default to 50/Neutral if null)
   const getNumericValue = (val: string | null) => {
     switch (val) {
-      case 'stronglyDisagree': return 0;
-      case 'disagree': return 25;
-      case 'neutral': return 50;
-      case 'agree': return 75;
-      case 'stronglyAgree': return 100;
-      default: return 50;
+      case 'stronglyDisagree':
+        return 0;
+      case 'disagree':
+        return 25;
+      case 'neutral':
+        return 50;
+      case 'agree':
+        return 75;
+      case 'stronglyAgree':
+        return 100;
+      default:
+        return 50;
     }
   };
 
@@ -57,7 +64,7 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
       >
         {question.question}
       </h3>
-      
+
       <div
         style={{
           padding: `0 ${spacing.lg}`,
@@ -78,7 +85,9 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
           <span>Strongly Agree</span>
         </div>
 
-        <div style={{ position: 'relative', height: '40px', display: 'flex', alignItems: 'center' }}>
+        <div
+          style={{ position: 'relative', height: '40px', display: 'flex', alignItems: 'center' }}
+        >
           {/* Custom Track */}
           <div
             style={{
@@ -91,7 +100,7 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
               border: `1px solid ${colors.borderSecondary}`,
             }}
           />
-          
+
           {/* Filled Track */}
           <div
             style={{

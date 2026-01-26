@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 export const usePolling = <T>(
   fetchFn: () => Promise<T>,
   interval: number | null,
-  equalityFn?: (prev: T | undefined, next: T) => boolean,
+  equalityFn?: (prev: T | undefined, next: T) => boolean
 ) => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<any>(null);
@@ -21,26 +21,29 @@ export const usePolling = <T>(
     savedEqualityFn.current = equalityFn;
   }, [equalityFn]);
 
-  const execute = useCallback(async (isInitialLoad: boolean) => {
-    // Only show loading if we don't have data yet
-    if (isInitialLoad && !data) {
-      setIsLoading(true);
-    }
-    setError(null);
-    try {
-      const result = await savedFetchFn.current();
-      setData((prevData) => {
-        if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
-          return prevData;
-        }
-        return result;
-      });
-    } catch (e) {
-      setError(e);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [data]);
+  const execute = useCallback(
+    async (isInitialLoad: boolean) => {
+      // Only show loading if we don't have data yet
+      if (isInitialLoad && !data) {
+        setIsLoading(true);
+      }
+      setError(null);
+      try {
+        const result = await savedFetchFn.current();
+        setData((prevData) => {
+          if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
+            return prevData;
+          }
+          return result;
+        });
+      } catch (e) {
+        setError(e);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [data]
+  );
 
   useEffect(() => {
     execute(true); // initial fetch

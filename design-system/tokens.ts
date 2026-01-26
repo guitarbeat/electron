@@ -1,18 +1,18 @@
 /**
  * Design System Tokens
- * 
+ *
  * Centralized design tokens for consistent spacing, colors, typography, and motion.
  */
 
 // * Spacing scale (Tight but balanced)
 export const spacing = {
-  xs: '0.25rem',    // 4px
-  sm: '0.5rem',     // 8px
-  md: '1rem',       // 16px
-  lg: '1.25rem',    // 20px
-  xl: '1.75rem',    // 28px
-  '2xl': '2.5rem',   // 40px
-  '3xl': '3.5rem',   // 56px
+  xs: '0.25rem', // 4px
+  sm: '0.5rem', // 8px
+  md: '1rem', // 16px
+  lg: '1.25rem', // 20px
+  xl: '1.75rem', // 28px
+  '2xl': '2.5rem', // 40px
+  '3xl': '3.5rem', // 56px
 } as const;
 
 // * Color palette (Retro theme)
@@ -24,8 +24,8 @@ export const colors = {
 
   // Text (improved contrast for readability)
   textPrimary: '#ffffff',
-  textSecondary: '#f0f0f5',    // Brighter for better contrast
-  textTertiary: '#c8c8d8',     // Increased brightness for legibility
+  textSecondary: '#f0f0f5', // Brighter for better contrast
+  textTertiary: '#c8c8d8', // Increased brightness for legibility
 
   // Accent (Hot Pink)
   accent: '#ff69b4',
@@ -75,14 +75,14 @@ export const typography = {
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {
-    xs: '0.8125rem',  // 13px
-    sm: '0.9375rem',  // 15px
-    base: '1.0625rem',// 17px
-    lg: '1.1875rem',  // 19px
-    xl: '1.375rem',   // 22px
+    xs: '0.8125rem', // 13px
+    sm: '0.9375rem', // 15px
+    base: '1.0625rem', // 17px
+    lg: '1.1875rem', // 19px
+    xl: '1.375rem', // 22px
     '2xl': '1.625rem', // 26px
-    '3xl': '2rem',     // 32px
-    '4xl': '2.5rem',   // 40px
+    '3xl': '2rem', // 32px
+    '4xl': '2.5rem', // 40px
   },
   fontWeight: {
     normal: 400,
@@ -91,13 +91,13 @@ export const typography = {
     bold: 700,
   },
   lineHeight: {
-    tight: 1.3,         // Slightly more breathing room
-    normal: 1.6,        // Better for body text readability
-    relaxed: 1.85,      // More generous for dense content
+    tight: 1.3, // Slightly more breathing room
+    normal: 1.6, // Better for body text readability
+    relaxed: 1.85, // More generous for dense content
   },
   letterSpacing: {
     tight: '-0.01em',
-    normal: '0.02em',   // Slight spacing improves Papyrus readability
+    normal: '0.02em', // Slight spacing improves Papyrus readability
     wide: '0.05em',
     wider: '0.08em',
   },
@@ -123,9 +123,9 @@ export const motion = {
 // * Border radius (Retro style)
 export const radius = {
   none: '0',
-  sm: '0.25rem',   // 4px
-  md: '0.5rem',    // 8px
-  lg: '0.75rem',   // 12px
+  sm: '0.25rem', // 4px
+  md: '0.5rem', // 8px
+  lg: '0.75rem', // 12px
   // Card border radius (optimized for mobile)
   card: '12px',
   full: '9999px',
@@ -143,22 +143,28 @@ export const borders = {
 export const shadows = {
   // Card shadows (enhanced depth)
   card: '5px 5px 0px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2)',
-  cardHover: '8px 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(255, 105, 180, 0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
+  cardHover:
+    '8px 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(255, 105, 180, 0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
   cardElevated: '6px 6px 0px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3)',
   // Button shadows (3D effect - enhanced)
   button: '0 4px 0 rgba(0,0,0,0.5), 0 5px 0 rgba(255,255,255,0.3) inset, 0 2px 4px rgba(0,0,0,0.3)',
-  buttonHover: '0 2px 0 rgba(0,0,0,0.5), 0 3px 0 rgba(255,255,255,0.3) inset, 0 1px 2px rgba(0,0,0,0.3)',
+  buttonHover:
+    '0 2px 0 rgba(0,0,0,0.5), 0 3px 0 rgba(255,255,255,0.3) inset, 0 1px 2px rgba(0,0,0,0.3)',
   buttonActive: '0 0px 0 rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.3) inset',
-  buttonLarge: '0 6px 0 rgba(0,0,0,0.6), 0 8px 0 rgba(255,255,255,0.3) inset, 0 0 25px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
+  buttonLarge:
+    '0 6px 0 rgba(0,0,0,0.6), 0 8px 0 rgba(255,255,255,0.3) inset, 0 0 25px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
   // Glow effects (enhanced)
   glow: '0 0 20px rgba(255, 105, 180, 0.5), 0 0 40px rgba(255, 105, 180, 0.2)',
   glowStrong: '0 0 30px rgba(255, 105, 180, 0.8), 0 0 60px rgba(255, 105, 180, 0.4)',
   glowBlue: '0 0 25px rgba(135, 206, 250, 0.8), 0 0 50px rgba(135, 206, 250, 0.3)',
   glowYellow: '0 0 20px rgba(255, 235, 59, 0.6), 0 0 40px rgba(255, 235, 59, 0.3)',
   // Text shadows - Multi-layered for depth
-  textGlow: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 105, 180, 0.5), 0 0 24px rgba(255, 105, 180, 0.3)',
-  textGlowBlue: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(135, 206, 250, 0.5), 0 0 24px rgba(135, 206, 250, 0.3)',
-  textGlowYellow: '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 235, 59, 0.5), 0 0 24px rgba(255, 235, 59, 0.3)',
+  textGlow:
+    '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 105, 180, 0.5), 0 0 24px rgba(255, 105, 180, 0.3)',
+  textGlowBlue:
+    '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(135, 206, 250, 0.5), 0 0 24px rgba(135, 206, 250, 0.3)',
+  textGlowYellow:
+    '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 235, 59, 0.5), 0 0 24px rgba(255, 235, 59, 0.3)',
 
   // Text gradients
   textGradientPink: 'linear-gradient(135deg, #ff69b4 0%, #ff8bb3 50%, #fff 100%)',

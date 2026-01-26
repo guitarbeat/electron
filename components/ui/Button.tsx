@@ -1,5 +1,13 @@
 import React from 'react';
-import { colors, radius, spacing, typography, motion, shadows, borders } from '../../design-system/tokens';
+import {
+  colors,
+  radius,
+  spacing,
+  typography,
+  motion,
+  shadows,
+  borders,
+} from '../../design-system/tokens';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -81,16 +89,18 @@ const Button: React.FC<ButtonProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         gap: spacing.sm,
-        boxShadow: variant === 'ghost' ? 'none' : (isLarge ? shadows.buttonLarge : shadows.button),
-        textShadow: variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
+        boxShadow: variant === 'ghost' ? 'none' : isLarge ? shadows.buttonLarge : shadows.button,
+        textShadow:
+          variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
         position: 'relative',
         top: 0,
         minHeight: size === 'lg' ? '44px' : size === 'md' ? '36px' : '32px',
         overflow: 'hidden',
         letterSpacing: '0.03em',
-        backgroundImage: variant !== 'ghost' 
-          ? `linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`
-          : 'none',
+        backgroundImage:
+          variant !== 'ghost'
+            ? `linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`
+            : 'none',
         ...style,
       }}
       onMouseEnter={(e) => {
@@ -111,7 +121,7 @@ const Button: React.FC<ButtonProps> = ({
         if (!isDisabled && variant !== 'ghost') {
           e.currentTarget.style.top = isLarge ? '6px' : '4px';
           e.currentTarget.style.transform = 'translateY(0) scale(0.98)';
-          e.currentTarget.style.boxShadow = isLarge 
+          e.currentTarget.style.boxShadow = isLarge
             ? '0 0px 0 #000, 0 2px 0 rgba(255,255,255,0.3) inset, 0 0 20px rgba(0,0,0,0.5)'
             : shadows.buttonActive;
         }
@@ -148,11 +158,7 @@ const Button: React.FC<ButtonProps> = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          {loadingText ? (
-            <span>{loadingText}</span>
-          ) : (
-            <span className="sr-only">Loading</span>
-          )}
+          {loadingText ? <span>{loadingText}</span> : <span className="sr-only">Loading</span>}
         </>
       ) : (
         children

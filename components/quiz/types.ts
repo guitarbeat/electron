@@ -1,6 +1,6 @@
 /**
  * Quiz Type Definitions
- * 
+ *
  * Type definitions for the personality quiz system
  */
 

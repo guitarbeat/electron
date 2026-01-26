@@ -16,7 +16,7 @@ export const hashPin = (pin: string): string => {
   let hash = 0;
   for (let i = 0; i < pin.length; i++) {
     const char = pin.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return hash.toString(36);
@@ -104,11 +104,11 @@ export const removePin = async (user: User): Promise<boolean> => {
 export const verifyPin = async (user: User, pin: string): Promise<boolean> => {
   const pins = await getPins();
   const storedHash = pins[user];
-  
+
   if (!storedHash) {
     return true; // No PIN set, allow access
   }
-  
+
   return storedHash === hashPin(pin);
 };
 

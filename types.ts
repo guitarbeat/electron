@@ -6,7 +6,7 @@ export interface Movie {
   addedBy: User;
   watchedBy: User[];
   createdAt: string;
-  
+
   // Metadata
   posterUrl?: string;
   year?: string;
@@ -35,10 +35,10 @@ export interface DailySpin {
 export interface MovieSuggestion {
   id: string;
   title: string;
-  suggestedBy: string;      // Any name (not restricted to User type)
-  reason?: string;          // Optional: "You'd love this because..."
+  suggestedBy: string; // Any name (not restricted to User type)
+  reason?: string; // Optional: "You'd love this because..."
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
   respondedAt?: string;
-  respondedBy?: User;       // Aaron or Electra
+  respondedBy?: User; // Aaron or Electra
 }

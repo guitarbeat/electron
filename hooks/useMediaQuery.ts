@@ -1,33 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore, useCallback } from 'react';
 
 /**
  * Custom hook to detect if a media query matches.
  * Useful for handling responsive logic in components using inline styles.
  */
 export function useMediaQuery(query: string): boolean {
-    const [matches, setMatches] = useState(false);
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const matchMedia = window.matchMedia(query);
+      matchMedia.addEventListener('change', callback);
+      return () => {
+        matchMedia.removeEventListener('change', callback);
+      };
+    },
+    [query]
+  );
 
-    useEffect(() => {
-        const media = window.matchMedia(query);
-        if (media.matches !== matches) {
-            setMatches(media.matches);
-        }
+  const getSnapshot = () => {
+    return window.matchMedia(query).matches;
+  };
 
-        const listener = () => setMatches(media.matches);
-        media.addEventListener('change', listener);
+  const getServerSnapshot = () => {
+    return false;
+  };
 
-        return () => media.removeEventListener('change', listener);
-    }, [matches, query]);
-
-    return matches;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 /**
  * Common breakpoints used in the design system.
  */
 export const breakpoints = {
-    sm: '(max-width: 640px)',
-    md: '(max-width: 768px)',
-    lg: '(max-width: 1024px)',
-    xl: '(max-width: 1280px)',
+  sm: '(max-width: 640px)',
+  md: '(max-width: 768px)',
+  lg: '(max-width: 1024px)',
+  xl: '(max-width: 1280px)',
 };

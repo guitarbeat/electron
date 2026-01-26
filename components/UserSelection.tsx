@@ -67,19 +67,19 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
     >
       <Card variant="elevated" className="animate-fade-in">
         <div style={{ padding: `${spacing.xl} ${spacing.md}` }}>
-            <div
-              style={{
-                height: 'min(128px, 25vh)',
-                minHeight: '100px',
-                maxHeight: '160px',
-                marginBottom: spacing.lg,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                position: 'relative',
-                width: '100%',
-              }}
-            >
+          <div
+            style={{
+              height: 'min(128px, 25vh)',
+              minHeight: '100px',
+              maxHeight: '160px',
+              marginBottom: spacing.lg,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              position: 'relative',
+              width: '100%',
+            }}
+          >
             <div
               style={{
                 position: 'absolute',
@@ -129,15 +129,17 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
           >
             Who's Watching?
           </h2>
-          <p style={{
-            fontSize: typography.fontSize.base,
-            color: colors.textSecondary,
-            marginBottom: spacing.xl,
-            marginTop: 0,
-            textAlign: 'center',
-            lineHeight: typography.lineHeight.relaxed,
-            letterSpacing: '0.02em',
-          }}>
+          <p
+            style={{
+              fontSize: typography.fontSize.base,
+              color: colors.textSecondary,
+              marginBottom: spacing.xl,
+              marginTop: 0,
+              textAlign: 'center',
+              lineHeight: typography.lineHeight.relaxed,
+              letterSpacing: '0.02em',
+            }}
+          >
             Select your profile to view and manage your shared movie watchlist
           </p>
           <div
@@ -156,7 +158,14 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
               onMouseLeave={() => setHoveredUser(null)}
               onFocus={() => setHoveredUser('Aaron')}
               onBlur={() => setHoveredUser(null)}
-              style={{ width: '100%', fontSize: typography.fontSize.xl, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
+              style={{
+                width: '100%',
+                fontSize: typography.fontSize.xl,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing.sm,
+              }}
               aria-label="Select Aaron as user"
               disabled={isPinsLoading}
             >
@@ -171,7 +180,14 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
               onMouseLeave={() => setHoveredUser(null)}
               onFocus={() => setHoveredUser('Electra')}
               onBlur={() => setHoveredUser(null)}
-              style={{ width: '100%', fontSize: typography.fontSize.xl, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm }}
+              style={{
+                width: '100%',
+                fontSize: typography.fontSize.xl,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing.sm,
+              }}
               aria-label="Select Electra as user"
               disabled={isPinsLoading}
             >

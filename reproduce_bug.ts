@@ -1,4 +1,3 @@
-
 import { saveDailySpin } from './services/dailySpinService';
 
 // Mock globals
@@ -11,11 +10,11 @@ const fetchMock = async (url: string, options: any = {}) => {
     const files = Object.keys(body.files);
     console.log('PATCH files:', files);
     if (files.length > 1) {
-        console.log('FAIL: More than one file being updated!');
+      console.log('FAIL: More than one file being updated!');
     } else if (files.length === 1 && files[0] === 'dailyspin.json') {
-        console.log('PASS: Only dailyspin.json is being updated.');
+      console.log('PASS: Only dailyspin.json is being updated.');
     } else {
-        console.log('FAIL: Unexpected file update:', files);
+      console.log('FAIL: Unexpected file update:', files);
     }
     return {
       ok: true,
@@ -40,23 +39,23 @@ globalAny.fetch = fetchMock;
 
 // Mock console.error to avoid noise
 globalAny.console = {
-    ...console,
-    error: () => {},
+  ...console,
+  error: () => {},
 };
 
 async function run() {
-    console.log('Running reproduction test...');
-    try {
-        await saveDailySpin({
-            date: '2023-10-27',
-            movieId: '123',
-            movieTitle: 'Test Movie',
-            spunBy: 'Aaron',
-            createdAt: '2023-10-27T00:00:00Z'
-        });
-    } catch (e) {
-        console.log('Error during execution:', e);
-    }
+  console.log('Running reproduction test...');
+  try {
+    await saveDailySpin({
+      date: '2023-10-27',
+      movieId: '123',
+      movieTitle: 'Test Movie',
+      spunBy: 'Aaron',
+      createdAt: '2023-10-27T00:00:00Z',
+    });
+  } catch (e) {
+    console.log('Error during execution:', e);
+  }
 }
 
 run();

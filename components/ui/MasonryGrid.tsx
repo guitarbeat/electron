@@ -11,12 +11,13 @@ interface MasonryGridProps {
   gap?: string;
 }
 
-const MasonryGrid: React.FC<MasonryGridProps> = ({ 
-  children, 
+const MasonryGrid: React.FC<MasonryGridProps> = ({
+  children,
   columns = { mobile: 1, tablet: 2, desktop: 4 },
-  gap = spacing.sm
+  gap = spacing.sm,
 }) => {
-  const gridStyles = React.useMemo(() => `
+  const gridStyles = React.useMemo(
+    () => `
     .masonry-grid {
       column-count: ${columns.desktop};
     }
@@ -36,10 +37,12 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
       display: inline-block;
       width: 100%;
     }
-  `, [columns.desktop, columns.tablet, columns.mobile, gap]);
+  `,
+    [columns.desktop, columns.tablet, columns.mobile, gap]
+  );
 
   return (
-    <div 
+    <div
       className="masonry-grid"
       style={{
         columnGap: gap,
@@ -48,9 +51,7 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
     >
       <style>{gridStyles}</style>
       {React.Children.map(children, (child) => (
-        <div className="masonry-item">
-          {child}
-        </div>
+        <div className="masonry-item">{child}</div>
       ))}
     </div>
   );

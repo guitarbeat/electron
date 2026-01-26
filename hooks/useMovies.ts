@@ -5,11 +5,12 @@ import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata } from '../services/metadataService';
 
 export const useMovies = (currentUser: User) => {
-  const { data: movies, error, isLoading, refresh } = usePolling(
-    getMovies,
-    5000,
-    (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
-  );
+  const {
+    data: movies,
+    error,
+    isLoading,
+    refresh,
+  } = usePolling(getMovies, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);
@@ -55,107 +56,124 @@ export const useMovies = (currentUser: User) => {
     seedMovies();
   }, [movies, isLoading, refresh]);
 
+  const performMutation = useCallback(
+    async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
+      // Chain mutations to prevent race conditions
+      const mutation = (async () => {
+        try {
+          await mutationLockRef.current;
+        } catch (e) {}
 
-  const performMutation = useCallback(async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
-    // Chain mutations to prevent race conditions
-    const mutation = (async () => {
-      try {
-        await mutationLockRef.current;
-      } catch (e) { }
-
-      setIsSubmitting(true);
-      isSubmittingRef.current = true;
-      try {
-        const latestMovies = await getMovies();
-        const updatedMovies = mutationFn(latestMovies);
-        await saveMovies(updatedMovies);
-        refresh();
-      } catch (err) {
-        console.error("Mutation failed:", err);
-        throw err;
-      } finally {
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-      }
-    })();
-
-    mutationLockRef.current = mutation;
-    return mutation;
-  }, [refresh]);
-
-  const addMovie = useCallback(async (title: string) => {
-    // 1. Create the basic movie object
-    const baseMovie: Movie = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      addedBy: currentUser,
-      watchedBy: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible, 
-    //    but here we do it inside performMutation logic effectively by prepping it first)
-    //    However, to keep UI responsive, we'll do it here.
-    let metadata = {};
-    try {
-      metadata = await fetchMovieMetadata(title.trim());
-    } catch (error) {
-      console.error("Failed to fetch metadata, continuing without it:", error);
-    }
-
-    const newMovie = { ...baseMovie, ...metadata };
-
-    await performMutation(latestMovies => [...latestMovies, newMovie]);
-  }, [currentUser, performMutation]);
-
-  const toggleWatched = useCallback(async (movieId: string) => {
-    await performMutation(latestMovies =>
-      latestMovies.map(movie => {
-        if (movie.id === movieId) {
-          const isWatched = movie.watchedBy.includes(currentUser);
-          const newWatchedBy = isWatched
-            ? movie.watchedBy.filter(user => user !== currentUser)
-            : [...movie.watchedBy, currentUser];
-          return { ...movie, watchedBy: newWatchedBy };
+        setIsSubmitting(true);
+        isSubmittingRef.current = true;
+        try {
+          const latestMovies = await getMovies();
+          const updatedMovies = mutationFn(latestMovies);
+          await saveMovies(updatedMovies);
+          refresh();
+        } catch (err) {
+          console.error('Mutation failed:', err);
+          throw err;
+        } finally {
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
         }
-        return movie;
-      })
-    );
-  }, [currentUser, performMutation]);
+      })();
 
-  const deleteMovie = useCallback(async (movieId: string) => {
-    if (!window.confirm("Are you sure you want to delete this movie?")) return;
-    await performMutation(latestMovies => latestMovies.filter(movie => movie.id !== movieId));
-  }, [performMutation]);
+      mutationLockRef.current = mutation;
+      return mutation;
+    },
+    [refresh]
+  );
 
-  const updateMovieMetadata = useCallback(async (movie: Movie, searchTerm?: string) => {
-    try {
-      const metadata = await fetchMovieMetadata(searchTerm || movie.title);
-      // Only update if we actually found something useful
-      if (metadata.posterUrl || metadata.plot || metadata.year) {
-        await performMutation(latestMovies =>
-          latestMovies.map(m => m.id === movie.id ? { ...m, ...metadata } : m)
+  const addMovie = useCallback(
+    async (title: string) => {
+      // 1. Create the basic movie object
+      const baseMovie: Movie = {
+        id: crypto.randomUUID(),
+        title: title.trim(),
+        addedBy: currentUser,
+        watchedBy: [],
+        createdAt: new Date().toISOString(),
+      };
+
+      // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible,
+      //    but here we do it inside performMutation logic effectively by prepping it first)
+      //    However, to keep UI responsive, we'll do it here.
+      let metadata = {};
+      try {
+        metadata = await fetchMovieMetadata(title.trim());
+      } catch (error) {
+        console.error('Failed to fetch metadata, continuing without it:', error);
+      }
+
+      const newMovie = { ...baseMovie, ...metadata };
+
+      await performMutation((latestMovies) => [...latestMovies, newMovie]);
+    },
+    [currentUser, performMutation]
+  );
+
+  const toggleWatched = useCallback(
+    async (movieId: string) => {
+      await performMutation((latestMovies) =>
+        latestMovies.map((movie) => {
+          if (movie.id === movieId) {
+            const isWatched = movie.watchedBy.includes(currentUser);
+            const newWatchedBy = isWatched
+              ? movie.watchedBy.filter((user) => user !== currentUser)
+              : [...movie.watchedBy, currentUser];
+            return { ...movie, watchedBy: newWatchedBy };
+          }
+          return movie;
+        })
+      );
+    },
+    [currentUser, performMutation]
+  );
+
+  const deleteMovie = useCallback(
+    async (movieId: string) => {
+      if (!window.confirm('Are you sure you want to delete this movie?')) return;
+      await performMutation((latestMovies) => latestMovies.filter((movie) => movie.id !== movieId));
+    },
+    [performMutation]
+  );
+
+  const updateMovieMetadata = useCallback(
+    async (movie: Movie, searchTerm?: string) => {
+      try {
+        const metadata = await fetchMovieMetadata(searchTerm || movie.title);
+        // Only update if we actually found something useful
+        if (metadata.posterUrl || metadata.plot || metadata.year) {
+          await performMutation((latestMovies) =>
+            latestMovies.map((m) => (m.id === movie.id ? { ...m, ...metadata } : m))
+          );
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Failed to manual update metadata:', error);
+        return false;
+      }
+    },
+    [performMutation]
+  );
+
+  const manualMetadataUpdate = useCallback(
+    async (movie: Movie, metadata: any) => {
+      try {
+        await performMutation((latestMovies) =>
+          latestMovies.map((m) => (m.id === movie.id ? { ...m, ...metadata } : m))
         );
         return true;
+      } catch (error) {
+        console.error('Failed to manual metadata update:', error);
+        return false;
       }
-      return false;
-    } catch (error) {
-      console.error("Failed to manual update metadata:", error);
-      return false;
-    }
-  }, [performMutation]);
-
-  const manualMetadataUpdate = useCallback(async (movie: Movie, metadata: any) => {
-    try {
-      await performMutation(latestMovies =>
-        latestMovies.map(m => m.id === movie.id ? { ...m, ...metadata } : m)
-      );
-      return true;
-    } catch (error) {
-      console.error("Failed to manual metadata update:", error);
-      return false;
-    }
-  }, [performMutation]);
+    },
+    [performMutation]
+  );
 
   const refreshAllMetadata = useCallback(async () => {
     if (isSubmittingRef.current) return;
@@ -165,30 +183,32 @@ export const useMovies = (currentUser: User) => {
     try {
       const latestMovies = await getMovies();
       // Fetch metadata for all movies in parallel (with some concurrency limit if needed, but for now simple)
-      console.log("Refreshing all metadata...");
+      console.log('Refreshing all metadata...');
 
-      const updatedMovies = await Promise.all(latestMovies.map(async (movie) => {
-        try {
-          // Add a small delay to avoid rate limits if any
-          await new Promise(r => setTimeout(r, Math.random() * 1000));
-          const metadata = await fetchMovieMetadata(movie.title);
-          // Merge mostly to keep existing IDs/User data, but overwrite metadata
-          // Only overwrite if we got data back
-          if (metadata.posterUrl) {
-            return { ...movie, ...metadata };
+      const updatedMovies = await Promise.all(
+        latestMovies.map(async (movie) => {
+          try {
+            // Add a small delay to avoid rate limits if any
+            await new Promise((r) => setTimeout(r, Math.random() * 1000));
+            const metadata = await fetchMovieMetadata(movie.title);
+            // Merge mostly to keep existing IDs/User data, but overwrite metadata
+            // Only overwrite if we got data back
+            if (metadata.posterUrl) {
+              return { ...movie, ...metadata };
+            }
+            return movie;
+          } catch (e) {
+            console.error(`Failed to refresh metadata for ${movie.title}`, e);
+            return movie;
           }
-          return movie;
-        } catch (e) {
-          console.error(`Failed to refresh metadata for ${movie.title}`, e);
-          return movie;
-        }
-      }));
+        })
+      );
 
       await saveMovies(updatedMovies);
       refresh();
       return true;
     } catch (error) {
-      console.error("Failed to refresh all metadata:", error);
+      console.error('Failed to refresh all metadata:', error);
       throw error;
     } finally {
       isSubmittingRef.current = false;
@@ -197,46 +217,51 @@ export const useMovies = (currentUser: User) => {
   }, [refresh]);
 
   const autoSyncMetadata = useCallback(async () => {
-    if (hasAutoSyncedRef.current || !movies || movies.length === 0 || isSubmittingRef.current) return;
+    if (hasAutoSyncedRef.current || !movies || movies.length === 0 || isSubmittingRef.current)
+      return;
 
-    const moviesMissingMetadata = movies.filter(m => !m.posterUrl || !m.plot || !m.year);
+    const moviesMissingMetadata = movies.filter((m) => !m.posterUrl || !m.plot || !m.year);
     if (moviesMissingMetadata.length === 0) {
       hasAutoSyncedRef.current = true;
       return;
     }
 
-    console.log(`Auto-sync: Found ${moviesMissingMetadata.length} movies missing metadata. Starting background sync...`);
+    console.log(
+      `Auto-sync: Found ${moviesMissingMetadata.length} movies missing metadata. Starting background sync...`
+    );
     hasAutoSyncedRef.current = true;
 
     try {
       // Small delay before starting to not interfere with initial load
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
 
       let syncOccurred = false;
-      const updatedMovies = await Promise.all(movies.map(async (movie) => {
-        const needsSync = !movie.posterUrl || !movie.plot || !movie.year;
-        if (needsSync) {
-          try {
-            // Random delay to spread out requests
-            await new Promise(r => setTimeout(r, Math.random() * 2000));
-            const metadata = await fetchMovieMetadata(movie.title);
-            if (metadata.posterUrl || metadata.plot || metadata.year) {
-              syncOccurred = true;
-              return { ...movie, ...metadata };
+      const updatedMovies = await Promise.all(
+        movies.map(async (movie) => {
+          const needsSync = !movie.posterUrl || !movie.plot || !movie.year;
+          if (needsSync) {
+            try {
+              // Random delay to spread out requests
+              await new Promise((r) => setTimeout(r, Math.random() * 2000));
+              const metadata = await fetchMovieMetadata(movie.title);
+              if (metadata.posterUrl || metadata.plot || metadata.year) {
+                syncOccurred = true;
+                return { ...movie, ...metadata };
+              }
+            } catch (e) {
+              console.warn(`Auto-sync failed for ${movie.title}:`, e);
             }
-          } catch (e) {
-            console.warn(`Auto-sync failed for ${movie.title}:`, e);
           }
-        }
-        return movie;
-      }));
+          return movie;
+        })
+      );
 
       if (syncOccurred) {
         await performMutation(() => updatedMovies);
-        console.log("Auto-sync: Successfully updated missing metadata.");
+        console.log('Auto-sync: Successfully updated missing metadata.');
       }
     } catch (error) {
-      console.error("Auto-sync: Failed background metadata update:", error);
+      console.error('Auto-sync: Failed background metadata update:', error);
     }
   }, [movies, performMutation]);
 
@@ -249,24 +274,40 @@ export const useMovies = (currentUser: User) => {
 
   // Memoize sortedMovies to prevent unnecessary re-renders in consumers (like Watchlist)
   // when other states in Watchlist change (e.g. input field typing)
-  const sortedMovies = useMemo(() => movies
-    ? [...movies].sort((a, b) => {
-      const aWatchedByBoth = a.watchedBy.length === 2;
-      const bWatchedByBoth = b.watchedBy.length === 2;
+  const sortedMovies = useMemo(
+    () =>
+      movies
+        ? [...movies].sort((a, b) => {
+            const aWatchedByBoth = a.watchedBy.length === 2;
+            const bWatchedByBoth = b.watchedBy.length === 2;
 
-      if (aWatchedByBoth && !bWatchedByBoth) {
-        return 1; // a (watched) comes after b (unwatched)
-      }
-      if (!aWatchedByBoth && bWatchedByBoth) {
-        return -1; // a (unwatched) comes before b (watched)
-      }
+            if (aWatchedByBoth && !bWatchedByBoth) {
+              return 1; // a (watched) comes after b (unwatched)
+            }
+            if (!aWatchedByBoth && bWatchedByBoth) {
+              return -1; // a (unwatched) comes before b (watched)
+            }
 
-      // For movies in the same group (both watched or both unwatched), sort by creation date
-      if (b.createdAt > a.createdAt) return 1;
-      if (b.createdAt < a.createdAt) return -1;
-      return 0;
-    })
-    : [], [movies]);
+            // For movies in the same group (both watched or both unwatched), sort by creation date
+            if (b.createdAt > a.createdAt) return 1;
+            if (b.createdAt < a.createdAt) return -1;
+            return 0;
+          })
+        : [],
+    [movies]
+  );
 
-  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh, updateMovieMetadata, manualMetadataUpdate, refreshAllMetadata };
+  return {
+    movies: sortedMovies,
+    isLoading,
+    error,
+    isSubmitting,
+    addMovie,
+    toggleWatched,
+    deleteMovie,
+    refresh,
+    updateMovieMetadata,
+    manualMetadataUpdate,
+    refreshAllMetadata,
+  };
 };
