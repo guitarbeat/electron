@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
-import Textarea from './ui/Textarea';
-import { spacing, typography, colors, shadows } from '../design-system/tokens';
+import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useSuggestions } from '../hooks/useSuggestions';
 
 const MAX_TITLE_LENGTH = 100;
@@ -93,106 +92,90 @@ const SuggestionForm: React.FC = () => {
   }
 
   return (
-    <Card variant="elevated" className="animate-fade-in">
-      <div style={{ padding: spacing.xl }}>
-        <h3 style={{
-          fontSize: typography.fontSize.xl,
-          fontWeight: typography.fontWeight.semibold,
-          color: colors.accent,
-          background: shadows.textGradientPink,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          marginBottom: spacing.sm,
-          marginTop: 0,
-          textAlign: 'center',
-          filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
-        }}>
-          🎬 Suggest a Movie
-        </h3>
-        <p style={{
-          fontSize: typography.fontSize.sm,
-          color: colors.textSecondary,
-          marginBottom: spacing.xl,
-          textAlign: 'center',
-          lineHeight: typography.lineHeight.relaxed,
-        }}>
-          Have a movie we should watch? Let us know!
-        </p>
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+    <Card variant="elevated" className="animate-fade-in" style={{ padding: spacing.sm }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
+        <div style={{ flex: 2, position: 'relative' }}>
           <Input
-            label="Movie Title *"
-            placeholder="e.g., The Princess Bride"
+            placeholder="Movie you suggest..."
             value={title}
             onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
             disabled={isSubmitting}
-            style={{ textAlign: 'left' }}
+            aria-label="Movie title"
+            style={{ 
+              borderRadius: `${radius.md} 0 0 ${radius.md}`,
+              borderRight: 'none',
+              height: '44px',
+              textAlign: 'left'
+            }}
           />
-          
+        </div>
+        <div style={{ flex: 1, minWidth: '100px' }}>
           <Input
-            label="Your Name *"
-            placeholder="e.g., Movie Enthusiast"
+            placeholder="Your Name"
             value={suggestedBy}
             onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
             disabled={isSubmitting}
-            style={{ textAlign: 'left' }}
+            aria-label="Your name"
+            style={{ 
+              borderRadius: 0,
+              borderLeft: `1px solid ${colors.borderSecondary}40`,
+              height: '44px',
+              textAlign: 'left'
+            }}
           />
-
-          <div>
-            <label style={{
-              display: 'block',
-              marginBottom: spacing.xs,
-              fontSize: typography.fontSize.sm,
-              fontWeight: typography.fontWeight.medium,
+        </div>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
+          isLoading={isSubmitting}
+          style={{ 
+            borderRadius: `0 ${radius.md} ${radius.md} 0`,
+            minWidth: '60px',
+            height: '44px',
+            fontSize: '1.25rem',
+            padding: 0
+          }}
+        >
+          {isSubmitting ? '' : '+'}
+        </Button>
+      </form>
+      
+      {/* Optional Reason field - only shows if title is being typed */}
+      {title.trim() && !submitted && (
+        <div className="animate-slide-down" style={{ marginTop: spacing.xs, padding: `0 ${spacing.xs}` }}>
+          <input
+            type="text"
+            placeholder="Add a quick note why... (optional)"
+            value={reason}
+            onChange={(e) => setReason(e.target.value.slice(0, MAX_REASON_LENGTH))}
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px dashed ${colors.borderSecondary}60`,
               color: colors.textSecondary,
-            }}>
-              Why should we watch it? (Optional)
-            </label>
-            <Textarea
-              placeholder="It's a classic! You'll love the sword fighting scenes..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value.slice(0, MAX_REASON_LENGTH))}
-              disabled={isSubmitting}
-              style={{ minHeight: '80px', textAlign: 'left' }}
-            />
-            <div style={{
               fontSize: typography.fontSize.xs,
-              color: colors.textTertiary,
-              marginTop: spacing.xs,
-              textAlign: 'right',
-            }}>
-              {reason.length}/{MAX_REASON_LENGTH}
-            </div>
-          </div>
+              padding: `${spacing.xs} 0`,
+              outline: 'none',
+              fontStyle: 'italic'
+            }}
+          />
+        </div>
+      )}
 
-          {error && (
-            <div style={{
-              padding: spacing.md,
-              backgroundColor: colors.error + '20',
-              border: `1px solid ${colors.error}`,
-              borderRadius: spacing.sm,
-              color: colors.error,
-              fontSize: typography.fontSize.sm,
-              textAlign: 'center',
-            }}>
-              {error}
-            </div>
-          )}
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            isLoading={isSubmitting}
-            loadingText="Submitting..."
-            disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
-            style={{ width: '100%' }}
-          >
-            Submit Suggestion
-          </Button>
-        </form>
-      </div>
+      {error && (
+        <div style={{
+          marginTop: spacing.sm,
+          color: colors.error,
+          fontSize: '10px',
+          textAlign: 'center',
+          fontWeight: typography.fontWeight.bold
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
     </Card>
   );
 };
