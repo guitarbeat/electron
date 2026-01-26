@@ -410,15 +410,17 @@ const Watchlist: React.FC = () => {
         onCancel={() => setMovieToDelete(null)}
       />
 
-      <SpinWheel
-        isOpen={isWheelVisible}
-        onClose={() => setIsWheelVisible(false)}
-        movies={unwatchedMovies}
-        onWinner={(movie) => {
-          setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
-          setIsWheelVisible(false);
-        }}
-      />
+      {isWheelVisible && (
+        <SpinWheel
+          isOpen={isWheelVisible}
+          onClose={() => setIsWheelVisible(false)}
+          movies={unwatchedMovies}
+          onWinner={(movie) => {
+            setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
+            // The modal stays open to show the result; close button inside SpinWheel will handle closing
+          }}
+        />
+      )}
 
       <PinDialog
         isOpen={showPinDialog}

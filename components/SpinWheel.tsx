@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Movie } from '../types';
 import { useSpinWheel } from '../hooks/useSpinWheel';
 import { useUser } from '../context/UserContext';
@@ -9,7 +10,7 @@ import { spacing, typography, colors, radius, shadows } from '../design-system/t
 
 const COLORS = ['#2E3B4E', '#E74C3C', '#AF7AC5', '#5DADE2', '#FADBD8', '#C39BD3', '#A9CCE3', '#F5B7B1'];
 
-const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies, onClose }) => {
+const SpinWheel: React.FC<{ isOpen: boolean, movies: Movie[], onClose: () => void, onWinner: (movie: Movie) => void }> = ({ isOpen, movies, onClose, onWinner }) => {
   const wheelRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useUser();
 
@@ -23,12 +24,14 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     handlePrimarySpin,
     handleSpinAgain,
     getPointerHandlers
-  } = useSpinWheel(movies, wheelRef, currentUser);
+  } = useSpinWheel(movies, wheelRef, currentUser, onWinner);
 
   const segmentAngle = movies.length > 0 ? 360 / movies.length : 0;
 
   // Effect to prevent body scroll when modal is open and handle Escape key
   useEffect(() => {
+    if (!isOpen) return;
+
     // * Prevent body scroll when modal is open
     document.body.classList.add('modal-open');
     
@@ -47,7 +50,7 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
       document.body.classList.remove('modal-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose, status]);
+  }, [onClose, status, isOpen]);
 
   const wheelBackgroundStyle = useMemo(() => {
     if (movies.length === 0) return {};
@@ -81,7 +84,9 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
     onClose();
   };
 
-  return (
+  if (!isOpen) return null;
+
+  return createPortal(
     <div 
       className="wheel-modal-overlay" 
       onClick={handleOverlayClick}
@@ -389,7 +394,8 @@ const SpinWheel: React.FC<{ movies: Movie[], onClose: () => void }> = ({ movies,
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
