@@ -108,6 +108,61 @@ const MovieItem: React.FC<MovieItemProps> = ({
             </h3>
           </div>
         ) : null}
+
+        {/* Watcher Badges - Floating on Top-Left */}
+        <div style={{
+          position: 'absolute',
+          top: spacing.sm,
+          left: spacing.sm,
+          display: 'flex',
+          gap: '4px',
+          zIndex: 10,
+        }}>
+          {movie.watchedBy.includes('Aaron') && (
+            <div 
+              title="Watched by Aaron"
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                backgroundColor: colors.secondary,
+                border: '2px solid white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                color: colors.background,
+                boxShadow: `0 0 10px ${colors.secondary}80`,
+                textShadow: 'none',
+              }}
+            >
+              A
+            </div>
+          )}
+          {movie.watchedBy.includes('Electra') && (
+            <div 
+              title="Watched by Electra"
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                backgroundColor: colors.accent,
+                border: '2px solid white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                color: 'white',
+                boxShadow: `0 0 10px ${colors.accent}80`,
+                textShadow: 'none',
+              }}
+            >
+              E
+            </div>
+          )}
+        </div>
         
         {/* Grid View Overlay */}
         {layout === 'grid' && (
