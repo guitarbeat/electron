@@ -123,5 +123,5 @@ export const useMovies = (currentUser: User) => {
       })
     : [], [movies]);
 
-  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie };
+  return { movies: sortedMovies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh };
 };
