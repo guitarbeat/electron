@@ -20,7 +20,8 @@ const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise
     }
 };
 
-interface MetadataResult {
+export interface MetadataResult {
+    id?: string; // Search result ID (imdbID or TVMaze ID)
     posterUrl?: string;
     year?: string;
     plot?: string;
@@ -28,6 +29,8 @@ interface MetadataResult {
     runtime?: string;
     genre?: string;
     director?: string;
+    title?: string; // For search results
+    type?: 'movie' | 'series';
 }
 
 export const fetchMovieMetadata = async (title: string): Promise<MetadataResult> => {
@@ -69,5 +72,54 @@ export const fetchMovieMetadata = async (title: string): Promise<MetadataResult>
     } catch (error) {
         console.error('Error fetching metadata:', error);
         return {};
+    }
+};
+
+export const searchMovies = async (query: string): Promise<MetadataResult[]> => {
+    try {
+        const results: MetadataResult[] = [];
+
+        // 1. Search OMDb
+        const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}`;
+        const omdbRes = await fetchWithRetry(omdbUrl);
+        const omdbData = await omdbRes.json();
+
+        if (omdbData.Response === 'True' && omdbData.Search) {
+            results.push(...omdbData.Search.map((item: any) => ({
+                id: item.imdbID,
+                title: item.Title,
+                year: item.Year,
+                posterUrl: item.Poster !== 'N/A' ? item.Poster : undefined,
+                type: item.Type === 'series' ? 'series' : 'movie'
+            })));
+        }
+
+        // 2. Search TVMaze
+        const tvmazeUrl = `${TVMAZE_BASE_URL}/search/shows?q=${encodeURIComponent(query)}`;
+        const tvmazeRes = await fetchWithRetry(tvmazeUrl);
+        const tvmazeData = await tvmazeRes.json();
+
+        if (tvmazeData && tvmazeData.length > 0) {
+            results.push(...tvmazeData.map((item: any) => ({
+                id: `tv-${item.show.id}`,
+                title: item.show.name,
+                year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
+                posterUrl: item.show.image?.medium || item.show.image?.original,
+                type: 'series',
+                plot: item.show.summary ? item.show.summary.replace(/<[^>]*>?/gm, '') : undefined,
+            })));
+        }
+
+        // Remove duplicates by title+year (simple heuristic)
+        const seen = new Set();
+        return results.filter(item => {
+            const key = `${item.title}-${item.year}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    } catch (error) {
+        console.error('Error searching metadata:', error);
+        return [];
     }
 };

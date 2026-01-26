@@ -35,7 +35,19 @@ import { spacing, typography, colors, shadows, radius } from '../design-system/t
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
-  const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie, refresh: refreshMovies, updateMovieMetadata } = useMovies(currentUser!);
+  const { 
+    movies, 
+    isLoading, 
+    error, 
+    isSubmitting, 
+    addMovie, 
+    toggleWatched, 
+    deleteMovie, 
+    refresh: refreshMovies, 
+    updateMovieMetadata,
+    manualMetadataUpdate,
+    refreshAllMetadata 
+  } = useMovies(currentUser!);
   const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
   const { pendingSuggestions, acceptSuggestion, rejectSuggestion, isLoading: isSuggestionsLoading } = useSuggestions();
 
@@ -426,17 +438,15 @@ const Watchlist: React.FC = () => {
         isOpen={!!movieToFix}
         movieTitle={movieToFix?.title || ''}
         onClose={() => setMovieToFix(null)}
-        onSearch={async (term) => {
-          if (!movieToFix) return false;
-          const termToCheck = term || movieToFix.title;
-          setToast({ message: `Fetching details for "${termToCheck}"...`, type: 'info' });
-          const success = await updateMovieMetadata(movieToFix, term);
+        onSelect={async (metadata) => {
+          if (!movieToFix) return;
+          setToast({ message: `Updating details for "${movieToFix.title}"...`, type: 'info' });
+          const success = await manualMetadataUpdate(movieToFix, metadata);
           if (success) {
             setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
           } else {
-            setToast({ message: `Could not find details for "${termToCheck}"`, type: 'error' });
+            setToast({ message: `Failed to update metadata.`, type: 'error' });
           }
-          return success;
         }}
       />
 
