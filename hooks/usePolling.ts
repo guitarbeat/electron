@@ -22,7 +22,8 @@ export const usePolling = <T>(
   }, [equalityFn]);
 
   const execute = useCallback(async (isInitialLoad: boolean) => {
-    if (isInitialLoad) {
+    // Only show loading if we don't have data yet
+    if (isInitialLoad && !data) {
       setIsLoading(true);
     }
     setError(null);
@@ -37,11 +38,9 @@ export const usePolling = <T>(
     } catch (e) {
       setError(e);
     } finally {
-      if (isInitialLoad) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  }, []);
+  }, [data]);
 
   useEffect(() => {
     execute(true); // initial fetch

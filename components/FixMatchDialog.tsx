@@ -4,6 +4,7 @@ import { colors, radius, spacing, typography, zIndex, shadows, motion } from '..
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
+import IconButton from './ui/IconButton';
 import { MagicWandIcon, XIcon, SearchIcon, Spinner } from './icons';
 
 interface FixMatchDialogProps {
@@ -88,43 +89,48 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: spacing.md,
+          position: 'relative'
+        }}>
           <h3 style={{ 
             margin: 0, 
-            fontSize: typography.fontSize.lg, 
+            fontSize: typography.fontSize.xl, 
             fontWeight: typography.fontWeight.bold,
             color: colors.textPrimary,
             display: 'flex',
             alignItems: 'center',
-            gap: spacing.sm
+            gap: spacing.sm,
+            textShadow: `0 0 15px ${colors.accent}60`,
+            letterSpacing: '-0.02em',
           }}>
-            <MagicWandIcon style={{ color: colors.accent }} />
-            Fix Incorrect Match
+            <MagicWandIcon style={{ color: colors.accent, filter: `drop-shadow(0 0 5px ${colors.accent})` }} />
+            Resolve Match
           </h3>
-          <button
+          <IconButton
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
+            variant="ghost"
+            size="sm"
+            style={{ 
               color: colors.textTertiary,
-              padding: spacing.xs,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              transition: 'all 0.2s ease',
             }}
           >
             <XIcon />
-          </button>
+          </IconButton>
         </div>
 
         <p style={{ 
           fontSize: typography.fontSize.sm, 
           color: colors.textSecondary, 
-          marginBottom: spacing.md,
-          lineHeight: typography.lineHeight.normal
+          marginBottom: spacing.xl,
+          lineHeight: typography.lineHeight.normal,
+          opacity: 0.8,
         }}>
-          Wrong movie? Enter the correct title below to search again.
+          If the current details aren't right, type the exact movie or show title below to fetch a fresh set of metadata.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -152,28 +158,36 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
             )}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: spacing.sm }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: spacing.md, marginTop: spacing.md }}>
             <Button
               type="button"
               variant="ghost"
               onClick={onClose}
               disabled={isSearching}
+              style={{ fontWeight: typography.fontWeight.semibold }}
             >
-              Cancel
+              Close
             </Button>
             <Button
               type="submit"
               variant="primary"
               disabled={isSearching || !searchTerm.trim()}
-              style={{ minWidth: '100px' }}
+              style={{ 
+                minWidth: '120px',
+                fontWeight: typography.fontWeight.bold,
+                boxShadow: `0 0 20px ${colors.accent}40`,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                fontSize: '0.75rem',
+              }}
             >
               {isSearching ? (
                 <>
                   <Spinner style={{ width: '16px', height: '16px', marginRight: spacing.sm }} />
-                  Searching...
+                  Updating...
                 </>
               ) : (
-                'Search'
+                'Save Match'
               )}
             </Button>
           </div>
