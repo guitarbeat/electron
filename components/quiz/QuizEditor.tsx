@@ -85,24 +85,51 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         </div>
       </Card>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.lg }}>
-        <Button 
-          variant={activeTab === 'questions' ? 'primary' : 'secondary'}
-          size="sm"
+      {/* Tabs - Modern Segmented Control */}
+      <div style={{ 
+        display: 'flex', 
+        backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+        padding: '4px', 
+        borderRadius: radius.lg, 
+        marginBottom: spacing.xl,
+        border: `1px solid ${colors.borderSecondary}10`,
+      }}>
+        <button 
           onClick={() => setActiveTab('questions')}
-          style={{ flex: 1 }}
+          style={{ 
+            flex: 1,
+            padding: `${spacing.sm} ${spacing.md}`,
+            border: 'none',
+            borderRadius: radius.md,
+            backgroundColor: activeTab === 'questions' ? colors.accent : 'transparent',
+            color: activeTab === 'questions' ? '#000' : colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+            fontWeight: typography.fontWeight.bold,
+            cursor: 'pointer',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: activeTab === 'questions' ? `0 4px 12px ${colors.accent}40` : 'none',
+          }}
         >
           Questions ({localData.questions.length})
-        </Button>
-        <Button 
-          variant={activeTab === 'descriptions' ? 'primary' : 'secondary'}
-          size="sm"
+        </button>
+        <button 
           onClick={() => setActiveTab('descriptions')}
-          style={{ flex: 1 }}
+          style={{ 
+            flex: 1,
+            padding: `${spacing.sm} ${spacing.md}`,
+            border: 'none',
+            borderRadius: radius.md,
+            backgroundColor: activeTab === 'descriptions' ? colors.accent : 'transparent',
+            color: activeTab === 'descriptions' ? '#000' : colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+            fontWeight: typography.fontWeight.bold,
+            cursor: 'pointer',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: activeTab === 'descriptions' ? `0 4px 12px ${colors.accent}40` : 'none',
+          }}
         >
           Characters
-        </Button>
+        </button>
       </div>
 
       {activeTab === 'questions' && (
@@ -220,9 +247,30 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       </div>
 
       {/* Questions List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
         {questions.map((q, index) => (
-          <Card key={q.id} variant="default" style={{ padding: spacing.md }}>
+          <Card 
+            key={q.id} 
+            variant="default" 
+            style={{ 
+              padding: spacing.md,
+              backgroundColor: colors.surfaceElevated,
+              border: `1px solid ${colors.borderSecondary}10`,
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+            }}
+            onClick={() => setEditingQuestion(q)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.borderColor = `${colors.accent}40`;
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = `${colors.borderSecondary}10`;
+              e.currentTarget.style.backgroundColor = colors.surfaceElevated;
+            }}
+          >
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -237,40 +285,55 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   marginBottom: spacing.xs 
                 }}>
                   <span style={{ 
-                    fontSize: typography.fontSize.xs, 
+                    fontSize: '10px', 
                     color: colors.accent,
-                    fontWeight: typography.fontWeight.bold
+                    fontWeight: typography.fontWeight.bold,
+                    backgroundColor: `${colors.accent}20`,
+                    padding: '2px 6px',
+                    borderRadius: '4px',
                   }}>
                     #{index + 1}
                   </span>
                   <span style={{ 
-                    fontSize: '0.7rem', 
+                    fontSize: '9px', 
                     color: colors.textTertiary,
-                    backgroundColor: colors.surfaceElevated,
-                    padding: `2px ${spacing.sm}`,
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    padding: `2px 6px`,
                     borderRadius: radius.full,
                     textTransform: 'uppercase',
-                    border: `1px solid ${colors.borderInset}`
+                    letterSpacing: '0.05em',
+                    fontWeight: typography.fontWeight.bold,
                   }}>
-                    {q.type}
+                    {q.type.replace('-', ' ')}
                   </span>
                 </div>
                 <p style={{ 
                   fontSize: typography.fontSize.sm, 
                   color: colors.textPrimary,
                   margin: 0,
+                  fontWeight: typography.fontWeight.semibold,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '-0.01em',
                 }}>
                   {q.question}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
-                <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)} style={{ minWidth: '60px' }}>
-                  Edit
-                </Button>
-                <Button variant="danger" size="sm" onClick={() => deleteQuestion(q.id)} style={{ padding: spacing.xs }}>
+              <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteQuestion(q.id);
+                  }} 
+                  style={{ 
+                    color: colors.error,
+                    opacity: 0.6,
+                    padding: spacing.xs,
+                  }}
+                >
                   ✕
                 </Button>
               </div>
@@ -690,29 +753,51 @@ interface ScoreEditorProps {
 
 const ScoreEditor: React.FC<ScoreEditorProps> = ({ scores, onChange }) => {
   return (
-    <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(2, 1fr)', 
+      gap: spacing.md,
+      marginTop: spacing.sm
+    }}>
       {CHARACTERS.map((char) => (
-        <div key={char} style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
-          <label style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary, minWidth: '80px' }}>
-            {char}:
+        <div key={char} style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: spacing.xs,
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          padding: spacing.sm,
+          borderRadius: radius.md,
+          border: `1px solid ${colors.borderSecondary}10`,
+        }}>
+          <label style={{ 
+            fontSize: '10px', 
+            color: colors.textTertiary, 
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontWeight: typography.fontWeight.bold
+          }}>
+            {char}
           </label>
-          <input
-            type="number"
-            min="0"
-            max="5"
-            value={scores[char] ?? 0}
-            onChange={(e) => onChange({ ...scores, [char]: parseInt(e.target.value) || 0 })}
-            style={{
-              width: '50px',
-              padding: spacing.xs,
-              backgroundColor: colors.background,
-              border: `1px solid ${colors.borderSecondary}`,
-              borderRadius: radius.sm,
-              color: colors.textPrimary,
-              fontSize: typography.fontSize.sm,
-              textAlign: 'center',
-            }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+            <input
+              type="number"
+              min="0"
+              max="5"
+              value={scores[char] ?? 0}
+              onChange={(e) => onChange({ ...scores, [char]: parseInt(e.target.value) || 0 })}
+              style={{
+                flex: 1,
+                padding: spacing.md,
+                backgroundColor: colors.background,
+                border: `1px solid ${colors.borderSecondary}20`,
+                borderRadius: radius.md,
+                color: colors.textPrimary,
+                fontSize: '16px', // Prevent iOS zoom
+                textAlign: 'center',
+                fontWeight: typography.fontWeight.bold,
+              }}
+            />
+          </div>
         </div>
       ))}
     </div>
