@@ -55,6 +55,7 @@ const Watchlist: React.FC = () => {
 
   const unwatchedMovies = useMemo(() => movies ? movies.filter(movie => movie.watchedBy.length < 2) : [], [movies]);
   const watchedMovies = useMemo(() => movies ? movies.filter(movie => movie.watchedBy.length === 2) : [], [movies]);
+  const firstWatchedIndex = useMemo(() => movies ? movies.findIndex(m => m.watchedBy.length === 2) : -1, [movies]);
   
   // TOAST management
   useEffect(() => {
@@ -203,8 +204,6 @@ const Watchlist: React.FC = () => {
       </div>
     );
   }
-
-  const firstWatchedIndex = useMemo(() => movies.findIndex(m => m.watchedBy.length === 2), [movies]);
 
   return (
     <div style={{ minHeight: '100vh', background: colors.background }}>
