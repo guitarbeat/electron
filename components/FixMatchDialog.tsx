@@ -76,8 +76,8 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
     setIsSearching(true);
     try {
       // Result from 'search' might be partial (OMDb search doesn't give plot/rating)
-      // So we fetch the full metadata for the specific title
-      const fullMetadata = await fetchMovieMetadata(result.title!);
+      // So we fetch the full metadata for the specific title/ID
+      const fullMetadata = await fetchMovieMetadata(result.title!, result.type, result.id);
       await onSelect(fullMetadata);
       onClose();
     } catch (err) {

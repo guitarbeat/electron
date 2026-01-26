@@ -33,8 +33,48 @@ export interface MetadataResult {
     type?: 'movie' | 'series';
 }
 
-export const fetchMovieMetadata = async (title: string): Promise<MetadataResult> => {
+export const fetchMovieMetadata = async (title: string, type?: 'movie' | 'series', id?: string): Promise<MetadataResult> => {
     try {
+        // If we have an ID and it's a TV show, use TVMaze directly by ID
+        if (type === 'series' && id?.startsWith('tv-')) {
+            const tvmazeId = id.replace('tv-', '');
+            const tvmazeUrl = `${TVMAZE_BASE_URL}/shows/${tvmazeId}`;
+            const tvmazeRes = await fetchWithRetry(tvmazeUrl);
+            const show = await tvmazeRes.json();
+
+            if (show) {
+                return {
+                    posterUrl: show.image?.medium || show.image?.original,
+                    year: show.premiered ? show.premiered.split('-')[0] : undefined,
+                    plot: show.summary ? show.summary.replace(/<[^>]*>?/gm, '') : undefined,
+                    imdbRating: show.rating?.average?.toString(),
+                    genre: show.genres?.join(', '),
+                    title: show.name,
+                    type: 'series'
+                };
+            }
+        }
+
+        // If we have an IMDB ID, use OMDb by ID
+        if (id && !id.startsWith('tv-')) {
+            const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&i=${id}`;
+            const omdbRes = await fetchWithRetry(omdbUrl);
+            const omdbData = await omdbRes.json();
+
+            if (omdbData.Response === 'True') {
+                return {
+                    posterUrl: omdbData.Poster !== 'N/A' ? omdbData.Poster : undefined,
+                    year: omdbData.Year !== 'N/A' ? omdbData.Year : undefined,
+                    plot: omdbData.Plot !== 'N/A' ? omdbData.Plot : undefined,
+                    imdbRating: omdbData.imdbRating !== 'N/A' ? omdbData.imdbRating : undefined,
+                    runtime: omdbData.Runtime !== 'N/A' ? omdbData.Runtime : undefined,
+                    genre: omdbData.Genre !== 'N/A' ? omdbData.Genre : undefined,
+                    director: omdbData.Director !== 'N/A' ? omdbData.Director : undefined,
+                    type: omdbData.Type === 'series' ? 'series' : 'movie'
+                };
+            }
+        }
+
         // 1. Try OMDb first (Best for Movies)
         const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`;
         const omdbRes = await fetchWithRetry(omdbUrl);
@@ -49,6 +89,7 @@ export const fetchMovieMetadata = async (title: string): Promise<MetadataResult>
                 runtime: omdbData.Runtime !== 'N/A' ? omdbData.Runtime : undefined,
                 genre: omdbData.Genre !== 'N/A' ? omdbData.Genre : undefined,
                 director: omdbData.Director !== 'N/A' ? omdbData.Director : undefined,
+                type: omdbData.Type === 'series' ? 'series' : 'movie'
             };
         }
 
@@ -65,6 +106,7 @@ export const fetchMovieMetadata = async (title: string): Promise<MetadataResult>
                 plot: show.summary ? show.summary.replace(/<[^>]*>?/gm, '') : undefined, // Strip HTML tags
                 imdbRating: show.rating?.average?.toString(),
                 genre: show.genres?.join(', '),
+                type: 'series'
             };
         }
 
