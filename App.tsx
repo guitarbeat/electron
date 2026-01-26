@@ -10,11 +10,13 @@ import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import { QuizResult } from './components/quiz/types';
 import { spacing, colors, typography } from './design-system/tokens';
+import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 import Button from './components/ui/Button';
 import { SettingsIcon } from './components/icons';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
+  const isMobile = useMediaQuery(breakpoints.sm);
   const { quizData, isLoading: isQuizLoading } = useQuiz();
   const [displayUser, setDisplayUser] = useState<User | null>(currentUser);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -141,19 +143,26 @@ const App: React.FC = () => {
         <div
           style={{
             position: 'fixed',
-            bottom: spacing.lg,
-            right: spacing.lg,
+            bottom: isMobile ? spacing.md : spacing.lg,
+            right: isMobile ? spacing.md : spacing.lg,
             zIndex: 100,
           }}
         >
           <Button 
             variant="secondary" 
-            size="sm" 
+            size={isMobile ? "xs" : "sm"} 
             onClick={() => setShowQuizEditor(true)}
             aria-label="Edit Quiz"
-            style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: spacing.xs,
+              padding: isMobile ? '8px 12px' : undefined,
+              fontSize: isMobile ? '12px' : undefined,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            }}
           >
-            <SettingsIcon style={{ width: '1rem', height: '1rem' }} />
+            <SettingsIcon style={{ width: isMobile ? '0.875rem' : '1rem', height: isMobile ? '0.875rem' : '1rem' }} />
             Edit Quiz
           </Button>
         </div>

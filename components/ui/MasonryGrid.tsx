@@ -42,7 +42,6 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
     <div 
       className="masonry-grid"
       style={{
-        columnCount: columns.desktop,
         columnGap: gap,
         width: '100%',
       }}
