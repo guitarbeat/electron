@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
+import { usePins } from '../hooks/usePins';
 import { Movie } from '../types';
-import { PlusIcon, LogoutIcon, DiceIcon, CheckIcon, FilmIcon } from './icons';
+import { PlusIcon, LogoutIcon, DiceIcon, CheckIcon, FilmIcon, LockIcon } from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
 import Card from './ui/Card';
@@ -10,6 +11,7 @@ import Button from './ui/Button';
 import Input from './ui/Input';
 import IconButton from './ui/IconButton';
 import ConfirmDialog from './ui/ConfirmDialog';
+import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 
@@ -17,6 +19,7 @@ const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   // FIX: Added non-null assertion as currentUser is guaranteed to exist in this component.
   const { movies, isLoading, error, isSubmitting, addMovie, toggleWatched, deleteMovie } = useMovies(currentUser!);
+  const { userHasPin, setUserPin, removeUserPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -25,6 +28,12 @@ const Watchlist: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // PIN management state
+  const [showPinDialog, setShowPinDialog] = useState(false);
+  const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
+  const [isPinLoading, setIsPinLoading] = useState(false);
+  const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
 
   const unwatchedMovies = movies ? movies.filter(movie => movie.watchedBy.length < 2) : [];
   const watchedMovies = movies ? movies.filter(movie => movie.watchedBy.length === 2) : [];
@@ -107,6 +116,70 @@ const Watchlist: React.FC = () => {
   const handleLogout = () => {
     setCurrentUser(null);
   };
+
+  // PIN management handlers
+  const handleOpenPinSettings = () => {
+    if (userHasPin(currentUser!)) {
+      setPinMode('change');
+    } else {
+      setPinMode('set');
+    }
+    setShowPinDialog(true);
+  };
+
+  const handlePinSubmit = async (pin: string, newPin?: string): Promise<boolean> => {
+    if (!currentUser) return false;
+    setIsPinLoading(true);
+    try {
+      if (pinMode === 'set') {
+        const success = await setUserPin(currentUser, pin);
+        if (success) {
+          setShowPinDialog(false);
+          setToast({ message: 'PIN set successfully!', type: 'success' });
+        }
+        return success;
+      } else if (pinMode === 'change') {
+        // First verify the current PIN
+        if (!newPin) {
+          // Step 1: Verify current PIN
+          const isValid = await verifyUserPin(currentUser, pin);
+          return isValid;
+        } else {
+          // Step 2: Set new PIN
+          const success = await setUserPin(currentUser, newPin);
+          if (success) {
+            setShowPinDialog(false);
+            setToast({ message: 'PIN changed successfully!', type: 'success' });
+          }
+          return success;
+        }
+      }
+      return false;
+    } finally {
+      setIsPinLoading(false);
+    }
+  };
+
+  const handleRemovePin = () => {
+    setShowPinDialog(false);
+    setShowRemovePinConfirm(true);
+  };
+
+  const confirmRemovePin = async () => {
+    if (!currentUser) return;
+    setIsPinLoading(true);
+    try {
+      const success = await removeUserPin(currentUser);
+      if (success) {
+        setToast({ message: 'PIN removed successfully', type: 'success' });
+      } else {
+        setToast({ message: 'Failed to remove PIN', type: 'error' });
+      }
+    } finally {
+      setIsPinLoading(false);
+      setShowRemovePinConfirm(false);
+    }
+  };
   
   const firstWatchedIndex = movies ? movies.findIndex(m => m.watchedBy.length === 2) : -1;
 
@@ -160,6 +233,29 @@ const Watchlist: React.FC = () => {
         onCancel={() => setMovieToDelete(null)}
         isLoading={isSubmitting}
       />
+
+      <ConfirmDialog
+        isOpen={showRemovePinConfirm}
+        title="Remove PIN"
+        message="Are you sure you want to remove your PIN? Anyone will be able to access your account."
+        confirmText="Remove PIN"
+        onConfirm={confirmRemovePin}
+        onCancel={() => setShowRemovePinConfirm(false)}
+        isLoading={isPinLoading}
+      />
+
+      {/* PIN Dialog */}
+      {currentUser && (
+        <PinDialog
+          isOpen={showPinDialog}
+          user={currentUser}
+          mode={pinMode}
+          onSubmit={handlePinSubmit}
+          onCancel={() => setShowPinDialog(false)}
+          onRemove={pinMode === 'change' ? handleRemovePin : undefined}
+          isLoading={isPinLoading}
+        />
+      )}
 
       {/* Toast Notification */}
       {toast && (
@@ -360,6 +456,21 @@ const Watchlist: React.FC = () => {
                   style={{ flexShrink: 0 }}
                 >
                   <LogoutIcon />
+                </IconButton>
+                <IconButton
+                  type="button"
+                  onClick={handleOpenPinSettings}
+                  title={userHasPin(currentUser!) ? 'Change or remove your PIN' : 'Set a PIN to lock your account'}
+                  aria-label={userHasPin(currentUser!) ? 'Change PIN' : 'Set PIN'}
+                  variant="ghost"
+                  disabled={isPinsLoading}
+                  style={{ flexShrink: 0 }}
+                >
+                  <LockIcon style={{ 
+                    width: '1.25rem', 
+                    height: '1.25rem',
+                    color: userHasPin(currentUser!) ? colors.success : colors.textSecondary,
+                  }} />
                 </IconButton>
                 <Input
                   ref={inputRef}
