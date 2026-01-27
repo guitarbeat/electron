@@ -12,6 +12,8 @@ const Toast: React.FC<ToastProps> = ({ message, type }) => {
   return (
     <Card
       variant="elevated"
+      role={type === 'error' ? 'alert' : 'status'}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
       style={{
         position: 'fixed',
         top: spacing.lg,
