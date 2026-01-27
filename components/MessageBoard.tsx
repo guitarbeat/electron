@@ -74,7 +74,7 @@ const MessageBoard: React.FC = () => {
           isSubmitting={isSubmitting}
         />
         <MessageInput
-          key={currentUser?.uid || 'anonymous'}
+          key={currentUser || 'anonymous'}
           currentUser={currentUser}
           isSubmitting={isSubmitting}
           onSend={handleSend}
