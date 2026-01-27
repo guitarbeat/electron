@@ -4,14 +4,7 @@ import { MessageIcon, ChevronDownIcon } from '../icons';
 import Card from '../ui/Card';
 import IconButton from '../ui/IconButton';
 import MessageItem from '../MessageItem';
-import { User } from '../../types';
-
-interface Message {
-  id: string;
-  author: string;
-  content: string;
-  timestamp: number;
-}
+import { Message, User } from '../../types';
 
 interface MessageListProps {
   messages: Message[] | null;
