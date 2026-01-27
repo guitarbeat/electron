@@ -1,162 +1,143 @@
 
 
-# Codebase Improvements Plan
+# Enhanced Watchlist Preview for Visitors
 
-This document outlines discovered issues and suggested improvements across the application, ranging from critical build errors to UX enhancements.
+Redesign the visitor-facing watchlist preview to show movie posters in an attractive grid layout, giving visitors a visual understanding of what's already on the watchlist before they suggest a movie.
 
 ---
 
-## 1. Critical: Fix Build Error
+## Current State
 
-**File:** `components/MessageBoard.tsx` (line 77)
+The `WatchlistPreview` component currently shows:
+- A simple text list of unwatched movie titles
+- A "1/2 Watched" badge for movies one person has seen
+- Basic styling with no visual appeal (no posters)
+- Limited to 150px height with scroll
 
-**Problem:** The code references `currentUser?.uid` but the `User` type is defined as a string union (`'Aaron' | 'Electra'`), not an object with a `uid` property.
+---
 
-**Solution:** Change the key prop from `currentUser?.uid` to simply use `currentUser`:
+## Proposed Design
 
-```typescript
-// Before (broken)
-key={currentUser?.uid || 'anonymous'}
+### Visual Approach
 
-// After (fixed)
-key={currentUser || 'anonymous'}
+Transform the preview into a **horizontal scrolling poster gallery**:
+- Show movie poster thumbnails in a compact horizontal strip
+- Hover/tap reveals movie title overlay
+- Visual "watched by 1" indicator badges
+- Empty state shows friendly message encouraging first suggestion
+- Matches the existing retro aesthetic with pink/blue accents
+
+### Layout Options
+
+**Option A: Horizontal Poster Strip** (Recommended)
+- Compact row of poster thumbnails (60-80px wide)
+- Smooth horizontal scroll on mobile
+- Hover shows title tooltip
+- Maximum of 8-10 visible at once
+
+**Option B: Mini Masonry Grid**
+- 2-3 columns of small poster cards
+- More visible at once but takes more vertical space
+- Similar to the main Watchlist grid but miniaturized
+
+---
+
+## Implementation Details
+
+### 1. Update `WatchlistPreview.tsx`
+
+**Changes:**
+- Replace the text list with a poster-based layout
+- Add horizontal scroll container with snap points
+- Include poster fallback for movies without images
+- Add hover states with title reveal
+- Show watched status badge (A/E indicators like in MovieItem)
+- Add movie count summary
+
+**New Structure:**
+```text
+┌─────────────────────────────────────────────┐
+│ 🎬 Current Watchlist (5 movies)            │
+├─────────────────────────────────────────────┤
+│ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ → scroll │
+│ │ 🎬 │ │ 🎬 │ │ 🎬 │ │ 🎬 │ │ 🎬 │          │
+│ │    │ │    │ │    │ │    │ │    │          │
+│ │[E] │ │    │ │[A] │ │    │ │    │          │
+│ └────┘ └────┘ └────┘ └────┘ └────┘          │
+└─────────────────────────────────────────────┘
 ```
 
-**Impact:** Build currently fails - this must be fixed first.
+### 2. Poster Card Features
 
----
+Each poster thumbnail will include:
+- **Movie poster image** (using `posterUrl` from metadata)
+- **Fallback gradient** with FilmIcon for movies without posters
+- **Title overlay** on hover/focus (semi-transparent background)
+- **Watcher badge** (small A/E circles like in MovieItem)
+- **Year badge** if available (subtle, bottom corner)
 
-## 2. Console Warning: Tailwind CDN
+### 3. Empty State
 
-**Problem:** The app uses `cdn.tailwindcss.com` which logs a warning about not being suitable for production.
-
-**Solution:** Install Tailwind CSS properly as a PostCSS plugin. This involves:
-- Adding `tailwindcss`, `postcss`, and `autoprefixer` as dev dependencies
-- Creating `tailwind.config.js` and `postcss.config.js`
-- Importing the generated CSS instead of the CDN script
-
-**Impact:** Removes console warning, improves build performance, enables tree-shaking for smaller bundles.
-
----
-
-## 3. Double Confirmation on Delete
-
-**File:** `hooks/useMessages.ts` (line 47)
-
-**Problem:** The `deleteMessage` function in `useMessages.ts` calls `window.confirm()`, and then `handleDelete` in `useChatLogic.ts` (line 35) also calls `window.confirm()`. This means users see **two confirmation dialogs** when deleting a message.
-
-**Solution:** Remove the confirmation from `useMessages.ts` since the `useChatLogic` hook already handles it appropriately:
-
-```typescript
-// hooks/useMessages.ts - Remove this line:
-if (!window.confirm('Are you sure you want to delete this message?')) return;
+When no unwatched movies exist:
+```text
+"The watchlist is empty! Be the first to suggest a movie 🎬"
 ```
 
-**Impact:** Better UX - users only see one confirmation prompt.
+### 4. Responsive Behavior
+
+- **Desktop**: Horizontal scroll with hover effects
+- **Mobile**: Touch-friendly horizontal scroll with snap points
+- Poster sizes slightly smaller on mobile (50-60px vs 70-80px)
 
 ---
 
-## 4. Message Interface Mismatch
+## Technical Specification
 
-**Files:** `components/message-board/MessageList.tsx` vs `types.ts`
+### File Changes
 
-**Problem:** `MessageList.tsx` defines its own local `Message` interface with a `timestamp: number` property, but the actual `Message` type in `types.ts` uses `createdAt: string`. This inconsistency could cause runtime issues.
+| File | Action | Description |
+|------|--------|-------------|
+| `components/WatchlistPreview.tsx` | Rewrite | Complete redesign with poster grid |
 
-**Solution:** Import the `Message` type from `types.ts` instead of defining a local interface:
+### New Component Structure
 
 ```typescript
-// MessageList.tsx - Replace local interface
-import { Message, User } from '../../types';
+// Poster dimensions
+const POSTER_WIDTH = 70; // px
+const POSTER_HEIGHT = 105; // 2:3 aspect ratio
 
-// Remove local Message interface definition
+// Features:
+// - Horizontal scroll container with overflow-x: auto
+// - CSS scroll-snap for smooth mobile scrolling
+// - Movie poster with lazy loading
+// - Gradient overlay with title on hover
+// - Watched-by badges (A/E indicators)
+// - Loading skeleton that matches poster shape
 ```
 
-**Impact:** Type safety and consistency across the codebase.
+### Styling Approach
+
+- Use existing design tokens (`spacing`, `colors`, `radius`, `shadows`)
+- Reuse badge styling from `MovieItem.tsx` for consistency
+- Add hover scale effect (transform: scale(1.05))
+- Gradient overlay: `linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%)`
 
 ---
 
-## 5. Missing Lock File Warning
+## Accessibility Considerations
 
-**Problem:** The project lacks a `package-lock.json` or `bun.lockb` file, which means dependency versions aren't locked and builds may be inconsistent.
-
-**Solution:** Run `npm install` or `pnpm install` locally to generate the appropriate lock file, then commit it to the repository.
-
-**Impact:** Consistent builds across environments.
-
----
-
-## 6. Accessibility Improvements
-
-Based on notes in `.Jules/palette.md`, several accessibility patterns need attention:
-
-### 6a. IconButton aria-labels
-Many `IconButton` components rely on `title` props which aren't sufficient for screen readers. Audit and add `aria-label` to all icon-only buttons.
-
-### 6b. Focus States for Interactive Elements
-`UserSelection` buttons and other interactive elements that change on hover should also change on focus for keyboard users. Pair `onMouseEnter/onMouseLeave` with `onFocus/onBlur`.
-
-### 6c. Hidden Action Visibility
-Delete buttons that appear on hover should also appear on focus-within. Currently, some use inline styles that override CSS pseudo-classes.
+- All posters have proper `alt` text with movie title
+- Scroll container has `role="list"` with poster items as `role="listitem"`
+- Focus states visible for keyboard navigation
+- Title always available (not just on hover) via `title` attribute
 
 ---
 
-## 7. Performance: List Re-render Prevention
+## Visual Consistency
 
-**File:** `.Jules/bolt.md` documents this issue
-
-**Problem:** Passing global `isSubmitting` state to every item in a list (like `MessageList` passing to `MessageItem`) causes O(N) re-renders for simple mutations.
-
-**Current:** `MessageList` receives `isSubmitting` and applies opacity changes to the entire list container.
-
-**Solution:** The current approach of applying opacity at the container level is acceptable, but ensure `isSubmitting` is NOT passed down to individual items if added later.
-
----
-
-## 8. Code Quality: WatchlistPreview Hardcoded User
-
-**File:** `components/WatchlistPreview.tsx` (line 13)
-
-**Problem:** Uses hardcoded `'Aaron'` as a proxy user for visitors viewing the watchlist.
-
-**Solution:** Create a read-only version of `useMovies` that doesn't require a user context, or document this as intentional behavior. For now, this works but should be noted as technical debt.
-
----
-
-## 9. UI Enhancement: Toast Component Improvements
-
-**File:** `components/ui/Toast.tsx`
-
-**Current:** Toast appears at top-center with no dismiss button and auto-hides after 3 seconds.
-
-**Suggested Improvements:**
-- Add a close button for accessibility (some users prefer manual dismissal)
-- Add `role="status"` for success messages and `role="alert"` for errors
-- Consider stacking multiple toasts if triggered in quick succession
-
----
-
-## Summary Table
-
-| Priority | Issue | File(s) | Effort |
-|----------|-------|---------|--------|
-| Critical | Build error - `uid` property | `MessageBoard.tsx` | 1 min |
-| High | Double delete confirmation | `useMessages.ts` | 1 min |
-| High | Message interface mismatch | `MessageList.tsx` | 2 min |
-| Medium | Tailwind CDN warning | `index.html` + config | 15 min |
-| Medium | Missing lock file | Project root | 2 min |
-| Medium | Accessibility audit | Multiple files | 30 min |
-| Low | WatchlistPreview hardcoded user | `WatchlistPreview.tsx` | 10 min |
-| Low | Toast enhancements | `Toast.tsx` | 15 min |
-
----
-
-## Recommended Implementation Order
-
-1. **Fix build error** (Critical - blocking)
-2. **Remove duplicate confirmation dialog** (Quick win)
-3. **Fix Message interface mismatch** (Type safety)
-4. **Generate lock file** (Stability)
-5. **Address accessibility issues** (Important for inclusivity)
-6. **Install Tailwind properly** (Performance)
-7. **Toast and UI polish** (Nice to have)
+The enhanced preview will match the main Watchlist's `MovieItem` styling:
+- Same poster aspect ratio (2:3)
+- Same watcher badge design (A/E circles)
+- Same gradient overlay treatment
+- Same fallback styling for missing posters
 
