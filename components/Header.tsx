@@ -149,6 +149,7 @@ const Header: React.FC<HeaderProps> = ({
                 variant="ghost"
                 size="sm"
                 title={hasPin ? 'Change PIN' : 'Set PIN'}
+                aria-label={hasPin ? 'Change PIN' : 'Set PIN'}
                 style={{
                   color: hasPin ? colors.success : colors.textTertiary,
                   borderColor: hasPin ? `${colors.success}40` : `${colors.borderSecondary}40`,
@@ -163,6 +164,7 @@ const Header: React.FC<HeaderProps> = ({
                   variant="ghost"
                   size="sm"
                   title="Remove PIN"
+                  aria-label="Remove PIN"
                   style={{
                     color: colors.error,
                     borderColor: `${colors.error}40`,

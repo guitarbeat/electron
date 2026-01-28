@@ -1,14 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import { CheckIcon } from '../icons';
-import { colors, shadows, spacing, typography } from '../../design-system/tokens';
+import { colors, shadows, spacing, typography, radius } from '../../design-system/tokens';
 
 interface ToastProps {
   message: string;
-  type: 'success' | 'error';
+  type: 'success' | 'error' | 'info';
+  onDismiss?: () => void;
+  duration?: number;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type }) => {
+const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000 }) => {
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    if (duration > 0) {
+      const exitTimer = setTimeout(() => setIsExiting(true), duration - 300);
+      const dismissTimer = setTimeout(() => onDismiss?.(), duration);
+      return () => {
+        clearTimeout(exitTimer);
+        clearTimeout(dismissTimer);
+      };
+    }
+  }, [duration, onDismiss]);
+
+  const handleDismiss = () => {
+    setIsExiting(true);
+    setTimeout(() => onDismiss?.(), 300);
+  };
+
+  const getTypeStyles = () => {
+    switch (type) {
+      case 'error':
+        return {
+          backgroundColor: colors.error + '30',
+          borderColor: colors.error,
+          iconColor: colors.error,
+          shadow: `0 4px 12px ${colors.error}40, ${shadows.card}`,
+        };
+      case 'success':
+        return {
+          backgroundColor: colors.success + '30',
+          borderColor: colors.success,
+          iconColor: colors.success,
+          shadow: `0 4px 12px ${colors.success}40, ${shadows.card}`,
+        };
+      case 'info':
+      default:
+        return {
+          backgroundColor: colors.secondary + '30',
+          borderColor: colors.secondary,
+          iconColor: colors.secondary,
+          shadow: `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
+        };
+    }
+  };
+
+  const styles = getTypeStyles();
+  const icons = {
+    success: <CheckIcon style={{ color: styles.iconColor, flexShrink: 0, filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))' }} />,
+    error: <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>,
+    info: <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>,
+  };
+
   return (
     <Card
       variant="elevated"
@@ -22,16 +76,21 @@ const Toast: React.FC<ToastProps> = ({ message, type }) => {
         zIndex: 1000,
         maxWidth: '90%',
         padding: spacing.lg,
-        backgroundColor: type === 'error' ? colors.error + '30' : colors.success + '30',
-        borderColor: type === 'error' ? colors.error : colors.success,
+        backgroundColor: styles.backgroundColor,
+        borderColor: styles.borderColor,
         borderWidth: '2px',
-        animation: 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        boxShadow:
-          type === 'error'
-            ? `0 4px 12px ${colors.error}40, ${shadows.card}`
-            : `0 4px 12px ${colors.success}40, ${shadows.card}`,
+        animation: isExiting
+          ? 'toast-slide-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+          : 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        boxShadow: styles.shadow,
       }}
     >
+      <style>{`
+        @keyframes toast-slide-out {
+          from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+          to { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
+        }
+      `}</style>
       <div
         style={{
           display: 'flex',
@@ -41,16 +100,7 @@ const Toast: React.FC<ToastProps> = ({ message, type }) => {
           justifyContent: 'center',
         }}
       >
-        {type === 'success' && (
-          <CheckIcon
-            style={{
-              color: colors.success,
-              flexShrink: 0,
-              filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
-            }}
-          />
-        )}
-        {type === 'error' && <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>}
+        {icons[type]}
         <span
           style={{
             fontSize: typography.fontSize.base,
@@ -66,6 +116,28 @@ const Toast: React.FC<ToastProps> = ({ message, type }) => {
         >
           {message}
         </span>
+        {onDismiss && (
+          <button
+            onClick={handleDismiss}
+            aria-label="Dismiss notification"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: colors.textSecondary,
+              cursor: 'pointer',
+              padding: spacing.xs,
+              fontSize: '18px',
+              lineHeight: 1,
+              opacity: 0.7,
+              transition: 'opacity 0.2s',
+              borderRadius: radius.sm,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+          >
+            ✕
+          </button>
+        )}
       </div>
     </Card>
   );
