@@ -1,143 +1,205 @@
 
 
-# Enhanced Watchlist Preview for Visitors
+# Site Improvements Plan
 
-Redesign the visitor-facing watchlist preview to show movie posters in an attractive grid layout, giving visitors a visual understanding of what's already on the watchlist before they suggest a movie.
-
----
-
-## Current State
-
-The `WatchlistPreview` component currently shows:
-- A simple text list of unwatched movie titles
-- A "1/2 Watched" badge for movies one person has seen
-- Basic styling with no visual appeal (no posters)
-- Limited to 150px height with scroll
+This plan covers multiple enhancements to make the site better while preserving the Papyrus font aesthetic.
 
 ---
 
-## Proposed Design
+## 1. Visual Polish & Micro-Interactions
 
-### Visual Approach
+### 1a. Add Floating Hearts Background Animation
+Enhance the ambient atmosphere with subtle floating heart particles that match the romantic aesthetic.
 
-Transform the preview into a **horizontal scrolling poster gallery**:
-- Show movie poster thumbnails in a compact horizontal strip
-- Hover/tap reveals movie title overlay
-- Visual "watched by 1" indicator badges
-- Empty state shows friendly message encouraging first suggestion
-- Matches the existing retro aesthetic with pink/blue accents
+**Changes to `index.html`:**
+- Add CSS keyframe animation for floating hearts
+- Create small SVG heart particles that drift upward slowly
+- Low opacity (0.03-0.08) to avoid distraction
+- Randomized sizes and animation durations
 
-### Layout Options
+### 1b. Add Hover Sound Effects (Optional CSS Animations)
+Add subtle CSS-only visual feedback animations to make interactions feel more responsive.
 
-**Option A: Horizontal Poster Strip** (Recommended)
-- Compact row of poster thumbnails (60-80px wide)
-- Smooth horizontal scroll on mobile
-- Hover shows title tooltip
-- Maximum of 8-10 visible at once
-
-**Option B: Mini Masonry Grid**
-- 2-3 columns of small poster cards
-- More visible at once but takes more vertical space
-- Similar to the main Watchlist grid but miniaturized
+**Changes to multiple components:**
+- Add "wiggle" animation on hover for buttons
+- Add subtle "pulse" effect to the spin wheel when idle
+- Add "sparkle" border animation on focused input fields
 
 ---
 
-## Implementation Details
+## 2. Improved Empty States & Loading States
 
-### 1. Update `WatchlistPreview.tsx`
+### 2a. Enhanced Loading Skeletons
+Replace basic "Loading..." text with animated skeleton components that match the card layouts.
 
-**Changes:**
-- Replace the text list with a poster-based layout
-- Add horizontal scroll container with snap points
-- Include poster fallback for movies without images
-- Add hover states with title reveal
-- Show watched status badge (A/E indicators like in MovieItem)
-- Add movie count summary
+**New file: `components/ui/Skeleton.tsx`**
+- Reusable skeleton component with configurable shapes
+- Matches the card styling with proper border radius
+- Uses existing design tokens
 
-**New Structure:**
-```text
-┌─────────────────────────────────────────────┐
-│ 🎬 Current Watchlist (5 movies)            │
-├─────────────────────────────────────────────┤
-│ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ → scroll │
-│ │ 🎬 │ │ 🎬 │ │ 🎬 │ │ 🎬 │ │ 🎬 │          │
-│ │    │ │    │ │    │ │    │ │    │          │
-│ │[E] │ │    │ │[A] │ │    │ │    │          │
-│ └────┘ └────┘ └────┘ └────┘ └────┘          │
-└─────────────────────────────────────────────┘
+**Updates to affected components:**
+- `Watchlist.tsx` - skeleton grid for movie cards
+- `WatchlistPreview.tsx` - already has skeleton, add subtle glow effect
+- `SuggestionList.tsx` - skeleton for suggestions
+
+### 2b. Delightful Empty States
+Add illustrated/emoji-based empty states with encouraging messages.
+
+**Updates:**
+- `Watchlist.tsx` - "Your watchlist is waiting for movies! 🎬" with a subtle animation
+- `SuggestionList.tsx` - "No suggestions yet! Share this page with friends" 
+
+---
+
+## 3. Enhanced User Feedback
+
+### 3a. Confetti Animation on Special Events
+Add celebration effects for key moments.
+
+**New file: `components/effects/Confetti.tsx`**
+- Lightweight CSS-only confetti burst
+- Trigger on: first movie added, movie watched by both, suggestion accepted
+
+### 3b. Improved Toast Notifications
+Enhance the existing Toast component.
+
+**Updates to `components/ui/Toast.tsx`:**
+- Add dismiss button for accessibility
+- Add stacking support for multiple toasts
+- Add different icons for success/error/info types
+- Add entrance/exit animations
+
+---
+
+## 4. Accessibility Improvements
+
+### 4a. Add Missing ARIA Labels
+Based on `.Jules/palette.md` guidance, add proper aria-labels.
+
+**Updates to multiple files:**
+- `IconButton` usages throughout - add `aria-label` where only `title` exists
+- `Watchlist.tsx` - view toggle button needs aria-label
+- `Header.tsx` - PIN and logout buttons
+
+### 4b. Focus-Visible Improvements
+Add consistent focus rings across all interactive elements.
+
+**Updates to `index.html` CSS:**
+- Add `:focus-visible` styles for better keyboard navigation
+- Ensure focus rings match the accent color
+
+### 4c. Skip Link Enhancement  
+Already exists in App.tsx - verify it's working properly.
+
+---
+
+## 5. Performance & Polish
+
+### 5a. Add Image Lazy Loading
+Ensure all movie poster images have `loading="lazy"` attribute.
+
+**Updates:**
+- `MovieItem.tsx` - add `loading="lazy"` to poster images
+- `WatchlistPreview.tsx` - already has it, verify it's consistent
+
+### 5b. Add Smooth Scroll Behavior
+Enable smooth scrolling globally.
+
+**Updates to `index.html`:**
+```css
+html {
+  scroll-behavior: smooth;
+}
 ```
 
-### 2. Poster Card Features
+### 5c. Preload Critical Fonts
+Add Papyrus font preload hint for faster rendering.
 
-Each poster thumbnail will include:
-- **Movie poster image** (using `posterUrl` from metadata)
-- **Fallback gradient** with FilmIcon for movies without posters
-- **Title overlay** on hover/focus (semi-transparent background)
-- **Watcher badge** (small A/E circles like in MovieItem)
-- **Year badge** if available (subtle, bottom corner)
-
-### 3. Empty State
-
-When no unwatched movies exist:
-```text
-"The watchlist is empty! Be the first to suggest a movie 🎬"
-```
-
-### 4. Responsive Behavior
-
-- **Desktop**: Horizontal scroll with hover effects
-- **Mobile**: Touch-friendly horizontal scroll with snap points
-- Poster sizes slightly smaller on mobile (50-60px vs 70-80px)
+**Updates to `index.html`:**
+- Add `<link rel="preload">` for Papyrus if available as web font
+- Fallback already configured in design tokens
 
 ---
 
-## Technical Specification
+## 6. Feature Enhancements
 
-### File Changes
+### 6a. Movie Count Badge in Header
+Show total movies and watched progress.
 
-| File | Action | Description |
-|------|--------|-------------|
-| `components/WatchlistPreview.tsx` | Rewrite | Complete redesign with poster grid |
+**Updates to `components/Header.tsx`:**
+- Add small stats display: "12 movies • 5 watched together"
+- Use subtle pill badge styling
 
-### New Component Structure
+### 6b. Quick Retake Quiz Button for Logged-In Users  
+Already exists as "Edit Quiz" - consider renaming to "Retake Quiz" for visitors who completed it.
 
+### 6c. Suggestion Count Badge
+Show pending suggestion count on the visitor-facing form.
+
+**Updates to `components/SuggestionForm.tsx`:**
+- Display "X suggestions pending review" if there are any
+- Adds social proof that suggestions are being considered
+
+---
+
+## 7. Mobile Experience
+
+### 7a. Pull-to-Refresh Indicator
+Add visual hint for mobile users that they can pull down to refresh.
+
+**Updates to `components/Watchlist.tsx`:**
+- Add subtle refresh icon at top when user scrolls past top
+- Pure CSS/visual only (actual refresh uses existing polling)
+
+### 7b. Bottom Sheet for Movie Actions
+On mobile, show movie actions in a bottom sheet instead of hover overlay.
+
+**Updates to `components/MovieItem.tsx`:**
+- Detect mobile via `useMediaQuery`
+- On tap, expand to show action buttons more prominently
+- Add smooth height transition
+
+---
+
+## 8. Code Quality
+
+### 8a. Install Tailwind Properly (Recommended but Optional)
+The CDN warning appears in console. Consider installing Tailwind as a dev dependency.
+
+This is a larger change and can be deferred if you prefer keeping the current setup.
+
+### 8b. Add Lock File Note
+Remind about generating `pnpm-lock.yaml` for consistent builds.
+
+---
+
+## Implementation Priority
+
+| Priority | Task | Effort |
+|----------|------|--------|
+| 1 | Add missing ARIA labels | 15 min |
+| 2 | Enhanced Toast with dismiss button | 10 min |
+| 3 | Movie count badge in Header | 10 min |
+| 4 | Floating hearts background animation | 15 min |
+| 5 | Improved loading skeletons | 20 min |
+| 6 | Confetti on special events | 20 min |
+| 7 | Delightful empty states | 10 min |
+| 8 | Mobile bottom sheet for actions | 25 min |
+| 9 | Focus-visible improvements | 10 min |
+| 10 | Smooth scroll + image lazy loading | 5 min |
+
+---
+
+## Technical Notes
+
+**Font Preservation**: All changes maintain the Papyrus font family defined in `design-system/tokens.ts`. The typography system will continue using:
 ```typescript
-// Poster dimensions
-const POSTER_WIDTH = 70; // px
-const POSTER_HEIGHT = 105; // 2:3 aspect ratio
-
-// Features:
-// - Horizontal scroll container with overflow-x: auto
-// - CSS scroll-snap for smooth mobile scrolling
-// - Movie poster with lazy loading
-// - Gradient overlay with title on hover
-// - Watched-by badges (A/E indicators)
-// - Loading skeleton that matches poster shape
+fontFamily: {
+  heading: ['Papyrus', 'fantasy'],
+  body: ['Papyrus', 'fantasy'],
+  sans: ['Papyrus', 'fantasy'],
+}
 ```
 
-### Styling Approach
-
-- Use existing design tokens (`spacing`, `colors`, `radius`, `shadows`)
-- Reuse badge styling from `MovieItem.tsx` for consistency
-- Add hover scale effect (transform: scale(1.05))
-- Gradient overlay: `linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%)`
-
----
-
-## Accessibility Considerations
-
-- All posters have proper `alt` text with movie title
-- Scroll container has `role="list"` with poster items as `role="listitem"`
-- Focus states visible for keyboard navigation
-- Title always available (not just on hover) via `title` attribute
-
----
-
-## Visual Consistency
-
-The enhanced preview will match the main Watchlist's `MovieItem` styling:
-- Same poster aspect ratio (2:3)
-- Same watcher badge design (A/E circles)
-- Same gradient overlay treatment
-- Same fallback styling for missing posters
+**Lock File**: The project is missing a lock file. You should run `pnpm install` locally and commit the generated `pnpm-lock.yaml` to ensure consistent dependency versions across environments.
 
