@@ -4,6 +4,7 @@ import { colors, radius, spacing, motion, borders } from '../../design-system/to
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'default' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 /**
