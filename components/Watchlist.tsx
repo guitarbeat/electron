@@ -243,13 +243,44 @@ const Watchlist: React.FC = () => {
       <div
         style={{
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: '100vh',
           background: colors.background,
+          gap: spacing.lg,
         }}
       >
-        <div style={{ color: colors.textSecondary }}>Loading watchlist...</div>
+        <div
+          style={{
+            fontSize: '3rem',
+            animation: 'float 2s ease-in-out infinite',
+          }}
+        >
+          🎬
+        </div>
+        <div style={{ color: colors.textSecondary, fontSize: typography.fontSize.lg }}>
+          Loading your watchlist...
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            gap: spacing.sm,
+          }}
+        >
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="skeleton"
+              style={{
+                width: '60px',
+                height: '90px',
+                borderRadius: radius.md,
+                animationDelay: `${i * 0.2}s`,
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -332,6 +363,7 @@ const Watchlist: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                    aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
                     style={{ padding: isMobile ? '4px' : undefined }}
                   >
                     {viewMode === 'list' ? (

@@ -71,8 +71,31 @@ const SuggestionList: React.FC<SuggestionListProps> = ({ currentUser, onMovieAdd
   if (isLoading) {
     return (
       <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
-        <div style={{ padding: spacing.xl, textAlign: 'center', color: colors.textSecondary }}>
-          Loading suggestions...
+        <div style={{ padding: spacing.xl }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+            {[1, 2].map((i) => (
+              <div
+                key={i}
+                style={{
+                  padding: spacing.lg,
+                  backgroundColor: 'rgba(27, 40, 69, 0.6)',
+                  borderRadius: radius.md,
+                  border: `1px solid ${colors.borderSecondary}40`,
+                }}
+              >
+                <div style={{ display: 'flex', gap: spacing.md, alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <div className="skeleton" style={{ width: '60%', height: '1.5em', marginBottom: spacing.sm, borderRadius: radius.sm }} />
+                    <div className="skeleton" style={{ width: '40%', height: '0.9em', borderRadius: radius.sm }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: spacing.sm }}>
+                    <div className="skeleton" style={{ width: '70px', height: '32px', borderRadius: radius.md }} />
+                    <div className="skeleton" style={{ width: '70px', height: '32px', borderRadius: radius.md }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </Card>
     );

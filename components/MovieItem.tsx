@@ -91,6 +91,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           <img
             src={movie.posterUrl}
             alt={`${movie.title} poster`}
+            loading="lazy"
             style={{
               width: '100%',
               height: '100%',
@@ -288,6 +289,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   variant="ghost"
                   size="sm"
                   title="Fix Metadata Match"
+                  aria-label={`Fix metadata for "${movie.title}"`}
                   style={{
                     padding: 0,
                     width: '28px',
@@ -309,6 +311,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   variant="ghost"
                   size="sm"
                   title="Delete Movie"
+                  aria-label={`Delete "${movie.title}"`}
                   style={{
                     padding: 0,
                     width: '28px',
