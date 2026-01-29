@@ -11,13 +11,15 @@ const MAX_NAME_LENGTH = 50;
 const MAX_REASON_LENGTH = 200;
 
 const SuggestionForm: React.FC = () => {
-  const { addSuggestion } = useSuggestions();
+  const { addSuggestion, pendingSuggestions } = useSuggestions();
   const [title, setTitle] = useState('');
   const [suggestedBy, setSuggestedBy] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const pendingCount = pendingSuggestions?.length || 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,22 +117,20 @@ const SuggestionForm: React.FC = () => {
 
           {title.trim() && (
             <div className="animate-slide-down" style={{ marginTop: spacing.xs }}>
-              <input
-                type="text"
+              <Input
                 placeholder="Add a quick note why... (optional)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value.slice(0, MAX_REASON_LENGTH))}
                 disabled={isSubmitting}
+                aria-label="Add a reason for your suggestion (optional)"
                 style={{
-                  width: '100%',
                   background: 'transparent',
                   border: 'none',
                   borderBottom: `1px dashed ${colors.borderSecondary}60`,
-                  color: colors.textSecondary,
                   fontSize: typography.fontSize.xs,
                   padding: `${spacing.xs} 0`,
-                  outline: 'none',
                   fontStyle: 'italic',
+                  textAlign: 'left',
                 }}
               />
             </div>
@@ -139,6 +139,21 @@ const SuggestionForm: React.FC = () => {
           {error && (
             <div style={{ marginTop: spacing.sm, color: colors.error, fontSize: '10px', textAlign: 'center', fontWeight: 'bold' }}>
               ⚠️ {error}
+            </div>
+          )}
+
+          {/* Pending suggestions social proof */}
+          {pendingCount > 0 && (
+            <div
+              style={{
+                marginTop: spacing.md,
+                textAlign: 'center',
+                fontSize: typography.fontSize.xs,
+                color: colors.textTertiary,
+                opacity: 0.8,
+              }}
+            >
+              💬 {pendingCount} suggestion{pendingCount !== 1 ? 's' : ''} pending review
             </div>
           )}
         </div>

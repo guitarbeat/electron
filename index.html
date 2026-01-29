@@ -972,6 +972,22 @@
         filter: grayscale(0.8) brightness(0.7);
       }
 
+      /* Pulse animation for idle spin wheel */
+      @keyframes wheel-pulse {
+        0%, 100% { 
+          transform: scale(1); 
+          box-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
+        }
+        50% { 
+          transform: scale(1.02); 
+          box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+        }
+      }
+
+      .spin-wheel-wrapper:not(.locked-state):not(.result-state) .spin-wheel-container {
+        animation: wheel-pulse 3s ease-in-out infinite;
+      }
+
       .spin-wheel-wrapper.locked-state {
         opacity: 0.8;
         cursor: not-allowed;
