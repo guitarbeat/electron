@@ -285,6 +285,24 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                 <div
                   key={result.id || idx}
                   onClick={() => handleSelect(result)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelect(result);
+                    }
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,105,180,0.08)';
+                    e.currentTarget.style.outline = `2px solid ${colors.accent}`;
+                    e.currentTarget.style.outlineOffset = '-2px';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.outline = 'none';
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select ${result.title} (${result.year})`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -299,7 +317,9 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                     e.currentTarget.style.backgroundColor = 'rgba(255,105,180,0.08)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
+                    if (document.activeElement !== e.currentTarget) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
                   }}
                 >
                   <div

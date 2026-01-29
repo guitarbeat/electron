@@ -30,6 +30,7 @@ import ConfirmDialog from './ui/ConfirmDialog';
 import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
+import Confetti from './effects/Confetti';
 import { DashboardCard, SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
@@ -74,7 +75,9 @@ const Watchlist: React.FC = () => {
   const [isPinLoading, setIsPinLoading] = useState(false);
   const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
-
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [celebratedMovieTitle, setCelebratedMovieTitle] = useState<string | null>(null);
+  const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const unwatchedMovies = useMemo(
@@ -89,6 +92,37 @@ const Watchlist: React.FC = () => {
     () => (movies ? movies.findIndex((m) => m.watchedBy.length === 2) : -1),
     [movies]
   );
+
+  // Track shared watch completion for confetti
+  useEffect(() => {
+    if (!movies || !previousMoviesRef.current) {
+      previousMoviesRef.current = movies || null;
+      return;
+    }
+
+    // Check if any movie just became watched by both
+    for (const movie of movies) {
+      if (movie.watchedBy.length === 2) {
+        const prevMovie = previousMoviesRef.current.find(m => m.id === movie.id);
+        if (prevMovie && prevMovie.watchedBy.length === 1) {
+          // Movie just became watched by both!
+          setShowConfetti(true);
+          setCelebratedMovieTitle(movie.title);
+          setToast({
+            message: `🎉 You both watched "${movie.title}"!`,
+            type: 'success',
+          });
+          setTimeout(() => {
+            setShowConfetti(false);
+            setCelebratedMovieTitle(null);
+          }, 3000);
+          break;
+        }
+      }
+    }
+
+    previousMoviesRef.current = movies;
+  }, [movies]);
 
   // TOAST management
   useEffect(() => {
@@ -287,12 +321,17 @@ const Watchlist: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: colors.background }}>
+      {/* Confetti celebration */}
+      {showConfetti && <Confetti />}
+      
       <Header
         currentUser={currentUser!}
         onLogout={handleLogout}
         onPinAction={handlePinAction}
         onRemovePin={() => setShowRemovePinConfirm(true)}
         hasPin={userHasPin(currentUser!)}
+        movieCount={movies?.length || 0}
+        watchedTogetherCount={watchedMovies.length}
       />
 
       <div
