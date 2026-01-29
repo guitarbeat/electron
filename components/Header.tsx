@@ -17,6 +17,8 @@ interface HeaderProps {
   onPinAction: () => void;
   onRemovePin: () => void;
   hasPin: boolean;
+  movieCount?: number;
+  watchedTogetherCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -25,6 +27,8 @@ const Header: React.FC<HeaderProps> = ({
   onPinAction,
   onRemovePin,
   hasPin,
+  movieCount = 0,
+  watchedTogetherCount = 0,
 }) => {
   const sources = currentUser ? userImageSources[currentUser] : defaultImageSources;
   const isMobile = useMediaQuery(breakpoints.sm);
@@ -129,6 +133,33 @@ const Header: React.FC<HeaderProps> = ({
                   {currentUser}
                 </span>
               </p>
+              {/* Movie Stats Badge */}
+              {movieCount > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.xs,
+                    marginTop: spacing.xs,
+                    padding: `2px ${spacing.sm}`,
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    color: colors.textTertiary,
+                    width: 'fit-content',
+                  }}
+                >
+                  <span>🎬 {movieCount} movies</span>
+                  {watchedTogetherCount > 0 && (
+                    <>
+                      <span style={{ opacity: 0.5 }}>•</span>
+                      <span style={{ color: colors.accent }}>
+                        💕 {watchedTogetherCount} watched together
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
