@@ -1,198 +1,177 @@
 
 
-# Site Improvements Plan
+# Additional Site Improvements Plan
 
-This plan covers multiple enhancements to make the site better while preserving the Papyrus font aesthetic.
-
----
-
-## 1. Visual Polish & Micro-Interactions
-
-### 1a. Add Floating Hearts Background Animation
-Enhance the ambient atmosphere with subtle floating heart particles that match the romantic aesthetic.
-
-**Changes to `index.html`:**
-- Add CSS keyframe animation for floating hearts
-- Create small SVG heart particles that drift upward slowly
-- Low opacity (0.03-0.08) to avoid distraction
-- Randomized sizes and animation durations
-
-### 1b. Add Hover Sound Effects (Optional CSS Animations)
-Add subtle CSS-only visual feedback animations to make interactions feel more responsive.
-
-**Changes to multiple components:**
-- Add "wiggle" animation on hover for buttons
-- Add subtle "pulse" effect to the spin wheel when idle
-- Add "sparkle" border animation on focused input fields
+This plan covers new enhancements building on the previous improvements, while continuing to preserve the Papyrus font aesthetic.
 
 ---
 
-## 2. Improved Empty States & Loading States
+## 1. Mobile Bottom Sheet for Movie Actions
 
-### 2a. Enhanced Loading Skeletons
-Replace basic "Loading..." text with animated skeleton components that match the card layouts.
+**Problem:** On mobile, movie action buttons (watched, delete, fix match) are only visible on hover, which doesn't work on touch devices.
 
-**New file: `components/ui/Skeleton.tsx`**
-- Reusable skeleton component with configurable shapes
-- Matches the card styling with proper border radius
-- Uses existing design tokens
+**Solution:** Create a bottom sheet component that appears when tapping a movie card on mobile.
 
-**Updates to affected components:**
-- `Watchlist.tsx` - skeleton grid for movie cards
-- `WatchlistPreview.tsx` - already has skeleton, add subtle glow effect
-- `SuggestionList.tsx` - skeleton for suggestions
+**File: `components/ui/BottomSheet.tsx` (new)**
+- Slide-up drawer from bottom of screen
+- Backdrop overlay with blur effect
+- Swipe-down to dismiss gesture support
+- Smooth CSS transitions matching existing motion tokens
 
-### 2b. Delightful Empty States
-Add illustrated/emoji-based empty states with encouraging messages.
-
-**Updates:**
-- `Watchlist.tsx` - "Your watchlist is waiting for movies! 🎬" with a subtle animation
-- `SuggestionList.tsx` - "No suggestions yet! Share this page with friends" 
+**File: `components/MovieItem.tsx` (update)**
+- Detect mobile using existing `useMediaQuery` hook
+- On tap, open bottom sheet with movie title, poster thumbnail, and action buttons
+- Actions: Mark as Watched (A/E), Delete, Fix Match
+- Close on action completion or backdrop tap
 
 ---
 
-## 3. Enhanced User Feedback
+## 2. Movie Count & Progress Badge in Header
 
-### 3a. Confetti Animation on Special Events
-Add celebration effects for key moments.
+**Problem:** Users can't see at a glance how many movies are on the list or progress toward watching them together.
 
-**New file: `components/effects/Confetti.tsx`**
-- Lightweight CSS-only confetti burst
-- Trigger on: first movie added, movie watched by both, suggestion accepted
+**Solution:** Add a subtle stats pill to the Header component.
 
-### 3b. Improved Toast Notifications
-Enhance the existing Toast component.
-
-**Updates to `components/ui/Toast.tsx`:**
-- Add dismiss button for accessibility
-- Add stacking support for multiple toasts
-- Add different icons for success/error/info types
-- Add entrance/exit animations
+**File: `components/Header.tsx` (update)**
+- Display format: "12 movies • 5 watched together"
+- Use existing design tokens for styling
+- Pill/badge style with subtle background
+- Only visible when user is logged in
+- Updates reactively when movies change
 
 ---
 
-## 4. Accessibility Improvements
+## 3. Confetti Celebration on Shared Watch Completion
 
-### 4a. Add Missing ARIA Labels
-Based on `.Jules/palette.md` guidance, add proper aria-labels.
+**Problem:** No celebration when both Aaron and Electra mark a movie as watched (a special moment).
 
-**Updates to multiple files:**
-- `IconButton` usages throughout - add `aria-label` where only `title` exists
-- `Watchlist.tsx` - view toggle button needs aria-label
-- `Header.tsx` - PIN and logout buttons
+**Solution:** Trigger confetti effect when a movie becomes fully watched by both users.
 
-### 4b. Focus-Visible Improvements
-Add consistent focus rings across all interactive elements.
+**File: `components/Watchlist.tsx` (update)**
+- Track when `watchedBy` goes from 1 to 2 users
+- Trigger existing `Confetti` component
+- Add toast notification: "You both watched [Movie Title]! 🎉"
 
-**Updates to `index.html` CSS:**
-- Add `:focus-visible` styles for better keyboard navigation
-- Ensure focus rings match the accent color
-
-### 4c. Skip Link Enhancement  
-Already exists in App.tsx - verify it's working properly.
+**File: `hooks/useMovies.ts` (update)**
+- Return callback or flag when shared watch is detected
+- Compare previous and current state on movie updates
 
 ---
 
-## 5. Performance & Polish
+## 4. Suggestion Count Badge & Social Proof
 
-### 5a. Add Image Lazy Loading
-Ensure all movie poster images have `loading="lazy"` attribute.
+**Problem:** Visitors don't know if their suggestions are being considered or if others have suggested movies.
 
-**Updates:**
-- `MovieItem.tsx` - add `loading="lazy"` to poster images
-- `WatchlistPreview.tsx` - already has it, verify it's consistent
+**Solution:** Show pending suggestion count on the form.
 
-### 5b. Add Smooth Scroll Behavior
-Enable smooth scrolling globally.
+**File: `components/SuggestionForm.tsx` (update)**
+- Fetch and display pending suggestion count
+- Show "X suggestions pending review" below the form
+- Adds social proof and engagement motivation
+- Subtle text styling matching existing secondary text
 
-**Updates to `index.html`:**
+---
+
+## 5. Keyboard Accessibility for Search Results in FixMatchDialog
+
+**Problem:** Search result items in `FixMatchDialog` only have mouse hover states and lack keyboard navigation.
+
+**Solution:** Add focus states and keyboard interaction.
+
+**File: `components/FixMatchDialog.tsx` (update)**
+- Add `tabIndex={0}` to each result item
+- Add `onKeyDown` handler for Enter/Space to select
+- Add `onFocus`/`onBlur` handlers matching hover styles
+- Ensure focus is visible with outline or background change
+
+---
+
+## 6. Pulse Animation on Idle Spin Wheel
+
+**Problem:** The spin wheel looks static when idle, missing an opportunity for visual engagement.
+
+**Solution:** Add a subtle pulse animation when the wheel is ready to spin.
+
+**File: `index.html` (update CSS)**
 ```css
-html {
-  scroll-behavior: smooth;
+@keyframes wheel-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 105, 180, 0.3); }
+  50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 105, 180, 0.5); }
+}
+
+.spin-wheel-wrapper:not(.locked-state):not(.result-state) .spin-wheel-container {
+  animation: wheel-pulse 3s ease-in-out infinite;
 }
 ```
 
-### 5c. Preload Critical Fonts
-Add Papyrus font preload hint for faster rendering.
+---
 
-**Updates to `index.html`:**
-- Add `<link rel="preload">` for Papyrus if available as web font
-- Fallback already configured in design tokens
+## 7. Enhanced Empty State for Message Board
+
+**Problem:** Message board may show empty state without engaging visuals when no messages exist.
+
+**File: `components/message-board/MessageList.tsx` (update)**
+- Check if message list is empty
+- Show friendly empty state: "No messages yet! Start the conversation 💬"
+- Add subtle entrance animation
+- Include decorative chat bubble icon
 
 ---
 
-## 6. Feature Enhancements
+## 8. Improved Input Accessibility
 
-### 6a. Movie Count Badge in Header
-Show total movies and watched progress.
+**Problem:** The reason input in `SuggestionForm` uses a raw `<input>` element without proper accessibility attributes.
 
-**Updates to `components/Header.tsx`:**
-- Add small stats display: "12 movies • 5 watched together"
-- Use subtle pill badge styling
-
-### 6b. Quick Retake Quiz Button for Logged-In Users  
-Already exists as "Edit Quiz" - consider renaming to "Retake Quiz" for visitors who completed it.
-
-### 6c. Suggestion Count Badge
-Show pending suggestion count on the visitor-facing form.
-
-**Updates to `components/SuggestionForm.tsx`:**
-- Display "X suggestions pending review" if there are any
-- Adds social proof that suggestions are being considered
+**File: `components/SuggestionForm.tsx` (update)**
+- Add `aria-label="Add a reason for your suggestion (optional)"`
+- Replace raw `<input>` with the existing `Input` component for consistency
+- Ensure focus states match other inputs
 
 ---
 
-## 7. Mobile Experience
+## 9. Add "Retake Quiz" Context for Non-Logged Users
 
-### 7a. Pull-to-Refresh Indicator
-Add visual hint for mobile users that they can pull down to refresh.
+**Problem:** The "Edit Quiz" button is only for logged-in users. Visitors who completed the quiz might want to retake it.
 
-**Updates to `components/Watchlist.tsx`:**
-- Add subtle refresh icon at top when user scrolls past top
-- Pure CSS/visual only (actual refresh uses existing polling)
-
-### 7b. Bottom Sheet for Movie Actions
-On mobile, show movie actions in a bottom sheet instead of hover overlay.
-
-**Updates to `components/MovieItem.tsx`:**
-- Detect mobile via `useMediaQuery`
-- On tap, expand to show action buttons more prominently
-- Add smooth height transition
+**File: `App.tsx` (update)**
+- Show "Retake Quiz" button for visitors who completed quiz (localStorage check)
+- Position near the user selection screen
+- Clear quiz completion flag and restart quiz flow on click
 
 ---
 
-## 8. Code Quality
+## 10. Progress Indicator for Quiz Flow
 
-### 8a. Install Tailwind Properly (Recommended but Optional)
-The CDN warning appears in console. Consider installing Tailwind as a dev dependency.
+**Problem:** Users don't know how many questions remain during the quiz.
 
-This is a larger change and can be deferred if you prefer keeping the current setup.
-
-### 8b. Add Lock File Note
-Remind about generating `pnpm-lock.yaml` for consistent builds.
+**File: `components/quiz/QuizFlow.tsx` (update)**
+- Add progress bar or "Question X of Y" indicator
+- Use design tokens for styling
+- Animate progress bar fill on question change
+- Position above or below the question card
 
 ---
 
-## Implementation Priority
+## Summary Table
 
-| Priority | Task | Effort |
-|----------|------|--------|
-| 1 | Add missing ARIA labels | 15 min |
-| 2 | Enhanced Toast with dismiss button | 10 min |
-| 3 | Movie count badge in Header | 10 min |
-| 4 | Floating hearts background animation | 15 min |
-| 5 | Improved loading skeletons | 20 min |
-| 6 | Confetti on special events | 20 min |
-| 7 | Delightful empty states | 10 min |
-| 8 | Mobile bottom sheet for actions | 25 min |
-| 9 | Focus-visible improvements | 10 min |
-| 10 | Smooth scroll + image lazy loading | 5 min |
+| Priority | Task | File(s) | Effort |
+|----------|------|---------|--------|
+| 1 | Mobile bottom sheet for movie actions | `BottomSheet.tsx`, `MovieItem.tsx` | 25 min |
+| 2 | Movie count badge in Header | `Header.tsx` | 10 min |
+| 3 | Confetti on shared watch completion | `Watchlist.tsx`, `useMovies.ts` | 15 min |
+| 4 | Suggestion count badge | `SuggestionForm.tsx` | 10 min |
+| 5 | Keyboard accessibility for FixMatchDialog | `FixMatchDialog.tsx` | 10 min |
+| 6 | Pulse animation on spin wheel | `index.html` | 5 min |
+| 7 | Enhanced empty state for messages | `MessageList.tsx` | 10 min |
+| 8 | Improved input accessibility | `SuggestionForm.tsx` | 5 min |
+| 9 | Retake Quiz button for visitors | `App.tsx` | 10 min |
+| 10 | Progress indicator for quiz | `QuizFlow.tsx` | 15 min |
 
 ---
 
 ## Technical Notes
 
-**Font Preservation**: All changes maintain the Papyrus font family defined in `design-system/tokens.ts`. The typography system will continue using:
+**Font Preservation:** All UI additions will use the typography tokens which enforce Papyrus:
 ```typescript
 fontFamily: {
   heading: ['Papyrus', 'fantasy'],
@@ -201,5 +180,7 @@ fontFamily: {
 }
 ```
 
-**Lock File**: The project is missing a lock file. You should run `pnpm install` locally and commit the generated `pnpm-lock.yaml` to ensure consistent dependency versions across environments.
+**Lock File Reminder:** The project still needs a lock file generated by running `pnpm install` locally and committing the `pnpm-lock.yaml` file for consistent builds.
+
+**Mobile Detection:** Uses existing `useMediaQuery` hook with `breakpoints.sm` (640px) for responsive behavior.
 
