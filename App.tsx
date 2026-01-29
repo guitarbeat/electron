@@ -101,6 +101,13 @@ const App: React.FC = () => {
     localStorage.setItem('quizCompleted', 'true');
   };
 
+  const handleRetakeQuiz = () => {
+    localStorage.removeItem('quizCompleted');
+    setQuizCompleted(false);
+    setShowIntro(true);
+    setShowQuiz(false);
+  };
+
   const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
 
   // Show quiz editor
@@ -234,6 +241,27 @@ const App: React.FC = () => {
           ) : !displayUser ? (
             <div className={animationClass}>
               <UserSelection onTakeQuiz={handleStartQuiz} />
+              {/* Retake Quiz button for visitors who completed the quiz */}
+              {quizCompleted && (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    marginTop: spacing.lg,
+                  }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRetakeQuiz}
+                    style={{
+                      fontSize: typography.fontSize.sm,
+                      color: colors.textSecondary,
+                    }}
+                  >
+                    🔄 Retake Personality Quiz
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className={animationClass}>

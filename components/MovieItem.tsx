@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Movie, User } from '../types';
 import {
   TrashIcon,
@@ -13,7 +13,9 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 import FixMatchDialog from './FixMatchDialog';
+import BottomSheet from './ui/BottomSheet';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
+import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 interface MovieItemProps {
   movie: Movie;
@@ -46,11 +48,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const watchedByCurrentUser = movie.watchedBy.includes(currentUser);
   const watchedByBoth = movie.watchedBy.length === 2;
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const isMobile = useMediaQuery(breakpoints.sm);
+
+  const handleCardClick = () => {
+    if (isMobile && layout === 'grid') {
+      setIsBottomSheetOpen(true);
+    }
+  };
+
+  const handleAction = (action: () => void) => {
+    action();
+    setIsBottomSheetOpen(false);
+  };
 
   return (
+    <>
     <Card
       variant={watchedByBoth ? 'elevated' : 'default'}
       className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up`}
+      onClick={handleCardClick}
       style={{
         padding: 0,
         opacity: 1,
@@ -66,6 +83,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
         minHeight: layout === 'grid' ? 'auto' : '160px',
         boxShadow: layout === 'grid' ? '0 4px 12px rgba(0,0,0,0.5)' : shadows.card,
         backgroundColor: colors.surfaceElevated,
+        cursor: isMobile && layout === 'grid' ? 'pointer' : 'default',
       }}
     >
       {/* Poster Image or Text Fallback */}
@@ -530,6 +548,117 @@ const MovieItem: React.FC<MovieItemProps> = ({
         </div>
       )}
     </Card>
+
+    {/* Mobile Bottom Sheet for Actions */}
+    <BottomSheet
+      isOpen={isBottomSheetOpen}
+      onClose={() => setIsBottomSheetOpen(false)}
+      title={movie.title}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        {/* Movie Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm }}>
+          {movie.posterUrl && (
+            <img
+              src={movie.posterUrl}
+              alt=""
+              style={{
+                width: '60px',
+                height: '90px',
+                objectFit: 'cover',
+                borderRadius: radius.md,
+                boxShadow: shadows.card,
+              }}
+            />
+          )}
+          <div style={{ flex: 1 }}>
+            {movie.year && (
+              <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
+                {movie.year}
+              </span>
+            )}
+            {movie.imdbRating && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                <span style={{ color: colors.yellow, fontWeight: typography.fontWeight.bold }}>★ {movie.imdbRating}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
+              {movie.watchedBy.includes('Aaron') && (
+                <span style={{
+                  fontSize: '10px',
+                  padding: '2px 6px',
+                  backgroundColor: colors.secondary,
+                  borderRadius: radius.full,
+                  color: colors.background,
+                  fontWeight: 'bold',
+                }}>Aaron ✓</span>
+              )}
+              {movie.watchedBy.includes('Electra') && (
+                <span style={{
+                  fontSize: '10px',
+                  padding: '2px 6px',
+                  backgroundColor: colors.accent,
+                  borderRadius: radius.full,
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}>Electra ✓</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <Button
+          onClick={() => handleAction(() => onToggle(movie))}
+          variant={watchedByCurrentUser ? 'primary' : 'secondary'}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: spacing.sm,
+            backgroundColor: watchedByCurrentUser ? colors.success : undefined,
+          }}
+        >
+          {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
+          {watchedByCurrentUser ? 'Marked as Watched' : `Mark as Watched (${currentUser})`}
+        </Button>
+
+        <Button
+          onClick={() => handleAction(() => onFixMatch?.(movie))}
+          variant="secondary"
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: spacing.sm,
+          }}
+        >
+          <MagicWandIcon />
+          Fix Metadata Match
+        </Button>
+
+        <Button
+          onClick={() => handleAction(() => onDelete(movie))}
+          variant="ghost"
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: spacing.sm,
+            color: colors.error,
+            borderColor: `${colors.error}40`,
+            border: '1px solid',
+          }}
+        >
+          <TrashIcon />
+          Delete Movie
+        </Button>
+      </div>
+    </BottomSheet>
+    </>
   );
 };
 

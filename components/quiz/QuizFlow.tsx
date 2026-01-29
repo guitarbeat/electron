@@ -154,6 +154,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         style={{
           marginBottom: spacing.xl,
         }}
+        role="progressbar"
+        aria-valuenow={currentQuestionIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={totalQuestions}
+        aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
       >
         <div
           style={{
@@ -189,6 +194,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
             borderRadius: '4px',
             overflow: 'hidden',
             border: `2px solid ${colors.borderSecondary}`,
+            position: 'relative',
           }}
         >
           <div
@@ -198,8 +204,19 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
               backgroundColor: colors.accent,
               transition: 'width 0.3s ease-out',
               boxShadow: shadows.glow,
+              position: 'relative',
             }}
-          />
+          >
+            {/* Animated shimmer effect */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                animation: 'shimmer 2s infinite',
+              }}
+            />
+          </div>
         </div>
       </div>
 
