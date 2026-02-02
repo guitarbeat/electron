@@ -1,11 +1,13 @@
 /**
- * QuizEditor Component
+ * QuizEditor Component - Enhanced Version
  *
- * Full editor UI for managing quiz questions and character descriptions
+ * Full editor UI with drag-drop, preview, templates, undo/redo, and import/export
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuiz } from '../../hooks/useQuiz';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { QuizData } from '../../services/quizService';
 import {
   QuizQuestion,
@@ -14,11 +16,14 @@ import {
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
 } from './types';
+import { questionTemplates, TemplateType } from './QuestionTemplates';
+import ScoreSlider from './ScoreSlider';
+import QuestionPreview from './QuestionPreview';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Textarea from '../ui/Textarea';
-import { spacing, colors, typography, radius } from '../../design-system/tokens';
+import { spacing, colors, typography, radius, shadows } from '../../design-system/tokens';
 import { ArrowLeftIcon } from '../icons';
 
 interface QuizEditorProps {
@@ -29,16 +34,33 @@ const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu
 
 const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   const { quizData, isLoading, isSaving, saveAllData, refresh } = useQuiz();
-  const [localData, setLocalData] = useState<QuizData | null>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  
+  // Use undo/redo for local state
+  const {
+    state: localData,
+    setState: setLocalData,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    reset: resetHistory,
+  } = useUndoRedo<QuizData | null>(null);
+
   const [activeTab, setActiveTab] = useState<'questions' | 'descriptions'>('questions');
   const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
+  const [showPreview, setShowPreview] = useState(!isMobile);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (quizData && !localData) {
-      setLocalData(quizData);
+      resetHistory(quizData);
     }
-  }, [quizData, localData]);
+  }, [quizData, localData, resetHistory]);
 
   const handleSave = async () => {
     if (!localData) return;
@@ -53,6 +75,42 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
     setHasChanges(true);
   };
 
+  // Export quiz data as JSON
+  const handleExport = () => {
+    if (!localData) return;
+    const blob = new Blob([JSON.stringify(localData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quiz-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import quiz data from JSON
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target?.result as string) as QuizData;
+        // Basic validation
+        if (!imported.questions || !Array.isArray(imported.questions)) {
+          alert('Invalid quiz data format');
+          return;
+        }
+        setLocalData(imported);
+        setHasChanges(true);
+      } catch {
+        alert('Failed to parse JSON file');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // Reset input
+  };
+
   if (isLoading || !localData) {
     return (
       <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
@@ -62,10 +120,17 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   }
 
   return (
-    <div style={{ maxWidth: '64rem', margin: '0 auto', padding: spacing.md }}>
+    <div style={{ maxWidth: '80rem', margin: '0 auto', padding: spacing.md }}>
       {/* Header */}
       <Card variant="elevated" style={{ marginBottom: spacing.lg, padding: spacing.md }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.sm,
+            flexWrap: 'wrap',
+          }}
+        >
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Back">
             <ArrowLeftIcon style={{ width: '1.25rem', height: '1.25rem' }} />
           </Button>
@@ -76,10 +141,73 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
               fontFamily: typography.fontFamily.heading.join(', '),
               margin: 0,
               flex: 1,
+              minWidth: '120px',
             }}
           >
             Quiz Editor
           </h1>
+
+          {/* Undo/Redo buttons */}
+          <div style={{ display: 'flex', gap: spacing.xs }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+              aria-label="Undo"
+              style={{ opacity: canUndo ? 1 : 0.4 }}
+            >
+              ↩
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Shift+Z)"
+              aria-label="Redo"
+              style={{ opacity: canRedo ? 1 : 0.4 }}
+            >
+              ↪
+            </Button>
+          </div>
+
+          {/* Import/Export */}
+          <div style={{ display: 'flex', gap: spacing.xs }}>
+            <Button variant="ghost" size="sm" onClick={handleExport} title="Export quiz as JSON">
+              📤
+            </Button>
+            <label style={{ cursor: 'pointer' }}>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                style={{ display: 'none' }}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                as="span"
+                title="Import quiz from JSON"
+                style={{ pointerEvents: 'none' }}
+              >
+                📥
+              </Button>
+            </label>
+          </div>
+
+          {/* Preview toggle (desktop only) */}
+          {!isMobile && (
+            <Button
+              variant={showPreview ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+            >
+              {showPreview ? '👁️ Preview On' : '👁️ Preview'}
+            </Button>
+          )}
+
           <Button
             variant="primary"
             size="sm"
@@ -148,6 +276,16 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           editingQuestion={editingQuestion}
           setEditingQuestion={setEditingQuestion}
           onUpdateQuestions={(questions) => updateLocalData({ questions })}
+          showPreview={showPreview && !isMobile}
+          showTemplates={showTemplates}
+          setShowTemplates={setShowTemplates}
+          expandedQuestions={expandedQuestions}
+          setExpandedQuestions={setExpandedQuestions}
+          draggedIndex={draggedIndex}
+          setDraggedIndex={setDraggedIndex}
+          dragOverIndex={dragOverIndex}
+          setDragOverIndex={setDragOverIndex}
+          isMobile={isMobile}
         />
       )}
 
@@ -171,6 +309,16 @@ interface QuestionsTabProps {
   editingQuestion: QuizQuestion | null;
   setEditingQuestion: (q: QuizQuestion | null) => void;
   onUpdateQuestions: (questions: QuizQuestion[]) => void;
+  showPreview: boolean;
+  showTemplates: boolean;
+  setShowTemplates: (show: boolean) => void;
+  expandedQuestions: Set<string>;
+  setExpandedQuestions: (set: Set<string>) => void;
+  draggedIndex: number | null;
+  setDraggedIndex: (index: number | null) => void;
+  dragOverIndex: number | null;
+  setDragOverIndex: (index: number | null) => void;
+  isMobile: boolean;
 }
 
 const QuestionsTab: React.FC<QuestionsTabProps> = ({
@@ -178,48 +326,25 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   editingQuestion,
   setEditingQuestion,
   onUpdateQuestions,
+  showPreview,
+  showTemplates,
+  setShowTemplates,
+  expandedQuestions,
+  setExpandedQuestions,
+  draggedIndex,
+  setDraggedIndex,
+  dragOverIndex,
+  setDragOverIndex,
+  isMobile,
 }) => {
-  const addNewQuestion = (type: QuizQuestion['type']) => {
-    const newId = `q_${Date.now()}`;
-    let newQuestion: QuizQuestion;
+  const addNewQuestion = (templateId: TemplateType = 'blank') => {
+    const template = questionTemplates.find((t) => t.id === templateId);
+    if (!template) return;
 
-    if (type === 'multiple-choice') {
-      newQuestion = {
-        id: newId,
-        type: 'multiple-choice',
-        question: 'New question?',
-        options: [
-          { text: 'Option 1', scores: {} },
-          { text: 'Option 2', scores: {} },
-        ],
-      };
-    } else if (type === 'agree-disagree') {
-      newQuestion = {
-        id: newId,
-        type: 'agree-disagree',
-        question: 'New agree/disagree statement',
-        scores: {
-          stronglyDisagree: {},
-          disagree: {},
-          neutral: {},
-          agree: {},
-          stronglyAgree: {},
-        },
-      };
-    } else {
-      newQuestion = {
-        id: newId,
-        type: 'image-choice',
-        question: 'Choose an image:',
-        options: [
-          { imageUrl: '/quiz-photos/quiz-img-1.png', alt: 'Image 1', scores: {} },
-          { imageUrl: '/quiz-photos/quiz-img-2.png', alt: 'Image 2', scores: {} },
-        ],
-      };
-    }
-
+    const newQuestion = template.create();
     onUpdateQuestions([...questions, newQuestion]);
     setEditingQuestion(newQuestion);
+    setShowTemplates(false);
   };
 
   const deleteQuestion = (id: string) => {
@@ -228,141 +353,492 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
     if (editingQuestion?.id === id) setEditingQuestion(null);
   };
 
+  const duplicateQuestion = (q: QuizQuestion) => {
+    const idx = questions.findIndex((question) => question.id === q.id);
+    const duplicate = {
+      ...JSON.parse(JSON.stringify(q)),
+      id: `q_${Date.now()}`,
+      question: `${q.question} (copy)`,
+    };
+    const newQuestions = [...questions];
+    newQuestions.splice(idx + 1, 0, duplicate);
+    onUpdateQuestions(newQuestions);
+  };
+
+  const moveQuestion = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const newQuestions = [...questions];
+    const [moved] = newQuestions.splice(fromIndex, 1);
+    newQuestions.splice(toIndex, 0, moved);
+    onUpdateQuestions(newQuestions);
+  };
+
   const saveQuestion = (updated: QuizQuestion) => {
     onUpdateQuestions(questions.map((q) => (q.id === updated.id ? updated : q)));
     setEditingQuestion(null);
   };
 
+  const toggleExpand = (id: string) => {
+    const newSet = new Set(expandedQuestions);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setExpandedQuestions(newSet);
+  };
+
+  const expandAll = () => {
+    setExpandedQuestions(new Set(questions.map((q) => q.id)));
+  };
+
+  const collapseAll = () => {
+    setExpandedQuestions(new Set());
+  };
+
+  // Drag handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (toIndex: number) => {
+    if (draggedIndex !== null && draggedIndex !== toIndex) {
+      moveQuestion(draggedIndex, toIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   if (editingQuestion) {
     return (
-      <QuestionEditor
-        question={editingQuestion}
-        onSave={saveQuestion}
-        onCancel={() => setEditingQuestion(null)}
-      />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: showPreview ? '1fr 300px' : '1fr',
+          gap: spacing.lg,
+        }}
+      >
+        <QuestionEditor
+          question={editingQuestion}
+          onSave={saveQuestion}
+          onCancel={() => setEditingQuestion(null)}
+        />
+        {showPreview && (
+          <div style={{ position: 'sticky', top: spacing.lg, alignSelf: 'start' }}>
+            <QuestionPreview question={editingQuestion} />
+          </div>
+        )}
+      </div>
     );
   }
 
   return (
     <div>
-      {/* Add Question Buttons */}
-      <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.lg, flexWrap: 'wrap' }}>
-        <Button variant="secondary" size="sm" onClick={() => addNewQuestion('multiple-choice')}>
-          + Multiple Choice
+      {/* Add Question Buttons / Templates */}
+      <Card
+        variant="default"
+        style={{
+          padding: spacing.md,
+          marginBottom: spacing.lg,
+          backgroundColor: colors.surfaceElevated,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.sm,
+          }}
+        >
+          <span
+            style={{
+              fontSize: typography.fontSize.sm,
+              fontWeight: typography.fontWeight.bold,
+              color: colors.textPrimary,
+            }}
+          >
+            Add New Question
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowTemplates(!showTemplates)}
+            style={{ fontSize: typography.fontSize.xs }}
+          >
+            {showTemplates ? 'Hide Templates' : '📋 Use Template'}
+          </Button>
+        </div>
+
+        {showTemplates ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+              gap: spacing.sm,
+            }}
+          >
+            {questionTemplates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => addNewQuestion(template.id)}
+                style={{
+                  padding: spacing.md,
+                  backgroundColor: colors.surface,
+                  border: `2px solid ${colors.borderSecondary}20`,
+                  borderRadius: radius.md,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = colors.accent;
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = `${colors.borderSecondary}20`;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div style={{ fontSize: '24px', marginBottom: spacing.xs }}>{template.icon}</div>
+                <div
+                  style={{
+                    fontSize: typography.fontSize.sm,
+                    fontWeight: typography.fontWeight.bold,
+                    color: colors.textPrimary,
+                    marginBottom: '2px',
+                  }}
+                >
+                  {template.name}
+                </div>
+                <div style={{ fontSize: '10px', color: colors.textTertiary }}>
+                  {template.description}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}
+          >
+            <Button variant="secondary" size="sm" onClick={() => addNewQuestion('blank')}>
+              + Multiple Choice
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const q: AgreeDisagreeQuestion = {
+                  id: `q_${Date.now()}`,
+                  type: 'agree-disagree',
+                  question: 'New agree/disagree statement',
+                  scores: {
+                    stronglyDisagree: {},
+                    disagree: {},
+                    neutral: {},
+                    agree: {},
+                    stronglyAgree: {},
+                  },
+                };
+                onUpdateQuestions([...questions, q]);
+                setEditingQuestion(q);
+              }}
+            >
+              + Agree/Disagree
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const q: ImageChoiceQuestion = {
+                  id: `q_${Date.now()}`,
+                  type: 'image-choice',
+                  question: 'Choose an image:',
+                  options: [
+                    { imageUrl: '/quiz-photos/quiz-img-1.png', alt: 'Image 1', scores: {} },
+                    { imageUrl: '/quiz-photos/quiz-img-2.png', alt: 'Image 2', scores: {} },
+                  ],
+                };
+                onUpdateQuestions([...questions, q]);
+                setEditingQuestion(q);
+              }}
+            >
+              + Image Choice
+            </Button>
+          </div>
+        )}
+      </Card>
+
+      {/* Expand/Collapse controls */}
+      <div
+        style={{
+          display: 'flex',
+          gap: spacing.sm,
+          marginBottom: spacing.md,
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Button variant="ghost" size="sm" onClick={expandAll}>
+          Expand All
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => addNewQuestion('agree-disagree')}>
-          + Agree/Disagree
-        </Button>
-        <Button variant="secondary" size="sm" onClick={() => addNewQuestion('image-choice')}>
-          + Image Choice
+        <Button variant="ghost" size="sm" onClick={collapseAll}>
+          Collapse All
         </Button>
       </div>
 
       {/* Questions List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-        {questions.map((q, index) => (
-          <Card
-            key={q.id}
-            variant="default"
-            style={{
-              padding: spacing.md,
-              backgroundColor: colors.surfaceElevated,
-              border: `1px solid ${colors.borderSecondary}10`,
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-            }}
-            onClick={() => setEditingQuestion(q)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.borderColor = `${colors.accent}40`;
-              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = `${colors.borderSecondary}10`;
-              e.currentTarget.style.backgroundColor = colors.surfaceElevated;
-            }}
-          >
-            <div
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+        {questions.map((q, index) => {
+          const isExpanded = expandedQuestions.has(q.id);
+          const isDragging = draggedIndex === index;
+          const isDragOver = dragOverIndex === index;
+
+          return (
+            <Card
+              key={q.id}
+              variant="default"
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={() => handleDrop(index)}
+              onDragEnd={handleDragEnd}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: spacing.md,
+                padding: spacing.md,
+                backgroundColor: isDragOver
+                  ? `${colors.accent}10`
+                  : colors.surfaceElevated,
+                border: `2px solid ${isDragOver ? colors.accent : 'transparent'}`,
+                transition: 'all 0.2s ease',
+                opacity: isDragging ? 0.5 : 1,
+                cursor: 'grab',
               }}
             >
-              <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Question header row */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.sm,
+                }}
+              >
+                {/* Drag handle */}
                 <div
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: spacing.sm,
-                    marginBottom: spacing.xs,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: colors.accent,
-                      fontWeight: typography.fontWeight.bold,
-                      backgroundColor: `${colors.accent}20`,
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    #{index + 1}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '9px',
-                      color: colors.textTertiary,
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      padding: `2px 6px`,
-                      borderRadius: radius.full,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      fontWeight: typography.fontWeight.bold,
-                    }}
-                  >
-                    {q.type.replace('-', ' ')}
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: typography.fontSize.sm,
-                    color: colors.textPrimary,
-                    margin: 0,
-                    fontWeight: typography.fontWeight.semibold,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  {q.question}
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: spacing.sm, flexShrink: 0 }}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteQuestion(q.id);
-                  }}
-                  style={{
-                    color: colors.error,
-                    opacity: 0.6,
+                    cursor: 'grab',
+                    color: colors.textTertiary,
+                    fontSize: '14px',
                     padding: spacing.xs,
                   }}
+                  title="Drag to reorder"
                 >
-                  ✕
-                </Button>
+                  ⋮⋮
+                </div>
+
+                {/* Question info */}
+                <div
+                  style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                  onClick={() => toggleExpand(q.id)}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: spacing.xs,
+                      marginBottom: '2px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: colors.accent,
+                        fontWeight: typography.fontWeight.bold,
+                        backgroundColor: `${colors.accent}20`,
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      #{index + 1}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        color: colors.textTertiary,
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        padding: '2px 6px',
+                        borderRadius: radius.full,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontWeight: typography.fontWeight.bold,
+                      }}
+                    >
+                      {q.type.replace('-', ' ')}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: typography.fontSize.sm,
+                      color: colors.textPrimary,
+                      margin: 0,
+                      fontWeight: typography.fontWeight.semibold,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {q.question}
+                  </p>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => duplicateQuestion(q)}
+                    title="Duplicate"
+                    style={{ padding: spacing.xs, opacity: 0.7 }}
+                  >
+                    📋
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveQuestion(index, Math.max(0, index - 1))}
+                    disabled={index === 0}
+                    title="Move up"
+                    style={{ padding: spacing.xs, opacity: index === 0 ? 0.3 : 0.7 }}
+                  >
+                    ⬆
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveQuestion(index, Math.min(questions.length - 1, index + 1))}
+                    disabled={index === questions.length - 1}
+                    title="Move down"
+                    style={{
+                      padding: spacing.xs,
+                      opacity: index === questions.length - 1 ? 0.3 : 0.7,
+                    }}
+                  >
+                    ⬇
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteQuestion(q.id)}
+                    style={{ color: colors.error, padding: spacing.xs, opacity: 0.6 }}
+                  >
+                    ✕
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
+
+              {/* Expanded content - option preview */}
+              {isExpanded && (
+                <div
+                  style={{
+                    marginTop: spacing.sm,
+                    paddingTop: spacing.sm,
+                    borderTop: `1px solid ${colors.borderSecondary}20`,
+                  }}
+                >
+                  {q.type === 'multiple-choice' && (
+                    <OptionsSummary options={(q as MultipleChoiceQuestion).options} />
+                  )}
+                  {q.type === 'image-choice' && (
+                    <ImageOptionsSummary options={(q as ImageChoiceQuestion).options} />
+                  )}
+                  {q.type === 'agree-disagree' && (
+                    <AgreeDisagreeSummary scores={(q as AgreeDisagreeQuestion).scores} />
+                  )}
+
+                  <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm }}>
+                    <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)}>
+                      ✏️ Edit Question
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          );
+        })}
       </div>
+    </div>
+  );
+};
+
+// Options summary for collapsed view
+const OptionsSummary: React.FC<{ options: MultipleChoiceQuestion['options'] }> = ({ options }) => (
+  <div style={{ fontSize: '11px', color: colors.textTertiary }}>
+    {options.map((opt, i) => {
+      const scoreStr = Object.entries(opt.scores)
+        .filter(([, v]) => typeof v === 'number' && v > 0)
+        .map(([char, v]) => `${char[0]}:${v}`)
+        .join(' ');
+      return (
+        <div key={i} style={{ marginBottom: '2px' }}>
+          ├─ {opt.text} {scoreStr && <span style={{ color: colors.accent }}>({scoreStr})</span>}
+        </div>
+      );
+    })}
+  </div>
+);
+
+const ImageOptionsSummary: React.FC<{ options: ImageChoiceQuestion['options'] }> = ({
+  options,
+}) => (
+  <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+    {options.map((opt, i) => (
+      <div
+        key={i}
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: radius.sm,
+          overflow: 'hidden',
+          border: `1px solid ${colors.borderSecondary}40`,
+        }}
+      >
+        {opt.imageUrl && (
+          <img
+            src={opt.imageUrl}
+            alt={opt.alt}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        )}
+      </div>
+    ))}
+  </div>
+);
+
+const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }> = ({
+  scores,
+}) => {
+  const levels = ['stronglyDisagree', 'disagree', 'neutral', 'agree', 'stronglyAgree'] as const;
+  return (
+    <div style={{ fontSize: '10px', color: colors.textTertiary }}>
+      {levels.map((level) => {
+      const scoreStr = Object.entries(scores[level])
+        .filter(([, v]) => typeof v === 'number' && v > 0)
+        .map(([char, v]) => `${char[0]}:${v}`)
+        .join(' ');
+        return (
+          <span key={level} style={{ marginRight: spacing.sm }}>
+            {level.slice(0, 2).toUpperCase()}: {scoreStr || '—'}
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -464,15 +940,6 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
     onChange({ ...question, options: newOptions });
   };
 
-  const updateScore = (optionIndex: number, character: QuizCharacter, score: number) => {
-    const newOptions = [...question.options];
-    newOptions[optionIndex] = {
-      ...newOptions[optionIndex],
-      scores: { ...newOptions[optionIndex].scores, [character]: score },
-    };
-    onChange({ ...question, options: newOptions });
-  };
-
   const addOption = () => {
     onChange({
       ...question,
@@ -519,7 +986,7 @@ const MultipleChoiceEditor: React.FC<MultipleChoiceEditorProps> = ({ question, o
               ✕
             </Button>
           </div>
-          <ScoreEditor
+          <ScoreSlider
             scores={option.scores}
             onChange={(scores) => {
               const newOptions = [...question.options];
@@ -576,7 +1043,7 @@ const AgreeDisagreeEditor: React.FC<AgreeDisagreeEditorProps> = ({ question, onC
           >
             {levelLabels[level]}
           </div>
-          <ScoreEditor
+          <ScoreSlider
             scores={question.scores[level]}
             onChange={(scores) => {
               onChange({
@@ -598,7 +1065,7 @@ interface ImageChoiceEditorProps {
 }
 
 const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChange }) => {
-  const fileInputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const updateOption = (index: number, field: 'imageUrl' | 'alt', value: string) => {
     const newOptions = [...question.options];
@@ -607,19 +1074,16 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
   };
 
   const handleImageUpload = async (index: number, file: File) => {
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
     }
 
-    // Validate file size (max 500KB for Gist storage)
     if (file.size > 500 * 1024) {
       alert('Image too large. Please use an image under 500KB for Gist storage.');
       return;
     }
 
-    // Convert to base64
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
@@ -725,7 +1189,6 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
 
             {/* Upload & URL inputs */}
             <div style={{ flex: 1 }}>
-              {/* Hidden file input */}
               <input
                 ref={(el) => {
                   fileInputRefs.current[idx] = el;
@@ -739,7 +1202,6 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
                 }}
               />
 
-              {/* Upload button */}
               <div style={{ marginBottom: spacing.sm }}>
                 <Button
                   variant="secondary"
@@ -751,7 +1213,6 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
                 </Button>
               </div>
 
-              {/* URL input */}
               <Input
                 label="Or enter URL"
                 value={isBase64Image(option.imageUrl) ? '(uploaded image)' : option.imageUrl}
@@ -773,7 +1234,6 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
               )}
             </div>
 
-            {/* Delete button */}
             <Button
               variant="danger"
               size="sm"
@@ -797,7 +1257,7 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
           </div>
 
           {/* Scores */}
-          <ScoreEditor
+          <ScoreSlider
             scores={option.scores}
             onChange={(scores) => {
               const newOptions = [...question.options];
@@ -810,72 +1270,6 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
       <Button variant="secondary" size="sm" onClick={addOption}>
         + Add Image Option
       </Button>
-    </div>
-  );
-};
-
-// Shared Score Editor Component
-interface ScoreEditorProps {
-  scores: Partial<Record<QuizCharacter, number>>;
-  onChange: (scores: Partial<Record<QuizCharacter, number>>) => void;
-}
-
-const ScoreEditor: React.FC<ScoreEditorProps> = ({ scores, onChange }) => {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: spacing.md,
-        marginTop: spacing.sm,
-      }}
-    >
-      {CHARACTERS.map((char) => (
-        <div
-          key={char}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.xs,
-            backgroundColor: 'rgba(0,0,0,0.2)',
-            padding: spacing.sm,
-            borderRadius: radius.md,
-            border: `1px solid ${colors.borderSecondary}10`,
-          }}
-        >
-          <label
-            style={{
-              fontSize: '10px',
-              color: colors.textTertiary,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              fontWeight: typography.fontWeight.bold,
-            }}
-          >
-            {char}
-          </label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-            <input
-              type="number"
-              min="0"
-              max="5"
-              value={scores[char] ?? 0}
-              onChange={(e) => onChange({ ...scores, [char]: parseInt(e.target.value) || 0 })}
-              style={{
-                flex: 1,
-                padding: spacing.md,
-                backgroundColor: colors.background,
-                border: `1px solid ${colors.borderSecondary}20`,
-                borderRadius: radius.md,
-                color: colors.textPrimary,
-                fontSize: '16px', // Prevent iOS zoom
-                textAlign: 'center',
-                fontWeight: typography.fontWeight.bold,
-              }}
-            />
-          </div>
-        </div>
-      ))}
     </div>
   );
 };
