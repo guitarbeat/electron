@@ -1,39 +1,15 @@
 import React, { memo } from 'react';
-import { Message } from '../types';
+import { Message, User } from '../types';
 import { TrashIcon } from './icons';
 import IconButton from './ui/IconButton';
-import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
+import { spacing, typography, colors, radius } from '../design-system/tokens';
 
-// * Retro iMessage-style color palette for different senders
-const SENDER_COLORS = [
-  '#007AFF', // iOS Blue
-  '#34C759', // iOS Green
-  '#FF9500', // iOS Orange
-  '#FF2D55', // iOS Pink
-  '#5856D6', // iOS Purple
-  '#FF3B30', // iOS Red
-  '#5AC8FA', // iOS Light Blue
-  '#AF52DE', // iOS Purple Pink
-  '#FF9500', // iOS Orange
-  '#FFCC00', // iOS Yellow
-];
+// iOS iMessage colors
+const IOS_BLUE = '#007AFF';
+const IOS_GRAY = '#e5e5ea';
+const IOS_TIMESTAMP = '#8e8e93';
 
-// * Generate consistent color for a sender based on their name
-const getSenderColor = (author: string, isCurrentUser: boolean): string => {
-  if (isCurrentUser) {
-    return '#007AFF'; // * Current user always gets blue (like iMessage)
-  }
-
-  // * Generate a consistent color based on the author's name
-  let hash = 0;
-  for (let i = 0; i < author.length; i++) {
-    hash = author.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % SENDER_COLORS.length;
-  return SENDER_COLORS[index];
-};
-
-// * Format time for display (simpler format for chat)
+// Format time for display (iOS style)
 const formatTime = (date: string): string => {
   try {
     const dateObj = new Date(date);
@@ -49,7 +25,7 @@ const formatTime = (date: string): string => {
       return '';
     }
 
-    // * Show time if less than 24 hours, otherwise show date
+    // Show time if less than 24 hours, otherwise show date
     if (seconds < 86400) {
       const hours = dateObj.getHours();
       const minutes = dateObj.getMinutes();
@@ -66,7 +42,7 @@ const formatTime = (date: string): string => {
 
 interface MessageItemProps {
   msg: Message;
-  currentUser: string | null;
+  currentUser: User | null;
   showSenderName: boolean;
   onDelete: (id: string) => void;
 }
@@ -79,7 +55,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
 }) => {
   const authorName = msg.author || 'Anonymous';
   const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
-  const senderColor = getSenderColor(authorName, !!isCurrentUser);
 
   return (
     <div
@@ -87,123 +62,66 @@ const MessageItem: React.FC<MessageItemProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: isCurrentUser ? 'flex-end' : 'flex-start',
-        marginBottom: showSenderName ? spacing.sm : spacing.xs,
-        maxWidth: '85%',
+        marginBottom: showSenderName ? '8px' : '2px',
+        maxWidth: '75%',
         marginLeft: isCurrentUser ? 'auto' : 0,
         marginRight: isCurrentUser ? 0 : 'auto',
       }}
     >
-      {/* Sender name and time - only show if different sender */}
+      {/* Sender name and time - iOS style */}
       {showSenderName && (
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: spacing.xs,
-            marginBottom: '2px',
-            paddingLeft: isCurrentUser ? 0 : spacing.sm,
-            paddingRight: isCurrentUser ? spacing.sm : 0,
-            alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
+            marginBottom: '4px',
+            paddingLeft: isCurrentUser ? 0 : '12px',
+            paddingRight: isCurrentUser ? '12px' : 0,
           }}
         >
-          <span
-            style={{
-              fontSize: typography.fontSize.xs,
-              fontWeight: typography.fontWeight.bold,
-              color: senderColor,
-              textShadow: `0 0 8px ${senderColor}80`,
-              letterSpacing: '0.05em',
-            }}
-          >
-            {authorName}
-          </span>
+          {!isCurrentUser && (
+            <span
+              style={{
+                fontFamily: typography.fontFamily.heading.join(', '),
+                fontSize: '12px',
+                fontWeight: typography.fontWeight.semibold,
+                color: IOS_TIMESTAMP,
+              }}
+            >
+              {authorName}
+            </span>
+          )}
           {formatTime(msg.createdAt) && (
             <span
               style={{
-                fontSize: typography.fontSize.xs,
-                color: colors.textTertiary,
-                opacity: 0.7,
-                fontFamily: 'monospace',
+                fontSize: '11px',
+                color: IOS_TIMESTAMP,
+                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
               }}
             >
-              [{formatTime(msg.createdAt)}]
+              {formatTime(msg.createdAt)}
             </span>
           )}
         </div>
       )}
 
-      {/* Speech bubble */}
+      {/* iMessage Bubble */}
       <div
-        style={{
-          position: 'relative',
-          background: isCurrentUser
-            ? senderColor
-            : `linear-gradient(135deg, ${senderColor}dd 0%, ${senderColor}cc 100%)`,
-          borderRadius: isCurrentUser
-            ? `${radius.lg} ${radius.lg} 2px ${radius.lg}`
-            : `${radius.lg} ${radius.lg} ${radius.lg} 2px`,
-          padding: `${spacing.sm} ${spacing.md}`,
-          paddingBottom: spacing.sm,
-          boxShadow: shadows.card,
-          border: `1px solid rgba(255,255,255,0.15)`,
-          maxWidth: '100%',
-          wordWrap: 'break-word',
-          overflowWrap: 'break-word',
-          transition: 'all 0.2s ease',
-        }}
+        className={`imessage-bubble ${isCurrentUser ? 'from-me' : 'from-them'}`}
         aria-label={`Message from ${authorName}`}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.02) translateY(-2px)';
-          e.currentTarget.style.boxShadow = `0 8px 16px rgba(0,0,0,0.3), 0 0 20px ${senderColor}60`;
-          e.currentTarget.style.zIndex = '1';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = shadows.card;
-          e.currentTarget.style.zIndex = 'auto';
-        }}
       >
-        {/* Speech bubble tail */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            [isCurrentUser ? 'right' : 'left']: '-6px',
-            width: 0,
-            height: 0,
-            borderStyle: 'solid',
-            ...(isCurrentUser
-              ? {
-                  borderWidth: '0 0 12px 12px',
-                  borderColor: `transparent transparent ${senderColor} transparent`,
-                }
-              : {
-                  borderWidth: '0 12px 12px 0',
-                  borderColor: `transparent ${senderColor}dd transparent transparent`,
-                }),
-            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.1))',
-          }}
-        />
-
         {/* Message content */}
         <p
           style={{
-            color: isCurrentUser
-              ? '#ffffff'
-              : senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C'
-                ? '#000000'
-                : colors.textPrimary,
+            color: isCurrentUser ? '#ffffff' : '#000000',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
             margin: 0,
-            lineHeight: typography.lineHeight.normal,
-            fontSize: typography.fontSize.base,
-            textShadow: isCurrentUser
-              ? '0 1px 2px rgba(0,0,0,0.3)'
-              : senderColor === '#FFCC00' || senderColor === '#FFEB3B' || senderColor === '#F0E68C'
-                ? '0 1px 1px rgba(255,255,255,0.3)'
-                : '0 1px 1px rgba(0,0,0,0.2)',
+            lineHeight: 1.25,
+            fontSize: '17px',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
           }}
         >
           {msg.content}
@@ -211,13 +129,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
         {/* Delete button - appears on hover */}
         <div
+          className="message-actions"
           style={{
             position: 'absolute',
-            top: `-${spacing.xs}`,
-            [isCurrentUser ? 'left' : 'right']: `-${spacing.xs}`,
-            transition: 'all 0.2s ease',
+            top: '-8px',
+            [isCurrentUser ? 'left' : 'right']: '-8px',
           }}
-          className="message-actions"
         >
           <IconButton
             onClick={() => onDelete(msg.id)}
@@ -225,13 +142,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
             title={`Delete message from ${authorName}`}
             aria-label={`Delete message from ${authorName}`}
             style={{
-              padding: spacing.xs,
+              padding: '4px',
               minWidth: '24px',
               minHeight: '24px',
               background: colors.error,
               color: '#fff',
-              boxShadow: shadows.button,
               borderRadius: radius.full,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             }}
           >
             <TrashIcon style={{ width: '12px', height: '12px' }} />
@@ -239,18 +156,95 @@ const MessageItem: React.FC<MessageItemProps> = ({
         </div>
       </div>
 
-      {/* Show delete button on hover */}
+      {/* iOS iMessage bubble styles */}
       <style>{`
-                .message-actions {
-                    opacity: 0;
-                    transform: scale(0.8);
-                }
-                div[aria-label*="Message from"]:hover .message-actions,
-                div[aria-label*="Message from"]:focus-within .message-actions {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-            `}</style>
+        .imessage-bubble {
+          position: relative;
+          border-radius: 18px;
+          padding: 8px 14px;
+          max-width: 100%;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+
+        .imessage-bubble.from-me {
+          background-color: ${IOS_BLUE};
+          border-bottom-right-radius: 4px;
+        }
+
+        .imessage-bubble.from-them {
+          background-color: ${IOS_GRAY};
+          border-bottom-left-radius: 4px;
+        }
+
+        /* Bubble tails using pseudo-elements */
+        .imessage-bubble.from-me::before {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          right: -6px;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 0 0 12px 10px;
+          border-color: transparent transparent ${IOS_BLUE} transparent;
+        }
+
+        .imessage-bubble.from-them::before {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: -6px;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 0 10px 12px 0;
+          border-color: transparent ${IOS_GRAY} transparent transparent;
+        }
+
+        /* Hide actions by default, show on hover */
+        .message-actions {
+          opacity: 0;
+          transform: scale(0.8);
+          transition: all 0.2s ease;
+        }
+
+        .imessage-bubble:hover .message-actions {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        /* Message slide-in animation */
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .imessage-bubble.from-me {
+          animation: slideInRight 0.2s ease-out;
+        }
+
+        .imessage-bubble.from-them {
+          animation: slideInLeft 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
