@@ -1,14 +1,40 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 import { Message, User } from '../types';
 import { TrashIcon } from './icons';
 import IconButton from './ui/IconButton';
 import { spacing, typography, colors, radius } from '../design-system/tokens';
 
-// iOS iMessage colors with playful palette
-const BUBBLE_COLORS = {
-  me: '#ff69b4', // Hot pink for current user
-  them: '#87cefa', // Light sky blue for others
-  timestamp: '#9370db', // Medium purple for timestamps
+// Available styles
+const STYLE_VARIANTS = [
+  {
+    gradient: colors.gradientBlue,
+    tailLeft: '#87cefa',
+    tailRight: '#a0d8ff',
+  },
+  {
+    gradient: colors.gradientPink,
+    tailLeft: '#ff69b4',
+    tailRight: '#ff8bb3',
+  },
+  {
+    gradient: colors.gradientPurple,
+    tailLeft: '#9370db',
+    tailRight: '#ab87e8',
+  },
+];
+
+const getStyleForUser = (username: string) => {
+  // Explicit overrides for main users
+  if (username === 'Aaron') return STYLE_VARIANTS[0]; // Blue
+  if (username === 'Electra') return STYLE_VARIANTS[1]; // Pink
+
+  // Deterministic selection for others based on username hash
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % STYLE_VARIANTS.length;
+  return STYLE_VARIANTS[index];
 };
 
 // Format time for display (iOS style)
@@ -55,8 +81,31 @@ const MessageItem: React.FC<MessageItemProps> = ({
   showSenderName,
   onDelete,
 }) => {
+  const [showHeart, setShowHeart] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const authorName = msg.author || 'Anonymous';
   const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
+
+  // Determine styles based on author
+  const userStyle = getStyleForUser(authorName);
+
+  const handleHeart = () => {
+    setShowHeart(true);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => setShowHeart(false), 1000);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div
@@ -88,7 +137,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 fontFamily: typography.fontFamily.heading.join(', '),
                 fontSize: '12px',
                 fontWeight: typography.fontWeight.semibold,
-                color: BUBBLE_COLORS.timestamp,
+                color: userStyle.tailLeft, // Use user's color for name
               }}
             >
               {authorName}
@@ -98,7 +147,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
             <span
               style={{
                 fontSize: '11px',
-                color: BUBBLE_COLORS.timestamp,
+                color: colors.textTertiary,
                 fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
               }}
             >
@@ -112,6 +161,14 @@ const MessageItem: React.FC<MessageItemProps> = ({
       <div
         className={`imessage-bubble ${isCurrentUser ? 'from-me' : 'from-them'}`}
         aria-label={`Message from ${authorName}`}
+        onClick={handleHeart}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleHeart();
+          }
+        }}
       >
         {/* Message content */}
         <p
@@ -129,6 +186,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
           {msg.content}
         </p>
 
+        {/* Heart Reaction */}
+        {showHeart && (
+          <div className="heart-reaction">
+            ❤️
+          </div>
+        )}
+
         {/* Delete button - appears on hover */}
         <div
           className="message-actions"
@@ -136,10 +200,14 @@ const MessageItem: React.FC<MessageItemProps> = ({
             position: 'absolute',
             top: '-8px',
             [isCurrentUser ? 'left' : 'right']: '-8px',
+            zIndex: 10,
           }}
         >
           <IconButton
-            onClick={() => onDelete(msg.id)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent heart reaction
+              onDelete(msg.id);
+            }}
             variant="danger"
             title={`Delete message from ${authorName}`}
             aria-label={`Delete message from ${authorName}`}
@@ -167,15 +235,22 @@ const MessageItem: React.FC<MessageItemProps> = ({
           max-width: 100%;
           word-wrap: break-word;
           overflow-wrap: break-word;
+          cursor: pointer;
+          transition: transform 0.1s ease;
+          background-image: ${userStyle.gradient};
+          /* Fallback background color */
+          background-color: ${userStyle.tailRight};
+        }
+
+        .imessage-bubble:active {
+          transform: scale(0.98);
         }
 
         .imessage-bubble.from-me {
-          background-color: ${BUBBLE_COLORS.me};
           border-bottom-right-radius: 4px;
         }
 
         .imessage-bubble.from-them {
-          background-color: ${BUBBLE_COLORS.them};
           border-bottom-left-radius: 4px;
         }
 
@@ -189,7 +264,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           height: 0;
           border-style: solid;
           border-width: 0 0 12px 10px;
-          border-color: transparent transparent ${BUBBLE_COLORS.me} transparent;
+          border-color: transparent transparent ${userStyle.tailRight} transparent;
         }
 
         .imessage-bubble.from-them::before {
@@ -201,7 +276,38 @@ const MessageItem: React.FC<MessageItemProps> = ({
           height: 0;
           border-style: solid;
           border-width: 0 10px 12px 0;
-          border-color: transparent ${BUBBLE_COLORS.them} transparent transparent;
+          border-color: transparent ${userStyle.tailLeft} transparent transparent;
+        }
+
+        /* Heart Animation */
+        .heart-reaction {
+          position: absolute;
+          top: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 24px;
+          pointer-events: none;
+          animation: floatUp 1s ease-out forwards;
+          z-index: 20;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes floatUp {
+          0% {
+            opacity: 0;
+            transform: translate(-50%, 10px) scale(0.5);
+          }
+          20% {
+            opacity: 1;
+            transform: translate(-50%, -10px) scale(1.2);
+          }
+          40% {
+            transform: translate(-50%, -15px) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(-50%, -50px);
+          }
         }
 
         /* Hide actions by default, show on hover */
@@ -214,6 +320,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
         .imessage-bubble:hover .message-actions {
           opacity: 1;
           transform: scale(1);
+        }
+
+        /* Show actions on focus for keyboard users */
+        .imessage-bubble:focus-within .message-actions {
+            opacity: 1;
+            transform: scale(1);
         }
 
         /* Message slide-in animation */
