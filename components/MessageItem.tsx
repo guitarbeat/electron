@@ -4,10 +4,12 @@ import { TrashIcon } from './icons';
 import IconButton from './ui/IconButton';
 import { spacing, typography, colors, radius } from '../design-system/tokens';
 
-// iOS iMessage colors
-const IOS_BLUE = '#007AFF';
-const IOS_GRAY = '#e5e5ea';
-const IOS_TIMESTAMP = '#8e8e93';
+// iOS iMessage colors with playful palette
+const BUBBLE_COLORS = {
+  me: '#ff69b4', // Hot pink for current user
+  them: '#87cefa', // Light sky blue for others
+  timestamp: '#9370db', // Medium purple for timestamps
+};
 
 // Format time for display (iOS style)
 const formatTime = (date: string): string => {
@@ -86,7 +88,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 fontFamily: typography.fontFamily.heading.join(', '),
                 fontSize: '12px',
                 fontWeight: typography.fontWeight.semibold,
-                color: IOS_TIMESTAMP,
+                color: BUBBLE_COLORS.timestamp,
               }}
             >
               {authorName}
@@ -96,7 +98,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
             <span
               style={{
                 fontSize: '11px',
-                color: IOS_TIMESTAMP,
+                color: BUBBLE_COLORS.timestamp,
                 fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
               }}
             >
@@ -114,7 +116,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
         {/* Message content */}
         <p
           style={{
-            color: isCurrentUser ? '#ffffff' : '#000000',
+            color: '#ffffff',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
@@ -168,12 +170,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
         }
 
         .imessage-bubble.from-me {
-          background-color: ${IOS_BLUE};
+          background-color: ${BUBBLE_COLORS.me};
           border-bottom-right-radius: 4px;
         }
 
         .imessage-bubble.from-them {
-          background-color: ${IOS_GRAY};
+          background-color: ${BUBBLE_COLORS.them};
           border-bottom-left-radius: 4px;
         }
 
@@ -187,7 +189,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           height: 0;
           border-style: solid;
           border-width: 0 0 12px 10px;
-          border-color: transparent transparent ${IOS_BLUE} transparent;
+          border-color: transparent transparent ${BUBBLE_COLORS.me} transparent;
         }
 
         .imessage-bubble.from-them::before {
@@ -199,7 +201,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           height: 0;
           border-style: solid;
           border-width: 0 10px 12px 0;
-          border-color: transparent ${IOS_GRAY} transparent transparent;
+          border-color: transparent ${BUBBLE_COLORS.them} transparent transparent;
         }
 
         /* Hide actions by default, show on hover */
