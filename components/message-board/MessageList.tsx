@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { colors, spacing, typography, shadows, radius } from '../../design-system/tokens';
+import { spacing, typography, colors, radius } from '../../design-system/tokens';
 import { MessageIcon, ChevronDownIcon } from '../icons';
 import Card from '../ui/Card';
 import IconButton from '../ui/IconButton';
@@ -28,30 +28,29 @@ const MessageList: React.FC<MessageListProps> = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const previousMessagesLengthRef = useRef<number>(0);
 
-  // * Check scroll position to show/hide scroll-to-bottom button
+  // Check scroll position to show/hide scroll-to-bottom button
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
     const checkScrollPosition = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100; // * 100px threshold
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
       setShowScrollToBottom(!isNearBottom);
     };
 
     container.addEventListener('scroll', checkScrollPosition);
-    checkScrollPosition(); // * Initial check
+    checkScrollPosition();
 
     return () => container.removeEventListener('scroll', checkScrollPosition);
   }, [messages]);
 
-  // * Auto-scroll to bottom when new messages arrive (only if already near bottom)
+  // Auto-scroll to bottom when new messages arrive (only if already near bottom)
   useEffect(() => {
     if (messages && messages.length > previousMessagesLengthRef.current) {
       const container = messagesContainerRef.current;
       if (container) {
         const { scrollTop, scrollHeight, clientHeight } = container;
-        // Increased threshold slightly and added a small delay to ensure DOM is ready
         const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
 
         if (isNearBottom) {
@@ -61,7 +60,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 top: container.scrollHeight,
                 behavior: 'smooth',
               });
-            }, 50); // Faster response
+            }, 50);
           });
         }
       }
@@ -69,7 +68,7 @@ const MessageList: React.FC<MessageListProps> = ({
     previousMessagesLengthRef.current = messages?.length || 0;
   }, [messages]);
 
-  // * Scroll to bottom function
+  // Scroll to bottom function
   const scrollToBottom = () => {
     const container = messagesContainerRef.current;
     if (container) {
@@ -86,7 +85,7 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   };
 
-  // * Memoize the reversed messages array to avoid re-reversing on every render
+  // Memoize the reversed messages array
   const reversedMessages = useMemo(() => {
     return messages ? [...messages].reverse() : [];
   }, [messages]);
@@ -101,35 +100,26 @@ const MessageList: React.FC<MessageListProps> = ({
         padding: spacing.md,
         position: 'relative',
         minHeight: 0,
-        // * Custom scrollbar styling
-        scrollbarWidth: 'thin',
-        scrollbarColor: `${colors.secondary}40 transparent`,
+        backgroundColor: '#ffffff',
+        WebkitOverflowScrolling: 'touch',
       }}
-      className="messages-container"
+      className="messages-container-ios"
     >
       <style>{`
-          .messages-container::-webkit-scrollbar {
-              width: 12px;
-          }
-          .messages-container::-webkit-scrollbar-track {
-              background: #1a1a2e;
-              border-left: 1px solid #333;
-          }
-          .messages-container::-webkit-scrollbar-thumb {
-              background: #404040;
-              border: 1px solid #808080;
-              border-radius: 0;
-          }
-          .messages-container::-webkit-scrollbar-thumb:hover {
-              background: #505050;
-          }
-          @keyframes pulse-glow {
-              0% { filter: drop-shadow(0 0 10px ${colors.secondary}40); transform: scale(1); }
-              50% { filter: drop-shadow(0 0 20px ${colors.secondary}80); transform: scale(1.05); }
-              100% { filter: drop-shadow(0 0 10px ${colors.secondary}40); transform: scale(1); }
-          }
+        .messages-container-ios {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .messages-container-ios::-webkit-scrollbar {
+          display: none;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
-      {/* Scroll to Bottom Button */}
+
+      {/* Scroll to Bottom Button - iOS style */}
       {showScrollToBottom && (
         <div
           style={{
@@ -138,35 +128,40 @@ const MessageList: React.FC<MessageListProps> = ({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,
-            display: 'flex',
-            justifyContent: 'center',
           }}
         >
-          <IconButton
+          <button
             onClick={scrollToBottom}
             aria-label="Scroll to bottom"
             style={{
-              background: colors.secondary,
-              boxShadow: shadows.card,
-              borderRadius: radius.full,
+              background: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+              borderRadius: '50%',
               padding: spacing.sm,
-              minWidth: '40px',
-              minHeight: '40px',
+              width: '40px',
+              height: '40px',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
           >
             <ChevronDownIcon style={{ width: '20px', height: '20px', color: '#ffffff' }} />
-          </IconButton>
+          </button>
         </div>
       )}
 
-      {/* Message List - Retro iMessage Style */}
+      {/* Message List */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: spacing.md,
-          opacity: isSubmitting ? 0.5 : 1,
+          gap: '2px',
+          opacity: isSubmitting ? 0.7 : 1,
           pointerEvents: isSubmitting ? 'none' : 'auto',
           transition: 'opacity 0.2s ease',
         }}
@@ -182,25 +177,35 @@ const MessageList: React.FC<MessageListProps> = ({
                 key={i}
                 style={{
                   padding: `${spacing.sm} ${spacing.md}`,
-                  height: '50px',
-                  background: colors.surface,
-                  borderRadius: radius.lg,
+                  height: '40px',
+                  background: '#e5e5ea',
+                  borderRadius: '18px',
                   opacity: 0.5,
+                  maxWidth: '60%',
+                  marginLeft: i % 2 === 0 ? 'auto' : 0,
+                  animation: 'fadeIn 0.3s ease-out',
                 }}
               />
             ))}
           </div>
         )}
+        
         {error && (
-          <Card variant="default">
-            <div
-              style={{ textAlign: 'center', padding: spacing.lg, color: colors.error }}
-              role="alert"
-              aria-live="assertive"
-            >
-              <p style={{ margin: 0 }}>Error loading messages. Please refresh the page.</p>
-            </div>
-          </Card>
+          <div
+            style={{
+              textAlign: 'center',
+              padding: spacing.lg,
+              color: '#ff3b30',
+              backgroundColor: 'rgba(255, 59, 48, 0.1)',
+              borderRadius: '12px',
+            }}
+            role="alert"
+            aria-live="assertive"
+          >
+            <p style={{ margin: 0, fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+              Error loading messages. Please refresh the page.
+            </p>
+          </div>
         )}
 
         {reversedMessages.map((msg, index) => {
@@ -219,13 +224,12 @@ const MessageList: React.FC<MessageListProps> = ({
             />
           );
         })}
+
         {messages?.length === 0 && !isLoading && (
           <div
             style={{
               textAlign: 'center',
               padding: spacing['2xl'],
-              color: colors.textTertiary,
-              opacity: 0.8,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -236,33 +240,40 @@ const MessageList: React.FC<MessageListProps> = ({
           >
             <div
               style={{
-                animation: 'pulse-glow 3s infinite ease-in-out',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                backgroundColor: '#007AFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: spacing.md,
               }}
             >
               <MessageIcon
                 style={{
-                  width: '64px',
-                  height: '64px',
-                  marginBottom: spacing.md,
-                  color: colors.secondary,
+                  width: '32px',
+                  height: '32px',
+                  color: '#ffffff',
                 }}
               />
             </div>
             <p
               style={{
+                fontFamily: typography.fontFamily.heading.join(', '),
                 fontSize: typography.fontSize.lg,
                 margin: 0,
-                color: colors.textSecondary,
-                textShadow: shadows.textGlowBlue,
+                color: '#000000',
               }}
             >
-              No messages yet...
+              No messages yet
             </p>
             <p
               style={{
-                fontSize: typography.fontSize.sm,
-                color: colors.textTertiary,
+                fontSize: '15px',
+                color: '#8e8e93',
                 marginTop: spacing.xs,
+                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
               }}
             >
               Be the first to start the conversation!
