@@ -24,7 +24,7 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
   actionLabel = 'Go',
 }) => {
   const isMobile = useMediaQuery(breakpoints.sm);
-  const getGradient = () => {
+  const gradient = React.useMemo(() => {
     switch (variant) {
       case 'accent':
         return colors.gradientPink;
@@ -33,9 +33,7 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
       default:
         return 'linear-gradient(135deg, rgba(27, 40, 69, 0.8) 0%, rgba(13, 20, 38, 0.9) 100%)';
     }
-  };
-
-  const gradient = React.useMemo(getGradient, [variant]);
+  }, [variant]);
 
   return (
     <Card
@@ -137,137 +135,139 @@ interface SuggestionItemCardProps {
   isProcessing: boolean;
 }
 
-export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
-  suggestion,
-  onAccept,
-  onReject,
-  isProcessing,
-}) => {
-  const isMobile = useMediaQuery(breakpoints.sm);
-  return (
-    <Card
-      style={{
-        padding: isMobile ? spacing.sm : spacing.md,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'rgba(27, 40, 69, 0.4)',
-        border: `1px solid ${colors.borderSecondary}20`,
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: isMobile ? '160px' : '180px',
-      }}
-    >
-      <div
-        style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm }}
+export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = React.memo(
+  ({ suggestion, onAccept, onReject, isProcessing }) => {
+    const isMobile = useMediaQuery(breakpoints.sm);
+    return (
+      <Card
+        style={{
+          padding: isMobile ? spacing.sm : spacing.md,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'rgba(27, 40, 69, 0.4)',
+          border: `1px solid ${colors.borderSecondary}20`,
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: isMobile ? '160px' : '180px',
+        }}
       >
         <div
           style={{
-            padding: '6px',
-            borderRadius: radius.full,
-            backgroundColor: colors.accent + '20',
-            color: colors.accent,
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.sm,
+            marginBottom: spacing.sm,
           }}
         >
-          <TicketIcon style={{ width: '16px', height: '16px' }} />
+          <div
+            style={{
+              padding: '6px',
+              borderRadius: radius.full,
+              backgroundColor: colors.accent + '20',
+              color: colors.accent,
+            }}
+          >
+            <TicketIcon style={{ width: '16px', height: '16px' }} />
+          </div>
+          <span
+            style={{
+              fontSize: '0.65rem',
+              fontWeight: typography.fontWeight.bold,
+              color: colors.textTertiary,
+              textTransform: 'uppercase',
+            }}
+          >
+            Suggestion
+          </span>
         </div>
-        <span
+
+        <h3
           style={{
-            fontSize: '0.65rem',
+            fontSize: typography.fontSize.base,
             fontWeight: typography.fontWeight.bold,
-            color: colors.textTertiary,
-            textTransform: 'uppercase',
+            color: colors.textPrimary,
+            margin: 0,
+            marginBottom: spacing.xs,
+            lineHeight: 1.2,
+            whiteSpace: 'normal',
+            wordBreak: 'normal',
+            overflowWrap: 'break-word',
           }}
         >
-          Suggestion
-        </span>
-      </div>
+          {suggestion.title}
+        </h3>
 
-      <h3
-        style={{
-          fontSize: typography.fontSize.base,
-          fontWeight: typography.fontWeight.bold,
-          color: colors.textPrimary,
-          margin: 0,
-          marginBottom: spacing.xs,
-          lineHeight: 1.2,
-          whiteSpace: 'normal',
-          wordBreak: 'normal',
-          overflowWrap: 'break-word',
-        }}
-      >
-        {suggestion.title}
-      </h3>
-
-      <p
-        style={{
-          fontSize: typography.fontSize.xs,
-          color: colors.textSecondary,
-          margin: 0,
-          marginBottom: spacing.sm,
-        }}
-      >
-        By <span style={{ color: colors.accent }}>{suggestion.suggestedBy}</span>
-      </p>
-
-      {suggestion.reason && (
         <p
           style={{
             fontSize: typography.fontSize.xs,
-            color: colors.textTertiary,
-            fontStyle: 'italic',
-            lineHeight: 1.4,
+            color: colors.textSecondary,
             margin: 0,
-            marginBottom: spacing.md,
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
+            marginBottom: spacing.sm,
           }}
         >
-          "{suggestion.reason}"
+          By <span style={{ color: colors.accent }}>{suggestion.suggestedBy}</span>
         </p>
-      )}
 
-      <div style={{ display: 'flex', gap: spacing.sm, marginTop: 'auto' }}>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => onAccept(suggestion)}
-          disabled={isProcessing}
-          isLoading={isProcessing}
-          style={{
-            flex: 1,
-            backgroundColor: colors.success,
-            fontSize: '11px',
-            fontWeight: typography.fontWeight.bold,
-            height: '32px',
-            padding: 0,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          }}
-        >
-          <CheckIcon style={{ width: '14px', marginRight: '4px' }} />
-          Accept
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => onReject(suggestion)}
-          disabled={isProcessing}
-          style={{
-            flex: 1,
-            fontSize: '11px',
-            height: '32px',
-            padding: 0,
-            opacity: 0.8,
-            backgroundColor: 'rgba(0,0,0,0.3)',
-            borderColor: 'rgba(255,255,255,0.1)',
-          }}
-        >
-          <TrashIcon style={{ width: '14px', marginRight: '4px' }} />
-          Reject
-        </Button>
-      </div>
-    </Card>
-  );
-};
+        {suggestion.reason && (
+          <p
+            style={{
+              fontSize: typography.fontSize.xs,
+              color: colors.textTertiary,
+              fontStyle: 'italic',
+              lineHeight: 1.4,
+              margin: 0,
+              marginBottom: spacing.md,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            "{suggestion.reason}"
+          </p>
+        )}
+
+        <div style={{ display: 'flex', gap: spacing.sm, marginTop: 'auto' }}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onAccept(suggestion)}
+            disabled={isProcessing}
+            isLoading={isProcessing}
+            style={{
+              flex: 1,
+              backgroundColor: colors.success,
+              fontSize: '11px',
+              fontWeight: typography.fontWeight.bold,
+              height: '32px',
+              padding: 0,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            <CheckIcon style={{ width: '14px', marginRight: '4px' }} />
+            Accept
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onReject(suggestion)}
+            disabled={isProcessing}
+            style={{
+              flex: 1,
+              fontSize: '11px',
+              height: '32px',
+              padding: 0,
+              opacity: 0.8,
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              borderColor: 'rgba(255,255,255,0.1)',
+            }}
+          >
+            <TrashIcon style={{ width: '14px', marginRight: '4px' }} />
+            Reject
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+);

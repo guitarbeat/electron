@@ -103,7 +103,7 @@ const Watchlist: React.FC = () => {
     // Check if any movie just became watched by both
     for (const movie of movies) {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current.find(m => m.id === movie.id);
+        const prevMovie = previousMoviesRef.current.find((m) => m.id === movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           // Movie just became watched by both!
           setShowConfetti(true);
@@ -180,9 +180,13 @@ const Watchlist: React.FC = () => {
     [toggleWatched, currentUser]
   );
 
-  const handleDeleteMovie = (movie: Movie) => {
+  const handleDeleteMovie = useCallback((movie: Movie) => {
     setMovieToDelete(movie);
-  };
+  }, []);
+
+  const handleFixMatch = useCallback((movie: Movie) => {
+    setMovieToFix(movie);
+  }, []);
 
   const confirmDelete = async () => {
     if (movieToDelete) {
@@ -196,30 +200,36 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  const handleAcceptSuggestion = async (suggestion: MovieSuggestion) => {
-    setProcessingSuggestionId(suggestion.id);
-    try {
-      await acceptSuggestion(suggestion.id, currentUser!);
-      setToast({ message: `"${suggestion.title}" added to watchlist!`, type: 'success' });
-      refreshMovies();
-    } catch (err: any) {
-      setToast({ message: `Failed to accept suggestion: ${err.message}`, type: 'error' });
-    } finally {
-      setProcessingSuggestionId(null);
-    }
-  };
+  const handleAcceptSuggestion = useCallback(
+    async (suggestion: MovieSuggestion) => {
+      setProcessingSuggestionId(suggestion.id);
+      try {
+        await acceptSuggestion(suggestion.id, currentUser!);
+        setToast({ message: `"${suggestion.title}" added to watchlist!`, type: 'success' });
+        refreshMovies();
+      } catch (err: any) {
+        setToast({ message: `Failed to accept suggestion: ${err.message}`, type: 'error' });
+      } finally {
+        setProcessingSuggestionId(null);
+      }
+    },
+    [acceptSuggestion, currentUser, refreshMovies]
+  );
 
-  const handleRejectSuggestion = async (suggestion: MovieSuggestion) => {
-    setProcessingSuggestionId(suggestion.id);
-    try {
-      await rejectSuggestion(suggestion.id, currentUser!);
-      setToast({ message: 'Suggestion rejected', type: 'info' });
-    } catch (err: any) {
-      setToast({ message: `Failed to reject suggestion: ${err.message}`, type: 'error' });
-    } finally {
-      setProcessingSuggestionId(null);
-    }
-  };
+  const handleRejectSuggestion = useCallback(
+    async (suggestion: MovieSuggestion) => {
+      setProcessingSuggestionId(suggestion.id);
+      try {
+        await rejectSuggestion(suggestion.id, currentUser!);
+        setToast({ message: 'Suggestion rejected', type: 'info' });
+      } catch (err: any) {
+        setToast({ message: `Failed to reject suggestion: ${err.message}`, type: 'error' });
+      } finally {
+        setProcessingSuggestionId(null);
+      }
+    },
+    [rejectSuggestion, currentUser]
+  );
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -323,7 +333,7 @@ const Watchlist: React.FC = () => {
     <div style={{ minHeight: '100vh', background: colors.background }}>
       {/* Confetti celebration */}
       {showConfetti && <Confetti />}
-      
+
       <Header
         currentUser={currentUser!}
         onLogout={handleLogout}
@@ -511,7 +521,7 @@ const Watchlist: React.FC = () => {
                     currentUser={currentUser!}
                     onToggle={handleToggleWatched}
                     onDelete={handleDeleteMovie}
-                    onFixMatch={(movie) => setMovieToFix(movie)}
+                    onFixMatch={handleFixMatch}
                     animationDelay="0s"
                     layout="grid"
                   />
@@ -563,7 +573,7 @@ const Watchlist: React.FC = () => {
                       currentUser={currentUser!}
                       onToggle={handleToggleWatched}
                       onDelete={handleDeleteMovie}
-                      onFixMatch={(movie) => setMovieToFix(movie)}
+                      onFixMatch={handleFixMatch}
                       animationDelay={`${index * 0.05}s`}
                       layout="list"
                     />
