@@ -5,7 +5,7 @@ import ChatWindow from './message-board/ChatWindow';
 import MessageList from './message-board/MessageList';
 import MessageInput from './message-board/MessageInput';
 import Toast from './ui/Toast';
-import { spacing, colors, typography, shadows } from '../design-system/tokens';
+import { spacing } from '../design-system/tokens';
 
 const MessageBoard: React.FC = () => {
   const { currentUser } = useUser();
@@ -15,11 +15,11 @@ const MessageBoard: React.FC = () => {
   return (
     <div
       style={{
-        maxWidth: '64rem', // Wider for chat window
+        maxWidth: '600px',
         margin: '0 auto',
         padding: spacing.md,
-        height: '400px', // Fixed height for chat room
-        maxHeight: '70vh', // Responsive max height
+        height: '500px',
+        maxHeight: '80vh',
         display: 'flex',
         flexDirection: 'column',
         marginBottom: spacing.xl,
@@ -30,41 +30,6 @@ const MessageBoard: React.FC = () => {
       {toast && <Toast message={toast.message} type={toast.type} />}
 
       <ChatWindow>
-        {/* Messages Header (Inside Window) */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: spacing.sm,
-            borderBottom: `1px solid ${colors.borderInset}`,
-            backgroundColor: colors.surface,
-          }}
-        >
-          <h2
-            style={{
-              fontSize: typography.fontSize.lg,
-              fontWeight: typography.fontWeight.bold,
-              color: colors.textPrimary,
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.xs,
-              textShadow: shadows.textGlowBlue,
-            }}
-          >
-            #general
-          </h2>
-          <span
-            style={{
-              fontSize: typography.fontSize.xs,
-              color: colors.textTertiary,
-            }}
-          >
-            Topic: Movie Night Planning 🍿
-          </span>
-        </div>
-
         <MessageList
           messages={messages}
           isLoading={isLoading}

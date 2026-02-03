@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Spinner } from '../icons';
-import { colors, spacing, typography, borders, radius } from '../../design-system/tokens';
+import { spacing, typography, colors, radius } from '../../design-system/tokens';
 import { User } from '../../types';
 
 interface MessageInputProps {
@@ -24,14 +24,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // * Auto-resize textarea based on content
+  // Auto-resize textarea based on content
   useEffect(() => {
     const textarea = contentTextareaRef.current;
     if (textarea) {
       requestAnimationFrame(() => {
         textarea.style.height = 'auto';
-        const newHeight = Math.min(textarea.scrollHeight, 120); // * Max 120px (matches maxHeight)
-        textarea.style.height = `${Math.max(newHeight, 44)}px`; // * Min 44px
+        const newHeight = Math.min(textarea.scrollHeight, 100);
+        textarea.style.height = `${Math.max(newHeight, 36)}px`;
       });
     }
   }, [content]);
@@ -40,7 +40,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
     e.preventDefault();
     setSubmitError(null);
 
-    // * Blur active element to dismiss iOS keyboard before validation
+    // Blur active element to dismiss iOS keyboard before validation
     const activeElement = document.activeElement as HTMLElement;
     if (activeElement && activeElement.blur) {
       activeElement.blur();
@@ -48,7 +48,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
     if (!content.trim()) {
       setSubmitError('Please enter a message');
-      // * Delay focus to allow keyboard to dismiss on iOS
       setTimeout(() => {
         contentTextareaRef.current?.focus();
       }, 100);
@@ -68,9 +67,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
     if (!isSubmitting) {
       try {
         await onSend(author, content);
-        setContent(''); // Clear content on success
+        setContent('');
 
-        // * Delay focus to allow keyboard to dismiss on iOS after submission
         setTimeout(() => {
           contentTextareaRef.current?.focus();
         }, 300);
@@ -82,7 +80,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // * Allow submitting with Ctrl+Enter or Cmd+Enter
+    // Allow submitting with Ctrl+Enter or Cmd+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       const form = e.currentTarget.form;
@@ -92,12 +90,15 @@ const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
+  const showSendButton = content.trim().length > 0;
+
   return (
     <div
       style={{
-        background: colors.surface,
-        padding: spacing.sm,
-        borderTop: `1px solid ${colors.borderInset}`,
+        background: '#f5f5f5',
+        padding: `${spacing.sm} ${spacing.md}`,
+        borderTop: '0.5px solid rgba(0, 0, 0, 0.1)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
       }}
     >
       <form
@@ -106,22 +107,23 @@ const MessageInput: React.FC<MessageInputProps> = ({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: spacing.sm,
+          gap: spacing.xs,
         }}
       >
-        {/* Author field - compact inline */}
+        {/* Author field - iOS style when no current user */}
         {!currentUser && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs }}>
             <label
               htmlFor="message-author"
               style={{
-                fontSize: typography.fontSize.xs,
-                color: colors.textTertiary,
+                fontSize: '13px',
+                color: '#8e8e93',
                 whiteSpace: 'nowrap',
-                fontWeight: typography.fontWeight.bold,
+                fontWeight: 500,
+                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
               }}
             >
-              FROM:
+              From:
             </label>
             <input
               id="message-author"
@@ -132,36 +134,33 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 setAuthor(value);
                 setSubmitError(null);
               }}
-              placeholder="YOUR NAME"
+              placeholder="Your name"
               maxLength={MAX_AUTHOR_LENGTH}
               disabled={isSubmitting}
               aria-label="Your name"
               style={{
                 flex: 1,
-                padding: `${spacing.xs} ${spacing.sm}`,
-                backgroundColor: '#000',
-                border: borders.inputInset,
-                borderRadius: 0, // Retro sharp corners
-                color: colors.secondary,
-                fontSize: typography.fontSize.sm,
-                fontFamily: typography.fontFamily.mono.join(', '),
+                padding: '8px 12px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e5ea',
+                borderRadius: '18px',
+                color: '#000000',
+                fontSize: '15px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                 outline: 'none',
-                transition: 'all 0.2s ease',
-                letterSpacing: '0.05em',
+                transition: 'border-color 0.2s ease',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = colors.secondary;
-                e.currentTarget.style.boxShadow = `0 0 8px ${colors.secondary}40`;
+                e.currentTarget.style.borderColor = '#007AFF';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = colors.borderInset;
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = '#e5e5ea';
               }}
             />
           </div>
         )}
 
-        {/* Message input and send button - chat bar style */}
+        {/* Message input bar - iOS iMessage style */}
         <div
           style={{
             display: 'flex',
@@ -169,6 +168,31 @@ const MessageInput: React.FC<MessageInputProps> = ({
             alignItems: 'flex-end',
           }}
         >
+          {/* Camera button placeholder */}
+          <button
+            type="button"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: 'transparent',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#8e8e93',
+              flexShrink: 0,
+            }}
+            aria-label="Camera"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+          </button>
+
+          {/* Text input */}
           <div style={{ flex: 1, position: 'relative' }}>
             <label htmlFor="message-content" className="sr-only">
               Message content
@@ -183,7 +207,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 setSubmitError(null);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
+              placeholder="iMessage"
               maxLength={MAX_MESSAGE_LENGTH}
               rows={1}
               disabled={isSubmitting}
@@ -191,117 +215,95 @@ const MessageInput: React.FC<MessageInputProps> = ({
               aria-invalid={submitError ? 'true' : 'false'}
               style={{
                 width: '100%',
-                padding: `${spacing.sm} ${spacing.md}`,
-                backgroundColor: '#fff', // White background for classic chat feel
-                border: borders.inputInset,
-                borderRadius: 0, // Sharp corners
-                color: '#000', // Black text
-                fontSize: typography.fontSize.base,
-                fontFamily: 'Arial, sans-serif', // Classic chat font
-                lineHeight: typography.lineHeight.normal,
+                padding: '8px 40px 8px 16px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e5ea',
+                borderRadius: '18px',
+                color: '#000000',
+                fontSize: '17px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+                lineHeight: 1.25,
                 resize: 'none',
-                minHeight: '44px',
-                maxHeight: '120px',
+                minHeight: '36px',
+                maxHeight: '100px',
                 outline: 'none',
-                transition: 'all 0.2s ease',
+                transition: 'border-color 0.2s ease',
                 overflow: 'hidden',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = colors.accent;
-                e.currentTarget.style.boxShadow = `inset 0 0 4px rgba(0,0,0,0.2)`;
+                e.currentTarget.style.borderColor = '#007AFF';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = colors.borderInset;
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = '#e5e5ea';
               }}
             />
 
-            {/* Character count - subtle */}
-            {content.length > 0 && (
+            {/* Character count - subtle iOS style */}
+            {content.length > MAX_MESSAGE_LENGTH * 0.8 && (
               <div
                 style={{
                   position: 'absolute',
-                  bottom: spacing.xs,
-                  right: spacing.sm,
-                  fontSize: typography.fontSize.xs,
-                  color:
-                    content.length > MAX_MESSAGE_LENGTH * 0.9
-                      ? content.length >= MAX_MESSAGE_LENGTH
-                        ? colors.error
-                        : colors.warning
-                      : '#666',
+                  bottom: '8px',
+                  right: '12px',
+                  fontSize: '11px',
+                  color: content.length >= MAX_MESSAGE_LENGTH ? '#ff3b30' : '#8e8e93',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
                   pointerEvents: 'none',
-                  opacity: 0.6,
-                  fontFamily: typography.fontFamily.mono.join(', '),
                 }}
               >
-                {content.length}/{MAX_MESSAGE_LENGTH}
+                {MAX_MESSAGE_LENGTH - content.length}
               </div>
             )}
           </div>
 
-          {/* Send button - Retro Windows Button */}
+          {/* Send button - iOS blue circle with arrow */}
           <button
             type="submit"
             disabled={!content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
             aria-label="Send message"
             style={{
-              width: '60px',
-              height: '44px',
-              borderRadius: 0, // Sharp corners
-              backgroundColor: '#c0c0c0',
-              border: '2px outset #fff',
-              borderRightColor: '#404040',
-              borderBottomColor: '#404040',
-              color: '#000',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: showSendButton ? '#007AFF' : 'transparent',
+              border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor:
-                content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting
-                  ? 'pointer'
-                  : 'not-allowed',
-              boxShadow: '1px 1px 0px #000',
-              transition: 'all 0.1s ease',
-              fontWeight: 'bold',
-              fontSize: '14px',
-            }}
-            onMouseDown={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.border = '2px inset #fff';
-                e.currentTarget.style.borderRightColor = '#dfdfdf';
-                e.currentTarget.style.borderBottomColor = '#dfdfdf';
-                e.currentTarget.style.transform = 'translate(1px, 1px)';
-              }
-            }}
-            onMouseUp={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.border = '2px outset #fff';
-                e.currentTarget.style.borderRightColor = '#404040';
-                e.currentTarget.style.borderBottomColor = '#404040';
-                e.currentTarget.style.transform = 'translate(0, 0)';
-              }
+              cursor: content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+              flexShrink: 0,
+              opacity: showSendButton ? 1 : 0.5,
+              transform: showSendButton ? 'scale(1)' : 'scale(0.9)',
             }}
           >
             {isSubmitting ? (
-              <Spinner style={{ width: '16px', height: '16px', color: '#000' }} />
+              <Spinner style={{ width: '18px', height: '18px', color: '#fff' }} />
             ) : (
-              'Send'
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path 
+                  d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" 
+                  stroke={showSendButton ? '#ffffff' : '#8e8e93'} 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
             )}
           </button>
         </div>
 
-        {/* Error message */}
+        {/* Error message - iOS style */}
         {submitError && (
           <div
             id="submit-error"
             style={{
-              color: colors.error,
-              fontSize: typography.fontSize.xs,
+              color: '#ff3b30',
+              fontSize: '13px',
               padding: `${spacing.xs} ${spacing.sm}`,
-              backgroundColor: colors.error + '20',
-              borderRadius: radius.sm,
-              border: `1px solid ${colors.error}40`,
+              backgroundColor: 'rgba(255, 59, 48, 0.1)',
+              borderRadius: '8px',
+              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
             }}
             role="alert"
             aria-live="polite"
