@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { QuizQuestion, QuizAnswer, CharacterScores, QuizResult, QuizCharacter, XYAxisQuestion as XYAxisQuestionType } from './types';
+import {
+  QuizQuestion,
+  QuizAnswer,
+  CharacterScores,
+  QuizResult,
+  QuizCharacter,
+  XYAxisQuestion as XYAxisQuestionType,
+} from './types';
 import { QuizData } from '../../services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
@@ -37,7 +44,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         }}
       >
         <p style={{ marginBottom: spacing.md }}>No quiz questions available.</p>
-        <Button onClick={onComplete} variant='primary' size='md'>
+        <Button onClick={onComplete} variant="primary" size="md">
           Continue
         </Button>
       </div>
@@ -127,10 +134,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         const totalWeight = tlWeight + trWeight + blWeight + brWeight || 1;
 
         // Apply weighted scores from each quadrant
-        const applyQuadrant = (
-          qScores: Partial<Record<QuizCharacter, number>>,
-          weight: number
-        ) => {
+        const applyQuadrant = (qScores: Partial<Record<QuizCharacter, number>>, weight: number) => {
           Object.entries(qScores).forEach(([char, score]) => {
             scores[char as QuizCharacter] += ((score as number) * weight) / totalWeight;
           });
@@ -192,10 +196,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     );
   }
 
-  const canProceed = currentAnswer !== undefined && 
-    (currentAnswer.answerIndex !== undefined || 
-     currentAnswer.scaleValue !== undefined || 
-     currentAnswer.xyPosition !== undefined);
+  const canProceed =
+    currentAnswer !== undefined &&
+    (currentAnswer.answerIndex !== undefined ||
+      currentAnswer.scaleValue !== undefined ||
+      currentAnswer.xyPosition !== undefined);
 
   return (
     <div
@@ -267,7 +272,8 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                background:
+                  'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
                 animation: 'shimmer 2s infinite',
               }}
             />

@@ -106,9 +106,7 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question, previewMode
             <ImageChoicePreview question={question as ImageChoiceQuestion} />
           )}
 
-          {question.type === 'xy-axis' && (
-            <XYAxisPreview question={question as XYAxisQuestion} />
-          )}
+          {question.type === 'xy-axis' && <XYAxisPreview question={question as XYAxisQuestion} />}
         </Card>
       </div>
     </div>

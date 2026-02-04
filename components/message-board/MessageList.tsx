@@ -189,7 +189,7 @@ const MessageList: React.FC<MessageListProps> = ({
             ))}
           </div>
         )}
-        
+
         {error && (
           <div
             style={{
