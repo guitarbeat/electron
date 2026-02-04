@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { QuizQuestion, QuizAnswer, CharacterScores, QuizResult, QuizCharacter } from './types';
+import { QuizQuestion, QuizAnswer, CharacterScores, QuizResult, QuizCharacter, XYAxisQuestion as XYAxisQuestionType } from './types';
 import { QuizData } from '../../services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
 import ImageChoiceQuestion from './ImageChoiceQuestion';
+import XYAxisQuestion from './XYAxisQuestion';
 import ResultsScreen from './ResultsScreen';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -30,12 +31,14 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
 
   const handleAnswer = (
     answerIndex?: number,
-    scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree'
+    scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree',
+    xyPosition?: { x: number; y: number }
   ) => {
     const newAnswer: QuizAnswer = {
       questionId: currentQuestion.id,
       answerIndex,
       scaleValue,
+      xyPosition,
     };
 
     // Update or add answer
@@ -88,6 +91,37 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         Object.entries(option.scores).forEach(([char, score]) => {
           scores[char as QuizCharacter] += score as number;
         });
+      } else if (question.type === 'xy-axis' && answer.xyPosition) {
+        // Calculate quadrant weights based on position
+        const { x, y } = answer.xyPosition;
+        const { quadrantScores } = question;
+
+        // Weight calculation: how much each quadrant contributes
+        // topLeft: x < 0, y > 0
+        // topRight: x > 0, y > 0
+        // bottomLeft: x < 0, y < 0
+        // bottomRight: x > 0, y < 0
+        const tlWeight = Math.max(0, -x) * Math.max(0, y);
+        const trWeight = Math.max(0, x) * Math.max(0, y);
+        const blWeight = Math.max(0, -x) * Math.max(0, -y);
+        const brWeight = Math.max(0, x) * Math.max(0, -y);
+
+        const totalWeight = tlWeight + trWeight + blWeight + brWeight || 1;
+
+        // Apply weighted scores from each quadrant
+        const applyQuadrant = (
+          qScores: Partial<Record<QuizCharacter, number>>,
+          weight: number
+        ) => {
+          Object.entries(qScores).forEach(([char, score]) => {
+            scores[char as QuizCharacter] += ((score as number) * weight) / totalWeight;
+          });
+        };
+
+        applyQuadrant(quadrantScores.topLeft, tlWeight);
+        applyQuadrant(quadrantScores.topRight, trWeight);
+        applyQuadrant(quadrantScores.bottomLeft, blWeight);
+        applyQuadrant(quadrantScores.bottomRight, brWeight);
       }
     });
 
@@ -140,7 +174,10 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     );
   }
 
-  const canProceed = currentAnswer !== undefined;
+  const canProceed = currentAnswer !== undefined && 
+    (currentAnswer.answerIndex !== undefined || 
+     currentAnswer.scaleValue !== undefined || 
+     currentAnswer.xyPosition !== undefined);
 
   return (
     <div
@@ -245,6 +282,14 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
               question={currentQuestion}
               selectedIndex={currentAnswer?.answerIndex ?? null}
               onSelect={(index) => handleAnswer(index)}
+            />
+          )}
+          {currentQuestion.type === 'xy-axis' && (
+            <XYAxisQuestion
+              key={currentQuestion.id}
+              question={currentQuestion as XYAxisQuestionType}
+              selectedPosition={currentAnswer?.xyPosition ?? null}
+              onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
             />
           )}
         </div>
