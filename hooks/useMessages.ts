@@ -4,7 +4,12 @@ import { usePolling } from './usePolling';
 import { getMessages, saveMessages } from '../services/messageService';
 
 export const useMessages = () => {
-  const { data: messages, error, isLoading, refresh } = usePolling(getMessages, 5000);
+  // * Use JSON.stringify for deep equality check to prevent unnecessary re-renders
+  const { data: messages, error, isLoading, refresh } = usePolling(
+    getMessages,
+    5000,
+    (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
