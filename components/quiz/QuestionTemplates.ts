@@ -6,7 +6,7 @@
 
 import { QuizQuestion, QuizCharacter } from './types';
 
-export type TemplateType = 'personality' | 'agree-disagree' | 'image-grid' | 'blank';
+export type TemplateType = 'personality' | 'agree-disagree' | 'image-grid' | 'xy-axis' | 'blank';
 
 export interface QuestionTemplate {
   id: TemplateType;
@@ -86,6 +86,25 @@ export const questionTemplates: QuestionTemplate[] = [
         { imageUrl: '/quiz-photos/quiz-img-3.png', alt: 'Art studio', scores: imageGridScores[2] },
         { imageUrl: '/quiz-photos/quiz-img-4.png', alt: 'Dark forest', scores: imageGridScores[3] },
       ],
+    }),
+  },
+  {
+    id: 'xy-axis',
+    name: 'XY Axis / 2D Spectrum',
+    description: 'Place position on 2D grid',
+    icon: '📊',
+    create: () => ({
+      id: `q_${Date.now()}`,
+      type: 'xy-axis',
+      question: 'Where do you see yourself on this grid?',
+      xAxis: { leftLabel: 'Solo', rightLabel: 'Social' },
+      yAxis: { topLabel: 'Spontaneous', bottomLabel: 'Planned' },
+      quadrantScores: {
+        topLeft: { Aaron: 2, Electra: 0, Madeleine: 0, 'Nosferatu/Smeemo': 0 },
+        topRight: { Aaron: 0, Electra: 2, Madeleine: 0, 'Nosferatu/Smeemo': 0 },
+        bottomLeft: { Aaron: 0, Electra: 0, Madeleine: 0, 'Nosferatu/Smeemo': 2 },
+        bottomRight: { Aaron: 0, Electra: 0, Madeleine: 2, 'Nosferatu/Smeemo': 0 },
+      },
     }),
   },
   {

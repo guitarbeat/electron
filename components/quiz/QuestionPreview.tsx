@@ -10,6 +10,7 @@ import {
   MultipleChoiceQuestion,
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
+  XYAxisQuestion,
 } from './types';
 import { spacing, colors, typography, radius } from '../../design-system/tokens';
 import Card from '../ui/Card';
@@ -103,6 +104,10 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question, previewMode
 
           {question.type === 'image-choice' && (
             <ImageChoicePreview question={question as ImageChoiceQuestion} />
+          )}
+
+          {question.type === 'xy-axis' && (
+            <XYAxisPreview question={question as XYAxisQuestion} />
           )}
         </Card>
       </div>
@@ -218,6 +223,113 @@ const ImageChoicePreview: React.FC<{ question: ImageChoiceQuestion }> = ({ quest
         )}
       </div>
     ))}
+  </div>
+);
+
+const XYAxisPreview: React.FC<{ question: XYAxisQuestion }> = ({ question }) => (
+  <div>
+    {/* Top label */}
+    <div
+      style={{
+        textAlign: 'center',
+        marginBottom: spacing.xs,
+        fontSize: '9px',
+        color: colors.secondary,
+        fontWeight: typography.fontWeight.bold,
+      }}
+    >
+      {question.yAxis.topLabel}
+    </div>
+
+    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+      {/* Left label */}
+      <div
+        style={{
+          writingMode: 'vertical-rl',
+          transform: 'rotate(180deg)',
+          fontSize: '9px',
+          color: colors.secondary,
+          fontWeight: typography.fontWeight.bold,
+        }}
+      >
+        {question.xAxis.leftLabel}
+      </div>
+
+      {/* Grid */}
+      <div
+        style={{
+          flex: 1,
+          aspectRatio: '1',
+          backgroundColor: colors.surface,
+          borderRadius: radius.sm,
+          border: `1px solid ${colors.borderSecondary}40`,
+          position: 'relative',
+          minHeight: '80px',
+        }}
+      >
+        {/* Crosshairs */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: 0,
+            right: 0,
+            height: '1px',
+            backgroundColor: `${colors.borderSecondary}40`,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: 0,
+            bottom: 0,
+            width: '1px',
+            backgroundColor: `${colors.borderSecondary}40`,
+          }}
+        />
+
+        {/* Sample marker */}
+        <div
+          style={{
+            position: 'absolute',
+            left: '60%',
+            top: '40%',
+            transform: 'translate(-50%, -50%)',
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            backgroundColor: colors.accent,
+            border: '2px solid white',
+          }}
+        />
+      </div>
+
+      {/* Right label */}
+      <div
+        style={{
+          writingMode: 'vertical-rl',
+          fontSize: '9px',
+          color: colors.secondary,
+          fontWeight: typography.fontWeight.bold,
+        }}
+      >
+        {question.xAxis.rightLabel}
+      </div>
+    </div>
+
+    {/* Bottom label */}
+    <div
+      style={{
+        textAlign: 'center',
+        marginTop: spacing.xs,
+        fontSize: '9px',
+        color: colors.secondary,
+        fontWeight: typography.fontWeight.bold,
+      }}
+    >
+      {question.yAxis.bottomLabel}
+    </div>
   </div>
 );
 
