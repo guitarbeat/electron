@@ -169,7 +169,47 @@ const MessageItem: React.FC<MessageItemProps> = ({
             handleHeart();
           }
         }}
+        style={{
+          position: 'relative',
+          borderRadius: '18px',
+          padding: '8px 14px',
+          maxWidth: '100%',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          cursor: 'pointer',
+          transition: 'transform 0.1s ease',
+          backgroundImage: userStyle.gradient,
+          backgroundColor: userStyle.tailRight,
+          borderBottomRightRadius: isCurrentUser ? '4px' : '18px',
+          borderBottomLeftRadius: isCurrentUser ? '18px' : '4px',
+        }}
       >
+        {/* Bubble tail */}
+        <div
+          style={{
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            ...(isCurrentUser
+              ? {
+                  right: '-6px',
+                  width: 0,
+                  height: 0,
+                  borderStyle: 'solid',
+                  borderWidth: '0 0 12px 10px',
+                  borderColor: `transparent transparent ${userStyle.tailRight} transparent`,
+                }
+              : {
+                  left: '-6px',
+                  width: 0,
+                  height: 0,
+                  borderStyle: 'solid',
+                  borderWidth: '0 10px 12px 0',
+                  borderColor: `transparent ${userStyle.tailLeft} transparent transparent`,
+                }),
+          }}
+        />
+
         {/* Message content */}
         <p
           style={{
@@ -229,54 +269,11 @@ const MessageItem: React.FC<MessageItemProps> = ({
       {/* iOS iMessage bubble styles */}
       <style>{`
         .imessage-bubble {
-          position: relative;
-          border-radius: 18px;
-          padding: 8px 14px;
-          max-width: 100%;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-          cursor: pointer;
-          transition: transform 0.1s ease;
-          background-image: ${userStyle.gradient};
-          /* Fallback background color */
-          background-color: ${userStyle.tailRight};
+          /* Base styles handled by inline styles for per-user colors */
         }
 
         .imessage-bubble:active {
           transform: scale(0.98);
-        }
-
-        .imessage-bubble.from-me {
-          border-bottom-right-radius: 4px;
-        }
-
-        .imessage-bubble.from-them {
-          border-bottom-left-radius: 4px;
-        }
-
-        /* Bubble tails using pseudo-elements */
-        .imessage-bubble.from-me::before {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          right: -6px;
-          width: 0;
-          height: 0;
-          border-style: solid;
-          border-width: 0 0 12px 10px;
-          border-color: transparent transparent ${userStyle.tailRight} transparent;
-        }
-
-        .imessage-bubble.from-them::before {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: -6px;
-          width: 0;
-          height: 0;
-          border-style: solid;
-          border-width: 0 10px 12px 0;
-          border-color: transparent ${userStyle.tailLeft} transparent transparent;
         }
 
         /* Heart Animation */
