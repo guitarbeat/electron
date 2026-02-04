@@ -10,6 +10,14 @@ export const usePolling = <T>(
   const [error, setError] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ⚡ Bolt Optimization: Use a ref for data to keep 'execute' stable.
+  // This prevents 'execute' from changing when data updates, avoiding
+  // unnecessary re-subscriptions and extra immediate fetches in the effect below.
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
   const savedFetchFn = useRef(fetchFn);
   const savedEqualityFn = useRef(equalityFn);
 
@@ -21,29 +29,26 @@ export const usePolling = <T>(
     savedEqualityFn.current = equalityFn;
   }, [equalityFn]);
 
-  const execute = useCallback(
-    async (isInitialLoad: boolean) => {
-      // Only show loading if we don't have data yet
-      if (isInitialLoad && !data) {
-        setIsLoading(true);
-      }
-      setError(null);
-      try {
-        const result = await savedFetchFn.current();
-        setData((prevData) => {
-          if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
-            return prevData;
-          }
-          return result;
-        });
-      } catch (e) {
-        setError(e);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [data]
-  );
+  const execute = useCallback(async (isInitialLoad: boolean) => {
+    // Only show loading if we don't have data yet
+    if (isInitialLoad && !dataRef.current) {
+      setIsLoading(true);
+    }
+    setError(null);
+    try {
+      const result = await savedFetchFn.current();
+      setData((prevData) => {
+        if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
+          return prevData;
+        }
+        return result;
+      });
+    } catch (e) {
+      setError(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     execute(true); // initial fetch

@@ -37,7 +37,7 @@ const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu
 const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   const { quizData, isLoading, isSaving, saveAllData, refresh } = useQuiz();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  
+
   // Use undo/redo for local state
   const {
     state: localData,
@@ -530,9 +530,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
             ))}
           </div>
         ) : (
-          <div
-            style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}
-          >
+          <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
             <Button variant="secondary" size="sm" onClick={() => addNewQuestion('blank')}>
               + Multiple Choice
             </Button>
@@ -639,9 +637,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
               onDragEnd={handleDragEnd}
               style={{
                 padding: spacing.md,
-                backgroundColor: isDragOver
-                  ? `${colors.accent}10`
-                  : colors.surfaceElevated,
+                backgroundColor: isDragOver ? `${colors.accent}10` : colors.surfaceElevated,
                 border: `2px solid ${isDragOver ? colors.accent : 'transparent'}`,
                 transition: 'all 0.2s ease',
                 opacity: isDragging ? 0.5 : 1,
@@ -787,9 +783,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   {q.type === 'agree-disagree' && (
                     <AgreeDisagreeSummary scores={(q as AgreeDisagreeQuestion).scores} />
                   )}
-                  {q.type === 'xy-axis' && (
-                    <XYAxisSummary question={q as XYAxisQuestion} />
-                  )}
+                  {q.type === 'xy-axis' && <XYAxisSummary question={q as XYAxisQuestion} />}
 
                   <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm }}>
                     <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)}>
@@ -857,10 +851,10 @@ const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }
   return (
     <div style={{ fontSize: '10px', color: colors.textTertiary }}>
       {levels.map((level) => {
-      const scoreStr = Object.entries(scores[level])
-        .filter(([, v]) => typeof v === 'number' && v > 0)
-        .map(([char, v]) => `${char[0]}:${v}`)
-        .join(' ');
+        const scoreStr = Object.entries(scores[level])
+          .filter(([, v]) => typeof v === 'number' && v > 0)
+          .map(([char, v]) => `${char[0]}:${v}`)
+          .join(' ');
         return (
           <span key={level} style={{ marginRight: spacing.sm }}>
             {level.slice(0, 2).toUpperCase()}: {scoreStr || '—'}
@@ -873,8 +867,12 @@ const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }
 
 const XYAxisSummary: React.FC<{ question: XYAxisQuestion }> = ({ question }) => (
   <div style={{ fontSize: '11px', color: colors.textTertiary }}>
-    <div>X: {question.xAxis.leftLabel} ↔ {question.xAxis.rightLabel}</div>
-    <div>Y: {question.yAxis.bottomLabel} ↔ {question.yAxis.topLabel}</div>
+    <div>
+      X: {question.xAxis.leftLabel} ↔ {question.xAxis.rightLabel}
+    </div>
+    <div>
+      Y: {question.yAxis.bottomLabel} ↔ {question.yAxis.topLabel}
+    </div>
   </div>
 );
 
@@ -954,10 +952,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({ question, onSave, onCan
           )}
 
           {local.type === 'xy-axis' && (
-            <XYAxisEditor
-              question={local as XYAxisQuestion}
-              onChange={(q) => setLocal(q)}
-            />
+            <XYAxisEditor question={local as XYAxisQuestion} onChange={(q) => setLocal(q)} />
           )}
         </div>
       </div>

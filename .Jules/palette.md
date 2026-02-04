@@ -12,5 +12,6 @@
 
 **Learning:** Action buttons hidden by default (e.g., show on hover) must be revealed when they or their container receive focus. Inline styles like `opacity: 0` override CSS pseudo-classes (`:hover`, `:focus-within`), breaking this behavior.
 **Action:** Use CSS classes instead of inline styles for default hidden states, and use `:focus-within` alongside `:hover` to reveal actions for keyboard users.
-- **Case-Insensitive Styling**: Updated  in  to case-insensitively match user names 'Aaron' and 'Electra' to their specific style variants, ensuring consistent styling regardless of capitalization.
+
+- **Case-Insensitive Styling**: Updated in to case-insensitively match user names 'Aaron' and 'Electra' to their specific style variants, ensuring consistent styling regardless of capitalization.
 - **Case-Insensitive Styling**: Updated `getStyleForUser` in `MessageItem.tsx` to case-insensitively match user names 'Aaron' and 'Electra' to their specific style variants, ensuring consistent styling regardless of capitalization.

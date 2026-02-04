@@ -112,7 +112,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
       >
         {/* Author field - iOS style when no current user */}
         {!currentUser && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.xs,
+              marginBottom: spacing.xs,
+            }}
+          >
             <label
               htmlFor="message-author"
               style={{
@@ -187,8 +194,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
             aria-label="Camera"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.5"/>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           </button>
 
@@ -221,7 +228,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 borderRadius: '18px',
                 color: '#000000',
                 fontSize: '17px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+                fontFamily:
+                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
                 lineHeight: 1.25,
                 resize: 'none',
                 minHeight: '36px',
@@ -270,7 +278,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting ? 'pointer' : 'default',
+              cursor:
+                content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting
+                  ? 'pointer'
+                  : 'default',
               transition: 'all 0.2s ease',
               flexShrink: 0,
               opacity: showSendButton ? 1 : 0.5,
@@ -281,11 +292,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
               <Spinner style={{ width: '18px', height: '18px', color: '#fff' }} />
             ) : (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path 
-                  d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" 
-                  stroke={showSendButton ? '#ffffff' : '#8e8e93'} 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
+                <path
+                  d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
+                  stroke={showSendButton ? '#ffffff' : '#8e8e93'}
+                  strokeWidth="2"
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>

@@ -1,6 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { colors, radius, spacing, typography, zIndex, shadows, motion } from '../../design-system/tokens';
+import {
+  colors,
+  radius,
+  spacing,
+  typography,
+  zIndex,
+  shadows,
+  motion,
+} from '../../design-system/tokens';
 
 interface BottomSheetProps {
   isOpen: boolean;

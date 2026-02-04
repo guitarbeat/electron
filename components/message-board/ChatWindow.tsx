@@ -16,7 +16,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ children }) => {
         borderRadius: '20px',
         overflow: 'hidden',
         boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
       }}
     >
       {/* iOS Navigation Bar */}
@@ -47,7 +48,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ children }) => {
           }}
         >
           <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
-            <path d="M10 2L2 10L10 18" stroke="#007AFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M10 2L2 10L10 18"
+              stroke="#007AFF"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           <span style={{ fontSize: '17px', fontWeight: 400 }}>Back</span>
         </div>

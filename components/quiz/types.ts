@@ -72,7 +72,11 @@ export interface XYAxisQuestion {
 }
 
 // Union type for all questions
-export type QuizQuestion = MultipleChoiceQuestion | AgreeDisagreeQuestion | ImageChoiceQuestion | XYAxisQuestion;
+export type QuizQuestion =
+  | MultipleChoiceQuestion
+  | AgreeDisagreeQuestion
+  | ImageChoiceQuestion
+  | XYAxisQuestion;
 
 // User's answer to a question
 export interface QuizAnswer {
