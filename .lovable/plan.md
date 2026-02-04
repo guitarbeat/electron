@@ -1,4 +1,3 @@
-
 # New Quiz Question Type: X-Y Axis Placement
 
 Add a new two-dimensional slider question type to the quiz system where users place a point on a 2D grid, allowing for nuanced personality scoring based on position.
@@ -8,6 +7,7 @@ Add a new two-dimensional slider question type to the quiz system where users pl
 ## Overview
 
 This adds a fourth question type called **"XY Axis"** (or "Spectrum" / "Position Picker") that presents a 2D plane where:
+
 - The **X-axis** represents one spectrum (e.g., Introvert ↔ Extrovert)
 - The **Y-axis** represents another spectrum (e.g., Thinking ↔ Feeling)
 - User taps/clicks to place their position on the grid
@@ -56,6 +56,7 @@ Add new interfaces for XY Axis questions:
 **File: `components/quiz/XYAxisQuestion.tsx`** (New)
 
 Interactive 2D grid component for quiz-takers:
+
 - Renders a square grid with crosshairs
 - Axis labels on all 4 sides
 - Touch/click to place a draggable marker
@@ -68,6 +69,7 @@ Interactive 2D grid component for quiz-takers:
 **File: `components/quiz/XYAxisEditor.tsx`** (New)
 
 Editor component for the quiz admin:
+
 - Text inputs for all 4 axis labels
 - Visual grid preview showing quadrant scoring
 - 4 ScoreSlider components (one per quadrant)
@@ -78,6 +80,7 @@ Editor component for the quiz admin:
 **File: `components/quiz/QuestionTemplates.ts`** (Update)
 
 Add new template:
+
 ```
 {
   id: 'xy-axis',
@@ -131,7 +134,7 @@ Position → Quadrant Weights:
 
 Weight calculation:
 - TL weight = max(0, -x) * max(0, y)
-- TR weight = max(0, x) * max(0, y)  
+- TR weight = max(0, x) * max(0, y)
 - BL weight = max(0, -x) * max(0, -y)
 - BR weight = max(0, x) * max(0, -y)
 
@@ -142,21 +145,22 @@ Normalize weights and multiply by quadrant character scores.
 
 ## Files to Create/Modify
 
-| File | Action | Description |
-|------|--------|-------------|
-| `components/quiz/types.ts` | Update | Add XYAxisQuestion type |
-| `components/quiz/XYAxisQuestion.tsx` | Create | User-facing 2D grid component |
-| `components/quiz/XYAxisEditor.tsx` | Create | Admin editor for XY questions |
-| `components/quiz/QuestionTemplates.ts` | Update | Add XY axis template |
-| `components/quiz/QuizEditor.tsx` | Update | Add editor support |
-| `components/quiz/QuizFlow.tsx` | Update | Add flow support + scoring |
-| `components/quiz/QuestionPreview.tsx` | Update | Add preview support |
+| File                                   | Action | Description                   |
+| -------------------------------------- | ------ | ----------------------------- |
+| `components/quiz/types.ts`             | Update | Add XYAxisQuestion type       |
+| `components/quiz/XYAxisQuestion.tsx`   | Create | User-facing 2D grid component |
+| `components/quiz/XYAxisEditor.tsx`     | Create | Admin editor for XY questions |
+| `components/quiz/QuestionTemplates.ts` | Update | Add XY axis template          |
+| `components/quiz/QuizEditor.tsx`       | Update | Add editor support            |
+| `components/quiz/QuizFlow.tsx`         | Update | Add flow support + scoring    |
+| `components/quiz/QuestionPreview.tsx`  | Update | Add preview support           |
 
 ---
 
 ## Visual Design
 
 ### Quiz-Taker View
+
 ```text
 ┌─────────────────────────────────────────────┐
 │  "Where do you see yourself on this grid?"  │
@@ -178,6 +182,7 @@ Normalize weights and multiply by quadrant character scores.
 ```
 
 ### Editor View
+
 ```text
 ┌─────────────────────────────────────────────┐
 │ XY Axis Labels                              │

@@ -18,12 +18,12 @@ interface Particle {
 }
 
 const CONFETTI_COLORS = [
-  colors.accent,     // Pink
-  colors.secondary,  // Blue
-  colors.tertiary,   // Purple
-  colors.yellow,     // Yellow
-  colors.success,    // Green
-  '#fff',            // White
+  colors.accent, // Pink
+  colors.secondary, // Blue
+  colors.tertiary, // Purple
+  colors.yellow, // Yellow
+  colors.success, // Green
+  '#fff', // White
 ];
 
 /**
@@ -49,7 +49,7 @@ const Confetti: React.FC<ConfettiProps> = ({
         rotation: Math.random() * 360,
         scale: 0.5 + Math.random() * 0.5,
       }));
-      
+
       setParticles(newParticles);
       setIsVisible(true);
 
@@ -101,7 +101,7 @@ const Confetti: React.FC<ConfettiProps> = ({
           animation: confetti-fall 2s ease-in forwards, confetti-sway 0.5s ease-in-out infinite;
         }
       `}</style>
-      
+
       <div
         aria-hidden="true"
         style={{

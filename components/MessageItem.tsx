@@ -220,18 +220,15 @@ const MessageItem: React.FC<MessageItemProps> = ({
             margin: 0,
             lineHeight: 1.25,
             fontSize: '17px',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
           }}
         >
           {msg.content}
         </p>
 
         {/* Heart Reaction */}
-        {showHeart && (
-          <div className="heart-reaction">
-            ❤️
-          </div>
-        )}
+        {showHeart && <div className="heart-reaction">❤️</div>}
 
         {/* Delete button - appears on hover */}
         <div
