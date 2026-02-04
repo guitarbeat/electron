@@ -81,8 +81,16 @@ export const questionTemplates: QuestionTemplate[] = [
       type: 'image-choice',
       question: 'Which image speaks to you most?',
       options: [
-        { imageUrl: '/quiz-photos/quiz-img-1.png', alt: 'Cozy home scene', scores: imageGridScores[0] },
-        { imageUrl: '/quiz-photos/quiz-img-2.png', alt: 'Vibrant party', scores: imageGridScores[1] },
+        {
+          imageUrl: '/quiz-photos/quiz-img-1.png',
+          alt: 'Cozy home scene',
+          scores: imageGridScores[0],
+        },
+        {
+          imageUrl: '/quiz-photos/quiz-img-2.png',
+          alt: 'Vibrant party',
+          scores: imageGridScores[1],
+        },
         { imageUrl: '/quiz-photos/quiz-img-3.png', alt: 'Art studio', scores: imageGridScores[2] },
         { imageUrl: '/quiz-photos/quiz-img-4.png', alt: 'Dark forest', scores: imageGridScores[3] },
       ],

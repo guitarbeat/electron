@@ -103,7 +103,7 @@ const Watchlist: React.FC = () => {
     // Check if any movie just became watched by both
     for (const movie of movies) {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current.find(m => m.id === movie.id);
+        const prevMovie = previousMoviesRef.current.find((m) => m.id === movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           // Movie just became watched by both!
           setShowConfetti(true);
@@ -323,7 +323,7 @@ const Watchlist: React.FC = () => {
     <div style={{ minHeight: '100vh', background: colors.background }}>
       {/* Confetti celebration */}
       {showConfetti && <Confetti />}
-      
+
       <Header
         currentUser={currentUser!}
         onLogout={handleLogout}

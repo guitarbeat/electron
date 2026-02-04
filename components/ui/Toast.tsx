@@ -58,7 +58,15 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
 
   const styles = getTypeStyles();
   const icons = {
-    success: <CheckIcon style={{ color: styles.iconColor, flexShrink: 0, filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))' }} />,
+    success: (
+      <CheckIcon
+        style={{
+          color: styles.iconColor,
+          flexShrink: 0,
+          filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
+        }}
+      />
+    ),
     error: <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>,
     info: <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>,
   };
@@ -132,8 +140,12 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
               transition: 'opacity 0.2s',
               borderRadius: radius.sm,
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.7';
+            }}
           >
             ✕
           </button>

@@ -85,12 +85,29 @@ const SuggestionList: React.FC<SuggestionListProps> = ({ currentUser, onMovieAdd
               >
                 <div style={{ display: 'flex', gap: spacing.md, alignItems: 'flex-start' }}>
                   <div style={{ flex: 1 }}>
-                    <div className="skeleton" style={{ width: '60%', height: '1.5em', marginBottom: spacing.sm, borderRadius: radius.sm }} />
-                    <div className="skeleton" style={{ width: '40%', height: '0.9em', borderRadius: radius.sm }} />
+                    <div
+                      className="skeleton"
+                      style={{
+                        width: '60%',
+                        height: '1.5em',
+                        marginBottom: spacing.sm,
+                        borderRadius: radius.sm,
+                      }}
+                    />
+                    <div
+                      className="skeleton"
+                      style={{ width: '40%', height: '0.9em', borderRadius: radius.sm }}
+                    />
                   </div>
                   <div style={{ display: 'flex', gap: spacing.sm }}>
-                    <div className="skeleton" style={{ width: '70px', height: '32px', borderRadius: radius.md }} />
-                    <div className="skeleton" style={{ width: '70px', height: '32px', borderRadius: radius.md }} />
+                    <div
+                      className="skeleton"
+                      style={{ width: '70px', height: '32px', borderRadius: radius.md }}
+                    />
+                    <div
+                      className="skeleton"
+                      style={{ width: '70px', height: '32px', borderRadius: radius.md }}
+                    />
                   </div>
                 </div>
               </div>

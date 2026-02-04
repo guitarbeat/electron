@@ -18,7 +18,7 @@ const SuggestionForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const pendingCount = pendingSuggestions?.length || 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,19 +46,37 @@ const SuggestionForm: React.FC = () => {
     return (
       <Card variant="elevated" className="animate-fade-in">
         <div style={{ padding: spacing['2xl'], textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: spacing.lg, animation: 'bounce 0.5s ease-out' }}>🎬</div>
-          <h3 style={{
-            fontSize: typography.fontSize.xl,
-            fontWeight: typography.fontWeight.semibold,
-            color: colors.accent,
-            marginBottom: spacing.md,
-          }}>Thanks for your suggestion!</h3>
-          <p style={{
-            fontSize: typography.fontSize.base,
-            color: colors.textSecondary,
-            marginBottom: spacing.xl,
-          }}>Aaron & Electra will review it soon.</p>
-          <Button variant="secondary" size="md" onClick={() => setSubmitted(false)}>Suggest Another Movie</Button>
+          <div
+            style={{
+              fontSize: '3rem',
+              marginBottom: spacing.lg,
+              animation: 'bounce 0.5s ease-out',
+            }}
+          >
+            🎬
+          </div>
+          <h3
+            style={{
+              fontSize: typography.fontSize.xl,
+              fontWeight: typography.fontWeight.semibold,
+              color: colors.accent,
+              marginBottom: spacing.md,
+            }}
+          >
+            Thanks for your suggestion!
+          </h3>
+          <p
+            style={{
+              fontSize: typography.fontSize.base,
+              color: colors.textSecondary,
+              marginBottom: spacing.xl,
+            }}
+          >
+            Aaron & Electra will review it soon.
+          </p>
+          <Button variant="secondary" size="md" onClick={() => setSubmitted(false)}>
+            Suggest Another Movie
+          </Button>
         </div>
       </Card>
     );
@@ -67,32 +85,48 @@ const SuggestionForm: React.FC = () => {
   return (
     <Card variant="elevated" className="animate-fade-in" style={{ padding: spacing.sm }}>
       <div style={{ padding: spacing.md }}>
-        <h3 style={{
-          fontSize: typography.fontSize.xl,
-          fontWeight: typography.fontWeight.semibold,
-          color: colors.accent,
-          marginBottom: spacing.sm,
-          marginTop: 0,
-          textAlign: 'center',
-        }}>🎬 Suggest a Movie</h3>
-        <p style={{
-          fontSize: typography.fontSize.sm,
-          color: colors.textSecondary,
-          marginBottom: spacing.md,
-          textAlign: 'center',
-        }}>Have a movie we should watch? Let us know!</p>
+        <h3
+          style={{
+            fontSize: typography.fontSize.xl,
+            fontWeight: typography.fontWeight.semibold,
+            color: colors.accent,
+            marginBottom: spacing.sm,
+            marginTop: 0,
+            textAlign: 'center',
+          }}
+        >
+          🎬 Suggest a Movie
+        </h3>
+        <p
+          style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.textSecondary,
+            marginBottom: spacing.md,
+            textAlign: 'center',
+          }}
+        >
+          Have a movie we should watch? Let us know!
+        </p>
 
         <WatchlistPreview />
 
         <div style={{ marginTop: spacing.lg }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}
+          >
             <div style={{ flex: 2 }}>
               <Input
                 placeholder="Movie title..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
                 disabled={isSubmitting}
-                style={{ borderRadius: `${radius.md} 0 0 ${radius.md}`, borderRight: 'none', height: '44px', textAlign: 'left' }}
+                style={{
+                  borderRadius: `${radius.md} 0 0 ${radius.md}`,
+                  borderRight: 'none',
+                  height: '44px',
+                  textAlign: 'left',
+                }}
               />
             </div>
             <div style={{ flex: 1, minWidth: '100px' }}>
@@ -101,7 +135,12 @@ const SuggestionForm: React.FC = () => {
                 value={suggestedBy}
                 onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
                 disabled={isSubmitting}
-                style={{ borderRadius: 0, borderLeft: `1px solid ${colors.borderSecondary}40`, height: '44px', textAlign: 'left' }}
+                style={{
+                  borderRadius: 0,
+                  borderLeft: `1px solid ${colors.borderSecondary}40`,
+                  height: '44px',
+                  textAlign: 'left',
+                }}
               />
             </div>
             <Button
@@ -109,7 +148,12 @@ const SuggestionForm: React.FC = () => {
               variant="primary"
               disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
               isLoading={isSubmitting}
-              style={{ borderRadius: `0 ${radius.md} ${radius.md} 0`, minWidth: '60px', height: '44px', fontSize: '1.25rem' }}
+              style={{
+                borderRadius: `0 ${radius.md} ${radius.md} 0`,
+                minWidth: '60px',
+                height: '44px',
+                fontSize: '1.25rem',
+              }}
             >
               {isSubmitting ? '' : '+'}
             </Button>
@@ -137,7 +181,15 @@ const SuggestionForm: React.FC = () => {
           )}
 
           {error && (
-            <div style={{ marginTop: spacing.sm, color: colors.error, fontSize: '10px', textAlign: 'center', fontWeight: 'bold' }}>
+            <div
+              style={{
+                marginTop: spacing.sm,
+                color: colors.error,
+                fontSize: '10px',
+                textAlign: 'center',
+                fontWeight: 'bold',
+              }}
+            >
               ⚠️ {error}
             </div>
           )}

@@ -31,7 +31,10 @@ const CHARACTER_INITIALS: Record<QuizCharacter, string> = {
 };
 
 const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 5 }) => {
-  const totalScore = Object.values(scores).reduce<number>((sum, val) => sum + ((val as number) || 0), 0);
+  const totalScore = Object.values(scores).reduce<number>(
+    (sum, val) => sum + ((val as number) || 0),
+    0
+  );
 
   const updateScore = (character: QuizCharacter, value: number) => {
     onChange({ ...scores, [character]: Math.max(0, Math.min(maxScore, value)) });
