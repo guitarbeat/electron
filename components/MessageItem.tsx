@@ -25,8 +25,8 @@ const STYLE_VARIANTS = [
 
 const getStyleForUser = (username: string) => {
   // Explicit overrides for main users
-  if (username === 'Aaron') return STYLE_VARIANTS[0]; // Blue
-  if (username === 'Electra') return STYLE_VARIANTS[1]; // Pink
+  if (username.toLowerCase() === 'aaron') return STYLE_VARIANTS[0]; // Blue
+  if (username.toLowerCase() === 'electra') return STYLE_VARIANTS[1]; // Pink
 
   // Deterministic selection for others based on username hash
   let hash = 0;
