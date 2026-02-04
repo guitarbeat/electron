@@ -48,7 +48,15 @@ export const getQuizData = async (): Promise<QuizData> => {
       return defaultQuizData;
     }
 
-    return JSON.parse(file.content);
+    const parsedData = JSON.parse(file.content);
+
+    // Validate data structure
+    if (!parsedData || !Array.isArray(parsedData.questions) || parsedData.questions.length === 0) {
+      console.warn('Invalid quiz data fetched from Gist, using defaults');
+      return defaultQuizData;
+    }
+
+    return parsedData;
   } catch (error) {
     console.error('Error fetching quiz data from Gist:', error);
     // Return defaults on error
