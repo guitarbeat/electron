@@ -21,10 +21,28 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const [showResults, setShowResults] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
-  const questions = quizData.questions;
+  const questions = quizData.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
-  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+  const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
+
+  // Handle case where questions are missing or index is invalid
+  if (!currentQuestion) {
+    return (
+      <div
+        style={{
+          textAlign: 'center',
+          padding: spacing['2xl'],
+          color: colors.textSecondary,
+        }}
+      >
+        <p style={{ marginBottom: spacing.md }}>No quiz questions available.</p>
+        <Button onClick={onComplete} variant='primary' size='md'>
+          Continue
+        </Button>
+      </div>
+    );
+  }
 
   // Get current answer for this question
   const currentAnswer = answers.find((a) => a.questionId === currentQuestion.id);
