@@ -15,7 +15,9 @@ import {
   MultipleChoiceQuestion,
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
+  XYAxisQuestion,
 } from './types';
+import XYAxisEditor from './XYAxisEditor';
 import { questionTemplates, TemplateType } from './QuestionTemplates';
 import ScoreSlider from './ScoreSlider';
 import QuestionPreview from './QuestionPreview';
@@ -575,6 +577,29 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
             >
               + Image Choice
             </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const q: XYAxisQuestion = {
+                  id: `q_${Date.now()}`,
+                  type: 'xy-axis',
+                  question: 'Where do you see yourself on this grid?',
+                  xAxis: { leftLabel: 'Solo', rightLabel: 'Social' },
+                  yAxis: { topLabel: 'Spontaneous', bottomLabel: 'Planned' },
+                  quadrantScores: {
+                    topLeft: {},
+                    topRight: {},
+                    bottomLeft: {},
+                    bottomRight: {},
+                  },
+                };
+                onUpdateQuestions([...questions, q]);
+                setEditingQuestion(q);
+              }}
+            >
+              + XY Axis
+            </Button>
           </div>
         )}
       </Card>
@@ -762,6 +787,9 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   {q.type === 'agree-disagree' && (
                     <AgreeDisagreeSummary scores={(q as AgreeDisagreeQuestion).scores} />
                   )}
+                  {q.type === 'xy-axis' && (
+                    <XYAxisSummary question={q as XYAxisQuestion} />
+                  )}
 
                   <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm }}>
                     <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)}>
@@ -843,6 +871,13 @@ const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }
   );
 };
 
+const XYAxisSummary: React.FC<{ question: XYAxisQuestion }> = ({ question }) => (
+  <div style={{ fontSize: '11px', color: colors.textTertiary }}>
+    <div>X: {question.xAxis.leftLabel} ↔ {question.xAxis.rightLabel}</div>
+    <div>Y: {question.yAxis.bottomLabel} ↔ {question.yAxis.topLabel}</div>
+  </div>
+);
+
 // Question Editor Component
 interface QuestionEditorProps {
   question: QuizQuestion;
@@ -914,6 +949,13 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({ question, onSave, onCan
           {local.type === 'image-choice' && (
             <ImageChoiceEditor
               question={local as ImageChoiceQuestion}
+              onChange={(q) => setLocal(q)}
+            />
+          )}
+
+          {local.type === 'xy-axis' && (
+            <XYAxisEditor
+              question={local as XYAxisQuestion}
               onChange={(q) => setLocal(q)}
             />
           )}
