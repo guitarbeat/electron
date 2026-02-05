@@ -7,7 +7,7 @@ interface ToastState {
 }
 
 export const useChatLogic = () => {
-  const { messages, isLoading, error, isSubmitting, addMessage, deleteMessage } = useMessages();
+  const { messages, isLoading, error, isSubmitting, addMessage, deleteMessage, toggleReaction } = useMessages();
   const [toast, setToast] = useState<ToastState | null>(null);
 
   // * Auto-hide toast
@@ -44,6 +44,17 @@ export const useChatLogic = () => {
     [deleteMessage]
   );
 
+  const handleReaction = useCallback(
+    async (messageId: string, emoji: string, username: string) => {
+      try {
+        await toggleReaction(messageId, emoji, username);
+      } catch (err: any) {
+        setToast({ message: 'Failed to add reaction', type: 'error' });
+      }
+    },
+    [toggleReaction]
+  );
+
   return {
     messages,
     isLoading,
@@ -51,6 +62,7 @@ export const useChatLogic = () => {
     isSubmitting,
     handleSend,
     handleDelete,
+    handleReaction,
     toast,
   };
 };
