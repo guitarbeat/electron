@@ -22,6 +22,7 @@ export interface Message {
   author: string;
   content: string;
   createdAt: string;
+  reactions?: { [emoji: string]: string[] }; // emoji -> array of usernames who reacted
 }
 
 export interface DailySpin {

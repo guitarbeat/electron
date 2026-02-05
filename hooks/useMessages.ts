@@ -57,5 +57,32 @@ export const useMessages = () => {
     [performMutation]
   );
 
-  return { messages, isLoading, error, isSubmitting, addMessage, deleteMessage };
+  const toggleReaction = useCallback(
+    async (messageId: string, emoji: string, username: string) => {
+      await performMutation((latestMessages) =>
+        latestMessages.map((msg) => {
+          if (msg.id !== messageId) return msg;
+
+          const reactions = { ...(msg.reactions || {}) };
+          const users = reactions[emoji] || [];
+
+          if (users.includes(username)) {
+            // Remove reaction
+            reactions[emoji] = users.filter((u) => u !== username);
+            if (reactions[emoji].length === 0) {
+              delete reactions[emoji];
+            }
+          } else {
+            // Add reaction
+            reactions[emoji] = [...users, username];
+          }
+
+          return { ...msg, reactions };
+        })
+      );
+    },
+    [performMutation]
+  );
+
+  return { messages, isLoading, error, isSubmitting, addMessage, deleteMessage, toggleReaction };
 };

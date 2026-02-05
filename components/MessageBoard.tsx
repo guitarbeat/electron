@@ -10,7 +10,7 @@ import { spacing } from '../design-system/tokens';
 
 const MessageBoard: React.FC = () => {
   const { currentUser } = useUser();
-  const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, toast } =
+  const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, handleReaction, toast } =
     useChatLogic();
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -38,6 +38,7 @@ const MessageBoard: React.FC = () => {
           error={error}
           currentUser={currentUser}
           onDelete={handleDelete}
+          onReaction={handleReaction}
           isSubmitting={isSubmitting}
           isEditMode={isEditMode}
         />
