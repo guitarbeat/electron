@@ -1,7 +1,6 @@
 import React, { memo, useState, useEffect, useRef } from 'react';
 import { Message, User } from '../types';
 import { TrashIcon } from './icons';
-import IconButton from './ui/IconButton';
 import { spacing, typography, colors, radius } from '../design-system/tokens';
 
 // Available styles
@@ -36,6 +35,9 @@ const getStyleForUser = (username: string) => {
   const index = Math.abs(hash) % STYLE_VARIANTS.length;
   return STYLE_VARIANTS[index];
 };
+
+// iOS-style reactions
+const REACTIONS = ['❤️', '👍', '👎', '😂', '‼️', '❓'];
 
 // Format time for display (iOS style)
 const formatTime = (date: string): string => {
@@ -83,8 +85,10 @@ const MessageItem: React.FC<MessageItemProps> = ({
   onDelete,
   isEditMode = false,
 }) => {
-  const [showHeart, setShowHeart] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
+  const [showReactionMenu, setShowReactionMenu] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const authorName = msg.author || 'Anonymous';
   const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
@@ -92,20 +96,54 @@ const MessageItem: React.FC<MessageItemProps> = ({
   // Determine styles based on author
   const userStyle = getStyleForUser(authorName);
 
-  const handleHeart = () => {
-    setShowHeart(true);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => setShowHeart(false), 1000);
+  const handleLongPressStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowReactionMenu(true);
+    }, 500);
   };
 
-  // Cleanup timeout on unmount
+  const handleLongPressEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleSelectReaction = (reaction: string) => {
+    // Toggle off if same reaction selected
+    if (selectedReaction === reaction) {
+      setSelectedReaction(null);
+    } else {
+      setSelectedReaction(reaction);
+    }
+    setShowReactionMenu(false);
+  };
+
+  const handleDoubleClick = () => {
+    // Quick heart reaction on double-click (iOS style)
+    setSelectedReaction(selectedReaction === '❤️' ? null : '❤️');
+  };
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowReactionMenu(false);
+      }
+    };
+
+    if (showReactionMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showReactionMenu]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (longPressTimer.current) clearTimeout(longPressTimer.current);
     };
   }, []);
 
@@ -163,14 +201,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
       <div
         className={`imessage-bubble ${isCurrentUser ? 'from-me' : 'from-them'}`}
         aria-label={`Message from ${authorName}`}
-        onClick={handleHeart}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            handleHeart();
-          }
-        }}
+        onDoubleClick={handleDoubleClick}
+        onMouseDown={handleLongPressStart}
+        onMouseUp={handleLongPressEnd}
+        onMouseLeave={handleLongPressEnd}
+        onTouchStart={handleLongPressStart}
+        onTouchEnd={handleLongPressEnd}
         style={{
           position: 'relative',
           borderRadius: '18px',
@@ -178,7 +214,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
           maxWidth: '100%',
           wordWrap: 'break-word',
           overflowWrap: 'break-word',
-          cursor: 'pointer',
+          cursor: 'default',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
           transition: 'transform 0.1s ease',
           backgroundImage: userStyle.gradient,
           backgroundColor: userStyle.tailRight,
@@ -229,8 +267,87 @@ const MessageItem: React.FC<MessageItemProps> = ({
           {msg.content}
         </p>
 
-        {/* Heart Reaction */}
-        {showHeart && <div className="heart-reaction">❤️</div>}
+        {/* Reaction Badge - iOS style */}
+        {selectedReaction && (
+          <div
+            className="reaction-badge"
+            style={{
+              position: 'absolute',
+              bottom: '-12px',
+              [isCurrentUser ? 'left' : 'right']: '-4px',
+              background: '#ffffff',
+              borderRadius: '12px',
+              padding: '2px 6px',
+              fontSize: '16px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+              border: '1px solid rgba(0,0,0,0.08)',
+              zIndex: 5,
+              cursor: 'pointer',
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowReactionMenu(true);
+            }}
+          >
+            {selectedReaction}
+          </div>
+        )}
+
+        {/* Reaction Menu - iOS style popup */}
+        {showReactionMenu && (
+          <div
+            ref={menuRef}
+            className="reaction-menu"
+            style={{
+              position: 'absolute',
+              bottom: 'calc(100% + 8px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderRadius: '28px',
+              padding: '6px 8px',
+              display: 'flex',
+              gap: '4px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+              zIndex: 100,
+              animation: 'reactionMenuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            }}
+          >
+            {REACTIONS.map((reaction) => (
+              <button
+                key={reaction}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectReaction(reaction);
+                }}
+                style={{
+                  background: selectedReaction === reaction ? 'rgba(0,0,0,0.1)' : 'transparent',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.15s ease, background 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+                aria-label={`React with ${reaction}`}
+              >
+                {reaction}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Delete button - only visible in edit mode */}
@@ -280,7 +397,36 @@ const MessageItem: React.FC<MessageItemProps> = ({
           transform: scale(0.98);
         }
 
-        /* Heart Animation */
+        /* Reaction menu pop animation */
+        @keyframes reactionMenuPop {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+          }
+        }
+
+        /* Reaction badge bounce on appear */
+        .reaction-badge {
+          animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes badgePop {
+          0% {
+            opacity: 0;
+            transform: scale(0);
+          }
+          50% {
+            transform: scale(1.2);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
 
         /* Message slide-in animation */
         @keyframes slideInRight {
