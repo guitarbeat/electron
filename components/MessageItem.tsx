@@ -73,6 +73,7 @@ interface MessageItemProps {
   currentUser: User | null;
   showSenderName: boolean;
   onDelete: (id: string) => void;
+  isEditMode?: boolean;
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({
@@ -80,6 +81,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
   currentUser,
   showSenderName,
   onDelete,
+  isEditMode = false,
 }) => {
   const [showHeart, setShowHeart] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -229,39 +231,44 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
         {/* Heart Reaction */}
         {showHeart && <div className="heart-reaction">❤️</div>}
+      </div>
 
-        {/* Delete button - appears on hover */}
-        <div
-          className="message-actions"
+      {/* Delete button - only visible in edit mode */}
+      {isEditMode && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(msg.id);
+          }}
+          aria-label={`Delete message from ${authorName}`}
           style={{
-            position: 'absolute',
-            top: '-8px',
-            [isCurrentUser ? 'left' : 'right']: '-8px',
-            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px',
+            background: '#ff3b30',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            marginTop: '4px',
+            marginLeft: isCurrentUser ? 'auto' : 0,
+            marginRight: isCurrentUser ? 0 : 'auto',
+            transition: 'transform 0.15s ease',
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = 'scale(0.9)';
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent heart reaction
-              onDelete(msg.id);
-            }}
-            variant="danger"
-            title={`Delete message from ${authorName}`}
-            aria-label={`Delete message from ${authorName}`}
-            style={{
-              padding: '4px',
-              minWidth: '24px',
-              minHeight: '24px',
-              background: colors.error,
-              color: '#fff',
-              borderRadius: radius.full,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            }}
-          >
-            <TrashIcon style={{ width: '12px', height: '12px' }} />
-          </IconButton>
-        </div>
-      </div>
+          <TrashIcon style={{ width: '14px', height: '14px', color: '#fff' }} />
+        </button>
+      )}
 
       {/* iOS iMessage bubble styles */}
       <style>{`
@@ -274,53 +281,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
         }
 
         /* Heart Animation */
-        .heart-reaction {
-          position: absolute;
-          top: -20px;
-          left: 50%;
-          transform: translateX(-50%);
-          font-size: 24px;
-          pointer-events: none;
-          animation: floatUp 1s ease-out forwards;
-          z-index: 20;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        @keyframes floatUp {
-          0% {
-            opacity: 0;
-            transform: translate(-50%, 10px) scale(0.5);
-          }
-          20% {
-            opacity: 1;
-            transform: translate(-50%, -10px) scale(1.2);
-          }
-          40% {
-            transform: translate(-50%, -15px) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translate(-50%, -50px);
-          }
-        }
-
-        /* Hide actions by default, show on hover */
-        .message-actions {
-          opacity: 0;
-          transform: scale(0.8);
-          transition: all 0.2s ease;
-        }
-
-        .imessage-bubble:hover .message-actions {
-          opacity: 1;
-          transform: scale(1);
-        }
-
-        /* Show actions on focus for keyboard users */
-        .imessage-bubble:focus-within .message-actions {
-            opacity: 1;
-            transform: scale(1);
-        }
 
         /* Message slide-in animation */
         @keyframes slideInRight {
