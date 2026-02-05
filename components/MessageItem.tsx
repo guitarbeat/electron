@@ -75,6 +75,7 @@ interface MessageItemProps {
   currentUser: User | null;
   showSenderName: boolean;
   onDelete: (id: string) => void;
+  onReaction: (messageId: string, emoji: string, username: string) => void;
   isEditMode?: boolean;
 }
 
@@ -83,18 +84,43 @@ const MessageItem: React.FC<MessageItemProps> = ({
   currentUser,
   showSenderName,
   onDelete,
+  onReaction,
   isEditMode = false,
 }) => {
-  const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
   const [showReactionMenu, setShowReactionMenu] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const authorName = msg.author || 'Anonymous';
   const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
+  const currentUsername = currentUser || 'Anonymous';
 
   // Determine styles based on author
   const userStyle = getStyleForUser(authorName);
+
+  // Get user's current reaction from persisted data
+  const getUserReaction = (): string | null => {
+    if (!msg.reactions) return null;
+    for (const [emoji, users] of Object.entries(msg.reactions) as [string, string[]][]) {
+      if (users.includes(currentUsername)) return emoji;
+    }
+    return null;
+  };
+
+  // Get all reactions with counts
+  const getReactionSummary = (): { emoji: string; count: number; hasUserReacted: boolean }[] => {
+    if (!msg.reactions) return [];
+    return (Object.entries(msg.reactions) as [string, string[]][])
+      .filter(([, users]) => users.length > 0)
+      .map(([emoji, users]) => ({
+        emoji,
+        count: users.length,
+        hasUserReacted: users.includes(currentUsername),
+      }));
+  };
+
+  const reactionSummary = getReactionSummary();
+  const userReaction = getUserReaction();
 
   const handleLongPressStart = () => {
     longPressTimer.current = setTimeout(() => {
@@ -110,18 +136,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
   };
 
   const handleSelectReaction = (reaction: string) => {
-    // Toggle off if same reaction selected
-    if (selectedReaction === reaction) {
-      setSelectedReaction(null);
-    } else {
-      setSelectedReaction(reaction);
-    }
+    onReaction(msg.id, reaction, currentUsername);
     setShowReactionMenu(false);
   };
 
   const handleDoubleClick = () => {
     // Quick heart reaction on double-click (iOS style)
-    setSelectedReaction(selectedReaction === '❤️' ? null : '❤️');
+    onReaction(msg.id, '❤️', currentUsername);
   };
 
   // Close menu on outside click
@@ -267,29 +288,47 @@ const MessageItem: React.FC<MessageItemProps> = ({
           {msg.content}
         </p>
 
-        {/* Reaction Badge - iOS style */}
-        {selectedReaction && (
+        {/* Reaction Badges - iOS style (show all reactions) */}
+        {reactionSummary.length > 0 && (
           <div
-            className="reaction-badge"
             style={{
               position: 'absolute',
               bottom: '-12px',
               [isCurrentUser ? 'left' : 'right']: '-4px',
-              background: '#ffffff',
-              borderRadius: '12px',
-              padding: '2px 6px',
-              fontSize: '16px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              display: 'flex',
+              gap: '2px',
               zIndex: 5,
-              cursor: 'pointer',
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowReactionMenu(true);
             }}
           >
-            {selectedReaction}
+            {reactionSummary.map(({ emoji, count, hasUserReacted }) => (
+              <div
+                key={emoji}
+                className="reaction-badge"
+                style={{
+                  background: hasUserReacted ? '#e8f4fd' : '#ffffff',
+                  borderRadius: '12px',
+                  padding: '2px 6px',
+                  fontSize: '14px',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                  border: hasUserReacted ? '1px solid #007AFF' : '1px solid rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReaction(msg.id, emoji, currentUsername);
+                }}
+              >
+                <span>{emoji}</span>
+                {count > 1 && (
+                  <span style={{ fontSize: '11px', color: '#666', fontWeight: 500 }}>
+                    {count}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -323,7 +362,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                   handleSelectReaction(reaction);
                 }}
                 style={{
-                  background: selectedReaction === reaction ? 'rgba(0,0,0,0.1)' : 'transparent',
+                  background: userReaction === reaction ? 'rgba(0,122,255,0.15)' : 'transparent',
                   border: 'none',
                   borderRadius: '50%',
                   width: '40px',
