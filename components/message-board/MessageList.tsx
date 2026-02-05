@@ -12,6 +12,7 @@ interface MessageListProps {
   error: any;
   currentUser: User | null;
   onDelete: (id: string) => Promise<void>;
+  onReaction: (messageId: string, emoji: string, username: string) => Promise<void>;
   isSubmitting: boolean;
   isEditMode?: boolean;
 }
@@ -22,6 +23,7 @@ const MessageList: React.FC<MessageListProps> = ({
   error,
   currentUser,
   onDelete,
+  onReaction,
   isSubmitting,
   isEditMode = false,
 }) => {
@@ -223,6 +225,7 @@ const MessageList: React.FC<MessageListProps> = ({
               currentUser={currentUser}
               showSenderName={showSenderName}
               onDelete={onDelete}
+              onReaction={onReaction}
               isEditMode={isEditMode}
             />
           );
