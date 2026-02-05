@@ -13,6 +13,7 @@ interface MessageListProps {
   currentUser: User | null;
   onDelete: (id: string) => Promise<void>;
   isSubmitting: boolean;
+  isEditMode?: boolean;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -22,6 +23,7 @@ const MessageList: React.FC<MessageListProps> = ({
   currentUser,
   onDelete,
   isSubmitting,
+  isEditMode = false,
 }) => {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -221,6 +223,7 @@ const MessageList: React.FC<MessageListProps> = ({
               currentUser={currentUser}
               showSenderName={showSenderName}
               onDelete={onDelete}
+              isEditMode={isEditMode}
             />
           );
         })}

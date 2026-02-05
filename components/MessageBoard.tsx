@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useChatLogic } from '../hooks/useChatLogic';
 import ChatWindow from './message-board/ChatWindow';
@@ -11,6 +12,7 @@ const MessageBoard: React.FC = () => {
   const { currentUser } = useUser();
   const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, toast } =
     useChatLogic();
+  const [isEditMode, setIsEditMode] = useState(false);
 
   return (
     <div
@@ -29,7 +31,7 @@ const MessageBoard: React.FC = () => {
       {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      <ChatWindow>
+      <ChatWindow isEditMode={isEditMode} onToggleEditMode={() => setIsEditMode(!isEditMode)}>
         <MessageList
           messages={messages}
           isLoading={isLoading}
@@ -37,6 +39,7 @@ const MessageBoard: React.FC = () => {
           currentUser={currentUser}
           onDelete={handleDelete}
           isSubmitting={isSubmitting}
+          isEditMode={isEditMode}
         />
         <MessageInput
           key={currentUser || 'anonymous'}
