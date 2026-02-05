@@ -1,11 +1,13 @@
 import React from 'react';
-import { spacing, typography } from '../../design-system/tokens';
+import { spacing, typography, colors } from '../../design-system/tokens';
 
 interface ChatWindowProps {
   children: React.ReactNode;
+  isEditMode?: boolean;
+  onToggleEditMode?: () => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ children }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ children, isEditMode = false, onToggleEditMode }) => {
   return (
     <div
       style={{
@@ -49,6 +51,27 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ children }) => {
             Messages
           </span>
         </div>
+
+        {/* Edit/Done button */}
+        {onToggleEditMode && (
+          <button
+            onClick={onToggleEditMode}
+            style={{
+              position: 'absolute',
+              right: spacing.md,
+              color: '#007AFF',
+              fontSize: '17px',
+              fontWeight: 400,
+              cursor: 'pointer',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+            }}
+          >
+            {isEditMode ? 'Done' : 'Edit'}
+          </button>
+        )}
       </div>
 
       {/* Chat Content Area */}
