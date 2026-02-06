@@ -1,227 +1,218 @@
-# New Quiz Question Type: X-Y Axis Placement
 
-Add a new two-dimensional slider question type to the quiz system where users place a point on a 2D grid, allowing for nuanced personality scoring based on position.
+
+# Y2K Dark Romantic Profile Selection Redesign
+
+Transform the profile selection page into a stunning Y2K-inspired dark romantic interface with gel-style floating bubbles, pixel-art stars, and a split-screen layout.
 
 ---
 
 ## Overview
 
-This adds a fourth question type called **"XY Axis"** (or "Spectrum" / "Position Picker") that presents a 2D plane where:
+Completely redesign the UserSelection component with:
+- **Vertical 50/50 split layout** for Aaron and Electra
+- **Gel-style floating bubbles** containing profile avatars with soft bounce animation
+- **Y2K dark romantic aesthetic** with deep purple/midnight blue gradients
+- **Pixel-art stars** and subtle heart patterns in the background
+- **Neon-pink glowing edges** throughout the interface
+- **Chunky glossy "Take Personality Quiz" button** with plastic texture
+- Preserved Papyrus font throughout
 
-- The **X-axis** represents one spectrum (e.g., Introvert ↔ Extrovert)
-- The **Y-axis** represents another spectrum (e.g., Thinking ↔ Feeling)
-- User taps/clicks to place their position on the grid
-- Each quadrant/region maps to different character scores
+---
+
+## Visual Design
 
 ```text
-                    Y-axis label (top)
-                          ↑
-         ┌────────────────┼────────────────┐
-         │                │                │
-         │   Quadrant 1   │   Quadrant 2   │
-         │   (Aaron)      │   (Electra)    │
-         │                │                │
-X-axis ──┼────────────────●────────────────┼── X-axis
-(left)   │                │                │   (right)
-         │   Quadrant 3   │   Quadrant 4   │
-         │   (Nosferatu)  │   (Madeleine)  │
-         │                │                │
-         └────────────────┼────────────────┘
-                          ↓
-                    Y-axis label (bottom)
+┌─────────────────────────────────────────────┐
+│  ★    ·    ★    ·    ★    ·    ★    ·    ★  │  <- Pixel stars layer
+├──────────────────┬──────────────────────────┤
+│                  │                          │
+│   ╭─────────╮    │    ╭─────────╮           │
+│   │ ◠─────◠ │    │    │ ◠─────◠ │           │  <- Gel bubbles with
+│   │  Aaron  │    │    │ Electra │           │     soft bounce animation
+│   │  avatar │    │    │  avatar │           │
+│   ╰─────────╯    │    ╰─────────╯           │
+│                  │                          │
+│    ┌───────┐     │     ┌───────┐            │
+│    │ Aaron │     │     │Electra│            │  <- Names below bubbles
+│    └───────┘     │     └───────┘            │
+│      🔒          │        🔒                │  <- Lock icons if PIN set
+├──────────────────┴──────────────────────────┤
+│                                             │
+│  ┌─────────────────────────────────────────┐│
+│  │  ✨ Take Personality Quiz ✨            ││  <- Chunky glossy button
+│  └─────────────────────────────────────────┘│
+│                                             │
+└─────────────────────────────────────────────┘
+         Background: Purple/blue gradient
+         with pixel stars and heart patterns
 ```
 
 ---
 
 ## Implementation Details
 
-### 1. Update Type Definitions
+### 1. New Component: ProfileSelectionScreen
 
-**File: `components/quiz/types.ts`**
+**File: `components/ProfileSelectionScreen.tsx`** (New)
 
-Add new interfaces for XY Axis questions:
+A completely new component replacing the current card-based layout:
 
-- `XYAxisQuestion` interface with:
-  - `id`, `type: 'xy-axis'`, `question`
-  - `xAxis: { leftLabel: string, rightLabel: string }`
-  - `yAxis: { topLabel: string, bottomLabel: string }`
-  - `quadrantScores`: Scoring for each of the 4 quadrants (top-left, top-right, bottom-left, bottom-right)
+- **Full-screen split layout**: Vertical divider with Aaron on left, Electra on right
+- **Gradient background**: Deep purple (#2d1b4e) to midnight blue (#1a1a3e)
+- **Pixel-art stars**: CSS-generated twinkling star field using pseudo-elements
+- **Subtle heart patterns**: Semi-transparent heart overlay (reusing existing pattern)
+- **Glowing neon divider line**: Animated pink/purple glow down the center
 
-- Update `QuestionType` union to include `'xy-axis'`
-- Update `QuizQuestion` union type
-- Update `QuizAnswer` to include `xyPosition?: { x: number, y: number }` (values -1 to 1)
+### 2. New Component: GelBubbleAvatar
 
-### 2. Create XY Axis Question Component
+**File: `components/GelBubbleAvatar.tsx`** (New)
 
-**File: `components/quiz/XYAxisQuestion.tsx`** (New)
+The translucent gel-style floating sphere:
 
-Interactive 2D grid component for quiz-takers:
+- **Gel appearance**: Layered gradients with inner glow and outer shine
+- **Glossy reflections**: White highlight at top-left, softer reflection at bottom
+- **Translucent effect**: rgba backgrounds with backdrop-filter blur
+- **Bounce animation**: Soft up-down floating using CSS keyframes
+- **Hover/tap effects**: Scale up slightly, intensify glow
+- **Profile image**: Centered inside the bubble with rounded clipping
+- **Lock badge**: Small overlay if user has PIN protection
 
-- Renders a square grid with crosshairs
-- Axis labels on all 4 sides
-- Touch/click to place a draggable marker
-- Visual feedback showing the selected position
-- Smooth animations for marker movement
-- Accessible with keyboard navigation (arrow keys)
+### 3. New Component: GlossyQuizButton
 
-### 3. Create XY Axis Editor Component
+**File: `components/GlossyQuizButton.tsx`** (New)
 
-**File: `components/quiz/XYAxisEditor.tsx`** (New)
+Chunky plastic-textured button:
 
-Editor component for the quiz admin:
+- **Plastic texture**: Multiple gradient layers for 3D plastic look
+- **Glossy shine**: Animated shimmer effect across the surface
+- **Thick border**: Raised 3D appearance with outset border
+- **Pink glow**: Neon edge glow on all sides
+- **Press animation**: Satisfying "squish" effect on click
 
-- Text inputs for all 4 axis labels
-- Visual grid preview showing quadrant scoring
-- 4 ScoreSlider components (one per quadrant)
-- Live preview of how scores interpolate
+### 4. Update UserSelection Component
 
-### 4. Add XY Axis Template
+**File: `components/UserSelection.tsx`** (Update)
 
-**File: `components/quiz/QuestionTemplates.ts`** (Update)
+Refactor to use the new components:
+- Replace Card layout with ProfileSelectionScreen
+- Use GelBubbleAvatar for each user
+- Use GlossyQuizButton for quiz CTA
+- Keep existing PIN dialog logic intact
+- Keep SuggestionForm at bottom
 
-Add new template:
+### 5. Add Y2K Animations to index.html
 
-```
-{
-  id: 'xy-axis',
-  name: 'XY Axis / 2D Spectrum',
-  description: 'Place position on 2D grid',
-  icon: '📊',
-  create: () => ({ ... default XY axis question ... })
-}
-```
+**File: `index.html`** (Update)
 
-### 5. Update Quiz Editor
-
-**File: `components/quiz/QuizEditor.tsx`** (Update)
-
-- Add "+ XY Axis" button to the "Add New Question" section
-- Add `XYAxisEditor` to the `QuestionEditor` component's type switch
-- Update `OptionsSummary`-style component for XY questions showing axis labels
-
-### 6. Update Quiz Flow
-
-**File: `components/quiz/QuizFlow.tsx`** (Update)
-
-- Import and render `XYAxisQuestion` for `type === 'xy-axis'`
-- Update `handleAnswer` to accept XY position
-- Update `calculateResults` to interpolate scores based on X/Y position:
-  - Position (-1, 1) = top-left quadrant (100% weight)
-  - Position (1, 1) = top-right quadrant (100% weight)
-  - Position (0, 0) = center (25% weight to each quadrant)
-  - Intermediate positions blend between adjacent quadrants
-
-### 7. Update Question Preview
-
-**File: `components/quiz/QuestionPreview.tsx`** (Update)
-
-Add preview rendering for XY axis questions showing the grid and labels.
+Add new CSS keyframes:
+- `@keyframes gel-bounce`: Soft floating bounce (transform: translateY)
+- `@keyframes twinkle`: Star twinkling effect (opacity pulse)
+- `@keyframes neon-pulse`: Glowing edge animation
+- `@keyframes shimmer-plastic`: Glossy button shine sweep
 
 ---
 
-## Scoring Algorithm
+## Technical Details
 
-The XY position (x, y) where both values range from -1 to 1:
+### Gel Bubble Styling
 
-```text
-Position → Quadrant Weights:
-┌─────────────────────────────────────┐
-│ x < 0, y > 0: Top-Left (TL)         │
-│ x > 0, y > 0: Top-Right (TR)        │
-│ x < 0, y < 0: Bottom-Left (BL)      │
-│ x > 0, y < 0: Bottom-Right (BR)     │
-└─────────────────────────────────────┘
+```css
+/* Multi-layer gradient for gel appearance */
+background: 
+  radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%),
+  radial-gradient(circle at 50% 50%, rgba(147, 112, 219, 0.6) 0%, rgba(75, 0, 130, 0.3) 100%);
 
-Weight calculation:
-- TL weight = max(0, -x) * max(0, y)
-- TR weight = max(0, x) * max(0, y)
-- BL weight = max(0, -x) * max(0, -y)
-- BR weight = max(0, x) * max(0, -y)
+/* Inner and outer glow */
+box-shadow: 
+  inset 0 -20px 30px rgba(255,255,255,0.1),
+  inset 0 10px 20px rgba(255,255,255,0.3),
+  0 0 40px rgba(255, 105, 180, 0.4),
+  0 0 80px rgba(147, 112, 219, 0.3);
+```
 
-Normalize weights and multiply by quadrant character scores.
+### Bounce Animation
+
+```css
+@keyframes gel-bounce {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.gel-bubble {
+  animation: gel-bounce 3s ease-in-out infinite;
+}
+/* Offset animation for second bubble */
+.gel-bubble-offset {
+  animation-delay: 1.5s;
+}
+```
+
+### Pixel Star Field
+
+```css
+/* CSS-only pixel stars using box-shadow */
+.pixel-stars::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  box-shadow: 
+    50px 80px white, 120px 40px white, 200px 100px white,
+    /* ... many more scattered positions */;
+  animation: twinkle 4s ease-in-out infinite;
+}
+```
+
+### Glossy Plastic Button
+
+```css
+background: 
+  linear-gradient(180deg, 
+    rgba(255,255,255,0.3) 0%, 
+    rgba(255,255,255,0.1) 40%,
+    transparent 60%,
+    rgba(0,0,0,0.2) 100%),
+  linear-gradient(135deg, #ff69b4 0%, #ff8bb3 50%, #ff69b4 100%);
+
+border: 4px outset rgba(255,255,255,0.5);
+border-radius: 16px;
+box-shadow: 
+  0 6px 0 rgba(180, 50, 120, 1),
+  0 8px 20px rgba(0,0,0,0.5),
+  0 0 30px rgba(255, 105, 180, 0.5),
+  inset 0 2px 0 rgba(255,255,255,0.4);
 ```
 
 ---
 
 ## Files to Create/Modify
 
-| File                                   | Action | Description                   |
-| -------------------------------------- | ------ | ----------------------------- |
-| `components/quiz/types.ts`             | Update | Add XYAxisQuestion type       |
-| `components/quiz/XYAxisQuestion.tsx`   | Create | User-facing 2D grid component |
-| `components/quiz/XYAxisEditor.tsx`     | Create | Admin editor for XY questions |
-| `components/quiz/QuestionTemplates.ts` | Update | Add XY axis template          |
-| `components/quiz/QuizEditor.tsx`       | Update | Add editor support            |
-| `components/quiz/QuizFlow.tsx`         | Update | Add flow support + scoring    |
-| `components/quiz/QuestionPreview.tsx`  | Update | Add preview support           |
-
----
-
-## Visual Design
-
-### Quiz-Taker View
-
-```text
-┌─────────────────────────────────────────────┐
-│  "Where do you see yourself on this grid?"  │
-├─────────────────────────────────────────────┤
-│                                             │
-│              Spontaneous                    │
-│                   ▲                         │
-│      ┌────────────┼────────────┐            │
-│      │            │            │            │
-│      │            │            │            │
-│ Solo │────────────●────────────│ Social     │
-│      │            │ ← marker   │            │
-│      │            │            │            │
-│      └────────────┼────────────┘            │
-│                   ▼                         │
-│               Planned                       │
-│                                             │
-└─────────────────────────────────────────────┘
-```
-
-### Editor View
-
-```text
-┌─────────────────────────────────────────────┐
-│ XY Axis Labels                              │
-├─────────────────────────────────────────────┤
-│ Y-Top:    [Spontaneous          ]           │
-│ Y-Bottom: [Planned              ]           │
-│ X-Left:   [Solo                 ]           │
-│ X-Right:  [Social               ]           │
-├─────────────────────────────────────────────┤
-│ Quadrant Scores                             │
-├─────────────────────────────────────────────┤
-│ ⬆⬅ Top-Left (Solo + Spontaneous)           │
-│ [ScoreSlider: A=2 E=0 M=0 N=0]             │
-│                                             │
-│ ⬆➡ Top-Right (Social + Spontaneous)        │
-│ [ScoreSlider: A=0 E=2 M=0 N=0]             │
-│                                             │
-│ ⬇⬅ Bottom-Left (Solo + Planned)            │
-│ [ScoreSlider: A=0 E=0 M=0 N=2]             │
-│                                             │
-│ ⬇➡ Bottom-Right (Social + Planned)         │
-│ [ScoreSlider: A=0 E=0 M=2 N=0]             │
-└─────────────────────────────────────────────┘
-```
+| File | Action | Description |
+|------|--------|-------------|
+| `components/ProfileSelectionScreen.tsx` | Create | Full-screen split layout with Y2K background |
+| `components/GelBubbleAvatar.tsx` | Create | Translucent gel sphere with bounce animation |
+| `components/GlossyQuizButton.tsx` | Create | Chunky plastic-textured button |
+| `components/UserSelection.tsx` | Update | Integrate new components |
+| `index.html` | Update | Add gel-bounce, twinkle, neon-pulse keyframes |
 
 ---
 
 ## Accessibility
 
-- Grid navigable via arrow keys
-- ARIA live region announces position changes
-- Visual marker has sufficient contrast
-- Quadrant areas have `role="radiogroup"` semantics
-- Labels clearly associated with axes
+- Gel bubbles are clickable with clear focus states
+- Keyboard navigation preserved (Tab between profiles, Enter to select)
+- ARIA labels on profile buttons
+- Animations respect `prefers-reduced-motion`
+- High contrast text on gradient backgrounds
+- PIN dialog interaction unchanged
 
 ---
 
-## Technical Notes
+## Mobile Responsiveness
 
-**Lock File Reminder:** The project is missing `pnpm-lock.yaml`. Run `pnpm install` locally and commit the lock file for consistent dependency versions.
+- On mobile: Stack profiles vertically instead of side-by-side
+- Smaller gel bubbles that still bounce
+- Quiz button spans full width
+- Touch-friendly tap targets (minimum 44px)
+- Reduced animation intensity on mobile for performance
 
-**Styling:** All new components will use existing design tokens from `design-system/tokens.ts` and maintain the Papyrus font aesthetic.
