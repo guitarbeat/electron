@@ -15,3 +15,7 @@
 
 - **Case-Insensitive Styling**: Updated in to case-insensitively match user names 'Aaron' and 'Electra' to their specific style variants, ensuring consistent styling regardless of capitalization.
 - **Case-Insensitive Styling**: Updated `getStyleForUser` in `MessageItem.tsx` to case-insensitively match user names 'Aaron' and 'Electra' to their specific style variants, ensuring consistent styling regardless of capitalization.
+
+## 2026-10-24 - Form Input Association
+**Learning:** The `Input` component was handling label and error rendering but failed to programmatically associate them with the input element using `for/id` and `aria-describedby`, making them disconnected for screen readers.
+**Action:** Enforce programmatic association in base form components by generating unique IDs and automatically wiring up `htmlFor`, `aria-describedby`, and `aria-invalid`.
