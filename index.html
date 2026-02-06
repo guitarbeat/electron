@@ -500,6 +500,128 @@
         animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
       }
 
+      /* Y2K Gel Bubble Animations */
+      @keyframes gel-bounce {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-12px); }
+      }
+
+      .gel-bubble {
+        animation: gel-bounce 3s ease-in-out infinite;
+      }
+
+      .gel-bubble-offset {
+        animation: gel-bounce 3s ease-in-out infinite;
+        animation-delay: 1.5s;
+      }
+
+      /* Pixel Star Twinkling */
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+
+      .twinkle-stars {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .twinkle-stars::before,
+      .twinkle-stars::after {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 4s ease-in-out infinite;
+      }
+
+      .twinkle-stars::before {
+        box-shadow: 
+          50px 80px white, 120px 40px white, 200px 100px white,
+          280px 60px white, 350px 140px white, 420px 30px white,
+          490px 180px white, 560px 90px white, 630px 150px white,
+          700px 50px white, 80px 200px white, 150px 280px white,
+          220px 220px white, 300px 300px white, 380px 250px white,
+          450px 320px white, 520px 270px white, 600px 350px white,
+          40px 400px white, 110px 450px white, 180px 380px white,
+          250px 500px white, 320px 420px white, 400px 480px white,
+          470px 400px white, 540px 520px white, 610px 440px white,
+          680px 500px white, 750px 380px white, 30px 550px white,
+          100px 600px white, 170px 520px white, 240px 620px white;
+      }
+
+      .twinkle-stars::after {
+        box-shadow: 
+          70px 120px rgba(135, 206, 250, 0.8), 
+          140px 60px rgba(255, 105, 180, 0.8),
+          210px 180px rgba(147, 112, 219, 0.8), 
+          290px 100px rgba(135, 206, 250, 0.8),
+          360px 200px rgba(255, 105, 180, 0.8), 
+          430px 80px rgba(147, 112, 219, 0.8),
+          500px 160px rgba(135, 206, 250, 0.8), 
+          570px 240px rgba(255, 105, 180, 0.8),
+          640px 120px rgba(147, 112, 219, 0.8), 
+          90px 300px rgba(135, 206, 250, 0.8),
+          160px 360px rgba(255, 105, 180, 0.8), 
+          230px 280px rgba(147, 112, 219, 0.8),
+          310px 400px rgba(135, 206, 250, 0.8), 
+          390px 340px rgba(255, 105, 180, 0.8);
+        animation-delay: 2s;
+      }
+
+      .twinkle-stars-offset::before,
+      .twinkle-stars-offset::after {
+        animation-delay: 2s;
+      }
+
+      /* Neon Pulse Animation */
+      @keyframes neon-pulse {
+        0%, 100% { 
+          opacity: 0.8;
+          box-shadow: 
+            0 0 10px rgba(255, 105, 180, 0.8),
+            0 0 20px rgba(255, 105, 180, 0.5),
+            0 0 40px rgba(135, 206, 250, 0.3);
+        }
+        50% { 
+          opacity: 1;
+          box-shadow: 
+            0 0 15px rgba(255, 105, 180, 1),
+            0 0 30px rgba(255, 105, 180, 0.7),
+            0 0 60px rgba(135, 206, 250, 0.5);
+        }
+      }
+
+      .neon-pulse {
+        animation: neon-pulse 2s ease-in-out infinite;
+      }
+
+      /* Glossy Button Shimmer */
+      @keyframes shimmer-plastic {
+        0% { left: -100%; }
+        100% { left: 200%; }
+      }
+
+      .glossy-quiz-button:hover .shimmer-plastic {
+        animation: shimmer-plastic 1.5s ease-in-out infinite;
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        .gel-bubble,
+        .gel-bubble-offset,
+        .twinkle-stars::before,
+        .twinkle-stars::after,
+        .neon-pulse,
+        .shimmer-plastic {
+          animation: none !important;
+        }
+      }
+      }
+
       /* Slide in from bottom */
       @keyframes slide-up {
         from {
