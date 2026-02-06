@@ -4,6 +4,7 @@ import Button from './ui/Button';
 import Input from './ui/Input';
 import { spacing, typography, colors, radius } from '../design-system/tokens';
 import { useSuggestions } from '../hooks/useSuggestions';
+import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import WatchlistPreview from './WatchlistPreview';
 
 const MAX_TITLE_LENGTH = 100;
@@ -12,6 +13,7 @@ const MAX_REASON_LENGTH = 200;
 
 const SuggestionForm: React.FC = () => {
   const { addSuggestion, pendingSuggestions } = useSuggestions();
+  const isMobile = useMediaQuery(breakpoints.sm);
   const [title, setTitle] = useState('');
   const [suggestedBy, setSuggestedBy] = useState('');
   const [reason, setReason] = useState('');
@@ -117,7 +119,7 @@ const SuggestionForm: React.FC = () => {
           >
             <div style={{ flex: 2 }}>
               <Input
-                placeholder="Movie title..."
+                placeholder={isMobile ? 'Title' : 'Movie title...'}
                 value={title}
                 onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
                 disabled={isSubmitting}
@@ -126,12 +128,13 @@ const SuggestionForm: React.FC = () => {
                   borderRight: 'none',
                   height: '44px',
                   textAlign: 'left',
+                  padding: isMobile ? spacing.sm : undefined,
                 }}
               />
             </div>
             <div style={{ flex: 1, minWidth: '100px' }}>
               <Input
-                placeholder="Your Name"
+                placeholder={isMobile ? 'Name' : 'Your Name'}
                 value={suggestedBy}
                 onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
                 disabled={isSubmitting}
@@ -140,6 +143,7 @@ const SuggestionForm: React.FC = () => {
                   borderLeft: `1px solid ${colors.borderSecondary}40`,
                   height: '44px',
                   textAlign: 'left',
+                  padding: isMobile ? spacing.sm : undefined,
                 }}
               />
             </div>
