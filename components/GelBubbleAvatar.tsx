@@ -53,59 +53,85 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         opacity: disabled ? 0.7 : 1,
       }}
     >
-      {/* Gel Bubble Container */}
+      {/* Gel Bubble Container - Outer Ring */}
       <div
         style={{
           position: 'relative',
-          width: 'clamp(120px, 30vw, 160px)',
-          height: 'clamp(120px, 30vw, 160px)',
+          width: 'clamp(140px, 35vw, 200px)',
+          height: 'clamp(140px, 35vw, 200px)',
           borderRadius: '50%',
-          // Multi-layer gradient for gel appearance
+          // Outer gel ring effect
           background: `
-            radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(147, 112, 219, 0.6) 0%, rgba(75, 0, 130, 0.3) 100%)
+            radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, transparent 40%),
+            radial-gradient(circle at 70% 75%, rgba(255,255,255,0.1) 0%, transparent 30%),
+            linear-gradient(135deg, 
+              rgba(147, 112, 219, 0.5) 0%, 
+              rgba(138, 130, 200, 0.4) 25%,
+              rgba(100, 80, 160, 0.35) 50%,
+              rgba(147, 112, 219, 0.45) 75%,
+              rgba(180, 150, 230, 0.5) 100%
+            )
           `,
-          // Inner and outer glow
+          // Multi-layer glow for depth
           boxShadow: `
-            inset 0 -20px 30px rgba(255,255,255,0.1),
-            inset 0 10px 20px rgba(255,255,255,0.3),
-            0 0 ${isHovered ? '60px' : '40px'} rgba(255, 105, 180, ${isHovered ? '0.6' : '0.4'}),
-            0 0 ${isHovered ? '100px' : '80px'} rgba(147, 112, 219, ${isHovered ? '0.5' : '0.3'})
+            inset 0 -15px 40px rgba(100, 60, 150, 0.4),
+            inset 0 15px 30px rgba(255, 255, 255, 0.2),
+            inset 0 0 20px rgba(255, 105, 180, 0.15),
+            0 0 ${isHovered ? '50px' : '35px'} rgba(255, 105, 180, ${isHovered ? '0.5' : '0.35'}),
+            0 0 ${isHovered ? '80px' : '60px'} rgba(147, 112, 219, ${isHovered ? '0.4' : '0.25'})
           `,
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          border: '3px solid rgba(180, 150, 220, 0.4)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
           transition: 'all 0.3s ease-out',
-          transform: isHovered ? 'scale(1.08)' : 'scale(1)',
-          overflow: 'hidden',
+          transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        {/* Glossy highlight overlay */}
+        {/* Glossy highlight - top left shine */}
         <div
           style={{
             position: 'absolute',
-            top: '5%',
-            left: '15%',
-            width: '40%',
-            height: '30%',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%)',
+            top: '8%',
+            left: '12%',
+            width: '35%',
+            height: '25%',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            filter: 'blur(2px)',
+          }}
+        />
+
+        {/* Secondary highlight - bottom right */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '15%',
+            right: '10%',
+            width: '20%',
+            height: '15%',
+            background: 'radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%)',
             borderRadius: '50%',
             pointerEvents: 'none',
           }}
         />
 
-        {/* Profile Image */}
+        {/* Profile Image Container */}
         <div
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '70%',
-            height: '70%',
+            width: '72%',
+            height: '72%',
             borderRadius: '50%',
             overflow: 'hidden',
-            border: '3px solid rgba(255, 105, 180, 0.5)',
-            boxShadow: '0 0 20px rgba(255, 105, 180, 0.3)',
+            border: '3px solid rgba(255, 105, 180, 0.6)',
+            boxShadow: `
+              0 0 15px rgba(255, 105, 180, 0.4),
+              inset 0 0 20px rgba(0, 0, 0, 0.2)
+            `,
+            position: 'relative',
           }}
         >
           <ImageWithFallback
@@ -124,20 +150,25 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           <div
             style={{
               position: 'absolute',
-              bottom: '8%',
-              right: '8%',
-              width: '28px',
-              height: '28px',
+              bottom: '5%',
+              right: '5%',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #2d1b4e 0%, #1a1a3e 100%)',
-              border: '2px solid rgba(255, 105, 180, 0.8)',
-              boxShadow: '0 0 10px rgba(255, 105, 180, 0.5)',
+              background: `
+                radial-gradient(circle at 30% 30%, rgba(100, 70, 150, 0.9) 0%, rgba(45, 27, 78, 0.95) 100%)
+              `,
+              border: '2px solid rgba(255, 105, 180, 0.7)',
+              boxShadow: `
+                0 0 12px rgba(255, 105, 180, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2)
+              `,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <LockIcon style={{ width: '14px', height: '14px', color: '#ff69b4' }} />
+            <LockIcon style={{ width: '15px', height: '15px', color: '#ff69b4' }} />
           </div>
         )}
       </div>
