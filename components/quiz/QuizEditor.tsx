@@ -187,15 +187,19 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
                 onChange={handleImport}
                 style={{ display: 'none' }}
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                as="span"
+              <span
                 title="Import quiz from JSON"
-                style={{ pointerEvents: 'none' }}
+                style={{ 
+                  pointerEvents: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px 12px',
+                  cursor: 'pointer',
+                }}
               >
                 📥
-              </Button>
+              </span>
             </label>
           </div>
 

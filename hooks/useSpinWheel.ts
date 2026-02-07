@@ -9,7 +9,7 @@ const POINTER_HISTORY_LIMIT = 5; // Track last 5 pointer moves for velocity calc
 
 export const useSpinWheel = (
   movies: Movie[],
-  wheelRef: React.RefObject<HTMLDivElement>,
+  wheelRef: React.RefObject<HTMLDivElement | null>,
   currentUser: User | null,
   onWinner?: (movie: Movie) => void
 ) => {

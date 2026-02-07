@@ -157,7 +157,7 @@ const App: React.FC = () => {
         >
           <Button
             variant="secondary"
-            size={isMobile ? 'xs' : 'sm'}
+            size="sm"
             onClick={() => setShowQuizEditor(true)}
             aria-label="Edit Quiz"
             style={{
