@@ -124,7 +124,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
           transform: isOpen ? 'scale(1)' : 'scale(0.95)',
           transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e?.stopPropagation()}
       >
         <div
           style={{
@@ -187,7 +187,6 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Movie title..."
               autoFocus
-              icon={<SearchIcon />}
               style={{ width: '100%' }}
               disabled={isSearching}
             />

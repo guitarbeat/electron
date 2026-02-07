@@ -371,7 +371,7 @@ const SpinWheel: React.FC<{
               <Card
                 variant="elevated"
                 className="result-display-container"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => e?.stopPropagation()}
               >
                 <div
                   style={{
