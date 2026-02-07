@@ -59,7 +59,6 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
       style={{
         minHeight: '100dvh',
         width: '100%',
-        // Deep purple to midnight blue gradient
         background: 'linear-gradient(135deg, #2d1b4e 0%, #1a1a3e 50%, #0f0f2e 100%)',
         position: 'relative',
         overflow: 'hidden',
@@ -76,23 +75,74 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           zIndex: 0,
         }}
       >
-        {/* Star layer 1 */}
         <div className="twinkle-stars" />
-        {/* Star layer 2 (offset animation) */}
         <div className="twinkle-stars twinkle-stars-offset" />
       </div>
+
+      {/* Floating Hearts Y2K Layer */}
+      <div className="floating-hearts-y2k">
+        <span className="floating-heart-y2k" style={{ left: '35%', animationDelay: '3s' }}>💗</span>
+        <span className="floating-heart-y2k" style={{ left: '55%', animationDelay: '8s' }}>💕</span>
+        <span className="floating-heart-y2k" style={{ left: '25%', animationDelay: '11s', fontSize: '16px' }}>✨</span>
+        <span className="floating-heart-y2k" style={{ left: '85%', animationDelay: '5s', fontSize: '18px' }}>💖</span>
+      </div>
+
+      {/* Shooting Stars */}
+      <div
+        className="shooting-star"
+        style={{ top: '10%', left: '-100px', animationDelay: '0s' }}
+      />
+      <div
+        className="shooting-star"
+        style={{ top: '30%', left: '-100px', animationDelay: '3s' }}
+      />
+      <div
+        className="shooting-star"
+        style={{ top: '60%', left: '-100px', animationDelay: '7s' }}
+      />
 
       {/* Heart pattern overlay */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z' fill='%23ff69b4' opacity='0.08'%3E%3C/path%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z' fill='%23ff69b4' opacity='0.06'%3E%3C/path%3E%3C/svg%3E")`,
           backgroundRepeat: 'repeat',
           pointerEvents: 'none',
           zIndex: 0,
         }}
       />
+
+      {/* Header Title with Entrance Animation */}
+      <div
+        style={{
+          position: 'absolute',
+          top: isMobile ? '16px' : '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2,
+          textAlign: 'center',
+        }}
+      >
+        <h1
+          className="title-entrance"
+          style={{
+            fontFamily: "'Papyrus', fantasy",
+            fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
+            fontWeight: 600,
+            color: '#fff',
+            margin: 0,
+            background: 'linear-gradient(135deg, #ff69b4 0%, #87cefa 50%, #ff69b4 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: 'none',
+            letterSpacing: '0.05em',
+          }}
+        >
+          ✨ Who's Watching? ✨
+        </h1>
+      </div>
 
       {/* Main Content */}
       <div
@@ -106,6 +156,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           zIndex: 1,
           padding: isMobile ? '24px 16px' : '32px',
           gap: isMobile ? '24px' : '0',
+          marginTop: isMobile ? '60px' : '40px',
         }}
       >
         {/* Aaron's Side */}
@@ -132,21 +183,53 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           />
         </div>
 
-        {/* Neon Divider */}
+        {/* Heart Divider with Glow Rings */}
         <div
-          className="neon-pulse"
           style={{
-            width: isMobile ? '80%' : '2px',
-            height: isMobile ? '2px' : '60%',
-            background: 'linear-gradient(90deg, transparent, #ff69b4, #87cefa, #ff69b4, transparent)',
-            boxShadow: `
-              0 0 10px rgba(255, 105, 180, 0.8),
-              0 0 20px rgba(255, 105, 180, 0.5),
-              0 0 40px rgba(135, 206, 250, 0.3)
-            `,
-            borderRadius: '2px',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: isMobile ? '100%' : '80px',
+            height: isMobile ? '60px' : '200px',
           }}
-        />
+        >
+          {/* Glow rings */}
+          <div
+            className="glow-ring"
+            style={{
+              position: 'absolute',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              border: '2px solid rgba(255, 105, 180, 0.5)',
+              boxShadow: '0 0 20px rgba(255, 105, 180, 0.4)',
+            }}
+          />
+          <div
+            className="glow-ring-delayed"
+            style={{
+              position: 'absolute',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              border: '2px solid rgba(135, 206, 250, 0.4)',
+              boxShadow: '0 0 15px rgba(135, 206, 250, 0.3)',
+            }}
+          />
+          
+          {/* Heart icon */}
+          <div
+            className="heart-beat"
+            style={{
+              fontSize: isMobile ? '32px' : '40px',
+              filter: 'drop-shadow(0 0 15px rgba(255, 105, 180, 0.8)) drop-shadow(0 0 30px rgba(255, 105, 180, 0.5))',
+              zIndex: 1,
+            }}
+          >
+            💗
+          </div>
+        </div>
 
         {/* Electra's Side */}
         <div
@@ -174,48 +257,26 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         </div>
       </div>
 
-      {/* Header Title */}
-      <div
-        style={{
-          position: 'absolute',
-          top: isMobile ? '16px' : '24px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 2,
-          textAlign: 'center',
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "'Papyrus', fantasy",
-            fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
-            fontWeight: 600,
-            color: '#fff',
-            margin: 0,
-            background: 'linear-gradient(135deg, #ff69b4 0%, #87cefa 50%, #ff69b4 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            textShadow: 'none',
-            filter: 'drop-shadow(0 2px 10px rgba(255, 105, 180, 0.5))',
-            letterSpacing: '0.05em',
-          }}
-        >
-          Who's Watching?
-        </h1>
-      </div>
-
-      {/* Bottom Section */}
+      {/* Glassmorphism Bottom Section */}
       <div
         style={{
           position: 'relative',
           zIndex: 1,
-          padding: isMobile ? '16px' : '32px',
-          paddingTop: 0,
+          padding: isMobile ? '24px 16px 32px' : '32px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: '24px',
+          background: 'linear-gradient(135deg, rgba(45, 27, 78, 0.5) 0%, rgba(26, 26, 62, 0.4) 100%)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(255, 105, 180, 0.2)',
+          borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0',
+          boxShadow: `
+            0 -4px 30px rgba(255, 105, 180, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1)
+          `,
+          marginTop: 'auto',
         }}
       >
         {/* Quiz Button */}
