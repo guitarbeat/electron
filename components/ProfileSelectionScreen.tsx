@@ -140,7 +140,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
             letterSpacing: '0.05em',
           }}
         >
-          ✨ Who's Watching? ✨
+          Who's Watching?
         </h1>
       </div>
 
