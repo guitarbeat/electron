@@ -60,7 +60,6 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           width: 'clamp(140px, 35vw, 200px)',
           height: 'clamp(140px, 35vw, 200px)',
           borderRadius: '50%',
-          // Outer gel ring effect
           background: `
             radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, transparent 40%),
             radial-gradient(circle at 70% 75%, rgba(255,255,255,0.1) 0%, transparent 30%),
@@ -72,7 +71,6 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               rgba(180, 150, 230, 0.5) 100%
             )
           `,
-          // Multi-layer glow for depth
           boxShadow: `
             inset 0 -15px 40px rgba(100, 60, 150, 0.4),
             inset 0 15px 30px rgba(255, 255, 255, 0.2),
@@ -90,6 +88,33 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           justifyContent: 'center',
         }}
       >
+        {/* Outer Ring Pulse on Hover */}
+        {isHovered && (
+          <>
+            <div
+              className="ring-pulse"
+              style={{
+                position: 'absolute',
+                inset: '-12px',
+                borderRadius: '50%',
+                border: '3px solid rgba(255, 105, 180, 0.5)',
+                pointerEvents: 'none',
+              }}
+            />
+            <div
+              className="ring-pulse"
+              style={{
+                position: 'absolute',
+                inset: '-12px',
+                borderRadius: '50%',
+                border: '2px solid rgba(135, 206, 250, 0.4)',
+                pointerEvents: 'none',
+                animationDelay: '0.3s',
+              }}
+            />
+          </>
+        )}
+
         {/* Glossy highlight - top left shine */}
         <div
           style={{
