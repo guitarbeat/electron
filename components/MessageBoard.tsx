@@ -33,7 +33,7 @@ const MessageBoard: React.FC = () => {
 
       <ChatWindow isEditMode={isEditMode} onToggleEditMode={() => setIsEditMode(!isEditMode)}>
         <MessageList
-          messages={messages}
+          messages={messages ?? null}
           isLoading={isLoading}
           error={error}
           currentUser={currentUser}

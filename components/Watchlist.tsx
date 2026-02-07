@@ -234,25 +234,29 @@ const Watchlist: React.FC = () => {
     setShowPinDialog(true);
   };
 
-  const handlePinSubmit = async (pin: string) => {
-    if (!currentUser) return;
+  const handlePinSubmit = async (pin: string): Promise<boolean> => {
+    if (!currentUser) return false;
     setIsPinLoading(true);
     try {
       if (pinMode === 'set') {
         await setUserPin(currentUser, pin);
         setShowPinDialog(false);
         setToast({ message: 'PIN set successfully!', type: 'success' });
+        return true;
       } else {
         // change mode
         const isValid = await verifyUserPin(currentUser, pin);
         if (isValid) {
           setPinMode('set'); // Reuse set mode for the new pin
+          return true;
         } else {
           setToast({ message: 'Incorrect PIN', type: 'error' });
+          return false;
         }
       }
     } catch (err: any) {
       setToast({ message: `Error: ${err.message}`, type: 'error' });
+      return false;
     } finally {
       setIsPinLoading(false);
     }
@@ -322,7 +326,7 @@ const Watchlist: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', background: colors.background }}>
       {/* Confetti celebration */}
-      {showConfetti && <Confetti />}
+      {showConfetti && <Confetti isActive={showConfetti} />}
 
       <Header
         currentUser={currentUser!}
@@ -607,7 +611,8 @@ const Watchlist: React.FC = () => {
 
       <PinDialog
         isOpen={showPinDialog}
-        onClose={() => setShowPinDialog(false)}
+        user={currentUser!}
+        onCancel={() => setShowPinDialog(false)}
         onSubmit={handlePinSubmit}
         mode={pinMode}
         isLoading={isPinLoading}
