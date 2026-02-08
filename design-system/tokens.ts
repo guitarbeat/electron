@@ -18,7 +18,7 @@ export const spacing = {
 // * Color palette (Retro theme)
 export const colors = {
   // Base
-  background: '#1a1a2e',
+  background: '#0f1115',
   surface: 'rgba(27, 40, 69, 0.85)',
   surfaceElevated: 'rgba(27, 40, 69, 0.95)',
 
@@ -127,7 +127,7 @@ export const radius = {
   md: '0.5rem', // 8px
   lg: '0.75rem', // 12px
   // Card border radius (optimized for mobile)
-  card: '12px',
+  card: '20px',
   full: '9999px',
 } as const;
 
