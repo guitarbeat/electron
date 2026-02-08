@@ -81,18 +81,9 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
       </div>
 
       {/* Shooting Stars */}
-      <div
-        className="shooting-star"
-        style={{ top: '10%', left: '-100px', animationDelay: '0s' }}
-      />
-      <div
-        className="shooting-star"
-        style={{ top: '30%', left: '-100px', animationDelay: '3s' }}
-      />
-      <div
-        className="shooting-star"
-        style={{ top: '60%', left: '-100px', animationDelay: '7s' }}
-      />
+      <div className="shooting-star" style={{ top: '10%', left: '-100px', animationDelay: '0s' }} />
+      <div className="shooting-star" style={{ top: '30%', left: '-100px', animationDelay: '3s' }} />
+      <div className="shooting-star" style={{ top: '60%', left: '-100px', animationDelay: '7s' }} />
 
       {/* Header Title with Entrance Animation */}
       <div
@@ -198,13 +189,14 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
               boxShadow: '0 0 15px rgba(135, 206, 250, 0.3)',
             }}
           />
-          
+
           {/* Heart icon */}
           <div
             className="heart-beat"
             style={{
               fontSize: isMobile ? '32px' : '40px',
-              filter: 'drop-shadow(0 0 15px rgba(255, 105, 180, 0.8)) drop-shadow(0 0 30px rgba(255, 105, 180, 0.5))',
+              filter:
+                'drop-shadow(0 0 15px rgba(255, 105, 180, 0.8)) drop-shadow(0 0 30px rgba(255, 105, 180, 0.5))',
               zIndex: 1,
             }}
           >
@@ -256,9 +248,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         }}
       >
         {/* Quiz Button */}
-        <GlossyQuizButton onClick={onTakeQuiz}>
-          ✨ Take Personality Quiz ✨
-        </GlossyQuizButton>
+        <GlossyQuizButton onClick={onTakeQuiz}>✨ Take Personality Quiz ✨</GlossyQuizButton>
 
         {/* Suggestion Form */}
         <div

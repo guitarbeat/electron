@@ -41,11 +41,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setPin('');
       setNewPin('');
       setConfirmPin('');
       setError('');
       setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
+      /* eslint-enable react-hooks/set-state-in-effect */
       document.body.classList.add('modal-open');
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {

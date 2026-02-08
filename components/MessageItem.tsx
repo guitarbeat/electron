@@ -323,9 +323,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
               >
                 <span>{emoji}</span>
                 {count > 1 && (
-                  <span style={{ fontSize: '11px', color: '#666', fontWeight: 500 }}>
-                    {count}
-                  </span>
+                  <span style={{ fontSize: '11px', color: '#666', fontWeight: 500 }}>{count}</span>
                 )}
               </div>
             ))}
