@@ -18,7 +18,17 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
       }}
       className="animate-fade-in"
     >
-      <Card variant="elevated">
+      <Card
+        variant="elevated"
+        style={{
+          background: colors.gradientCard,
+          border: `2px solid ${colors.border}`,
+          boxShadow: shadows.cardElevated,
+          backdropFilter: 'blur(8px)',
+          backgroundImage:
+            'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',
+        }}
+      >
         <div style={{ padding: spacing['2xl'] }}>
           {/* Decorative sparkle effect */}
           <div
