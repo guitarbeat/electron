@@ -3,6 +3,7 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import { usePins } from '../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+import { colors } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import GlossyQuizButton from './GlossyQuizButton';
 import PinDialog from './PinDialog';
@@ -59,7 +60,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
       style={{
         minHeight: '100dvh',
         width: '100%',
-        background: 'linear-gradient(135deg, #2d1b4e 0%, #1a1a3e 50%, #0f0f2e 100%)',
+        background: `linear-gradient(135deg, ${colors.background} 0%, #121620 45%, #0b0d11 100%)`,
         position: 'relative',
         overflow: 'hidden',
         display: 'flex',
@@ -79,14 +80,6 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         <div className="twinkle-stars twinkle-stars-offset" />
       </div>
 
-      {/* Floating Hearts Y2K Layer */}
-      <div className="floating-hearts-y2k">
-        <span className="floating-heart-y2k" style={{ left: '35%', animationDelay: '3s' }}>💗</span>
-        <span className="floating-heart-y2k" style={{ left: '55%', animationDelay: '8s' }}>💕</span>
-        <span className="floating-heart-y2k" style={{ left: '25%', animationDelay: '11s', fontSize: '16px' }}>✨</span>
-        <span className="floating-heart-y2k" style={{ left: '85%', animationDelay: '5s', fontSize: '18px' }}>💖</span>
-      </div>
-
       {/* Shooting Stars */}
       <div
         className="shooting-star"
@@ -99,18 +92,6 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
       <div
         className="shooting-star"
         style={{ top: '60%', left: '-100px', animationDelay: '7s' }}
-      />
-
-      {/* Heart pattern overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z' fill='%23ff69b4' opacity='0.06'%3E%3C/path%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
       />
 
       {/* Header Title with Entrance Animation */}
@@ -257,7 +238,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         </div>
       </div>
 
-      {/* Glassmorphism Bottom Section */}
+      {/* Bottom Section */}
       <div
         style={{
           position: 'relative',
@@ -267,15 +248,10 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           flexDirection: 'column',
           alignItems: 'center',
           gap: '24px',
-          background: 'linear-gradient(135deg, rgba(45, 27, 78, 0.5) 0%, rgba(26, 26, 62, 0.4) 100%)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(255, 105, 180, 0.2)',
-          borderRadius: isMobile ? '24px 24px 0 0' : '32px 32px 0 0',
-          boxShadow: `
-            0 -4px 30px rgba(255, 105, 180, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1)
-          `,
+          background: 'transparent',
+          borderTop: 'none',
+          borderRadius: 0,
+          boxShadow: 'none',
           marginTop: 'auto',
         }}
       >
