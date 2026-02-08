@@ -22,6 +22,14 @@ const SuggestionForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const pendingCount = pendingSuggestions?.length || 0;
+  const panelStyles: React.CSSProperties = {
+    background: colors.surfaceElevated,
+    border: `1px solid ${colors.borderSecondary}40`,
+    borderRadius: radius.card,
+    padding: spacing.lg,
+    boxShadow: '0 12px 30px rgba(0,0,0,0.35)',
+    backdropFilter: 'blur(8px)',
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +55,7 @@ const SuggestionForm: React.FC = () => {
   if (submitted) {
     return (
       <Card variant="elevated" className="animate-fade-in">
-        <div style={{ padding: spacing['2xl'], textAlign: 'center' }}>
+        <div style={{ padding: spacing['2xl'], textAlign: 'center', ...panelStyles }}>
           <div
             style={{
               fontSize: '3rem',
@@ -110,108 +118,120 @@ const SuggestionForm: React.FC = () => {
           Have a movie we should watch? Let us know!
         </p>
 
-        <WatchlistPreview />
+        <div style={panelStyles}>
+          <WatchlistPreview />
 
-        <div style={{ marginTop: spacing.lg }}>
-          <form
-            onSubmit={handleSubmit}
-            style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}
-          >
-            <div style={{ flex: 2 }}>
-              <Input
-                placeholder={isMobile ? 'Title' : 'Movie title...'}
-                value={title}
-                onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
-                disabled={isSubmitting}
-                style={{
-                  borderRadius: `${radius.md} 0 0 ${radius.md}`,
-                  borderRight: 'none',
-                  height: '44px',
-                  textAlign: 'left',
-                  padding: isMobile ? spacing.sm : undefined,
-                }}
-              />
-            </div>
-            <div style={{ flex: 1, minWidth: '100px' }}>
-              <Input
-                placeholder={isMobile ? 'Name' : 'Your Name'}
-                value={suggestedBy}
-                onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
-                disabled={isSubmitting}
-                style={{
-                  borderRadius: 0,
-                  borderLeft: `1px solid ${colors.borderSecondary}40`,
-                  height: '44px',
-                  textAlign: 'left',
-                  padding: isMobile ? spacing.sm : undefined,
-                }}
-              />
-            </div>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
-              isLoading={isSubmitting}
+          <div style={{ marginTop: spacing.lg }}>
+            <form
+              onSubmit={handleSubmit}
               style={{
-                borderRadius: `0 ${radius.md} ${radius.md} 0`,
-                minWidth: '60px',
-                height: '44px',
-                fontSize: '1.25rem',
+                display: 'flex',
+                gap: spacing.sm,
+                alignItems: 'center',
+                background: colors.surface,
+                borderRadius: radius.md,
+                padding: spacing.xs,
+                border: `1px solid ${colors.borderSecondary}40`,
               }}
             >
-              {isSubmitting ? '' : '+'}
-            </Button>
-          </form>
-
-          {title.trim() && (
-            <div className="animate-slide-down" style={{ marginTop: spacing.xs }}>
-              <Input
-                placeholder="Add a quick note why... (optional)"
-                value={reason}
-                onChange={(e) => setReason(e.target.value.slice(0, MAX_REASON_LENGTH))}
-                disabled={isSubmitting}
-                aria-label="Add a reason for your suggestion (optional)"
+              <div style={{ flex: 2 }}>
+                <Input
+                  placeholder={isMobile ? 'Title' : 'Movie title...'}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
+                  disabled={isSubmitting}
+                  style={{
+                    borderRadius: radius.md,
+                    border: 'none',
+                    height: '44px',
+                    textAlign: 'left',
+                    padding: isMobile ? spacing.sm : undefined,
+                    backgroundColor: 'transparent',
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: '100px' }}>
+                <Input
+                  placeholder={isMobile ? 'Name' : 'Your Name'}
+                  value={suggestedBy}
+                  onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
+                  disabled={isSubmitting}
+                  style={{
+                    borderRadius: radius.md,
+                    border: 'none',
+                    height: '44px',
+                    textAlign: 'left',
+                    padding: isMobile ? spacing.sm : undefined,
+                    backgroundColor: 'transparent',
+                  }}
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
+                isLoading={isSubmitting}
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: `1px dashed ${colors.borderSecondary}60`,
+                  borderRadius: radius.md,
+                  minWidth: '60px',
+                  height: '44px',
+                  fontSize: '1.25rem',
+                }}
+              >
+                {isSubmitting ? '' : '+'}
+              </Button>
+            </form>
+
+            {title.trim() && (
+              <div className="animate-slide-down" style={{ marginTop: spacing.sm }}>
+                <Input
+                  placeholder="Add a quick note why... (optional)"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value.slice(0, MAX_REASON_LENGTH))}
+                  disabled={isSubmitting}
+                  aria-label="Add a reason for your suggestion (optional)"
+                  style={{
+                    background: colors.surface,
+                    border: `1px dashed ${colors.borderSecondary}60`,
+                    fontSize: typography.fontSize.xs,
+                    padding: `${spacing.xs} ${spacing.sm}`,
+                    fontStyle: 'italic',
+                    textAlign: 'left',
+                    borderRadius: radius.md,
+                  }}
+                />
+              </div>
+            )}
+
+            {error && (
+              <div
+                style={{
+                  marginTop: spacing.sm,
+                  color: colors.error,
+                  fontSize: '10px',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                }}
+              >
+                ⚠️ {error}
+              </div>
+            )}
+
+            {/* Pending suggestions social proof */}
+            {pendingCount > 0 && (
+              <div
+                style={{
+                  marginTop: spacing.md,
+                  textAlign: 'center',
                   fontSize: typography.fontSize.xs,
-                  padding: `${spacing.xs} 0`,
-                  fontStyle: 'italic',
-                  textAlign: 'left',
+                  color: colors.textTertiary,
+                  opacity: 0.8,
                 }}
-              />
-            </div>
-          )}
-
-          {error && (
-            <div
-              style={{
-                marginTop: spacing.sm,
-                color: colors.error,
-                fontSize: '10px',
-                textAlign: 'center',
-                fontWeight: 'bold',
-              }}
-            >
-              ⚠️ {error}
-            </div>
-          )}
-
-          {/* Pending suggestions social proof */}
-          {pendingCount > 0 && (
-            <div
-              style={{
-                marginTop: spacing.md,
-                textAlign: 'center',
-                fontSize: typography.fontSize.xs,
-                color: colors.textTertiary,
-                opacity: 0.8,
-              }}
-            >
-              💬 {pendingCount} suggestion{pendingCount !== 1 ? 's' : ''} pending review
-            </div>
-          )}
+              >
+                💬 {pendingCount} suggestion{pendingCount !== 1 ? 's' : ''} pending review
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Card>
