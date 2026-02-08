@@ -189,7 +189,7 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
               />
               <span
                 title="Import quiz from JSON"
-                style={{ 
+                style={{
                   pointerEvents: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',

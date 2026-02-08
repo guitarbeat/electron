@@ -53,6 +53,7 @@ const App: React.FC = () => {
     const isLogout = wasLoggedIn && isNowLoggedOut;
 
     if (isLogin || isLogout) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsTransitioning(true);
 
       if (isLogin) {

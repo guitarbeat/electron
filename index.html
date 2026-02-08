@@ -281,9 +281,21 @@
         outline-offset: 2px;
       }
 
-      .transition-container {
+      #main-content > .transition-container {
         position: relative;
-        width: 100%;
+        width: min(100%, 1024px);
+        margin: 0 auto;
+        padding: clamp(22px, 3.2vw, 38px);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(18px, 3vw, 32px);
+        min-height: clamp(420px, 62vh, 700px);
+        background: linear-gradient(180deg, rgba(24, 26, 32, 0.85), rgba(15, 17, 21, 0.45));
+        border-radius: 22px;
+        border: 1px solid rgba(255, 105, 180, 0.16);
+        box-shadow:
+          0 16px 32px rgba(0, 0, 0, 0.32),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
       }
 
       .transition-container > * {

@@ -123,7 +123,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             left: '12%',
             width: '35%',
             height: '25%',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)',
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%)',
             borderRadius: '50%',
             pointerEvents: 'none',
             filter: 'blur(2px)',

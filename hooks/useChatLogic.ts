@@ -7,7 +7,8 @@ interface ToastState {
 }
 
 export const useChatLogic = () => {
-  const { messages, isLoading, error, isSubmitting, addMessage, deleteMessage, toggleReaction } = useMessages();
+  const { messages, isLoading, error, isSubmitting, addMessage, deleteMessage, toggleReaction } =
+    useMessages();
   const [toast, setToast] = useState<ToastState | null>(null);
 
   // * Auto-hide toast

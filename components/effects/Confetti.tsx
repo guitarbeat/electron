@@ -15,6 +15,7 @@ interface Particle {
   delay: number;
   rotation: number;
   scale: number;
+  isRounded: boolean;
 }
 
 const CONFETTI_COLORS = [
@@ -48,10 +49,13 @@ const Confetti: React.FC<ConfettiProps> = ({
         delay: Math.random() * 0.5, // Stagger start
         rotation: Math.random() * 360,
         scale: 0.5 + Math.random() * 0.5,
+        isRounded: Math.random() > 0.5,
       }));
 
-      setParticles(newParticles);
-      setIsVisible(true);
+      const startTimer = setTimeout(() => {
+        setParticles(newParticles);
+        setIsVisible(true);
+      }, 0);
 
       // Cleanup after animation
       const timer = setTimeout(() => {
@@ -60,7 +64,10 @@ const Confetti: React.FC<ConfettiProps> = ({
         onComplete?.();
       }, duration);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(startTimer);
+        clearTimeout(timer);
+      };
     }
   }, [isActive, duration, particleCount, onComplete]);
 
@@ -125,7 +132,7 @@ const Confetti: React.FC<ConfettiProps> = ({
               className="confetti-inner"
               style={{
                 backgroundColor: particle.color,
-                borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                borderRadius: particle.isRounded ? '50%' : '2px',
                 transform: `scale(${particle.scale}) rotate(${particle.rotation}deg)`,
                 animationDelay: `${particle.delay}s`,
                 boxShadow: `0 0 6px ${particle.color}`,
