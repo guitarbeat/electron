@@ -7,7 +7,11 @@ interface ChatWindowProps {
   onToggleEditMode?: () => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ children, isEditMode = false, onToggleEditMode }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  children,
+  isEditMode = false,
+  onToggleEditMode,
+}) => {
   return (
     <div
       style={{

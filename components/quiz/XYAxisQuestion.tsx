@@ -74,7 +74,7 @@ const XYAxisQuestion: React.FC<XYAxisQuestionProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const step = 0.1;
     const current = selectedPosition || { x: 0, y: 0 };
-    let newPos = { ...current };
+    const newPos = { ...current };
 
     switch (e.key) {
       case 'ArrowLeft':

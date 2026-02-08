@@ -7,7 +7,7 @@ interface UserSelectionProps {
 
 /**
  * UserSelection component - Y2K Dark Romantic Profile Selection
- * 
+ *
  * This component now renders the redesigned ProfileSelectionScreen
  * with gel-style floating bubbles, pixel-art stars, and a split-screen layout.
  */

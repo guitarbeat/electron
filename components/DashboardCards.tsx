@@ -35,7 +35,7 @@ export const DashboardCard: React.FC<DashboardItemProps> = ({
     }
   };
 
-  const gradient = React.useMemo(getGradient, [variant]);
+  const gradient = getGradient();
 
   return (
     <Card

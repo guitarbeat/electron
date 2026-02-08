@@ -62,7 +62,9 @@ export const useMovies = (currentUser: User) => {
       const mutation = (async () => {
         try {
           await mutationLockRef.current;
-        } catch (e) {}
+        } catch (e) {
+          // Ignore previous mutation errors so the next mutation can proceed.
+        }
 
         setIsSubmitting(true);
         isSubmittingRef.current = true;
