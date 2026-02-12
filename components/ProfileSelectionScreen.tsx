@@ -254,7 +254,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         <div
           style={{
             width: '100%',
-            maxWidth: '400px',
+            maxWidth: '700px',
           }}
         >
           <SuggestionForm />
