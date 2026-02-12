@@ -28,6 +28,11 @@ const defaultQuizData: QuizData = {
 
 export const getQuizData = async (): Promise<QuizData> => {
   try {
+    if (!GIST_TOKEN || GIST_TOKEN === 'YOUR_GITHUB_TOKEN' || GIST_TOKEN.startsWith('ghp_')) {
+      // If token is default or missing, we might want to just return default data 
+      // instead of attempting a fetch that will likely fail with 401
+    }
+
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,
@@ -35,6 +40,11 @@ export const getQuizData = async (): Promise<QuizData> => {
       },
       cache: 'no-cache',
     });
+
+    if (response.status === 401 || response.status === 404) {
+      console.warn(`GitHub API returned ${response.status}, using default quiz data.`);
+      return defaultQuizData;
+    }
 
     if (!response.ok) {
       throw new Error(`GitHub API responded with ${response.status}`);
