@@ -38,6 +38,8 @@ export const usePolling = <T>(
     try {
       const result = await savedFetchFn.current();
       setData((prevData) => {
+        // usePolling.ts: FIX - Use functional update for savedEqualityFn to avoid stale closures
+        // although savedEqualityFn is a ref, the check inside setData ensures we use the latest values
         if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
           return prevData;
         }
