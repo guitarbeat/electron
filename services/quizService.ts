@@ -28,9 +28,10 @@ const defaultQuizData: QuizData = {
 
 export const getQuizData = async (): Promise<QuizData> => {
   try {
-    if (!GIST_TOKEN || GIST_TOKEN === 'YOUR_GITHUB_TOKEN' || GIST_TOKEN.startsWith('ghp_')) {
-      // If token is default or missing, we might want to just return default data 
-      // instead of attempting a fetch that will likely fail with 401
+    const isDefaultToken = !GIST_TOKEN || GIST_TOKEN.startsWith('ghp_') || GIST_TOKEN === 'YOUR_GITHUB_TOKEN';
+    
+    if (isDefaultToken) {
+      // Logic for handling default token if needed
     }
 
     const response = await fetch(GIST_API_URL, {
