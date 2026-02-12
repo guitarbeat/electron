@@ -85,7 +85,7 @@ const SuggestionForm: React.FC = () => {
             Aaron & Electra will review it soon.
           </p>
           <Button variant="secondary" size="md" onClick={() => setSubmitted(false)}>
-            Suggest Another Movie
+            Suggest Another Movie or Show
           </Button>
         </div>
       </Card>
@@ -93,7 +93,7 @@ const SuggestionForm: React.FC = () => {
   }
 
   return (
-    <Card variant="elevated" className="animate-fade-in" style={{ padding: spacing.sm }}>
+    <Card variant="elevated" className="animate-fade-in" style={{ padding: spacing.sm, maxWidth: '650px', margin: '0 auto' }}>
       <div style={{ padding: spacing.md }}>
         <h3
           style={{
@@ -105,7 +105,7 @@ const SuggestionForm: React.FC = () => {
             textAlign: 'center',
           }}
         >
-          🎬 Suggest a Movie
+          🎬 Suggest a Movie or Show
         </h3>
         <p
           style={{
@@ -115,7 +115,7 @@ const SuggestionForm: React.FC = () => {
             textAlign: 'center',
           }}
         >
-          Have a movie we should watch? Let us know!
+          Have a movie or TV show we should watch? Let us know!
         </p>
 
         <div style={panelStyles}>
@@ -136,7 +136,7 @@ const SuggestionForm: React.FC = () => {
             >
               <div style={{ flex: 2 }}>
                 <Input
-                  placeholder={isMobile ? 'Title' : 'Movie title...'}
+                  placeholder={isMobile ? 'Title' : 'Movie or show title...'}
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
                   disabled={isSubmitting}
