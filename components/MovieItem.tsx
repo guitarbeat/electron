@@ -118,27 +118,33 @@ const MovieItem: React.FC<MovieItemProps> = ({
               }}
             />
           ) : layout === 'grid' ? (
-          <div
-            style={{
-              padding: isMobile ? spacing.sm : spacing.md,
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              minWidth: 0,
-            }}
-          >
-            <h3
+            <div
               style={{
-                fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
-                margin: 0,
-                color: colors.textPrimary,
-                fontWeight: typography.fontWeight.bold,
-                lineHeight: 1.2,
-                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                padding: isMobile ? spacing.sm : spacing.md,
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                minWidth: 0,
+                textAlign: 'center',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1,
               }}
             >
-              {movie.title}
-            </h3>
+              <FilmIcon style={{ width: '32px', height: '32px', color: 'rgba(255,255,255,0.2)', marginBottom: spacing.sm }} />
+              <h3
+                style={{
+                  fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
+                  margin: 0,
+                  color: colors.textPrimary,
+                  fontWeight: typography.fontWeight.bold,
+                  lineHeight: 1.2,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                }}
+              >
+                {movie.title}
+              </h3>
+            </div>
           ) : null}
 
           {/* Watcher Badges - Floating on Top-Left */}
@@ -636,22 +642,24 @@ const MovieItem: React.FC<MovieItemProps> = ({
             }}
           >
             {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
-            {watchedByCurrentUser ? 'Marked as Watched' : `Mark as Watched (${currentUser})`}
+            {watchedByCurrentUser ? 'Mark as Unwatched' : 'Mark as Watched'}
           </Button>
 
           <Button
             onClick={() => handleAction(() => onFixMatch?.(movie))}
-            variant="secondary"
+            variant="ghost"
             style={{
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: spacing.sm,
+              color: colors.accent,
+              borderColor: `${colors.accent}40`,
             }}
           >
             <MagicWandIcon />
-            Fix Metadata Match
+            Fix Details
           </Button>
 
           <Button
@@ -665,11 +673,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
               gap: spacing.sm,
               color: colors.error,
               borderColor: `${colors.error}40`,
-              border: '1px solid',
             }}
           >
             <TrashIcon />
-            Delete Movie
+            Remove from Watchlist
           </Button>
         </div>
       </BottomSheet>
