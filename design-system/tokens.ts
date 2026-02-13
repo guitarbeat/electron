@@ -18,9 +18,9 @@ export const spacing = {
 // * Color palette (Retro theme)
 export const colors = {
   // Base
-  background: '#0f1115',
-  surface: 'rgba(27, 40, 69, 0.85)',
-  surfaceElevated: 'rgba(27, 40, 69, 0.95)',
+  background: '#0a0b0e',
+  surface: 'rgba(23, 33, 58, 0.7)',
+  surfaceElevated: 'rgba(30, 42, 75, 0.85)',
 
   // Text (improved contrast for readability)
   textPrimary: '#ffffff',
