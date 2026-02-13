@@ -22,11 +22,21 @@ const MessageBoard: React.FC = () => {
   } = useChatLogic();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
+  const [lastViewedCount, setLastViewedCount] = useState(0);
+
+  const handleToggle = () => {
+    if (isMinimized) {
+      setLastViewedCount(messages?.length || 0);
+    }
+    setIsMinimized(!isMinimized);
+  };
+
+  const unreadCount = (messages?.length || 0) - lastViewedCount;
 
   if (isMinimized) {
     return (
       <button
-        onClick={() => setIsMinimized(false)}
+        onClick={handleToggle}
         aria-label="Open messages"
         className="gel-bubble"
         style={{
@@ -49,7 +59,7 @@ const MessageBoard: React.FC = () => {
         }}
       >
         <MessageIcon style={{ width: '30px', height: '30px', color: '#000' }} />
-        {messages && messages.length > 0 && (
+        {unreadCount > 0 && (
           <div
             style={{
               position: 'absolute',
@@ -69,7 +79,7 @@ const MessageBoard: React.FC = () => {
               border: '2px solid white',
             }}
           >
-            {messages.length}
+            {unreadCount}
           </div>
         )}
       </button>
@@ -107,13 +117,13 @@ const MessageBoard: React.FC = () => {
           fontWeight: 'bold',
           cursor: 'pointer',
         }}
-        onClick={() => setIsMinimized(true)}
+        onClick={handleToggle}
       >
         <span>Messages</span>
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setIsMinimized(true);
+            handleToggle();
           }}
           style={{
             background: 'none',
