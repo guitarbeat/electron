@@ -52,17 +52,17 @@ const Header: React.FC<HeaderProps> = ({
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: spacing.md,
+              gap: isMobile ? spacing.sm : spacing.md,
               width: '100%',
               flex: 1,
             }}
           >
             <div
               style={{
-                width: '48px',
-                height: '48px',
-                minWidth: '48px',
-                minHeight: '48px',
+                width: isMobile ? '36px' : '48px',
+                height: isMobile ? '36px' : '48px',
+                minWidth: isMobile ? '36px' : '48px',
+                minHeight: isMobile ? '36px' : '48px',
                 position: 'relative',
                 flexShrink: 0,
               }}
@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({
             <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
               <h1
                 style={{
-                  fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
+                  fontSize: isMobile ? typography.fontSize.base : typography.fontSize.xl,
                   fontWeight: typography.fontWeight.bold,
                   color: colors.accent,
                   background: shadows.textGradientPink,
@@ -110,8 +110,9 @@ const Header: React.FC<HeaderProps> = ({
                   textShadow: '0 2px 4px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 105, 180, 0.3)',
                   letterSpacing: '0.01em',
                   filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))',
-                  whiteSpace: 'normal',
-                  overflowWrap: 'break-word',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
                 className="header-title"
               >
@@ -217,10 +218,12 @@ const Header: React.FC<HeaderProps> = ({
                 gap: spacing.xs,
                 backgroundColor: 'rgba(0,0,0,0.3)',
                 borderColor: 'rgba(255,255,255,0.1)',
+                padding: isMobile ? '6px 12px' : undefined,
+                fontSize: isMobile ? '12px' : undefined,
               }}
             >
-              <LogoutIcon style={{ width: '1.25rem', height: '1.5rem' }} />
-              Logout
+              <LogoutIcon style={{ width: isMobile ? '1rem' : '1.25rem', height: isMobile ? '1rem' : '1.5rem' }} />
+              {isMobile ? 'Exit' : 'Logout'}
             </Button>
           </div>
         </div>
