@@ -229,7 +229,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
         </p>
       )}
 
-      <div style={{ display: 'flex', gap: spacing.sm, marginTop: 'auto' }}>
+      <div style={{ display: 'flex', gap: spacing.xs, marginTop: 'auto' }}>
         <Button
           variant="primary"
           size="sm"
@@ -239,15 +239,14 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
           style={{
             flex: 1,
             backgroundColor: colors.success,
-            fontSize: '11px',
+            fontSize: isMobile ? '10px' : '11px',
             fontWeight: typography.fontWeight.bold,
-            height: '32px',
+            height: isMobile ? '36px' : '32px',
             padding: 0,
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
-          <CheckIcon style={{ width: '14px', marginRight: '4px' }} />
-          Accept
+          {isMobile ? 'Add' : <><CheckIcon style={{ width: '14px', marginRight: '4px' }} />Accept</>}
         </Button>
         <Button
           variant="secondary"
@@ -256,16 +255,15 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
           disabled={isProcessing}
           style={{
             flex: 1,
-            fontSize: '11px',
-            height: '32px',
+            fontSize: isMobile ? '10px' : '11px',
+            height: isMobile ? '36px' : '32px',
             padding: 0,
             opacity: 0.8,
             backgroundColor: 'rgba(0,0,0,0.3)',
             borderColor: 'rgba(255,255,255,0.1)',
           }}
         >
-          <TrashIcon style={{ width: '14px', marginRight: '4px' }} />
-          Reject
+          {isMobile ? 'Skip' : <><TrashIcon style={{ width: '14px', marginRight: '4px' }} />Reject</>}
         </Button>
       </div>
     </Card>

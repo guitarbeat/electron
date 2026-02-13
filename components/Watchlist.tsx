@@ -351,9 +351,10 @@ const Watchlist: React.FC = () => {
           <div
             style={{
               position: 'fixed',
-              top: spacing.lg,
+              top: isMobile ? spacing.sm : spacing.lg,
+              left: isMobile ? spacing.md : 'auto',
               right: spacing.lg,
-              padding: `${spacing.md} ${spacing.xl}`,
+              padding: isMobile ? `${spacing.sm} ${spacing.md}` : `${spacing.md} ${spacing.xl}`,
               backgroundColor:
                 toast.type === 'error'
                   ? colors.error
@@ -365,16 +366,17 @@ const Watchlist: React.FC = () => {
               boxShadow: shadows.card,
               zIndex: 1000,
               animation: 'slide-in 0.3s ease-out',
-              fontSize: typography.fontSize.base,
+              fontSize: isMobile ? typography.fontSize.xs : typography.fontSize.base,
               fontWeight: typography.fontWeight.semibold,
+              textAlign: 'center',
             }}
           >
             {toast.message}
           </div>
         )}
 
-        <Card variant="elevated" style={{ marginBottom: spacing.xl }}>
-          <form onSubmit={handleAddMovie} style={{ padding: spacing.md }}>
+        <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}>
+          <form onSubmit={handleAddMovie}>
             <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
               <div style={{ flex: 1, position: 'relative' }}>
                 <Input
@@ -385,19 +387,21 @@ const Watchlist: React.FC = () => {
                   disabled={isSubmitting}
                   aria-label="New movie title"
                   style={{
-                    paddingRight: isMobile ? '80px' : '120px',
+                    paddingRight: isMobile ? '70px' : '120px',
                     borderColor: successMovieId ? colors.success : undefined,
                     transition: 'border-color 0.3s ease',
+                    height: isMobile ? '42px' : '48px',
+                    fontSize: isMobile ? '14px' : '16px',
                   }}
                 />
                 <div
                   style={{
                     position: 'absolute',
-                    right: spacing.sm,
+                    right: spacing.xs,
                     top: '50%',
                     transform: 'translateY(-50%)',
                     display: 'flex',
-                    gap: isMobile ? spacing.xs : spacing.sm,
+                    gap: isMobile ? '4px' : spacing.sm,
                     alignItems: 'center',
                   }}
                 >
@@ -407,7 +411,11 @@ const Watchlist: React.FC = () => {
                     size="sm"
                     title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
                     aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    style={{ padding: isMobile ? '4px' : undefined }}
+                    style={{ 
+                      padding: isMobile ? '6px' : undefined,
+                      width: isMobile ? '32px' : '36px',
+                      height: isMobile ? '32px' : '36px',
+                    }}
                   >
                     {viewMode === 'list' ? (
                       <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />

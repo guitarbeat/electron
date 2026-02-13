@@ -29,6 +29,10 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
     @media (max-width: 640px) {
       .masonry-grid {
         column-count: ${columns.mobile};
+        column-gap: ${gap};
+      }
+      .masonry-item {
+        margin-bottom: ${gap};
       }
     }
     .masonry-item {

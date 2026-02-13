@@ -118,31 +118,27 @@ const MovieItem: React.FC<MovieItemProps> = ({
               }}
             />
           ) : layout === 'grid' ? (
-            <div
+          <div
+            style={{
+              padding: isMobile ? spacing.sm : spacing.md,
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0,
+            }}
+          >
+            <h3
               style={{
-                padding: spacing.md,
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: spacing.sm,
-                zIndex: 1,
+                fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
+                margin: 0,
+                color: colors.textPrimary,
+                fontWeight: typography.fontWeight.bold,
+                lineHeight: 1.2,
+                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
               }}
             >
-              <FilmIcon style={{ width: '32px', height: '32px', color: 'rgba(255,255,255,0.2)' }} />
-              <h3
-                style={{
-                  fontSize: typography.fontSize.lg,
-                  fontWeight: typography.fontWeight.bold,
-                  color: colors.textPrimary,
-                  margin: 0,
-                  lineHeight: 1.2,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                }}
-              >
-                {movie.title}
-              </h3>
-            </div>
+              {movie.title}
+            </h3>
           ) : null}
 
           {/* Watcher Badges - Floating on Top-Left */}
@@ -353,7 +349,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           <div
             style={{
               flex: 1,
-              padding: spacing.md,
+              padding: isMobile ? spacing.sm : spacing.md,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -374,7 +370,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <h3
                   className="movie-title"
                   style={{
-                    fontSize: typography.fontSize.xl,
+                    fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
                     fontWeight: typography.fontWeight.bold,
                     color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
                     textDecoration: watchedByBoth ? 'line-through' : 'none',
@@ -441,13 +437,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
               {movie.plot && (
                 <p
                   style={{
-                    fontSize: typography.fontSize.base,
+                    fontSize: isMobile ? typography.fontSize.xs : typography.fontSize.base,
                     color: colors.textSecondary,
                     opacity: 0.9,
                     margin: 0,
-                    marginBottom: spacing.lg,
+                    marginBottom: isMobile ? spacing.sm : spacing.lg,
                     display: '-webkit-box',
-                    WebkitLineClamp: 3,
+                    WebkitLineClamp: isMobile ? 2 : 3,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
                     lineHeight: typography.lineHeight.normal,
