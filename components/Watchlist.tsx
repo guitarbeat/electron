@@ -31,6 +31,7 @@ import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
+import TicTacToe from './TicTacToe';
 import { DashboardCard, SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
@@ -76,6 +77,7 @@ const Watchlist: React.FC = () => {
   const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showGames, setShowGames] = useState(false);
   const [celebratedMovieTitle, setCelebratedMovieTitle] = useState<string | null>(null);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -451,7 +453,7 @@ const Watchlist: React.FC = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
               gap: spacing.md,
               marginBottom: spacing.xl,
             }}
@@ -472,8 +474,24 @@ const Watchlist: React.FC = () => {
               <DiceIcon />
               Spin to Decide
             </Button>
+            <Button
+              onClick={() => setShowGames(!showGames)}
+              variant="ghost"
+              size="sm"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing.xs,
+              }}
+            >
+              🎮 {showGames ? 'Hide Games' : 'Play a Game'}
+            </Button>
           </div>
         )}
+
+        {showGames && <TicTacToe />}
 
         <div
           style={{
