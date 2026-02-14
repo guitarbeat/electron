@@ -94,7 +94,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
         user={pendingUser || 'Aaron'}
         onCancel={() => setPendingUser(null)}
         onSubmit={handlePinSubmit}
-        mode="verify"
+        mode="enter"
         isLoading={isVerifying}
       />
     </div>
