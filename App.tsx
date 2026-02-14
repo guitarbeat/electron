@@ -239,33 +239,31 @@ const App: React.FC = () => {
                 <QuizFlow onComplete={handleQuizComplete} quizData={quizData} />
               )}
             </div>
-          ) : !displayUser ? (
-            <div className={animationClass}>
-              <UserSelection onTakeQuiz={handleStartQuiz} />
-              {/* Retake Quiz button for visitors who completed the quiz */}
-              {quizCompleted && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    marginTop: spacing.lg,
-                  }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRetakeQuiz}
-                    style={{
-                      fontSize: typography.fontSize.sm,
-                      color: colors.textSecondary,
-                    }}
-                  >
-                    🔄 Retake Personality Quiz
-                  </Button>
-                </div>
-              )}
-            </div>
           ) : (
             <div className={animationClass}>
+              <div style={{ marginBottom: spacing['2xl'] }}>
+                <UserSelection onTakeQuiz={handleStartQuiz} />
+                {quizCompleted && (
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      marginTop: spacing.lg,
+                    }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRetakeQuiz}
+                      style={{
+                        fontSize: typography.fontSize.sm,
+                        color: colors.textSecondary,
+                      }}
+                    >
+                      🔄 Retake Personality Quiz
+                    </Button>
+                  </div>
+                )}
+              </div>
               <Watchlist />
             </div>
           )}
