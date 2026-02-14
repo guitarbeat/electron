@@ -278,6 +278,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   }}
                 >
                   <Button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggle(movie);
@@ -313,6 +314,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   </Button>
 
                   <IconButton
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onFixMatch?.(movie);
@@ -338,6 +340,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   </IconButton>
 
                   <IconButton
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(movie);
@@ -521,6 +524,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
 
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                 <IconButton
+                  type="button"
                   onClick={() => onToggle(movie)}
                   variant="ghost"
                   disabled={isGuest}
@@ -543,10 +547,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 </IconButton>
 
                 <IconButton
+                  type="button"
                   onClick={() => onFixMatch?.(movie)}
                   variant="ghost"
                   disabled={isGuest}
                   title="Fix Incorrect Match"
+                  aria-label={`Fix metadata for "${movie.title}"`}
                   style={{
                     border: `1px solid ${colors.borderSecondary}40`,
                     color: colors.accent,
@@ -558,10 +564,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 </IconButton>
 
                 <IconButton
+                  type="button"
                   onClick={() => onDelete(movie)}
                   variant="ghost"
                   disabled={isGuest}
                   title="Delete Movie"
+                  aria-label={`Delete "${movie.title}"`}
                   style={{
                     border: `1px solid ${colors.error}40`,
                     color: colors.error,
@@ -656,6 +664,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
 
           {/* Action Buttons */}
           <Button
+            type="button"
             onClick={() => handleAction(() => onToggle(movie))}
             variant={watchedByCurrentUser ? 'primary' : 'secondary'}
             disabled={isGuest}
@@ -674,6 +683,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           </Button>
 
           <Button
+            type="button"
             onClick={() => handleAction(() => onFixMatch?.(movie))}
             variant="ghost"
             disabled={isGuest}
@@ -693,6 +703,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           </Button>
 
           <Button
+            type="button"
             onClick={() => handleAction(() => onDelete(movie))}
             variant="ghost"
             disabled={isGuest}
