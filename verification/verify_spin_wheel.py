@@ -1,5 +1,4 @@
 from playwright.sync_api import sync_playwright, expect
-import time
 import json
 
 def run(playwright):
@@ -15,8 +14,20 @@ def run(playwright):
         if route.request.method == "GET":
             # Return 2 unwatched movies to unlock the wheel immediately
             movies_data = [
-                {"id": "1", "title": "Movie A", "watchedBy": [], "addedBy": "Aaron", "createdAt": "2023-01-01"},
-                {"id": "2", "title": "Movie B", "watchedBy": [], "addedBy": "Aaron", "createdAt": "2023-01-02"}
+                {
+                    "id": "1",
+                    "title": "Movie A",
+                    "watchedBy": [],
+                    "addedBy": "Aaron",
+                    "createdAt": "2023-01-01"
+                },
+                {
+                    "id": "2",
+                    "title": "Movie B",
+                    "watchedBy": [],
+                    "addedBy": "Aaron",
+                    "createdAt": "2023-01-02"
+                }
             ]
 
             route.fulfill(
@@ -76,7 +87,8 @@ def run(playwright):
 
         # Check for Spin Button (should be visible due to mock)
         print("Looking for Spin Wheel button...")
-        # The button text depends on state, but with 2 unwatched it should be "Spin Wheel Now" or "Spin Now"
+        # The button text depends on state, but with 2 unwatched it should be "Spin Wheel Now"
+        # or "Spin Now"
         spin_button = page.locator("button").filter(has_text="Spin").first
 
         # Wait a bit for the polling/loading to process the mock
