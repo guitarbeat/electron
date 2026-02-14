@@ -3,14 +3,7 @@ import { createPortal } from 'react-dom';
 import { User } from '../types';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import {
-  colors,
-  spacing,
-  typography,
-  zIndex,
-  radius,
-  motion,
-} from '../design-system/tokens';
+import { colors, spacing, typography, zIndex, radius, motion } from '../design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -41,14 +34,12 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      /* eslint-disable react-hooks/set-state-in-effect */
       setPin('');
       setNewPin('');
       setConfirmPin('');
       setError('');
       setIsShaking(false);
       setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
-      /* eslint-enable react-hooks/set-state-in-effect */
       document.body.classList.add('modal-open');
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {

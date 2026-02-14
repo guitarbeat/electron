@@ -20,7 +20,7 @@ def run(playwright):
             if skip_button.is_visible(timeout=5000):
                 print("Skipping quiz...")
                 skip_button.click()
-        except:
+        except Exception:
             print("Quiz skip button not found, assuming user selection or watchlist...")
 
         # Select User

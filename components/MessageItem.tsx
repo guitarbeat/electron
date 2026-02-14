@@ -62,9 +62,8 @@ const formatTime = (date: string): string => {
       const ampm = hours >= 12 ? 'PM' : 'AM';
       const displayHours = hours % 12 || 12;
       return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-    } else {
-      return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
+    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   } catch {
     return '';
   }
