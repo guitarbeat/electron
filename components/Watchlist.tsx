@@ -278,17 +278,15 @@ const Watchlist: React.FC = () => {
         setShowPinDialog(false);
         setToast({ message: 'PIN set successfully!', type: 'success' });
         return true;
-      } else {
-        // change mode
-        const isValid = await verifyUserPin(currentUser, pin);
-        if (isValid) {
-          setPinMode('set'); // Reuse set mode for the new pin
-          return true;
-        } else {
-          setToast({ message: 'Incorrect PIN', type: 'error' });
-          return false;
-        }
       }
+      // change mode
+      const isValid = await verifyUserPin(currentUser, pin);
+      if (isValid) {
+        setPinMode('set'); // Reuse set mode for the new pin
+        return true;
+      }
+      setToast({ message: 'Incorrect PIN', type: 'error' });
+      return false;
     } catch (err: any) {
       setToast({ message: `Error: ${err.message}`, type: 'error' });
       return false;

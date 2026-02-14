@@ -20,19 +20,18 @@ const fetchMock = async (url: string, options: any = {}) => {
       ok: true,
       json: async () => ({}),
     };
-  } else {
-    // GET request (mocking the initial fetch in saveDailySpin)
-    return {
-      ok: true,
-      json: async () => ({
-        files: {
-          'dailyspin.json': { content: '{}' },
-          'movielist.json': { content: '[]' },
-          'messages.json': { content: '[]' },
-        },
-      }),
-    };
   }
+  // GET request (mocking the initial fetch in saveDailySpin)
+  return {
+    ok: true,
+    json: async () => ({
+      files: {
+        'dailyspin.json': { content: '{}' },
+        'movielist.json': { content: '[]' },
+        'messages.json': { content: '[]' },
+      },
+    }),
+  };
 };
 
 globalAny.fetch = fetchMock;

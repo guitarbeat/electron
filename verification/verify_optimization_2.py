@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright, expect
 
+
 def test_add_message(page):
     # ... setup ...
     page.goto("http://localhost:3000/")
@@ -41,6 +42,7 @@ def test_add_message(page):
 
     page.screenshot(path="verification/verification_message_board_2.png")
     print("Verification screenshot saved to verification/verification_message_board_2.png")
+
 
 if __name__ == "__main__":
     with sync_playwright() as p:

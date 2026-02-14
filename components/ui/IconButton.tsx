@@ -59,12 +59,12 @@ const IconButton: React.FC<IconButtonProps> = ({
       onMouseEnter={(e) => {
         if (!isDisabled) {
           if (variant === 'default') {
-            e.currentTarget.style.backgroundColor = colors.tertiaryHover + '40';
+            e.currentTarget.style.backgroundColor = `${colors.tertiaryHover}40`;
           } else if (variant === 'ghost') {
             e.currentTarget.style.backgroundColor = colors.surfaceElevated;
             e.currentTarget.style.color = colors.textPrimary;
           } else if (variant === 'danger') {
-            e.currentTarget.style.backgroundColor = colors.error + '20';
+            e.currentTarget.style.backgroundColor = `${colors.error}20`;
             e.currentTarget.style.opacity = '0.9';
           }
         }
@@ -91,12 +91,12 @@ const IconButton: React.FC<IconButtonProps> = ({
       onFocus={(e) => {
         if (!isDisabled) {
           if (variant === 'default') {
-            e.currentTarget.style.backgroundColor = colors.tertiaryHover + '40';
+            e.currentTarget.style.backgroundColor = `${colors.tertiaryHover}40`;
           } else if (variant === 'ghost') {
             e.currentTarget.style.backgroundColor = colors.surfaceElevated;
             e.currentTarget.style.color = colors.textPrimary;
           } else if (variant === 'danger') {
-            e.currentTarget.style.backgroundColor = colors.error + '20';
+            e.currentTarget.style.backgroundColor = `${colors.error}20`;
             e.currentTarget.style.opacity = '0.9';
           }
         }

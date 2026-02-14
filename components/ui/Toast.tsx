@@ -33,14 +33,14 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
     switch (type) {
       case 'error':
         return {
-          backgroundColor: colors.error + '30',
+          backgroundColor: `${colors.error}30`,
           borderColor: colors.error,
           iconColor: colors.error,
           shadow: `0 4px 12px ${colors.error}40, ${shadows.card}`,
         };
       case 'success':
         return {
-          backgroundColor: colors.success + '30',
+          backgroundColor: `${colors.success}30`,
           borderColor: colors.success,
           iconColor: colors.success,
           shadow: `0 4px 12px ${colors.success}40, ${shadows.card}`,
@@ -48,7 +48,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
       case 'info':
       default:
         return {
-          backgroundColor: colors.secondary + '30',
+          backgroundColor: `${colors.secondary}30`,
           borderColor: colors.secondary,
           iconColor: colors.secondary,
           shadow: `0 4px 12px ${colors.secondary}40, ${shadows.card}`,

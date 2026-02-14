@@ -84,7 +84,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
         padding: `${spacing.sm} ${spacing.md}`,
         background: isHovered
           ? variant === 'danger'
-            ? colors.error + '20'
+            ? `${colors.error}20`
             : colors.surface
           : 'transparent',
         border: 'none',

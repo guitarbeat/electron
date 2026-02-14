@@ -103,7 +103,7 @@ export const fetchMovieMetadata = async (
     const tvmazeData = await tvmazeRes.json();
 
     if (tvmazeData && tvmazeData.length > 0) {
-      const show = tvmazeData[0].show;
+      const { show } = tvmazeData[0];
       return {
         posterUrl: show.image?.medium || show.image?.original,
         year: show.premiered ? show.premiered.split('-')[0] : undefined,

@@ -156,9 +156,9 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     // Calculate percentages
     const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
     const percentages: Record<QuizCharacter, number> = {
-      Electra: Math.round((scores['Electra'] / totalScore) * 100) || 0,
-      Aaron: Math.round((scores['Aaron'] / totalScore) * 100) || 0,
-      Madeleine: Math.round((scores['Madeleine'] / totalScore) * 100) || 0,
+      Electra: Math.round((scores.Electra / totalScore) * 100) || 0,
+      Aaron: Math.round((scores.Aaron / totalScore) * 100) || 0,
+      Madeleine: Math.round((scores.Madeleine / totalScore) * 100) || 0,
       'Nosferatu/Smeemo': Math.round((scores['Nosferatu/Smeemo'] / totalScore) * 100) || 0,
     };
 
