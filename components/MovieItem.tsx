@@ -19,7 +19,7 @@ import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 interface MovieItemProps {
   movie: Movie;
-  currentUser: User;
+  currentUser: User | null;
   onToggle: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
@@ -45,11 +45,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
   animationDelay,
   layout = 'list',
 }) => {
-  const watchedByCurrentUser = movie.watchedBy.includes(currentUser);
+  const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
+  const isGuest = !currentUser;
 
   const handleCardClick = () => {
     if (isMobile && layout === 'grid') {
@@ -283,6 +284,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     }}
                     variant={watchedByCurrentUser ? 'primary' : 'secondary'}
                     size="sm"
+                    disabled={isGuest}
                     aria-label={
                       watchedByCurrentUser
                         ? `Mark "${movie.title}" as unwatched`
@@ -298,6 +300,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       alignItems: 'center',
                       gap: '4px',
                       flex: 1,
+                      opacity: isGuest ? 0.5 : 1,
+                      cursor: isGuest ? 'not-allowed' : 'pointer',
                     }}
                   >
                     {watchedByCurrentUser ? (
@@ -315,6 +319,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     }}
                     variant="ghost"
                     size="sm"
+                    disabled={isGuest}
                     title="Fix Metadata Match"
                     aria-label={`Fix metadata for "${movie.title}"`}
                     style={{
@@ -325,6 +330,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       borderRadius: radius.md,
                       color: colors.accent,
                       border: `1px solid ${colors.accent}40`,
+                      opacity: isGuest ? 0.5 : 1,
+                      cursor: isGuest ? 'not-allowed' : 'pointer',
                     }}
                   >
                     <MagicWandIcon style={{ width: '14px', height: '14px' }} />
@@ -337,6 +344,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     }}
                     variant="ghost"
                     size="sm"
+                    disabled={isGuest}
                     title="Delete Movie"
                     aria-label={`Delete "${movie.title}"`}
                     style={{
@@ -347,6 +355,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       borderRadius: radius.md,
                       color: colors.error,
                       border: `1px solid ${colors.error}40`,
+                      opacity: isGuest ? 0.5 : 1,
+                      cursor: isGuest ? 'not-allowed' : 'pointer',
                     }}
                   >
                     <TrashIcon style={{ width: '14px', height: '14px' }} />
@@ -513,6 +523,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <IconButton
                   onClick={() => onToggle(movie)}
                   variant="ghost"
+                  disabled={isGuest}
                   title={watchedByCurrentUser ? 'Mark as unwatched' : 'Mark as watched'}
                   aria-label={
                     watchedByCurrentUser
@@ -524,6 +535,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     border: watchedByCurrentUser
                       ? `1px solid ${colors.success}40`
                       : '1px solid transparent',
+                    opacity: isGuest ? 0.5 : 1,
+                    cursor: isGuest ? 'not-allowed' : 'pointer',
                   }}
                 >
                   {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
@@ -532,10 +545,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <IconButton
                   onClick={() => onFixMatch?.(movie)}
                   variant="ghost"
+                  disabled={isGuest}
                   title="Fix Incorrect Match"
                   style={{
                     border: `1px solid ${colors.borderSecondary}40`,
                     color: colors.accent,
+                    opacity: isGuest ? 0.5 : 1,
+                    cursor: isGuest ? 'not-allowed' : 'pointer',
                   }}
                 >
                   <MagicWandIcon />
@@ -544,10 +560,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <IconButton
                   onClick={() => onDelete(movie)}
                   variant="ghost"
+                  disabled={isGuest}
                   title="Delete Movie"
                   style={{
                     border: `1px solid ${colors.error}40`,
                     color: colors.error,
+                    opacity: isGuest ? 0.5 : 1,
+                    cursor: isGuest ? 'not-allowed' : 'pointer',
                   }}
                 >
                   <TrashIcon />
@@ -639,6 +658,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           <Button
             onClick={() => handleAction(() => onToggle(movie))}
             variant={watchedByCurrentUser ? 'primary' : 'secondary'}
+            disabled={isGuest}
             style={{
               width: '100%',
               display: 'flex',
@@ -646,6 +666,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               justifyContent: 'center',
               gap: spacing.sm,
               backgroundColor: watchedByCurrentUser ? colors.success : undefined,
+              opacity: isGuest ? 0.5 : 1,
             }}
           >
             {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
@@ -655,6 +676,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           <Button
             onClick={() => handleAction(() => onFixMatch?.(movie))}
             variant="ghost"
+            disabled={isGuest}
             style={{
               width: '100%',
               display: 'flex',
@@ -663,6 +685,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               gap: spacing.sm,
               color: colors.accent,
               borderColor: `${colors.accent}40`,
+              opacity: isGuest ? 0.5 : 1,
             }}
           >
             <MagicWandIcon />
@@ -672,6 +695,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           <Button
             onClick={() => handleAction(() => onDelete(movie))}
             variant="ghost"
+            disabled={isGuest}
             style={{
               width: '100%',
               display: 'flex',
@@ -680,6 +704,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               gap: spacing.sm,
               color: colors.error,
               borderColor: `${colors.error}40`,
+              opacity: isGuest ? 0.5 : 1,
             }}
           >
             <TrashIcon />
