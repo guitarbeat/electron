@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({
           style={{
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
-            alignItems: isMobile ? 'flex-start' : 'center',
+            alignItems: 'center',
             width: '100%',
             gap: isMobile ? spacing.md : spacing.lg,
             padding: isMobile ? spacing.md : `${spacing.md} ${spacing.lg}`,
@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({
           <div
             style={{
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: isMobile ? 'column' : 'row',
               alignItems: 'center',
               gap: isMobile ? spacing.sm : spacing.md,
               width: '100%',
@@ -59,10 +59,10 @@ const Header: React.FC<HeaderProps> = ({
           >
             <div
               style={{
-                width: isMobile ? '36px' : '48px',
-                height: isMobile ? '36px' : '48px',
-                minWidth: isMobile ? '36px' : '48px',
-                minHeight: isMobile ? '36px' : '48px',
+                width: isMobile ? '40px' : '48px',
+                height: isMobile ? '40px' : '48px',
+                minWidth: isMobile ? '40px' : '48px',
+                minHeight: isMobile ? '40px' : '48px',
                 position: 'relative',
                 flexShrink: 0,
               }}
@@ -95,10 +95,10 @@ const Header: React.FC<HeaderProps> = ({
               />
             </div>
 
-            <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+            <div style={{ flex: 1, textAlign: isMobile ? 'center' : 'left', minWidth: 0 }}>
               <h1
                 style={{
-                  fontSize: isMobile ? typography.fontSize.base : typography.fontSize.xl,
+                  fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
                   fontWeight: typography.fontWeight.bold,
                   color: colors.accent,
                   background: shadows.textGradientPink,
@@ -154,6 +154,7 @@ const Header: React.FC<HeaderProps> = ({
                     fontSize: '11px',
                     color: colors.textTertiary,
                     width: 'fit-content',
+                    margin: isMobile ? '4px auto 0' : '4px 0 0',
                   }}
                 >
                   <span>🎬 {movieCount} movies</span>
@@ -177,7 +178,7 @@ const Header: React.FC<HeaderProps> = ({
                 alignItems: 'center',
                 gap: spacing.md,
                 width: isMobile ? '100%' : 'auto',
-                justifyContent: isMobile ? 'space-between' : 'flex-end',
+                justifyContent: isMobile ? 'center' : 'flex-end',
                 paddingTop: isMobile ? spacing.sm : 0,
                 borderTop: isMobile ? `1px solid ${colors.borderSecondary}20` : 'none',
               }}

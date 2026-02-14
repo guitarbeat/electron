@@ -241,13 +241,13 @@ const App: React.FC = () => {
             </div>
           ) : (
             <div className={animationClass}>
-              <div style={{ marginBottom: spacing['2xl'] }}>
+              <div style={{ marginBottom: spacing.xl, width: '100%' }}>
                 <UserSelection onTakeQuiz={handleStartQuiz} />
                 {quizCompleted && (
                   <div
                     style={{
                       textAlign: 'center',
-                      marginTop: spacing.lg,
+                      marginTop: spacing.sm,
                     }}
                   >
                     <Button
@@ -255,7 +255,7 @@ const App: React.FC = () => {
                       size="sm"
                       onClick={handleRetakeQuiz}
                       style={{
-                        fontSize: typography.fontSize.sm,
+                        fontSize: typography.fontSize.xs,
                         color: colors.textSecondary,
                       }}
                     >
