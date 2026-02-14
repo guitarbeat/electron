@@ -12,7 +12,7 @@ import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 
 interface HeaderProps {
-  currentUser: User;
+  currentUser: User | null;
   onLogout: () => void;
   onPinAction: () => void;
   onRemovePin: () => void;
@@ -129,7 +129,8 @@ const Header: React.FC<HeaderProps> = ({
                   opacity: 0.8,
                 }}
               >
-                Shared Watchlist{currentUser ? (
+                Shared Watchlist
+                {currentUser ? (
                   <>
                     {' • '}
                     <span style={{ color: colors.accent, fontWeight: typography.fontWeight.bold }}>
@@ -233,7 +234,12 @@ const Header: React.FC<HeaderProps> = ({
                   fontSize: isMobile ? '12px' : undefined,
                 }}
               >
-                <LogoutIcon style={{ width: isMobile ? '1rem' : '1.25rem', height: isMobile ? '1rem' : '1.5rem' }} />
+                <LogoutIcon
+                  style={{
+                    width: isMobile ? '1rem' : '1.25rem',
+                    height: isMobile ? '1rem' : '1.5rem',
+                  }}
+                />
                 {isMobile ? 'Exit' : 'Logout'}
               </Button>
             </div>

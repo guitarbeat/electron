@@ -1,5 +1,3 @@
-
-
 # Enhanced "Who's Watching" Screen Improvements
 
 Elevate the Y2K dark romantic profile selection screen with additional visual polish, micro-interactions, and improved layout while preserving the Papyrus font and gel-bubble aesthetic.
@@ -9,24 +7,31 @@ Elevate the Y2K dark romantic profile selection screen with additional visual po
 ## Overview of Improvements
 
 ### 1. Fix Critical Build Error
+
 Add missing TypeScript type definitions to resolve the 150+ build errors.
 
 ### 2. Title Animation Enhancement
+
 Add an entrance animation for "Who's Watching?" where it fades and slides in from above before the bubbles appear, with a subtle glow pulse effect.
 
 ### 3. Floating Hearts Background Layer
+
 Add animated floating heart particles that drift upward behind the gel bubbles, creating more visual depth and romanticism.
 
 ### 4. Improved Neon Divider
+
 Replace the static divider with a more dynamic animated heart or infinity symbol connecting the two profiles.
 
 ### 5. Gel Bubble Ring Pulse
+
 Add a subtle outer ring pulse animation when hovering, creating a "heartbeat" effect around the avatars.
 
 ### 6. Bottom Section Glassmorphism
+
 Style the suggestion form area with a frosted glass effect that matches the Y2K aesthetic better.
 
 ### 7. Shooting Stars Effect
+
 Add occasional shooting star animations across the background for more visual interest.
 
 ---
@@ -62,6 +67,7 @@ BEFORE                              AFTER
 **File: `package.json`** (Update)
 
 Add missing dev dependencies:
+
 ```json
 "@types/react": "^19.2.0",
 "@types/react-dom": "^19.2.0"
@@ -83,12 +89,23 @@ This fixes all 150+ TypeScript errors about missing type declarations.
 **File: `index.html`** (Update)
 
 Add new animation and styles:
+
 ```css
 @keyframes float-heart-y2k {
-  0% { transform: translateY(100vh) rotate(0deg) scale(0.5); opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.4; }
-  100% { transform: translateY(-20vh) rotate(45deg) scale(1); opacity: 0; }
+  0% {
+    transform: translateY(100vh) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-20vh) rotate(45deg) scale(1);
+    opacity: 0;
+  }
 }
 
 .floating-hearts-y2k::before,
@@ -106,6 +123,7 @@ Add floating hearts layer div between pixel stars and heart pattern overlay.
 **File: `components/ProfileSelectionScreen.tsx`** (Update)
 
 Replace the simple neon line with:
+
 - A pulsing heart icon or infinity symbol
 - Multiple animated glow rings radiating outward
 - Connects the two profiles more romantically
@@ -115,11 +133,21 @@ Replace the simple neon line with:
 **File: `index.html`** (Update)
 
 Add new animation:
+
 ```css
 @keyframes ring-pulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.15); opacity: 0; }
-  100% { transform: scale(1); opacity: 0.6; }
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
 }
 ```
 
@@ -134,6 +162,7 @@ Add new animation:
 **File: `components/ProfileSelectionScreen.tsx`** (Update)
 
 Wrap the bottom section in a frosted glass container:
+
 - `background: rgba(45, 27, 78, 0.4)`
 - `backdrop-filter: blur(12px)`
 - Subtle border with gradient
@@ -144,12 +173,23 @@ Wrap the bottom section in a frosted glass container:
 **File: `index.html`** (Update)
 
 Add shooting star animation:
+
 ```css
 @keyframes shooting-star {
-  0% { transform: translateX(-100px) translateY(-100px); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateX(300px) translateY(300px); opacity: 0; }
+  0% {
+    transform: translateX(-100px) translateY(-100px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(300px) translateY(300px);
+    opacity: 0;
+  }
 }
 
 .shooting-star {
@@ -166,18 +206,19 @@ Add shooting star elements with random delays and positions.
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `package.json` | Add `@types/react` and `@types/react-dom` |
-| `index.html` | Add title-entrance, ring-pulse, floating-hearts-y2k, shooting-star animations |
+| File                                    | Changes                                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `package.json`                          | Add `@types/react` and `@types/react-dom`                                                          |
+| `index.html`                            | Add title-entrance, ring-pulse, floating-hearts-y2k, shooting-star animations                      |
 | `components/ProfileSelectionScreen.tsx` | Enhanced title, floating hearts layer, heart divider, glassmorphism bottom section, shooting stars |
-| `components/GelBubbleAvatar.tsx` | Add outer ring pulse on hover |
+| `components/GelBubbleAvatar.tsx`        | Add outer ring pulse on hover                                                                      |
 
 ---
 
 ## Technical Details
 
 ### Title Entrance Animation
+
 ```css
 @keyframes title-entrance {
   0% {
@@ -193,27 +234,30 @@ Add shooting star elements with random delays and positions.
 }
 
 @keyframes title-glow-pulse {
-  0%, 100% { filter: drop-shadow(0 2px 10px rgba(255, 105, 180, 0.5)); }
-  50% { filter: drop-shadow(0 2px 20px rgba(255, 105, 180, 0.8)); }
+  0%,
+  100% {
+    filter: drop-shadow(0 2px 10px rgba(255, 105, 180, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 2px 20px rgba(255, 105, 180, 0.8));
+  }
 }
 ```
 
 ### Heart Divider Component
+
 - Animated heart icon using existing SparkleHeartIcon
 - Concentric glow rings that expand outward
 - Optional infinity symbol variant
 
 ### Glassmorphism Panel
+
 ```css
-background: linear-gradient(
-  135deg, 
-  rgba(45, 27, 78, 0.5) 0%, 
-  rgba(26, 26, 62, 0.4) 100%
-);
+background: linear-gradient(135deg, rgba(45, 27, 78, 0.5) 0%, rgba(26, 26, 62, 0.4) 100%);
 backdrop-filter: blur(16px);
 border: 1px solid rgba(255, 105, 180, 0.2);
 border-radius: 24px 24px 0 0;
-box-shadow: 
+box-shadow:
   0 -4px 30px rgba(255, 105, 180, 0.1),
   inset 0 1px 0 rgba(255, 255, 255, 0.1);
 ```
@@ -236,4 +280,3 @@ box-shadow:
 - Use `will-change` sparingly for animated elements
 - Limit shooting stars to 2-3 concurrent animations
 - Floating hearts use CSS pseudo-elements, not DOM nodes
-
