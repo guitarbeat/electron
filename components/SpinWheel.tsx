@@ -30,7 +30,7 @@ const SpinWheel: React.FC<{
 
   const {
     status,
-    currentRotation,
+    activeMovie,
     selectedMovie,
     hasSpunToday,
     todaySpinData,
@@ -79,17 +79,6 @@ const SpinWheel: React.FC<{
       background: `conic-gradient(${gradientColors})`,
     };
   }, [movies, segmentAngle]);
-
-  const currentMovie = useMemo(() => {
-    if (movies.length === 0 || segmentAngle === 0) return null;
-    // The marker is at the top (270deg from the positive x-axis), so we adjust the angle
-    // to calculate the currently selected segment based on rotation.
-    const normalizedRotation = currentRotation % 360;
-    const selectionAngle = (360 + 270 - normalizedRotation) % 360;
-    const currentIndex = Math.floor(selectionAngle / segmentAngle);
-    const safeIndex = Math.max(0, Math.min(currentIndex, movies.length - 1));
-    return movies[safeIndex];
-  }, [currentRotation, movies, segmentAngle]);
 
   // * Prevent closing during critical states
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -242,8 +231,8 @@ const SpinWheel: React.FC<{
               >
                 {status === 'result' && selectedMovie
                   ? selectedMovie.title
-                  : currentMovie
-                    ? currentMovie.title
+                  : activeMovie
+                    ? activeMovie.title
                     : 'Ready to spin?'}
               </h3>
               {status === 'result' && selectedMovie && (
