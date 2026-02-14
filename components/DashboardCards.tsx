@@ -246,7 +246,14 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
-          {isMobile ? 'Add' : <><CheckIcon style={{ width: '14px', marginRight: '4px' }} />Accept</>}
+          {isMobile ? (
+            'Add'
+          ) : (
+            <>
+              <CheckIcon style={{ width: '14px', marginRight: '4px' }} />
+              Accept
+            </>
+          )}
         </Button>
         <Button
           variant="secondary"
@@ -263,7 +270,14 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
             borderColor: 'rgba(255,255,255,0.1)',
           }}
         >
-          {isMobile ? 'Skip' : <><TrashIcon style={{ width: '14px', marginRight: '4px' }} />Reject</>}
+          {isMobile ? (
+            'Skip'
+          ) : (
+            <>
+              <TrashIcon style={{ width: '14px', marginRight: '4px' }} />
+              Reject
+            </>
+          )}
         </Button>
       </div>
     </Card>

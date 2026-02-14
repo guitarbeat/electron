@@ -410,7 +410,10 @@ const Watchlist: React.FC = () => {
           </div>
         )}
 
-        <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}>
+        <Card
+          variant="elevated"
+          style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
+        >
           <form onSubmit={handleAddMovie}>
             <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
               <div style={{ flex: 1, position: 'relative' }}>
@@ -446,7 +449,7 @@ const Watchlist: React.FC = () => {
                     size="sm"
                     title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
                     aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    style={{ 
+                    style={{
                       padding: isMobile ? '6px' : undefined,
                       width: isMobile ? '32px' : '36px',
                       height: isMobile ? '32px' : '36px',

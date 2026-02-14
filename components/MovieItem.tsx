@@ -131,7 +131,14 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 zIndex: 1,
               }}
             >
-              <FilmIcon style={{ width: '32px', height: '32px', color: 'rgba(255,255,255,0.2)', marginBottom: spacing.sm }} />
+              <FilmIcon
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  color: 'rgba(255,255,255,0.2)',
+                  marginBottom: spacing.sm,
+                }}
+              />
               <h3
                 style={{
                   fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
