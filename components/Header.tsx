@@ -12,7 +12,7 @@ import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 
 interface HeaderProps {
-  currentUser: User;
+  currentUser: User | null;
   onLogout: () => void;
   onPinAction: () => void;
   onRemovePin: () => void;

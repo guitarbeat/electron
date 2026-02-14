@@ -89,7 +89,7 @@ export const useMovies = (currentUser: User | null) => {
       mutationLockRef.current = mutation;
       return mutation;
     },
-    [refresh]
+    [currentUser, refresh]
   );
 
   const addMovie = useCallback(
