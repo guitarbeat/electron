@@ -21,10 +21,8 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   // this component re-mounts and state is naturally reset.
   // This useEffect ensures we reset state even if the component isn't re-mounted.
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
     setCurrentSourceIndex(0);
     setHasError(false);
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [sources]);
 
   const handleError = () => {

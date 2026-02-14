@@ -165,7 +165,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
           style={{
             padding: '6px',
             borderRadius: radius.full,
-            backgroundColor: colors.accent + '20',
+            backgroundColor: `${colors.accent}20`,
             color: colors.accent,
           }}
         >
