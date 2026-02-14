@@ -649,7 +649,7 @@ const Watchlist: React.FC = () => {
                   !currentUser
                     ? 'Select a profile above to unlock the wheel'
                     : canSpin
-                      ? 'Tap to pick tonight\'s movie instantly'
+                      ? "Tap to pick tonight's movie instantly"
                       : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'}`
                 }
                 onClick={handleOpenWheel}
