@@ -129,10 +129,16 @@ const Header: React.FC<HeaderProps> = ({
                   opacity: 0.8,
                 }}
               >
-                Shared Watchlist •{' '}
-                <span style={{ color: colors.accent, fontWeight: typography.fontWeight.bold }}>
-                  {currentUser}
-                </span>
+                Shared Watchlist{currentUser ? (
+                  <>
+                    {' • '}
+                    <span style={{ color: colors.accent, fontWeight: typography.fontWeight.bold }}>
+                      {currentUser}
+                    </span>
+                  </>
+                ) : (
+                  ' • Guest Mode'
+                )}
               </p>
               {/* Movie Stats Badge */}
               {movieCount > 0 && (
@@ -164,68 +170,73 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.md,
-              width: isMobile ? '100%' : 'auto',
-              justifyContent: isMobile ? 'space-between' : 'flex-end',
-              paddingTop: isMobile ? spacing.sm : 0,
-              borderTop: isMobile ? `1px solid ${colors.borderSecondary}20` : 'none',
-            }}
-          >
-            <div style={{ display: 'flex', gap: spacing.sm }}>
-              <IconButton
-                onClick={onPinAction}
-                variant="ghost"
-                size="sm"
-                title={hasPin ? 'Change PIN' : 'Set PIN'}
-                aria-label={hasPin ? 'Change PIN' : 'Set PIN'}
-                style={{
-                  color: hasPin ? colors.success : colors.textTertiary,
-                  borderColor: hasPin ? `${colors.success}40` : `${colors.borderSecondary}40`,
-                  border: '1px solid',
-                }}
-              >
-                <LockIcon />
-              </IconButton>
-              {hasPin && (
-                <IconButton
-                  onClick={onRemovePin}
-                  variant="ghost"
-                  size="sm"
-                  title="Remove PIN"
-                  aria-label="Remove PIN"
-                  style={{
-                    color: colors.error,
-                    borderColor: `${colors.error}40`,
-                    border: '1px solid',
-                  }}
-                >
-                  <TrashIcon />
-                </IconButton>
-              )}
-            </div>
-
-            <Button
-              onClick={onLogout}
-              variant="secondary"
-              size="sm"
+          {currentUser && (
+            <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: spacing.xs,
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                borderColor: 'rgba(255,255,255,0.1)',
-                padding: isMobile ? '6px 12px' : undefined,
-                fontSize: isMobile ? '12px' : undefined,
+                gap: spacing.md,
+                width: isMobile ? '100%' : 'auto',
+                justifyContent: isMobile ? 'space-between' : 'flex-end',
+                paddingTop: isMobile ? spacing.sm : 0,
+                borderTop: isMobile ? `1px solid ${colors.borderSecondary}20` : 'none',
               }}
             >
-              <LogoutIcon style={{ width: isMobile ? '1rem' : '1.25rem', height: isMobile ? '1rem' : '1.5rem' }} />
-              {isMobile ? 'Exit' : 'Logout'}
-            </Button>
-          </div>
+              <div style={{ display: 'flex', gap: spacing.sm }}>
+                <IconButton
+                  onClick={onPinAction}
+                  variant="ghost"
+                  size="sm"
+                  title={hasPin ? 'Change PIN' : 'Set PIN'}
+                  aria-label={hasPin ? 'Change PIN' : 'Set PIN'}
+                  style={{
+                    color: hasPin ? colors.success : colors.textPrimary,
+                    borderColor: hasPin ? `${colors.success}60` : 'rgba(255,255,255,0.2)',
+                    border: '1px solid',
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                  }}
+                >
+                  <LockIcon />
+                </IconButton>
+                {hasPin && (
+                  <IconButton
+                    onClick={onRemovePin}
+                    variant="ghost"
+                    size="sm"
+                    title="Remove PIN"
+                    aria-label="Remove PIN"
+                    style={{
+                      color: colors.error,
+                      borderColor: `${colors.error}60`,
+                      border: '1px solid',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    <TrashIcon />
+                  </IconButton>
+                )}
+              </div>
+
+              <Button
+                onClick={onLogout}
+                variant="secondary"
+                size="sm"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.xs,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  color: colors.textPrimary,
+                  padding: isMobile ? '6px 12px' : undefined,
+                  fontSize: isMobile ? '12px' : undefined,
+                }}
+              >
+                <LogoutIcon style={{ width: isMobile ? '1rem' : '1.25rem', height: isMobile ? '1rem' : '1.5rem' }} />
+                {isMobile ? 'Exit' : 'Logout'}
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
     </div>
