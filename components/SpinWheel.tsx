@@ -263,7 +263,7 @@ const SpinWheel: React.FC<{
                       gap: spacing.xs,
                       padding: `${spacing.xs} ${spacing.sm}`,
                       borderRadius: '9999px',
-                      backgroundColor: colors.success + '20',
+                      backgroundColor: `${colors.success}20`,
                       border: `1px solid ${colors.success}80`,
                     }}
                   >
@@ -296,13 +296,13 @@ const SpinWheel: React.FC<{
                     </div>
                   </div>
                 )}
-                <div className="spin-marker"></div>
+                <div className="spin-marker" />
                 <div
                   ref={wheelRef}
                   className={`spin-wheel ${hasSpunToday ? 'grayscale' : ''}`}
                   style={wheelBackgroundStyle}
-                ></div>
-                <div className="spin-hub"></div>
+                />
+                <div className="spin-hub" />
               </div>
               {status === 'idle' && !hasSpunToday && (
                 <div className="spin-content">
@@ -449,8 +449,8 @@ const SpinWheel: React.FC<{
                     style={{
                       marginBottom: spacing.lg,
                       padding: spacing.md,
-                      backgroundColor: colors.warning + '20',
-                      borderColor: colors.warning + '80',
+                      backgroundColor: `${colors.warning}20`,
+                      borderColor: `${colors.warning}80`,
                     }}
                   >
                     <p
@@ -504,10 +504,10 @@ const SpinWheel: React.FC<{
                           gap: spacing.sm,
                           padding: `${spacing.xs} ${spacing.md}`,
                           borderRadius: '9999px',
-                          border: `1px solid ${todaySpinData.spunBy === currentUser ? colors.success + '80' : colors.accent + '80'}`,
+                          border: `1px solid ${todaySpinData.spunBy === currentUser ? `${colors.success}80` : `${colors.accent}80`}`,
                           backgroundColor:
                             todaySpinData.spunBy === currentUser
-                              ? colors.success + '20'
+                              ? `${colors.success}20`
                               : colors.accentMuted,
                         }}
                       >
@@ -539,7 +539,7 @@ const SpinWheel: React.FC<{
                       <span>
                         {(() => {
                           try {
-                            const date = new Date(todaySpinData.date + 'T00:00:00');
+                            const date = new Date(`${todaySpinData.date}T00:00:00`);
                             if (isNaN(date.getTime())) {
                               return todaySpinData.date;
                             }

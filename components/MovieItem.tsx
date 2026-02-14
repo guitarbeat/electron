@@ -531,7 +531,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       : `Mark "${movie.title}" as watched`
                   }
                   style={{
-                    backgroundColor: watchedByCurrentUser ? colors.success + '20' : 'transparent',
+                    backgroundColor: watchedByCurrentUser ? `${colors.success}20` : 'transparent',
                     border: watchedByCurrentUser
                       ? `1px solid ${colors.success}40`
                       : '1px solid transparent',

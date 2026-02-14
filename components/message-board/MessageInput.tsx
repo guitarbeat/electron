@@ -83,7 +83,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
     // Allow submitting with Ctrl+Enter or Cmd+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
-      const form = e.currentTarget.form;
+      const { form } = e.currentTarget;
       if (form) {
         form.requestSubmit();
       }
