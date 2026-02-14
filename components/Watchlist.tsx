@@ -99,6 +99,8 @@ const Watchlist: React.FC = () => {
     () => (movies ? movies.findIndex((m) => m.watchedBy.length === 2) : -1),
     [movies]
   );
+  const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
+  const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -501,6 +503,95 @@ const Watchlist: React.FC = () => {
           </form>
         </Card>
 
+        <Card
+          variant="elevated"
+          className={!canSpin ? 'neon-pulse' : undefined}
+          style={{
+            marginBottom: spacing.lg,
+            padding: isMobile ? spacing.md : spacing.lg,
+            border: `2px solid ${canSpin ? colors.secondary : colors.accent}`,
+            background: canSpin
+              ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
+              : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
+            boxShadow: canSpin ? shadows.glowBlue : shadows.glowStrong,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+              justifyContent: 'space-between',
+              gap: spacing.md,
+            }}
+          >
+            <div style={{ flex: 1, textAlign: isMobile ? 'center' : 'left' }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  fontSize: typography.fontSize.xs,
+                  fontWeight: typography.fontWeight.bold,
+                  color: canSpin ? colors.secondary : colors.accentLight,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  marginBottom: spacing.xs,
+                }}
+              >
+                {!currentUser
+                  ? 'Spin wheel locked'
+                  : canSpin
+                    ? "Tonight's movie picker is ready"
+                    : 'Almost ready to spin'}
+              </span>
+              <h2
+                style={{
+                  margin: 0,
+                  marginBottom: spacing.xs,
+                  color: colors.textPrimary,
+                  fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
+                  fontWeight: typography.fontWeight.bold,
+                  lineHeight: typography.lineHeight.tight,
+                }}
+              >
+                {!currentUser ? 'Login to Spin the Wheel' : 'Spin the Wheel'}
+              </h2>
+              <p
+                style={{
+                  margin: 0,
+                  color: colors.textSecondary,
+                  fontSize: typography.fontSize.sm,
+                  lineHeight: typography.lineHeight.normal,
+                }}
+              >
+                {!currentUser
+                  ? 'Select a profile above, then spin for an instant movie pick.'
+                  : canSpin
+                    ? 'You have enough unwatched movies. Spin now and let fate decide.'
+                    : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'} to unlock the wheel.`}
+              </p>
+            </div>
+            <Button
+              onClick={handleOpenWheel}
+              variant={canSpin ? 'secondary' : 'primary'}
+              size={isMobile ? 'md' : 'lg'}
+              style={{
+                width: isMobile ? '100%' : 'auto',
+                minWidth: isMobile ? '100%' : '220px',
+                fontWeight: typography.fontWeight.bold,
+                letterSpacing: '0.06em',
+              }}
+              aria-label={!currentUser ? 'Login to spin the wheel' : 'Open spin wheel'}
+            >
+              {!currentUser ? <LockIcon /> : <DiceIcon />}
+              {!currentUser
+                ? 'Login to Spin'
+                : canSpin
+                  ? 'Spin Wheel Now'
+                  : `Need ${moviesNeededForSpin} More`}
+            </Button>
+          </div>
+        </Card>
+
         {/* Action Grid (Only in List View) */}
         {viewMode === 'list' && (
           <div
@@ -513,20 +604,26 @@ const Watchlist: React.FC = () => {
           >
             <Button
               onClick={handleOpenWheel}
-              disabled={!currentUser || unwatchedMovies.length < 2}
               variant="secondary"
-              size="sm"
+              size="md"
               style={{
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: spacing.xs,
-                opacity: !currentUser ? 0.6 : 1,
+                fontWeight: typography.fontWeight.bold,
+                letterSpacing: '0.05em',
+                minHeight: isMobile ? '44px' : '48px',
+                boxShadow: canSpin ? shadows.buttonLarge : shadows.button,
               }}
             >
               {!currentUser ? <LockIcon /> : <DiceIcon />}
-              {!currentUser ? 'Login to Spin' : 'Spin to Decide'}
+              {!currentUser
+                ? 'Login to Spin the Wheel'
+                : canSpin
+                  ? 'Spin Wheel Now'
+                  : `Add ${moviesNeededForSpin} More to Spin`}
             </Button>
           </div>
         )}
@@ -542,7 +639,7 @@ const Watchlist: React.FC = () => {
             <MasonryGrid>
               {/* Primary Action Card */}
               <DashboardCard
-                title={!currentUser ? 'Login to Spin' : 'Spin to Decide'}
+                title={!currentUser ? 'Login to Spin the Wheel' : 'Spin Wheel'}
                 icon={
                   !currentUser ? (
                     <LockIcon style={{ width: '32px', height: '32px' }} />
@@ -552,14 +649,14 @@ const Watchlist: React.FC = () => {
                 }
                 description={
                   !currentUser
-                    ? 'Select a profile to spin'
-                    : unwatchedMovies.length < 2
-                      ? 'Needs 2+ movies'
-                      : 'Pick a random movie!'
+                    ? 'Select a profile above to unlock the wheel'
+                    : canSpin
+                      ? 'Tap to pick tonight\'s movie instantly'
+                      : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'}`
                 }
                 onClick={handleOpenWheel}
                 variant="accent"
-                actionLabel={!currentUser ? 'Locked' : 'Spin Wheel'}
+                actionLabel={!currentUser ? 'Login to Spin' : canSpin ? 'Spin Now' : 'Add Movies'}
               />
 
               {/* Individual Suggestions */}
