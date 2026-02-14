@@ -52,7 +52,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: `${spacing.xl} 0`,
+        padding: `${spacing.lg} 0`,
         width: '100%',
         maxWidth: '800px',
         margin: '0 auto',
@@ -62,24 +62,27 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
         style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: 'clamp(20px, 8vw, 60px)',
+          alignItems: 'center',
+          gap: 'clamp(16px, 4vw, 40px)',
           width: '100%',
-          flexWrap: 'wrap',
+          flexWrap: 'nowrap',
+          padding: `0 ${spacing.md}`,
         }}
       >
         {(['Aaron', 'Electra'] as User[]).map((user, index) => (
-          <GelBubbleAvatar
-            key={user}
-            user={user}
-            hasPin={userHasPin(user)}
-            isHovered={hoveredUser === user || currentUser === user}
-            onClick={() => handleUserClick(user)}
-            onMouseEnter={() => setHoveredUser(user)}
-            onMouseLeave={() => setHoveredUser(null)}
-            onFocus={() => setHoveredUser(user)}
-            onBlur={() => setHoveredUser(null)}
-            animationOffset={index % 2 === 1}
-          />
+          <div key={user} style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+            <GelBubbleAvatar
+              user={user}
+              hasPin={userHasPin(user)}
+              isHovered={hoveredUser === user || currentUser === user}
+              onClick={() => handleUserClick(user)}
+              onMouseEnter={() => setHoveredUser(user)}
+              onMouseLeave={() => setHoveredUser(null)}
+              onFocus={() => setHoveredUser(user)}
+              onBlur={() => setHoveredUser(null)}
+              animationOffset={index % 2 === 1}
+            />
+          </div>
         ))}
       </div>
 
