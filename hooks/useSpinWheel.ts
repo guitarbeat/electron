@@ -18,7 +18,7 @@ export const useSpinWheel = (
   );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [currentRotation, setCurrentRotation] = useState(0);
+  const [activeMovie, setActiveMovie] = useState<Movie | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -53,10 +53,34 @@ export const useSpinWheel = (
         wheelRef.current.style.transition = 'none'; // Ensure no CSS transition interferes
       }
       rotationRef.current = angle;
-      setCurrentRotation(angle);
+
+      if (movies.length > 0 && segmentAngle > 0) {
+        const normalizedRotation = angle % 360;
+        const selectionAngle = (360 + 270 - normalizedRotation) % 360;
+        const currentIndex = Math.floor(selectionAngle / segmentAngle);
+        const safeIndex = Math.max(0, Math.min(currentIndex, movies.length - 1));
+        const newMovie = movies[safeIndex];
+
+        setActiveMovie((prev) => (prev?.id === newMovie.id ? prev : newMovie));
+      }
     },
-    [wheelRef]
+    [wheelRef, movies, segmentAngle]
   );
+
+  // Sync activeMovie when movies change
+  useEffect(() => {
+    if (movies.length === 0) {
+      setActiveMovie(null);
+      return;
+    }
+
+    const angle = rotationRef.current;
+    const normalizedRotation = angle % 360;
+    const selectionAngle = (360 + 270 - normalizedRotation) % 360;
+    const currentIndex = Math.floor(selectionAngle / segmentAngle);
+    const safeIndex = Math.max(0, Math.min(currentIndex, movies.length - 1));
+    setActiveMovie(movies[safeIndex]);
+  }, [movies, segmentAngle]);
 
   const spinLoop = useCallback(async () => {
     velocityRef.current *= FRICTION;
@@ -292,7 +316,7 @@ export const useSpinWheel = (
   return {
     status,
     selectedMovie,
-    currentRotation,
+    activeMovie,
     hasSpunToday,
     todaySpinData,
     saveError,
