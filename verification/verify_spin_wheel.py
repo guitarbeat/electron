@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright, expect
 import json
 
+
 def run(playwright):
     browser = playwright.chromium.launch(headless=True)
     context = browser.new_context()
@@ -19,39 +20,33 @@ def run(playwright):
                     "title": "Movie A",
                     "watchedBy": [],
                     "addedBy": "Aaron",
-                    "createdAt": "2023-01-01"
+                    "createdAt": "2023-01-01",
                 },
                 {
                     "id": "2",
                     "title": "Movie B",
                     "watchedBy": [],
                     "addedBy": "Aaron",
-                    "createdAt": "2023-01-02"
-                }
+                    "createdAt": "2023-01-02",
+                },
             ]
 
             route.fulfill(
                 status=200,
                 content_type="application/json",
-                body=json.dumps({
-                    "files": {
-                        "pins.json": {
-                            "content": "{}"
-                        },
-                        "movielist.json": {
-                            "content": json.dumps(movies_data)
-                        },
-                        "dailySpin.json": {
-                            "content": "null"
+                body=json.dumps(
+                    {
+                        "files": {
+                            "pins.json": {"content": "{}"},
+                            "movielist.json": {"content": json.dumps(movies_data)},
+                            "dailySpin.json": {"content": "null"},
                         }
                     }
-                })
+                ),
             )
         else:
             route.fulfill(
-                status=200,
-                content_type="application/json",
-                body=json.dumps({"id": "mock_id"})
+                status=200, content_type="application/json", body=json.dumps({"id": "mock_id"})
             )
 
     page.route("**/gists/**", handle_gist)
@@ -75,7 +70,7 @@ def run(playwright):
         # Try both generic and specific button text just in case
         user_button = page.locator("button").filter(has_text="Select Aaron as user").first
         if not user_button.is_visible():
-             user_button = page.locator("button").filter(has_text="Aaron").first
+            user_button = page.locator("button").filter(has_text="Aaron").first
 
         user_button.wait_for(state="visible")
         user_button.click(force=True)
@@ -142,6 +137,7 @@ def run(playwright):
         raise e
     finally:
         browser.close()
+
 
 with sync_playwright() as playwright:
     run(playwright)
