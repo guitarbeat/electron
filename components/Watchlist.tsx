@@ -50,7 +50,7 @@ const Watchlist: React.FC = () => {
     updateMovieMetadata,
     manualMetadataUpdate,
     refreshAllMetadata,
-  } = useMovies(currentUser!);
+  } = useMovies(currentUser);
   const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
   const {
     pendingSuggestions,
@@ -79,6 +79,13 @@ const Watchlist: React.FC = () => {
   const [celebratedMovieTitle, setCelebratedMovieTitle] = useState<string | null>(null);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const showGuestWarning = useCallback(() => {
+    setToast({
+      message: 'Please select a profile above to make changes!',
+      type: 'info',
+    });
+  }, []);
 
   const unwatchedMovies = useMemo(
     () => (movies ? movies.filter((movie) => movie.watchedBy.length < 2) : []),
@@ -133,6 +140,10 @@ const Watchlist: React.FC = () => {
   }, [toast]);
 
   const handleOpenWheel = () => {
+    if (!currentUser) {
+      showGuestWarning();
+      return;
+    }
     if (unwatchedMovies.length > 1) {
       setIsWheelVisible(true);
     } else {
@@ -145,6 +156,10 @@ const Watchlist: React.FC = () => {
 
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      showGuestWarning();
+      return;
+    }
     if (newMovieTitle.trim() && !isSubmitting) {
       setIsAdding(true);
       const title = newMovieTitle.trim();
@@ -164,8 +179,12 @@ const Watchlist: React.FC = () => {
 
   const handleToggleWatched = useCallback(
     async (movie: Movie) => {
+      if (!currentUser) {
+        showGuestWarning();
+        return;
+      }
       try {
-        const wasWatched = movie.watchedBy.includes(currentUser!);
+        const wasWatched = movie.watchedBy.includes(currentUser);
         await toggleWatched(movie.id);
         setToast({
           message: wasWatched
@@ -177,10 +196,14 @@ const Watchlist: React.FC = () => {
         setToast({ message: `Error: ${err.message}`, type: 'error' });
       }
     },
-    [toggleWatched, currentUser]
+    [toggleWatched, currentUser, showGuestWarning]
   );
 
   const handleDeleteMovie = (movie: Movie) => {
+    if (!currentUser) {
+      showGuestWarning();
+      return;
+    }
     setMovieToDelete(movie);
   };
 
@@ -197,9 +220,13 @@ const Watchlist: React.FC = () => {
   };
 
   const handleAcceptSuggestion = async (suggestion: MovieSuggestion) => {
+    if (!currentUser) {
+      showGuestWarning();
+      return;
+    }
     setProcessingSuggestionId(suggestion.id);
     try {
-      await acceptSuggestion(suggestion.id, currentUser!);
+      await acceptSuggestion(suggestion.id, currentUser);
       setToast({ message: `"${suggestion.title}" added to watchlist!`, type: 'success' });
       refreshMovies();
     } catch (err: any) {
@@ -210,9 +237,13 @@ const Watchlist: React.FC = () => {
   };
 
   const handleRejectSuggestion = async (suggestion: MovieSuggestion) => {
+    if (!currentUser) {
+      showGuestWarning();
+      return;
+    }
     setProcessingSuggestionId(suggestion.id);
     try {
-      await rejectSuggestion(suggestion.id, currentUser!);
+      await rejectSuggestion(suggestion.id, currentUser);
       setToast({ message: 'Suggestion rejected', type: 'info' });
     } catch (err: any) {
       setToast({ message: `Failed to reject suggestion: ${err.message}`, type: 'error' });
@@ -226,7 +257,11 @@ const Watchlist: React.FC = () => {
   };
 
   const handlePinAction = () => {
-    if (userHasPin(currentUser!)) {
+    if (!currentUser) {
+      showGuestWarning();
+      return;
+    }
+    if (userHasPin(currentUser)) {
       setPinMode('change');
     } else {
       setPinMode('set');
@@ -284,7 +319,7 @@ const Watchlist: React.FC = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          minHeight: '100vh',
+          minHeight: '50vh',
           background: colors.background,
           gap: spacing.lg,
         }}
@@ -324,16 +359,16 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: colors.background }}>
+    <div style={{ background: colors.background }}>
       {/* Confetti celebration */}
       {showConfetti && <Confetti isActive={showConfetti} />}
 
       <Header
-        currentUser={currentUser!}
+        currentUser={currentUser || null}
         onLogout={handleLogout}
         onPinAction={handlePinAction}
         onRemovePin={() => setShowRemovePinConfirm(true)}
-        hasPin={userHasPin(currentUser!)}
+        hasPin={currentUser ? userHasPin(currentUser) : false}
         movieCount={movies?.length || 0}
         watchedTogetherCount={watchedMovies.length}
       />

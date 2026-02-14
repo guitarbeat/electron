@@ -4,7 +4,7 @@ import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata } from '../services/metadataService';
 
-export const useMovies = (currentUser: User) => {
+export const useMovies = (currentUser: User | null) => {
   const {
     data: movies,
     error,
@@ -58,6 +58,10 @@ export const useMovies = (currentUser: User) => {
 
   const performMutation = useCallback(
     async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
+      if (!currentUser) {
+        console.warn('Mutation attempted without user');
+        return;
+      }
       // Chain mutations to prevent race conditions
       const mutation = (async () => {
         try {
