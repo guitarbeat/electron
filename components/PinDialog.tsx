@@ -10,7 +10,6 @@ import {
   zIndex,
   radius,
   motion,
-  shadows,
 } from '../design-system/tokens';
 
 interface PinDialogProps {
@@ -36,6 +35,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
+  const [isShaking, setIsShaking] = useState(false);
   const [step, setStep] = useState<'current' | 'new' | 'confirm'>('current');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -46,6 +46,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setNewPin('');
       setConfirmPin('');
       setError('');
+      setIsShaking(false);
       setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
       /* eslint-enable react-hooks/set-state-in-effect */
       document.body.classList.add('modal-open');
@@ -54,6 +55,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
       document.body.classList.remove('modal-open');
     }
   }, [isOpen, mode]);
+
+  useEffect(() => {
+    if (isShaking) {
+      const timer = setTimeout(() => setIsShaking(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isShaking]);
 
   useEffect(() => {
     if (isOpen) {
@@ -74,11 +82,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
     if (mode === 'enter') {
       if (pin.length !== 4) {
         setError('PIN must be 4 digits');
+        setIsShaking(true);
         return;
       }
       const success = await onSubmit(pin);
       if (!success) {
         setError('Incorrect PIN');
+        setIsShaking(true);
         setPin('');
         inputRef.current?.focus();
       }
@@ -86,6 +96,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       if (step === 'new') {
         if (newPin.length !== 4) {
           setError('PIN must be 4 digits');
+          setIsShaking(true);
           return;
         }
         setStep('confirm');
@@ -94,6 +105,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       } else if (step === 'confirm') {
         if (confirmPin !== newPin) {
           setError('PINs do not match');
+          setIsShaking(true);
           setConfirmPin('');
           inputRef.current?.focus();
           return;
@@ -104,11 +116,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
       if (step === 'current') {
         if (pin.length !== 4) {
           setError('PIN must be 4 digits');
+          setIsShaking(true);
           return;
         }
         const success = await onSubmit(pin);
         if (!success) {
           setError('Incorrect current PIN');
+          setIsShaking(true);
           setPin('');
           inputRef.current?.focus();
           return;
@@ -119,6 +133,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       } else if (step === 'new') {
         if (newPin.length !== 4) {
           setError('PIN must be 4 digits');
+          setIsShaking(true);
           return;
         }
         setStep('confirm');
@@ -127,6 +142,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       } else if (step === 'confirm') {
         if (confirmPin !== newPin) {
           setError('PINs do not match');
+          setIsShaking(true);
           setConfirmPin('');
           inputRef.current?.focus();
           return;
@@ -188,6 +204,16 @@ const PinDialog: React.FC<PinDialogProps> = ({
       aria-modal="true"
       aria-labelledby="pin-dialog-title"
     >
+      <style>
+        {`
+          @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+          }
+        `}
+      </style>
       <div onClick={(e) => e.stopPropagation()}>
         <Card variant="elevated" style={{ maxWidth: '350px', width: '100%', padding: spacing.xl }}>
           <h2
@@ -229,6 +255,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   outline: 'none',
                   boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
                   transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
+                  animation: isShaking ? 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = colors.accent;
