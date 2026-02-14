@@ -28,8 +28,9 @@ const defaultQuizData: QuizData = {
 
 export const getQuizData = async (): Promise<QuizData> => {
   try {
-    const isDefaultToken = !GIST_TOKEN || GIST_TOKEN.startsWith('ghp_') || GIST_TOKEN === 'YOUR_GITHUB_TOKEN';
-    
+    const isDefaultToken =
+      !GIST_TOKEN || GIST_TOKEN.startsWith('ghp_') || GIST_TOKEN === 'YOUR_GITHUB_TOKEN';
+
     if (isDefaultToken) {
       // Logic for handling default token if needed
     }

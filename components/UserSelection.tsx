@@ -70,7 +70,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
         }}
       >
         {(['Aaron', 'Electra'] as User[]).map((user, index) => (
-          <div key={user} style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+          <div
+            key={user}
+            style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}
+          >
             <GelBubbleAvatar
               user={user}
               hasPin={userHasPin(user)}

@@ -93,7 +93,11 @@ const SuggestionForm: React.FC = () => {
   }
 
   return (
-    <Card variant="elevated" className="animate-fade-in" style={{ padding: spacing.sm, maxWidth: '650px', margin: '0 auto' }}>
+    <Card
+      variant="elevated"
+      className="animate-fade-in"
+      style={{ padding: spacing.sm, maxWidth: '650px', margin: '0 auto' }}
+    >
       <div style={{ padding: spacing.md }}>
         <h3
           style={{

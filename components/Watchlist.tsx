@@ -410,7 +410,10 @@ const Watchlist: React.FC = () => {
           </div>
         )}
 
-        <Card variant="elevated" style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}>
+        <Card
+          variant="elevated"
+          style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
+        >
           <form onSubmit={handleAddMovie}>
             <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
               <div style={{ flex: 1, position: 'relative' }}>
@@ -418,8 +421,14 @@ const Watchlist: React.FC = () => {
                   ref={inputRef}
                   value={newMovieTitle}
                   onChange={(e) => setNewMovieTitle(e.target.value)}
-                  placeholder={isMobile ? 'Add movie...' : 'Enter movie or show title...'}
-                  disabled={isSubmitting}
+                  placeholder={
+                    !currentUser
+                      ? 'Login to add movies...'
+                      : isMobile
+                        ? 'Add movie...'
+                        : 'Enter movie or show title...'
+                  }
+                  disabled={!currentUser || isSubmitting}
                   aria-label="New movie title"
                   style={{
                     paddingRight: isMobile ? '70px' : '120px',
@@ -427,6 +436,8 @@ const Watchlist: React.FC = () => {
                     transition: 'border-color 0.3s ease',
                     height: isMobile ? '42px' : '48px',
                     fontSize: isMobile ? '14px' : '16px',
+                    opacity: !currentUser ? 0.6 : 1,
+                    cursor: !currentUser ? 'not-allowed' : 'text',
                   }}
                 />
                 <div
@@ -446,7 +457,7 @@ const Watchlist: React.FC = () => {
                     size="sm"
                     title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
                     aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    style={{ 
+                    style={{
                       padding: isMobile ? '6px' : undefined,
                       width: isMobile ? '32px' : '36px',
                       height: isMobile ? '32px' : '36px',
@@ -462,7 +473,7 @@ const Watchlist: React.FC = () => {
                   <Button
                     type="submit"
                     variant="primary"
-                    disabled={!newMovieTitle.trim() || isSubmitting}
+                    disabled={!currentUser || !newMovieTitle.trim() || isSubmitting}
                     isLoading={isAdding}
                     style={{
                       padding: 0,
@@ -472,6 +483,7 @@ const Watchlist: React.FC = () => {
                       width: isMobile ? '32px' : '36px',
                       height: isMobile ? '32px' : '36px',
                       flexShrink: 0,
+                      opacity: !currentUser ? 0.5 : 1,
                     }}
                   >
                     {!isAdding && (
@@ -501,7 +513,7 @@ const Watchlist: React.FC = () => {
           >
             <Button
               onClick={handleOpenWheel}
-              disabled={unwatchedMovies.length < 2}
+              disabled={!currentUser || unwatchedMovies.length < 2}
               variant="secondary"
               size="sm"
               style={{
@@ -510,10 +522,11 @@ const Watchlist: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: spacing.xs,
+                opacity: !currentUser ? 0.6 : 1,
               }}
             >
-              <DiceIcon />
-              Spin to Decide
+              {!currentUser ? <LockIcon /> : <DiceIcon />}
+              {!currentUser ? 'Login to Spin' : 'Spin to Decide'}
             </Button>
           </div>
         )}
@@ -529,14 +542,24 @@ const Watchlist: React.FC = () => {
             <MasonryGrid>
               {/* Primary Action Card */}
               <DashboardCard
-                title="Spin to Decide"
-                icon={<DiceIcon style={{ width: '32px', height: '32px' }} />}
+                title={!currentUser ? 'Login to Spin' : 'Spin to Decide'}
+                icon={
+                  !currentUser ? (
+                    <LockIcon style={{ width: '32px', height: '32px' }} />
+                  ) : (
+                    <DiceIcon style={{ width: '32px', height: '32px' }} />
+                  )
+                }
                 description={
-                  unwatchedMovies.length < 2 ? 'Needs 2+ movies' : 'Pick a random movie!'
+                  !currentUser
+                    ? 'Select a profile to spin'
+                    : unwatchedMovies.length < 2
+                      ? 'Needs 2+ movies'
+                      : 'Pick a random movie!'
                 }
                 onClick={handleOpenWheel}
                 variant="accent"
-                actionLabel="Spin Wheel"
+                actionLabel={!currentUser ? 'Locked' : 'Spin Wheel'}
               />
 
               {/* Individual Suggestions */}
@@ -555,7 +578,7 @@ const Watchlist: React.FC = () => {
                   <MovieItem
                     key={movie.id}
                     movie={movie}
-                    currentUser={currentUser!}
+                    currentUser={currentUser}
                     onToggle={handleToggleWatched}
                     onDelete={handleDeleteMovie}
                     onFixMatch={(movie) => setMovieToFix(movie)}
@@ -607,7 +630,7 @@ const Watchlist: React.FC = () => {
                     )}
                     <MovieItem
                       movie={movie}
-                      currentUser={currentUser!}
+                      currentUser={currentUser}
                       onToggle={handleToggleWatched}
                       onDelete={handleDeleteMovie}
                       onFixMatch={(movie) => setMovieToFix(movie)}
