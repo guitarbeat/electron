@@ -1,17 +1,3 @@
-// DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER
-//
-// GITHUB PERSONAL ACCESS TOKEN
-//
-// This token gives write access to your Gists.
-// Exposing it in a client-side application is a SIGNIFICANT SECURITY RISK.
-// Anyone who inspects your site's source code can find this token and use it.
-//
-// This is acceptable ONLY for a private, personal project between trusted users.
-//
-// DO NOT COMMIT THIS FILE TO A PUBLIC REPOSITORY if it contains a real token.
-//
-// DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER
-
 // How to get a token:
 // 1. Go to https://github.com/settings/tokens/new
 // 2. Select "Tokens (classic)".
@@ -19,11 +5,12 @@
 // 4. Set an expiration date.
 // 5. Check the "gist" scope.
 // 6. Click "Generate token" and paste the token string below.
-const GIST_TOKEN = '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';
+// 7. Add it to your .env file as VITE_GIST_TOKEN
+const GIST_TOKEN = import.meta.env.VITE_GIST_TOKEN || '';
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.
-const GIST_ID = 'ba250f944e3e9e71c0d669060254eab2';
+const GIST_ID = import.meta.env.VITE_GIST_ID || '';
 
 // The filename inside your Gist that contains the movie data.
 const GIST_FILENAME = 'movielist.json';
