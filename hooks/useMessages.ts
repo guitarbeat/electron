@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { Message } from '../types';
 import { usePolling } from './usePolling';
 import { getMessages, saveMessages } from '../services/messageService';
+import { sanitizeInput, MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../config/security';
 
 export const useMessages = () => {
   // * Use JSON.stringify for deep equality check to prevent unnecessary re-renders
@@ -37,10 +38,25 @@ export const useMessages = () => {
 
   const addMessage = useCallback(
     async (author: string, content: string) => {
+      const cleanAuthor = sanitizeInput(author);
+      const cleanContent = sanitizeInput(content);
+
+      if (!cleanContent) {
+        throw new Error('Message cannot be empty');
+      }
+
+      if (cleanContent.length > MAX_MESSAGE_LENGTH) {
+        throw new Error(`Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters`);
+      }
+
+      if (cleanAuthor.length > MAX_AUTHOR_LENGTH) {
+        throw new Error(`Author name exceeds maximum length of ${MAX_AUTHOR_LENGTH} characters`);
+      }
+
       const newMessage: Message = {
         id: crypto.randomUUID(),
-        author: author.trim() || 'Anonymous',
-        content: content.trim(),
+        author: cleanAuthor || 'Anonymous',
+        content: cleanContent,
         createdAt: new Date().toISOString(),
       };
       await performMutation((latestMessages) => [newMessage, ...latestMessages]);
