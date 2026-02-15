@@ -22,6 +22,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
         clearTimeout(dismissTimer);
       };
     }
+    return undefined;
   }, [duration, onDismiss]);
 
   const handleDismiss = () => {
@@ -126,6 +127,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
         </span>
         {onDismiss && (
           <button
+            type="button"
             onClick={handleDismiss}
             aria-label="Dismiss notification"
             style={{

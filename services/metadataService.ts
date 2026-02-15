@@ -13,7 +13,9 @@ const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise
     return response;
   } catch (error) {
     if (retries > 0) {
-      await new Promise((resolve) => setTimeout(resolve, backoff));
+      await new Promise((resolve) => {
+        setTimeout(resolve, backoff);
+      });
       return fetchWithRetry(url, retries - 1, backoff * 2);
     }
     throw error;

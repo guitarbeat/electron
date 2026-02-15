@@ -58,6 +58,7 @@ export const usePolling = <T>(
       const intervalId = setInterval(() => execute(false), interval);
       return () => clearInterval(intervalId);
     }
+    return undefined;
   }, [interval, execute]);
 
   const refresh = useCallback(() => execute(true), [execute]);
