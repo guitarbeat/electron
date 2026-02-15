@@ -29,6 +29,7 @@ const Button: React.FC<ButtonProps> = ({
   children,
   className = '',
   style,
+  type = 'button',
   ...props
 }) => {
   const sizeStyles = {
@@ -74,6 +75,7 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      type={type}
       className={`${className} ripple-effect`}
       disabled={isDisabled}
       style={{

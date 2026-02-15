@@ -3,7 +3,7 @@ import json
 
 
 def run(playwright):
-    browser = playwright.chromium.launch(headless=True)
+    browser = playwright.chromium.launch(headless=True, args=["--disable-web-security"])
     context = browser.new_context()
     page = context.new_page()
 
