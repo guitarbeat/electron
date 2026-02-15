@@ -111,7 +111,6 @@ def run(playwright):
         print("Deleting movie...")
         # The delete button usually has trash icon or aria label.
         # MovieItem.tsx: Button with TrashIcon.
-        # Let's see MovieItem.tsx content? No time, assume test was roughly correct but let's be generic.
         # The original test used: page.get_by_role("button", name=f'Delete "{movie_title}"')
         # If MovieItem has aria-label `Delete "${movie.title}"`, it works.
         page.get_by_role("button", name=f'Delete "{movie_title}"').click()
