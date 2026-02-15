@@ -135,6 +135,22 @@ const Button: React.FC<ButtonProps> = ({
           e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
         }
       }}
+      onFocus={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.filter = 'brightness(1.1)';
+        }
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.filter = 'brightness(1)';
+          e.currentTarget.style.top = '0';
+          e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
+        }
+        props.onBlur?.(e);
+      }}
       {...props}
     >
       {isLoading ? (
