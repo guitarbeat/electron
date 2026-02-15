@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Spinner } from '../icons';
 import { spacing, typography, colors, radius } from '../../design-system/tokens';
 import { User } from '../../types';
+import { MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../../config/security';
 
 interface MessageInputProps {
   currentUser: User | null;
@@ -9,9 +10,6 @@ interface MessageInputProps {
   onSend: (author: string, content: string) => Promise<void>;
   onError: (error: string) => void;
 }
-
-const MAX_MESSAGE_LENGTH = 500;
-const MAX_AUTHOR_LENGTH = 50;
 
 const MessageInput: React.FC<MessageInputProps> = ({
   currentUser,

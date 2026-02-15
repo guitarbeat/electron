@@ -3,6 +3,7 @@ import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata } from '../services/metadataService';
+import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH } from '../config/security';
 
 export const useMovies = (currentUser: User | null) => {
   const {
@@ -94,10 +95,22 @@ export const useMovies = (currentUser: User | null) => {
 
   const addMovie = useCallback(
     async (title: string) => {
+      const cleanTitle = sanitizeInput(title);
+
+      if (!cleanTitle) {
+        throw new Error('Movie title cannot be empty');
+      }
+
+      if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
+        throw new Error(
+          `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`
+        );
+      }
+
       // 1. Create the basic movie object
       const baseMovie: Movie = {
         id: crypto.randomUUID(),
-        title: title.trim(),
+        title: cleanTitle,
         addedBy: currentUser,
         watchedBy: [],
         createdAt: new Date().toISOString(),
