@@ -16,45 +16,9 @@ export const useMovies = (currentUser: User | null) => {
   const mutationLockRef = useRef<Promise<void> | null>(null);
   const hasAutoSyncedRef = useRef(false);
 
-  // Effect to seed the initial movies if the Gist is empty
-  useEffect(() => {
-    const seedMovies = async () => {
-      const hasBeenSeeded = localStorage.getItem('movieListSeeded_gist_refactored');
-      if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
-        console.log('Gist is empty, seeding initial movies...');
-        const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
-          { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Renfield', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Sinister', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Creep', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Easy A', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [] },
-        ];
-
-        const moviesToSave: Movie[] = defaultMovies.map((movie) => ({
-          ...movie,
-          id: crypto.randomUUID(),
-          createdAt: new Date().toISOString(),
-        }));
-
-        try {
-          isSubmittingRef.current = true;
-          setIsSubmitting(true);
-          await saveMovies(moviesToSave);
-          localStorage.setItem('movieListSeeded_gist_refactored', 'true');
-          refresh();
-        } catch (err) {
-          console.error('Failed to seed movies:', err);
-        } finally {
-          isSubmittingRef.current = false;
-          setIsSubmitting(false);
-        }
-      }
-    };
-    seedMovies();
-  }, [movies, isLoading, refresh]);
+  // Note: Seeding of initial movies is now handled automatically in movieService.ts
+  // when the Gist file is missing or empty. This ensures the Gist file is created
+  // with default movies at the service level, eliminating the need for client-side seeding.
 
   const performMutation = useCallback(
     async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
