@@ -73,6 +73,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <button
+      type="button"
       onClick={(e) => {
         onClick(e);
       }}

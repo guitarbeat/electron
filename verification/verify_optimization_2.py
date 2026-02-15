@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright, expect
 
 def test_add_message(page):
     # ... setup ...
-    page.goto("http://localhost:3000/")
+    page.goto("http://localhost:5000/")
 
     skip_button = page.get_by_role("button", name="Skip for Now")
     if skip_button.is_visible():

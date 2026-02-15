@@ -60,7 +60,7 @@ export const useMovies = (currentUser: User | null) => {
     async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
       if (!currentUser) {
         console.warn('Mutation attempted without user');
-        return;
+        return undefined;
       }
       // Chain mutations to prevent race conditions
       const mutation = (async () => {
@@ -195,7 +195,9 @@ export const useMovies = (currentUser: User | null) => {
         latestMovies.map(async (movie) => {
           try {
             // Add a small delay to avoid rate limits if any
-            await new Promise((r) => setTimeout(r, Math.random() * 1000));
+            await new Promise((r) => {
+              setTimeout(r, Math.random() * 1000);
+            });
             const metadata = await fetchMovieMetadata(movie.title);
             // Merge mostly to keep existing IDs/User data, but overwrite metadata
             // Only overwrite if we got data back
@@ -239,7 +241,9 @@ export const useMovies = (currentUser: User | null) => {
 
     try {
       // Small delay before starting to not interfere with initial load
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => {
+        setTimeout(r, 2000);
+      });
 
       let syncOccurred = false;
       const updatedMovies = await Promise.all(
@@ -248,7 +252,9 @@ export const useMovies = (currentUser: User | null) => {
           if (needsSync) {
             try {
               // Random delay to spread out requests
-              await new Promise((r) => setTimeout(r, Math.random() * 2000));
+              await new Promise((r) => {
+                setTimeout(r, Math.random() * 2000);
+              });
               const metadata = await fetchMovieMetadata(movie.title);
               if (metadata.posterUrl || metadata.plot || metadata.year) {
                 syncOccurred = true;
