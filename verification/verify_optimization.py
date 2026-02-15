@@ -60,7 +60,7 @@ def run(playwright):
             skip_button = page.get_by_role("button", name="Skip quiz and go to user selection")
             if skip_button.is_visible(timeout=5000):
                 skip_button.click()
-        except:
+        except Exception:
             pass
 
         # 3. Select User "Aaron"
