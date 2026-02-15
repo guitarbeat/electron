@@ -62,7 +62,14 @@ const createGistFileWithDefaults = async (): Promise<Movie[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json();
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch (parseError) {
+        const errorText = await response.text();
+        console.error('[movieService] Failed to create Gist file. Non-JSON response:', errorText);
+        throw new Error(`Failed to create Gist file: ${response.status} - ${errorText}`);
+      }
       console.error('[movieService] Failed to create Gist file. API error:', errorBody);
       throw new Error(`Failed to create Gist file: ${response.status} - ${JSON.stringify(errorBody)}`);
     }
@@ -165,7 +172,18 @@ export const saveMovies = async (movies: Movie[]): Promise<void> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json();
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch (parseError) {
+        const errorText = await response.text();
+        console.error('[movieService] GitHub API error (non-JSON response):', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+        throw new Error(`GitHub API responded with ${response.status}: ${response.statusText}`);
+      }
       console.error('[movieService] GitHub API error details:', {
         status: response.status,
         statusText: response.statusText,
