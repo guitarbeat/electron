@@ -2,15 +2,14 @@ from playwright.sync_api import sync_playwright, expect
 import json
 import time
 
+
 def run(playwright):
     browser = playwright.chromium.launch(headless=True, args=["--disable-web-security"])
     context = browser.new_context()
     page = context.new_page()
 
     # Stateful mock
-    state = {
-        "messages": []
-    }
+    state = {"messages": []}
 
     def handle_gist(route):
         request = route.request
@@ -18,12 +17,12 @@ def run(playwright):
             if request.method == "GET":
                 response_body = {
                     "files": {
-                         "pins.json": {"content": "{}"},
-                         "movielist.json": {"content": "[]"},
-                         "dailySpin.json": {"content": "null"},
-                         "messages.json": {"content": json.dumps(state["messages"])},
-                         "quiz.json": {"content": "[]"},
-                         "suggestions.json": {"content": "[]"},
+                        "pins.json": {"content": "{}"},
+                        "movielist.json": {"content": "[]"},
+                        "dailySpin.json": {"content": "null"},
+                        "messages.json": {"content": json.dumps(state["messages"])},
+                        "quiz.json": {"content": "[]"},
+                        "suggestions.json": {"content": "[]"},
                     }
                 }
                 route.fulfill(
@@ -96,6 +95,7 @@ def run(playwright):
         raise e
     finally:
         browser.close()
+
 
 if __name__ == "__main__":
     with sync_playwright() as playwright:
