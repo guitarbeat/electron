@@ -16,6 +16,7 @@ const IconButton: React.FC<IconButtonProps> = ({
   className = '',
   disabled,
   style,
+  type = 'button',
   ...props
 }) => {
   const variantStyles = {
@@ -40,6 +41,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 
   return (
     <button
+      type={type}
       className={className}
       disabled={isDisabled}
       style={{
