@@ -708,7 +708,6 @@ const Watchlist: React.FC = () => {
           movies={unwatchedMovies}
           onWinner={(movie) => {
             setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
-            // The modal stays open to show the result; close button inside SpinWheel will handle closing
           }}
         />
       )}
