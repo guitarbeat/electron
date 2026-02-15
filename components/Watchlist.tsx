@@ -501,11 +501,12 @@ const Watchlist: React.FC = () => {
           </form>
         </Card>
 
+        {/* Combined Spin Wheel Header/Card */}
         <Card
           variant="elevated"
           className={!canSpin ? 'neon-pulse' : undefined}
           style={{
-            marginBottom: spacing.lg,
+            marginBottom: spacing.xl,
             padding: isMobile ? spacing.md : spacing.lg,
             border: `2px solid ${canSpin ? colors.secondary : colors.accent}`,
             background: canSpin
@@ -590,42 +591,6 @@ const Watchlist: React.FC = () => {
           </div>
         </Card>
 
-        {/* Action Grid (Only in List View) */}
-        {viewMode === 'list' && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr',
-              gap: spacing.md,
-              marginBottom: spacing.xl,
-            }}
-          >
-            <Button
-              onClick={handleOpenWheel}
-              variant="secondary"
-              size="md"
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: spacing.xs,
-                fontWeight: typography.fontWeight.bold,
-                letterSpacing: '0.05em',
-                minHeight: isMobile ? '44px' : '48px',
-                boxShadow: canSpin ? shadows.buttonLarge : shadows.button,
-              }}
-            >
-              {!currentUser ? <LockIcon /> : <DiceIcon />}
-              {!currentUser
-                ? 'Login to Spin the Wheel'
-                : canSpin
-                  ? 'Spin Wheel Now'
-                  : `Add ${moviesNeededForSpin} More to Spin`}
-            </Button>
-          </div>
-        )}
-
         <div
           style={{
             opacity: isSubmitting ? 0.5 : 1,
@@ -635,28 +600,6 @@ const Watchlist: React.FC = () => {
         >
           {viewMode === 'grid' ? (
             <MasonryGrid>
-              {/* Primary Action Card */}
-              <DashboardCard
-                title={!currentUser ? 'Login to Spin the Wheel' : 'Spin Wheel'}
-                icon={
-                  !currentUser ? (
-                    <LockIcon style={{ width: '32px', height: '32px' }} />
-                  ) : (
-                    <DiceIcon style={{ width: '32px', height: '32px' }} />
-                  )
-                }
-                description={
-                  !currentUser
-                    ? 'Select a profile above to unlock the wheel'
-                    : canSpin
-                      ? "Tap to pick tonight's movie instantly"
-                      : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'}`
-                }
-                onClick={handleOpenWheel}
-                variant="accent"
-                actionLabel={!currentUser ? 'Login to Spin' : canSpin ? 'Spin Now' : 'Add Movies'}
-              />
-
               {/* Individual Suggestions */}
               {pendingSuggestions.map((suggestion) => (
                 <SuggestionItemCard
