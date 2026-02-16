@@ -37,7 +37,7 @@ export const usePolling = <T>(
     setError(null);
     try {
       const result = await savedFetchFn.current();
-      
+
       // Validation check: if result is empty/invalid but we expect data, handle it
       if (result === undefined || result === null) {
         throw new Error('Fetched data is null or undefined');

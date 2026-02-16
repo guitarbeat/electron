@@ -201,13 +201,20 @@ const Watchlist: React.FC = () => {
     [toggleWatched, currentUser, showGuestWarning]
   );
 
-  const handleDeleteMovie = (movie: Movie) => {
-    if (!currentUser) {
-      showGuestWarning();
-      return;
-    }
-    setMovieToDelete(movie);
-  };
+  const handleDeleteMovie = useCallback(
+    (movie: Movie) => {
+      if (!currentUser) {
+        showGuestWarning();
+        return;
+      }
+      setMovieToDelete(movie);
+    },
+    [currentUser, showGuestWarning]
+  );
+
+  const handleFixMatch = useCallback((movie: Movie) => {
+    setMovieToFix(movie);
+  }, []);
 
   const confirmDelete = async () => {
     if (movieToDelete) {
@@ -619,7 +626,7 @@ const Watchlist: React.FC = () => {
                     currentUser={currentUser}
                     onToggle={handleToggleWatched}
                     onDelete={handleDeleteMovie}
-                    onFixMatch={(movie) => setMovieToFix(movie)}
+                    onFixMatch={handleFixMatch}
                     animationDelay="0s"
                     layout="grid"
                   />
@@ -671,7 +678,7 @@ const Watchlist: React.FC = () => {
                       currentUser={currentUser}
                       onToggle={handleToggleWatched}
                       onDelete={handleDeleteMovie}
-                      onFixMatch={(movie) => setMovieToFix(movie)}
+                      onFixMatch={handleFixMatch}
                       animationDelay={`${index * 0.05}s`}
                       layout="list"
                     />
