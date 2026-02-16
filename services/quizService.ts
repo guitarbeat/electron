@@ -67,9 +67,9 @@ export const getQuizData = async (): Promise<QuizData> => {
       return defaultQuizData;
     }
 
-    // Ensure all required fields exist
+    // Ensure all required fields exist and use defaults if missing
     const sanitizedData: QuizData = {
-      questions: parsedData.questions || defaultQuestions,
+      questions: parsedData.questions.length > 0 ? parsedData.questions : defaultQuestions,
       characterDescriptions: parsedData.characterDescriptions || defaultDescriptions,
       neitherDescription: parsedData.neitherDescription || defaultNeither,
     };
