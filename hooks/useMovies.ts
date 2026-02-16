@@ -2,8 +2,22 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
-import { fetchMovieMetadata } from '../services/metadataService';
+import { fetchMovieMetadata, MetadataResult } from '../services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH } from '../config/security';
+
+// Helper to extract only safe metadata fields to prevent overwriting critical fields like id
+const extractSafeMetadata = (metadata: MetadataResult | any): Partial<Movie> => {
+  const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
+  const result: Partial<Movie> = {};
+  if (posterUrl) result.posterUrl = posterUrl;
+  if (year) result.year = year;
+  if (plot) result.plot = plot;
+  if (imdbRating) result.imdbRating = imdbRating;
+  if (runtime) result.runtime = runtime;
+  if (genre) result.genre = genre;
+  if (director) result.director = director;
+  return result;
+};
 
 export const useMovies = (currentUser: User | null) => {
   const {
@@ -126,7 +140,7 @@ export const useMovies = (currentUser: User | null) => {
         console.error('Failed to fetch metadata, continuing without it:', error);
       }
 
-      const newMovie = { ...baseMovie, ...metadata };
+      const newMovie = { ...baseMovie, ...extractSafeMetadata(metadata) };
 
       await performMutation((latestMovies) => [...latestMovies, newMovie]);
     },
@@ -166,7 +180,9 @@ export const useMovies = (currentUser: User | null) => {
         // Only update if we actually found something useful
         if (metadata.posterUrl || metadata.plot || metadata.year) {
           await performMutation((latestMovies) =>
-            latestMovies.map((m) => (m.id === movie.id ? { ...m, ...metadata } : m))
+            latestMovies.map((m) =>
+              m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
+            )
           );
           return true;
         }
@@ -183,7 +199,9 @@ export const useMovies = (currentUser: User | null) => {
     async (movie: Movie, metadata: any) => {
       try {
         await performMutation((latestMovies) =>
-          latestMovies.map((m) => (m.id === movie.id ? { ...m, ...metadata } : m))
+          latestMovies.map((m) =>
+            m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
+          )
         );
         return true;
       } catch (error) {
@@ -215,7 +233,7 @@ export const useMovies = (currentUser: User | null) => {
             // Merge mostly to keep existing IDs/User data, but overwrite metadata
             // Only overwrite if we got data back
             if (metadata.posterUrl) {
-              return { ...movie, ...metadata };
+              return { ...movie, ...extractSafeMetadata(metadata) };
             }
             return movie;
           } catch (e) {
@@ -271,7 +289,7 @@ export const useMovies = (currentUser: User | null) => {
               const metadata = await fetchMovieMetadata(movie.title);
               if (metadata.posterUrl || metadata.plot || metadata.year) {
                 syncOccurred = true;
-                return { ...movie, ...metadata };
+                return { ...movie, ...extractSafeMetadata(metadata) };
               }
             } catch (e) {
               console.warn(`Auto-sync failed for ${movie.title}:`, e);
