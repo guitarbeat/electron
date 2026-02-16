@@ -11,7 +11,7 @@ export const useMovies = (currentUser: User | null) => {
     error,
     isLoading,
     refresh,
-  } = usePolling(getMovies, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
+  } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);

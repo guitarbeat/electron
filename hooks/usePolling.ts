@@ -37,6 +37,12 @@ export const usePolling = <T>(
     setError(null);
     try {
       const result = await savedFetchFn.current();
+      
+      // Validation check: if result is empty/invalid but we expect data, handle it
+      if (result === undefined || result === null) {
+        throw new Error('Fetched data is null or undefined');
+      }
+
       setData((prevData) => {
         // usePolling.ts: FIX - Use functional update for savedEqualityFn to avoid stale closures
         // although savedEqualityFn is a ref, the check inside setData ensures we use the latest values
@@ -46,6 +52,7 @@ export const usePolling = <T>(
         return result;
       });
     } catch (e) {
+      console.error('Polling execution failed:', e);
       setError(e);
     } finally {
       setIsLoading(false);
