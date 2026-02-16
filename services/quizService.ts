@@ -62,12 +62,19 @@ export const getQuizData = async (): Promise<QuizData> => {
     const parsedData = JSON.parse(file.content);
 
     // Validate data structure
-    if (!parsedData || !Array.isArray(parsedData.questions) || parsedData.questions.length === 0) {
-      console.warn('Invalid quiz data fetched from Gist, using defaults');
+    if (!parsedData || !Array.isArray(parsedData.questions)) {
+      console.warn('Invalid quiz data format fetched from Gist, returning defaults');
       return defaultQuizData;
     }
 
-    return parsedData;
+    // Ensure all required fields exist
+    const sanitizedData: QuizData = {
+      questions: parsedData.questions || defaultQuestions,
+      characterDescriptions: parsedData.characterDescriptions || defaultDescriptions,
+      neitherDescription: parsedData.neitherDescription || defaultNeither,
+    };
+
+    return sanitizedData;
   } catch (error) {
     console.error('Error fetching quiz data from Gist:', error);
     // Return defaults on error
