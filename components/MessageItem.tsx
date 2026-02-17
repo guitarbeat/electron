@@ -206,8 +206,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           userSelect: 'none',
           WebkitUserSelect: 'none',
           transition: 'transform 0.1s ease',
-          backgroundImage: userStyle.gradient,
-          backgroundColor: userStyle.tailRight,
+          background: `${userStyle.gradient}`,
           borderBottomRightRadius: isCurrentUser ? '4px' : '18px',
           borderBottomLeftRadius: isCurrentUser ? '18px' : '4px',
         }}
