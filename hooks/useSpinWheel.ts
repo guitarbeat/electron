@@ -34,7 +34,7 @@ export const useSpinWheel = (
 
   const filteredMovies = useMemo(() => {
     if (selectedCategory === 'All') return movies;
-    return movies.filter(m => m.category === selectedCategory);
+    return movies.filter((m) => m.category === selectedCategory);
   }, [movies, selectedCategory]);
 
   const numMovies = filteredMovies.length;

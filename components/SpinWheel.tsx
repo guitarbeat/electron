@@ -236,7 +236,7 @@ const SpinWheel: React.FC<{
                 {categories.map((cat) => (
                   <Button
                     key={cat}
-                    variant={selectedCategory === cat ? 'primary' : 'outline'}
+                    variant={selectedCategory === cat ? 'primary' : 'secondary'}
                     size="sm"
                     onClick={() => setSelectedCategory(cat)}
                     style={{
@@ -305,8 +305,12 @@ const SpinWheel: React.FC<{
                       maxWidth: '100%',
                       padding: '0',
                       boxSizing: 'border-box',
-                      fontSize: status === 'result' ? typography.fontSize.lg : typography.fontSize.base,
-                      fontWeight: status === 'result' ? typography.fontWeight.bold : typography.fontWeight.medium,
+                      fontSize:
+                        status === 'result' ? typography.fontSize.lg : typography.fontSize.base,
+                      fontWeight:
+                        status === 'result'
+                          ? typography.fontWeight.bold
+                          : typography.fontWeight.medium,
                       margin: 0,
                       color: status === 'result' ? colors.accent : colors.textPrimary,
                     }}
