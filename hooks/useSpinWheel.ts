@@ -175,7 +175,7 @@ export const useSpinWheel = (
 
     const handlePointerMove = (e: MouseEvent | TouchEvent) => {
       // * Prevent default scroll behavior during drag on mobile
-      if ('touches' in e) {
+      if (e.cancelable) {
         e.preventDefault();
       }
 
