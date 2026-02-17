@@ -90,3 +90,17 @@
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+.spin-poster-preview {
+  animation: poster-fade-in 0.2s ease-out;
+}
+
+@keyframes poster-fade-in {
+  from { transform: scale(0.9) translateX(-10px); opacity: 0; }
+  to { transform: scale(1) translateX(0); opacity: 1; }
+}
+
+/* Category selector horizontal scroll hiding */
+.modal-content-wrapper div::-webkit-scrollbar {
+  display: none;
+}

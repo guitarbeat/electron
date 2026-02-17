@@ -39,9 +39,17 @@ const SpinWheel: React.FC<{
     handlePrimarySpin,
     handleSpinAgain,
     getPointerHandlers,
+    selectedCategory,
+    setSelectedCategory,
+    filteredMovies,
   } = useSpinWheel(movies, wheelRef, currentUser, onWinner);
 
-  const segmentAngle = movies.length > 0 ? 360 / movies.length : 0;
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(movies.map((m) => m.category || 'Movies')));
+    return ['All', ...cats.sort()];
+  }, [movies]);
+
+  const segmentAngle = filteredMovies.length > 0 ? 360 / filteredMovies.length : 0;
 
   // Effect to prevent body scroll when modal is open and handle Escape key
   useEffect(() => {
@@ -68,8 +76,8 @@ const SpinWheel: React.FC<{
   }, [onClose, status, isOpen]);
 
   const wheelBackgroundStyle = useMemo(() => {
-    if (movies.length === 0) return {};
-    const gradientColors = movies
+    if (filteredMovies.length === 0) return {};
+    const gradientColors = filteredMovies
       .map(
         (_, i) =>
           `${COLORS[i % COLORS.length]} ${i * segmentAngle}deg, ${COLORS[i % COLORS.length]} ${(i + 1) * segmentAngle}deg`
@@ -79,7 +87,7 @@ const SpinWheel: React.FC<{
     return {
       backgroundImage: `conic-gradient(${gradientColors})`,
     };
-  }, [movies, segmentAngle]);
+  }, [filteredMovies, segmentAngle]);
 
   // * Prevent closing during critical states
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -212,30 +220,118 @@ const SpinWheel: React.FC<{
 
         {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
           <>
+            {/* Category Selector */}
+            {!hasSpunToday && status === 'idle' && (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: spacing.xs,
+                  overflowX: 'auto',
+                  width: '100%',
+                  padding: `0 ${spacing.md}`,
+                  marginBottom: spacing.md,
+                  scrollbarWidth: 'none',
+                }}
+              >
+                {categories.map((cat) => (
+                  <Button
+                    key={cat}
+                    variant={selectedCategory === cat ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      borderRadius: '9999px',
+                      padding: `${spacing.xs} ${spacing.md}`,
+                    }}
+                  >
+                    {cat}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             <Card
               variant="default"
               className="current-movie-display"
-              style={{ marginBottom: spacing.md, padding: `${spacing.sm} ${spacing.md}` }}
+              style={{
+                marginBottom: spacing.md,
+                padding: `${spacing.sm} ${spacing.md}`,
+                minHeight: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+                width: 'min(400px, 90vw)',
+              }}
             >
-              <h3
-                className="current-movie-title"
+              <div
                 style={{
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  hyphens: 'auto',
-                  maxWidth: '100%',
-                  padding: '0',
-                  boxSizing: 'border-box',
-                  fontSize: typography.fontSize.base,
-                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.md,
+                  width: '100%',
                 }}
               >
-                {status === 'result' && selectedMovie
-                  ? selectedMovie.title
-                  : activeMovie
-                    ? activeMovie.title
-                    : 'Ready to spin?'}
-              </h3>
+                {activeMovie?.posterUrl && status !== 'result' && (
+                  <div
+                    className="spin-poster-preview"
+                    key={activeMovie.id}
+                    style={{
+                      width: '60px',
+                      aspectRatio: '2/3',
+                      borderRadius: radius.sm,
+                      overflow: 'hidden',
+                      boxShadow: shadows.card,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <img
+                      src={activeMovie.posterUrl}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <h3
+                    className="current-movie-title"
+                    style={{
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      maxWidth: '100%',
+                      padding: '0',
+                      boxSizing: 'border-box',
+                      fontSize: status === 'result' ? typography.fontSize.lg : typography.fontSize.base,
+                      fontWeight: status === 'result' ? typography.fontWeight.bold : typography.fontWeight.medium,
+                      margin: 0,
+                      color: status === 'result' ? colors.accent : colors.textPrimary,
+                    }}
+                  >
+                    {status === 'result' && selectedMovie
+                      ? selectedMovie.title
+                      : activeMovie
+                        ? activeMovie.title
+                        : 'Ready to spin?'}
+                  </h3>
+                  {activeMovie?.category && status !== 'result' && (
+                    <span
+                      style={{
+                        fontSize: typography.fontSize.xs,
+                        color: colors.textSecondary,
+                        marginTop: spacing.xs,
+                        display: 'block',
+                      }}
+                    >
+                      {activeMovie.category}
+                    </span>
+                  )}
+                </div>
+              </div>
+
               {status === 'result' && selectedMovie && (
                 <div
                   style={{
@@ -294,7 +390,7 @@ const SpinWheel: React.FC<{
                 />
                 <div className="spin-hub" />
               </div>
-              {status === 'idle' && !hasSpunToday && (
+              {(status === 'idle' || status === 'spinning') && !hasSpunToday && (
                 <div className="spin-content">
                   <Button
                     variant="secondary"
@@ -302,6 +398,7 @@ const SpinWheel: React.FC<{
                     onClick={handlePrimarySpin}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
+                    disabled={status === 'spinning' || filteredMovies.length === 0}
                     autoFocus
                     style={{
                       width: 'min(128px, 20vw)',
@@ -314,9 +411,10 @@ const SpinWheel: React.FC<{
                       pointerEvents: 'auto',
                       position: 'relative',
                       zIndex: 60,
+                      boxShadow: status === 'spinning' ? 'none' : shadows.glow,
                     }}
                   >
-                    Spin!
+                    {status === 'spinning' ? '...' : 'Spin!'}
                   </Button>
                 </div>
               )}
