@@ -44,3 +44,12 @@ export interface MovieSuggestion {
   respondedAt?: string;
   respondedBy?: User; // Aaron or Electra
 }
+
+export interface SharedMemory {
+  id: string;
+  movieId?: string;
+  movieTitle: string;
+  author: string;
+  note: string;
+  createdAt: string;
+}
