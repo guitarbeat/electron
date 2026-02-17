@@ -8,7 +8,7 @@ import MessageBoard from './components/MessageBoard';
 import IntroScreen from './components/quiz/IntroScreen';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
-import { QuizResult } from './components/quiz/types';
+import SnakeGame from './components/snake/SnakeGame';
 import { spacing, colors, typography } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 import Button from './components/ui/Button';
@@ -264,6 +264,7 @@ const App: React.FC = () => {
                 )}
               </div>
               <Watchlist />
+              <SnakeGame />
             </div>
           )}
         </div>
