@@ -3,7 +3,15 @@ import { createPortal } from 'react-dom';
 import { User } from '../types';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import { colors, spacing, typography, zIndex, radius, motion, shadows } from '../design-system/tokens';
+import {
+  colors,
+  spacing,
+  typography,
+  zIndex,
+  radius,
+  motion,
+  shadows,
+} from '../design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -370,8 +378,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   height: '56px',
                   fontSize: typography.fontSize.lg,
                   borderRadius: radius.lg,
-                  boxShadow:
-                    getCurrentValue().length === 4 && !isLoading ? shadows.glow : 'none',
+                  boxShadow: getCurrentValue().length === 4 && !isLoading ? shadows.glow : 'none',
                 }}
               >
                 {mode === 'enter' ? 'Unlock Profile' : step === 'confirm' ? 'Save PIN' : 'Continue'}

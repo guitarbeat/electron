@@ -638,10 +638,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
               )}
               <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
                 {movie.watchedBy.includes('Aaron') && (
-                  <WatcherBadge user="Aaron" variant="text" showLabel={true} />
+                  <WatcherBadge user="Aaron" variant="text" showLabel />
                 )}
                 {movie.watchedBy.includes('Electra') && (
-                  <WatcherBadge user="Electra" variant="text" showLabel={true} />
+                  <WatcherBadge user="Electra" variant="text" showLabel />
                 )}
               </div>
             </div>
