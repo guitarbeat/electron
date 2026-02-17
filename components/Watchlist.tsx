@@ -458,8 +458,6 @@ const Watchlist: React.FC = () => {
         onPinAction={handlePinAction}
         onRemovePin={() => setShowRemovePinConfirm(true)}
         hasPin={currentUser ? userHasPin(currentUser) : false}
-        movieCount={movies?.length || 0}
-        watchedTogetherCount={watchedMovies.length}
       />
 
       <div
