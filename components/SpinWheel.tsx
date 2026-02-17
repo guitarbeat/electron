@@ -297,7 +297,11 @@ const SpinWheel: React.FC<{
                 )}
                 <div style={{ flex: 1 }}>
                   <h3
-                    className="current-movie-title"
+                    className={
+                      status === 'result'
+                        ? 'current-movie-title current-movie-title--result'
+                        : 'current-movie-title'
+                    }
                     style={{
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
@@ -311,6 +315,12 @@ const SpinWheel: React.FC<{
                         status === 'result'
                           ? typography.fontWeight.bold
                           : typography.fontWeight.medium,
+                      fontFamily: typography.fontFamily.heading.join(', '),
+                      letterSpacing:
+                        status === 'result'
+                          ? typography.letterSpacing.wide
+                          : typography.letterSpacing.normal,
+                      lineHeight: typography.lineHeight.tight,
                       margin: 0,
                       color: status === 'result' ? colors.accent : colors.textPrimary,
                     }}
@@ -479,6 +489,9 @@ const SpinWheel: React.FC<{
                     style={{
                       fontSize: typography.fontSize.xl,
                       fontWeight: typography.fontWeight.semibold,
+                      fontFamily: typography.fontFamily.heading.join(', '),
+                      letterSpacing: typography.letterSpacing.wide,
+                      lineHeight: typography.lineHeight.tight,
                       color: colors.textPrimary,
                       margin: 0,
                     }}
@@ -517,9 +530,13 @@ const SpinWheel: React.FC<{
                     </div>
                   )}
                   <h3
+                    className="current-movie-title current-movie-title--hero"
                     style={{
                       fontSize: typography.fontSize['3xl'],
                       fontWeight: typography.fontWeight.bold,
+                      fontFamily: typography.fontFamily.heading.join(', '),
+                      letterSpacing: typography.letterSpacing.wide,
+                      lineHeight: typography.lineHeight.tight,
                       color: colors.accent,
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
