@@ -25,11 +25,15 @@ import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
+import MemoryWall from './MemoryWall';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
+const MAX_SUGGESTION_TITLE_LENGTH = 120;
+const MAX_SUGGESTION_REASON_LENGTH = 240;
+const MAX_SUGGESTION_AUTHOR_LENGTH = 40;
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -48,6 +52,7 @@ const Watchlist: React.FC = () => {
   const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
   const {
     pendingSuggestions,
+    addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
     isLoading: isSuggestionsLoading,
@@ -67,6 +72,8 @@ const Watchlist: React.FC = () => {
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
+  const [suggestionReason, setSuggestionReason] = useState('');
+  const [suggestionAuthor, setSuggestionAuthor] = useState('');
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
@@ -92,6 +99,7 @@ const Watchlist: React.FC = () => {
     () => (movies ? movies.filter((movie) => movie.watchedBy.length === 2) : []),
     [movies]
   );
+  const isSpinLocked = !currentUser;
   const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
   const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
   const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -137,6 +145,14 @@ const Watchlist: React.FC = () => {
         .includes(normalizedSearch);
     });
   }, [pendingSuggestions, contentTab, normalizedSearch]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setSuggestionAuthor(currentUser);
+    } else {
+      setSuggestionAuthor('');
+    }
+  }, [currentUser]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -194,24 +210,54 @@ const Watchlist: React.FC = () => {
 
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
-      showGuestWarning();
+    const title = newMovieTitle.trim();
+    const guestAuthor = suggestionAuthor.trim();
+    const reason = suggestionReason.trim();
+
+    if (!title || isSubmitting || isAdding) {
       return;
     }
-    if (newMovieTitle.trim() && !isSubmitting) {
-      setIsAdding(true);
-      const title = newMovieTitle.trim();
-      try {
+
+    if (!currentUser && !guestAuthor) {
+      setToast({ message: 'Add your name so we know who suggested it.', type: 'info' });
+      return;
+    }
+
+    if (!currentUser && ['aaron', 'electra'].includes(guestAuthor.toLowerCase())) {
+      setToast({
+        message: 'If this is Aaron or Electra, select that profile above to add directly.',
+        type: 'info',
+      });
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      if (currentUser) {
         await addMovie(title);
-        setNewMovieTitle('');
         setToast({ message: `"${title}" added successfully!`, type: 'success' });
-        setSuccessMovieId(title);
-        setTimeout(() => setSuccessMovieId(null), 2000);
-      } catch (err: any) {
-        setToast({ message: `Error adding movie: ${err.message}`, type: 'error' });
-      } finally {
-        setIsAdding(false);
+      } else {
+        await addSuggestion(title, guestAuthor, reason || undefined);
+        setToast({ message: `"${title}" suggested for review!`, type: 'success' });
+        setContentTab('suggestions');
       }
+
+      setNewMovieTitle('');
+      setSuggestionReason('');
+      if (!currentUser) {
+        setSuggestionAuthor(guestAuthor);
+      }
+      setSuccessMovieId(title);
+      setTimeout(() => setSuccessMovieId(null), 2000);
+    } catch (err: any) {
+      setToast({
+        message: currentUser
+          ? `Error adding movie: ${err.message}`
+          : `Failed to add suggestion: ${err.message}`,
+        type: 'error',
+      });
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -458,20 +504,34 @@ const Watchlist: React.FC = () => {
           style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
         >
           <form onSubmit={handleAddMovie}>
+            <p
+              style={{
+                margin: 0,
+                marginBottom: spacing.sm,
+                color: colors.textSecondary,
+                fontSize: typography.fontSize.xs,
+              }}
+            >
+              {currentUser
+                ? 'Add directly to your shared watchlist.'
+                : 'Not signed in? Add a suggestion for Aaron and Electra to review.'}
+            </p>
             <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
               <div style={{ flex: 1, position: 'relative' }}>
                 <Input
                   ref={inputRef}
                   value={newMovieTitle}
-                  onChange={(e) => setNewMovieTitle(e.target.value)}
+                  onChange={(e) =>
+                    setNewMovieTitle(e.target.value.slice(0, MAX_SUGGESTION_TITLE_LENGTH))
+                  }
                   placeholder={
-                    !currentUser
-                      ? 'Login to add movies...'
-                      : isMobile
+                    currentUser
+                      ? isMobile
                         ? 'Add movie...'
                         : 'Enter movie or show title...'
+                      : 'Suggest a movie or show...'
                   }
-                  disabled={!currentUser || isSubmitting}
+                  disabled={isSubmitting || isAdding}
                   aria-label="New movie title"
                   style={{
                     paddingRight: isMobile ? '102px' : '132px',
@@ -479,8 +539,6 @@ const Watchlist: React.FC = () => {
                     transition: 'border-color 0.3s ease',
                     height: isMobile ? '46px' : '48px',
                     fontSize: isMobile ? '14px' : '16px',
-                    opacity: !currentUser ? 0.6 : 1,
-                    cursor: !currentUser ? 'not-allowed' : 'text',
                   }}
                 />
                 <div
@@ -515,9 +573,15 @@ const Watchlist: React.FC = () => {
 
                   <Button
                     type="submit"
-                    variant="primary"
-                    disabled={!currentUser || !newMovieTitle.trim() || isSubmitting}
+                    variant={currentUser ? 'primary' : 'secondary'}
+                    disabled={
+                      isSubmitting ||
+                      isAdding ||
+                      !newMovieTitle.trim() ||
+                      (!currentUser && !suggestionAuthor.trim())
+                    }
                     isLoading={isAdding}
+                    aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
                     style={{
                       padding: 0,
                       borderRadius: '50%',
@@ -526,7 +590,6 @@ const Watchlist: React.FC = () => {
                       width: isMobile ? '44px' : '44px',
                       height: isMobile ? '44px' : '44px',
                       flexShrink: 0,
-                      opacity: !currentUser ? 0.5 : 1,
                     }}
                   >
                     {!isAdding && (
@@ -541,21 +604,54 @@ const Watchlist: React.FC = () => {
                 </div>
               </div>
             </div>
+            {!currentUser && (
+              <div
+                style={{
+                  marginTop: spacing.sm,
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                  gap: spacing.sm,
+                }}
+              >
+                <Input
+                  value={suggestionAuthor}
+                  onChange={(e) =>
+                    setSuggestionAuthor(e.target.value.slice(0, MAX_SUGGESTION_AUTHOR_LENGTH))
+                  }
+                  placeholder="Your name"
+                  aria-label="Your name"
+                  disabled={isSubmitting || isAdding}
+                  style={{ height: '44px' }}
+                />
+                <Input
+                  value={suggestionReason}
+                  onChange={(e) =>
+                    setSuggestionReason(e.target.value.slice(0, MAX_SUGGESTION_REASON_LENGTH))
+                  }
+                  placeholder="Why this pick? (optional)"
+                  aria-label="Suggestion reason (optional)"
+                  disabled={isSubmitting || isAdding}
+                  style={{ height: '44px' }}
+                />
+              </div>
+            )}
           </form>
         </Card>
 
         {/* Combined Spin Wheel Header/Card */}
         <Card
           variant="elevated"
-          className={!canSpin ? 'neon-pulse' : undefined}
+          className={currentUser && !canSpin ? 'neon-pulse' : undefined}
           style={{
             marginBottom: spacing.xl,
             padding: isMobile ? spacing.md : spacing.lg,
-            border: `2px solid ${canSpin ? colors.secondary : colors.accent}`,
-            background: canSpin
+            border: `1px solid ${canSpin ? colors.secondary : colors.borderSecondary}55`,
+            background: isSpinLocked
+              ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
+              : canSpin
               ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
               : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
-            boxShadow: canSpin ? shadows.glowBlue : shadows.glowStrong,
+            boxShadow: isSpinLocked ? shadows.card : canSpin ? shadows.glowBlue : shadows.glowStrong,
           }}
         >
           <div
@@ -573,14 +669,14 @@ const Watchlist: React.FC = () => {
                   display: 'inline-block',
                   fontSize: typography.fontSize.xs,
                   fontWeight: typography.fontWeight.bold,
-                  color: canSpin ? colors.secondary : colors.accentLight,
+                  color: isSpinLocked ? colors.textTertiary : canSpin ? colors.secondary : colors.accentLight,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                   marginBottom: spacing.xs,
                 }}
               >
                 {!currentUser
-                  ? 'Spin wheel locked'
+                  ? 'Spin is available after profile select'
                   : canSpin
                     ? "Tonight's movie picker is ready"
                     : 'Almost ready to spin'}
@@ -590,12 +686,12 @@ const Watchlist: React.FC = () => {
                   margin: 0,
                   marginBottom: spacing.xs,
                   color: colors.textPrimary,
-                  fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
+                  fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
                   fontWeight: typography.fontWeight.bold,
                   lineHeight: typography.lineHeight.tight,
                 }}
               >
-                {!currentUser ? 'Login to Spin the Wheel' : 'Spin the Wheel'}
+                {!currentUser ? 'Movie Spin Wheel' : 'Spin the Wheel'}
               </h2>
               <p
                 style={{
@@ -606,7 +702,7 @@ const Watchlist: React.FC = () => {
                 }}
               >
                 {!currentUser
-                  ? 'Select a profile above, then spin for an instant movie pick.'
+                  ? 'Choose Aaron or Electra above whenever you want to spin.'
                   : canSpin
                     ? 'You have enough unwatched movies. Spin now and let fate decide.'
                     : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'} to unlock the wheel.`}
@@ -614,19 +710,20 @@ const Watchlist: React.FC = () => {
             </div>
             <Button
               onClick={handleOpenWheel}
-              variant={canSpin ? 'secondary' : 'primary'}
-              size={isMobile ? 'md' : 'lg'}
+              variant={canSpin ? 'secondary' : 'ghost'}
+              size={isMobile ? 'sm' : 'md'}
               style={{
                 width: isMobile ? '100%' : 'auto',
-                minWidth: isMobile ? '100%' : '220px',
+                minWidth: isMobile ? '100%' : '180px',
                 fontWeight: typography.fontWeight.bold,
-                letterSpacing: '0.06em',
+                letterSpacing: '0.04em',
+                border: canSpin ? undefined : `1px solid ${colors.borderSecondary}40`,
               }}
               aria-label={!currentUser ? 'Login to spin the wheel' : 'Open spin wheel'}
             >
               {!currentUser ? <LockIcon /> : <DiceIcon />}
               {!currentUser
-                ? 'Login to Spin'
+                ? 'Pick Profile First'
                 : canSpin
                   ? 'Spin Wheel Now'
                   : `Need ${moviesNeededForSpin} More`}
@@ -807,6 +904,8 @@ const Watchlist: React.FC = () => {
             </div>
           )}
         </div>
+
+        <MemoryWall watchedMovies={watchedMovies} currentUser={currentUser} />
       </div>
 
       <ConfirmDialog

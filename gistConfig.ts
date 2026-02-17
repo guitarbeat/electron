@@ -23,6 +23,8 @@ const GIST_QUIZ_FILENAME = 'quiz.json';
 
 // The filename for movie suggestions data.
 const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
+// The filename for shared memory wall data.
+const GIST_MEMORIES_FILENAME = 'memories.json';
 
 export {
   GIST_TOKEN,
@@ -31,4 +33,5 @@ export {
   GIST_MESSAGES_FILENAME,
   GIST_QUIZ_FILENAME,
   GIST_SUGGESTIONS_FILENAME,
+  GIST_MEMORIES_FILENAME,
 };
