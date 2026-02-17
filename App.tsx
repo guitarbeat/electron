@@ -150,7 +150,8 @@ const App: React.FC = () => {
         <div
           style={{
             position: 'fixed',
-            bottom: isMobile ? spacing.md : spacing.lg,
+            top: isMobile ? `max(${spacing.md}, env(safe-area-inset-top))` : 'auto',
+            bottom: isMobile ? 'auto' : `max(${spacing.lg}, env(safe-area-inset-bottom))`,
             right: isMobile ? spacing.md : spacing.lg,
             zIndex: 100,
           }}

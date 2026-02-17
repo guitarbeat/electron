@@ -18,18 +18,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#ffffff',
+        backgroundColor: colors.surfaceElevated,
         borderRadius: '20px',
         overflow: 'hidden',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
+        fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-      {/* iOS Navigation Bar */}
       <div
         style={{
-          background: 'rgba(249, 249, 249, 0.94)',
+          background: 'rgba(27, 40, 69, 0.9)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           padding: `${spacing.sm} ${spacing.md}`,
@@ -37,18 +35,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           height: '44px',
-          borderBottom: '0.5px solid rgba(0, 0, 0, 0.1)',
+          borderBottom: `1px solid ${colors.accentMuted}`,
           position: 'relative',
         }}
       >
-        {/* Title - Keep Papyrus for brand */}
         <div style={{ textAlign: 'center' }}>
           <span
             style={{
               fontFamily: typography.fontFamily.heading.join(', '),
               fontWeight: typography.fontWeight.semibold,
               fontSize: '17px',
-              color: '#000',
+              color: colors.textPrimary,
               letterSpacing: '-0.01em',
             }}
           >
@@ -56,21 +53,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           </span>
         </div>
 
-        {/* Edit/Done button */}
         {onToggleEditMode && (
           <button
             onClick={onToggleEditMode}
             style={{
               position: 'absolute',
               right: spacing.md,
-              color: '#007AFF',
-              fontSize: '17px',
+              color: colors.secondary,
+              fontSize: '15px',
               fontWeight: 400,
               cursor: 'pointer',
               background: 'none',
               border: 'none',
               padding: 0,
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+              fontFamily: typography.fontFamily.body.join(', '),
             }}
           >
             {isEditMode ? 'Done' : 'Edit'}
@@ -84,7 +80,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#ffffff',
+          backgroundColor: colors.surfaceElevated,
           overflow: 'hidden',
         }}
       >

@@ -93,9 +93,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <div
       style={{
-        background: '#f5f5f5',
+        background: colors.surface,
         padding: `${spacing.sm} ${spacing.md}`,
-        borderTop: '0.5px solid rgba(0, 0, 0, 0.1)',
+        borderTop: `1px solid ${colors.accentMuted}`,
         paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
       }}
     >
@@ -122,10 +122,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
               htmlFor="message-author"
               style={{
                 fontSize: '13px',
-                color: '#8e8e93',
+                color: colors.textSecondary,
                 whiteSpace: 'nowrap',
                 fontWeight: 500,
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                fontFamily: typography.fontFamily.body.join(', '),
               }}
             >
               From:
@@ -146,26 +146,25 @@ const MessageInput: React.FC<MessageInputProps> = ({
               style={{
                 flex: 1,
                 padding: '8px 12px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e5e5ea',
+                backgroundColor: colors.surfaceElevated,
+                border: `1px solid ${colors.borderInset}`,
                 borderRadius: '18px',
-                color: '#000000',
+                color: colors.textPrimary,
                 fontSize: '15px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                fontFamily: typography.fontFamily.body.join(', '),
                 outline: 'none',
                 transition: 'border-color 0.2s ease',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#007AFF';
+                e.currentTarget.style.borderColor = colors.secondary;
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#e5e5ea';
+                e.currentTarget.style.borderColor = colors.borderInset;
               }}
             />
           </div>
         )}
 
-        {/* Message input bar - iOS iMessage style */}
         <div
           style={{
             display: 'flex',
@@ -186,7 +185,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#8e8e93',
+              color: colors.textSecondary,
               flexShrink: 0,
             }}
             aria-label="Camera"
@@ -212,7 +211,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 setSubmitError(null);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="iMessage"
+              placeholder="Write a message..."
               maxLength={MAX_MESSAGE_LENGTH}
               rows={1}
               disabled={isSubmitting}
@@ -221,13 +220,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
               style={{
                 width: '100%',
                 padding: '8px 40px 8px 16px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e5e5ea',
+                backgroundColor: colors.surfaceElevated,
+                border: `1px solid ${colors.borderInset}`,
                 borderRadius: '18px',
-                color: '#000000',
+                color: colors.textPrimary,
                 fontSize: '17px',
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+                fontFamily: typography.fontFamily.body.join(', '),
                 lineHeight: 1.25,
                 resize: 'none',
                 minHeight: '36px',
@@ -237,10 +235,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 overflow: 'hidden',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#007AFF';
+                e.currentTarget.style.borderColor = colors.secondary;
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#e5e5ea';
+                e.currentTarget.style.borderColor = colors.borderInset;
               }}
             />
 
@@ -252,8 +250,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                   bottom: '8px',
                   right: '12px',
                   fontSize: '11px',
-                  color: content.length >= MAX_MESSAGE_LENGTH ? '#ff3b30' : '#8e8e93',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                  color: content.length >= MAX_MESSAGE_LENGTH ? colors.error : colors.textSecondary,
+                  fontFamily: typography.fontFamily.body.join(', '),
                   pointerEvents: 'none',
                 }}
               >
@@ -271,7 +269,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              backgroundColor: showSendButton ? '#007AFF' : 'transparent',
+              backgroundColor: showSendButton ? colors.secondary : 'transparent',
               border: 'none',
               display: 'flex',
               alignItems: 'center',
@@ -292,7 +290,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
-                  stroke={showSendButton ? '#ffffff' : '#8e8e93'}
+                  stroke={showSendButton ? '#000000' : colors.textSecondary}
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -312,7 +310,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               padding: `${spacing.xs} ${spacing.sm}`,
               backgroundColor: 'rgba(255, 59, 48, 0.1)',
               borderRadius: '8px',
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+              fontFamily: typography.fontFamily.body.join(', '),
             }}
             role="alert"
             aria-live="polite"

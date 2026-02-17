@@ -283,8 +283,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     }
                     style={{
                       padding: `${spacing.xs} ${spacing.md}`,
-                      height: '28px',
-                      fontSize: '10px',
+                      minHeight: '44px',
+                      fontSize: '12px',
                       backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.6)',
                       borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.2)',
                       display: 'flex',
@@ -316,8 +316,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     aria-label={`Fix metadata for "${movie.title}"`}
                     style={{
                       padding: 0,
-                      width: '28px',
-                      height: '28px',
+                      width: '44px',
+                      height: '44px',
                       backgroundColor: 'rgba(0,0,0,0.6)',
                       borderRadius: radius.md,
                       color: colors.accent,
@@ -342,8 +342,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     aria-label={`Delete "${movie.title}"`}
                     style={{
                       padding: 0,
-                      width: '28px',
-                      height: '28px',
+                      width: '44px',
+                      height: '44px',
                       backgroundColor: 'rgba(0,0,0,0.6)',
                       borderRadius: radius.md,
                       color: colors.error,

@@ -7,6 +7,7 @@ import MessageInput from './message-board/MessageInput';
 import Toast from './ui/Toast';
 import { spacing, colors, shadows, radius, zIndex, motion } from '../design-system/tokens';
 import { MessageIcon } from './icons';
+import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 const MessageBoard: React.FC = () => {
   const { currentUser } = useUser();
@@ -23,6 +24,7 @@ const MessageBoard: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
   const [lastViewedCount, setLastViewedCount] = useState(0);
+  const isMobile = useMediaQuery(breakpoints.sm);
 
   const handleToggle = () => {
     if (isMinimized) {
@@ -31,7 +33,7 @@ const MessageBoard: React.FC = () => {
     setIsMinimized(!isMinimized);
   };
 
-  const unreadCount = (messages?.length || 0) - lastViewedCount;
+  const unreadCount = Math.max(0, (messages?.length || 0) - lastViewedCount);
 
   if (isMinimized) {
     return (
@@ -41,8 +43,9 @@ const MessageBoard: React.FC = () => {
         className="gel-bubble"
         style={{
           position: 'fixed',
-          bottom: spacing.lg,
-          left: spacing.lg,
+          bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+          left: isMobile ? 'auto' : spacing.lg,
+          right: isMobile ? spacing.md : 'auto',
           width: '60px',
           height: '60px',
           borderRadius: '50%',
@@ -90,10 +93,11 @@ const MessageBoard: React.FC = () => {
     <div
       style={{
         position: 'fixed',
-        bottom: spacing.lg,
-        left: spacing.lg,
-        width: 'min(400px, 90vw)',
-        maxHeight: 'min(600px, 70vh)',
+        bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+        left: isMobile ? spacing.md : spacing.lg,
+        right: isMobile ? spacing.md : 'auto',
+        width: isMobile ? 'auto' : 'min(420px, 90vw)',
+        maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
         display: 'flex',
         flexDirection: 'column',
         zIndex: zIndex.overlay,
@@ -109,13 +113,14 @@ const MessageBoard: React.FC = () => {
       <div
         style={{
           padding: `${spacing.sm} ${spacing.md}`,
-          backgroundColor: colors.accent,
-          color: '#000',
+          backgroundColor: colors.surface,
+          color: colors.textPrimary,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontWeight: 'bold',
           cursor: 'pointer',
+          borderBottom: `1px solid ${colors.accentMuted}`,
         }}
         onClick={handleToggle}
       >
@@ -132,7 +137,7 @@ const MessageBoard: React.FC = () => {
             cursor: 'pointer',
             padding: '4px',
             lineHeight: 1,
-            color: '#000',
+            color: colors.textPrimary,
           }}
           aria-label="Minimize"
         >
