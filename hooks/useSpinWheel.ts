@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Movie, User, DailySpin } from '../types';
 import { getTodaySpin, saveDailySpin } from '../services/dailySpinService';
 
@@ -17,6 +17,7 @@ export const useSpinWheel = (
     'loading'
   );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [isDragging, setIsDragging] = useState(false);
   const [activeMovie, setActiveMovie] = useState<Movie | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
@@ -31,7 +32,12 @@ export const useSpinWheel = (
   const interactionElementRef = useRef<HTMLElement | null>(null);
   const spinTimeoutRef = useRef<number | null>(null);
 
-  const numMovies = movies.length;
+  const filteredMovies = useMemo(() => {
+    if (selectedCategory === 'All') return movies;
+    return movies.filter(m => m.category === selectedCategory);
+  }, [movies, selectedCategory]);
+
+  const numMovies = filteredMovies.length;
   const segmentAngle = numMovies > 0 ? 360 / numMovies : 0;
 
   const getPointerAngle = useCallback((e: MouseEvent | TouchEvent, targetElement: HTMLElement) => {
@@ -54,22 +60,22 @@ export const useSpinWheel = (
       }
       rotationRef.current = angle;
 
-      if (movies.length > 0 && segmentAngle > 0) {
+      if (filteredMovies.length > 0 && segmentAngle > 0) {
         const normalizedRotation = angle % 360;
         const selectionAngle = (360 + 270 - normalizedRotation) % 360;
         const currentIndex = Math.floor(selectionAngle / segmentAngle);
-        const safeIndex = Math.max(0, Math.min(currentIndex, movies.length - 1));
-        const newMovie = movies[safeIndex];
+        const safeIndex = Math.max(0, Math.min(currentIndex, filteredMovies.length - 1));
+        const newMovie = filteredMovies[safeIndex];
 
         setActiveMovie((prev) => (prev?.id === newMovie.id ? prev : newMovie));
       }
     },
-    [wheelRef, movies, segmentAngle]
+    [wheelRef, filteredMovies, segmentAngle]
   );
 
   // Sync activeMovie when movies change
   useEffect(() => {
-    if (movies.length === 0) {
+    if (filteredMovies.length === 0) {
       setActiveMovie(null);
       return;
     }
@@ -78,9 +84,9 @@ export const useSpinWheel = (
     const normalizedRotation = angle % 360;
     const selectionAngle = (360 + 270 - normalizedRotation) % 360;
     const currentIndex = Math.floor(selectionAngle / segmentAngle);
-    const safeIndex = Math.max(0, Math.min(currentIndex, movies.length - 1));
-    setActiveMovie(movies[safeIndex]);
-  }, [movies, segmentAngle]);
+    const safeIndex = Math.max(0, Math.min(currentIndex, filteredMovies.length - 1));
+    setActiveMovie(filteredMovies[safeIndex]);
+  }, [filteredMovies, segmentAngle]);
 
   const spinLoop = useCallback(async () => {
     velocityRef.current *= FRICTION;
@@ -98,8 +104,8 @@ export const useSpinWheel = (
       const winningAngle = (360 + 270 - finalAngle) % 360;
       const winnerIndex = Math.floor(winningAngle / segmentAngle);
       // * Ensure winnerIndex is within bounds
-      const safeIndex = Math.max(0, Math.min(winnerIndex, movies.length - 1));
-      const winner = movies[safeIndex];
+      const safeIndex = Math.max(0, Math.min(winnerIndex, filteredMovies.length - 1));
+      const winner = filteredMovies[safeIndex];
       if (!winner) {
         console.error('No winner found, movies array might be empty');
         return;
@@ -134,7 +140,7 @@ export const useSpinWheel = (
         if (onWinner) onWinner(winner);
       }
     }
-  }, [updateWheelRotation, segmentAngle, movies, currentUser, onWinner]);
+  }, [updateWheelRotation, segmentAngle, filteredMovies, currentUser, onWinner]);
 
   const startSpinAnimation = useCallback(() => {
     setStatus('spinning');
@@ -240,10 +246,10 @@ export const useSpinWheel = (
   }, []);
 
   const handleButtonClick = useCallback(() => {
-    if (status === 'spinning' || hasSpunToday || movies.length === 0) return;
+    if (status === 'spinning' || hasSpunToday || filteredMovies.length === 0) return;
     velocityRef.current = 15 + Math.random() * 10;
     startSpinAnimation();
-  }, [status, hasSpunToday, startSpinAnimation, movies.length]);
+  }, [status, hasSpunToday, startSpinAnimation, filteredMovies.length]);
 
   const resetAndSpin = () => {
     if (hasSpunToday) return; // * Prevent spinning again if already spun today
@@ -320,6 +326,9 @@ export const useSpinWheel = (
     hasSpunToday,
     todaySpinData,
     saveError,
+    selectedCategory,
+    setSelectedCategory,
+    filteredMovies,
     getPointerHandlers: () => ({
       onMouseDown: handlePointerDown,
       onTouchStart: handlePointerDown,

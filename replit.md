@@ -45,4 +45,5 @@ pnpm run dev
 
 ## Recent Changes
 
+- 2026-02-17: Improved Spin Wheel feature with movie posters shown during rotation and added category-based spinning.
 - 2026-01-26: Initial Replit setup - configured Vite for port 5000 with allowedHosts
