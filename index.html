@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -14,10 +14,6 @@
       /* Base styles */
       * {
         box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
       }
 
       body {
@@ -30,7 +26,7 @@
         background-attachment: fixed;
         color: #f0f0f5;
         margin: 0;
-        font-family: 'Papyrus', fantasy;
+        font-family: 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
         font-size: calc(0.95rem + 0.5vw);
         letter-spacing: 0.03em;
         line-height: 1.6;
@@ -63,6 +59,7 @@
         pointer-events: none;
         z-index: 0;
         overflow: hidden;
+        opacity: 0.5;
       }
 
       .floating-heart {
@@ -76,29 +73,17 @@
         fill: #ff69b4;
       }
 
-      /* Wiggle animation for buttons on hover */
-      @keyframes wiggle {
-        0%,
-        100% {
-          transform: rotate(0deg);
+      @media (max-width: 640px) {
+        .floating-hearts {
+          display: none;
         }
-        25% {
-          transform: rotate(-2deg);
-        }
-        75% {
-          transform: rotate(2deg);
-        }
-      }
-
-      button:hover:not(:disabled) {
-        animation: wiggle 0.3s ease-in-out;
       }
 
       /* Enhanced focus-visible styles */
-      *:focus-visible {
-        outline: 2px solid #ff69b4 !important;
-        outline-offset: 2px !important;
-        box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.25) !important;
+      :where(button, input, textarea, a, [role='button']):focus-visible {
+        outline: 2px solid #ff69b4;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.25);
       }
 
       /* Sparkle border animation for focused inputs */
@@ -114,9 +99,9 @@
         }
       }
 
-      input:focus,
-      textarea:focus {
-        animation: sparkle-border 2s ease-in-out infinite;
+      input:focus-visible,
+      textarea:focus-visible {
+        animation: sparkle-border 0.6s ease-out 1;
       }
 
       /* Custom scrollbar (Retro style) */
@@ -267,22 +252,6 @@
 
       .animate-logout-enter {
         animation: zoom-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-
-      /* Smooth hover transitions */
-      button,
-      .card,
-      input,
-      textarea {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      }
-
-      /* Better focus states */
-      button:focus-visible,
-      input:focus-visible,
-      textarea:focus-visible {
-        outline: 2px solid var(--accent-color, #ff69b4);
-        outline-offset: 2px;
       }
 
       #main-content > .transition-container {
@@ -555,15 +524,15 @@
       .gel-bubble {
         animation:
           bubble-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-          gel-bounce 3s ease-in-out 0.8s infinite;
+          gel-bounce 4s ease-in-out 1.2s infinite;
         opacity: 0;
       }
 
       .gel-bubble-offset {
         animation:
           bubble-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s forwards,
-          gel-bounce 3s ease-in-out 0.95s infinite;
-        animation-delay: 0.15s, 1.65s;
+          gel-bounce 4s ease-in-out 1.35s infinite;
+        animation-delay: 0.15s, 2s;
         opacity: 0;
       }
 
@@ -882,6 +851,11 @@
 
       /* Reduced motion support */
       @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        .floating-heart,
         .gel-bubble,
         .gel-bubble-offset,
         .twinkle-stars::before,
@@ -996,19 +970,19 @@
 
       @media (max-width: 640px) {
         .header-content {
-          padding: 1.25rem !important;
-          gap: 1rem !important;
+          padding: 1.25rem;
+          gap: 1rem;
         }
 
         .header-avatar {
-          width: 64px !important;
-          height: 64px !important;
+          width: 64px;
+          height: 64px;
         }
       }
 
       @media (max-width: 480px) {
         .header-content {
-          padding: 1rem !important;
+          padding: 1rem;
         }
       }
 
@@ -1016,7 +990,7 @@
       @media (max-width: 640px) {
         input,
         textarea {
-          font-size: calc(0.95rem + 0.2vw) !important;
+          font-size: calc(0.95rem + 0.2vw);
           /* Prevents zoom on iOS */
           -webkit-appearance: none;
           /* Prevent iOS default styling */
@@ -1036,13 +1010,13 @@
           input,
           textarea,
           select {
-            font-size: calc(0.95rem + 0.2vw) !important;
+            font-size: calc(0.95rem + 0.2vw);
           }
         }
 
         .add-movie-form {
           flex-wrap: wrap;
-          gap: 0.75rem !important;
+          gap: 0.75rem;
         }
 
         .add-movie-form > * {
@@ -1050,48 +1024,48 @@
         }
 
         .message-board-title {
-          font-size: calc(1.15rem + 0.8vw) !important;
+          font-size: calc(1.15rem + 0.8vw);
           flex-wrap: wrap;
           justify-content: center;
         }
 
         .user-selection-title {
-          font-size: calc(1.35rem + 1.2vw) !important;
+          font-size: calc(1.35rem + 1.2vw);
         }
       }
 
       @media (max-width: 480px) {
         .user-selection-title {
-          font-size: calc(1.15rem + 1vw) !important;
+          font-size: calc(1.15rem + 1vw);
         }
       }
 
       /* Movie Card Title Responsive */
       @media (max-width: 640px) {
         .movie-title {
-          font-size: calc(1.05rem + 0.6vw) !important;
+          font-size: calc(1.05rem + 0.6vw);
         }
       }
 
       @media (max-width: 480px) {
         .movie-title {
-          font-size: calc(0.95rem + 0.5vw) !important;
+          font-size: calc(0.95rem + 0.5vw);
         }
       }
 
       /* Tablet and Medium Screens */
       @media (min-width: 641px) and (max-width: 1024px) {
         .main-container {
-          padding-left: 2rem !important;
-          padding-right: 2rem !important;
+          padding-left: 2rem;
+          padding-right: 2rem;
         }
       }
 
       /* Large Screens */
       @media (min-width: 1025px) {
         .main-container {
-          padding-left: 3rem !important;
-          padding-right: 3rem !important;
+          padding-left: 3rem;
+          padding-right: 3rem;
         }
       }
 
@@ -1107,59 +1081,6 @@
         overflow-x: hidden;
       }
 
-      /* Better text wrapping for long words */
-      p,
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6,
-      span,
-      div {
-        overflow-wrap: break-word;
-        word-wrap: break-word;
-        word-break: normal;
-        hyphens: none;
-      }
-
-      /* Ensure all text containers allow wrapping */
-      * {
-        box-sizing: border-box;
-      }
-
-      /* Prevent text cutoff in flex containers - only apply to flex items with flex: 1 */
-      [style*='flex: 1'],
-      [style*='flex:1'] {
-        min-width: 0 !important;
-        /* Allows flex items to shrink below content size */
-      }
-
-      /* Ensure cards allow content to wrap and grow */
-      .card,
-      [class*='card'],
-      [class*='Card'] {
-        min-height: auto !important;
-      }
-
-      /* Ensure text content in cards wraps properly - but don't override explicit styles */
-      .card p,
-      .card h1,
-      .card h2,
-      .card h3,
-      .card h4,
-      .card h5,
-      .card h6,
-      .card span:not([style*='white-space: nowrap']),
-      [class*='card'] p,
-      [class*='card'] h1,
-      [class*='card'] h2,
-      [class*='card'] h3 {
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        word-break: break-word !important;
-      }
-
       /* Ensure containers don't overflow */
       .main-container,
       .modal-content-wrapper,
@@ -1171,17 +1092,17 @@
       /* Main Container Mobile Padding */
       @media (max-width: 640px) {
         .main-container {
-          padding-left: 1rem !important;
-          padding-right: 1rem !important;
-          padding-top: 1.5rem !important;
-          padding-bottom: 2rem !important;
+          padding-left: 1rem;
+          padding-right: 1rem;
+          padding-top: 1.5rem;
+          padding-bottom: 2rem;
         }
       }
 
       @media (max-width: 480px) {
         .main-container {
-          padding-left: 0.75rem !important;
-          padding-right: 0.75rem !important;
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
         }
       }
 
@@ -1189,8 +1110,8 @@
       @media (max-width: 640px) {
         /* Disable hover effects on mobile */
         .card-mobile-disable-hover:hover {
-          transform: none !important;
-          box-shadow: inherit !important;
+          transform: none;
+          box-shadow: inherit;
         }
       }
 

@@ -70,8 +70,8 @@ export const colors = {
 export const typography = {
   fontFamily: {
     heading: ['Papyrus', 'fantasy'],
-    body: ['Papyrus', 'fantasy'],
-    sans: ['Papyrus', 'fantasy'],
+    body: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
+    sans: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {

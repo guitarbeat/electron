@@ -7,18 +7,11 @@ import { useSuggestions } from '../hooks/useSuggestions';
 import { Movie, MovieSuggestion } from '../types';
 import {
   PlusIcon,
-  LogoutIcon,
   DiceIcon,
-  CheckIcon,
   FilmIcon,
   LockIcon,
-  RefreshIcon,
   LayoutGridIcon,
   LayoutListIcon,
-  TicketIcon,
-  EyeIcon,
-  EyeOffIcon,
-  TrashIcon,
 } from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
@@ -31,9 +24,12 @@ import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
-import { DashboardCard, SuggestionItemCard } from './DashboardCards';
+import { SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+
+type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
+type SortMode = 'recent' | 'title' | 'year';
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -47,9 +43,7 @@ const Watchlist: React.FC = () => {
     toggleWatched,
     deleteMovie,
     refresh: refreshMovies,
-    updateMovieMetadata,
     manualMetadataUpdate,
-    refreshAllMetadata,
   } = useMovies(currentUser);
   const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
   const {
@@ -70,6 +64,9 @@ const Watchlist: React.FC = () => {
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [contentTab, setContentTab] = useState<ContentTab>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState<SortMode>('recent');
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
@@ -95,12 +92,51 @@ const Watchlist: React.FC = () => {
     () => (movies ? movies.filter((movie) => movie.watchedBy.length === 2) : []),
     [movies]
   );
-  const firstWatchedIndex = useMemo(
-    () => (movies ? movies.findIndex((m) => m.watchedBy.length === 2) : -1),
-    [movies]
-  );
   const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
   const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const sortedMovies = useMemo(() => {
+    if (!movies) return [];
+    const next = [...movies];
+    switch (sortMode) {
+      case 'title':
+        next.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'year':
+        next.sort((a, b) => Number(b.year || 0) - Number(a.year || 0));
+        break;
+      case 'recent':
+      default:
+        break;
+    }
+    return next;
+  }, [movies, sortMode]);
+
+  const filteredMovies = useMemo(() => {
+    return sortedMovies.filter((movie) => {
+      const inTab =
+        contentTab === 'all' ||
+        (contentTab === 'to-watch' && movie.watchedBy.length < 2) ||
+        (contentTab === 'watched' && movie.watchedBy.length === 2);
+      if (!inTab) return false;
+      if (!normalizedSearch) return true;
+      return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+  }, [sortedMovies, contentTab, normalizedSearch]);
+
+  const filteredSuggestions = useMemo(() => {
+    if (contentTab !== 'all' && contentTab !== 'suggestions') {
+      return [];
+    }
+    return pendingSuggestions.filter((suggestion) => {
+      if (!normalizedSearch) return true;
+      return `${suggestion.title} ${suggestion.suggestedBy} ${suggestion.reason || ''}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+  }, [pendingSuggestions, contentTab, normalizedSearch]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -438,10 +474,10 @@ const Watchlist: React.FC = () => {
                   disabled={!currentUser || isSubmitting}
                   aria-label="New movie title"
                   style={{
-                    paddingRight: isMobile ? '70px' : '120px',
+                    paddingRight: isMobile ? '102px' : '132px',
                     borderColor: successMovieId ? colors.success : undefined,
                     transition: 'border-color 0.3s ease',
-                    height: isMobile ? '42px' : '48px',
+                    height: isMobile ? '46px' : '48px',
                     fontSize: isMobile ? '14px' : '16px',
                     opacity: !currentUser ? 0.6 : 1,
                     cursor: !currentUser ? 'not-allowed' : 'text',
@@ -465,9 +501,9 @@ const Watchlist: React.FC = () => {
                     title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
                     aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
                     style={{
-                      padding: isMobile ? '6px' : undefined,
-                      width: isMobile ? '32px' : '36px',
-                      height: isMobile ? '32px' : '36px',
+                      padding: isMobile ? '8px' : undefined,
+                      width: isMobile ? '44px' : '44px',
+                      height: isMobile ? '44px' : '44px',
                     }}
                   >
                     {viewMode === 'list' ? (
@@ -486,9 +522,9 @@ const Watchlist: React.FC = () => {
                       padding: 0,
                       borderRadius: '50%',
                       aspectRatio: '1',
-                      minWidth: isMobile ? '32px' : '36px',
-                      width: isMobile ? '32px' : '36px',
-                      height: isMobile ? '32px' : '36px',
+                      minWidth: isMobile ? '44px' : '44px',
+                      width: isMobile ? '44px' : '44px',
+                      height: isMobile ? '44px' : '44px',
                       flexShrink: 0,
                       opacity: !currentUser ? 0.5 : 1,
                     }}
@@ -598,6 +634,102 @@ const Watchlist: React.FC = () => {
           </div>
         </Card>
 
+        <Card
+          variant="elevated"
+          style={{
+            marginBottom: spacing.lg,
+            padding: isMobile ? spacing.sm : spacing.md,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.sm,
+          }}
+        >
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))',
+              gap: spacing.xs,
+            }}
+          >
+            {(
+              [
+                ['all', `All (${movies?.length || 0})`],
+                ['to-watch', `To Watch (${unwatchedMovies.length})`],
+                ['watched', `Watched (${watchedMovies.length})`],
+                ['suggestions', `Suggestions (${pendingSuggestions.length})`],
+              ] as Array<[ContentTab, string]>
+            ).map(([tabValue, label]) => (
+              <Button
+                key={tabValue}
+                variant={contentTab === tabValue ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setContentTab(tabValue)}
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  border:
+                    contentTab === tabValue
+                      ? undefined
+                      : `1px solid ${colors.borderSecondary}30`,
+                  color: contentTab === tabValue ? colors.textPrimary : colors.textSecondary,
+                  minHeight: '44px',
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: spacing.sm,
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+            }}
+          >
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search movies and suggestions..."
+              aria-label="Search movies and suggestions"
+              style={{
+                height: '44px',
+                flex: 1,
+              }}
+            />
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs,
+                color: colors.textSecondary,
+                fontSize: typography.fontSize.sm,
+              }}
+            >
+              Sort
+              <select
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value as SortMode)}
+                style={{
+                  height: '44px',
+                  minWidth: isMobile ? '100%' : '160px',
+                  borderRadius: radius.md,
+                  border: `1px solid ${colors.borderSecondary}40`,
+                  backgroundColor: colors.surfaceElevated,
+                  color: colors.textPrimary,
+                  padding: `0 ${spacing.sm}`,
+                  fontFamily: typography.fontFamily.body.join(', '),
+                }}
+              >
+                <option value="recent">Recently Added</option>
+                <option value="title">Title A-Z</option>
+                <option value="year">Year (Newest)</option>
+              </select>
+            </label>
+          </div>
+        </Card>
+
         <div
           style={{
             opacity: isSubmitting ? 0.5 : 1,
@@ -607,8 +739,7 @@ const Watchlist: React.FC = () => {
         >
           {viewMode === 'grid' ? (
             <MasonryGrid>
-              {/* Individual Suggestions */}
-              {pendingSuggestions.map((suggestion) => (
+              {filteredSuggestions.map((suggestion) => (
                 <SuggestionItemCard
                   key={suggestion.id}
                   suggestion={suggestion}
@@ -618,83 +749,61 @@ const Watchlist: React.FC = () => {
                 />
               ))}
 
-              {movies &&
-                movies.map((movie) => (
-                  <MovieItem
-                    key={movie.id}
-                    movie={movie}
-                    currentUser={currentUser}
-                    onToggle={handleToggleWatched}
-                    onDelete={handleDeleteMovie}
-                    onFixMatch={handleFixMatch}
-                    animationDelay="0s"
-                    layout="grid"
-                  />
-                ))}
+              {filteredMovies.map((movie) => (
+                <MovieItem
+                  key={movie.id}
+                  movie={movie}
+                  currentUser={currentUser}
+                  onToggle={handleToggleWatched}
+                  onDelete={handleDeleteMovie}
+                  onFixMatch={handleFixMatch}
+                  animationDelay="0s"
+                  layout="grid"
+                />
+              ))}
             </MasonryGrid>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              {movies &&
-                movies.map((movie, index) => (
-                  <React.Fragment key={movie.id}>
-                    {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                      <div
-                        style={{
-                          margin: `${spacing.xl} 0`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: spacing.md,
-                        }}
-                      >
-                        <hr
-                          style={{
-                            flex: 1,
-                            border: 'none',
-                            borderTop: `1px dashed ${colors.accent}`,
-                            opacity: 0.5,
-                          }}
-                        />
-                        <span
-                          style={{
-                            color: colors.accent,
-                            fontSize: typography.fontSize.sm,
-                            fontWeight: typography.fontWeight.semibold,
-                          }}
-                        >
-                          Watched Together ✨
-                        </span>
-                        <hr
-                          style={{
-                            flex: 1,
-                            border: 'none',
-                            borderTop: `1px dashed ${colors.accent}`,
-                            opacity: 0.5,
-                          }}
-                        />
-                      </div>
-                    )}
-                    <MovieItem
-                      movie={movie}
-                      currentUser={currentUser}
-                      onToggle={handleToggleWatched}
-                      onDelete={handleDeleteMovie}
-                      onFixMatch={handleFixMatch}
-                      animationDelay={`${index * 0.05}s`}
-                      layout="list"
-                    />
-                  </React.Fragment>
+              {(contentTab === 'all' || contentTab === 'suggestions') &&
+                filteredSuggestions.map((suggestion) => (
+                  <SuggestionItemCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onAccept={handleAcceptSuggestion}
+                    onReject={handleRejectSuggestion}
+                    isProcessing={processingSuggestionId === suggestion.id}
+                  />
                 ))}
+
+              {filteredMovies.map((movie, index) => (
+                <MovieItem
+                  key={movie.id}
+                  movie={movie}
+                  currentUser={currentUser}
+                  onToggle={handleToggleWatched}
+                  onDelete={handleDeleteMovie}
+                  onFixMatch={handleFixMatch}
+                  animationDelay={`${index * 0.05}s`}
+                  layout="list"
+                />
+              ))}
             </div>
           )}
 
-          {movies?.length === 0 && !isSuggestionsLoading && (
+          {filteredMovies.length === 0 && filteredSuggestions.length === 0 && !isSuggestionsLoading && (
             <div
               style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}
             >
               <FilmIcon
                 style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
               />
-              <p>Your watchlist is empty. Add a movie to start!</p>
+              <p>
+                {searchQuery
+                  ? 'No results match your search.'
+                  : contentTab === 'suggestions'
+                    ? 'No pending suggestions right now.'
+                    : 'No movies in this section yet.'}
+              </p>
             </div>
           )}
         </div>
