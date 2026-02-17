@@ -236,7 +236,7 @@ const SpinWheel: React.FC<{
                 {categories.map((cat) => (
                   <Button
                     key={cat}
-                    variant={selectedCategory === cat ? 'primary' : 'outline'}
+                    variant={selectedCategory === cat ? 'primary' : 'ghost'}
                     size="sm"
                     onClick={() => setSelectedCategory(cat)}
                     style={{
