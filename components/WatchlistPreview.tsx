@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useMovies } from '../hooks/useMovies';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 import { FilmIcon } from './icons';
-import { Movie } from '../types';
+import { Movie, User } from '../types';
+import WatcherBadge from './WatcherBadge';
 
 const POSTER_WIDTH = 70;
 const POSTER_HEIGHT = 105;
@@ -16,7 +17,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ movie }) => {
   const [imgError, setImgError] = useState(false);
 
   const watchedByOne = movie.watchedBy.length === 1;
-  const watcherInitial = watchedByOne ? movie.watchedBy[0][0] : null;
+  const watcher = watchedByOne ? (movie.watchedBy[0] as User) : null;
 
   return (
     <div
@@ -70,26 +71,15 @@ const PosterCard: React.FC<PosterCardProps> = ({ movie }) => {
       )}
 
       {/* Watched-by Badge */}
-      {watcherInitial && (
+      {watcher && (
         <div
           style={{
             position: 'absolute',
             top: 4,
             right: 4,
-            width: 18,
-            height: 18,
-            borderRadius: radius.full,
-            backgroundColor: watcherInitial === 'A' ? colors.accent : colors.secondary,
-            color: colors.background,
-            fontSize: '10px',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
           }}
         >
-          {watcherInitial}
+          <WatcherBadge user={watcher} size="sm" />
         </div>
       )}
 
