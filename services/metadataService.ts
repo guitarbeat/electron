@@ -1,7 +1,10 @@
-import { Movie } from '../types';
-
-const OMDB_API_KEY = 'trilogy';
+const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY || '';
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
+
+if (!OMDB_API_KEY) {
+  // eslint-disable-next-line no-console
+  console.warn('VITE_OMDB_API_KEY is not set. Movie metadata fetching will fail.');
+}
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
 const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise<Response> => {
