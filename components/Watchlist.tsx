@@ -385,7 +385,7 @@ const Watchlist: React.FC = () => {
           maxWidth: viewMode === 'grid' ? '1200px' : '44rem',
           margin: '0 auto',
           padding: `${spacing.lg} ${spacing.md}`,
-          transition: 'max-width 0.3s ease',
+          transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Toast Notification */}
