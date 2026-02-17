@@ -69,7 +69,7 @@ export const colors = {
 // * Typography scale (Legible and tight)
 export const typography = {
   fontFamily: {
-    heading: ['Papyrus', 'fantasy'],
+    heading: ['Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
     body: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
     sans: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
@@ -97,9 +97,9 @@ export const typography = {
   },
   letterSpacing: {
     tight: '-0.01em',
-    normal: '0.02em', // Slight spacing improves Papyrus readability
-    wide: '0.05em',
-    wider: '0.08em',
+    normal: '0.015em', // Slight spacing improves Papyrus readability
+    wide: '0.04em',
+    wider: '0.065em',
   },
 } as const;
 

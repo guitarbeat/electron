@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import { usePins } from '../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { colors, spacing } from '../design-system/tokens';
+import { colors, spacing, typography } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import PinDialog from './PinDialog';
 
@@ -174,7 +174,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
         <h1
           className="title-entrance"
           style={{
-            fontFamily: "'Papyrus', fantasy",
+            fontFamily: typography.fontFamily.heading.join(', '),
             fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
             fontWeight: 600,
             margin: 0,
@@ -184,7 +184,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
             backgroundClip: 'text',
             color: 'transparent',
             textShadow: 'none',
-            letterSpacing: '0.05em',
+            letterSpacing: typography.letterSpacing.wide,
           }}
         >
           {title}

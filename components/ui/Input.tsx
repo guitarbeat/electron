@@ -42,7 +42,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
             outline: 'none',
             WebkitAppearance: 'none', // * Prevent iOS default styling
-            textAlign: 'center',
+            textAlign: 'left',
             letterSpacing: '0.02em',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
             ...style,
