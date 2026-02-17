@@ -4,15 +4,8 @@ import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { usePins } from '../hooks/usePins';
 import { useSuggestions } from '../hooks/useSuggestions';
-import { Movie, MovieSuggestion } from '../types';
-import {
-  PlusIcon,
-  DiceIcon,
-  FilmIcon,
-  LockIcon,
-  LayoutGridIcon,
-  LayoutListIcon,
-} from './icons';
+import { Movie, MovieSuggestion, SharedMemory } from '../types';
+import { PlusIcon, DiceIcon, FilmIcon, LockIcon, LayoutGridIcon, LayoutListIcon } from './icons';
 import SpinWheel from './SpinWheel';
 import Header from './Header';
 import Card from './ui/Card';
@@ -81,6 +74,7 @@ const Watchlist: React.FC = () => {
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [celebratedMovieTitle, setCelebratedMovieTitle] = useState<string | null>(null);
+  const [sharedMemories, setSharedMemories] = useState<SharedMemory[]>([]);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -145,6 +139,41 @@ const Watchlist: React.FC = () => {
         .includes(normalizedSearch);
     });
   }, [pendingSuggestions, contentTab, normalizedSearch]);
+
+  const memorySummariesByMovie = useMemo(() => {
+    const summaries = new Map<string, { count: number; latestNote: string; latestAuthor: string }>();
+
+    sharedMemories.forEach((memory) => {
+      const fallbackKey = `title:${memory.movieTitle.trim().toLowerCase()}`;
+      const key = memory.movieId || fallbackKey;
+      const existing = summaries.get(key);
+
+      if (existing) {
+        summaries.set(key, { ...existing, count: existing.count + 1 });
+        return;
+      }
+
+      summaries.set(key, {
+        count: 1,
+        latestNote: memory.note,
+        latestAuthor: memory.author,
+      });
+    });
+
+    return summaries;
+  }, [sharedMemories]);
+
+  const getMovieMemorySummary = useCallback(
+    (movie: Movie) => {
+      const byId = memorySummariesByMovie.get(movie.id);
+      if (byId) {
+        return byId;
+      }
+
+      return memorySummariesByMovie.get(`title:${movie.title.trim().toLowerCase()}`);
+    },
+    [memorySummariesByMovie]
+  );
 
   useEffect(() => {
     if (currentUser) {
@@ -448,7 +477,7 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ background: colors.background }}>
+    <div className="quiet-ui" style={{ background: colors.background }}>
       {/* Confetti celebration */}
       {showConfetti && <Confetti isActive={showConfetti} />}
 
@@ -502,105 +531,96 @@ const Watchlist: React.FC = () => {
           style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
         >
           <form onSubmit={handleAddMovie}>
-            <p
+            <div
               style={{
-                margin: 0,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                gap: spacing.sm,
                 marginBottom: spacing.sm,
-                color: colors.textSecondary,
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
+                    color: colors.textPrimary,
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  {currentUser ? 'Add to Watchlist' : 'Suggest a Title'}
+                </h3>
+                <p
+                  style={{
+                    margin: `${spacing.xs} 0 0`,
+                    color: colors.textSecondary,
+                    fontSize: typography.fontSize.xs,
+                  }}
+                >
+                  {currentUser
+                    ? 'Quick add with one clear field.'
+                    : 'Leave your name so Aaron and Electra can review it.'}
+                </p>
+              </div>
+
+              <IconButton
+                onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                variant="ghost"
+                size="sm"
+                title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  flexShrink: 0,
+                }}
+              >
+                {viewMode === 'list' ? (
+                  <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />
+                ) : (
+                  <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />
+                )}
+              </IconButton>
+            </div>
+
+            <Input
+              ref={inputRef}
+              label="Movie or show title"
+              value={newMovieTitle}
+              onChange={(e) =>
+                setNewMovieTitle(e.target.value.slice(0, MAX_SUGGESTION_TITLE_LENGTH))
+              }
+              placeholder={currentUser ? 'Example: Spirited Away' : 'Example: The Holdovers'}
+              disabled={isSubmitting || isAdding}
+              aria-label="Movie or show title"
+              style={{
+                borderColor: successMovieId ? colors.success : undefined,
+                transition: 'border-color 0.3s ease',
+                height: isMobile ? '46px' : '48px',
+                fontSize: isMobile ? '14px' : '16px',
+              }}
+            />
+
+            <div
+              style={{
+                marginTop: spacing.xs,
+                marginBottom: spacing.sm,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                color: colors.textTertiary,
                 fontSize: typography.fontSize.xs,
               }}
             >
-              {currentUser
-                ? 'Add directly to your shared watchlist.'
-                : 'Not signed in? Add a suggestion for Aaron and Electra to review.'}
-            </p>
-            <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <Input
-                  ref={inputRef}
-                  value={newMovieTitle}
-                  onChange={(e) =>
-                    setNewMovieTitle(e.target.value.slice(0, MAX_SUGGESTION_TITLE_LENGTH))
-                  }
-                  placeholder={
-                    currentUser
-                      ? isMobile
-                        ? 'Add movie...'
-                        : 'Enter movie or show title...'
-                      : 'Suggest a movie or show...'
-                  }
-                  disabled={isSubmitting || isAdding}
-                  aria-label="New movie title"
-                  style={{
-                    paddingRight: isMobile ? '102px' : '132px',
-                    borderColor: successMovieId ? colors.success : undefined,
-                    transition: 'border-color 0.3s ease',
-                    height: isMobile ? '46px' : '48px',
-                    fontSize: isMobile ? '14px' : '16px',
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    right: spacing.xs,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    display: 'flex',
-                    gap: isMobile ? '4px' : spacing.sm,
-                    alignItems: 'center',
-                  }}
-                >
-                  <IconButton
-                    onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                    variant="ghost"
-                    size="sm"
-                    title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    style={{
-                      padding: isMobile ? '8px' : undefined,
-                      width: isMobile ? '44px' : '44px',
-                      height: isMobile ? '44px' : '44px',
-                    }}
-                  >
-                    {viewMode === 'list' ? (
-                      <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />
-                    ) : (
-                      <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />
-                    )}
-                  </IconButton>
-
-                  <Button
-                    type="submit"
-                    variant={currentUser ? 'primary' : 'secondary'}
-                    disabled={
-                      isSubmitting ||
-                      isAdding ||
-                      !newMovieTitle.trim() ||
-                      (!currentUser && !suggestionAuthor.trim())
-                    }
-                    isLoading={isAdding}
-                    aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
-                    style={{
-                      padding: 0,
-                      borderRadius: '50%',
-                      aspectRatio: '1',
-                      minWidth: isMobile ? '44px' : '44px',
-                      width: isMobile ? '44px' : '44px',
-                      height: isMobile ? '44px' : '44px',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {!isAdding && (
-                      <PlusIcon
-                        style={{
-                          width: isMobile ? '16px' : '18px',
-                          height: isMobile ? '16px' : '18px',
-                        }}
-                      />
-                    )}
-                  </Button>
-                </div>
-              </div>
+              <span>
+                {currentUser ? 'Press Enter to add quickly.' : 'Add a reason if you want context.'}
+              </span>
+              <span>
+                {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
+              </span>
             </div>
             {!currentUser && (
               <div
@@ -616,6 +636,7 @@ const Watchlist: React.FC = () => {
                   onChange={(e) =>
                     setSuggestionAuthor(e.target.value.slice(0, MAX_SUGGESTION_AUTHOR_LENGTH))
                   }
+                  label="Your name"
                   placeholder="Your name"
                   aria-label="Your name"
                   disabled={isSubmitting || isAdding}
@@ -626,6 +647,7 @@ const Watchlist: React.FC = () => {
                   onChange={(e) =>
                     setSuggestionReason(e.target.value.slice(0, MAX_SUGGESTION_REASON_LENGTH))
                   }
+                  label="Why this pick? (optional)"
                   placeholder="Why this pick? (optional)"
                   aria-label="Suggestion reason (optional)"
                   disabled={isSubmitting || isAdding}
@@ -633,6 +655,41 @@ const Watchlist: React.FC = () => {
                 />
               </div>
             )}
+
+            <div
+              style={{
+                marginTop: spacing.md,
+                display: 'flex',
+                justifyContent: isMobile ? 'stretch' : 'flex-end',
+              }}
+            >
+              <Button
+                type="submit"
+                variant={currentUser ? 'primary' : 'secondary'}
+                disabled={
+                  isSubmitting ||
+                  isAdding ||
+                  !newMovieTitle.trim() ||
+                  (!currentUser && !suggestionAuthor.trim())
+                }
+                isLoading={isAdding}
+                aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
+                style={{
+                  width: isMobile ? '100%' : 'auto',
+                  minWidth: isMobile ? '100%' : '220px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: spacing.xs,
+                  fontFamily:
+                    "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {!isAdding && <PlusIcon style={{ width: '16px', height: '16px' }} />}
+                {currentUser ? 'Add to Watchlist' : 'Submit Suggestion'}
+              </Button>
+            </div>
           </form>
         </Card>
 
@@ -647,9 +704,13 @@ const Watchlist: React.FC = () => {
             background: isSpinLocked
               ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
               : canSpin
-              ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
-              : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
-            boxShadow: isSpinLocked ? shadows.card : canSpin ? shadows.glowBlue : shadows.glowStrong,
+                ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
+                : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
+            boxShadow: isSpinLocked
+              ? shadows.card
+              : canSpin
+                ? shadows.glowBlue
+                : shadows.glowStrong,
           }}
         >
           <div
@@ -662,23 +723,6 @@ const Watchlist: React.FC = () => {
             }}
           >
             <div style={{ flex: 1, textAlign: isMobile ? 'center' : 'left' }}>
-              <span
-                style={{
-                  display: 'inline-block',
-                  fontSize: typography.fontSize.xs,
-                  fontWeight: typography.fontWeight.bold,
-                  color: isSpinLocked ? colors.textTertiary : canSpin ? colors.secondary : colors.accentLight,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  marginBottom: spacing.xs,
-                }}
-              >
-                {!currentUser
-                  ? 'Spin is available after profile select'
-                  : canSpin
-                    ? "Tonight's movie picker is ready"
-                    : 'Almost ready to spin'}
-              </span>
               <h2
                 style={{
                   margin: 0,
@@ -691,20 +735,19 @@ const Watchlist: React.FC = () => {
               >
                 {!currentUser ? 'Movie Spin Wheel' : 'Spin the Wheel'}
               </h2>
-              <p
-                style={{
-                  margin: 0,
-                  color: colors.textSecondary,
-                  fontSize: typography.fontSize.sm,
-                  lineHeight: typography.lineHeight.normal,
-                }}
-              >
-                {!currentUser
-                  ? 'Choose Aaron or Electra above whenever you want to spin.'
-                  : canSpin
-                    ? 'You have enough unwatched movies. Spin now and let fate decide.'
-                    : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'} to unlock the wheel.`}
-              </p>
+              {!canSpin && currentUser && (
+                <p
+                  style={{
+                    margin: 0,
+                    color: colors.textSecondary,
+                    fontSize: typography.fontSize.sm,
+                    lineHeight: typography.lineHeight.normal,
+                  }}
+                >
+                  Add {moviesNeededForSpin} more unwatched{' '}
+                  {moviesNeededForSpin === 1 ? 'movie' : 'movies'}.
+                </p>
+              )}
             </div>
             <Button
               onClick={handleOpenWheel}
@@ -748,10 +791,10 @@ const Watchlist: React.FC = () => {
           >
             {(
               [
-                ['all', `All (${movies?.length || 0})`],
-                ['to-watch', `To Watch (${unwatchedMovies.length})`],
-                ['watched', `Watched (${watchedMovies.length})`],
-                ['suggestions', `Suggestions (${pendingSuggestions.length})`],
+                ['all', 'All'],
+                ['to-watch', 'To Watch'],
+                ['watched', 'Watched'],
+                ['suggestions', 'Suggestions'],
               ] as Array<[ContentTab, string]>
             ).map(([tabValue, label]) => (
               <Button
@@ -763,9 +806,7 @@ const Watchlist: React.FC = () => {
                   width: '100%',
                   justifyContent: 'center',
                   border:
-                    contentTab === tabValue
-                      ? undefined
-                      : `1px solid ${colors.borderSecondary}30`,
+                    contentTab === tabValue ? undefined : `1px solid ${colors.borderSecondary}30`,
                   color: contentTab === tabValue ? colors.textPrimary : colors.textSecondary,
                   minHeight: '44px',
                 }}
@@ -793,35 +834,27 @@ const Watchlist: React.FC = () => {
                 flex: 1,
               }}
             />
-            <label
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              aria-label="Sort movies"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: spacing.xs,
-                color: colors.textSecondary,
-                fontSize: typography.fontSize.sm,
+                height: '44px',
+                minWidth: isMobile ? '100%' : '160px',
+                borderRadius: radius.md,
+                border: `1px solid ${colors.borderSecondary}40`,
+                backgroundColor: colors.surfaceElevated,
+                color: colors.textPrimary,
+                padding: `0 ${spacing.sm}`,
+                fontFamily: typography.fontFamily.body.join(', '),
               }}
             >
-              Sort
-              <select
-                value={sortMode}
-                onChange={(e) => setSortMode(e.target.value as SortMode)}
-                style={{
-                  height: '44px',
-                  minWidth: isMobile ? '100%' : '160px',
-                  borderRadius: radius.md,
-                  border: `1px solid ${colors.borderSecondary}40`,
-                  backgroundColor: colors.surfaceElevated,
-                  color: colors.textPrimary,
-                  padding: `0 ${spacing.sm}`,
-                  fontFamily: typography.fontFamily.body.join(', '),
-                }}
-              >
-                <option value="recent">Recently Added</option>
-                <option value="title">Title A-Z</option>
-                <option value="year">Year (Newest)</option>
-              </select>
-            </label>
+              <option value="recent">Recently Added</option>
+              <option value="title">Title A-Z</option>
+              <option value="year">Year (Newest)</option>
+            </select>
           </div>
         </Card>
 
@@ -885,22 +918,28 @@ const Watchlist: React.FC = () => {
             </div>
           )}
 
-          {filteredMovies.length === 0 && filteredSuggestions.length === 0 && !isSuggestionsLoading && (
-            <div
-              style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}
-            >
-              <FilmIcon
-                style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
-              />
-              <p>
-                {searchQuery
-                  ? 'No results match your search.'
-                  : contentTab === 'suggestions'
-                    ? 'No pending suggestions right now.'
-                    : 'No movies in this section yet.'}
-              </p>
-            </div>
-          )}
+          {filteredMovies.length === 0 &&
+            filteredSuggestions.length === 0 &&
+            !isSuggestionsLoading && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: spacing['3xl'],
+                  color: colors.textSecondary,
+                }}
+              >
+                <FilmIcon
+                  style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
+                />
+                <p>
+                  {searchQuery
+                    ? 'No results match your search.'
+                    : contentTab === 'suggestions'
+                      ? 'No pending suggestions right now.'
+                      : 'No movies in this section yet.'}
+                </p>
+              </div>
+            )}
         </div>
 
         <MemoryWall watchedMovies={watchedMovies} currentUser={currentUser} />

@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -122,6 +119,20 @@
       /* Global font styles */
       .bg-main {
         background-color: transparent;
+      }
+
+      /* Quiet visual defaults */
+      .floating-hearts,
+      .twinkle-stars,
+      #sparkle-container {
+        display: none !important;
+      }
+
+      .gel-bubble,
+      .gel-bubble-offset,
+      .neon-pulse,
+      .animate-pink-glow {
+        animation: none !important;
       }
 
       /* Utility animations */
@@ -1515,7 +1526,8 @@
       .current-movie-title {
         font-size: clamp(1.35rem, 1.1rem + 1.35vw, 2.25rem);
         font-weight: 700;
-        font-family: 'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', serif;
+        font-family:
+          'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', serif;
         color: #ffeb3b;
         letter-spacing: 0.04em;
         text-shadow:
@@ -1545,67 +1557,6 @@
   </head>
 
   <body class="font-body">
-    <!-- Floating Hearts Background -->
-    <div class="floating-hearts" aria-hidden="true">
-      <div class="floating-heart" style="left: 5%; animation-duration: 15s; animation-delay: 0s">
-        <svg width="16" height="16" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 15%; animation-duration: 18s; animation-delay: 2s">
-        <svg width="12" height="12" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 30%; animation-duration: 20s; animation-delay: 4s">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 45%; animation-duration: 16s; animation-delay: 1s">
-        <svg width="14" height="14" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 60%; animation-duration: 22s; animation-delay: 3s">
-        <svg width="18" height="18" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 75%; animation-duration: 17s; animation-delay: 5s">
-        <svg width="10" height="10" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 85%; animation-duration: 19s; animation-delay: 0.5s">
-        <svg width="16" height="16" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-      <div class="floating-heart" style="left: 95%; animation-duration: 21s; animation-delay: 2.5s">
-        <svg width="14" height="14" viewBox="0 0 24 24">
-          <path
-            d="M12 4.248c-3.148-5.402-12-3.825-12 2.944 0 4.661 5.571 9.427 12 15.808 6.43-6.381 12-11.147 12-15.808 0-6.792-8.875-8.306-12-2.944z"
-          />
-        </svg>
-      </div>
-    </div>
-
-    <div id="sparkle-container"></div>
     <div id="root"></div>
 
     <script type="importmap">
@@ -1618,57 +1569,5 @@
       }
     </script>
     <script type="module" src="/index.tsx"></script>
-    <script>
-      // Sparkle cursor effect
-      (function () {
-        const sparkleContainer = document.getElementById('sparkle-container');
-        if (!sparkleContainer) return;
-
-        const colors = ['#ff69b4', '#87cefa', '#9370db', '#ffffff', '#f0e68c'];
-
-        const throttle = (func, limit) => {
-          let inThrottle;
-          return function () {
-            const args = arguments;
-            const context = this;
-            if (!inThrottle) {
-              func.apply(context, args);
-              inThrottle = true;
-              setTimeout(() => (inThrottle = false), limit);
-            }
-          };
-        };
-
-        const createSparkle = (x, y) => {
-          const sparkle = document.createElement('div');
-          sparkle.className = 'sparkle';
-          sparkle.style.left = `${x}px`;
-          sparkle.style.top = `${y}px`;
-
-          sparkle.innerHTML = '&#10024;'; // ✨
-          sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
-
-          const size = Math.random() * 20 + 8;
-          sparkle.style.fontSize = `${size}px`;
-
-          const xEnd = (Math.random() - 0.5) * 100;
-          const yEnd = (Math.random() - 0.5) * 100;
-          sparkle.style.setProperty('--sparkle-x-end', `${xEnd}px`);
-          sparkle.style.setProperty('--sparkle-y-end', `${yEnd}px`);
-          sparkle.style.setProperty('--sparkle-duration', `${Math.random() * 0.5 + 0.5}s`);
-
-          sparkleContainer.appendChild(sparkle);
-
-          sparkle.addEventListener('animationend', () => {
-            sparkle.remove();
-          });
-        };
-
-        document.addEventListener(
-          'mousemove',
-          throttle((e) => createSparkle(e.clientX, e.clientY), 50)
-        );
-      })();
-    </script>
   </body>
 </html>
