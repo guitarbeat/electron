@@ -255,17 +255,35 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   marginTop: '4px',
+                  gap: '4px',
+                  flexWrap: 'wrap',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: '10px',
-                    color: colors.textSecondary,
-                    fontWeight: typography.fontWeight.bold,
-                  }}
-                >
-                  {movie.year || ''}
-                </span>
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      color: colors.textSecondary,
+                      fontWeight: typography.fontWeight.bold,
+                    }}
+                  >
+                    {movie.year || ''}
+                  </span>
+                  {movie.category && (
+                    <span
+                      style={{
+                        fontSize: '8px',
+                        color: colors.accentLight,
+                        backgroundColor: 'rgba(0,0,0,0.4)',
+                        padding: '1px 4px',
+                        borderRadius: '2px',
+                        border: `1px solid ${colors.accent}40`,
+                      }}
+                    >
+                      {movie.category}
+                    </span>
+                  )}
+                </div>
 
                 <div
                   style={{
@@ -458,6 +476,23 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 )}
 
                 {movie.runtime && <span>{movie.runtime}</span>}
+                {movie.category && (
+                  <>
+                    <span>•</span>
+                    <span
+                      style={{
+                        color: colors.accentLight,
+                        backgroundColor: `${colors.accent}15`,
+                        padding: '2px 8px',
+                        borderRadius: radius.sm,
+                        fontSize: '0.7rem',
+                        border: `1px solid ${colors.accent}30`,
+                      }}
+                    >
+                      {movie.category}
+                    </span>
+                  </>
+                )}
               </div>
 
               {movie.plot && (

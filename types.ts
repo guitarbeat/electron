@@ -15,6 +15,7 @@ export interface Movie {
   runtime?: string;
   genre?: string;
   director?: string;
+  category?: string; // e.g. "Humor", "Action", "Drama"
 }
 
 export interface Message {
