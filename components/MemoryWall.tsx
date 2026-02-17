@@ -11,6 +11,7 @@ import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 interface MemoryWallProps {
   watchedMovies: Movie[];
   currentUser: User | null;
+  onMemoriesChange?: (memories: SharedMemory[]) => void;
 }
 
 const MAX_NOTE_LENGTH = 280;
@@ -113,7 +114,11 @@ const formatMemoryTimestamp = (createdAt: string): string => {
   });
 };
 
-const MemoryWall: React.FC<MemoryWallProps> = ({ watchedMovies, currentUser }) => {
+const MemoryWall: React.FC<MemoryWallProps> = ({
+  watchedMovies,
+  currentUser,
+  onMemoriesChange,
+}) => {
   const { memories, addMemory, isLoading, error: memoriesError } = useMemories();
   const isMobile = useMediaQuery(breakpoints.sm);
   const noteInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -151,6 +156,10 @@ const MemoryWall: React.FC<MemoryWallProps> = ({ watchedMovies, currentUser }) =
       setIsComposerOpen(true);
     }
   }, [isLoading, memories.length]);
+
+  useEffect(() => {
+    onMemoriesChange?.(memories);
+  }, [memories, onMemoriesChange]);
 
   useEffect(() => {
     if (

@@ -224,47 +224,18 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <div
                 style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
                   alignItems: 'center',
                   marginTop: '4px',
                   gap: '4px',
-                  flexWrap: 'wrap',
                 }}
               >
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: colors.textSecondary,
-                      fontWeight: typography.fontWeight.bold,
-                    }}
-                  >
-                    {movie.year || ''}
-                  </span>
-                  {movie.category && (
-                    <span
-                      style={{
-                        fontSize: '8px',
-                        color: colors.accentLight,
-                        backgroundColor: 'rgba(0,0,0,0.4)',
-                        padding: '1px 4px',
-                        borderRadius: '2px',
-                        border: `1px solid ${colors.accent}40`,
-                      }}
-                    >
-                      {movie.category}
-                    </span>
-                  )}
-                </div>
-
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: spacing.sm,
-                    marginTop: spacing.sm,
-                    flexWrap: 'wrap',
+                    width: '100%',
                   }}
                 >
                   <Button
@@ -422,35 +393,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   fontSize: typography.fontSize.sm,
                   color: colors.textTertiary,
                   marginBottom: spacing.md,
-                  flexWrap: 'wrap',
-                  fontWeight: typography.fontWeight.medium,
+                  fontWeight: typography.fontWeight.semibold,
                 }}
               >
                 {movie.year && <span style={{ color: colors.textSecondary }}>{movie.year}</span>}
-                {movie.year && (movie.imdbRating || movie.runtime) && <span>•</span>}
-
-                {movie.imdbRating && (
-                  <span
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      color: colors.yellow,
-                      fontWeight: typography.fontWeight.bold,
-                      textShadow: '0 0 10px rgba(255, 235, 59, 0.3)',
-                    }}
-                  >
-                    ★ {movie.imdbRating}
-                  </span>
-                )}
-                {movie.imdbRating && movie.runtime && (
-                  <span style={{ color: colors.textTertiary }}>•</span>
-                )}
-
-                {movie.runtime && <span>{movie.runtime}</span>}
+                {movie.year && movie.category && <span>•</span>}
                 {movie.category && (
                   <>
-                    <span>•</span>
                     <span
                       style={{
                         color: colors.accentLight,
@@ -501,21 +450,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                  <span
-                    style={{
-                      fontSize: '0.65rem',
-                      color: colors.textTertiary,
-                      fontWeight: typography.fontWeight.bold,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      padding: `2px 6px`,
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      borderRadius: radius.md,
-                      border: `1px solid ${colors.borderInset}`,
-                    }}
-                  >
-                    {movie.addedBy}
-                  </span>
                   <span
                     style={{
                       fontSize: typography.fontSize.xs,
