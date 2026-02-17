@@ -2,39 +2,7 @@ import React, { memo, useState, useEffect, useRef } from 'react';
 import { Message, User } from '../types';
 import { TrashIcon } from './icons';
 import { spacing, typography, colors, radius } from '../design-system/tokens';
-
-// Available styles
-const STYLE_VARIANTS = [
-  {
-    gradient: colors.gradientBlue,
-    tailLeft: '#87cefa',
-    tailRight: '#a0d8ff',
-  },
-  {
-    gradient: colors.gradientPink,
-    tailLeft: '#ff69b4',
-    tailRight: '#ff8bb3',
-  },
-  {
-    gradient: colors.gradientPurple,
-    tailLeft: '#9370db',
-    tailRight: '#ab87e8',
-  },
-];
-
-const getStyleForUser = (username: string) => {
-  // Explicit overrides for main users
-  if (username.toLowerCase() === 'aaron') return STYLE_VARIANTS[0]; // Blue
-  if (username.toLowerCase() === 'electra') return STYLE_VARIANTS[1]; // Pink
-
-  // Deterministic selection for others based on username hash
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % STYLE_VARIANTS.length;
-  return STYLE_VARIANTS[index];
-};
+import { getMessageBubbleStyle } from '../hooks/useUserColors';
 
 // iOS-style reactions
 const REACTIONS = ['❤️', '👍', '👎', '😂', '‼️', '❓'];
@@ -94,8 +62,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
   const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
   const currentUsername = currentUser || 'Anonymous';
 
-  // Determine styles based on author
-  const userStyle = getStyleForUser(authorName);
+  // Determine styles based on author (from centralized color system)
+  const userStyle = getMessageBubbleStyle(authorName);
 
   // Get user's current reaction from persisted data
   const getUserReaction = (): string | null => {
@@ -238,8 +206,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           userSelect: 'none',
           WebkitUserSelect: 'none',
           transition: 'transform 0.1s ease',
-          backgroundImage: userStyle.gradient,
-          backgroundColor: userStyle.tailRight,
+          background: `${userStyle.gradient}`,
           borderBottomRightRadius: isCurrentUser ? '4px' : '18px',
           borderBottomLeftRadius: isCurrentUser ? '18px' : '4px',
         }}

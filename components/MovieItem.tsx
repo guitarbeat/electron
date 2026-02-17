@@ -14,6 +14,7 @@ import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 import FixMatchDialog from './FixMatchDialog';
 import BottomSheet from './ui/BottomSheet';
+import WatcherBadge from './WatcherBadge';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
@@ -179,50 +180,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
               zIndex: 10,
             }}
           >
-            {movie.watchedBy.includes('Aaron') && (
-              <div
-                title="Watched by Aaron"
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  backgroundColor: colors.secondary,
-                  border: '2px solid white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: colors.background,
-                  boxShadow: `0 0 10px ${colors.secondary}80`,
-                  textShadow: 'none',
-                }}
-              >
-                A
-              </div>
-            )}
-            {movie.watchedBy.includes('Electra') && (
-              <div
-                title="Watched by Electra"
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  backgroundColor: colors.accent,
-                  border: '2px solid white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  boxShadow: `0 0 10px ${colors.accent}80`,
-                  textShadow: 'none',
-                }}
-              >
-                E
-              </div>
-            )}
+            {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
+            {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
           </div>
 
           {/* Grid View Overlay */}
@@ -679,32 +638,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
               )}
               <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
                 {movie.watchedBy.includes('Aaron') && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      backgroundColor: colors.secondary,
-                      borderRadius: radius.full,
-                      color: colors.background,
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    Aaron ✓
-                  </span>
+                  <WatcherBadge user="Aaron" variant="text" showLabel={true} />
                 )}
                 {movie.watchedBy.includes('Electra') && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      backgroundColor: colors.accent,
-                      borderRadius: radius.full,
-                      color: 'white',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    Electra ✓
-                  </span>
+                  <WatcherBadge user="Electra" variant="text" showLabel={true} />
                 )}
               </div>
             </div>

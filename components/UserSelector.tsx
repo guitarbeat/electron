@@ -3,18 +3,28 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import { usePins } from '../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { colors } from '../design-system/tokens';
+import { colors, spacing } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
-import GlossyQuizButton from './GlossyQuizButton';
 import PinDialog from './PinDialog';
-import SuggestionForm from './SuggestionForm';
 
-interface ProfileSelectionScreenProps {
-  onTakeQuiz: () => void;
+interface UserSelectorProps {
+  /** 'full' for full-screen with decorations, 'compact' for inline */
+  variant?: 'full' | 'compact';
+  /** Optional header title (only used in 'full' variant) */
+  title?: string;
+  /** Optional bottom content (only used in 'full' variant) */
+  bottomContent?: React.ReactNode;
+  /** Can user toggle their own selection? Only matters in 'compact' variant */
+  allowToggle?: boolean;
 }
 
-const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQuiz }) => {
-  const { setCurrentUser } = useUser();
+const UserSelector: React.FC<UserSelectorProps> = ({
+  variant = 'full',
+  title = "Who's Watching?",
+  bottomContent,
+  allowToggle = false,
+}) => {
+  const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
   const isMobile = useMediaQuery(breakpoints.sm);
 
@@ -24,6 +34,13 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
   const [isVerifying, setIsVerifying] = useState(false);
 
   const handleUserSelect = (user: User) => {
+    // In compact mode with toggle, allow deselection
+    if (variant === 'compact' && allowToggle && user === currentUser) {
+      setCurrentUser(null);
+      return;
+    }
+
+    // Check for PIN protection
     if (userHasPin(user)) {
       setSelectedUser(user);
       setShowPinDialog(true);
@@ -54,6 +71,64 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
     setSelectedUser(null);
   };
 
+  // Compact variant - inline user selector
+  if (variant === 'compact') {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: `${spacing.lg} 0`,
+          width: '100%',
+          maxWidth: '800px',
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 'clamp(16px, 4vw, 40px)',
+            width: '100%',
+            flexWrap: 'nowrap',
+            padding: `0 ${spacing.md}`,
+          }}
+        >
+          {(['Aaron', 'Electra'] as User[]).map((user, index) => (
+            <div
+              key={user}
+              style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}
+            >
+              <GelBubbleAvatar
+                user={user}
+                hasPin={userHasPin(user)}
+                isHovered={hoveredUser === user || currentUser === user}
+                onClick={() => handleUserSelect(user)}
+                onMouseEnter={() => setHoveredUser(user)}
+                onMouseLeave={() => setHoveredUser(null)}
+                onFocus={() => setHoveredUser(user)}
+                onBlur={() => setHoveredUser(null)}
+                animationOffset={index % 2 === 1}
+              />
+            </div>
+          ))}
+        </div>
+
+        <PinDialog
+          isOpen={showPinDialog}
+          user={selectedUser || 'Aaron'}
+          onCancel={handlePinCancel}
+          onSubmit={handlePinSubmit}
+          mode="enter"
+          isLoading={isVerifying}
+        />
+      </div>
+    );
+  }
+
+  // Full variant - full-screen with decorations
   return (
     <div
       className="animate-fade-in pixel-stars"
@@ -112,7 +187,7 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
             letterSpacing: '0.05em',
           }}
         >
-          Who's Watching?
+          {title}
         </h1>
       </div>
 
@@ -231,35 +306,26 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
       </div>
 
       {/* Bottom Section */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          padding: isMobile ? '24px 16px 32px' : '32px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
-          background: 'transparent',
-          borderTop: 'none',
-          borderRadius: 0,
-          boxShadow: 'none',
-          marginTop: 'auto',
-        }}
-      >
-        {/* Quiz Button */}
-        <GlossyQuizButton onClick={onTakeQuiz}>✨ Take Personality Quiz ✨</GlossyQuizButton>
-
-        {/* Suggestion Form */}
+      {bottomContent && (
         <div
           style={{
-            width: '100%',
-            maxWidth: '700px',
+            position: 'relative',
+            zIndex: 1,
+            padding: isMobile ? '24px 16px 32px' : '32px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '24px',
+            background: 'transparent',
+            borderTop: 'none',
+            borderRadius: 0,
+            boxShadow: 'none',
+            marginTop: 'auto',
           }}
         >
-          <SuggestionForm />
+          {bottomContent}
         </div>
-      </div>
+      )}
 
       {/* PIN Dialog */}
       {selectedUser && (
@@ -276,4 +342,4 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
   );
 };
 
-export default ProfileSelectionScreen;
+export default UserSelector;
