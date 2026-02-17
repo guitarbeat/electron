@@ -3,6 +3,7 @@ import { User } from '../types';
 import ImageWithFallback from './ImageWithFallback';
 import { userImageSources } from '../config/imageConfig';
 import { LockIcon } from './icons';
+import { typography } from '../design-system/tokens';
 
 interface GelBubbleAvatarProps {
   user: User;
@@ -33,6 +34,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -202,7 +204,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       {/* Name Label */}
       <span
         style={{
-          fontFamily: "'Papyrus', fantasy",
+          fontFamily: typography.fontFamily.heading.join(', '),
           fontSize: 'clamp(1.25rem, 5vw, 1.75rem)',
           fontWeight: 600,
           color: '#fff',
@@ -211,7 +213,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             0 0 20px rgba(255, 105, 180, 0.5),
             0 2px 4px rgba(0, 0, 0, 0.5)
           `,
-          letterSpacing: '0.05em',
+          letterSpacing: typography.letterSpacing.wide,
           transition: 'all 0.3s ease-out',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',
         }}

@@ -12,6 +12,7 @@ interface ScoreSliderProps {
   scores: Partial<Record<QuizCharacter, number>>;
   onChange: (scores: Partial<Record<QuizCharacter, number>>) => void;
   maxScore?: number;
+  compact?: boolean;
 }
 
 const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo'];
@@ -30,11 +31,28 @@ const CHARACTER_INITIALS: Record<QuizCharacter, string> = {
   'Nosferatu/Smeemo': 'N',
 };
 
-const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 5 }) => {
+const ScoreSlider: React.FC<ScoreSliderProps> = ({
+  scores,
+  onChange,
+  maxScore = 5,
+  compact = false,
+}) => {
+  const [showFineTune, setShowFineTune] = React.useState(!compact);
   const totalScore = Object.values(scores).reduce<number>(
     (sum, val) => sum + ((val as number) || 0),
     0
   );
+  const dominantCharacter = CHARACTERS.reduce<QuizCharacter | null>((winner, char) => {
+    const current = scores[char] ?? 0;
+    if (!winner) return current > 0 ? char : null;
+    return current > (scores[winner] ?? 0) ? char : winner;
+  }, null);
+  const weightedCharacters = CHARACTERS.filter((char) => (scores[char] ?? 0) > 0);
+  const summaryText = !dominantCharacter
+    ? 'No character assigned'
+    : weightedCharacters.length === 1
+      ? `Primary: ${dominantCharacter}`
+      : `${weightedCharacters.length} characters weighted`;
 
   const updateScore = (character: QuizCharacter, value: number) => {
     onChange({ ...scores, [character]: Math.max(0, Math.min(maxScore, value)) });
@@ -54,7 +72,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 
 
   const assignStrong = (character: QuizCharacter) => {
     const assigned: Partial<Record<QuizCharacter, number>> = {};
-    CHARACTERS.forEach((char) => (assigned[char] = char === character ? 2 : 0));
+    CHARACTERS.forEach((char) => (assigned[char] = char === character ? Math.min(maxScore, 3) : 0));
     onChange(assigned);
   };
 
@@ -89,6 +107,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 
         </span>
         {CHARACTERS.map((char) => (
           <button
+            type="button"
             key={char}
             onClick={() => assignStrong(char)}
             title={`Assign to ${char}`}
@@ -115,139 +134,169 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 
             {CHARACTER_INITIALS[char]}
           </button>
         ))}
+        {compact && (
+          <>
+            <span
+              style={{
+                marginLeft: 'auto',
+                fontSize: typography.fontSize.xs,
+                color: colors.textTertiary,
+              }}
+            >
+              {summaryText}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowFineTune(!showFineTune)}
+              style={{
+                padding: '3px 8px',
+                fontSize: '10px',
+                backgroundColor: 'transparent',
+                color: colors.textSecondary,
+                border: `1px solid ${colors.borderSecondary}30`,
+                borderRadius: radius.full,
+                cursor: 'pointer',
+              }}
+            >
+              {showFineTune ? 'Hide fine-tune' : 'Fine-tune'}
+            </button>
+          </>
+        )}
       </div>
 
       {/* Sliders */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-        {CHARACTERS.map((char) => {
-          const value = scores[char] ?? 0;
-          const percentage = (value / maxScore) * 100;
+      {(!compact || showFineTune) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+          {CHARACTERS.map((char) => {
+            const value = scores[char] ?? 0;
+            const percentage = (value / maxScore) * 100;
 
-          return (
-            <div
-              key={char}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: spacing.sm,
-              }}
-            >
-              {/* Character initial */}
+            return (
               <div
+                key={char}
                 style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: radius.full,
-                  backgroundColor: CHARACTER_COLORS[char],
-                  color: '#000',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: typography.fontWeight.bold,
-                  flexShrink: 0,
-                }}
-                title={char}
-              >
-                {CHARACTER_INITIALS[char]}
-              </div>
-
-              {/* Slider container */}
-              <div
-                style={{
-                  flex: 1,
-                  height: '24px',
-                  backgroundColor: 'rgba(0,0,0,0.3)',
-                  borderRadius: radius.full,
-                  position: 'relative',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                }}
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const clickX = e.clientX - rect.left;
-                  const newValue = Math.round((clickX / rect.width) * maxScore);
-                  updateScore(char, newValue);
+                  gap: spacing.sm,
                 }}
               >
-                {/* Filled portion */}
+                {/* Character initial */}
                 <div
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    height: '100%',
-                    width: `${percentage}%`,
-                    background: `linear-gradient(90deg, ${CHARACTER_COLORS[char]}80, ${CHARACTER_COLORS[char]})`,
+                    width: '20px',
+                    height: '20px',
                     borderRadius: radius.full,
-                    transition: 'width 0.15s ease',
-                  }}
-                />
-
-                {/* Tick marks */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
+                    backgroundColor: CHARACTER_COLORS[char],
+                    color: '#000',
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    padding: '0 2px',
-                    pointerEvents: 'none',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '10px',
+                    fontWeight: typography.fontWeight.bold,
+                    flexShrink: 0,
                   }}
+                  title={char}
                 >
-                  {Array.from({ length: maxScore + 1 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: '1px',
-                        height: '100%',
-                        backgroundColor: 'rgba(255,255,255,0.15)',
-                      }}
-                    />
-                  ))}
+                  {CHARACTER_INITIALS[char]}
                 </div>
 
-                {/* Range input for accessibility */}
-                <input
-                  type="range"
-                  min={0}
-                  max={maxScore}
-                  value={value}
-                  onChange={(e) => updateScore(char, parseInt(e.target.value))}
-                  aria-label={`Score for ${char}`}
-                  aria-valuetext={`${value} out of ${maxScore}`}
+                {/* Slider container */}
+                <div
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    opacity: 0,
+                    flex: 1,
+                    height: '24px',
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                    borderRadius: radius.full,
+                    position: 'relative',
                     cursor: 'pointer',
-                    margin: 0,
+                    overflow: 'hidden',
                   }}
-                />
-              </div>
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const newValue = Math.round((clickX / rect.width) * maxScore);
+                    updateScore(char, newValue);
+                  }}
+                >
+                  {/* Filled portion */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      height: '100%',
+                      width: `${percentage}%`,
+                      background: `linear-gradient(90deg, ${CHARACTER_COLORS[char]}80, ${CHARACTER_COLORS[char]})`,
+                      borderRadius: radius.full,
+                      transition: 'width 0.15s ease',
+                    }}
+                  />
 
-              {/* Value display */}
-              <div
-                style={{
-                  width: '24px',
-                  textAlign: 'center',
-                  fontSize: typography.fontSize.sm,
-                  fontWeight: typography.fontWeight.bold,
-                  color: value > 0 ? CHARACTER_COLORS[char] : colors.textTertiary,
-                }}
-              >
-                {value}
+                  {/* Tick marks */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      padding: '0 2px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {Array.from({ length: maxScore + 1 }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: '1px',
+                          height: '100%',
+                          backgroundColor: 'rgba(255,255,255,0.15)',
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Range input for accessibility */}
+                  <input
+                    type="range"
+                    min={0}
+                    max={maxScore}
+                    value={value}
+                    onChange={(e) => updateScore(char, parseInt(e.target.value, 10))}
+                    aria-label={`Score for ${char}`}
+                    aria-valuetext={`${value} out of ${maxScore}`}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      opacity: 0,
+                      cursor: 'pointer',
+                      margin: 0,
+                    }}
+                  />
+                </div>
+
+                {/* Value display */}
+                <div
+                  style={{
+                    width: '24px',
+                    textAlign: 'center',
+                    fontSize: typography.fontSize.sm,
+                    fontWeight: typography.fontWeight.bold,
+                    color: value > 0 ? CHARACTER_COLORS[char] : colors.textTertiary,
+                  }}
+                >
+                  {value}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Footer actions */}
       <div
@@ -270,6 +319,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 
         </span>
         <div style={{ display: 'flex', gap: spacing.xs }}>
           <button
+            type="button"
             onClick={clearAll}
             style={{
               padding: '2px 8px',
@@ -291,6 +341,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({ scores, onChange, maxScore = 
             Clear
           </button>
           <button
+            type="button"
             onClick={balanceEvenly}
             style={{
               padding: '2px 8px',
