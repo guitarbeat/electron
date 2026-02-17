@@ -7,6 +7,7 @@ import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
+import './SpinWheel.css';
 
 const COLORS = [
   '#2E3B4E',
@@ -76,7 +77,7 @@ const SpinWheel: React.FC<{
       .join(', ');
 
     return {
-      background: `conic-gradient(${gradientColors})`,
+      backgroundImage: `conic-gradient(${gradientColors})`,
     };
   }, [movies, segmentAngle]);
 
