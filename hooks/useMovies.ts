@@ -24,14 +24,14 @@ export const useMovies = (currentUser: User | null) => {
       if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
         console.log('Gist is empty, seeding initial movies...');
         const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
-          { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Renfield', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Sinister', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Creep', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Easy A', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [] },
-          { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [] },
+          { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          { title: 'Renfield', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          { title: 'Sinister', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          { title: 'Creep', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          { title: 'Easy A', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [], category: 'Humor' },
+          { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
         ];
 
         const moviesToSave: Movie[] = defaultMovies.map((movie) => ({
