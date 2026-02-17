@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { User } from '../types';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import { colors, spacing, typography, zIndex, radius, motion } from '../design-system/tokens';
+import { colors, spacing, typography, zIndex, radius, motion, shadows } from '../design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -14,6 +14,8 @@ interface PinDialogProps {
   onRemove?: () => void;
   isLoading?: boolean;
 }
+
+const PIN_LENGTH = 4;
 
 const PinDialog: React.FC<PinDialogProps> = ({
   isOpen,
@@ -150,14 +152,25 @@ const PinDialog: React.FC<PinDialogProps> = ({
   };
 
   const getTitle = () => {
-    if (mode === 'enter') return `Enter PIN for ${user}`;
-    if (mode === 'set') return `Set PIN for ${user}`;
+    if (mode === 'enter') return `Unlock ${user}'s Profile`;
+    if (mode === 'set') return `Create a PIN for ${user}`;
     if (mode === 'change') {
-      if (step === 'current') return 'Enter Current PIN';
-      if (step === 'new') return 'Enter New PIN';
-      return 'Confirm New PIN';
+      if (step === 'current') return 'Confirm Current PIN';
+      if (step === 'new') return 'Create New PIN';
+      return 'Verify New PIN';
     }
-    return 'PIN';
+    return 'Security PIN';
+  };
+
+  const getSubtitle = () => {
+    if (mode === 'enter') return 'Enter your 4-digit code to continue';
+    if (mode === 'set') return 'Choose a 4-digit code to protect your profile';
+    if (mode === 'change') {
+      if (step === 'current') return 'Please enter your current PIN first';
+      if (step === 'new') return 'Choose your new 4-digit code';
+      return 'Type it once more to confirm';
+    }
+    return 'Secure your account';
   };
 
   const getCurrentValue = () => {
@@ -206,23 +219,104 @@ const PinDialog: React.FC<PinDialogProps> = ({
         `}
       </style>
       <div onClick={(e) => e.stopPropagation()}>
-        <Card variant="elevated" style={{ maxWidth: '350px', width: '100%', padding: spacing.xl }}>
-          <h2
-            id="pin-dialog-title"
-            style={{
-              marginTop: 0,
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-              color: colors.accent,
-              marginBottom: spacing.lg,
-              textAlign: 'center',
-            }}
-          >
-            {getTitle()}
-          </h2>
+        <Card
+          variant="elevated"
+          style={{
+            maxWidth: '400px',
+            width: '100%',
+            padding: spacing.xl,
+            borderRadius: radius.card,
+            border: `1px solid ${colors.border}`,
+            background: `linear-gradient(180deg, ${colors.surface} 0%, #1a1f2e 100%)`,
+          }}
+        >
+          <div style={{ textAlign: 'center', marginBottom: spacing.xl }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                backgroundColor: `${colors.accent}15`,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                border: `1px solid ${colors.accent}30`,
+                fontSize: '24px',
+              }}
+            >
+              {mode === 'enter' ? '🔐' : '🆕'}
+            </div>
+            <h2
+              id="pin-dialog-title"
+              style={{
+                marginTop: 0,
+                fontSize: typography.fontSize['2xl'],
+                fontWeight: typography.fontWeight.bold,
+                color: colors.textPrimary,
+                marginBottom: spacing.xs,
+              }}
+            >
+              {getTitle()}
+            </h2>
+            <p
+              style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                margin: 0,
+              }}
+            >
+              {getSubtitle()}
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: spacing.lg }}>
+            <div style={{ marginBottom: spacing.xl }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: spacing.sm,
+                  justifyContent: 'center',
+                  marginBottom: spacing.md,
+                  animation: isShaking ? 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
+                }}
+              >
+                {Array.from({ length: PIN_LENGTH }).map((_, i) => {
+                  const val = getCurrentValue()[i];
+                  const isActive = getCurrentValue().length === i;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        width: '56px',
+                        height: '64px',
+                        backgroundColor: val ? `${colors.accent}20` : '#162447',
+                        border: `2px solid ${
+                          error
+                            ? colors.error
+                            : isActive
+                              ? colors.accent
+                              : val
+                                ? `${colors.accent}40`
+                                : colors.borderInset
+                        }`,
+                        borderRadius: radius.lg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: typography.fontSize['3xl'],
+                        color: colors.accent,
+                        boxShadow: isActive ? `0 0 15px ${colors.accent}30` : 'none',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {val ? '•' : ''}
+                    </div>
+                  );
+                })}
+              </div>
+
               <input
                 ref={inputRef}
                 type="password"
@@ -231,68 +325,56 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 maxLength={4}
                 value={getCurrentValue()}
                 onChange={(e) => handlePinInput(e.target.value, getCurrentSetter())}
-                placeholder="••••"
                 style={{
-                  width: '100%',
-                  padding: spacing.lg,
-                  backgroundColor: '#162447',
-                  border: `2px solid ${error ? colors.error : colors.borderInset}`,
-                  borderRadius: radius.md,
-                  color: colors.textPrimary,
-                  fontSize: typography.fontSize['2xl'],
-                  fontFamily: typography.fontFamily.mono.join(', '),
-                  textAlign: 'center',
-                  letterSpacing: '0.5em',
-                  outline: 'none',
-                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
-                  transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
-                  animation: isShaking ? 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = colors.accent;
-                  e.currentTarget.style.boxShadow = `inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px ${colors.accent}40`;
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = error ? colors.error : colors.borderInset;
-                  e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.3)';
+                  position: 'absolute',
+                  opacity: 0,
+                  pointerEvents: 'none',
                 }}
                 disabled={isLoading}
                 autoComplete="off"
               />
+
               {error && (
-                <p
+                <div
                   style={{
                     marginTop: spacing.sm,
-                    fontSize: typography.fontSize.sm,
-                    color: colors.error,
-                    textAlign: 'center',
+                    padding: `${spacing.xs} ${spacing.md}`,
+                    backgroundColor: `${colors.error}15`,
+                    borderRadius: radius.md,
+                    border: `1px solid ${colors.error}30`,
                   }}
                 >
-                  {error}
-                </p>
+                  <p
+                    style={{
+                      fontSize: typography.fontSize.sm,
+                      color: colors.error,
+                      textAlign: 'center',
+                      margin: 0,
+                    }}
+                  >
+                    {error}
+                  </p>
+                </div>
               )}
-              <p
-                style={{
-                  marginTop: spacing.sm,
-                  fontSize: typography.fontSize.xs,
-                  color: colors.textSecondary,
-                  textAlign: 'center',
-                }}
-              >
-                Enter a 4-digit PIN
-              </p>
             </div>
 
             <div style={{ display: 'flex', gap: spacing.md, flexDirection: 'column' }}>
               <Button
                 type="submit"
                 variant="primary"
-                size="md"
+                size="lg"
                 isLoading={isLoading}
                 disabled={getCurrentValue().length !== 4}
-                style={{ width: '100%' }}
+                style={{
+                  width: '100%',
+                  height: '56px',
+                  fontSize: typography.fontSize.lg,
+                  borderRadius: radius.lg,
+                  boxShadow:
+                    getCurrentValue().length === 4 && !isLoading ? shadows.glow : 'none',
+                }}
               >
-                {mode === 'enter' ? 'Unlock' : step === 'confirm' ? 'Set PIN' : 'Next'}
+                {mode === 'enter' ? 'Unlock Profile' : step === 'confirm' ? 'Save PIN' : 'Continue'}
               </Button>
 
               <div style={{ display: 'flex', gap: spacing.sm }}>
@@ -302,9 +384,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   size="md"
                   onClick={onCancel}
                   disabled={isLoading}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, color: colors.textSecondary }}
                 >
-                  Cancel
+                  Go Back
                 </Button>
                 {mode === 'change' && onRemove && step === 'current' && (
                   <Button
