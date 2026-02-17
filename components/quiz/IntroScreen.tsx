@@ -21,12 +21,10 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
       <Card
         variant="elevated"
         style={{
-          background: colors.gradientCard,
+          backgroundImage: `${colors.gradientCard}, linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 50%, transparent 100%)`,
           border: `2px solid ${colors.border}`,
           boxShadow: shadows.cardElevated,
           backdropFilter: 'blur(8px)',
-          backgroundImage:
-            'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',
         }}
       >
         <div style={{ padding: spacing['2xl'] }}>
@@ -45,14 +43,14 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
             style={{
               fontSize: typography.fontSize['3xl'],
               fontWeight: typography.fontWeight.bold,
-              color: colors.accent,
-              background: shadows.textGradientPink,
+              backgroundImage: shadows.textGradientPink,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               marginBottom: spacing.lg,
               marginTop: 0,
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
+              color: 'transparent',
+              textShadow: 'none',
               letterSpacing: '0.02em',
               filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
             }}

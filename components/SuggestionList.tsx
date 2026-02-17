@@ -142,11 +142,11 @@ const SuggestionList: React.FC<SuggestionListProps> = ({ currentUser, onMovieAdd
             style={{
               fontSize: typography.fontSize.xl,
               fontWeight: typography.fontWeight.semibold,
-              color: colors.secondary,
-              background: shadows.textGradientBlue,
+              backgroundImage: shadows.textGradientBlue,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
+              color: 'transparent',
               margin: 0,
               filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
             }}
