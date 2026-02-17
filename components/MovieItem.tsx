@@ -72,7 +72,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
         style={{
           padding: 0,
           opacity: 1,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           marginBottom: layout === 'grid' ? spacing.sm : spacing.md,
           borderWidth: watchedByBoth ? (layout === 'grid' ? '2px' : '3px') : '1px',
           borderColor: watchedByBoth ? colors.accent : colors.border,
@@ -82,9 +82,22 @@ const MovieItem: React.FC<MovieItemProps> = ({
           display: 'flex',
           flexDirection: layout === 'grid' ? 'column' : 'row',
           minHeight: layout === 'grid' ? 'auto' : '160px',
-          boxShadow: layout === 'grid' ? '0 4px 12px rgba(0,0,0,0.5)' : shadows.card,
+          boxShadow: layout === 'grid' ? shadows.card : shadows.card,
           backgroundColor: colors.surfaceElevated,
           cursor: isMobile && layout === 'grid' ? 'pointer' : 'default',
+          transform: 'translateZ(0)',
+        }}
+        onMouseEnter={(e) => {
+          if (!isMobile) {
+            e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+            e.currentTarget.style.boxShadow = shadows.glow;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isMobile) {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = shadows.card;
+          }
         }}
       >
         {/* Poster Image or Text Fallback */}

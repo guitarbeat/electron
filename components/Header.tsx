@@ -147,23 +147,31 @@ const Header: React.FC<HeaderProps> = ({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: spacing.xs,
-                    marginTop: spacing.xs,
-                    padding: `2px ${spacing.sm}`,
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    color: colors.textTertiary,
+                    gap: spacing.sm,
+                    marginTop: spacing.sm,
+                    padding: `4px ${spacing.md}`,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    color: colors.textSecondary,
                     width: 'fit-content',
-                    margin: isMobile ? '4px auto 0' : '4px 0 0',
+                    margin: isMobile ? '8px auto 0' : '8px 0 0',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                   }}
                 >
-                  <span>🎬 {movieCount} movies</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '14px' }}>🎬</span>
+                    <strong style={{ color: colors.textPrimary }}>{movieCount}</strong>
+                    <span style={{ opacity: 0.7 }}>movies</span>
+                  </span>
                   {watchedTogetherCount > 0 && (
                     <>
-                      <span style={{ opacity: 0.5 }}>•</span>
-                      <span style={{ color: colors.accent }}>
-                        💕 {watchedTogetherCount} watched together
+                      <span style={{ opacity: 0.3, fontSize: '14px' }}>|</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '14px' }}>💕</span>
+                        <strong style={{ color: colors.accent }}>{watchedTogetherCount}</strong>
+                        <span style={{ opacity: 0.7 }}>watched together</span>
                       </span>
                     </>
                   )}

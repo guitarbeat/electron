@@ -47,4 +47,5 @@ pnpm run dev
 
 - 2026-02-17: Improved Spin Wheel feature with movie posters shown during rotation and added category-based spinning.
 - 2026-02-17: Redesigned the PIN Dialog/Login experience to be more intuitive with a modern digit-box entry system.
+- 2026-02-17: Enhanced UI/UX across the app, including improved header stats, movie card hover effects, and smoother transitions.
 - 2026-01-26: Initial Replit setup - configured Vite for port 5000 with allowedHosts
