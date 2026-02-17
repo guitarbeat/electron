@@ -1,18 +1,9 @@
 import React, { memo, useState } from 'react';
 import { Movie, User } from '../types';
-import {
-  TrashIcon,
-  EyeIcon,
-  EyeOffIcon,
-  TicketIcon,
-  MagicWandIcon,
-  Spinner,
-  FilmIcon,
-} from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
-import FixMatchDialog from './FixMatchDialog';
 import BottomSheet from './ui/BottomSheet';
 import WatcherBadge from './WatcherBadge';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
@@ -21,7 +12,7 @@ import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 interface MovieItemProps {
   movie: Movie;
   currentUser: User | null;
-  onToggle: (movie: Movie) => void;
+  onToggle: (movie: Movie) => void | Promise<void>;
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
   animationDelay: string;
@@ -62,6 +53,19 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const handleAction = (action: () => void) => {
     action();
     setIsBottomSheetOpen(false);
+  };
+
+  const handleToggle = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (isGuest) return;
+
+    setIsUpdating(true);
+    try {
+      await onToggle(movie);
+    } finally {
+      setIsUpdating(false);
+      setIsBottomSheetOpen(false);
+    }
   };
 
   return (
@@ -269,12 +273,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 >
                   <Button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggle(movie);
-                    }}
+                    onClick={handleToggle}
                     variant={watchedByCurrentUser ? 'primary' : 'secondary'}
                     size="sm"
+                    isLoading={isUpdating}
+                    loadingText="Updating..."
                     disabled={isGuest}
                     aria-label={
                       watchedByCurrentUser
@@ -532,9 +535,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                 <IconButton
                   type="button"
-                  onClick={() => onToggle(movie)}
+                  onClick={handleToggle}
                   variant="ghost"
-                  disabled={isGuest}
+                  disabled={isGuest || isUpdating}
                   title={watchedByCurrentUser ? 'Mark as unwatched' : 'Mark as watched'}
                   aria-label={
                     watchedByCurrentUser
@@ -638,10 +641,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
               )}
               <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
                 {movie.watchedBy.includes('Aaron') && (
-                  <WatcherBadge user="Aaron" variant="text" showLabel={true} />
+                  <WatcherBadge user="Aaron" variant="text" showLabel />
                 )}
                 {movie.watchedBy.includes('Electra') && (
-                  <WatcherBadge user="Electra" variant="text" showLabel={true} />
+                  <WatcherBadge user="Electra" variant="text" showLabel />
                 )}
               </div>
             </div>
@@ -650,8 +653,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
           {/* Action Buttons */}
           <Button
             type="button"
-            onClick={() => handleAction(() => onToggle(movie))}
+            onClick={() => handleToggle()}
             variant={watchedByCurrentUser ? 'primary' : 'secondary'}
+            isLoading={isUpdating}
+            loadingText="Updating..."
             disabled={isGuest}
             style={{
               width: '100%',
