@@ -35,6 +35,10 @@ const MessageBoard: React.FC = () => {
 
   const unreadCount = Math.max(0, (messages?.length || 0) - lastViewedCount);
 
+  if (!currentUser) {
+    return null;
+  }
+
   if (isMinimized) {
     return (
       <button

@@ -269,7 +269,7 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
-        {!showIntro && !showQuiz && currentUser && <MessageBoard />}
+        {!showIntro && !showQuiz && <MessageBoard />}
       </main>
     </div>
   );
