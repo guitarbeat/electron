@@ -1,11 +1,6 @@
 import React from 'react';
 import { MainTab } from '../../types';
-import {
-  FilmIcon,
-  SparkleHeartIcon,
-  MessageIcon,
-  TicketIcon,
-} from '../icons';
+import { FilmIcon, MessageIcon, TicketIcon } from '../icons';
 import { colors, spacing, typography, radius, layout } from '../../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 
@@ -22,11 +17,6 @@ interface TabConfig {
 
 const TAB_CONFIG: TabConfig[] = [
   { id: 'queue', label: 'Queue', icon: <FilmIcon style={{ width: '18px', height: '18px' }} /> },
-  {
-    id: 'memories',
-    label: 'Memories',
-    icon: <SparkleHeartIcon style={{ width: '18px', height: '18px' }} />,
-  },
   {
     id: 'messages',
     label: 'Messages',
@@ -62,7 +52,7 @@ const MainTabNav: React.FC<MainTabNavProps> = ({ activeTab, onTabChange }) => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
             minHeight: layout.tabBarHeight,
           }}
         >
@@ -88,7 +78,9 @@ const MainTabNav: React.FC<MainTabNavProps> = ({ activeTab, onTabChange }) => {
                   gap: '4px',
                   cursor: 'pointer',
                   fontSize: '11px',
-                  fontWeight: isActive ? typography.fontWeight.semibold : typography.fontWeight.medium,
+                  fontWeight: isActive
+                    ? typography.fontWeight.semibold
+                    : typography.fontWeight.medium,
                   letterSpacing: '0.03em',
                 }}
               >
@@ -119,7 +111,7 @@ const MainTabNav: React.FC<MainTabNavProps> = ({ activeTab, onTabChange }) => {
           borderRadius: radius.full,
           padding: '6px',
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: spacing.xs,
           minHeight: layout.desktopNavHeight,
         }}

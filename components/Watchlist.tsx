@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from '
 import FixMatchDialog from './FixMatchDialog';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
+import { useMemories } from '../hooks/useMemories';
 import { useSuggestions } from '../hooks/useSuggestions';
 import { Movie, MovieSuggestion } from '../types';
 import { PlusIcon, DiceIcon, FilmIcon, LockIcon, LayoutGridIcon, LayoutListIcon } from './icons';
@@ -25,27 +26,23 @@ import {
 } from '../hooks/useGuestProfile';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from './memories/memoryUtils';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
 
-interface WatchlistProps {
-  surface: 'queue' | 'memories';
-}
-
 const getGuestInitials = (name: string): string => {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (!parts.length) return '';
-  return parts.map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2);
+  return parts
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('')
+    .slice(0, 2);
 };
 
-const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
+const Watchlist: React.FC = () => {
   const { currentUser } = useUser();
   const { guestName, hasGuestName, setGuestName, clearGuestName } = useGuestProfile();
   const isMobile = useMediaQuery(breakpoints.sm);
@@ -66,6 +63,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
     rejectSuggestion,
     isLoading: isSuggestionsLoading,
   } = useSuggestions();
+  const { memories, addMemory, isLoading: isMemoriesLoading, error: memoriesError } = useMemories();
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -87,8 +85,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
   const [isGuestBubbleOpen, setIsGuestBubbleOpen] = useState(() => !guestName);
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [activeMemoryFilter, setActiveMemoryFilter] = useState(ALL_MOVIES_FILTER);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const memorySectionRef = useRef<HTMLDivElement | null>(null);
   const guestInitials = getGuestInitials(guestName);
   const guestMotionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
@@ -110,8 +110,17 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
   const isSpinLocked = !currentUser;
   const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
   const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
-  const isQueueSurface = surface === 'queue';
   const normalizedSearch = searchQuery.trim().toLowerCase();
+  const movieMemorySummaries = useMemo(
+    () => buildMovieMemorySummaries(movies || [], memories),
+    [movies, memories]
+  );
+  const memoryErrorMessage =
+    memoriesError instanceof Error
+      ? memoriesError.message
+      : memoriesError
+        ? String(memoriesError)
+        : null;
   const sortedMovies = useMemo(() => {
     if (!movies) return [];
     const next = [...movies];
@@ -154,7 +163,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
         .includes(normalizedSearch);
     });
   }, [pendingSuggestions, contentTab, normalizedSearch]);
-
 
   useEffect(() => {
     if (!isGuestBubbleOpen) {
@@ -348,6 +356,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
     setMovieToFix(movie);
   }, []);
 
+  const handleJumpToMovieMemories = useCallback((movie: Movie) => {
+    setActiveMemoryFilter(movie.id);
+    requestAnimationFrame(() => {
+      memorySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, []);
+
   const confirmDelete = async () => {
     if (movieToDelete) {
       try {
@@ -446,7 +461,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
       {showConfetti && <Confetti isActive={showConfetti} />}
       <div
         style={{
-          maxWidth: isQueueSurface ? (viewMode === 'grid' ? '1200px' : '44rem') : '960px',
+          maxWidth: viewMode === 'grid' ? '1200px' : '44rem',
           margin: '0 auto',
           padding: `${spacing.lg} ${spacing.md}`,
           transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -481,12 +496,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
           </div>
         )}
 
-        {isQueueSurface && (
-          <>
-            <Card
-              variant="elevated"
-              style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
-            >
+        <Card
+          variant="elevated"
+          style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
+        >
           <form onSubmit={handleAddMovie}>
             <div
               style={{
@@ -604,7 +617,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
                       style={{
                         borderRadius: radius.full,
                         border: `1px solid ${
-                          isGuestSaveConfirmed ? '#ffd899aa' : hasGuestName ? '#9bd8ff88' : '#ffd29a88'
+                          isGuestSaveConfirmed
+                            ? '#ffd899aa'
+                            : hasGuestName
+                              ? '#9bd8ff88'
+                              : '#ffd29a88'
                         }`,
                         padding: '2px 8px',
                         fontSize: '0.62rem',
@@ -784,29 +801,29 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
                 {currentUser ? 'Add to Watchlist' : 'Submit Suggestion'}
               </Button>
             </div>
-            </form>
-          </Card>
+          </form>
+        </Card>
 
-          {/* Combined Spin Wheel Header/Card */}
-          <Card
-            variant="elevated"
-            className={currentUser && !canSpin ? 'neon-pulse' : undefined}
-            style={{
-              marginBottom: spacing.xl,
-              padding: isMobile ? spacing.md : spacing.lg,
-              border: `1px solid ${canSpin ? colors.secondary : colors.borderSecondary}55`,
-              background: isSpinLocked
-                ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
-                : canSpin
-                  ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
-                  : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
-              boxShadow: isSpinLocked
-                ? shadows.card
-                : canSpin
-                  ? shadows.glowBlue
-                  : shadows.glowStrong,
-            }}
-          >
+        {/* Combined Spin Wheel Header/Card */}
+        <Card
+          variant="elevated"
+          className={currentUser && !canSpin ? 'neon-pulse' : undefined}
+          style={{
+            marginBottom: spacing.xl,
+            padding: isMobile ? spacing.md : spacing.lg,
+            border: `1px solid ${canSpin ? colors.secondary : colors.borderSecondary}55`,
+            background: isSpinLocked
+              ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
+              : canSpin
+                ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
+                : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
+            boxShadow: isSpinLocked
+              ? shadows.card
+              : canSpin
+                ? shadows.glowBlue
+                : shadows.glowStrong,
+          }}
+        >
           <div
             style={{
               display: 'flex',
@@ -953,6 +970,24 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
         </Card>
 
         <div
+          ref={memorySectionRef}
+          style={{
+            scrollMarginTop: isMobile ? '88px' : '110px',
+          }}
+        >
+          <MemoryWall
+            watchedMovies={watchedMovies}
+            currentUser={currentUser}
+            memories={memories}
+            isLoading={isMemoriesLoading}
+            memoriesError={memoryErrorMessage}
+            addMemory={addMemory}
+            activeMovieFilter={activeMemoryFilter}
+            onActiveMovieFilterChange={setActiveMemoryFilter}
+          />
+        </div>
+
+        <div
           style={{
             opacity: isSubmitting ? 0.5 : 1,
             pointerEvents: isSubmitting ? 'none' : 'auto',
@@ -971,18 +1006,25 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
                 />
               ))}
 
-              {filteredMovies.map((movie) => (
-                <MovieItem
-                  key={movie.id}
-                  movie={movie}
-                  currentUser={currentUser}
-                  onToggle={handleToggleWatched}
-                  onDelete={handleDeleteMovie}
-                  onFixMatch={handleFixMatch}
-                  animationDelay="0s"
-                  layout="grid"
-                />
-              ))}
+              {filteredMovies.map((movie) => {
+                const memorySummary = movieMemorySummaries.get(movie.id);
+                return (
+                  <MovieItem
+                    key={movie.id}
+                    movie={movie}
+                    currentUser={currentUser}
+                    onToggle={handleToggleWatched}
+                    onDelete={handleDeleteMovie}
+                    onFixMatch={handleFixMatch}
+                    onMemoryClick={handleJumpToMovieMemories}
+                    animationDelay="0s"
+                    layout="grid"
+                    memoryCount={memorySummary?.count}
+                    memoryPreview={memorySummary?.latest?.note}
+                    memoryAuthor={memorySummary?.latest?.author}
+                  />
+                );
+              })}
             </MasonryGrid>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
@@ -997,18 +1039,25 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
                   />
                 ))}
 
-              {filteredMovies.map((movie, index) => (
-                <MovieItem
-                  key={movie.id}
-                  movie={movie}
-                  currentUser={currentUser}
-                  onToggle={handleToggleWatched}
-                  onDelete={handleDeleteMovie}
-                  onFixMatch={handleFixMatch}
-                  animationDelay={`${index * 0.05}s`}
-                  layout="list"
-                />
-              ))}
+              {filteredMovies.map((movie, index) => {
+                const memorySummary = movieMemorySummaries.get(movie.id);
+                return (
+                  <MovieItem
+                    key={movie.id}
+                    movie={movie}
+                    currentUser={currentUser}
+                    onToggle={handleToggleWatched}
+                    onDelete={handleDeleteMovie}
+                    onFixMatch={handleFixMatch}
+                    onMemoryClick={handleJumpToMovieMemories}
+                    animationDelay={`${index * 0.05}s`}
+                    layout="list"
+                    memoryCount={memorySummary?.count}
+                    memoryPreview={memorySummary?.latest?.note}
+                    memoryAuthor={memorySummary?.latest?.author}
+                  />
+                );
+              })}
             </div>
           )}
 
@@ -1035,52 +1084,42 @@ const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
               </div>
             )}
         </div>
-      </>
-    )}
-
-        {surface === 'memories' && (
-          <MemoryWall watchedMovies={watchedMovies} currentUser={currentUser} />
-        )}
       </div>
 
-      {isQueueSurface && (
-        <>
-          <ConfirmDialog
-            isOpen={!!movieToDelete}
-            title="Delete Movie"
-            message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
-            onConfirm={confirmDelete}
-            onCancel={() => setMovieToDelete(null)}
-          />
+      <ConfirmDialog
+        isOpen={!!movieToDelete}
+        title="Delete Movie"
+        message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setMovieToDelete(null)}
+      />
 
-          {isWheelVisible && (
-            <SpinWheel
-              isOpen={isWheelVisible}
-              onClose={() => setIsWheelVisible(false)}
-              movies={unwatchedMovies}
-              onWinner={(movie) => {
-                setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
-              }}
-            />
-          )}
-
-          <FixMatchDialog
-            isOpen={!!movieToFix}
-            movieTitle={movieToFix?.title || ''}
-            onClose={() => setMovieToFix(null)}
-            onSelect={async (metadata) => {
-              if (!movieToFix) return;
-              setToast({ message: `Updating details for "${movieToFix.title}"...`, type: 'info' });
-              const success = await manualMetadataUpdate(movieToFix, metadata);
-              if (success) {
-                setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
-              } else {
-                setToast({ message: `Failed to update metadata.`, type: 'error' });
-              }
-            }}
-          />
-        </>
+      {isWheelVisible && (
+        <SpinWheel
+          isOpen={isWheelVisible}
+          onClose={() => setIsWheelVisible(false)}
+          movies={unwatchedMovies}
+          onWinner={(movie) => {
+            setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
+          }}
+        />
       )}
+
+      <FixMatchDialog
+        isOpen={!!movieToFix}
+        movieTitle={movieToFix?.title || ''}
+        onClose={() => setMovieToFix(null)}
+        onSelect={async (metadata) => {
+          if (!movieToFix) return;
+          setToast({ message: `Updating details for "${movieToFix.title}"...`, type: 'info' });
+          const success = await manualMetadataUpdate(movieToFix, metadata);
+          if (success) {
+            setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
+          } else {
+            setToast({ message: 'Failed to update metadata.', type: 'error' });
+          }
+        }}
+      />
     </div>
   );
 };
