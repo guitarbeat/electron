@@ -1,18 +1,9 @@
 import React, { memo, useState } from 'react';
 import { Movie, User } from '../types';
-import {
-  TrashIcon,
-  EyeIcon,
-  EyeOffIcon,
-  TicketIcon,
-  MagicWandIcon,
-  Spinner,
-  FilmIcon,
-} from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
-import FixMatchDialog from './FixMatchDialog';
 import BottomSheet from './ui/BottomSheet';
 import WatcherBadge from './WatcherBadge';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
@@ -26,6 +17,9 @@ interface MovieItemProps {
   onFixMatch?: (movie: Movie) => void;
   animationDelay: string;
   layout?: 'list' | 'grid';
+  memoryCount?: number;
+  memoryPreview?: string;
+  memoryAuthor?: string;
 }
 
 const getWatchedStatus = (movie: Movie) => {
@@ -45,13 +39,17 @@ const MovieItem: React.FC<MovieItemProps> = ({
   onFixMatch,
   animationDelay,
   layout = 'list',
+  memoryCount,
+  memoryPreview,
+  memoryAuthor,
 }) => {
   const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
-  const [isUpdating, setIsUpdating] = React.useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
+  const hasSharedMemories = Boolean(memoryCount && memoryCount > 0);
+  const memorySnippet = memoryPreview?.trim();
 
   const handleCardClick = () => {
     if (isMobile && layout === 'grid') {
@@ -219,6 +217,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 >
                   {movie.title}
                 </h3>
+              )}
+
+              {hasSharedMemories && (
+                <div
+                  style={{
+                    alignSelf: 'flex-start',
+                    marginBottom: spacing.xs,
+                    padding: '2px 8px',
+                    borderRadius: radius.full,
+                    border: '1px solid rgba(255, 248, 210, 0.55)',
+                    backgroundColor: 'rgba(58, 41, 17, 0.55)',
+                    color: '#fff4d6',
+                    fontSize: '0.65rem',
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
+                </div>
               )}
 
               <div
@@ -434,6 +452,49 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   {movie.plot}
                 </p>
               )}
+
+              {hasSharedMemories && (
+                <div
+                  style={{
+                    marginBottom: spacing.md,
+                    padding: `${spacing.xs} ${spacing.sm}`,
+                    borderRadius: radius.md,
+                    border: '1px solid rgba(255, 223, 167, 0.35)',
+                    background:
+                      'linear-gradient(145deg, rgba(64, 41, 18, 0.45) 0%, rgba(34, 24, 14, 0.55) 100%)',
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      color: '#ffe9c0',
+                      fontSize: typography.fontSize.xs,
+                      fontFamily:
+                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                      letterSpacing: '0.03em',
+                    }}
+                  >
+                    {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
+                    {memoryAuthor ? ` by ${memoryAuthor}` : ''}
+                  </p>
+                  {memorySnippet && (
+                    <p
+                      style={{
+                        margin: `${spacing.xs} 0 0`,
+                        color: colors.textSecondary,
+                        fontSize: typography.fontSize.xs,
+                        lineHeight: typography.lineHeight.normal,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      "{memorySnippet}"
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div
@@ -578,6 +639,25 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   <WatcherBadge user="Electra" variant="text" showLabel />
                 )}
               </div>
+              {hasSharedMemories && (
+                <div
+                  style={{
+                    marginTop: spacing.sm,
+                    padding: `${spacing.xs} ${spacing.sm}`,
+                    borderRadius: radius.sm,
+                    border: `1px solid ${colors.borderSecondary}40`,
+                    color: '#ffe9c0',
+                    fontSize: typography.fontSize.xs,
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                  }}
+                >
+                  {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
+                  {memorySnippet
+                    ? `: "${memorySnippet.slice(0, 60)}${memorySnippet.length > 60 ? '...' : ''}"`
+                    : ''}
+                </div>
+              )}
             </div>
           </div>
 
