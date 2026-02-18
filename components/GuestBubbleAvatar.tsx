@@ -106,10 +106,19 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
             fontWeight: 700,
             letterSpacing: '0.04em',
             fontFamily: typography.fontFamily.heading.join(', '),
+            overflow: 'hidden',
           }}
         >
-          {initials ? (
-            initials
+          {guestName ? (
+            <img
+              src={`https://cataas.com/cat?width=200&height=200&ts=${Date.now()}`}
+              alt="Guest Cat"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
           ) : (
             <PlusIcon
               style={{
