@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from './ui/Card';
-import { spacing, colors } from '../design-system/tokens';
+import { spacing, colors, typography } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 import { User } from '../types';
@@ -14,6 +14,8 @@ interface HeaderProps {
   onPinAction: () => void;
   onRemovePin: () => void;
   hasPin: boolean;
+  movieCount: number;
+  watchedTogetherCount: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -22,6 +24,8 @@ const Header: React.FC<HeaderProps> = ({
   onPinAction,
   onRemovePin,
   hasPin,
+  movieCount,
+  watchedTogetherCount,
 }) => {
   const isMobile = useMediaQuery(breakpoints.sm);
 
@@ -36,70 +40,108 @@ const Header: React.FC<HeaderProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             gap: spacing.md,
             padding: isMobile ? spacing.sm : `${spacing.sm} ${spacing.md}`,
           }}
           className="header-content"
         >
-          <div style={{ display: 'flex', gap: spacing.sm }}>
-            <IconButton
-              onClick={onPinAction}
-              variant="ghost"
-              size="sm"
-              title={hasPin ? 'Change PIN' : 'Set PIN'}
-              aria-label={hasPin ? 'Change PIN' : 'Set PIN'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+            <div
               style={{
-                color: hasPin ? colors.success : colors.textPrimary,
-                borderColor: hasPin ? `${colors.success}60` : 'rgba(255,255,255,0.2)',
-                border: '1px solid',
-                backgroundColor: 'rgba(0,0,0,0.2)',
+                width: isMobile ? '32px' : '40px',
+                height: isMobile ? '32px' : '40px',
+                borderRadius: '50%',
+                backgroundColor: currentUser === 'Aaron' ? colors.secondary : colors.accent,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: isMobile ? '14px' : '18px',
+                boxShadow: `0 0 15px ${currentUser === 'Aaron' ? colors.secondary : colors.accent}40`,
               }}
             >
-              <LockIcon />
-            </IconButton>
-            {hasPin && (
+              {currentUser[0]}
+            </div>
+            {!isMobile && (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span
+                  style={{
+                    fontSize: typography.fontSize.sm,
+                    fontWeight: typography.fontWeight.bold,
+                    color: colors.textPrimary,
+                  }}
+                >
+                  {currentUser}
+                </span>
+                <span style={{ fontSize: '10px', color: colors.textSecondary }}>
+                  {movieCount} movies • {watchedTogetherCount} watched
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+            <div style={{ display: 'flex', gap: spacing.sm }}>
               <IconButton
-                onClick={onRemovePin}
+                onClick={onPinAction}
                 variant="ghost"
                 size="sm"
-                title="Remove PIN"
-                aria-label="Remove PIN"
+                title={hasPin ? 'Change PIN' : 'Set PIN'}
+                aria-label={hasPin ? 'Change PIN' : 'Set PIN'}
                 style={{
-                  color: colors.error,
-                  borderColor: `${colors.error}60`,
+                  color: hasPin ? colors.success : colors.textPrimary,
+                  borderColor: hasPin ? `${colors.success}60` : 'rgba(255,255,255,0.2)',
                   border: '1px solid',
                   backgroundColor: 'rgba(0,0,0,0.2)',
                 }}
               >
-                <TrashIcon />
+                <LockIcon />
               </IconButton>
-            )}
-          </div>
+              {hasPin && (
+                <IconButton
+                  onClick={onRemovePin}
+                  variant="ghost"
+                  size="sm"
+                  title="Remove PIN"
+                  aria-label="Remove PIN"
+                  style={{
+                    color: colors.error,
+                    borderColor: `${colors.error}60`,
+                    border: '1px solid',
+                    backgroundColor: 'rgba(0,0,0,0.2)',
+                  }}
+                >
+                  <TrashIcon />
+                </IconButton>
+              )}
+            </div>
 
-          <Button
-            onClick={onLogout}
-            variant="secondary"
-            size="sm"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.xs,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-              color: colors.textPrimary,
-              padding: isMobile ? '6px 12px' : undefined,
-              fontSize: isMobile ? '12px' : undefined,
-            }}
-          >
-            <LogoutIcon
+            <Button
+              onClick={onLogout}
+              variant="secondary"
+              size="sm"
               style={{
-                width: isMobile ? '1rem' : '1.25rem',
-                height: isMobile ? '1rem' : '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                color: colors.textPrimary,
+                padding: isMobile ? '6px 12px' : undefined,
+                fontSize: isMobile ? '12px' : undefined,
               }}
-            />
-            {isMobile ? 'Exit' : 'Logout'}
-          </Button>
+            >
+              <LogoutIcon
+                style={{
+                  width: isMobile ? '1rem' : '1.25rem',
+                  height: isMobile ? '1rem' : '1.5rem',
+                }}
+              />
+              {isMobile ? 'Exit' : 'Logout'}
+            </Button>
+          </div>
         </div>
       </Card>
     </div>
