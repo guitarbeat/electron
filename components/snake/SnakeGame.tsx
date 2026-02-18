@@ -26,6 +26,10 @@ interface SnakeLeaderboardEntry {
   createdAt: string;
 }
 
+interface SnakeGameProps {
+  mode?: 'floating' | 'embedded';
+}
+
 const loadLeaderboard = (): SnakeLeaderboardEntry[] => {
   if (typeof window === 'undefined') {
     return [];
@@ -90,15 +94,23 @@ const KEY_TO_DIRECTION: Record<string, Direction> = {
   D: 'right',
 };
 
-const SnakeGame: React.FC = () => {
+const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
+  const isEmbedded = mode === 'embedded';
   const [gameState, setGameState] = useState<SnakeGameState>(() =>
     createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT })
   );
-  const [isMinimized, setIsMinimized] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
+  const isGameVisible = isEmbedded || !isMinimized;
+
+  useEffect(() => {
+    if (isEmbedded) {
+      setIsMinimized(false);
+    }
+  }, [isEmbedded]);
 
   const restartGame = useCallback(() => {
     setGameState(createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT }));
@@ -122,7 +134,7 @@ const SnakeGame: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isMinimized) {
+    if (!isGameVisible) {
       return undefined;
     }
 
@@ -137,10 +149,10 @@ const SnakeGame: React.FC = () => {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [gameState.status, isMinimized]);
+  }, [gameState.status, isGameVisible]);
 
   useEffect(() => {
-    if (isMinimized) {
+    if (!isGameVisible) {
       return undefined;
     }
 
@@ -167,7 +179,7 @@ const SnakeGame: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDirection, isMinimized, restartGame, togglePause]);
+  }, [handleDirection, isGameVisible, restartGame, togglePause]);
 
   useEffect(() => {
     if (gameState.status !== 'game-over') {
@@ -214,10 +226,12 @@ const SnakeGame: React.FC = () => {
   }
 
   const handleOpen = () => {
+    if (isEmbedded) return;
     setIsMinimized(false);
   };
 
   const handleMinimize = () => {
+    if (isEmbedded) return;
     setIsMinimized(true);
     setGameState((previousState) => {
       if (previousState.status === 'running') {
@@ -254,7 +268,7 @@ const SnakeGame: React.FC = () => {
     saveLeaderboard([]);
   };
 
-  if (isMinimized) {
+  if (!isEmbedded && isMinimized) {
     return (
       <button
         type="button"
