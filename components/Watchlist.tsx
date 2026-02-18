@@ -17,13 +17,7 @@ import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
 import MemoryWall from './MemoryWall';
-import GuestBubbleNameEditor from './GuestBubbleNameEditor';
-import {
-  useGuestProfile,
-  MAX_GUEST_NAME_LENGTH,
-  normalizeGuestName,
-  isReservedProfileName,
-} from '../hooks/useGuestProfile';
+import { useGuestProfile, isReservedProfileName } from '../hooks/useGuestProfile';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from './memories/memoryUtils';
@@ -33,19 +27,9 @@ type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
 const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 
-const getGuestInitials = (name: string): string => {
-  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
-
-  if (!parts.length) return '';
-  return parts
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('')
-    .slice(0, 2);
-};
-
 const Watchlist: React.FC = () => {
   const { currentUser } = useUser();
-  const { guestName, hasGuestName, setGuestName, clearGuestName } = useGuestProfile();
+  const { guestName, hasGuestName } = useGuestProfile();
   const isMobile = useMediaQuery(breakpoints.sm);
   const {
     movies,
@@ -88,10 +72,6 @@ const Watchlist: React.FC = () => {
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
-  const [guestNameDraft, setGuestNameDraft] = useState(guestName);
-  const [guestError, setGuestError] = useState<string | null>(null);
-  const [isGuestSaveConfirmed, setIsGuestSaveConfirmed] = useState(false);
-  const [isGuestBubbleOpen, setIsGuestBubbleOpen] = useState(() => !guestName);
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [activeMemoryFilter, setActiveMemoryFilter] = useState(ALL_MOVIES_FILTER);
@@ -102,8 +82,6 @@ const Watchlist: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const memorySectionRef = useRef<HTMLDivElement | null>(null);
   const movieResultsRef = useRef<HTMLDivElement | null>(null);
-  const guestInitials = getGuestInitials(guestName);
-  const guestMotionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
   const showGuestWarning = useCallback(() => {
     setToast({
@@ -192,30 +170,6 @@ const Watchlist: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!isGuestBubbleOpen) {
-      setGuestNameDraft(guestName);
-      setGuestError(null);
-    }
-  }, [guestName, isGuestBubbleOpen]);
-
-  useEffect(() => {
-    if (!isGuestSaveConfirmed) return;
-    const timer = setTimeout(() => setIsGuestSaveConfirmed(false), 1500);
-    return () => clearTimeout(timer);
-  }, [isGuestSaveConfirmed]);
-
-  useEffect(() => {
-    if (currentUser) {
-      setIsGuestBubbleOpen(false);
-      return;
-    }
-
-    if (!hasGuestName) {
-      setIsGuestBubbleOpen(true);
-    }
-  }, [currentUser, hasGuestName]);
-
-  useEffect(() => {
     setIsMemoryWallCollapsed(isMobile);
   }, [isMobile]);
 
@@ -296,36 +250,6 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  const handleSaveGuestBubble = () => {
-    const normalizedName = normalizeGuestName(guestNameDraft);
-
-    if (!normalizedName) {
-      setGuestError('Add a guest name to continue.');
-      return;
-    }
-
-    if (isReservedProfileName(normalizedName)) {
-      setGuestError('Use Aaron or Electra bubbles for those names.');
-      return;
-    }
-
-    setGuestName(normalizedName);
-    setGuestNameDraft(normalizedName);
-    setGuestError(null);
-    setIsGuestSaveConfirmed(true);
-    setIsGuestBubbleOpen(false);
-    setToast({ message: `Guest bubble saved as "${normalizedName}"`, type: 'success' });
-  };
-
-  const handleResetGuestBubble = () => {
-    clearGuestName();
-    setGuestNameDraft('');
-    setGuestError(null);
-    setIsGuestSaveConfirmed(false);
-    setIsGuestBubbleOpen(true);
-    setToast({ message: 'Guest bubble removed.', type: 'info' });
-  };
-
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
     const title = newMovieTitle.trim();
@@ -336,8 +260,7 @@ const Watchlist: React.FC = () => {
     }
 
     if (!currentUser && !guestAuthor) {
-      setToast({ message: 'Create your guest bubble before suggesting a movie.', type: 'info' });
-      setIsGuestBubbleOpen(true);
+      setToast({ message: 'Use the Guest bubble above in Who’s watching first.', type: 'info' });
       return;
     }
 
@@ -643,117 +566,11 @@ const Watchlist: React.FC = () => {
                 >
                   {currentUser
                     ? 'Quick add with one clear field.'
-                    : 'Create a guest bubble once, then suggest in one tap.'}
+                    : 'Choose the Guest bubble in the profile row above, then suggest in one tap.'}
                 </p>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
-                {!currentUser && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGuestError(null);
-                      setGuestNameDraft(guestName);
-                      setIsGuestBubbleOpen((isOpen) => !isOpen || !hasGuestName);
-                    }}
-                    onMouseEnter={(event) => {
-                      event.currentTarget.style.transform = 'translateY(-1px)';
-                      event.currentTarget.style.filter = 'brightness(1.04)';
-                    }}
-                    onMouseLeave={(event) => {
-                      event.currentTarget.style.transform = 'translateY(0)';
-                      event.currentTarget.style.filter = 'brightness(1)';
-                    }}
-                    onFocus={(event) => {
-                      event.currentTarget.style.transform = 'translateY(-1px)';
-                      event.currentTarget.style.filter = 'brightness(1.04)';
-                    }}
-                    onBlur={(event) => {
-                      event.currentTarget.style.transform = 'translateY(0)';
-                      event.currentTarget.style.filter = 'brightness(1)';
-                    }}
-                    onMouseDown={(event) => {
-                      event.currentTarget.style.transform = 'translateY(1px) scale(0.99)';
-                    }}
-                    onMouseUp={(event) => {
-                      event.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    style={{
-                      minHeight: '44px',
-                      borderRadius: radius.full,
-                      border: `1px solid ${hasGuestName ? '#8ed0ff8c' : '#ffcb8a8a'}`,
-                      background:
-                        'radial-gradient(circle at 28% 20%, rgba(255,255,255,0.2), rgba(255,255,255,0)), linear-gradient(145deg, rgba(34, 56, 95, 0.92), rgba(22, 36, 65, 0.94))',
-                      color: colors.textPrimary,
-                      padding: `0 ${spacing.sm}`,
-                      fontSize: typography.fontSize.xs,
-                      fontFamily:
-                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                      letterSpacing: '0.04em',
-                      whiteSpace: 'nowrap',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: spacing.xs,
-                      boxShadow: hasGuestName
-                        ? '0 0 16px rgba(114, 186, 245, 0.34), inset 0 1px 0 rgba(255,255,255,0.18)'
-                        : '0 0 14px rgba(255, 196, 125, 0.26), inset 0 1px 0 rgba(255,255,255,0.14)',
-                      transform: 'translateY(0)',
-                      filter: 'brightness(1)',
-                      transition: `transform 160ms ${guestMotionEasing}, box-shadow 180ms ${guestMotionEasing}, filter 160ms ${guestMotionEasing}`,
-                    }}
-                    aria-label={guestName ? 'Edit guest bubble name' : 'Create guest bubble'}
-                    title={guestName ? 'Edit guest bubble name' : 'Create guest bubble'}
-                  >
-                    <span
-                      aria-hidden
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.7rem',
-                        color: '#eaf5ff',
-                        border: '1px solid rgba(166, 216, 255, 0.65)',
-                        background:
-                          'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.36), rgba(255,255,255,0)), linear-gradient(145deg, rgba(59, 104, 161, 0.95), rgba(36, 66, 120, 0.95))',
-                      }}
-                    >
-                      {guestInitials || '+'}
-                    </span>
-                    <span>{guestName ? `Guest: ${guestName}` : 'Create Guest Bubble'}</span>
-                    <span
-                      style={{
-                        borderRadius: radius.full,
-                        border: `1px solid ${
-                          isGuestSaveConfirmed
-                            ? '#ffd899aa'
-                            : hasGuestName
-                              ? '#9bd8ff88'
-                              : '#ffd29a88'
-                        }`,
-                        padding: '2px 8px',
-                        fontSize: '0.62rem',
-                        color: isGuestSaveConfirmed
-                          ? '#fff1d8'
-                          : hasGuestName
-                            ? '#cde9ff'
-                            : '#ffe1bc',
-                        background: isGuestSaveConfirmed
-                          ? 'rgba(255, 206, 138, 0.2)'
-                          : hasGuestName
-                            ? 'rgba(126, 194, 252, 0.16)'
-                            : 'rgba(255, 194, 122, 0.14)',
-                        transition: `all 180ms ${guestMotionEasing}`,
-                      }}
-                    >
-                      {isGuestSaveConfirmed ? 'Saved' : hasGuestName ? 'Edit' : 'Create'}
-                    </span>
-                  </button>
-                )}
-
                 <IconButton
                   onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
                   variant="ghost"
@@ -809,74 +626,35 @@ const Watchlist: React.FC = () => {
                   ? 'Press Enter to add quickly.'
                   : guestName
                     ? `Suggesting as ${guestName}`
-                    : 'Create a guest bubble to suggest titles.'}
+                    : 'Pick Guest in the profile bubbles above to suggest titles.'}
               </span>
               <span>
                 {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
               </span>
             </div>
-            {!currentUser &&
-              (isGuestBubbleOpen ? (
-                <GuestBubbleNameEditor
-                  draftName={guestNameDraft}
-                  savedName={guestName}
-                  error={guestError}
-                  isMobile={isMobile}
-                  disabled={isSubmitting || isAdding}
-                  onDraftChange={(value) => {
-                    setGuestNameDraft(value.slice(0, MAX_GUEST_NAME_LENGTH));
-                    setGuestError(null);
-                  }}
-                  onSave={handleSaveGuestBubble}
-                  onClear={handleResetGuestBubble}
-                  isSaveConfirmed={isGuestSaveConfirmed}
-                  onClose={() => {
-                    setGuestNameDraft(guestName);
-                    setGuestError(null);
-                    setIsGuestBubbleOpen(false);
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    marginTop: spacing.sm,
-                    padding: spacing.sm,
-                    border: `1px solid ${colors.borderSecondary}35`,
-                    borderRadius: radius.full,
-                    background:
-                      'radial-gradient(circle at 22% 15%, rgba(255,255,255,0.16), rgba(255,255,255,0)), rgba(19, 31, 58, 0.66)',
-                    color: '#d8ecff',
-                    fontSize: typography.fontSize.xs,
-                    fontFamily:
-                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                    letterSpacing: '0.04em',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: spacing.xs,
-                    boxShadow: '0 0 16px rgba(116, 180, 235, 0.25)',
-                    transition: `all 220ms ${guestMotionEasing}`,
-                  }}
-                >
-                  <span
-                    aria-hidden
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '1px solid rgba(170, 217, 255, 0.6)',
-                      background: 'rgba(69, 117, 173, 0.65)',
-                      color: '#f1f8ff',
-                      fontSize: '0.62rem',
-                    }}
-                  >
-                    {guestInitials || 'G'}
-                  </span>
-                  Guest bubble active: {guestName}
-                </div>
-              ))}
+            {!currentUser && guestName && (
+              <div
+                style={{
+                  marginTop: spacing.sm,
+                  padding: spacing.sm,
+                  border: `1px solid ${colors.borderSecondary}35`,
+                  borderRadius: radius.full,
+                  background:
+                    'radial-gradient(circle at 22% 15%, rgba(255,255,255,0.16), rgba(255,255,255,0)), rgba(19, 31, 58, 0.66)',
+                  color: '#d8ecff',
+                  fontSize: typography.fontSize.xs,
+                  fontFamily:
+                    "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                  letterSpacing: '0.04em',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: spacing.xs,
+                  boxShadow: '0 0 16px rgba(116, 180, 235, 0.25)',
+                }}
+              >
+                Guest bubble active: {guestName}
+              </div>
+            )}
 
             <div
               style={{

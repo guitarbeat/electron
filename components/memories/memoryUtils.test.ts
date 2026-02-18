@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import type { Movie, SharedMemory } from '../../types';
 import { buildMovieMemorySummaries, getMemoryMovieKey, sortMemories } from './memoryUtils.ts';
 
 test('getMemoryMovieKey falls back to normalized movie title when movieId is absent', () => {
@@ -15,7 +16,7 @@ test('getMemoryMovieKey falls back to normalized movie title when movieId is abs
 });
 
 test('buildMovieMemorySummaries links by movieId and title fallback without duplication', () => {
-  const movies = [
+  const movies: Movie[] = [
     {
       id: 'movie-1',
       title: 'The Matrix',
@@ -25,7 +26,7 @@ test('buildMovieMemorySummaries links by movieId and title fallback without dupl
     },
   ];
 
-  const memories = [
+  const memories: SharedMemory[] = [
     {
       id: 'mem-a',
       movieId: 'movie-1',
@@ -52,7 +53,7 @@ test('buildMovieMemorySummaries links by movieId and title fallback without dupl
 });
 
 test('sortMemories keeps pinned entries at top for both sort modes', () => {
-  const memories = [
+  const memories: SharedMemory[] = [
     {
       id: 'a',
       movieTitle: 'A',
