@@ -17,8 +17,8 @@ import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
-  const { quizData, isLoading: isQuizLoading } = useQuiz();
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const { quizData, isLoading: isQuizLoading } = useQuiz(activeTab !== 'extras');
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -152,7 +152,7 @@ const App: React.FC = () => {
                 <UserSelection />
               </section>
             )}
-            <Watchlist />
+            <Watchlist isPaused={activeTab !== 'queue'} />
           </div>
 
           {activeTab === 'messages' && (

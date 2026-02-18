@@ -27,7 +27,11 @@ type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
 const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 
-const Watchlist: React.FC = () => {
+interface WatchlistProps {
+  isPaused?: boolean;
+}
+
+const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const { guestName, hasGuestName } = useGuestProfile();
   const isMobile = useMediaQuery(breakpoints.sm);
@@ -40,14 +44,14 @@ const Watchlist: React.FC = () => {
     deleteMovie,
     refresh: refreshMovies,
     manualMetadataUpdate,
-  } = useMovies(currentUser);
+  } = useMovies(currentUser, isPaused);
   const {
     pendingSuggestions,
     addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
     isLoading: isSuggestionsLoading,
-  } = useSuggestions();
+  } = useSuggestions(isPaused);
   const {
     memories,
     addMemory,
@@ -56,7 +60,7 @@ const Watchlist: React.FC = () => {
     toggleMemoryPin,
     isLoading: isMemoriesLoading,
     error: memoriesError,
-  } = useMemories();
+  } = useMemories(isPaused);
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
