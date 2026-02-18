@@ -119,40 +119,48 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
           width: '100%',
           flexWrap: 'nowrap',
           padding: `0 ${spacing.md}`,
+          position: 'relative',
         }}
       >
-        {(['Aaron', 'Electra'] as User[]).map((user, index) => (
-          <React.Fragment key={user}>
-            {user === 'Electra' && (
-              <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-                <GuestBubbleAvatar
-                  guestName={guestName}
-                  isHovered={hoveredAvatar === 'Guest' || (currentUser === null && Boolean(guestName))}
-                  isActive={currentUser === null && Boolean(guestName)}
-                  onClick={handleGuestBubbleClick}
-                  onMouseEnter={() => setHoveredAvatar('Guest')}
-                  onMouseLeave={() => setHoveredAvatar(null)}
-                  onFocus={() => setHoveredAvatar('Guest')}
-                  onBlur={() => setHoveredAvatar(null)}
-                />
-              </div>
-            )}
+        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+          <GelBubbleAvatar
+            user="Aaron"
+            hasPin={userHasPin('Aaron')}
+            isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
+            onClick={() => handleUserClick('Aaron')}
+            onMouseEnter={() => setHoveredAvatar('Aaron')}
+            onMouseLeave={() => setHoveredAvatar(null)}
+            onFocus={() => setHoveredAvatar('Aaron')}
+            onBlur={() => setHoveredAvatar(null)}
+          />
+        </div>
 
-            <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-              <GelBubbleAvatar
-                user={user}
-                hasPin={userHasPin(user)}
-                isHovered={hoveredAvatar === user || currentUser === user}
-                onClick={() => handleUserClick(user)}
-                onMouseEnter={() => setHoveredAvatar(user)}
-                onMouseLeave={() => setHoveredAvatar(null)}
-                onFocus={() => setHoveredAvatar(user)}
-                onBlur={() => setHoveredAvatar(null)}
-                animationOffset={index % 2 === 1}
-              />
-            </div>
-          </React.Fragment>
-        ))}
+        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+          <GuestBubbleAvatar
+            guestName={guestName}
+            isHovered={hoveredAvatar === 'Guest' || (currentUser === null && Boolean(guestName))}
+            isActive={currentUser === null && Boolean(guestName)}
+            onClick={handleGuestBubbleClick}
+            onMouseEnter={() => setHoveredAvatar('Guest')}
+            onMouseLeave={() => setHoveredAvatar(null)}
+            onFocus={() => setHoveredAvatar('Guest')}
+            onBlur={() => setHoveredAvatar(null)}
+          />
+        </div>
+
+        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+          <GelBubbleAvatar
+            user="Electra"
+            hasPin={userHasPin('Electra')}
+            isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
+            onClick={() => handleUserClick('Electra')}
+            onMouseEnter={() => setHoveredAvatar('Electra')}
+            onMouseLeave={() => setHoveredAvatar(null)}
+            onFocus={() => setHoveredAvatar('Electra')}
+            onBlur={() => setHoveredAvatar(null)}
+            animationOffset
+          />
+        </div>
       </div>
 
       {!currentUser && guestName && !isGuestEditorOpen && (

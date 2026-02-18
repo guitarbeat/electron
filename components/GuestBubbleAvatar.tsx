@@ -66,8 +66,8 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
       <div
         style={{
           position: 'relative',
-          width: 'clamp(120px, 30vw, 170px)',
-          height: 'clamp(120px, 30vw, 170px)',
+          width: 'clamp(140px, 35vw, 200px)',
+          height: 'clamp(140px, 35vw, 200px)',
           borderRadius: '50%',
           background: `
             radial-gradient(circle at 30% 25%, rgba(255,255,255,0.34) 0%, transparent 42%),
@@ -77,13 +77,13 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
           boxShadow: `
             inset 0 -15px 34px rgba(37, 68, 118, 0.42),
             inset 0 14px 25px rgba(255, 255, 255, 0.2),
-            0 0 ${isHovered || isActive ? '46px' : '30px'} rgba(109, 176, 233, ${
+            0 0 ${isHovered || isActive ? '50px' : '35px'} rgba(109, 176, 233, ${
               isHovered || isActive ? '0.42' : '0.28'
             })
           `,
           border: `3px solid ${isActive ? 'rgba(191, 227, 255, 0.8)' : 'rgba(160, 210, 250, 0.55)'}`,
           transition: 'all 0.3s ease-out',
-          transform: isHovered || isActive ? 'scale(1.05)' : 'scale(1)',
+          transform: isHovered || isActive ? 'scale(1.06)' : 'scale(1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -125,13 +125,13 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
       <span
         style={{
           fontFamily: typography.fontFamily.heading.join(', '),
-          fontSize: 'clamp(1.05rem, 4.2vw, 1.45rem)',
+          fontSize: 'clamp(1.25rem, 5vw, 1.75rem)',
           fontWeight: 600,
           color: '#f0f6ff',
           textShadow: '0 0 10px rgba(147, 201, 245, 0.7), 0 2px 4px rgba(0, 0, 0, 0.45)',
           letterSpacing: typography.letterSpacing.wide,
           transition: 'all 0.3s ease-out',
-          transform: isHovered || isActive ? 'scale(1.04)' : 'scale(1)',
+          transform: isHovered || isActive ? 'scale(1.05)' : 'scale(1)',
           maxWidth: '100%',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
