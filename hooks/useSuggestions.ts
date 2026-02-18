@@ -16,13 +16,15 @@ const suggestionsEqual = (prev: MovieSuggestion[] | undefined, next: MovieSugges
   return JSON.stringify(prev) === JSON.stringify(next);
 };
 
-export const useSuggestions = () => {
+export const useSuggestions = (isPaused: boolean = false) => {
   const {
     data: suggestions,
     isLoading,
     error,
     refresh,
-  } = usePolling<MovieSuggestion[]>(getSuggestions, POLLING_INTERVAL, suggestionsEqual);
+  } = usePolling<MovieSuggestion[]>(getSuggestions, POLLING_INTERVAL, suggestionsEqual, {
+    isPaused,
+  });
 
   const pendingSuggestions = useMemo(
     () => suggestions?.filter((s) => s.status === 'pending') || [],
