@@ -13,7 +13,6 @@ interface MainTopBarProps {
 
 const TAB_LABELS: Record<MainTab, string> = {
   queue: 'Queue',
-  memories: 'Memories',
   messages: 'Messages',
   extras: 'Extras',
 };

@@ -117,9 +117,9 @@ const App: React.FC = () => {
         >
           <div
             style={{
-              display: activeTab === 'queue' || activeTab === 'memories' ? 'block' : 'none',
+              display: activeTab === 'queue' ? 'block' : 'none',
             }}
-            aria-hidden={activeTab !== 'queue' && activeTab !== 'memories'}
+            aria-hidden={activeTab !== 'queue'}
           >
             {activeTab === 'queue' && (
               <section
@@ -152,7 +152,7 @@ const App: React.FC = () => {
                 <UserSelection />
               </section>
             )}
-            <Watchlist surface={activeTab === 'memories' ? 'memories' : 'queue'} />
+            <Watchlist />
           </div>
 
           {activeTab === 'messages' && (

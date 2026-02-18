@@ -15,6 +15,7 @@ interface MovieItemProps {
   onToggle: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
+  onMemoryClick?: (movie: Movie) => void;
   animationDelay: string;
   layout?: 'list' | 'grid';
   memoryCount?: number;
@@ -37,6 +38,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
   onToggle,
   onDelete,
   onFixMatch,
+  onMemoryClick,
   animationDelay,
   layout = 'list',
   memoryCount,
@@ -220,7 +222,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
               )}
 
               {hasSharedMemories && (
-                <div
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMemoryClick?.(movie);
+                  }}
                   style={{
                     alignSelf: 'flex-start',
                     marginBottom: spacing.xs,
@@ -233,10 +240,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     fontFamily:
                       "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
                     letterSpacing: '0.04em',
+                    cursor: onMemoryClick ? 'pointer' : 'default',
+                    borderStyle: 'solid',
                   }}
+                  aria-label={`View memories for "${movie.title}"`}
                 >
                   {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
-                </div>
+                </button>
               )}
 
               <div
@@ -454,7 +464,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
               )}
 
               {hasSharedMemories && (
-                <div
+                <button
+                  type="button"
+                  onClick={() => onMemoryClick?.(movie)}
                   style={{
                     marginBottom: spacing.md,
                     padding: `${spacing.xs} ${spacing.sm}`,
@@ -462,7 +474,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     border: '1px solid rgba(255, 223, 167, 0.35)',
                     background:
                       'linear-gradient(145deg, rgba(64, 41, 18, 0.45) 0%, rgba(34, 24, 14, 0.55) 100%)',
+                    textAlign: 'left',
+                    width: '100%',
+                    cursor: onMemoryClick ? 'pointer' : 'default',
                   }}
+                  aria-label={`View memories for "${movie.title}"`}
                 >
                   <p
                     style={{
@@ -493,7 +509,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       "{memorySnippet}"
                     </p>
                   )}
-                </div>
+                </button>
               )}
             </div>
 
@@ -640,7 +656,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 )}
               </div>
               {hasSharedMemories && (
-                <div
+                <button
+                  type="button"
+                  onClick={() => handleAction(() => onMemoryClick?.(movie))}
                   style={{
                     marginTop: spacing.sm,
                     padding: `${spacing.xs} ${spacing.sm}`,
@@ -650,13 +668,18 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     fontSize: typography.fontSize.xs,
                     fontFamily:
                       "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    background: 'transparent',
+                    textAlign: 'left',
+                    width: '100%',
+                    cursor: onMemoryClick ? 'pointer' : 'default',
                   }}
+                  aria-label={`View memories for "${movie.title}"`}
                 >
                   {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
                   {memorySnippet
                     ? `: "${memorySnippet.slice(0, 60)}${memorySnippet.length > 60 ? '...' : ''}"`
                     : ''}
-                </div>
+                </button>
               )}
             </div>
           </div>
