@@ -89,7 +89,7 @@ const MainTopBar: React.FC<MainTopBarProps> = ({ activeTab, currentUser, onOpenP
           }}
         >
           <SettingsIcon style={{ width: '16px', height: '16px' }} />
-          {currentUser ? currentUser : 'Guest'}
+          {currentUser || 'Guest'}
         </Button>
       </div>
     </header>

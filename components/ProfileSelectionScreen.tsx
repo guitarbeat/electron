@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import { usePins } from '../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { colors, typography } from '../design-system/tokens';
+import { colors, typography, spacing } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import GuestBubbleAvatar from './GuestBubbleAvatar';
 import GlossyQuizButton from './GlossyQuizButton';
@@ -17,7 +17,6 @@ import {
 } from '../hooks/useGuestProfile';
 import Input from './ui/Input';
 import Button from './ui/Button';
-import { spacing } from '../design-system/tokens';
 
 interface ProfileSelectionScreenProps {
   onTakeQuiz: () => void;
