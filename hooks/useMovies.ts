@@ -19,13 +19,15 @@ const extractSafeMetadata = (metadata: MetadataResult | any): Partial<Movie> => 
   return result;
 };
 
-export const useMovies = (currentUser: User | null) => {
+export const useMovies = (currentUser: User | null, isPaused: boolean = false) => {
   const {
     data: movies,
     error,
     isLoading,
     refresh,
-  } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
+  } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+    isPaused,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);
