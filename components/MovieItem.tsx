@@ -437,20 +437,18 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 {movie.year && <span style={{ color: colors.textSecondary }}>{movie.year}</span>}
                 {movie.year && movie.category && <span>•</span>}
                 {movie.category && (
-                  <>
-                    <span
-                      style={{
-                        color: colors.accentLight,
-                        backgroundColor: `${colors.accent}15`,
-                        padding: '2px 8px',
-                        borderRadius: radius.sm,
-                        fontSize: '0.7rem',
-                        border: `1px solid ${colors.accent}30`,
-                      }}
-                    >
-                      {movie.category}
-                    </span>
-                  </>
+                  <span
+                    style={{
+                      color: colors.accentLight,
+                      backgroundColor: `${colors.accent}15`,
+                      padding: '2px 8px',
+                      borderRadius: radius.sm,
+                      fontSize: '0.7rem',
+                      border: `1px solid ${colors.accent}30`,
+                    }}
+                  >
+                    {movie.category}
+                  </span>
                 )}
               </div>
 

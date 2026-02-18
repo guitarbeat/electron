@@ -47,7 +47,9 @@ export const fetchMovieMetadata = async (
     // If we have an ID and it's a TV show, use TVMaze directly by ID
     if (type === 'series' && id?.startsWith('tv-')) {
       const tvmazeId = id.replace('tv-', '');
-      const tvmazeUrl = `${TVMAZE_BASE_URL}/shows/${tvmazeId}`;
+      // Ensure the ID is safe for path usage
+      const safeTvMazeId = encodeURIComponent(tvmazeId);
+      const tvmazeUrl = `${TVMAZE_BASE_URL}/shows/${safeTvMazeId}`;
       const tvmazeRes = await fetchWithRetry(tvmazeUrl);
       const show = await tvmazeRes.json();
 
@@ -66,8 +68,11 @@ export const fetchMovieMetadata = async (
 
     // If we have an IMDB ID, use OMDb by ID
     if (id && !id.startsWith('tv-')) {
-      const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&i=${id}`;
-      const omdbRes = await fetchWithRetry(omdbUrl);
+      const omdbUrl = new URL(OMDB_BASE_URL);
+      omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
+      omdbUrl.searchParams.append('i', id);
+
+      const omdbRes = await fetchWithRetry(omdbUrl.toString());
       const omdbData = await omdbRes.json();
 
       if (omdbData.Response === 'True') {
@@ -85,8 +90,11 @@ export const fetchMovieMetadata = async (
     }
 
     // 1. Try OMDb first (Best for Movies)
-    const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`;
-    const omdbRes = await fetchWithRetry(omdbUrl);
+    const omdbUrl = new URL(OMDB_BASE_URL);
+    omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
+    omdbUrl.searchParams.append('t', title);
+
+    const omdbRes = await fetchWithRetry(omdbUrl.toString());
     const omdbData = await omdbRes.json();
 
     if (omdbData.Response === 'True') {
@@ -103,8 +111,10 @@ export const fetchMovieMetadata = async (
     }
 
     // 2. If OMDb fails or not found, try TVMaze (Best for TV Shows)
-    const tvmazeUrl = `${TVMAZE_BASE_URL}/search/shows?q=${encodeURIComponent(title)}`;
-    const tvmazeRes = await fetchWithRetry(tvmazeUrl);
+    const tvmazeUrl = new URL(`${TVMAZE_BASE_URL}/search/shows`);
+    tvmazeUrl.searchParams.append('q', title);
+
+    const tvmazeRes = await fetchWithRetry(tvmazeUrl.toString());
     const tvmazeData = await tvmazeRes.json();
 
     if (tvmazeData && tvmazeData.length > 0) {
@@ -131,8 +141,11 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     const results: MetadataResult[] = [];
 
     // 1. Search OMDb
-    const omdbUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}`;
-    const omdbRes = await fetchWithRetry(omdbUrl);
+    const omdbUrl = new URL(OMDB_BASE_URL);
+    omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
+    omdbUrl.searchParams.append('s', query);
+
+    const omdbRes = await fetchWithRetry(omdbUrl.toString());
     const omdbData = await omdbRes.json();
 
     if (omdbData.Response === 'True' && omdbData.Search) {
@@ -148,8 +161,10 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     }
 
     // 2. Search TVMaze
-    const tvmazeUrl = `${TVMAZE_BASE_URL}/search/shows?q=${encodeURIComponent(query)}`;
-    const tvmazeRes = await fetchWithRetry(tvmazeUrl);
+    const tvmazeUrl = new URL(`${TVMAZE_BASE_URL}/search/shows`);
+    tvmazeUrl.searchParams.append('q', query);
+
+    const tvmazeRes = await fetchWithRetry(tvmazeUrl.toString());
     const tvmazeData = await tvmazeRes.json();
 
     if (tvmazeData && tvmazeData.length > 0) {

@@ -140,7 +140,10 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     const deltaX = event.clientX - dragState.startX;
     const deltaY = event.clientY - dragState.startY;
 
-    if (!didDragRef.current && (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)) {
+    if (
+      !didDragRef.current &&
+      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+    ) {
       didDragRef.current = true;
     }
 

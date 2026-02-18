@@ -16,11 +16,7 @@ interface GuestBubbleAvatarProps {
 }
 
 const getGuestInitials = (value: string): string => {
-  const parts = value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = value.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (parts.length === 0) {
     return '';
