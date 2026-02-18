@@ -11,6 +11,8 @@ interface GuestBubbleAvatarProps {
   onMouseLeave: () => void;
   onFocus: () => void;
   onBlur: () => void;
+  size?: 'default' | 'compact';
+  label?: string;
 }
 
 const getGuestInitials = (value: string): string => {
@@ -39,8 +41,13 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
   onMouseLeave,
   onFocus,
   onBlur,
+  size = 'default',
+  label,
 }) => {
   const initials = getGuestInitials(guestName);
+  const isCompact = size === 'compact';
+  const bubbleSize = isCompact ? 'clamp(96px, 24vw, 132px)' : 'clamp(140px, 35vw, 200px)';
+  const labelText = label || guestName || 'Guest';
 
   return (
     <button
@@ -56,7 +63,7 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '16px',
+        gap: isCompact ? '10px' : '16px',
         background: 'transparent',
         border: 'none',
         cursor: 'pointer',
@@ -66,8 +73,8 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
       <div
         style={{
           position: 'relative',
-          width: 'clamp(140px, 35vw, 200px)',
-          height: 'clamp(140px, 35vw, 200px)',
+          width: bubbleSize,
+          height: bubbleSize,
           borderRadius: '50%',
           background: `
             radial-gradient(circle at 30% 25%, rgba(255,255,255,0.34) 0%, transparent 42%),
@@ -102,7 +109,7 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             color: '#d8efff',
-            fontSize: initials ? '2rem' : '1.6rem',
+            fontSize: initials ? (isCompact ? '1.45rem' : '2rem') : isCompact ? '1.2rem' : '1.6rem',
             fontWeight: 700,
             letterSpacing: '0.04em',
             fontFamily: typography.fontFamily.heading.join(', '),
@@ -122,8 +129,8 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
           ) : (
             <PlusIcon
               style={{
-                width: '1.7rem',
-                height: '1.7rem',
+                width: isCompact ? '1.3rem' : '1.7rem',
+                height: isCompact ? '1.3rem' : '1.7rem',
                 color: '#d8efff',
               }}
             />
@@ -134,7 +141,7 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
       <span
         style={{
           fontFamily: typography.fontFamily.heading.join(', '),
-          fontSize: 'clamp(1.25rem, 5vw, 1.75rem)',
+          fontSize: isCompact ? 'clamp(0.95rem, 3.6vw, 1.2rem)' : 'clamp(1.25rem, 5vw, 1.75rem)',
           fontWeight: 600,
           color: '#f0f6ff',
           textShadow: '0 0 10px rgba(147, 201, 245, 0.7), 0 2px 4px rgba(0, 0, 0, 0.45)',
@@ -147,7 +154,7 @@ const GuestBubbleAvatar: React.FC<GuestBubbleAvatarProps> = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {guestName || 'Guest'}
+        {labelText}
       </span>
     </button>
   );

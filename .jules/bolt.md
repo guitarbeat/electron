@@ -1,9 +1,4 @@
-## 2025-10-27 - Missing Equality Check in Polling Hook
+## 2024-05-23 - Prevent List Re-renders on Mutation
 
-**Learning:** `usePolling` hook updates state every interval if no equality function is provided, even if data is identical. This causes massive re-renders in consumers like `MessageBoard`. Always check if polled data needs stable references.
-**Action:** Add equality check (e.g., `JSON.stringify`) to `usePolling` calls when data comes from an API that returns new references.
-
-## 2026-02-16 - Unstable Callbacks in List Rendering
-
-**Learning:** Passing inline arrow functions (e.g., `onFixMatch={(m) => setMovieToFix(m)}`) to memoized list items (`MovieItem`) breaks memoization, causing all items to re-render on every parent state change (like typing in an input).
-**Action:** Always wrap event handlers passed to memoized list components in `useCallback`.
+**Learning:** Passing global loading state (like `isSubmitting`) to every item in a large list forces the entire list to re-render whenever a mutation starts or ends. This is an O(N) performance hit for a simple action.
+**Action:** Use `useRef` to track submission state for mutation guards in hooks, and remove `isSubmitting` props from list items. If button disabling is needed, rely on the guard or manage UI feedback more locally/optimistically, or accept that removing "disabled" visual state during short mutations is a worthy trade-off for performance.
