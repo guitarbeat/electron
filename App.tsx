@@ -3,6 +3,7 @@ import { useUser } from './context/UserContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/Watchlist';
+import UserSelection from './components/UserSelection';
 import MessageBoard from './components/MessageBoard';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
@@ -120,6 +121,37 @@ const App: React.FC = () => {
             }}
             aria-hidden={activeTab !== 'queue' && activeTab !== 'memories'}
           >
+            {activeTab === 'queue' && (
+              <section
+                aria-label="Profile selection"
+                className="animate-fade-in"
+                style={{
+                  maxWidth: '980px',
+                  margin: `0 auto ${spacing.lg}`,
+                  padding: isMobile ? spacing.sm : spacing.md,
+                  borderRadius: spacing.lg,
+                  border: `1px solid ${colors.borderSecondary}35`,
+                  background:
+                    'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.2), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
+                  boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    marginBottom: spacing.sm,
+                    textAlign: 'center',
+                    color: colors.textTertiary,
+                    fontSize: typography.fontSize.xs,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.07em',
+                  }}
+                >
+                  Who&apos;s watching
+                </p>
+                <UserSelection />
+              </section>
+            )}
             <Watchlist surface={activeTab === 'memories' ? 'memories' : 'queue'} />
           </div>
 
@@ -167,6 +199,8 @@ const App: React.FC = () => {
       </main>
 
       {isMobile && <MainTabNav activeTab={activeTab} onTabChange={setActiveTab} />}
+
+      {activeTab !== 'messages' && <MessageBoard mode="floating" />}
 
       <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>

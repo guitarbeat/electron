@@ -120,7 +120,7 @@ const UserSelection: React.FC = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: 'clamp(16px, 4vw, 40px)',
+          gap: 'clamp(10px, 2.8vw, 28px)',
           width: '100%',
           flexWrap: 'nowrap',
           padding: `0 ${spacing.md}`,
@@ -140,11 +140,20 @@ const UserSelection: React.FC = () => {
           />
         </div>
 
-        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+        <div
+          style={{
+            flex: '0 0 auto',
+            display: 'flex',
+            justifyContent: 'center',
+            minWidth: 'clamp(96px, 24vw, 132px)',
+          }}
+        >
           <GuestBubbleAvatar
             guestName={guestName}
             isHovered={hoveredAvatar === 'Guest' || (currentUser === null && Boolean(guestName))}
             isActive={currentUser === null && Boolean(guestName)}
+            size="compact"
+            label="Guest"
             onClick={handleGuestBubbleClick}
             onMouseEnter={() => setHoveredAvatar('Guest')}
             onMouseLeave={() => setHoveredAvatar(null)}
