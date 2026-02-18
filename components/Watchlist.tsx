@@ -25,8 +25,16 @@ import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
-const MAX_SUGGESTION_REASON_LENGTH = 240;
-const MAX_SUGGESTION_AUTHOR_LENGTH = 40;
+const MAX_GUEST_NAME_LENGTH = 40;
+const GUEST_NAME_STORAGE_KEY = 'movieWatchlistGuestName';
+
+const getStoredGuestName = () => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return localStorage.getItem(GUEST_NAME_STORAGE_KEY)?.trim() || '';
+};
 
 const Watchlist: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -65,8 +73,9 @@ const Watchlist: React.FC = () => {
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
-  const [suggestionReason, setSuggestionReason] = useState('');
-  const [suggestionAuthor, setSuggestionAuthor] = useState('');
+  const [guestName, setGuestName] = useState(() => getStoredGuestName());
+  const [guestNameDraft, setGuestNameDraft] = useState(() => getStoredGuestName());
+  const [isGuestBubbleOpen, setIsGuestBubbleOpen] = useState(() => !getStoredGuestName());
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
@@ -96,6 +105,7 @@ const Watchlist: React.FC = () => {
   const isSpinLocked = !currentUser;
   const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
   const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
+  const sharedMemoryCount = sharedMemories.length;
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const sortedMovies = useMemo(() => {
     if (!movies) return [];
@@ -141,7 +151,10 @@ const Watchlist: React.FC = () => {
   }, [pendingSuggestions, contentTab, normalizedSearch]);
 
   const memorySummariesByMovie = useMemo(() => {
-    const summaries = new Map<string, { count: number; latestNote: string; latestAuthor: string }>();
+    const summaries = new Map<
+      string,
+      { count: number; latestNote: string; latestAuthor: string }
+    >();
 
     sharedMemories.forEach((memory) => {
       const fallbackKey = `title:${memory.movieTitle.trim().toLowerCase()}`;
@@ -177,11 +190,14 @@ const Watchlist: React.FC = () => {
 
   useEffect(() => {
     if (currentUser) {
-      setSuggestionAuthor(currentUser);
-    } else {
-      setSuggestionAuthor('');
+      setIsGuestBubbleOpen(false);
+      return;
     }
-  }, [currentUser]);
+
+    if (!guestName) {
+      setIsGuestBubbleOpen(true);
+    }
+  }, [currentUser, guestName]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -237,18 +253,61 @@ const Watchlist: React.FC = () => {
     }
   };
 
+  const persistGuestName = (nextGuestName: string) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (nextGuestName) {
+      localStorage.setItem(GUEST_NAME_STORAGE_KEY, nextGuestName);
+    } else {
+      localStorage.removeItem(GUEST_NAME_STORAGE_KEY);
+    }
+  };
+
+  const handleSaveGuestBubble = () => {
+    const normalizedName = guestNameDraft.trim().slice(0, MAX_GUEST_NAME_LENGTH);
+
+    if (!normalizedName) {
+      setToast({ message: 'Enter a guest name to continue.', type: 'info' });
+      return;
+    }
+
+    if (['aaron', 'electra'].includes(normalizedName.toLowerCase())) {
+      setToast({
+        message: 'Aaron and Electra should use their profile bubbles above.',
+        type: 'info',
+      });
+      return;
+    }
+
+    setGuestName(normalizedName);
+    setGuestNameDraft(normalizedName);
+    persistGuestName(normalizedName);
+    setIsGuestBubbleOpen(false);
+    setToast({ message: `Guest bubble saved as "${normalizedName}"`, type: 'success' });
+  };
+
+  const handleResetGuestBubble = () => {
+    setGuestName('');
+    setGuestNameDraft('');
+    persistGuestName('');
+    setIsGuestBubbleOpen(true);
+    setToast({ message: 'Guest bubble removed.', type: 'info' });
+  };
+
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
     const title = newMovieTitle.trim();
-    const guestAuthor = suggestionAuthor.trim();
-    const reason = suggestionReason.trim();
+    const guestAuthor = guestName.trim();
 
     if (!title || isSubmitting || isAdding) {
       return;
     }
 
     if (!currentUser && !guestAuthor) {
-      setToast({ message: 'Add your name so we know who suggested it.', type: 'info' });
+      setToast({ message: 'Create your guest bubble before suggesting a movie.', type: 'info' });
+      setIsGuestBubbleOpen(true);
       return;
     }
 
@@ -266,16 +325,12 @@ const Watchlist: React.FC = () => {
         await addMovie(title);
         setToast({ message: `"${title}" added successfully!`, type: 'success' });
       } else {
-        await addSuggestion(title, guestAuthor, reason || undefined);
+        await addSuggestion(title, guestAuthor);
         setToast({ message: `"${title}" suggested for review!`, type: 'success' });
         setContentTab('suggestions');
       }
 
       setNewMovieTitle('');
-      setSuggestionReason('');
-      if (!currentUser) {
-        setSuggestionAuthor(guestAuthor);
-      }
       setSuccessMovieId(title);
       setTimeout(() => setSuccessMovieId(null), 2000);
     } catch (err: any) {
@@ -562,28 +617,56 @@ const Watchlist: React.FC = () => {
                 >
                   {currentUser
                     ? 'Quick add with one clear field.'
-                    : 'Leave your name so Aaron and Electra can review it.'}
+                    : 'Create a guest bubble once, then suggest in one tap.'}
                 </p>
               </div>
 
-              <IconButton
-                onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                variant="ghost"
-                size="sm"
-                title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  flexShrink: 0,
-                }}
-              >
-                {viewMode === 'list' ? (
-                  <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />
-                ) : (
-                  <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                {!currentUser && (
+                  <button
+                    type="button"
+                    onClick={() => setIsGuestBubbleOpen((isOpen) => !isOpen)}
+                    style={{
+                      minHeight: '44px',
+                      borderRadius: radius.full,
+                      border: `1px solid ${colors.accent}55`,
+                      background:
+                        'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), rgba(255,255,255,0)), linear-gradient(145deg, rgba(62, 91, 140, 0.85), rgba(39, 59, 96, 0.9))',
+                      color: colors.textPrimary,
+                      padding: `0 ${spacing.md}`,
+                      fontSize: typography.fontSize.xs,
+                      fontFamily:
+                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                      letterSpacing: '0.04em',
+                      whiteSpace: 'nowrap',
+                      cursor: 'pointer',
+                    }}
+                    aria-label={guestName ? 'Edit guest bubble name' : 'Create guest bubble'}
+                    title={guestName ? 'Edit guest bubble name' : 'Create guest bubble'}
+                  >
+                    {guestName ? `Guest: ${guestName}` : 'Create Guest Bubble'}
+                  </button>
                 )}
-              </IconButton>
+
+                <IconButton
+                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                  variant="ghost"
+                  size="sm"
+                  title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                  aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    flexShrink: 0,
+                  }}
+                >
+                  {viewMode === 'list' ? (
+                    <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />
+                  ) : (
+                    <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />
+                  )}
+                </IconButton>
+              </div>
             </div>
 
             <Input
@@ -616,7 +699,11 @@ const Watchlist: React.FC = () => {
               }}
             >
               <span>
-                {currentUser ? 'Press Enter to add quickly.' : 'Add a reason if you want context.'}
+                {currentUser
+                  ? 'Press Enter to add quickly.'
+                  : guestName
+                    ? `Suggesting as ${guestName}`
+                    : 'Create a guest bubble to suggest titles.'}
               </span>
               <span>
                 {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
@@ -626,33 +713,68 @@ const Watchlist: React.FC = () => {
               <div
                 style={{
                   marginTop: spacing.sm,
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                  padding: spacing.sm,
+                  border: `1px solid ${colors.borderSecondary}35`,
+                  borderRadius: radius.md,
+                  backgroundColor: 'rgba(19, 31, 58, 0.55)',
+                  display: 'flex',
+                  flexDirection: 'column',
                   gap: spacing.sm,
                 }}
               >
-                <Input
-                  value={suggestionAuthor}
-                  onChange={(e) =>
-                    setSuggestionAuthor(e.target.value.slice(0, MAX_SUGGESTION_AUTHOR_LENGTH))
-                  }
-                  label="Your name"
-                  placeholder="Your name"
-                  aria-label="Your name"
-                  disabled={isSubmitting || isAdding}
-                  style={{ height: '44px' }}
-                />
-                <Input
-                  value={suggestionReason}
-                  onChange={(e) =>
-                    setSuggestionReason(e.target.value.slice(0, MAX_SUGGESTION_REASON_LENGTH))
-                  }
-                  label="Why this pick? (optional)"
-                  placeholder="Why this pick? (optional)"
-                  aria-label="Suggestion reason (optional)"
-                  disabled={isSubmitting || isAdding}
-                  style={{ height: '44px' }}
-                />
+                {isGuestBubbleOpen ? (
+                  <>
+                    <Input
+                      value={guestNameDraft}
+                      onChange={(e) =>
+                        setGuestNameDraft(e.target.value.slice(0, MAX_GUEST_NAME_LENGTH))
+                      }
+                      label="Guest bubble name"
+                      placeholder="Example: Maya"
+                      aria-label="Guest bubble name"
+                      disabled={isSubmitting || isAdding}
+                      style={{ height: '44px' }}
+                    />
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: spacing.sm,
+                        flexDirection: isMobile ? 'column' : 'row',
+                      }}
+                    >
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handleSaveGuestBubble}
+                        style={{ minHeight: '44px', width: isMobile ? '100%' : 'auto' }}
+                      >
+                        Save Guest Bubble
+                      </Button>
+                      {guestName && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={handleResetGuestBubble}
+                          style={{ minHeight: '44px', width: isMobile ? '100%' : 'auto' }}
+                        >
+                          Reset
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div
+                    style={{
+                      color: '#ffe9c0',
+                      fontSize: typography.fontSize.xs,
+                      fontFamily:
+                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    Guest bubble active: {guestName}
+                  </div>
+                )}
               </div>
             )}
 
@@ -670,7 +792,7 @@ const Watchlist: React.FC = () => {
                   isSubmitting ||
                   isAdding ||
                   !newMovieTitle.trim() ||
-                  (!currentUser && !suggestionAuthor.trim())
+                  (!currentUser && !guestName.trim())
                 }
                 isLoading={isAdding}
                 aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
@@ -746,6 +868,21 @@ const Watchlist: React.FC = () => {
                 >
                   Add {moviesNeededForSpin} more unwatched{' '}
                   {moviesNeededForSpin === 1 ? 'movie' : 'movies'}.
+                </p>
+              )}
+              {sharedMemoryCount > 0 && (
+                <p
+                  style={{
+                    margin: `${spacing.xs} 0 0`,
+                    color: '#ffe5b5',
+                    fontSize: typography.fontSize.xs,
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  {sharedMemoryCount} shared memor{sharedMemoryCount === 1 ? 'y' : 'ies'} on your
+                  wall.
                 </p>
               )}
             </div>
@@ -877,18 +1014,24 @@ const Watchlist: React.FC = () => {
                 />
               ))}
 
-              {filteredMovies.map((movie) => (
-                <MovieItem
-                  key={movie.id}
-                  movie={movie}
-                  currentUser={currentUser}
-                  onToggle={handleToggleWatched}
-                  onDelete={handleDeleteMovie}
-                  onFixMatch={handleFixMatch}
-                  animationDelay="0s"
-                  layout="grid"
-                />
-              ))}
+              {filteredMovies.map((movie) => {
+                const memorySummary = getMovieMemorySummary(movie);
+                return (
+                  <MovieItem
+                    key={movie.id}
+                    movie={movie}
+                    currentUser={currentUser}
+                    onToggle={handleToggleWatched}
+                    onDelete={handleDeleteMovie}
+                    onFixMatch={handleFixMatch}
+                    animationDelay="0s"
+                    layout="grid"
+                    memoryCount={memorySummary?.count}
+                    memoryPreview={memorySummary?.latestNote}
+                    memoryAuthor={memorySummary?.latestAuthor}
+                  />
+                );
+              })}
             </MasonryGrid>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
@@ -903,18 +1046,24 @@ const Watchlist: React.FC = () => {
                   />
                 ))}
 
-              {filteredMovies.map((movie, index) => (
-                <MovieItem
-                  key={movie.id}
-                  movie={movie}
-                  currentUser={currentUser}
-                  onToggle={handleToggleWatched}
-                  onDelete={handleDeleteMovie}
-                  onFixMatch={handleFixMatch}
-                  animationDelay={`${index * 0.05}s`}
-                  layout="list"
-                />
-              ))}
+              {filteredMovies.map((movie, index) => {
+                const memorySummary = getMovieMemorySummary(movie);
+                return (
+                  <MovieItem
+                    key={movie.id}
+                    movie={movie}
+                    currentUser={currentUser}
+                    onToggle={handleToggleWatched}
+                    onDelete={handleDeleteMovie}
+                    onFixMatch={handleFixMatch}
+                    animationDelay={`${index * 0.05}s`}
+                    layout="list"
+                    memoryCount={memorySummary?.count}
+                    memoryPreview={memorySummary?.latestNote}
+                    memoryAuthor={memorySummary?.latestAuthor}
+                  />
+                );
+              })}
             </div>
           )}
 
@@ -942,7 +1091,11 @@ const Watchlist: React.FC = () => {
             )}
         </div>
 
-        <MemoryWall watchedMovies={watchedMovies} currentUser={currentUser} />
+        <MemoryWall
+          watchedMovies={watchedMovies}
+          currentUser={currentUser}
+          onMemoriesChange={setSharedMemories}
+        />
       </div>
 
       <ConfirmDialog
