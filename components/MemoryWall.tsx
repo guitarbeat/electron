@@ -12,6 +12,7 @@ import {
   MemorySortMode,
   VISIBLE_COUNT_STEP,
   getMemoryMovieKey,
+  sortMemories,
 } from './memories/memoryUtils';
 
 interface MemoryWallProps {
@@ -26,8 +27,12 @@ interface MemoryWallProps {
     author: string,
     note: string
   ) => Promise<SharedMemory>;
+  updateMemory: (memoryId: string, updates: { note?: string }) => Promise<void>;
+  deleteMemory: (memoryId: string) => Promise<void>;
+  toggleMemoryPin: (memoryId: string) => Promise<void>;
   activeMovieFilter: string;
   onActiveMovieFilterChange: (nextFilter: string) => void;
+  onJumpToMovie: (memory: SharedMemory) => void;
 }
 
 const MemoryWall: React.FC<MemoryWallProps> = ({
@@ -37,8 +42,12 @@ const MemoryWall: React.FC<MemoryWallProps> = ({
   isLoading,
   memoriesError,
   addMemory,
+  updateMemory,
+  deleteMemory,
+  toggleMemoryPin,
   activeMovieFilter,
   onActiveMovieFilterChange,
+  onJumpToMovie,
 }) => {
   const isMobile = useMediaQuery(breakpoints.sm);
   const noteInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -112,11 +121,7 @@ const MemoryWall: React.FC<MemoryWallProps> = ({
         ? memories
         : memories.filter((memory) => getMemoryMovieKey(memory) === activeMovieFilter);
 
-    if (sortMode === 'newest') {
-      return filtered;
-    }
-
-    return [...filtered].reverse();
+    return sortMemories(filtered, sortMode);
   }, [activeMovieFilter, memories, sortMode]);
 
   const visibleMemories = useMemo(() => {
@@ -261,6 +266,17 @@ const MemoryWall: React.FC<MemoryWallProps> = ({
           isLoading={isLoading}
           memoriesError={memoriesError}
           isMobile={isMobile}
+          currentUser={currentUser}
+          onJumpToMovie={onJumpToMovie}
+          onEditMemory={async (memory, nextNote) => {
+            await updateMemory(memory.id, { note: nextNote });
+          }}
+          onDeleteMemory={async (memory) => {
+            await deleteMemory(memory.id);
+          }}
+          onTogglePin={async (memory) => {
+            await toggleMemoryPin(memory.id);
+          }}
         />
       </div>
     </Card>

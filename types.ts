@@ -53,4 +53,6 @@ export interface SharedMemory {
   author: string;
   note: string;
   createdAt: string;
+  updatedAt?: string;
+  isPinned?: boolean;
 }

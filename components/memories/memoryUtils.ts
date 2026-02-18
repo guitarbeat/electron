@@ -1,4 +1,4 @@
-import { Movie, SharedMemory } from '../../types';
+import type { Movie, SharedMemory } from '../../types';
 
 export const MAX_NOTE_LENGTH = 280;
 export const INITIAL_VISIBLE_COUNT = 6;
@@ -6,6 +6,8 @@ export const VISIBLE_COUNT_STEP = 6;
 export const ALL_MOVIES_FILTER = 'all';
 
 export type MemorySortMode = 'newest' | 'oldest';
+export type MemoryMention = '@Aaron' | '@Electra';
+export const MEMORY_MENTION_REGEX = /(@Aaron|@Electra)\b/gi;
 
 interface StickyNoteTheme {
   background: string;
@@ -137,9 +139,7 @@ export const buildMovieMemorySummaries = (
       });
     });
 
-    const allMemories = Array.from(merged.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const allMemories = sortMemories(Array.from(merged.values()), 'newest');
 
     if (allMemories.length > 0) {
       summaries.set(movie.id, {
@@ -151,3 +151,26 @@ export const buildMovieMemorySummaries = (
 
   return summaries;
 };
+
+export const sortMemories = (
+  memories: SharedMemory[],
+  sortMode: MemorySortMode
+): SharedMemory[] => {
+  const ordered = [...memories].sort((a, b) => {
+    if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
+      return a.isPinned ? -1 : 1;
+    }
+
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  if (sortMode === 'newest') {
+    return ordered;
+  }
+
+  const pinned = ordered.filter((memory) => memory.isPinned);
+  const unpinned = ordered.filter((memory) => !memory.isPinned).reverse();
+  return [...pinned, ...unpinned];
+};
+
+export const canCreateMemory = (currentUser: string | null): boolean => Boolean(currentUser);
