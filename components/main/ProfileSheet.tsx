@@ -132,7 +132,7 @@ const ProfileSheet: React.FC<ProfileSheetProps> = ({ isOpen, onClose }) => {
                 letterSpacing: '0.03em',
               }}
             >
-              {currentUser ? currentUser : 'Guest Mode'}
+              {currentUser || 'Guest Mode'}
             </p>
             <p
               style={{
