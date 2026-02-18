@@ -4,10 +4,9 @@ import { User } from '../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import GuestBubbleAvatar from './GuestBubbleAvatar';
 import { usePins } from '../hooks/usePins';
-import { spacing, typography, colors } from '../design-system/tokens';
+import { spacing, typography, radius } from '../design-system/tokens';
 import PinDialog from './PinDialog';
-import Input from './ui/Input';
-import Button from './ui/Button';
+import GuestBubbleNameEditor from './GuestBubbleNameEditor';
 import {
   useGuestProfile,
   MAX_GUEST_NAME_LENGTH,
@@ -15,11 +14,7 @@ import {
   isReservedProfileName,
 } from '../hooks/useGuestProfile';
 
-interface UserSelectionProps {
-  onTakeQuiz: () => void;
-}
-
-const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
+const UserSelection: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin } = usePins();
   const { guestName, setGuestName, clearGuestName } = useGuestProfile();
@@ -29,6 +24,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
   const [isGuestEditorOpen, setIsGuestEditorOpen] = useState(false);
   const [guestNameDraft, setGuestNameDraft] = useState(guestName);
   const [guestError, setGuestError] = useState<string | null>(null);
+  const [isGuestSaveConfirmed, setIsGuestSaveConfirmed] = useState(false);
+  const guestMotionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
   useEffect(() => {
     if (!isGuestEditorOpen) {
@@ -88,6 +85,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
     setGuestName(normalized);
     setCurrentUser(null);
     setGuestError(null);
+    setIsGuestSaveConfirmed(true);
     setIsGuestEditorOpen(false);
   };
 
@@ -96,7 +94,14 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
     setCurrentUser(null);
     setGuestNameDraft('');
     setGuestError(null);
+    setIsGuestSaveConfirmed(false);
   };
+
+  useEffect(() => {
+    if (!isGuestSaveConfirmed) return;
+    const timer = setTimeout(() => setIsGuestSaveConfirmed(false), 1500);
+    return () => clearTimeout(timer);
+  }, [isGuestSaveConfirmed]);
 
   return (
     <div
@@ -156,17 +161,30 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
       </div>
 
       {!currentUser && guestName && !isGuestEditorOpen && (
-        <p
+        <div
           style={{
             marginTop: spacing.sm,
             marginBottom: 0,
-            color: colors.textSecondary,
+            color: isGuestSaveConfirmed ? '#fff0cf' : '#d4e8ff',
             fontSize: typography.fontSize.xs,
             textAlign: 'center',
+            border: `1px solid ${isGuestSaveConfirmed ? 'rgba(255, 214, 144, 0.6)' : 'rgba(147, 199, 252, 0.45)'}`,
+            borderRadius: radius.full,
+            background:
+              'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), rgba(255,255,255,0)), rgba(19, 36, 66, 0.7)',
+            padding: `${spacing.xs} ${spacing.md}`,
+            boxShadow: isGuestSaveConfirmed
+              ? '0 0 18px rgba(255, 196, 120, 0.32)'
+              : '0 0 18px rgba(107, 170, 236, 0.25)',
+            transition: `all 220ms ${guestMotionEasing}`,
+            animation: isGuestSaveConfirmed ? `guest-save-chip-pop 360ms ${guestMotionEasing}` : undefined,
           }}
         >
-          Guest bubble active as {guestName}
-        </p>
+          <style>
+            {`@keyframes guest-save-chip-pop { from { transform: translateY(2px) scale(0.985); opacity: 0.65; } to { transform: translateY(0) scale(1); opacity: 1; } }`}
+          </style>
+          {isGuestSaveConfirmed ? 'Guest bubble saved' : 'Guest bubble active'} as {guestName}
+        </div>
       )}
 
       {isGuestEditorOpen && (
@@ -174,66 +192,30 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
           style={{
             marginTop: spacing.md,
             width: 'min(560px, 100%)',
-            padding: spacing.md,
-            borderRadius: spacing.md,
-            border: `1px solid ${colors.borderSecondary}40`,
-            backgroundColor: 'rgba(18, 31, 58, 0.62)',
-            boxShadow: '0 10px 20px rgba(0,0,0,0.25)',
+            animation: `guest-editor-wrap-rise 240ms ${guestMotionEasing}`,
           }}
         >
-          <Input
-            label="Guest bubble name"
-            value={guestNameDraft}
-            onChange={(event) => {
-              setGuestNameDraft(event.target.value.slice(0, MAX_GUEST_NAME_LENGTH));
+          <style>
+            {`@keyframes guest-editor-wrap-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}
+          </style>
+          <GuestBubbleNameEditor
+            draftName={guestNameDraft}
+            savedName={guestName}
+            error={guestError}
+            autoFocus
+            onDraftChange={(value) => {
+              setGuestNameDraft(value.slice(0, MAX_GUEST_NAME_LENGTH));
               setGuestError(null);
             }}
-            placeholder="Example: Maya"
-            aria-label="Guest bubble name"
-            autoFocus
-            style={{ height: '44px' }}
-          />
-          {guestError && (
-            <p
-              style={{
-                marginTop: spacing.xs,
-                marginBottom: 0,
-                color: colors.error,
-                fontSize: typography.fontSize.xs,
-              }}
-            >
-              {guestError}
-            </p>
-          )}
-          <div
-            style={{
-              marginTop: spacing.sm,
-              display: 'flex',
-              gap: spacing.sm,
-              flexWrap: 'wrap',
-              justifyContent: 'center',
+            onSave={handleGuestSave}
+            onClear={handleGuestClear}
+            isSaveConfirmed={isGuestSaveConfirmed}
+            onClose={() => {
+              setGuestNameDraft(guestName);
+              setGuestError(null);
+              setIsGuestEditorOpen(false);
             }}
-          >
-            <Button type="button" variant="secondary" onClick={handleGuestSave}>
-              Save Guest Bubble
-            </Button>
-            {guestName && (
-              <Button type="button" variant="ghost" onClick={handleGuestClear}>
-                Clear
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setGuestNameDraft(guestName);
-                setGuestError(null);
-                setIsGuestEditorOpen(false);
-              }}
-            >
-              Close
-            </Button>
-          </div>
+          />
         </div>
       )}
 
