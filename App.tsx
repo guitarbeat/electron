@@ -1,88 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useUser } from './context/UserContext';
-import { User } from './types';
+import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
-import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import MessageBoard from './components/MessageBoard';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
-import SnakeGame from './components/snake/SnakeGame';
-import { spacing, colors, typography } from './design-system/tokens';
+import MainTopBar from './components/main/MainTopBar';
+import MainTabNav from './components/main/MainTabNav';
+import ProfileSheet from './components/main/ProfileSheet';
+import ExtrasHub from './components/main/ExtrasHub';
+import { spacing, colors, typography, layout } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
-import Button from './components/ui/Button';
-import { SettingsIcon } from './components/icons';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const { quizData, isLoading: isQuizLoading } = useQuiz();
-  const [displayUser, setDisplayUser] = useState<User | null>(currentUser);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [animationClass, setAnimationClass] = useState<string>('animate-fade-in');
-  const prevUserRef = useRef<User | null>(currentUser);
-  const isInitialMount = useRef(true);
+  const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const [showProfileSheet, setShowProfileSheet] = useState(false);
 
-  // Quiz state
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
   const [showQuiz, setShowQuiz] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
+  const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
 
-  useEffect(() => {
-    // * Skip animation on initial mount
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      prevUserRef.current = currentUser;
-      // * Clear fade-in after initial animation completes
-      setTimeout(() => setAnimationClass(''), 500);
-      return;
-    }
-
-    // * Detects user state changes and triggers appropriate animations
-    const wasLoggedOut = prevUserRef.current === null;
-    const isNowLoggedIn = currentUser !== null;
-    const wasLoggedIn = prevUserRef.current !== null;
-    const isNowLoggedOut = currentUser === null;
-
-    // * Determine transition type
-    const isLogin = wasLoggedOut && isNowLoggedIn;
-    const isLogout = wasLoggedIn && isNowLoggedOut;
-
-    if (isLogin || isLogout) {
-      setIsTransitioning(true);
-
-      if (isLogin) {
-        // * Login: UserSelection exits left, Watchlist enters from right
-        setAnimationClass('animate-login-exit');
-        setTimeout(() => {
-          setDisplayUser(currentUser);
-          setAnimationClass('animate-login-enter');
-          setTimeout(() => {
-            setIsTransitioning(false);
-            setAnimationClass('');
-          }, 500); // * Match animation duration
-        }, 400); // * Match exit animation duration
-      } else {
-        // * Logout: Watchlist zooms out, UserSelection zooms in
-        setAnimationClass('animate-logout-exit');
-        setTimeout(() => {
-          setDisplayUser(null);
-          setAnimationClass('animate-logout-enter');
-          setTimeout(() => {
-            setIsTransitioning(false);
-            setAnimationClass('');
-          }, 500); // * Match animation duration
-        }, 300); // * Match exit animation duration
-      }
-    }
-
-    prevUserRef.current = currentUser;
-  }, [currentUser]);
-
-  // Quiz handlers
   const handleStartQuiz = () => {
+    setActiveTab('extras');
+    setShowQuizEditor(false);
     setShowQuiz(true);
   };
 
@@ -93,36 +40,16 @@ const App: React.FC = () => {
   };
 
   const handleRetakeQuiz = () => {
+    setActiveTab('extras');
+    setShowQuizEditor(false);
     setShowQuiz(true);
   };
 
-  const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
-
-  // Show quiz editor
-  if (showQuizEditor) {
-    return (
-      <div
-        className="bg-main"
-        style={{
-          color: colors.textPrimary,
-          minHeight: '100vh',
-          fontFamily: typography.fontFamily.body.join(', '),
-        }}
-      >
-        <main
-          style={{
-            paddingTop: spacing.xl,
-            paddingBottom: spacing['3xl'],
-            paddingLeft: spacing.lg,
-            paddingRight: spacing.lg,
-            maxWidth: '100%',
-          }}
-        >
-          <QuizEditor onClose={() => setShowQuizEditor(false)} />
-        </main>
-      </div>
-    );
-  }
+  const handleOpenQuizEditor = () => {
+    setActiveTab('extras');
+    setShowQuiz(false);
+    setShowQuizEditor(true);
+  };
 
   return (
     <div
@@ -133,42 +60,6 @@ const App: React.FC = () => {
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-      {/* Quiz Editor Button - Only visible when logged in */}
-      {displayUser && !showQuiz && (
-        <div
-          style={{
-            position: 'fixed',
-            top: isMobile ? `max(${spacing.md}, env(safe-area-inset-top))` : 'auto',
-            bottom: isMobile ? 'auto' : `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-            right: isMobile ? spacing.md : spacing.lg,
-            zIndex: 100,
-          }}
-        >
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowQuizEditor(true)}
-            aria-label="Edit Quiz"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.xs,
-              padding: isMobile ? '8px 12px' : undefined,
-              fontSize: isMobile ? '12px' : undefined,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            }}
-          >
-            <SettingsIcon
-              style={{
-                width: isMobile ? '0.875rem' : '1rem',
-                height: isMobile ? '0.875rem' : '1rem',
-              }}
-            />
-            Edit Quiz
-          </Button>
-        </div>
-      )}
-
       <a
         href="#main-content"
         style={{
@@ -193,91 +84,91 @@ const App: React.FC = () => {
       >
         Skip to content
       </a>
+
+      <MainTopBar
+        activeTab={activeTab}
+        currentUser={currentUser}
+        onOpenProfile={() => setShowProfileSheet(true)}
+      />
+
+      {!isMobile && <MainTabNav activeTab={activeTab} onTabChange={setActiveTab} />}
+
       <main
         id="main-content"
         className="main-container"
         style={{
-          paddingTop: spacing.xl,
-          paddingBottom: spacing['3xl'],
-          paddingLeft: spacing.lg,
-          paddingRight: spacing.lg,
+          paddingTop: spacing.md,
+          paddingBottom: isMobile
+            ? `calc(${layout.tabBarHeight} + ${spacing.lg} + env(safe-area-inset-bottom, 0px))`
+            : spacing['3xl'],
+          paddingLeft: isMobile ? spacing.md : spacing.lg,
+          paddingRight: isMobile ? spacing.md : spacing.lg,
           maxWidth: '100%',
-          outline: 'none', // Ensure programmatic focus doesn't show default ring unless needed
+          outline: 'none',
         }}
-        tabIndex={-1} // Allow programmatic focus
+        tabIndex={-1}
       >
-        <div className="transition-container">
-          {showQuiz ? (
-            <div className={animationClass}>
-              {isQuizLoading || !quizData ? (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: spacing['2xl'],
-                    color: colors.textSecondary,
-                  }}
-                >
-                  Loading quiz...
-                </div>
-              ) : (
-                <QuizFlow onComplete={handleQuizComplete} quizData={quizData} />
-              )}
+        <div
+          style={{
+            maxWidth: layout.contentMaxWidth,
+            margin: '0 auto',
+          }}
+        >
+          <div
+            style={{
+              display: activeTab === 'queue' || activeTab === 'memories' ? 'block' : 'none',
+            }}
+            aria-hidden={activeTab !== 'queue' && activeTab !== 'memories'}
+          >
+            <Watchlist surface={activeTab === 'memories' ? 'memories' : 'queue'} />
+          </div>
+
+          {activeTab === 'messages' && (
+            <div
+              style={{
+                maxWidth: '960px',
+                margin: '0 auto',
+              }}
+            >
+              <MessageBoard mode="embedded" />
             </div>
-          ) : (
-            <div className={animationClass}>
-              <div style={{ marginBottom: spacing.xl, width: '100%' }}>
-                <UserSelection />
-                <div
-                  style={{
-                    marginTop: spacing.md,
-                    border: `1px solid ${colors.borderSecondary}40`,
-                    borderRadius: spacing.md,
-                    padding: isMobile ? spacing.sm : spacing.md,
-                    background: 'rgba(18, 30, 55, 0.55)',
-                  }}
-                >
-                  <h2
+          )}
+
+          {activeTab === 'extras' && (
+            <div className="animate-fade-in" style={{ width: '100%' }}>
+              {showQuizEditor ? (
+                <QuizEditor onClose={() => setShowQuizEditor(false)} />
+              ) : showQuiz ? (
+                isQuizLoading || !quizData ? (
+                  <div
                     style={{
-                      margin: 0,
-                      marginBottom: spacing.xs,
-                      fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
-                      color: colors.textPrimary,
-                    }}
-                  >
-                    Personality Quiz
-                  </h2>
-                  <p
-                    style={{
-                      margin: 0,
-                      marginBottom: spacing.sm,
-                      fontSize: typography.fontSize.sm,
+                      textAlign: 'center',
+                      padding: spacing['2xl'],
                       color: colors.textSecondary,
                     }}
                   >
-                    {quizCompleted
-                      ? 'Optional: retake it any time to refresh your match.'
-                      : 'Optional: take it when you want, the watchlist is ready now.'}
-                  </p>
-                  <Button
-                    variant={quizCompleted ? 'ghost' : 'secondary'}
-                    size="sm"
-                    onClick={quizCompleted ? handleRetakeQuiz : handleStartQuiz}
-                    style={{
-                      width: isMobile ? '100%' : 'auto',
-                      fontSize: typography.fontSize.sm,
-                    }}
-                  >
-                    {quizCompleted ? 'Retake quiz' : 'Take quiz'}
-                  </Button>
-                </div>
-              </div>
-              <Watchlist />
-              <SnakeGame />
+                    Loading quiz...
+                  </div>
+                ) : (
+                  <QuizFlow onComplete={handleQuizComplete} quizData={quizData} />
+                )
+              ) : (
+                <ExtrasHub
+                  currentUser={currentUser}
+                  quizCompleted={quizCompleted}
+                  onStartQuiz={handleStartQuiz}
+                  onRetakeQuiz={handleRetakeQuiz}
+                  onOpenQuizEditor={handleOpenQuizEditor}
+                />
+              )}
             </div>
           )}
         </div>
-        {!showQuiz && currentUser && <MessageBoard />}
       </main>
+
+      {isMobile && <MainTabNav activeTab={activeTab} onTabChange={setActiveTab} />}
+
+      <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
   );
 };
