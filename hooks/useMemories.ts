@@ -17,13 +17,13 @@ const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) =
   return JSON.stringify(prev) === JSON.stringify(next);
 };
 
-export const useMemories = () => {
+export const useMemories = (isPaused: boolean = false) => {
   const {
     data: memories,
     isLoading,
     error,
     refresh,
-  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual);
+  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual, { isPaused });
 
   const sortedMemories = useMemo(() => {
     return [...(memories || [])].sort((a, b) => {

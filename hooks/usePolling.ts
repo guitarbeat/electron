@@ -4,11 +4,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 export const usePolling = <T>(
   fetchFn: () => Promise<T>,
   interval: number | null,
-  equalityFn?: (prev: T | undefined, next: T) => boolean
+  equalityFn?: (prev: T | undefined, next: T) => boolean,
+  options: { isPaused?: boolean } = {}
 ) => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [error, setError] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { isPaused = false } = options;
 
   // ⚡ Bolt Optimization: Use a ref for data to keep 'execute' stable.
   // This prevents 'execute' from changing when data updates, avoiding
@@ -60,13 +62,17 @@ export const usePolling = <T>(
   }, []);
 
   useEffect(() => {
+    if (isPaused) {
+      return;
+    }
+
     execute(true); // initial fetch
     if (interval !== null) {
       const intervalId = setInterval(() => execute(false), interval);
       return () => clearInterval(intervalId);
     }
     return undefined;
-  }, [interval, execute]);
+  }, [interval, execute, isPaused]);
 
   const refresh = useCallback(() => execute(true), [execute]);
 
