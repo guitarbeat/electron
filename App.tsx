@@ -242,7 +242,7 @@ const App: React.FC = () => {
           ) : (
             <div className={animationClass}>
               <div style={{ marginBottom: spacing.xl, width: '100%' }}>
-                <UserSelection onTakeQuiz={handleStartQuiz} />
+                {!currentUser && <UserSelection onTakeQuiz={handleStartQuiz} />}
                 {quizCompleted && (
                   <div
                     style={{
