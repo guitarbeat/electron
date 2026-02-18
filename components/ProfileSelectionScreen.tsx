@@ -5,9 +5,19 @@ import { usePins } from '../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import { colors, typography } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
+import GuestBubbleAvatar from './GuestBubbleAvatar';
 import GlossyQuizButton from './GlossyQuizButton';
 import PinDialog from './PinDialog';
 import SuggestionForm from './SuggestionForm';
+import {
+  useGuestProfile,
+  MAX_GUEST_NAME_LENGTH,
+  normalizeGuestName,
+  isReservedProfileName,
+} from '../hooks/useGuestProfile';
+import Input from './ui/Input';
+import Button from './ui/Button';
+import { spacing } from '../design-system/tokens';
 
 interface ProfileSelectionScreenProps {
   onTakeQuiz: () => void;
@@ -17,11 +27,15 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
   const { setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin, isLoading: isPinsLoading } = usePins();
   const isMobile = useMediaQuery(breakpoints.sm);
+  const { guestName, setGuestName, clearGuestName } = useGuestProfile();
 
-  const [hoveredUser, setHoveredUser] = useState<User | null>(null);
+  const [hoveredUser, setHoveredUser] = useState<User | 'Guest' | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isGuestEditorOpen, setIsGuestEditorOpen] = useState(false);
+  const [guestNameDraft, setGuestNameDraft] = useState(guestName);
+  const [guestError, setGuestError] = useState<string | null>(null);
 
   const handleUserSelect = (user: User) => {
     if (userHasPin(user)) {
@@ -52,6 +66,36 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
   const handlePinCancel = () => {
     setShowPinDialog(false);
     setSelectedUser(null);
+  };
+
+  const handleGuestBubbleClick = () => {
+    setGuestError(null);
+    setGuestNameDraft(guestName);
+    setIsGuestEditorOpen((open) => !open || !guestName);
+  };
+
+  const handleGuestSave = () => {
+    const normalized = normalizeGuestName(guestNameDraft);
+
+    if (!normalized) {
+      setGuestError('Add a guest name to continue.');
+      return;
+    }
+
+    if (isReservedProfileName(normalized)) {
+      setGuestError('Use Aaron or Electra bubbles for those names.');
+      return;
+    }
+
+    setGuestName(normalized);
+    setGuestError(null);
+    setIsGuestEditorOpen(false);
+  };
+
+  const handleGuestClear = () => {
+    clearGuestName();
+    setGuestNameDraft('');
+    setGuestError(null);
   };
 
   return (
@@ -155,53 +199,27 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           />
         </div>
 
-        {/* Heart Divider with Glow Rings */}
+        {/* Guest Bubble in the Middle */}
         <div
           style={{
-            position: 'relative',
+            flex: isMobile ? 'none' : 1,
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            width: isMobile ? '100%' : '80px',
-            height: isMobile ? '60px' : '200px',
+            padding: isMobile ? '16px' : '32px',
           }}
         >
-          {/* Glow rings */}
-          <div
-            className="glow-ring"
-            style={{
-              position: 'absolute',
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              border: '2px solid rgba(255, 105, 180, 0.5)',
-              boxShadow: '0 0 20px rgba(255, 105, 180, 0.4)',
-            }}
+          <GuestBubbleAvatar
+            guestName={guestName}
+            isHovered={hoveredUser === 'Guest'}
+            isActive={Boolean(guestName)}
+            onClick={handleGuestBubbleClick}
+            onMouseEnter={() => setHoveredUser('Guest')}
+            onMouseLeave={() => setHoveredUser(null)}
+            onFocus={() => setHoveredUser('Guest')}
+            onBlur={() => setHoveredUser(null)}
           />
-          <div
-            className="glow-ring-delayed"
-            style={{
-              position: 'absolute',
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              border: '2px solid rgba(135, 206, 250, 0.4)',
-              boxShadow: '0 0 15px rgba(135, 206, 250, 0.3)',
-            }}
-          />
-
-          {/* Heart icon */}
-          <div
-            className="heart-beat"
-            style={{
-              fontSize: isMobile ? '32px' : '40px',
-              filter:
-                'drop-shadow(0 0 15px rgba(255, 105, 180, 0.8)) drop-shadow(0 0 30px rgba(255, 105, 180, 0.5))',
-              zIndex: 1,
-            }}
-          >
-            💗
-          </div>
         </div>
 
         {/* Electra's Side */}
@@ -229,6 +247,80 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           />
         </div>
       </div>
+
+      {/* Guest Name Editor (Visible when clicked) */}
+      {isGuestEditorOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10,
+            width: 'min(560px, 90%)',
+            padding: spacing.md,
+            borderRadius: spacing.md,
+            border: `1px solid ${colors.borderSecondary}40`,
+            backgroundColor: 'rgba(18, 31, 58, 0.9)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Input
+            label="Guest bubble name"
+            value={guestNameDraft}
+            onChange={(event) => {
+              setGuestNameDraft(event.target.value.slice(0, MAX_GUEST_NAME_LENGTH));
+              setGuestError(null);
+            }}
+            placeholder="Example: Maya"
+            aria-label="Guest bubble name"
+            autoFocus
+            style={{ height: '44px' }}
+          />
+          {guestError && (
+            <p
+              style={{
+                marginTop: spacing.xs,
+                marginBottom: 0,
+                color: colors.error,
+                fontSize: typography.fontSize.xs,
+              }}
+            >
+              {guestError}
+            </p>
+          )}
+          <div
+            style={{
+              marginTop: spacing.sm,
+              display: 'flex',
+              gap: spacing.sm,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
+            <Button type="button" variant="secondary" onClick={handleGuestSave}>
+              Save Guest Bubble
+            </Button>
+            {guestName && (
+              <Button type="button" variant="ghost" onClick={handleGuestClear}>
+                Clear
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setGuestNameDraft(guestName);
+                setGuestError(null);
+                setIsGuestEditorOpen(false);
+              }}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Section */}
       <div
