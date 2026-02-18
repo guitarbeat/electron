@@ -21,6 +21,7 @@ interface MovieItemProps {
   memoryCount?: number;
   memoryPreview?: string;
   memoryAuthor?: string;
+  isHighlighted?: boolean;
 }
 
 const getWatchedStatus = (movie: Movie) => {
@@ -44,6 +45,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
   memoryCount,
   memoryPreview,
   memoryAuthor,
+  isHighlighted = false,
 }) => {
   const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
@@ -76,14 +78,22 @@ const MovieItem: React.FC<MovieItemProps> = ({
           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           marginBottom: layout === 'grid' ? spacing.sm : spacing.md,
           borderWidth: watchedByBoth ? (layout === 'grid' ? '2px' : '3px') : '1px',
-          borderColor: watchedByBoth ? colors.accent : colors.border,
+          borderColor: isHighlighted
+            ? colors.secondary
+            : watchedByBoth
+              ? colors.accent
+              : colors.border,
           position: 'relative',
           overflow: 'hidden',
           animationDelay,
           display: 'flex',
           flexDirection: layout === 'grid' ? 'column' : 'row',
           minHeight: layout === 'grid' ? 'auto' : '160px',
-          boxShadow: layout === 'grid' ? shadows.card : shadows.card,
+          boxShadow: isHighlighted
+            ? '0 0 0 2px rgba(135, 206, 250, 0.55), 0 0 24px rgba(135, 206, 250, 0.45)'
+            : layout === 'grid'
+              ? shadows.card
+              : shadows.card,
           backgroundColor: colors.surfaceElevated,
           cursor: isMobile && layout === 'grid' ? 'pointer' : 'default',
           transform: 'translateZ(0)',

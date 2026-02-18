@@ -4,6 +4,7 @@ import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Textarea from '../ui/Textarea';
 import { colors, radius, spacing, typography } from '../../design-system/tokens';
+import { canCreateMemory } from './memoryUtils';
 
 interface MemoryComposerProps {
   watchedMovieOptions: Movie[];
@@ -42,7 +43,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
   onComposerToggle,
   noteInputRef,
 }) => {
-  const creationLocked = !currentUser;
+  const creationLocked = !canCreateMemory(currentUser);
 
   return (
     <>
@@ -253,7 +254,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
                   {remainingChars} chars left
                 </span>
                 <span style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
-                  Tip: press Ctrl/Cmd + Enter to save.
+                  Tip: press Ctrl/Cmd + Enter to save. Mentions: @Aaron or @Electra.
                 </span>
               </div>
               <Button

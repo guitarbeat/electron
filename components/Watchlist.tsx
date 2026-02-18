@@ -31,6 +31,7 @@ import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from './memories/memoryU
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
+const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 
 const getGuestInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
@@ -63,7 +64,15 @@ const Watchlist: React.FC = () => {
     rejectSuggestion,
     isLoading: isSuggestionsLoading,
   } = useSuggestions();
-  const { memories, addMemory, isLoading: isMemoriesLoading, error: memoriesError } = useMemories();
+  const {
+    memories,
+    addMemory,
+    updateMemory,
+    deleteMemory: deleteMemoryRecord,
+    toggleMemoryPin,
+    isLoading: isMemoriesLoading,
+    error: memoriesError,
+  } = useMemories();
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -86,9 +95,13 @@ const Watchlist: React.FC = () => {
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [activeMemoryFilter, setActiveMemoryFilter] = useState(ALL_MOVIES_FILTER);
+  const [showMemoriesOnly, setShowMemoriesOnly] = useState(false);
+  const [isMemoryWallCollapsed, setIsMemoryWallCollapsed] = useState(isMobile);
+  const [highlightMovieId, setHighlightMovieId] = useState<string | null>(null);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const memorySectionRef = useRef<HTMLDivElement | null>(null);
+  const movieResultsRef = useRef<HTMLDivElement | null>(null);
   const guestInitials = getGuestInitials(guestName);
   const guestMotionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
@@ -145,14 +158,18 @@ const Watchlist: React.FC = () => {
         (contentTab === 'to-watch' && movie.watchedBy.length < 2) ||
         (contentTab === 'watched' && movie.watchedBy.length === 2);
       if (!inTab) return false;
+      if (showMemoriesOnly && !movieMemorySummaries.has(movie.id)) return false;
       if (!normalizedSearch) return true;
       return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [sortedMovies, contentTab, normalizedSearch]);
+  }, [sortedMovies, contentTab, normalizedSearch, showMemoriesOnly, movieMemorySummaries]);
 
   const filteredSuggestions = useMemo(() => {
+    if (showMemoriesOnly) {
+      return [];
+    }
     if (contentTab !== 'all' && contentTab !== 'suggestions') {
       return [];
     }
@@ -162,7 +179,17 @@ const Watchlist: React.FC = () => {
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [pendingSuggestions, contentTab, normalizedSearch]);
+  }, [pendingSuggestions, contentTab, normalizedSearch, showMemoriesOnly]);
+
+  const tabCounts = useMemo(
+    () => ({
+      all: sortedMovies.length,
+      'to-watch': sortedMovies.filter((movie) => movie.watchedBy.length < 2).length,
+      watched: sortedMovies.filter((movie) => movie.watchedBy.length === 2).length,
+      suggestions: pendingSuggestions.length,
+    }),
+    [sortedMovies, pendingSuggestions]
+  );
 
   useEffect(() => {
     if (!isGuestBubbleOpen) {
@@ -187,6 +214,35 @@ const Watchlist: React.FC = () => {
       setIsGuestBubbleOpen(true);
     }
   }, [currentUser, hasGuestName]);
+
+  useEffect(() => {
+    setIsMemoryWallCollapsed(isMobile);
+  }, [isMobile]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlFilter = searchParams.get('memoryFilter');
+    const savedFilter = localStorage.getItem(MEMORY_FILTER_STORAGE_KEY);
+    const initialFilter = urlFilter || savedFilter || ALL_MOVIES_FILTER;
+    setActiveMemoryFilter(initialFilter);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(MEMORY_FILTER_STORAGE_KEY, activeMemoryFilter);
+    const url = new URL(window.location.href);
+    if (activeMemoryFilter === ALL_MOVIES_FILTER) {
+      url.searchParams.delete('memoryFilter');
+    } else {
+      url.searchParams.set('memoryFilter', activeMemoryFilter);
+    }
+    window.history.replaceState({}, '', url.toString());
+  }, [activeMemoryFilter]);
+
+  useEffect(() => {
+    if (activeMemoryFilter !== ALL_MOVIES_FILTER) {
+      setIsMemoryWallCollapsed(false);
+    }
+  }, [activeMemoryFilter]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -358,10 +414,65 @@ const Watchlist: React.FC = () => {
 
   const handleJumpToMovieMemories = useCallback((movie: Movie) => {
     setActiveMemoryFilter(movie.id);
+    setIsMemoryWallCollapsed(false);
     requestAnimationFrame(() => {
       memorySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }, []);
+
+  const handleJumpFromMemory = useCallback(
+    (memory: { movieId?: string; movieTitle: string }) => {
+      const targetMovie =
+        (movies || []).find((movie) => movie.id === memory.movieId) ||
+        (movies || []).find(
+          (movie) => movie.title.trim().toLowerCase() === memory.movieTitle.trim().toLowerCase()
+        );
+
+      if (!targetMovie) {
+        setToast({ message: 'Movie is no longer in the queue.', type: 'info' });
+        return;
+      }
+
+      setContentTab('watched');
+      setSearchQuery('');
+      setHighlightMovieId(targetMovie.id);
+      requestAnimationFrame(() => {
+        movieResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      setTimeout(() => {
+        setHighlightMovieId((current) => (current === targetMovie.id ? null : current));
+      }, 2200);
+    },
+    [movies]
+  );
+
+  const handleEditMemory = useCallback(
+    async (memoryId: string, note: string) => {
+      await updateMemory(memoryId, { note });
+      setToast({ message: 'Memory updated.', type: 'success' });
+    },
+    [updateMemory]
+  );
+
+  const handleDeleteMemory = useCallback(
+    async (memoryId: string) => {
+      await deleteMemoryRecord(memoryId);
+      setToast({ message: 'Memory deleted.', type: 'info' });
+    },
+    [deleteMemoryRecord]
+  );
+
+  const handleTogglePin = useCallback(
+    async (memoryId: string) => {
+      const result = await toggleMemoryPin(memoryId);
+      setToast({
+        message: result.isPinned ? 'Memory pinned.' : 'Memory unpinned.',
+        type: 'success',
+      });
+    },
+    [toggleMemoryPin]
+  );
 
   const confirmDelete = async () => {
     if (movieToDelete) {
@@ -922,7 +1033,7 @@ const Watchlist: React.FC = () => {
                   minHeight: '44px',
                 }}
               >
-                {label}
+                {label} ({tabCounts[tabValue]})
               </Button>
             ))}
           </div>
@@ -966,28 +1077,24 @@ const Watchlist: React.FC = () => {
               <option value="title">Title A-Z</option>
               <option value="year">Year (Newest)</option>
             </select>
+            <Button
+              type="button"
+              size="sm"
+              variant={showMemoriesOnly ? 'secondary' : 'ghost'}
+              onClick={() => setShowMemoriesOnly((prev) => !prev)}
+              style={{
+                minHeight: '44px',
+                border: `1px solid ${colors.borderSecondary}40`,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Memories only ({memories.length})
+            </Button>
           </div>
         </Card>
 
         <div
-          ref={memorySectionRef}
-          style={{
-            scrollMarginTop: isMobile ? '88px' : '110px',
-          }}
-        >
-          <MemoryWall
-            watchedMovies={watchedMovies}
-            currentUser={currentUser}
-            memories={memories}
-            isLoading={isMemoriesLoading}
-            memoriesError={memoryErrorMessage}
-            addMemory={addMemory}
-            activeMovieFilter={activeMemoryFilter}
-            onActiveMovieFilterChange={setActiveMemoryFilter}
-          />
-        </div>
-
-        <div
+          ref={movieResultsRef}
           style={{
             opacity: isSubmitting ? 0.5 : 1,
             pointerEvents: isSubmitting ? 'none' : 'auto',
@@ -1022,6 +1129,7 @@ const Watchlist: React.FC = () => {
                     memoryCount={memorySummary?.count}
                     memoryPreview={memorySummary?.latest?.note}
                     memoryAuthor={memorySummary?.latest?.author}
+                    isHighlighted={highlightMovieId === movie.id}
                   />
                 );
               })}
@@ -1055,6 +1163,7 @@ const Watchlist: React.FC = () => {
                     memoryCount={memorySummary?.count}
                     memoryPreview={memorySummary?.latest?.note}
                     memoryAuthor={memorySummary?.latest?.author}
+                    isHighlighted={highlightMovieId === movie.id}
                   />
                 );
               })}
@@ -1083,6 +1192,81 @@ const Watchlist: React.FC = () => {
                 </p>
               </div>
             )}
+        </div>
+
+        <div
+          ref={memorySectionRef}
+          style={{
+            marginTop: spacing.xl,
+            scrollMarginTop: isMobile ? '88px' : '110px',
+          }}
+        >
+          <Card
+            variant="elevated"
+            style={{
+              padding: isMobile ? spacing.sm : spacing.md,
+              border: `1px solid ${colors.borderSecondary}40`,
+              marginBottom: spacing.md,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: spacing.sm,
+                flexWrap: 'wrap',
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    color: colors.textPrimary,
+                    fontSize: typography.fontSize.base,
+                  }}
+                >
+                  Memories ({memories.length})
+                </h3>
+                <p
+                  style={{
+                    margin: `${spacing.xs} 0 0`,
+                    color: colors.textTertiary,
+                    fontSize: typography.fontSize.xs,
+                  }}
+                >
+                  Pinned, editable, and linked to your watched movies.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant={isMemoryWallCollapsed ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setIsMemoryWallCollapsed((prev) => !prev)}
+              >
+                {isMemoryWallCollapsed ? 'Show Memories' : 'Hide Memories'}
+              </Button>
+            </div>
+          </Card>
+
+          {!isMemoryWallCollapsed && (
+            <MemoryWall
+              watchedMovies={watchedMovies}
+              currentUser={currentUser}
+              memories={memories}
+              isLoading={isMemoriesLoading}
+              memoriesError={memoryErrorMessage}
+              addMemory={addMemory}
+              updateMemory={async (memoryId, updates) => {
+                await handleEditMemory(memoryId, updates.note || '');
+              }}
+              deleteMemory={handleDeleteMemory}
+              toggleMemoryPin={handleTogglePin}
+              activeMovieFilter={activeMemoryFilter}
+              onActiveMovieFilterChange={setActiveMemoryFilter}
+              onJumpToMovie={handleJumpFromMemory}
+            />
+          )}
         </div>
       </div>
 

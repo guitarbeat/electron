@@ -81,3 +81,66 @@ export const addMemory = async (
 
   return newMemory;
 };
+
+const findMemoryIndex = (memories: SharedMemory[], memoryId: string): number =>
+  memories.findIndex((memory) => memory.id === memoryId);
+
+export const updateMemory = async (
+  memoryId: string,
+  updates: {
+    note?: string;
+    movieId?: string;
+    movieTitle?: string;
+  }
+): Promise<SharedMemory> => {
+  const memories = await getMemories();
+  const memoryIndex = findMemoryIndex(memories, memoryId);
+
+  if (memoryIndex < 0) {
+    throw new Error('Memory not found');
+  }
+
+  const nextMemory: SharedMemory = {
+    ...memories[memoryIndex],
+    ...updates,
+    note: updates.note?.trim() ?? memories[memoryIndex].note,
+    movieTitle: updates.movieTitle?.trim() ?? memories[memoryIndex].movieTitle,
+    updatedAt: new Date().toISOString(),
+  };
+
+  memories[memoryIndex] = nextMemory;
+  await saveMemories(memories);
+
+  return nextMemory;
+};
+
+export const deleteMemory = async (memoryId: string): Promise<void> => {
+  const memories = await getMemories();
+  const nextMemories = memories.filter((memory) => memory.id !== memoryId);
+
+  if (nextMemories.length === memories.length) {
+    throw new Error('Memory not found');
+  }
+
+  await saveMemories(nextMemories);
+};
+
+export const toggleMemoryPin = async (memoryId: string): Promise<SharedMemory> => {
+  const memories = await getMemories();
+  const memoryIndex = findMemoryIndex(memories, memoryId);
+
+  if (memoryIndex < 0) {
+    throw new Error('Memory not found');
+  }
+
+  const target = memories[memoryIndex];
+  const nextMemory: SharedMemory = {
+    ...target,
+    isPinned: !target.isPinned,
+    updatedAt: new Date().toISOString(),
+  };
+
+  memories[memoryIndex] = nextMemory;
+  await saveMemories(memories);
+  return nextMemory;
+};

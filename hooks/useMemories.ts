@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { usePolling } from './usePolling';
-import { addMemory as addMemoryService, getMemories } from '../services/memoryService';
+import {
+  addMemory as addMemoryService,
+  deleteMemory as deleteMemoryService,
+  getMemories,
+  toggleMemoryPin as toggleMemoryPinService,
+  updateMemory as updateMemoryService,
+} from '../services/memoryService';
 import { SharedMemory } from '../types';
 
 const POLLING_INTERVAL = 30000;
@@ -20,14 +26,44 @@ export const useMemories = () => {
   } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual);
 
   const sortedMemories = useMemo(() => {
-    return [...(memories || [])].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return [...(memories || [])].sort((a, b) => {
+      if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
+        return a.isPinned ? -1 : 1;
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
   }, [memories]);
 
   const addMemory = useCallback(
     async (movieId: string | undefined, movieTitle: string, author: string, note: string) => {
       const result = await addMemoryService(movieId, movieTitle, author, note);
+      refresh();
+      return result;
+    },
+    [refresh]
+  );
+
+  const updateMemory = useCallback(
+    async (memoryId: string, updates: { note?: string; movieId?: string; movieTitle?: string }) => {
+      const result = await updateMemoryService(memoryId, updates);
+      refresh();
+      return result;
+    },
+    [refresh]
+  );
+
+  const deleteMemory = useCallback(
+    async (memoryId: string) => {
+      await deleteMemoryService(memoryId);
+      refresh();
+    },
+    [refresh]
+  );
+
+  const toggleMemoryPin = useCallback(
+    async (memoryId: string) => {
+      const result = await toggleMemoryPinService(memoryId);
       refresh();
       return result;
     },
@@ -40,5 +76,8 @@ export const useMemories = () => {
     error,
     refresh,
     addMemory,
+    updateMemory,
+    deleteMemory,
+    toggleMemoryPin,
   };
 };
