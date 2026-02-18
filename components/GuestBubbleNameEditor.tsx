@@ -8,9 +8,6 @@ interface GuestBubbleNameEditorProps {
   draftName: string;
   savedName: string;
   error?: string | null;
-  isMobile?: boolean;
-  disabled?: boolean;
-  autoFocus?: boolean;
   isSaveConfirmed?: boolean;
   onDraftChange: (value: string) => void;
   onSave: () => void;
@@ -22,9 +19,6 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
   draftName,
   savedName,
   error,
-  isMobile = false,
-  disabled = false,
-  autoFocus = false,
   isSaveConfirmed = false,
   onDraftChange,
   onSave,
@@ -75,7 +69,8 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
           width: '36%',
           height: '100%',
           transform: 'skewX(-18deg)',
-          background: 'linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.16), rgba(255,255,255,0))',
+          background:
+            'linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.16), rgba(255,255,255,0))',
           animation: 'guest-editor-sheen 3.6s ease-in-out infinite',
           pointerEvents: 'none',
         }}
@@ -132,8 +127,7 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
         label="Guest bubble name"
         placeholder="Example: Maya"
         aria-label="Guest bubble name"
-        disabled={disabled}
-        autoFocus={autoFocus}
+        autoFocus
         style={{
           height: '44px',
           transition: `border-color 160ms ${entranceEasing}, box-shadow 160ms ${entranceEasing}`,
@@ -154,8 +148,8 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
         style={{
           display: 'flex',
           gap: spacing.sm,
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: isMobile ? 'stretch' : 'center',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
           animation: `guest-editor-rise 260ms ${entranceEasing}`,
         }}
       >
@@ -165,7 +159,7 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
           onClick={onSave}
           style={{
             minHeight: '44px',
-            width: isMobile ? '100%' : 'auto',
+            width: 'auto',
             transition: `transform 170ms ${entranceEasing}, box-shadow 170ms ${entranceEasing}`,
             animation: isSaveConfirmed ? 'guest-editor-emphasize 420ms ease-out' : undefined,
           }}
@@ -178,7 +172,7 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
             type="button"
             variant="ghost"
             onClick={onClear}
-            style={{ minHeight: '44px', width: isMobile ? '100%' : 'auto' }}
+            style={{ minHeight: '44px', width: 'auto' }}
           >
             Clear
           </Button>
@@ -188,7 +182,7 @@ const GuestBubbleNameEditor: React.FC<GuestBubbleNameEditorProps> = ({
             type="button"
             variant="ghost"
             onClick={onClose}
-            style={{ minHeight: '44px', width: isMobile ? '100%' : 'auto' }}
+            style={{ minHeight: '44px', width: 'auto' }}
           >
             Close
           </Button>

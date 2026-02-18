@@ -194,7 +194,9 @@ const UserSelection: React.FC = () => {
               ? '0 0 18px rgba(255, 196, 120, 0.32)'
               : '0 0 18px rgba(107, 170, 236, 0.25)',
             transition: `all 220ms ${guestMotionEasing}`,
-            animation: isGuestSaveConfirmed ? `guest-save-chip-pop 360ms ${guestMotionEasing}` : undefined,
+            animation: isGuestSaveConfirmed
+              ? `guest-save-chip-pop 360ms ${guestMotionEasing}`
+              : undefined,
           }}
         >
           <style>
@@ -219,7 +221,6 @@ const UserSelection: React.FC = () => {
             draftName={guestNameDraft}
             savedName={guestName}
             error={guestError}
-            autoFocus
             onDraftChange={(value) => {
               setGuestNameDraft(value.slice(0, MAX_GUEST_NAME_LENGTH));
               setGuestError(null);
