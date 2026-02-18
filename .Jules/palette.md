@@ -20,3 +20,8 @@
 
 **Learning:** `IconButton`s in repeated lists (like movie items) often lack context if their `aria-label` is static (e.g., "Delete"). Screen readers announce "Delete" repeatedly, confusing users about which item is targeted.
 **Action:** Incorporate the item's name into the `aria-label` (e.g., "Delete The Matrix") to provide specific context for each action.
+
+## 2026-03-02 - Automated Input Accessibility
+
+**Learning:** Manually managing `id` and `htmlFor` props on inputs and labels is error-prone and often skipped. `React.useId` simplifies this by automatically generating stable, unique IDs, ensuring screen reader associations without manual overhead.
+**Action:** Implement `useId` in base form components (`Input`, `Select`, `Textarea`) to automatically associate labels and error messages (`aria-describedby`) by default.
