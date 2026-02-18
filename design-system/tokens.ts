@@ -184,3 +184,14 @@ export const zIndex = {
   modal: 40,
   tooltip: 50,
 } as const;
+
+// * Layout constants for app shell/navigation
+export const layout = {
+  topBarHeight: '64px',
+  topBarMobileHeight: '58px',
+  tabBarHeight: '72px',
+  desktopNavHeight: '56px',
+  contentMaxWidth: '1200px',
+  contentPaddingX: '1rem',
+  contentPaddingXDesktop: '1.5rem',
+} as const;

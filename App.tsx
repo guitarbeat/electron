@@ -5,7 +5,6 @@ import { useQuiz } from './hooks/useQuiz';
 import UserSelection from './components/UserSelection';
 import Watchlist from './components/Watchlist';
 import MessageBoard from './components/MessageBoard';
-import IntroScreen from './components/quiz/IntroScreen';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import SnakeGame from './components/snake/SnakeGame';
@@ -29,7 +28,6 @@ const App: React.FC = () => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
   const [showQuiz, setShowQuiz] = useState(false);
-  const [showIntro, setShowIntro] = useState(!quizCompleted);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
 
   useEffect(() => {
@@ -85,14 +83,7 @@ const App: React.FC = () => {
 
   // Quiz handlers
   const handleStartQuiz = () => {
-    setShowIntro(false);
     setShowQuiz(true);
-  };
-
-  const handleSkipQuiz = () => {
-    setShowIntro(false);
-    setQuizCompleted(true);
-    localStorage.setItem('quizCompleted', 'true');
   };
 
   const handleQuizComplete = () => {
@@ -102,10 +93,7 @@ const App: React.FC = () => {
   };
 
   const handleRetakeQuiz = () => {
-    localStorage.removeItem('quizCompleted');
-    setQuizCompleted(false);
-    setShowIntro(true);
-    setShowQuiz(false);
+    setShowQuiz(true);
   };
 
   const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
@@ -146,7 +134,7 @@ const App: React.FC = () => {
       }}
     >
       {/* Quiz Editor Button - Only visible when logged in */}
-      {displayUser && !showIntro && !showQuiz && (
+      {displayUser && !showQuiz && (
         <div
           style={{
             position: 'fixed',
@@ -219,11 +207,7 @@ const App: React.FC = () => {
         tabIndex={-1} // Allow programmatic focus
       >
         <div className="transition-container">
-          {showIntro ? (
-            <div className={animationClass}>
-              <IntroScreen onStartQuiz={handleStartQuiz} onSkip={handleSkipQuiz} />
-            </div>
-          ) : showQuiz ? (
+          {showQuiz ? (
             <div className={animationClass}>
               {isQuizLoading || !quizData ? (
                 <div
@@ -242,34 +226,57 @@ const App: React.FC = () => {
           ) : (
             <div className={animationClass}>
               <div style={{ marginBottom: spacing.xl, width: '100%' }}>
-                {!currentUser && <UserSelection onTakeQuiz={handleStartQuiz} />}
-                {quizCompleted && (
-                  <div
+                <UserSelection />
+                <div
+                  style={{
+                    marginTop: spacing.md,
+                    border: `1px solid ${colors.borderSecondary}40`,
+                    borderRadius: spacing.md,
+                    padding: isMobile ? spacing.sm : spacing.md,
+                    background: 'rgba(18, 30, 55, 0.55)',
+                  }}
+                >
+                  <h2
                     style={{
-                      textAlign: 'center',
-                      marginTop: spacing.sm,
+                      margin: 0,
+                      marginBottom: spacing.xs,
+                      fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
+                      color: colors.textPrimary,
                     }}
                   >
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRetakeQuiz}
-                      style={{
-                        fontSize: typography.fontSize.xs,
-                        color: colors.textSecondary,
-                      }}
-                    >
-                      Retake quiz
-                    </Button>
-                  </div>
-                )}
+                    Personality Quiz
+                  </h2>
+                  <p
+                    style={{
+                      margin: 0,
+                      marginBottom: spacing.sm,
+                      fontSize: typography.fontSize.sm,
+                      color: colors.textSecondary,
+                    }}
+                  >
+                    {quizCompleted
+                      ? 'Optional: retake it any time to refresh your match.'
+                      : 'Optional: take it when you want, the watchlist is ready now.'}
+                  </p>
+                  <Button
+                    variant={quizCompleted ? 'ghost' : 'secondary'}
+                    size="sm"
+                    onClick={quizCompleted ? handleRetakeQuiz : handleStartQuiz}
+                    style={{
+                      width: isMobile ? '100%' : 'auto',
+                      fontSize: typography.fontSize.sm,
+                    }}
+                  >
+                    {quizCompleted ? 'Retake quiz' : 'Take quiz'}
+                  </Button>
+                </div>
               </div>
               <Watchlist />
               <SnakeGame />
             </div>
           )}
         </div>
-        {!showIntro && !showQuiz && <MessageBoard />}
+        {!showQuiz && currentUser && <MessageBoard />}
       </main>
     </div>
   );

@@ -2,42 +2,52 @@ import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from '
 import FixMatchDialog from './FixMatchDialog';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
-import { usePins } from '../hooks/usePins';
 import { useSuggestions } from '../hooks/useSuggestions';
-import { Movie, MovieSuggestion, SharedMemory } from '../types';
+import { Movie, MovieSuggestion } from '../types';
 import { PlusIcon, DiceIcon, FilmIcon, LockIcon, LayoutGridIcon, LayoutListIcon } from './icons';
 import SpinWheel from './SpinWheel';
-import Header from './Header';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import IconButton from './ui/IconButton';
 import ConfirmDialog from './ui/ConfirmDialog';
-import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
 import MemoryWall from './MemoryWall';
+import GuestBubbleNameEditor from './GuestBubbleNameEditor';
+import {
+  useGuestProfile,
+  MAX_GUEST_NAME_LENGTH,
+  normalizeGuestName,
+  isReservedProfileName,
+} from '../hooks/useGuestProfile';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
-const MAX_GUEST_NAME_LENGTH = 40;
-const GUEST_NAME_STORAGE_KEY = 'movieWatchlistGuestName';
 
-const getStoredGuestName = () => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
+interface WatchlistProps {
+  surface: 'queue' | 'memories';
+}
 
-  return localStorage.getItem(GUEST_NAME_STORAGE_KEY)?.trim() || '';
+const getGuestInitials = (name: string): string => {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!parts.length) return '';
+  return parts.map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2);
 };
 
-const Watchlist: React.FC = () => {
-  const { currentUser, setCurrentUser } = useUser();
+const Watchlist: React.FC<WatchlistProps> = ({ surface }) => {
+  const { currentUser } = useUser();
+  const { guestName, hasGuestName, setGuestName, clearGuestName } = useGuestProfile();
   const isMobile = useMediaQuery(breakpoints.sm);
   const {
     movies,
@@ -49,7 +59,6 @@ const Watchlist: React.FC = () => {
     refresh: refreshMovies,
     manualMetadataUpdate,
   } = useMovies(currentUser);
-  const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
   const {
     pendingSuggestions,
     addSuggestion,
@@ -72,19 +81,16 @@ const Watchlist: React.FC = () => {
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
-  const [guestName, setGuestName] = useState(() => getStoredGuestName());
-  const [guestNameDraft, setGuestNameDraft] = useState(() => getStoredGuestName());
-  const [isGuestBubbleOpen, setIsGuestBubbleOpen] = useState(() => !getStoredGuestName());
-  const [showPinDialog, setShowPinDialog] = useState(false);
-  const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
-  const [isPinLoading, setIsPinLoading] = useState(false);
-  const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
+  const [guestNameDraft, setGuestNameDraft] = useState(guestName);
+  const [guestError, setGuestError] = useState<string | null>(null);
+  const [isGuestSaveConfirmed, setIsGuestSaveConfirmed] = useState(false);
+  const [isGuestBubbleOpen, setIsGuestBubbleOpen] = useState(() => !guestName);
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [celebratedMovieTitle, setCelebratedMovieTitle] = useState<string | null>(null);
-  const [sharedMemories, setSharedMemories] = useState<SharedMemory[]>([]);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const guestInitials = getGuestInitials(guestName);
+  const guestMotionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
   const showGuestWarning = useCallback(() => {
     setToast({
@@ -104,7 +110,7 @@ const Watchlist: React.FC = () => {
   const isSpinLocked = !currentUser;
   const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
   const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
-  const sharedMemoryCount = sharedMemories.length;
+  const isQueueSurface = surface === 'queue';
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const sortedMovies = useMemo(() => {
     if (!movies) return [];
@@ -149,43 +155,19 @@ const Watchlist: React.FC = () => {
     });
   }, [pendingSuggestions, contentTab, normalizedSearch]);
 
-  const memorySummariesByMovie = useMemo(() => {
-    const summaries = new Map<
-      string,
-      { count: number; latestNote: string; latestAuthor: string }
-    >();
 
-    sharedMemories.forEach((memory) => {
-      const fallbackKey = `title:${memory.movieTitle.trim().toLowerCase()}`;
-      const key = memory.movieId || fallbackKey;
-      const existing = summaries.get(key);
+  useEffect(() => {
+    if (!isGuestBubbleOpen) {
+      setGuestNameDraft(guestName);
+      setGuestError(null);
+    }
+  }, [guestName, isGuestBubbleOpen]);
 
-      if (existing) {
-        summaries.set(key, { ...existing, count: existing.count + 1 });
-        return;
-      }
-
-      summaries.set(key, {
-        count: 1,
-        latestNote: memory.note,
-        latestAuthor: memory.author,
-      });
-    });
-
-    return summaries;
-  }, [sharedMemories]);
-
-  const getMovieMemorySummary = useCallback(
-    (movie: Movie) => {
-      const byId = memorySummariesByMovie.get(movie.id);
-      if (byId) {
-        return byId;
-      }
-
-      return memorySummariesByMovie.get(`title:${movie.title.trim().toLowerCase()}`);
-    },
-    [memorySummariesByMovie]
-  );
+  useEffect(() => {
+    if (!isGuestSaveConfirmed) return;
+    const timer = setTimeout(() => setIsGuestSaveConfirmed(false), 1500);
+    return () => clearTimeout(timer);
+  }, [isGuestSaveConfirmed]);
 
   useEffect(() => {
     if (currentUser) {
@@ -193,10 +175,10 @@ const Watchlist: React.FC = () => {
       return;
     }
 
-    if (!guestName) {
+    if (!hasGuestName) {
       setIsGuestBubbleOpen(true);
     }
-  }, [currentUser, guestName]);
+  }, [currentUser, hasGuestName]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -212,14 +194,12 @@ const Watchlist: React.FC = () => {
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           // Movie just became watched by both!
           setShowConfetti(true);
-          setCelebratedMovieTitle(movie.title);
           setToast({
             message: `🎉 You both watched "${movie.title}"!`,
             type: 'success',
           });
           setTimeout(() => {
             setShowConfetti(false);
-            setCelebratedMovieTitle(null);
           }, 3000);
           break;
         }
@@ -252,45 +232,32 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  const persistGuestName = (nextGuestName: string) => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    if (nextGuestName) {
-      localStorage.setItem(GUEST_NAME_STORAGE_KEY, nextGuestName);
-    } else {
-      localStorage.removeItem(GUEST_NAME_STORAGE_KEY);
-    }
-  };
-
   const handleSaveGuestBubble = () => {
-    const normalizedName = guestNameDraft.trim().slice(0, MAX_GUEST_NAME_LENGTH);
+    const normalizedName = normalizeGuestName(guestNameDraft);
 
     if (!normalizedName) {
-      setToast({ message: 'Enter a guest name to continue.', type: 'info' });
+      setGuestError('Add a guest name to continue.');
       return;
     }
 
-    if (['aaron', 'electra'].includes(normalizedName.toLowerCase())) {
-      setToast({
-        message: 'Aaron and Electra should use their profile bubbles above.',
-        type: 'info',
-      });
+    if (isReservedProfileName(normalizedName)) {
+      setGuestError('Use Aaron or Electra bubbles for those names.');
       return;
     }
 
     setGuestName(normalizedName);
     setGuestNameDraft(normalizedName);
-    persistGuestName(normalizedName);
+    setGuestError(null);
+    setIsGuestSaveConfirmed(true);
     setIsGuestBubbleOpen(false);
     setToast({ message: `Guest bubble saved as "${normalizedName}"`, type: 'success' });
   };
 
   const handleResetGuestBubble = () => {
-    setGuestName('');
+    clearGuestName();
     setGuestNameDraft('');
-    persistGuestName('');
+    setGuestError(null);
+    setIsGuestSaveConfirmed(false);
     setIsGuestBubbleOpen(true);
     setToast({ message: 'Guest bubble removed.', type: 'info' });
   };
@@ -310,7 +277,7 @@ const Watchlist: React.FC = () => {
       return;
     }
 
-    if (!currentUser && ['aaron', 'electra'].includes(guestAuthor.toLowerCase())) {
+    if (!currentUser && isReservedProfileName(guestAuthor)) {
       setToast({
         message: 'If this is Aaron or Electra, select that profile above to add directly.',
         type: 'info',
@@ -426,63 +393,6 @@ const Watchlist: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-  };
-
-  const handlePinAction = () => {
-    if (!currentUser) {
-      showGuestWarning();
-      return;
-    }
-    if (userHasPin(currentUser)) {
-      setPinMode('change');
-    } else {
-      setPinMode('set');
-    }
-    setShowPinDialog(true);
-  };
-
-  const handlePinSubmit = async (pin: string): Promise<boolean> => {
-    if (!currentUser) return false;
-    setIsPinLoading(true);
-    try {
-      if (pinMode === 'set') {
-        await setUserPin(currentUser, pin);
-        setShowPinDialog(false);
-        setToast({ message: 'PIN set successfully!', type: 'success' });
-        return true;
-      }
-      // change mode
-      const isValid = await verifyUserPin(currentUser, pin);
-      if (isValid) {
-        setPinMode('set'); // Reuse set mode for the new pin
-        return true;
-      }
-      setToast({ message: 'Incorrect PIN', type: 'error' });
-      return false;
-    } catch (err: any) {
-      setToast({ message: `Error: ${err.message}`, type: 'error' });
-      return false;
-    } finally {
-      setIsPinLoading(false);
-    }
-  };
-
-  const handleRemovePin = async () => {
-    if (!currentUser) return;
-    setIsPinLoading(true);
-    try {
-      await removeUserPin(currentUser);
-      setToast({ message: 'PIN removed', type: 'info' });
-    } catch (err: any) {
-      setToast({ message: `Error: ${err.message}`, type: 'error' });
-    } finally {
-      setIsPinLoading(false);
-      setShowRemovePinConfirm(false);
-    }
-  };
-
   if (isLoading && !movies) {
     return (
       <div
@@ -534,20 +444,9 @@ const Watchlist: React.FC = () => {
     <div className="quiet-ui" style={{ background: colors.background }}>
       {/* Confetti celebration */}
       {showConfetti && <Confetti isActive={showConfetti} />}
-
-      <Header
-        currentUser={currentUser || null}
-        onLogout={handleLogout}
-        onPinAction={handlePinAction}
-        onRemovePin={() => setShowRemovePinConfirm(true)}
-        hasPin={currentUser ? userHasPin(currentUser) : false}
-        movieCount={movies?.length || 0}
-        watchedTogetherCount={watchedMovies.length}
-      />
-
       <div
         style={{
-          maxWidth: viewMode === 'grid' ? '1200px' : '44rem',
+          maxWidth: isQueueSurface ? (viewMode === 'grid' ? '1200px' : '44rem') : '960px',
           margin: '0 auto',
           padding: `${spacing.lg} ${spacing.md}`,
           transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -582,10 +481,12 @@ const Watchlist: React.FC = () => {
           </div>
         )}
 
-        <Card
-          variant="elevated"
-          style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
-        >
+        {isQueueSurface && (
+          <>
+            <Card
+              variant="elevated"
+              style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
+            >
           <form onSubmit={handleAddMovie}>
             <div
               style={{
@@ -626,26 +527,102 @@ const Watchlist: React.FC = () => {
                 {!currentUser && (
                   <button
                     type="button"
-                    onClick={() => setIsGuestBubbleOpen((isOpen) => !isOpen)}
+                    onClick={() => {
+                      setGuestError(null);
+                      setGuestNameDraft(guestName);
+                      setIsGuestBubbleOpen((isOpen) => !isOpen || !hasGuestName);
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.transform = 'translateY(-1px)';
+                      event.currentTarget.style.filter = 'brightness(1.04)';
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.transform = 'translateY(0)';
+                      event.currentTarget.style.filter = 'brightness(1)';
+                    }}
+                    onFocus={(event) => {
+                      event.currentTarget.style.transform = 'translateY(-1px)';
+                      event.currentTarget.style.filter = 'brightness(1.04)';
+                    }}
+                    onBlur={(event) => {
+                      event.currentTarget.style.transform = 'translateY(0)';
+                      event.currentTarget.style.filter = 'brightness(1)';
+                    }}
+                    onMouseDown={(event) => {
+                      event.currentTarget.style.transform = 'translateY(1px) scale(0.99)';
+                    }}
+                    onMouseUp={(event) => {
+                      event.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
                     style={{
                       minHeight: '44px',
                       borderRadius: radius.full,
-                      border: `1px solid ${colors.accent}55`,
+                      border: `1px solid ${hasGuestName ? '#8ed0ff8c' : '#ffcb8a8a'}`,
                       background:
-                        'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), rgba(255,255,255,0)), linear-gradient(145deg, rgba(62, 91, 140, 0.85), rgba(39, 59, 96, 0.9))',
+                        'radial-gradient(circle at 28% 20%, rgba(255,255,255,0.2), rgba(255,255,255,0)), linear-gradient(145deg, rgba(34, 56, 95, 0.92), rgba(22, 36, 65, 0.94))',
                       color: colors.textPrimary,
-                      padding: `0 ${spacing.md}`,
+                      padding: `0 ${spacing.sm}`,
                       fontSize: typography.fontSize.xs,
                       fontFamily:
                         "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
                       letterSpacing: '0.04em',
                       whiteSpace: 'nowrap',
                       cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: spacing.xs,
+                      boxShadow: hasGuestName
+                        ? '0 0 16px rgba(114, 186, 245, 0.34), inset 0 1px 0 rgba(255,255,255,0.18)'
+                        : '0 0 14px rgba(255, 196, 125, 0.26), inset 0 1px 0 rgba(255,255,255,0.14)',
+                      transform: 'translateY(0)',
+                      filter: 'brightness(1)',
+                      transition: `transform 160ms ${guestMotionEasing}, box-shadow 180ms ${guestMotionEasing}, filter 160ms ${guestMotionEasing}`,
                     }}
                     aria-label={guestName ? 'Edit guest bubble name' : 'Create guest bubble'}
                     title={guestName ? 'Edit guest bubble name' : 'Create guest bubble'}
                   >
-                    {guestName ? `Guest: ${guestName}` : 'Create Guest Bubble'}
+                    <span
+                      aria-hidden
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.7rem',
+                        color: '#eaf5ff',
+                        border: '1px solid rgba(166, 216, 255, 0.65)',
+                        background:
+                          'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.36), rgba(255,255,255,0)), linear-gradient(145deg, rgba(59, 104, 161, 0.95), rgba(36, 66, 120, 0.95))',
+                      }}
+                    >
+                      {guestInitials || '+'}
+                    </span>
+                    <span>{guestName ? `Guest: ${guestName}` : 'Create Guest Bubble'}</span>
+                    <span
+                      style={{
+                        borderRadius: radius.full,
+                        border: `1px solid ${
+                          isGuestSaveConfirmed ? '#ffd899aa' : hasGuestName ? '#9bd8ff88' : '#ffd29a88'
+                        }`,
+                        padding: '2px 8px',
+                        fontSize: '0.62rem',
+                        color: isGuestSaveConfirmed
+                          ? '#fff1d8'
+                          : hasGuestName
+                            ? '#cde9ff'
+                            : '#ffe1bc',
+                        background: isGuestSaveConfirmed
+                          ? 'rgba(255, 206, 138, 0.2)'
+                          : hasGuestName
+                            ? 'rgba(126, 194, 252, 0.16)'
+                            : 'rgba(255, 194, 122, 0.14)',
+                        transition: `all 180ms ${guestMotionEasing}`,
+                      }}
+                    >
+                      {isGuestSaveConfirmed ? 'Saved' : hasGuestName ? 'Edit' : 'Create'}
+                    </span>
                   </button>
                 )}
 
@@ -710,74 +687,68 @@ const Watchlist: React.FC = () => {
                 {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
               </span>
             </div>
-            {!currentUser && (
-              <div
-                style={{
-                  marginTop: spacing.sm,
-                  padding: spacing.sm,
-                  border: `1px solid ${colors.borderSecondary}35`,
-                  borderRadius: radius.md,
-                  backgroundColor: 'rgba(19, 31, 58, 0.55)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: spacing.sm,
-                }}
-              >
-                {isGuestBubbleOpen ? (
-                  <>
-                    <Input
-                      value={guestNameDraft}
-                      onChange={(e) =>
-                        setGuestNameDraft(e.target.value.slice(0, MAX_GUEST_NAME_LENGTH))
-                      }
-                      label="Guest bubble name"
-                      placeholder="Example: Maya"
-                      aria-label="Guest bubble name"
-                      disabled={isSubmitting || isAdding}
-                      style={{ height: '44px' }}
-                    />
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: spacing.sm,
-                        flexDirection: isMobile ? 'column' : 'row',
-                      }}
-                    >
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={handleSaveGuestBubble}
-                        style={{ minHeight: '44px', width: isMobile ? '100%' : 'auto' }}
-                      >
-                        Save Guest Bubble
-                      </Button>
-                      {guestName && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={handleResetGuestBubble}
-                          style={{ minHeight: '44px', width: isMobile ? '100%' : 'auto' }}
-                        >
-                          Reset
-                        </Button>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div
+            {!currentUser &&
+              (isGuestBubbleOpen ? (
+                <GuestBubbleNameEditor
+                  draftName={guestNameDraft}
+                  savedName={guestName}
+                  error={guestError}
+                  isMobile={isMobile}
+                  disabled={isSubmitting || isAdding}
+                  onDraftChange={(value) => {
+                    setGuestNameDraft(value.slice(0, MAX_GUEST_NAME_LENGTH));
+                    setGuestError(null);
+                  }}
+                  onSave={handleSaveGuestBubble}
+                  onClear={handleResetGuestBubble}
+                  isSaveConfirmed={isGuestSaveConfirmed}
+                  onClose={() => {
+                    setGuestNameDraft(guestName);
+                    setGuestError(null);
+                    setIsGuestBubbleOpen(false);
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    marginTop: spacing.sm,
+                    padding: spacing.sm,
+                    border: `1px solid ${colors.borderSecondary}35`,
+                    borderRadius: radius.full,
+                    background:
+                      'radial-gradient(circle at 22% 15%, rgba(255,255,255,0.16), rgba(255,255,255,0)), rgba(19, 31, 58, 0.66)',
+                    color: '#d8ecff',
+                    fontSize: typography.fontSize.xs,
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    letterSpacing: '0.04em',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: spacing.xs,
+                    boxShadow: '0 0 16px rgba(116, 180, 235, 0.25)',
+                    transition: `all 220ms ${guestMotionEasing}`,
+                  }}
+                >
+                  <span
+                    aria-hidden
                     style={{
-                      color: '#ffe9c0',
-                      fontSize: typography.fontSize.xs,
-                      fontFamily:
-                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                      letterSpacing: '0.04em',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(170, 217, 255, 0.6)',
+                      background: 'rgba(69, 117, 173, 0.65)',
+                      color: '#f1f8ff',
+                      fontSize: '0.62rem',
                     }}
                   >
-                    Guest bubble active: {guestName}
-                  </div>
-                )}
-              </div>
-            )}
+                    {guestInitials || 'G'}
+                  </span>
+                  Guest bubble active: {guestName}
+                </div>
+              ))}
 
             <div
               style={{
@@ -793,7 +764,7 @@ const Watchlist: React.FC = () => {
                   isSubmitting ||
                   isAdding ||
                   !newMovieTitle.trim() ||
-                  (!currentUser && !guestName.trim())
+                  (!currentUser && !hasGuestName)
                 }
                 isLoading={isAdding}
                 aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
@@ -813,29 +784,29 @@ const Watchlist: React.FC = () => {
                 {currentUser ? 'Add to Watchlist' : 'Submit Suggestion'}
               </Button>
             </div>
-          </form>
-        </Card>
+            </form>
+          </Card>
 
-        {/* Combined Spin Wheel Header/Card */}
-        <Card
-          variant="elevated"
-          className={currentUser && !canSpin ? 'neon-pulse' : undefined}
-          style={{
-            marginBottom: spacing.xl,
-            padding: isMobile ? spacing.md : spacing.lg,
-            border: `1px solid ${canSpin ? colors.secondary : colors.borderSecondary}55`,
-            background: isSpinLocked
-              ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
-              : canSpin
-                ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
-                : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
-            boxShadow: isSpinLocked
-              ? shadows.card
-              : canSpin
-                ? shadows.glowBlue
-                : shadows.glowStrong,
-          }}
-        >
+          {/* Combined Spin Wheel Header/Card */}
+          <Card
+            variant="elevated"
+            className={currentUser && !canSpin ? 'neon-pulse' : undefined}
+            style={{
+              marginBottom: spacing.xl,
+              padding: isMobile ? spacing.md : spacing.lg,
+              border: `1px solid ${canSpin ? colors.secondary : colors.borderSecondary}55`,
+              background: isSpinLocked
+                ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
+                : canSpin
+                  ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
+                  : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
+              boxShadow: isSpinLocked
+                ? shadows.card
+                : canSpin
+                  ? shadows.glowBlue
+                  : shadows.glowStrong,
+            }}
+          >
           <div
             style={{
               display: 'flex',
@@ -869,21 +840,6 @@ const Watchlist: React.FC = () => {
                 >
                   Add {moviesNeededForSpin} more unwatched{' '}
                   {moviesNeededForSpin === 1 ? 'movie' : 'movies'}.
-                </p>
-              )}
-              {sharedMemoryCount > 0 && (
-                <p
-                  style={{
-                    margin: `${spacing.xs} 0 0`,
-                    color: '#ffe5b5',
-                    fontSize: typography.fontSize.xs,
-                    fontFamily:
-                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                    letterSpacing: '0.03em',
-                  }}
-                >
-                  {sharedMemoryCount} shared memor{sharedMemoryCount === 1 ? 'y' : 'ies'} on your
-                  wall.
                 </p>
               )}
             </div>
@@ -1015,24 +971,18 @@ const Watchlist: React.FC = () => {
                 />
               ))}
 
-              {filteredMovies.map((movie) => {
-                const memorySummary = getMovieMemorySummary(movie);
-                return (
-                  <MovieItem
-                    key={movie.id}
-                    movie={movie}
-                    currentUser={currentUser}
-                    onToggle={handleToggleWatched}
-                    onDelete={handleDeleteMovie}
-                    onFixMatch={handleFixMatch}
-                    animationDelay="0s"
-                    layout="grid"
-                    memoryCount={memorySummary?.count}
-                    memoryPreview={memorySummary?.latestNote}
-                    memoryAuthor={memorySummary?.latestAuthor}
-                  />
-                );
-              })}
+              {filteredMovies.map((movie) => (
+                <MovieItem
+                  key={movie.id}
+                  movie={movie}
+                  currentUser={currentUser}
+                  onToggle={handleToggleWatched}
+                  onDelete={handleDeleteMovie}
+                  onFixMatch={handleFixMatch}
+                  animationDelay="0s"
+                  layout="grid"
+                />
+              ))}
             </MasonryGrid>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
@@ -1047,24 +997,18 @@ const Watchlist: React.FC = () => {
                   />
                 ))}
 
-              {filteredMovies.map((movie, index) => {
-                const memorySummary = getMovieMemorySummary(movie);
-                return (
-                  <MovieItem
-                    key={movie.id}
-                    movie={movie}
-                    currentUser={currentUser}
-                    onToggle={handleToggleWatched}
-                    onDelete={handleDeleteMovie}
-                    onFixMatch={handleFixMatch}
-                    animationDelay={`${index * 0.05}s`}
-                    layout="list"
-                    memoryCount={memorySummary?.count}
-                    memoryPreview={memorySummary?.latestNote}
-                    memoryAuthor={memorySummary?.latestAuthor}
-                  />
-                );
-              })}
+              {filteredMovies.map((movie, index) => (
+                <MovieItem
+                  key={movie.id}
+                  movie={movie}
+                  currentUser={currentUser}
+                  onToggle={handleToggleWatched}
+                  onDelete={handleDeleteMovie}
+                  onFixMatch={handleFixMatch}
+                  animationDelay={`${index * 0.05}s`}
+                  layout="list"
+                />
+              ))}
             </div>
           )}
 
@@ -1091,65 +1035,52 @@ const Watchlist: React.FC = () => {
               </div>
             )}
         </div>
+      </>
+    )}
 
-        <MemoryWall
-          watchedMovies={watchedMovies}
-          currentUser={currentUser}
-          onMemoriesChange={setSharedMemories}
-        />
+        {surface === 'memories' && (
+          <MemoryWall watchedMovies={watchedMovies} currentUser={currentUser} />
+        )}
       </div>
 
-      <ConfirmDialog
-        isOpen={!!movieToDelete}
-        title="Delete Movie"
-        message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
-        onConfirm={confirmDelete}
-        onCancel={() => setMovieToDelete(null)}
-      />
+      {isQueueSurface && (
+        <>
+          <ConfirmDialog
+            isOpen={!!movieToDelete}
+            title="Delete Movie"
+            message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
+            onConfirm={confirmDelete}
+            onCancel={() => setMovieToDelete(null)}
+          />
 
-      {isWheelVisible && (
-        <SpinWheel
-          isOpen={isWheelVisible}
-          onClose={() => setIsWheelVisible(false)}
-          movies={unwatchedMovies}
-          onWinner={(movie) => {
-            setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
-          }}
-        />
+          {isWheelVisible && (
+            <SpinWheel
+              isOpen={isWheelVisible}
+              onClose={() => setIsWheelVisible(false)}
+              movies={unwatchedMovies}
+              onWinner={(movie) => {
+                setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
+              }}
+            />
+          )}
+
+          <FixMatchDialog
+            isOpen={!!movieToFix}
+            movieTitle={movieToFix?.title || ''}
+            onClose={() => setMovieToFix(null)}
+            onSelect={async (metadata) => {
+              if (!movieToFix) return;
+              setToast({ message: `Updating details for "${movieToFix.title}"...`, type: 'info' });
+              const success = await manualMetadataUpdate(movieToFix, metadata);
+              if (success) {
+                setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
+              } else {
+                setToast({ message: `Failed to update metadata.`, type: 'error' });
+              }
+            }}
+          />
+        </>
       )}
-
-      <PinDialog
-        isOpen={showPinDialog}
-        user={currentUser!}
-        onCancel={() => setShowPinDialog(false)}
-        onSubmit={handlePinSubmit}
-        mode={pinMode}
-        isLoading={isPinLoading}
-      />
-
-      <FixMatchDialog
-        isOpen={!!movieToFix}
-        movieTitle={movieToFix?.title || ''}
-        onClose={() => setMovieToFix(null)}
-        onSelect={async (metadata) => {
-          if (!movieToFix) return;
-          setToast({ message: `Updating details for "${movieToFix.title}"...`, type: 'info' });
-          const success = await manualMetadataUpdate(movieToFix, metadata);
-          if (success) {
-            setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
-          } else {
-            setToast({ message: `Failed to update metadata.`, type: 'error' });
-          }
-        }}
-      />
-
-      <ConfirmDialog
-        isOpen={showRemovePinConfirm}
-        title="Remove PIN"
-        message="Are you sure you want to remove your PIN? Anyone will be able to mark movies as watched for you."
-        onConfirm={handleRemovePin}
-        onCancel={() => setShowRemovePinConfirm(false)}
-      />
     </div>
   );
 };
