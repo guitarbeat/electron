@@ -42,7 +42,6 @@ const Watchlist: React.FC = () => {
   const {
     movies,
     isLoading,
-    error,
     isSubmitting,
     addMovie,
     toggleWatched,
