@@ -329,14 +329,21 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-        right: isMobile ? spacing.md : spacing.lg,
-        left: isMobile ? spacing.md : 'auto',
-        width: isMobile ? 'auto' : 'min(440px, 90vw)',
-        zIndex: 1000,
-      }}
+      style={
+        isEmbedded
+          ? {
+              position: 'relative',
+              width: '100%',
+            }
+          : {
+              position: 'fixed',
+              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+              right: isMobile ? spacing.md : spacing.lg,
+              left: isMobile ? spacing.md : 'auto',
+              width: isMobile ? 'auto' : 'min(440px, 90vw)',
+              zIndex: 1000,
+            }
+      }
     >
       <Card
         style={{
@@ -367,9 +374,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           >
             Snake
           </h2>
-          <Button size="sm" variant="ghost" onClick={handleMinimize}>
-            Hide
-          </Button>
+          {!isEmbedded && (
+            <Button size="sm" variant="ghost" onClick={handleMinimize}>
+              Hide
+            </Button>
+          )}
         </div>
 
         <div
