@@ -199,10 +199,35 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
           />
         </div>
 
+        {/* Heart Divider with Glow Rings - Hidden to make space for the third bubble */}
+        {!isMobile && (
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '200px',
+              opacity: 0.3, // Fade it out instead of removing entirely to keep some flair
+            }}
+          >
+            <div
+              className="heart-beat"
+              style={{
+                fontSize: '24px',
+                filter: 'drop-shadow(0 0 10px rgba(255, 105, 180, 0.5))',
+              }}
+            >
+              💗
+            </div>
+          </div>
+        )}
+
         {/* Guest Bubble in the Middle */}
         <div
           style={{
-            flex: isMobile ? 'none' : 1,
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -221,6 +246,31 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
             onBlur={() => setHoveredUser(null)}
           />
         </div>
+
+        {/* Another Heart Divider */}
+        {!isMobile && (
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '200px',
+              opacity: 0.3,
+            }}
+          >
+            <div
+              className="heart-beat"
+              style={{
+                fontSize: '24px',
+                filter: 'drop-shadow(0 0 10px rgba(135, 206, 250, 0.5))',
+              }}
+            >
+              💗
+            </div>
+          </div>
+        )}
 
         {/* Electra's Side */}
         <div
