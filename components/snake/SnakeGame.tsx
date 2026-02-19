@@ -11,11 +11,16 @@ import {
   stepGame,
 } from './snakeGameLogic';
 import type { Direction, SnakeGameState } from './snakeGameLogic';
+import { useSnakeAudio } from './useSnakeAudio';
 
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
-const TICK_INTERVAL_MS = 140;
+
+const INITIAL_TICK_INTERVAL_MS = 140;
+const MIN_TICK_INTERVAL_MS = 50;
+const SPEED_DECREMENT_PER_FOOD = 2; // Speed up by 2ms per food eaten
 const SNAKE_LEADERBOARD_KEY = 'snakeLeaderboard';
+
 const GUEST_NAME_STORAGE_KEY = 'movieWatchlistGuestName';
 const MAX_LEADERBOARD_ENTRIES = 8;
 
@@ -104,7 +109,33 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
+  const { playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
   const isGameVisible = isEmbedded || !isMinimized;
+  const [shake, setShake] = useState(0);
+
+  // Reset shake when game restarts
+  useEffect(() => {
+    if (gameState.status === 'running' && gameState.score === 0) {
+      setShake(0);
+    }
+  }, [gameState.status, gameState.score]);
+
+  // Audio effects and shake triggers
+  useEffect(() => {
+    if (gameState.status === 'game-over') {
+      playGameOverSound();
+      setShake(10); // Start shake intensity
+    }
+  }, [gameState.status, playGameOverSound]);
+
+  // Previous score ref to detect score increase
+  const prevScoreRef = React.useRef(gameState.score);
+  useEffect(() => {
+    if (gameState.score > prevScoreRef.current) {
+      playEatSound();
+    }
+    prevScoreRef.current = gameState.score;
+  }, [gameState.score, playEatSound]);
 
   useEffect(() => {
     if (isEmbedded) {
@@ -142,14 +173,21 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       return undefined;
     }
 
+    const currentTickInterval = Math.max(
+      MIN_TICK_INTERVAL_MS,
+      INITIAL_TICK_INTERVAL_MS - gameState.score * SPEED_DECREMENT_PER_FOOD
+    );
+
     const intervalId = window.setInterval(() => {
       setGameState((previousState) => stepGame(previousState));
-    }, TICK_INTERVAL_MS);
+      // Optional: tick sound? Might be annoying if too frequent.
+    }, currentTickInterval);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [gameState.status, isGameVisible]);
+
+  }, [gameState.status, isGameVisible, gameState.score]);
 
   useEffect(() => {
     if (!isGameVisible) {
@@ -332,19 +370,36 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       style={
         isEmbedded
           ? {
-              position: 'relative',
-              width: '100%',
-            }
+            position: 'relative',
+            width: '100%',
+          }
           : {
-              position: 'fixed',
-              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-              right: isMobile ? spacing.md : spacing.lg,
-              left: isMobile ? spacing.md : 'auto',
-              width: isMobile ? 'auto' : 'min(440px, 90vw)',
-              zIndex: 1000,
-            }
+            position: 'fixed',
+            bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+            right: isMobile ? spacing.md : spacing.lg,
+            left: isMobile ? spacing.md : 'auto',
+            width: isMobile ? 'auto' : 'min(440px, 90vw)',
+            zIndex: 1000,
+          }
       }
     >
+      <style>
+        {`
+            @keyframes snake-shake {
+              0% { transform: translate(1px, 1px) rotate(0deg); }
+              10% { transform: translate(-1px, -2px) rotate(-1deg); }
+              20% { transform: translate(-3px, 0px) rotate(1deg); }
+              30% { transform: translate(3px, 2px) rotate(0deg); }
+              40% { transform: translate(1px, -1px) rotate(1deg); }
+              50% { transform: translate(-1px, 2px) rotate(-1deg); }
+              60% { transform: translate(-3px, 1px) rotate(0deg); }
+              70% { transform: translate(3px, 1px) rotate(-1deg); }
+              80% { transform: translate(-1px, -1px) rotate(1deg); }
+              90% { transform: translate(1px, 2px) rotate(0deg); }
+              100% { transform: translate(1px, -2px) rotate(-1deg); }
+            }
+          `}
+      </style>
       <Card
         style={{
           padding: spacing.lg,
@@ -354,7 +409,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           boxShadow: shadows.cardElevated,
           maxHeight: isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
           overflowY: 'auto',
+          animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
         }}
+        onAnimationEnd={() => setShake(0)}
       >
         <div
           style={{
@@ -421,27 +478,84 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             const isFood = cellKey === foodCellKey;
             const isSnake = snakeCells.has(cellKey);
             let cellColor = 'rgba(255,255,255,0.06)';
+            let borderRadius = '2px';
+            let transform = 'none';
 
             if (isSnake) {
               cellColor = colors.accent;
+              borderRadius = '4px';
+              // Slightly scale down snake segments for a "separated" look
+              transform = 'scale(0.92)';
             }
 
             if (isFood) {
               cellColor = colors.yellow;
+              borderRadius = '50%';
+              transform = 'scale(0.8)';
             }
 
             if (isHead) {
               cellColor = colors.secondary;
+              borderRadius = '4px';
+              transform = 'scale(1)';
             }
 
             return (
               <div
                 key={cellKey}
                 style={{
-                  borderRadius: '2px',
+                  borderRadius,
                   backgroundColor: cellColor,
+                  transform,
+                  position: 'relative',
+                  transition: 'transform 0.1s',
                 }}
-              />
+              >
+                {isHead && (
+                  <>
+                    {(() => {
+                      const eyeBase = {
+                        position: 'absolute' as const,
+                        width: '20%',
+                        height: '20%',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        zIndex: 2,
+                      };
+                      switch (gameState.direction) {
+                        case 'up':
+                          return (
+                            <>
+                              <div style={{ ...eyeBase, top: '10%', left: '20%' }} />
+                              <div style={{ ...eyeBase, top: '10%', right: '20%' }} />
+                            </>
+                          );
+                        case 'down':
+                          return (
+                            <>
+                              <div style={{ ...eyeBase, bottom: '10%', left: '20%' }} />
+                              <div style={{ ...eyeBase, bottom: '10%', right: '20%' }} />
+                            </>
+                          );
+                        case 'left':
+                          return (
+                            <>
+                              <div style={{ ...eyeBase, top: '20%', left: '10%' }} />
+                              <div style={{ ...eyeBase, bottom: '20%', left: '10%' }} />
+                            </>
+                          );
+                        case 'right':
+                          return (
+                            <>
+                              <div style={{ ...eyeBase, top: '20%', right: '10%' }} />
+                              <div style={{ ...eyeBase, bottom: '20%', right: '10%' }} />
+                            </>
+                          );
+                      }
+                    })()}
+                  </>
+                )}
+              </div>
             );
           })}
         </div>

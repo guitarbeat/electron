@@ -6,7 +6,6 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import PinDialog from '../PinDialog';
 import UserSelection from '../UserSelection';
-import { colors, spacing, typography, radius } from '../../design-system/tokens';
 
 interface ProfileSheetProps {
   isOpen: boolean;
@@ -20,17 +19,6 @@ const ProfileSheet: React.FC<ProfileSheetProps> = ({ isOpen, onClose }) => {
   const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
   const [isPinLoading, setIsPinLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-
-  const handleOpenPinDialog = () => {
-    if (!currentUser) {
-      setStatusMessage('Pick Aaron or Electra above to manage PIN settings.');
-      return;
-    }
-
-    setPinMode(userHasPin(currentUser) ? 'change' : 'set');
-    setShowPinDialog(true);
-    setStatusMessage(null);
-  };
 
   const handlePinSubmit = async (pin: string, newPin?: string): Promise<boolean> => {
     if (!currentUser) return false;
@@ -64,30 +52,6 @@ const ProfileSheet: React.FC<ProfileSheetProps> = ({ isOpen, onClose }) => {
     } catch (error) {
       setStatusMessage('Unable to update PIN right now.');
       return false;
-    } finally {
-      setIsPinLoading(false);
-    }
-  };
-
-  const handleRemovePin = async () => {
-    if (!currentUser || !userHasPin(currentUser)) {
-      return;
-    }
-
-    const shouldRemove = window.confirm(
-      'Remove your PIN? Anyone can then mark movies as watched under this profile.'
-    );
-
-    if (!shouldRemove) {
-      return;
-    }
-
-    setIsPinLoading(true);
-    try {
-      const success = await removeUserPin(currentUser);
-      setStatusMessage(success ? 'PIN removed.' : 'Could not remove PIN.');
-    } catch (error) {
-      setStatusMessage('Could not remove PIN right now.');
     } finally {
       setIsPinLoading(false);
     }
