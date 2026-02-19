@@ -24,13 +24,16 @@ test('dailySpinService', async (t) => {
 
   await t.test('hasSpunToday returns true when spin date matches today', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-      return new Response(JSON.stringify({
-        files: {
-          'dailyspin.json': {
-            content: JSON.stringify({ date: '2024-03-20', result: 'Test Result' })
-          }
-        }
-      }), { status: 200 });
+      return new Response(
+        JSON.stringify({
+          files: {
+            'dailyspin.json': {
+              content: JSON.stringify({ date: '2024-03-20', result: 'Test Result' }),
+            },
+          },
+        }),
+        { status: 200 }
+      );
     });
 
     const result = await hasSpunToday();
@@ -39,13 +42,16 @@ test('dailySpinService', async (t) => {
 
   await t.test('hasSpunToday returns false when spin date is different', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-      return new Response(JSON.stringify({
-        files: {
-          'dailyspin.json': {
-            content: JSON.stringify({ date: '2024-03-19', result: 'Old Result' })
-          }
-        }
-      }), { status: 200 });
+      return new Response(
+        JSON.stringify({
+          files: {
+            'dailyspin.json': {
+              content: JSON.stringify({ date: '2024-03-19', result: 'Old Result' }),
+            },
+          },
+        }),
+        { status: 200 }
+      );
     });
 
     const result = await hasSpunToday();
@@ -54,9 +60,12 @@ test('dailySpinService', async (t) => {
 
   await t.test('hasSpunToday returns false when spin file does not exist', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-      return new Response(JSON.stringify({
-        files: {} // Empty files
-      }), { status: 200 });
+      return new Response(
+        JSON.stringify({
+          files: {}, // Empty files
+        }),
+        { status: 200 }
+      );
     });
 
     const result = await hasSpunToday();
@@ -65,8 +74,8 @@ test('dailySpinService', async (t) => {
 
   await t.test('hasSpunToday returns false when fetch fails', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-       // Simulate fetch error by returning non-ok response
-       return new Response(null, { status: 500, statusText: 'Server Error' });
+      // Simulate fetch error by returning non-ok response
+      return new Response(null, { status: 500, statusText: 'Server Error' });
     });
 
     const result = await hasSpunToday();
@@ -75,7 +84,7 @@ test('dailySpinService', async (t) => {
 
   await t.test('hasSpunToday returns false when fetch throws network error', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-       throw new Error('Network error');
+      throw new Error('Network error');
     });
 
     const result = await hasSpunToday();
