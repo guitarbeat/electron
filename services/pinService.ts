@@ -2,11 +2,15 @@ import { GIST_TOKEN, GIST_ID } from '../gistConfig';
 import { User } from '../types';
 
 const GIST_PINS_FILENAME = 'pins.json';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export interface UserPins {
   Aaron?: string; // Hashed PIN
   Electra?: string; // Hashed PIN
 }
+
+let cachedPins: UserPins | null = null;
+let lastFetchTime = 0;
 
 /**
  * Simple hash function for PIN codes.
@@ -26,6 +30,11 @@ export const hashPin = (pin: string): string => {
  * Fetches the current PINs from the Gist.
  */
 export const getPins = async (): Promise<UserPins> => {
+  const now = Date.now();
+  if (cachedPins && now - lastFetchTime < CACHE_TTL) {
+    return cachedPins;
+  }
+
   try {
     const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: {
@@ -42,10 +51,14 @@ export const getPins = async (): Promise<UserPins> => {
     const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
 
     if (!fileContent) {
+      cachedPins = {};
+      lastFetchTime = now;
       return {};
     }
 
-    return JSON.parse(fileContent);
+    cachedPins = JSON.parse(fileContent);
+    lastFetchTime = now;
+    return cachedPins as UserPins;
   } catch (error) {
     console.error('Error fetching PINs:', error);
     return {};
@@ -73,7 +86,13 @@ export const savePins = async (pins: UserPins): Promise<boolean> => {
       }),
     });
 
-    return response.ok;
+    if (response.ok) {
+      // Update cache on successful save
+      cachedPins = { ...pins };
+      lastFetchTime = Date.now();
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('Error saving PINs:', error);
     return false;
