@@ -61,6 +61,7 @@ const App: React.FC = () => {
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
+      {/* Skip to content link for accessibility */}
       <a
         href="#main-content"
         style={{
@@ -85,12 +86,6 @@ const App: React.FC = () => {
       >
         Skip to content
       </a>
-
-      <MainTopBar
-        activeTab={activeTab}
-        currentUser={currentUser}
-        onOpenProfile={() => setShowProfileSheet(true)}
-      />
 
       {!isMobile && <MainTabNav activeTab={activeTab} onTabChange={setActiveTab} />}
 
