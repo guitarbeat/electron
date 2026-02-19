@@ -1,10 +1,9 @@
 import React from 'react';
+import { TicketIcon, CheckIcon, TrashIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { DiceIcon, TicketIcon, CheckIcon, TrashIcon } from './icons';
-import { User, MovieSuggestion } from '../types';
 
 interface DashboardItemProps {
   title: string;

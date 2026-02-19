@@ -1,5 +1,5 @@
 import { colors } from '../design-system/tokens';
-import { User } from '../types';
+import type { User } from '../types';
 
 export interface UserStyle {
   primary: string;

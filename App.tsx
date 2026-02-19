@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const { quizData, isLoading: isQuizLoading } = useQuiz(true);
+  const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
