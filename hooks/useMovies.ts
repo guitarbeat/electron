@@ -45,6 +45,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     isLoading,
     refresh,
   } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+    key: 'movies',
     isPaused,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
