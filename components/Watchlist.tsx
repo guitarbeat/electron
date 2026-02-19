@@ -609,9 +609,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 fontSize: typography.fontSize.xs,
               }}
             >
-              <span>
-                Suggestions are reviewed by Aaron & Electra.
-              </span>
+              <span>Suggestions are reviewed by Aaron & Electra.</span>
               <span>
                 {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
               </span>
@@ -627,11 +625,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               <Button
                 type="submit"
                 variant={currentUser ? 'primary' : 'secondary'}
-                disabled={
-                  isSubmitting ||
-                  isAdding ||
-                  !newMovieTitle.trim()
-                }
+                disabled={isSubmitting || isAdding || !newMovieTitle.trim()}
                 isLoading={isAdding}
                 aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
                 style={{
