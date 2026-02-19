@@ -167,7 +167,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     return () => {
       window.clearInterval(intervalId);
     };
-
   }, [gameState.status, isGameVisible, gameState.score]);
 
   useEffect(() => {
@@ -395,17 +394,17 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       style={
         isEmbedded
           ? {
-            position: 'relative',
-            width: '100%',
-          }
+              position: 'relative',
+              width: '100%',
+            }
           : {
-            position: 'fixed',
-            bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-            right: isMobile ? spacing.md : spacing.lg,
-            left: isMobile ? spacing.md : 'auto',
-            width: isMobile ? 'auto' : 'min(440px, 90vw)',
-            zIndex: 1000,
-          }
+              position: 'fixed',
+              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+              right: isMobile ? spacing.md : spacing.lg,
+              left: isMobile ? spacing.md : 'auto',
+              width: isMobile ? 'auto' : 'min(440px, 90vw)',
+              zIndex: 1000,
+            }
       }
     >
       <style>

@@ -57,6 +57,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [note, setNote] = useState('');
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
 
@@ -84,6 +86,21 @@ const MovieItem: React.FC<MovieItemProps> = ({
     } finally {
       setIsUpdating(false);
       setIsBottomSheetOpen(false);
+    }
+  };
+
+  const handleToggleMemories = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMemories((prev) => !prev);
+  };
+
+  const handleAddMemory = async (note: string) => {
+    if (!onAddMemory) return;
+    setIsSubmittingMemory(true);
+    try {
+      await onAddMemory(note);
+    } finally {
+      setIsSubmittingMemory(false);
     }
   };
 
@@ -669,22 +686,25 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <MemoryComposer
                 watchedMovieOptions={[movie]}
                 selectedMovieId={movie.id}
-                onSelectedMovieIdChange={() => { }}
+                onSelectedMovieIdChange={() => {}}
                 currentUser={currentUser}
-                isExpanded={true}
-                onSubmit={async (e, note) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   await handleAddMemory(note);
+                  setNote('');
                 }}
                 isSubmitting={isSubmittingMemory}
-                canSubmit={!isSubmittingMemory}
+                canSubmit={!isSubmittingMemory && note.trim().length > 0}
                 isMobile={isMobile}
                 // Props required by interface but unused in single-movie context
-                note=""
-                onNoteChange={() => { }}
+                note={note}
+                onNoteChange={setNote}
                 isComposerOpen={true}
-                onComposerToggle={() => { }}
+                onComposerToggle={() => {}}
                 remainingChars={280}
+                error={null}
+                successMessage={null}
+                noteInputRef={{ current: null }}
               />
             </div>
           )}
@@ -710,24 +730,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
               // Props not needed for simple list but required by component
               movieFilterOptions={[]}
               activeMovieFilter={movie.id}
-              onActiveMovieFilterChange={() => { }}
+              onActiveMovieFilterChange={() => {}}
               sortMode="newest"
-              onSortModeChange={() => { }}
-              onShowMore={() => { }}
-              onShowLess={() => { }}
+              onSortModeChange={() => {}}
+              onShowMore={() => {}}
+              onShowLess={() => {}}
               visibleCount={100}
               isLoading={false}
               memoriesError={null}
-              onJumpToMovie={() => { }}
+              onJumpToMovie={() => {}}
             />
           ) : (
-            <p style={{
-              textAlign: 'center',
-              color: colors.textTertiary,
-              fontSize: typography.fontSize.xs,
-              fontStyle: 'italic',
-              padding: spacing.sm
-            }}>
+            <p
+              style={{
+                textAlign: 'center',
+                color: colors.textTertiary,
+                fontSize: typography.fontSize.xs,
+                fontStyle: 'italic',
+                padding: spacing.sm,
+              }}
+            >
               No memories yet. Add one above!
             </p>
           )}
