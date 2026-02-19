@@ -1,10 +1,6 @@
-const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY || '';
-const OMDB_BASE_URL = 'https://www.omdbapi.com';
+const SUPABASE_PROJECT_ID = 'jectngcrpikxwnjdwana';
+const OMDB_PROXY_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/omdb-proxy`;
 
-if (!OMDB_API_KEY) {
-  // eslint-disable-next-line no-console
-  console.warn('VITE_OMDB_API_KEY is not set. Movie metadata fetching will fail.');
-}
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
 const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise<Response> => {
@@ -68,8 +64,7 @@ export const fetchMovieMetadata = async (
 
     // If we have an IMDB ID, use OMDb by ID
     if (id && !id.startsWith('tv-')) {
-      const omdbUrl = new URL(OMDB_BASE_URL);
-      omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
+      const omdbUrl = new URL(OMDB_PROXY_URL);
       omdbUrl.searchParams.append('i', id);
 
       const omdbRes = await fetchWithRetry(omdbUrl.toString());
@@ -90,8 +85,7 @@ export const fetchMovieMetadata = async (
     }
 
     // 1. Try OMDb first (Best for Movies)
-    const omdbUrl = new URL(OMDB_BASE_URL);
-    omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
+    const omdbUrl = new URL(OMDB_PROXY_URL);
     omdbUrl.searchParams.append('t', title);
 
     const omdbRes = await fetchWithRetry(omdbUrl.toString());
@@ -141,8 +135,7 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     const results: MetadataResult[] = [];
 
     // 1. Search OMDb
-    const omdbUrl = new URL(OMDB_BASE_URL);
-    omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
+    const omdbUrl = new URL(OMDB_PROXY_URL);
     omdbUrl.searchParams.append('s', query);
 
     const omdbRes = await fetchWithRetry(omdbUrl.toString());
