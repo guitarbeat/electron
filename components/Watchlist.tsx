@@ -4,7 +4,7 @@ import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
 import { useMemories } from '../hooks/useMemories';
 import { useSuggestions } from '../hooks/useSuggestions';
-import { Movie, MovieSuggestion } from '../types';
+import { Movie, MovieSuggestion, SharedMemory } from '../types';
 import { PlusIcon, DiceIcon, FilmIcon, LockIcon, LayoutGridIcon, LayoutListIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -15,15 +15,17 @@ import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
-import MemoryWall from './MemoryWall';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from './memories/memoryUtils';
+import {
+  getMemoryMovieKey,
+  getFallbackMovieKey,
+  sortMemories
+} from './memories/memoryUtils';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
 const MAX_SUGGESTION_TITLE_LENGTH = 120;
-const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 
 interface WatchlistProps {
   isPaused?: boolean;
@@ -75,13 +77,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [sortMode, setSortMode] = useState<SortMode>('recent');
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [activeMemoryFilter, setActiveMemoryFilter] = useState(ALL_MOVIES_FILTER);
   const [showMemoriesOnly, setShowMemoriesOnly] = useState(false);
-  const [isMemoryWallCollapsed, setIsMemoryWallCollapsed] = useState(isMobile);
   const [highlightMovieId, setHighlightMovieId] = useState<string | null>(null);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const memorySectionRef = useRef<HTMLDivElement | null>(null);
   const movieResultsRef = useRef<HTMLDivElement | null>(null);
 
   const showGuestWarning = useCallback(() => {
@@ -100,16 +99,44 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     [movies]
   );
   const normalizedSearch = searchQuery.trim().toLowerCase();
-  const movieMemorySummaries = useMemo(
-    () => buildMovieMemorySummaries(movies || [], memories),
-    [movies, memories]
-  );
+
+  const movieMemoriesMap = useMemo(() => {
+    if (!movies) return new Map();
+    const groupedByKey = new Map<string, SharedMemory[]>();
+
+    memories.forEach((memory) => {
+      const key = getMemoryMovieKey(memory);
+      const list = groupedByKey.get(key) || [];
+      list.push(memory);
+      groupedByKey.set(key, list);
+    });
+
+    const resultMap = new Map<string, SharedMemory[]>();
+
+    movies.forEach((movie) => {
+      const movieKeys = [movie.id, getFallbackMovieKey(movie.title)];
+      const merged = new Map<string, SharedMemory>();
+
+      movieKeys.forEach((key) => {
+        const memoriesForKey = groupedByKey.get(key) || [];
+        memoriesForKey.forEach((memory) => {
+          merged.set(memory.id, memory);
+        });
+      });
+
+      resultMap.set(movie.id, sortMemories(Array.from(merged.values()), 'newest'));
+    });
+
+    return resultMap;
+  }, [movies, memories]);
+
   const memoryErrorMessage =
     memoriesError instanceof Error
       ? memoriesError.message
       : memoriesError
         ? String(memoriesError)
         : null;
+
   const sortedMovies = useMemo(() => {
     if (!movies) return [];
     const next = [...movies];
@@ -134,13 +161,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         (contentTab === 'to-watch' && movie.watchedBy.length < 2) ||
         (contentTab === 'watched' && movie.watchedBy.length === 2);
       if (!inTab) return false;
-      if (showMemoriesOnly && !movieMemorySummaries.has(movie.id)) return false;
+
+      const hasMemories = (movieMemoriesMap.get(movie.id)?.length || 0) > 0;
+      if (showMemoriesOnly && !hasMemories) return false;
+
       if (!normalizedSearch) return true;
       return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [sortedMovies, contentTab, normalizedSearch, showMemoriesOnly, movieMemorySummaries]);
+  }, [sortedMovies, contentTab, normalizedSearch, showMemoriesOnly, movieMemoriesMap]);
 
   const filteredSuggestions = useMemo(() => {
     if (showMemoriesOnly) {
@@ -168,33 +198,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   );
 
   useEffect(() => {
-    setIsMemoryWallCollapsed(isMobile);
+    // Only used for mobile detection now
   }, [isMobile]);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const urlFilter = searchParams.get('memoryFilter');
-    const savedFilter = localStorage.getItem(MEMORY_FILTER_STORAGE_KEY);
-    const initialFilter = urlFilter || savedFilter || ALL_MOVIES_FILTER;
-    setActiveMemoryFilter(initialFilter);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(MEMORY_FILTER_STORAGE_KEY, activeMemoryFilter);
-    const url = new URL(window.location.href);
-    if (activeMemoryFilter === ALL_MOVIES_FILTER) {
-      url.searchParams.delete('memoryFilter');
-    } else {
-      url.searchParams.set('memoryFilter', activeMemoryFilter);
-    }
-    window.history.replaceState({}, '', url.toString());
-  }, [activeMemoryFilter]);
-
-  useEffect(() => {
-    if (activeMemoryFilter !== ALL_MOVIES_FILTER) {
-      setIsMemoryWallCollapsed(false);
-    }
-  }, [activeMemoryFilter]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -232,8 +237,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-
-
 
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -306,40 +309,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setMovieToFix(movie);
   }, []);
 
-  const handleJumpToMovieMemories = useCallback((movie: Movie) => {
-    setActiveMemoryFilter(movie.id);
-    setIsMemoryWallCollapsed(false);
-    requestAnimationFrame(() => {
-      memorySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, []);
 
-  const handleJumpFromMemory = useCallback(
-    (memory: { movieId?: string; movieTitle: string }) => {
-      const targetMovie =
-        (movies || []).find((movie) => movie.id === memory.movieId) ||
-        (movies || []).find(
-          (movie) => movie.title.trim().toLowerCase() === memory.movieTitle.trim().toLowerCase()
-        );
-
-      if (!targetMovie) {
-        setToast({ message: 'Movie is no longer in the queue.', type: 'info' });
-        return;
-      }
-
-      setContentTab('watched');
-      setSearchQuery('');
-      setHighlightMovieId(targetMovie.id);
-      requestAnimationFrame(() => {
-        movieResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-
-      setTimeout(() => {
-        setHighlightMovieId((current) => (current === targetMovie.id ? null : current));
-      }, 2200);
-    },
-    [movies]
-  );
 
   const handleEditMemory = useCallback(
     async (memoryId: string, note: string) => {
@@ -630,8 +600,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           </form>
         </Card>
 
-
-
         <Card
           variant="elevated"
           style={{
@@ -752,7 +720,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               ))}
 
               {filteredMovies.map((movie) => {
-                const memorySummary = movieMemorySummaries.get(movie.id);
+                const movieMemories = movieMemoriesMap.get(movie.id) || [];
                 return (
                   <MovieItem
                     key={movie.id}
@@ -761,12 +729,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     onToggle={handleToggleWatched}
                     onDelete={handleDeleteMovie}
                     onFixMatch={handleFixMatch}
-                    onMemoryClick={handleJumpToMovieMemories}
                     animationDelay="0s"
                     layout="grid"
-                    memoryCount={memorySummary?.count}
-                    memoryPreview={memorySummary?.latest?.note}
-                    memoryAuthor={memorySummary?.latest?.author}
+                    memories={movieMemories}
+                    onAddMemory={async (note) => {
+                      await addMemory(movie.id, movie.title, currentUser!, note);
+                      setToast({ message: 'Memory added!', type: 'success' });
+                    }}
+                    onUpdateMemory={handleEditMemory}
+                    onDeleteMemory={handleDeleteMemory}
+                    onTogglePin={handleTogglePin}
                     isHighlighted={highlightMovieId === movie.id}
                   />
                 );
@@ -785,8 +757,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   />
                 ))}
 
-              {filteredMovies.map((movie, index) => {
-                const memorySummary = movieMemorySummaries.get(movie.id);
+              {filteredMovies.map((movie) => {
+                const movieMemories = movieMemoriesMap.get(movie.id) || [];
                 return (
                   <MovieItem
                     key={movie.id}
@@ -795,12 +767,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     onToggle={handleToggleWatched}
                     onDelete={handleDeleteMovie}
                     onFixMatch={handleFixMatch}
-                    onMemoryClick={handleJumpToMovieMemories}
-                    animationDelay={`${index * 0.05}s`}
+                    animationDelay="0s"
                     layout="list"
-                    memoryCount={memorySummary?.count}
-                    memoryPreview={memorySummary?.latest?.note}
-                    memoryAuthor={memorySummary?.latest?.author}
+                    memories={movieMemories}
+                    onAddMemory={async (note) => {
+                      await addMemory(movie.id, movie.title, currentUser!, note);
+                      setToast({ message: 'Memory added!', type: 'success' });
+                    }}
+                    onUpdateMemory={handleEditMemory}
+                    onDeleteMemory={handleDeleteMemory}
+                    onTogglePin={handleTogglePin}
                     isHighlighted={highlightMovieId === movie.id}
                   />
                 );
@@ -832,80 +808,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             )}
         </div>
 
-        <div
-          ref={memorySectionRef}
-          style={{
-            marginTop: spacing.xl,
-            scrollMarginTop: isMobile ? '88px' : '110px',
-          }}
-        >
-          <Card
-            variant="elevated"
-            style={{
-              padding: isMobile ? spacing.sm : spacing.md,
-              border: `1px solid ${colors.borderSecondary}40`,
-              marginBottom: spacing.md,
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: spacing.sm,
-                flexWrap: 'wrap',
-              }}
-            >
-              <div>
-                <h3
-                  style={{
-                    margin: 0,
-                    color: colors.textPrimary,
-                    fontSize: typography.fontSize.base,
-                  }}
-                >
-                  Memories ({memories.length})
-                </h3>
-                <p
-                  style={{
-                    margin: `${spacing.xs} 0 0`,
-                    color: colors.textTertiary,
-                    fontSize: typography.fontSize.xs,
-                  }}
-                >
-                  Pinned, editable, and linked to your watched movies.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant={isMemoryWallCollapsed ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setIsMemoryWallCollapsed((prev) => !prev)}
-              >
-                {isMemoryWallCollapsed ? 'Show Memories' : 'Hide Memories'}
-              </Button>
-            </div>
-          </Card>
 
-          {!isMemoryWallCollapsed && (
-            <MemoryWall
-              watchedMovies={watchedMovies}
-              currentUser={currentUser}
-              memories={memories}
-              isLoading={isMemoriesLoading}
-              memoriesError={memoryErrorMessage}
-              addMemory={addMemory}
-              updateMemory={async (memoryId, updates) => {
-                await handleEditMemory(memoryId, updates.note || '');
-              }}
-              deleteMemory={handleDeleteMemory}
-              toggleMemoryPin={handleTogglePin}
-              activeMovieFilter={activeMemoryFilter}
-              onActiveMovieFilterChange={setActiveMemoryFilter}
-              onJumpToMovie={handleJumpFromMemory}
-            />
-          )}
-        </div>
       </div>
 
       <ConfirmDialog

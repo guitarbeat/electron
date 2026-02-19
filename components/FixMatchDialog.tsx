@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { MagicWandIcon, XIcon, Spinner } from './icons';
 import {
   colors,
   radius,
@@ -13,7 +14,6 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import IconButton from './ui/IconButton';
-import { MagicWandIcon, XIcon, SearchIcon, Spinner } from './icons';
 import { searchMovies, MetadataResult, fetchMovieMetadata } from '../services/metadataService';
 
 interface FixMatchDialogProps {

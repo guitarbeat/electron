@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "check-types": "tsc --noEmit",
     "test:snake": "node --test components/snake/snakeGameLogic.test.ts",
-    "test:memories": "node --test components/memories/memoryUtils.test.ts components/memories/memoryComposerAuth.test.ts"
+    "test:memories": "node --test components/memories/memoryUtils.test.ts components/memories/memoryComposerAuth.test.ts",
+    "test:security": "node --test config/security.test.ts"
   },
   "dependencies": {
     "@types/react": "^19.2.14",
