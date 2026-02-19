@@ -20,7 +20,7 @@ export const usePolling = <T>(
     return undefined;
   });
 
-  const [error, setError] = useState<any>( () => {
+  const [error, setError] = useState<any>(() => {
     if (key) {
       const cachedError = pollingManager.getError(key);
       if (cachedError) return cachedError;
@@ -30,7 +30,9 @@ export const usePolling = <T>(
 
   const [isLoading, setIsLoading] = useState(() => {
     if (key) {
-      return pollingManager.getData(key) === undefined && pollingManager.getError(key) === undefined;
+      return (
+        pollingManager.getData(key) === undefined && pollingManager.getError(key) === undefined
+      );
     }
     return true;
   });
@@ -91,21 +93,26 @@ export const usePolling = <T>(
       // Pass a proxy function to ensure we always call the latest fetchFn
       const proxyFetch = () => savedFetchFn.current();
 
-      const unsubscribe = pollingManager.subscribe(key, proxyFetch, interval, (newData, newError) => {
-        if (newError) {
+      const unsubscribe = pollingManager.subscribe(
+        key,
+        proxyFetch,
+        interval,
+        (newData, newError) => {
+          if (newError) {
             setError(newError);
             setIsLoading(false);
-        } else {
+          } else {
             setError(null);
-            setData(prev => {
-                if (savedEqualityFn.current && savedEqualityFn.current(prev, newData)) {
-                    return prev;
-                }
-                return newData;
+            setData((prev) => {
+              if (savedEqualityFn.current && savedEqualityFn.current(prev, newData)) {
+                return prev;
+              }
+              return newData;
             });
             setIsLoading(false);
+          }
         }
-      });
+      );
 
       return unsubscribe;
     } else {
@@ -119,14 +126,14 @@ export const usePolling = <T>(
   }, [interval, executeLocal, isPaused, key]);
 
   const refresh = useCallback(() => {
-      if (key) {
-          setIsLoading(true);
-          pollingManager.refresh(key).catch(() => {
-             setIsLoading(false);
-          });
-      } else {
-          executeLocal(true);
-      }
+    if (key) {
+      setIsLoading(true);
+      pollingManager.refresh(key).catch(() => {
+        setIsLoading(false);
+      });
+    } else {
+      executeLocal(true);
+    }
   }, [executeLocal, key]);
 
   return { data, error, isLoading, refresh };

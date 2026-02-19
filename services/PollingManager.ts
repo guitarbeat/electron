@@ -30,12 +30,12 @@ class PollingManager {
     if (!this.intervals.has(key)) {
       this.startPolling(key, interval);
     } else {
-        // If interval changed, restart polling
-        const currentInterval = this.activeIntervals.get(key);
-        if (currentInterval !== interval) {
-             this.stopPolling(key);
-             this.startPolling(key, interval);
-        }
+      // If interval changed, restart polling
+      const currentInterval = this.activeIntervals.get(key);
+      if (currentInterval !== interval) {
+        this.stopPolling(key);
+        this.startPolling(key, interval);
+      }
     }
 
     return () => this.unsubscribe(key, listener);
@@ -97,10 +97,10 @@ class PollingManager {
   }
 
   private notify(key: string, data: any, error: any) {
-      const listeners = this.subscribers.get(key);
-      if (listeners) {
-          listeners.forEach(l => l(data, error));
-      }
+    const listeners = this.subscribers.get(key);
+    if (listeners) {
+      listeners.forEach((l) => l(data, error));
+    }
   }
 
   getData(key: string) {
@@ -108,11 +108,11 @@ class PollingManager {
   }
 
   getError(key: string) {
-      return this.errors.get(key);
+    return this.errors.get(key);
   }
 
   refresh(key: string) {
-      return this.execute(key);
+    return this.execute(key);
   }
 }
 
