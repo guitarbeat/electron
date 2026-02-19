@@ -11,6 +11,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "format": "prettier --write .",
     "check-types": "tsc --noEmit",
+    "check:case-collisions": "bash scripts/check-case-collisions.sh",
+    "jules:sync": "bash scripts/jules-sync.sh",
+    "jules:preflight": "pnpm run check:case-collisions && pnpm run lint && pnpm run check-types && pnpm run build",
     "test:snake": "node --test components/snake/snakeGameLogic.test.ts",
     "test:memories": "node --test components/memories/memoryUtils.test.ts components/memories/memoryComposerAuth.test.ts",
     "test:security": "node --test config/security.test.ts"
