@@ -8,6 +8,9 @@ import BottomSheet from './ui/BottomSheet';
 import WatcherBadge from './WatcherBadge';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+import MemoryList from './memories/MemoryList';
+import MemoryComposer from './memories/MemoryComposer';
+import { SharedMemory } from '../types';
 
 interface MovieItemProps {
   movie: Movie;
@@ -15,12 +18,13 @@ interface MovieItemProps {
   onToggle: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
-  onMemoryClick?: (movie: Movie) => void;
   animationDelay: string;
   layout?: 'list' | 'grid';
-  memoryCount?: number;
-  memoryPreview?: string;
-  memoryAuthor?: string;
+  memories?: SharedMemory[];
+  onAddMemory?: (note: string) => Promise<void>;
+  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
+  onDeleteMemory?: (memoryId: string) => Promise<void>;
+  onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
 }
 
@@ -39,21 +43,25 @@ const MovieItem: React.FC<MovieItemProps> = ({
   onToggle,
   onDelete,
   onFixMatch,
-  onMemoryClick,
   animationDelay,
   layout = 'list',
-  memoryCount,
-  memoryPreview,
-  memoryAuthor,
+  memories = [],
+  onAddMemory,
+  onUpdateMemory,
+  onDeleteMemory,
+  onTogglePin,
   isHighlighted = false,
 }) => {
   const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [showMemories, setShowMemories] = useState(false);
+  const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
-  const hasSharedMemories = Boolean(memoryCount && memoryCount > 0);
-  const memorySnippet = memoryPreview?.trim();
+
+  // We don't need memoryPreview/Count props anymore as we have the full array
+  const hasSharedMemories = memories.length > 0;
 
   const handleCardClick = () => {
     if (isMobile && layout === 'grid') {
@@ -64,6 +72,21 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const handleAction = (action: () => void) => {
     action();
     setIsBottomSheetOpen(false);
+  };
+
+  const handleToggleMemories = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setShowMemories(!showMemories);
+  };
+
+  const handleAddMemory = async (note: string) => {
+    if (!onAddMemory) return;
+    setIsSubmittingMemory(true);
+    try {
+      await onAddMemory(note);
+    } finally {
+      setIsSubmittingMemory(false);
+    }
   };
 
   return (
@@ -97,6 +120,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           backgroundColor: colors.surfaceElevated,
           cursor: isMobile && layout === 'grid' ? 'pointer' : 'default',
           transform: 'translateZ(0)',
+          flexWrap: 'wrap', // Allow memories to take full width below
         }}
         onMouseEnter={(e) => {
           if (!isMobile) {
@@ -235,8 +259,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    onMemoryClick?.(movie);
+                    handleToggleMemories(e);
                   }}
                   style={{
                     alignSelf: 'flex-start',
@@ -250,12 +273,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     fontFamily:
                       "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
                     letterSpacing: '0.04em',
-                    cursor: onMemoryClick ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     borderStyle: 'solid',
                   }}
                   aria-label={`View memories for "${movie.title}"`}
                 >
-                  {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
+                  {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
                 </button>
               )}
 
@@ -471,23 +494,28 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 </p>
               )}
 
-              {hasSharedMemories && (
-                <button
-                  type="button"
-                  onClick={() => onMemoryClick?.(movie)}
-                  style={{
-                    marginBottom: spacing.md,
-                    padding: `${spacing.xs} ${spacing.sm}`,
-                    borderRadius: radius.md,
-                    border: '1px solid rgba(255, 223, 167, 0.35)',
-                    background:
-                      'linear-gradient(145deg, rgba(64, 41, 18, 0.45) 0%, rgba(34, 24, 14, 0.55) 100%)',
-                    textAlign: 'left',
-                    width: '100%',
-                    cursor: onMemoryClick ? 'pointer' : 'default',
-                  }}
-                  aria-label={`View memories for "${movie.title}"`}
-                >
+              {/* Memory Toggle Button */}
+              <button
+                type="button"
+                onClick={handleToggleMemories}
+                style={{
+                  marginBottom: spacing.md,
+                  padding: `${spacing.xs} ${spacing.sm}`,
+                  borderRadius: radius.md,
+                  border: '1px solid rgba(255, 223, 167, 0.35)',
+                  background:
+                    'linear-gradient(145deg, rgba(64, 41, 18, 0.45) 0%, rgba(34, 24, 14, 0.55) 100%)',
+                  textAlign: 'left',
+                  width: '100%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+                aria-label={`View memories for "${movie.title}"`}
+                aria-expanded={showMemories}
+              >
+                <div>
                   <p
                     style={{
                       margin: 0,
@@ -498,10 +526,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       letterSpacing: '0.03em',
                     }}
                   >
-                    {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
-                    {memoryAuthor ? ` by ${memoryAuthor}` : ''}
+                    {hasSharedMemories
+                      ? `${memories.length} shared memor${memories.length === 1 ? 'y' : 'ies'}`
+                      : 'Add a memory...'}
                   </p>
-                  {memorySnippet && (
+                  {hasSharedMemories && memories.length > 0 && (
                     <p
                       style={{
                         margin: `${spacing.xs} 0 0`,
@@ -509,16 +538,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
                         fontSize: typography.fontSize.xs,
                         lineHeight: typography.lineHeight.normal,
                         display: '-webkit-box',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 1,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                       }}
                     >
-                      "{memorySnippet}"
+                      "{memories[0].note}"
                     </p>
                   )}
-                </button>
-              )}
+                </div>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: colors.textTertiary,
+                    transform: showMemories ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                  }}
+                >
+                  ▼
+                </div>
+              </button>
             </div>
 
             <div
@@ -611,6 +650,93 @@ const MovieItem: React.FC<MovieItemProps> = ({
         )}
       </Card>
 
+      {/* Expanded Memory Section */}
+      {showMemories && (
+        <div
+          className="slide-down"
+          style={{
+            width: '100%',
+            marginTop: `-${spacing.sm}`,
+            marginBottom: spacing.md,
+            padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
+            background: 'rgba(20, 20, 25, 0.4)',
+            border: `1px solid ${colors.borderSecondary}30`,
+            borderTop: 'none',
+            borderRadius: `0 0 ${radius.md} ${radius.md}`,
+            borderLeft: `3px solid ${colors.accent}40`,
+          }}
+        >
+          {/* Add New Memory */}
+          {currentUser && onAddMemory && (
+            <div style={{ marginBottom: spacing.md }}>
+              <MemoryComposer
+                watchedMovieOptions={[movie]}
+                selectedMovieId={movie.id}
+                onSelectedMovieIdChange={() => { }}
+                currentUser={currentUser}
+                isExpanded={true}
+                onSubmit={async (e, note) => {
+                  e.preventDefault();
+                  await handleAddMemory(note);
+                }}
+                isSubmitting={isSubmittingMemory}
+                canSubmit={!isSubmittingMemory}
+                isMobile={isMobile}
+                // Props required by interface but unused in single-movie context
+                note=""
+                onNoteChange={() => { }}
+                isComposerOpen={true}
+                onComposerToggle={() => { }}
+                remainingChars={280}
+              />
+            </div>
+          )}
+
+          {/* List Memories */}
+          {memories.length > 0 ? (
+            <MemoryList
+              memories={memories}
+              visibleMemories={memories}
+              sortedMemories={memories}
+              currentUser={currentUser}
+              isMobile={isMobile}
+              // Actions
+              onEditMemory={async (memory, note) => {
+                if (onUpdateMemory) await onUpdateMemory(memory.id, note);
+              }}
+              onDeleteMemory={async (memory) => {
+                if (onDeleteMemory) await onDeleteMemory(memory.id);
+              }}
+              onTogglePin={async (memory) => {
+                if (onTogglePin) await onTogglePin(memory.id);
+              }}
+              // Props not needed for simple list but required by component
+              movieFilterOptions={[]}
+              activeMovieFilter={movie.id}
+              onActiveMovieFilterChange={() => { }}
+              sortMode="newest"
+              onSortModeChange={() => { }}
+              onShowMore={() => { }}
+              onShowLess={() => { }}
+              visibleCount={100}
+              isLoading={false}
+              memoriesError={null}
+              onJumpToMovie={() => { }}
+            />
+          ) : (
+            <p style={{
+              textAlign: 'center',
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.xs,
+              fontStyle: 'italic',
+              padding: spacing.sm
+            }}>
+              No memories yet. Add one above!
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Mobile Bottom Sheet for Actions */}
       <BottomSheet
         isOpen={isBottomSheetOpen}
@@ -666,7 +792,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               {hasSharedMemories && (
                 <button
                   type="button"
-                  onClick={() => handleAction(() => onMemoryClick?.(movie))}
+                  onClick={() => handleAction(() => setShowMemories(true))}
                   style={{
                     marginTop: spacing.sm,
                     padding: `${spacing.xs} ${spacing.sm}`,
@@ -679,13 +805,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     background: 'transparent',
                     textAlign: 'left',
                     width: '100%',
-                    cursor: onMemoryClick ? 'pointer' : 'default',
+                    cursor: 'pointer',
                   }}
                   aria-label={`View memories for "${movie.title}"`}
                 >
-                  {memoryCount} shared memor{memoryCount === 1 ? 'y' : 'ies'}
-                  {memorySnippet
-                    ? `: "${memorySnippet.slice(0, 60)}${memorySnippet.length > 60 ? '...' : ''}"`
+                  {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
+                  {memories[0]?.note
+                    ? `: "${memories[0].note.slice(0, 60)}${memories[0].note.length > 60 ? '...' : ''}"`
                     : ''}
                 </button>
               )}

@@ -65,7 +65,7 @@ export const addSuggestion = async (
   const suggestions = await getSuggestions();
 
   const newSuggestion: MovieSuggestion = {
-    id: `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: crypto.randomUUID(),
     title: title.trim(),
     suggestedBy: suggestedBy.trim(),
     reason: reason?.trim() || undefined,

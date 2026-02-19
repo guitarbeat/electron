@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import SnakeGame from '../snake/SnakeGame';
-import { colors, spacing, typography, radius } from '../../design-system/tokens';
+import SpinWheel from '../extras/spin-wheel/SpinWheel';
+import { useMovies } from '../../hooks/useMovies';
+import { DiceIcon } from '../icons';
+import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
 
 interface ExtrasHubProps {
   currentUser: User | null;
@@ -20,6 +23,13 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
   onRetakeQuiz,
   onOpenQuizEditor,
 }) => {
+  const [isWheelVisible, setIsWheelVisible] = useState(false);
+  const { movies } = useMovies(currentUser);
+
+  const unwatchedMovies = movies ? movies.filter((movie) => movie.watchedBy.length < 2) : [];
+  const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
+  const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
+
   return (
     <div
       style={{
@@ -30,6 +40,68 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
         gap: spacing.lg,
       }}
     >
+      {/* Spin Wheel Card */}
+      <Card
+        style={{
+          padding: spacing.lg,
+          borderRadius: radius.lg,
+          border: `1px solid ${colors.borderSecondary}35`,
+          background:
+            'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
+          boxShadow: shadows.glowStrong,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: spacing.md,
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              margin: 0,
+              marginBottom: spacing.xs,
+              color: colors.textPrimary,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              fontSize: typography.fontSize.lg,
+              letterSpacing: '0.03em',
+            }}
+          >
+            Movie Spin Wheel
+          </h2>
+          <p
+            style={{
+              margin: 0,
+              color: colors.textSecondary,
+              fontSize: typography.fontSize.sm,
+            }}
+          >
+            {canSpin
+              ? 'Ready to spin!'
+              : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'} to spin.`}
+          </p>
+        </div>
+        <Button
+          variant={canSpin ? 'secondary' : 'ghost'}
+          onClick={() => setIsWheelVisible(true)}
+          disabled={!canSpin}
+          style={{
+            minWidth: '160px',
+            border: canSpin ? undefined : `1px solid ${colors.borderSecondary}40`,
+          }}
+        >
+          <DiceIcon />
+          {canSpin ? 'Spin the Wheel' : 'Locked'}
+        </Button>
+      </Card>
+
+      <SpinWheel
+        isOpen={isWheelVisible}
+        movies={unwatchedMovies}
+        onClose={() => setIsWheelVisible(false)}
+        onWinner={(movie) => console.log('Winner:', movie.title)}
+      />
+
       <Card
         style={{
           padding: spacing.lg,
