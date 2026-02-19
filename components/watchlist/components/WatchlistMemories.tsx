@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
-import MemoryWall from '../../MemoryWall';
+import MemoryList from '../../memories/MemoryList';
 import { SharedMemory, Movie, User } from '../../../types';
 import { colors, spacing, typography } from '../../../design-system/tokens';
+import { MemorySortMode } from '../../memories/memoryUtils';
 
 interface WatchlistMemoriesProps {
   isCollapsed: boolean;
@@ -47,6 +48,42 @@ export const WatchlistMemories: React.FC<WatchlistMemoriesProps> = ({
   memorySectionRef,
   isMobile,
 }) => {
+  const [sortMode, setSortMode] = useState<MemorySortMode>('newest');
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  const movieFilterOptions = useMemo(
+    () =>
+      watchedMovies.map((m) => ({
+        id: m.id,
+        title: m.title,
+      })),
+    [watchedMovies]
+  );
+
+  const filteredMemories = useMemo(() => {
+    let result = [...memories];
+    if (activeFilter !== 'all') {
+      result = result.filter((m) => m.movieId === activeFilter);
+    }
+    return result;
+  }, [memories, activeFilter]);
+
+  const sortedMemories = useMemo(() => {
+    return [...filteredMemories].sort((a, b) => {
+      // Pin priority
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortMode === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+  }, [filteredMemories, sortMode]);
+
+  const visibleMemories = useMemo(() => {
+    return sortedMemories.slice(0, visibleCount);
+  }, [sortedMemories, visibleCount]);
+
   return (
     <div
       ref={memorySectionRef}
@@ -104,19 +141,32 @@ export const WatchlistMemories: React.FC<WatchlistMemoriesProps> = ({
       </Card>
 
       {!isCollapsed && (
-        <MemoryWall
-          watchedMovies={watchedMovies}
-          currentUser={currentUser}
+        <MemoryList
           memories={memories}
-          isLoading={isLoading}
-          memoriesError={error}
-          addMemory={onAddMemory}
-          updateMemory={onUpdateMemory}
-          deleteMemory={onDeleteMemory}
-          toggleMemoryPin={onTogglePin}
+          visibleMemories={visibleMemories}
+          sortedMemories={sortedMemories}
+          movieFilterOptions={movieFilterOptions}
           activeMovieFilter={activeFilter}
           onActiveMovieFilterChange={onFilterChange}
+          sortMode={sortMode}
+          onSortModeChange={setSortMode}
+          onShowMore={() => setVisibleCount((prev) => prev + 12)}
+          onShowLess={() => setVisibleCount(12)}
+          visibleCount={visibleCount}
+          isLoading={isLoading}
+          memoriesError={error}
+          isMobile={isMobile}
+          currentUser={currentUser}
           onJumpToMovie={onJumpToMovie}
+          onEditMemory={async (memory, note) => {
+            await onUpdateMemory(memory.id, { note });
+          }}
+          onDeleteMemory={async (memory) => {
+            await onDeleteMemory(memory.id);
+          }}
+          onTogglePin={async (memory) => {
+            await onTogglePin(memory.id);
+          }}
         />
       )}
     </div>

@@ -5,6 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// @ts-expect-error - Deno is not defined in this environment
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -17,6 +18,7 @@ Deno.serve(async (req) => {
     const title = searchParams.get('t');
     const id = searchParams.get('i');
 
+    // @ts-expect-error - Deno is not defined in this environment
     const apiKey = Deno.env.get('OMDB_API_KEY');
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'OMDb API Key not configured' }), {

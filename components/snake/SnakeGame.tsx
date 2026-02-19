@@ -11,6 +11,7 @@ import {
   Direction,
   SnakeGameState,
 } from './snakeGameLogic';
+import { useSnakeAudio } from './useSnakeAudio';
 
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
@@ -111,6 +112,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
+  const [shake, setShake] = useState(0);
   const { playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
   const isGameVisible = isEmbedded || !isMinimized;
   const canvasRef = useRef<HTMLCanvasElement>(null);
