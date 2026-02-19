@@ -89,6 +89,8 @@ export interface QuizAnswer {
 // Character scores
 export type CharacterScores = Record<QuizCharacter, number>;
 
+export const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo'];
+
 // Quiz result
 export interface QuizResult {
   character: QuizCharacter | 'Neither';
