@@ -2,66 +2,68 @@ import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from '
 import FixMatchDialog from './FixMatchDialog';
 import { useUser } from '../context/UserContext';
 import { useMovies } from '../hooks/useMovies';
-import { usePins } from '../hooks/usePins';
+import { useMemories } from '../hooks/useMemories';
 import { useSuggestions } from '../hooks/useSuggestions';
-import { Movie, MovieSuggestion } from '../types';
-import {
-  PlusIcon,
-  LogoutIcon,
-  DiceIcon,
-  CheckIcon,
-  FilmIcon,
-  LockIcon,
-  RefreshIcon,
-  LayoutGridIcon,
-  LayoutListIcon,
-  TicketIcon,
-  EyeIcon,
-  EyeOffIcon,
-  TrashIcon,
-} from './icons';
-import SpinWheel from './SpinWheel';
-import Header from './Header';
+import { Movie, MovieSuggestion, SharedMemory } from '../types';
+import { PlusIcon, DiceIcon, FilmIcon, LockIcon, LayoutGridIcon, LayoutListIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import IconButton from './ui/IconButton';
 import ConfirmDialog from './ui/ConfirmDialog';
-import PinDialog from './PinDialog';
 import MovieItem from './MovieItem';
 import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
-import { DashboardCard, SuggestionItemCard } from './DashboardCards';
+import { SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+import {
+  getMemoryMovieKey,
+  getFallbackMovieKey,
+  sortMemories
+} from './memories/memoryUtils';
 
-const Watchlist: React.FC = () => {
-  const { currentUser, setCurrentUser } = useUser();
+type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
+type SortMode = 'recent' | 'title' | 'year';
+const MAX_SUGGESTION_TITLE_LENGTH = 120;
+
+interface WatchlistProps {
+  isPaused?: boolean;
+}
+
+const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
+  const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const {
     movies,
     isLoading,
-    error,
     isSubmitting,
     addMovie,
     toggleWatched,
     deleteMovie,
     refresh: refreshMovies,
-    updateMovieMetadata,
     manualMetadataUpdate,
-    refreshAllMetadata,
-  } = useMovies(currentUser);
-  const { userHasPin, setUserPin, removeUserPin, verifyUserPin } = usePins();
+  } = useMovies(currentUser, isPaused);
   const {
     pendingSuggestions,
+    addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
     isLoading: isSuggestionsLoading,
-  } = useSuggestions();
+  } = useSuggestions(isPaused);
+  const {
+    memories,
+    addMemory,
+    updateMemory,
+    deleteMemory: deleteMemoryRecord,
+    toggleMemoryPin,
+    isLoading: isMemoriesLoading,
+    error: memoriesError,
+  } = useMemories(isPaused);
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [isWheelVisible, setIsWheelVisible] = useState(false);
+
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [toast, setToast] = useState<{
     message: string;
@@ -70,15 +72,16 @@ const Watchlist: React.FC = () => {
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
-  const [showPinDialog, setShowPinDialog] = useState(false);
-  const [pinMode, setPinMode] = useState<'set' | 'change'>('set');
-  const [isPinLoading, setIsPinLoading] = useState(false);
-  const [showRemovePinConfirm, setShowRemovePinConfirm] = useState(false);
+  const [contentTab, setContentTab] = useState<ContentTab>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState<SortMode>('recent');
   const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [celebratedMovieTitle, setCelebratedMovieTitle] = useState<string | null>(null);
+  const [showMemoriesOnly, setShowMemoriesOnly] = useState(false);
+  const [highlightMovieId, setHighlightMovieId] = useState<string | null>(null);
   const previousMoviesRef = useRef<Movie[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const movieResultsRef = useRef<HTMLDivElement | null>(null);
 
   const showGuestWarning = useCallback(() => {
     setToast({
@@ -95,12 +98,108 @@ const Watchlist: React.FC = () => {
     () => (movies ? movies.filter((movie) => movie.watchedBy.length === 2) : []),
     [movies]
   );
-  const firstWatchedIndex = useMemo(
-    () => (movies ? movies.findIndex((m) => m.watchedBy.length === 2) : -1),
-    [movies]
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  const movieMemoriesMap = useMemo(() => {
+    if (!movies) return new Map();
+    const groupedByKey = new Map<string, SharedMemory[]>();
+
+    memories.forEach((memory) => {
+      const key = getMemoryMovieKey(memory);
+      const list = groupedByKey.get(key) || [];
+      list.push(memory);
+      groupedByKey.set(key, list);
+    });
+
+    const resultMap = new Map<string, SharedMemory[]>();
+
+    movies.forEach((movie) => {
+      const movieKeys = [movie.id, getFallbackMovieKey(movie.title)];
+      const merged = new Map<string, SharedMemory>();
+
+      movieKeys.forEach((key) => {
+        const memoriesForKey = groupedByKey.get(key) || [];
+        memoriesForKey.forEach((memory) => {
+          merged.set(memory.id, memory);
+        });
+      });
+
+      resultMap.set(movie.id, sortMemories(Array.from(merged.values()), 'newest'));
+    });
+
+    return resultMap;
+  }, [movies, memories]);
+
+  const memoryErrorMessage =
+    memoriesError instanceof Error
+      ? memoriesError.message
+      : memoriesError
+        ? String(memoriesError)
+        : null;
+
+  const sortedMovies = useMemo(() => {
+    if (!movies) return [];
+    const next = [...movies];
+    switch (sortMode) {
+      case 'title':
+        next.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'year':
+        next.sort((a, b) => Number(b.year || 0) - Number(a.year || 0));
+        break;
+      case 'recent':
+      default:
+        break;
+    }
+    return next;
+  }, [movies, sortMode]);
+
+  const filteredMovies = useMemo(() => {
+    return sortedMovies.filter((movie) => {
+      const inTab =
+        contentTab === 'all' ||
+        (contentTab === 'to-watch' && movie.watchedBy.length < 2) ||
+        (contentTab === 'watched' && movie.watchedBy.length === 2);
+      if (!inTab) return false;
+
+      const hasMemories = (movieMemoriesMap.get(movie.id)?.length || 0) > 0;
+      if (showMemoriesOnly && !hasMemories) return false;
+
+      if (!normalizedSearch) return true;
+      return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+  }, [sortedMovies, contentTab, normalizedSearch, showMemoriesOnly, movieMemoriesMap]);
+
+  const filteredSuggestions = useMemo(() => {
+    if (showMemoriesOnly) {
+      return [];
+    }
+    if (contentTab !== 'all' && contentTab !== 'suggestions') {
+      return [];
+    }
+    return pendingSuggestions.filter((suggestion) => {
+      if (!normalizedSearch) return true;
+      return `${suggestion.title} ${suggestion.suggestedBy} ${suggestion.reason || ''}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+  }, [pendingSuggestions, contentTab, normalizedSearch, showMemoriesOnly]);
+
+  const tabCounts = useMemo(
+    () => ({
+      all: sortedMovies.length,
+      'to-watch': sortedMovies.filter((movie) => movie.watchedBy.length < 2).length,
+      watched: sortedMovies.filter((movie) => movie.watchedBy.length === 2).length,
+      suggestions: pendingSuggestions.length,
+    }),
+    [sortedMovies, pendingSuggestions]
   );
-  const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
-  const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
+
+  useEffect(() => {
+    // Only used for mobile detection now
+  }, [isMobile]);
 
   // Track shared watch completion for confetti
   useEffect(() => {
@@ -116,14 +215,12 @@ const Watchlist: React.FC = () => {
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           // Movie just became watched by both!
           setShowConfetti(true);
-          setCelebratedMovieTitle(movie.title);
           setToast({
             message: `🎉 You both watched "${movie.title}"!`,
             type: 'success',
           });
           setTimeout(() => {
             setShowConfetti(false);
-            setCelebratedMovieTitle(null);
           }, 3000);
           break;
         }
@@ -141,41 +238,37 @@ const Watchlist: React.FC = () => {
     }
   }, [toast]);
 
-  const handleOpenWheel = () => {
-    if (!currentUser) {
-      showGuestWarning();
-      return;
-    }
-    if (unwatchedMovies.length > 1) {
-      setIsWheelVisible(true);
-    } else {
-      setToast({
-        message: 'You need at least two unwatched movies to spin the wheel!',
-        type: 'info',
-      });
-    }
-  };
-
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) {
-      showGuestWarning();
+    const title = newMovieTitle.trim();
+
+    if (!title || isSubmitting || isAdding) {
       return;
     }
-    if (newMovieTitle.trim() && !isSubmitting) {
-      setIsAdding(true);
-      const title = newMovieTitle.trim();
-      try {
+
+    setIsAdding(true);
+    try {
+      if (currentUser) {
         await addMovie(title);
-        setNewMovieTitle('');
         setToast({ message: `"${title}" added successfully!`, type: 'success' });
-        setSuccessMovieId(title);
-        setTimeout(() => setSuccessMovieId(null), 2000);
-      } catch (err: any) {
-        setToast({ message: `Error adding movie: ${err.message}`, type: 'error' });
-      } finally {
-        setIsAdding(false);
+      } else {
+        await addSuggestion(title, 'Anonymous');
+        setToast({ message: `"${title}" suggested for review!`, type: 'success' });
+        setContentTab('suggestions');
       }
+
+      setNewMovieTitle('');
+      setSuccessMovieId(title);
+      setTimeout(() => setSuccessMovieId(null), 2000);
+    } catch (err: any) {
+      setToast({
+        message: currentUser
+          ? `Error adding movie: ${err.message}`
+          : `Failed to add suggestion: ${err.message}`,
+        type: 'error',
+      });
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -215,6 +308,35 @@ const Watchlist: React.FC = () => {
   const handleFixMatch = useCallback((movie: Movie) => {
     setMovieToFix(movie);
   }, []);
+
+
+
+  const handleEditMemory = useCallback(
+    async (memoryId: string, note: string) => {
+      await updateMemory(memoryId, { note });
+      setToast({ message: 'Memory updated.', type: 'success' });
+    },
+    [updateMemory]
+  );
+
+  const handleDeleteMemory = useCallback(
+    async (memoryId: string) => {
+      await deleteMemoryRecord(memoryId);
+      setToast({ message: 'Memory deleted.', type: 'info' });
+    },
+    [deleteMemoryRecord]
+  );
+
+  const handleTogglePin = useCallback(
+    async (memoryId: string) => {
+      const result = await toggleMemoryPin(memoryId);
+      setToast({
+        message: result.isPinned ? 'Memory pinned.' : 'Memory unpinned.',
+        type: 'success',
+      });
+    },
+    [toggleMemoryPin]
+  );
 
   const confirmDelete = async () => {
     if (movieToDelete) {
@@ -258,63 +380,6 @@ const Watchlist: React.FC = () => {
       setToast({ message: `Failed to reject suggestion: ${err.message}`, type: 'error' });
     } finally {
       setProcessingSuggestionId(null);
-    }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-  };
-
-  const handlePinAction = () => {
-    if (!currentUser) {
-      showGuestWarning();
-      return;
-    }
-    if (userHasPin(currentUser)) {
-      setPinMode('change');
-    } else {
-      setPinMode('set');
-    }
-    setShowPinDialog(true);
-  };
-
-  const handlePinSubmit = async (pin: string): Promise<boolean> => {
-    if (!currentUser) return false;
-    setIsPinLoading(true);
-    try {
-      if (pinMode === 'set') {
-        await setUserPin(currentUser, pin);
-        setShowPinDialog(false);
-        setToast({ message: 'PIN set successfully!', type: 'success' });
-        return true;
-      }
-      // change mode
-      const isValid = await verifyUserPin(currentUser, pin);
-      if (isValid) {
-        setPinMode('set'); // Reuse set mode for the new pin
-        return true;
-      }
-      setToast({ message: 'Incorrect PIN', type: 'error' });
-      return false;
-    } catch (err: any) {
-      setToast({ message: `Error: ${err.message}`, type: 'error' });
-      return false;
-    } finally {
-      setIsPinLoading(false);
-    }
-  };
-
-  const handleRemovePin = async () => {
-    if (!currentUser) return;
-    setIsPinLoading(true);
-    try {
-      await removeUserPin(currentUser);
-      setToast({ message: 'PIN removed', type: 'info' });
-    } catch (err: any) {
-      setToast({ message: `Error: ${err.message}`, type: 'error' });
-    } finally {
-      setIsPinLoading(false);
-      setShowRemovePinConfirm(false);
     }
   };
 
@@ -366,25 +431,14 @@ const Watchlist: React.FC = () => {
   }
 
   return (
-    <div style={{ background: colors.background }}>
+    <div className="quiet-ui" style={{ background: colors.background }}>
       {/* Confetti celebration */}
       {showConfetti && <Confetti isActive={showConfetti} />}
-
-      <Header
-        currentUser={currentUser || null}
-        onLogout={handleLogout}
-        onPinAction={handlePinAction}
-        onRemovePin={() => setShowRemovePinConfirm(true)}
-        hasPin={currentUser ? userHasPin(currentUser) : false}
-        movieCount={movies?.length || 0}
-        watchedTogetherCount={watchedMovies.length}
-      />
-
       <div
         style={{
-          maxWidth: viewMode === 'grid' ? '1200px' : '44rem',
+          maxWidth: '100%',
           margin: '0 auto',
-          padding: `${spacing.lg} ${spacing.md}`,
+          padding: `${spacing.lg} 0`,
           transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
@@ -422,183 +476,231 @@ const Watchlist: React.FC = () => {
           style={{ marginBottom: spacing.xl, padding: isMobile ? spacing.sm : spacing.md }}
         >
           <form onSubmit={handleAddMovie}>
-            <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <Input
-                  ref={inputRef}
-                  value={newMovieTitle}
-                  onChange={(e) => setNewMovieTitle(e.target.value)}
-                  placeholder={
-                    !currentUser
-                      ? 'Login to add movies...'
-                      : isMobile
-                        ? 'Add movie...'
-                        : 'Enter movie or show title...'
-                  }
-                  disabled={!currentUser || isSubmitting}
-                  aria-label="New movie title"
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                gap: spacing.sm,
+                marginBottom: spacing.sm,
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <h3
                   style={{
-                    paddingRight: isMobile ? '70px' : '120px',
-                    borderColor: successMovieId ? colors.success : undefined,
-                    transition: 'border-color 0.3s ease',
-                    height: isMobile ? '42px' : '48px',
-                    fontSize: isMobile ? '14px' : '16px',
-                    opacity: !currentUser ? 0.6 : 1,
-                    cursor: !currentUser ? 'not-allowed' : 'text',
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    right: spacing.xs,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    display: 'flex',
-                    gap: isMobile ? '4px' : spacing.sm,
-                    alignItems: 'center',
+                    margin: 0,
+                    fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
+                    color: colors.textPrimary,
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    letterSpacing: '0.03em',
                   }}
                 >
-                  <IconButton
-                    onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                    variant="ghost"
-                    size="sm"
-                    title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
-                    style={{
-                      padding: isMobile ? '6px' : undefined,
-                      width: isMobile ? '32px' : '36px',
-                      height: isMobile ? '32px' : '36px',
-                    }}
-                  >
-                    {viewMode === 'list' ? (
-                      <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />
-                    ) : (
-                      <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />
-                    )}
-                  </IconButton>
-
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={!currentUser || !newMovieTitle.trim() || isSubmitting}
-                    isLoading={isAdding}
-                    style={{
-                      padding: 0,
-                      borderRadius: '50%',
-                      aspectRatio: '1',
-                      minWidth: isMobile ? '32px' : '36px',
-                      width: isMobile ? '32px' : '36px',
-                      height: isMobile ? '32px' : '36px',
-                      flexShrink: 0,
-                      opacity: !currentUser ? 0.5 : 1,
-                    }}
-                  >
-                    {!isAdding && (
-                      <PlusIcon
-                        style={{
-                          width: isMobile ? '16px' : '18px',
-                          height: isMobile ? '16px' : '18px',
-                        }}
-                      />
-                    )}
-                  </Button>
-                </div>
+                  {currentUser ? 'Add to Watchlist' : 'Suggest a Title'}
+                </h3>
+                <p
+                  style={{
+                    margin: `${spacing.xs} 0 0`,
+                    color: colors.textSecondary,
+                    fontSize: typography.fontSize.xs,
+                  }}
+                >
+                  {currentUser
+                    ? 'Quick add with one clear field.'
+                    : 'Suggest a title for Aaron & Electra to watch.'}
+                </p>
               </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                <IconButton
+                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                  variant="ghost"
+                  size="sm"
+                  title={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                  aria-label={`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`}
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    flexShrink: 0,
+                  }}
+                >
+                  {viewMode === 'list' ? (
+                    <LayoutGridIcon style={{ width: isMobile ? '16px' : undefined }} />
+                  ) : (
+                    <LayoutListIcon style={{ width: isMobile ? '16px' : undefined }} />
+                  )}
+                </IconButton>
+              </div>
+            </div>
+
+            <Input
+              ref={inputRef}
+              label="Movie or show title"
+              value={newMovieTitle}
+              onChange={(e) =>
+                setNewMovieTitle(e.target.value.slice(0, MAX_SUGGESTION_TITLE_LENGTH))
+              }
+              placeholder={currentUser ? 'Example: Spirited Away' : 'Example: The Holdovers'}
+              disabled={isSubmitting || isAdding}
+              aria-label="Movie or show title"
+              style={{
+                borderColor: successMovieId ? colors.success : undefined,
+                transition: 'border-color 0.3s ease',
+                height: isMobile ? '46px' : '48px',
+                fontSize: isMobile ? '14px' : '16px',
+              }}
+            />
+
+            <div
+              style={{
+                marginTop: spacing.xs,
+                marginBottom: spacing.sm,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                color: colors.textTertiary,
+                fontSize: typography.fontSize.xs,
+              }}
+            >
+              <span>Suggestions are reviewed by Aaron & Electra.</span>
+              <span>
+                {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
+              </span>
+            </div>
+
+            <div
+              style={{
+                marginTop: spacing.md,
+                display: 'flex',
+                justifyContent: isMobile ? 'stretch' : 'flex-end',
+              }}
+            >
+              <Button
+                type="submit"
+                variant={currentUser ? 'primary' : 'secondary'}
+                disabled={isSubmitting || isAdding || !newMovieTitle.trim()}
+                isLoading={isAdding}
+                aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
+                style={{
+                  width: isMobile ? '100%' : 'auto',
+                  minWidth: isMobile ? '100%' : '220px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: spacing.xs,
+                  fontFamily:
+                    "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {!isAdding && <PlusIcon style={{ width: '16px', height: '16px' }} />}
+                {currentUser ? 'Add to Watchlist' : 'Submit Suggestion'}
+              </Button>
             </div>
           </form>
         </Card>
 
-        {/* Combined Spin Wheel Header/Card */}
         <Card
           variant="elevated"
-          className={!canSpin ? 'neon-pulse' : undefined}
           style={{
-            marginBottom: spacing.xl,
-            padding: isMobile ? spacing.md : spacing.lg,
-            border: `2px solid ${canSpin ? colors.secondary : colors.accent}`,
-            background: canSpin
-              ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
-              : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
-            boxShadow: canSpin ? shadows.glowBlue : shadows.glowStrong,
+            marginBottom: spacing.lg,
+            padding: isMobile ? spacing.sm : spacing.md,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.sm,
           }}
         >
           <div
             style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              alignItems: isMobile ? 'stretch' : 'center',
-              justifyContent: 'space-between',
-              gap: spacing.md,
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))',
+              gap: spacing.xs,
             }}
           >
-            <div style={{ flex: 1, textAlign: isMobile ? 'center' : 'left' }}>
-              <span
+            {(
+              [
+                ['all', 'All'],
+                ['to-watch', 'To Watch'],
+                ['watched', 'Watched'],
+                ['suggestions', 'Suggestions'],
+              ] as Array<[ContentTab, string]>
+            ).map(([tabValue, label]) => (
+              <Button
+                key={tabValue}
+                variant={contentTab === tabValue ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setContentTab(tabValue)}
                 style={{
-                  display: 'inline-block',
-                  fontSize: typography.fontSize.xs,
-                  fontWeight: typography.fontWeight.bold,
-                  color: canSpin ? colors.secondary : colors.accentLight,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  marginBottom: spacing.xs,
+                  width: '100%',
+                  justifyContent: 'center',
+                  border:
+                    contentTab === tabValue ? undefined : `1px solid ${colors.borderSecondary}30`,
+                  color: contentTab === tabValue ? colors.textPrimary : colors.textSecondary,
+                  minHeight: '44px',
                 }}
               >
-                {!currentUser
-                  ? 'Spin wheel locked'
-                  : canSpin
-                    ? "Tonight's movie picker is ready"
-                    : 'Almost ready to spin'}
-              </span>
-              <h2
-                style={{
-                  margin: 0,
-                  marginBottom: spacing.xs,
-                  color: colors.textPrimary,
-                  fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
-                  fontWeight: typography.fontWeight.bold,
-                  lineHeight: typography.lineHeight.tight,
-                }}
-              >
-                {!currentUser ? 'Login to Spin the Wheel' : 'Spin the Wheel'}
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  color: colors.textSecondary,
-                  fontSize: typography.fontSize.sm,
-                  lineHeight: typography.lineHeight.normal,
-                }}
-              >
-                {!currentUser
-                  ? 'Select a profile above, then spin for an instant movie pick.'
-                  : canSpin
-                    ? 'You have enough unwatched movies. Spin now and let fate decide.'
-                    : `Add ${moviesNeededForSpin} more unwatched ${moviesNeededForSpin === 1 ? 'movie' : 'movies'} to unlock the wheel.`}
-              </p>
-            </div>
-            <Button
-              onClick={handleOpenWheel}
-              variant={canSpin ? 'secondary' : 'primary'}
-              size={isMobile ? 'md' : 'lg'}
+                {label} ({tabCounts[tabValue]})
+              </Button>
+            ))}
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: spacing.sm,
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+            }}
+          >
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search movies and suggestions..."
+              aria-label="Search movies and suggestions"
               style={{
-                width: isMobile ? '100%' : 'auto',
-                minWidth: isMobile ? '100%' : '220px',
-                fontWeight: typography.fontWeight.bold,
-                letterSpacing: '0.06em',
+                height: '44px',
+                flex: 1,
               }}
-              aria-label={!currentUser ? 'Login to spin the wheel' : 'Open spin wheel'}
+            />
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              aria-label="Sort movies"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '44px',
+                minWidth: isMobile ? '100%' : '160px',
+                borderRadius: radius.md,
+                border: `1px solid ${colors.borderSecondary}40`,
+                backgroundColor: colors.surfaceElevated,
+                color: colors.textPrimary,
+                padding: `0 ${spacing.sm}`,
+                fontFamily: typography.fontFamily.body.join(', '),
+              }}
             >
-              {!currentUser ? <LockIcon /> : <DiceIcon />}
-              {!currentUser
-                ? 'Login to Spin'
-                : canSpin
-                  ? 'Spin Wheel Now'
-                  : `Need ${moviesNeededForSpin} More`}
+              <option value="recent">Recently Added</option>
+              <option value="title">Title A-Z</option>
+              <option value="year">Year (Newest)</option>
+            </select>
+            <Button
+              type="button"
+              size="sm"
+              variant={showMemoriesOnly ? 'secondary' : 'ghost'}
+              onClick={() => setShowMemoriesOnly((prev) => !prev)}
+              style={{
+                minHeight: '44px',
+                border: `1px solid ${colors.borderSecondary}40`,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Memories only ({memories.length})
             </Button>
           </div>
         </Card>
 
         <div
+          ref={movieResultsRef}
           style={{
             opacity: isSubmitting ? 0.5 : 1,
             pointerEvents: isSubmitting ? 'none' : 'auto',
@@ -607,8 +709,7 @@ const Watchlist: React.FC = () => {
         >
           {viewMode === 'grid' ? (
             <MasonryGrid>
-              {/* Individual Suggestions */}
-              {pendingSuggestions.map((suggestion) => (
+              {filteredSuggestions.map((suggestion) => (
                 <SuggestionItemCard
                   key={suggestion.id}
                   suggestion={suggestion}
@@ -618,8 +719,9 @@ const Watchlist: React.FC = () => {
                 />
               ))}
 
-              {movies &&
-                movies.map((movie) => (
+              {filteredMovies.map((movie) => {
+                const movieMemories = movieMemoriesMap.get(movie.id) || [];
+                return (
                   <MovieItem
                     key={movie.id}
                     movie={movie}
@@ -629,75 +731,84 @@ const Watchlist: React.FC = () => {
                     onFixMatch={handleFixMatch}
                     animationDelay="0s"
                     layout="grid"
+                    memories={movieMemories}
+                    onAddMemory={async (note) => {
+                      await addMemory(movie.id, movie.title, currentUser!, note);
+                      setToast({ message: 'Memory added!', type: 'success' });
+                    }}
+                    onUpdateMemory={handleEditMemory}
+                    onDeleteMemory={handleDeleteMemory}
+                    onTogglePin={handleTogglePin}
+                    isHighlighted={highlightMovieId === movie.id}
                   />
-                ))}
+                );
+              })}
             </MasonryGrid>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              {movies &&
-                movies.map((movie, index) => (
-                  <React.Fragment key={movie.id}>
-                    {index === firstWatchedIndex && firstWatchedIndex !== -1 && (
-                      <div
-                        style={{
-                          margin: `${spacing.xl} 0`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: spacing.md,
-                        }}
-                      >
-                        <hr
-                          style={{
-                            flex: 1,
-                            border: 'none',
-                            borderTop: `1px dashed ${colors.accent}`,
-                            opacity: 0.5,
-                          }}
-                        />
-                        <span
-                          style={{
-                            color: colors.accent,
-                            fontSize: typography.fontSize.sm,
-                            fontWeight: typography.fontWeight.semibold,
-                          }}
-                        >
-                          Watched Together ✨
-                        </span>
-                        <hr
-                          style={{
-                            flex: 1,
-                            border: 'none',
-                            borderTop: `1px dashed ${colors.accent}`,
-                            opacity: 0.5,
-                          }}
-                        />
-                      </div>
-                    )}
-                    <MovieItem
-                      movie={movie}
-                      currentUser={currentUser}
-                      onToggle={handleToggleWatched}
-                      onDelete={handleDeleteMovie}
-                      onFixMatch={handleFixMatch}
-                      animationDelay={`${index * 0.05}s`}
-                      layout="list"
-                    />
-                  </React.Fragment>
+              {(contentTab === 'all' || contentTab === 'suggestions') &&
+                filteredSuggestions.map((suggestion) => (
+                  <SuggestionItemCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onAccept={handleAcceptSuggestion}
+                    onReject={handleRejectSuggestion}
+                    isProcessing={processingSuggestionId === suggestion.id}
+                  />
                 ))}
+
+              {filteredMovies.map((movie) => {
+                const movieMemories = movieMemoriesMap.get(movie.id) || [];
+                return (
+                  <MovieItem
+                    key={movie.id}
+                    movie={movie}
+                    currentUser={currentUser}
+                    onToggle={handleToggleWatched}
+                    onDelete={handleDeleteMovie}
+                    onFixMatch={handleFixMatch}
+                    animationDelay="0s"
+                    layout="list"
+                    memories={movieMemories}
+                    onAddMemory={async (note) => {
+                      await addMemory(movie.id, movie.title, currentUser!, note);
+                      setToast({ message: 'Memory added!', type: 'success' });
+                    }}
+                    onUpdateMemory={handleEditMemory}
+                    onDeleteMemory={handleDeleteMemory}
+                    onTogglePin={handleTogglePin}
+                    isHighlighted={highlightMovieId === movie.id}
+                  />
+                );
+              })}
             </div>
           )}
 
-          {movies?.length === 0 && !isSuggestionsLoading && (
-            <div
-              style={{ textAlign: 'center', padding: spacing['3xl'], color: colors.textSecondary }}
-            >
-              <FilmIcon
-                style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
-              />
-              <p>Your watchlist is empty. Add a movie to start!</p>
-            </div>
-          )}
+          {filteredMovies.length === 0 &&
+            filteredSuggestions.length === 0 &&
+            !isSuggestionsLoading && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: spacing['3xl'],
+                  color: colors.textSecondary,
+                }}
+              >
+                <FilmIcon
+                  style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
+                />
+                <p>
+                  {searchQuery
+                    ? 'No results match your search.'
+                    : contentTab === 'suggestions'
+                      ? 'No pending suggestions right now.'
+                      : 'No movies in this section yet.'}
+                </p>
+              </div>
+            )}
         </div>
+
+
       </div>
 
       <ConfirmDialog
@@ -706,26 +817,6 @@ const Watchlist: React.FC = () => {
         message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setMovieToDelete(null)}
-      />
-
-      {isWheelVisible && (
-        <SpinWheel
-          isOpen={isWheelVisible}
-          onClose={() => setIsWheelVisible(false)}
-          movies={unwatchedMovies}
-          onWinner={(movie) => {
-            setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
-          }}
-        />
-      )}
-
-      <PinDialog
-        isOpen={showPinDialog}
-        user={currentUser!}
-        onCancel={() => setShowPinDialog(false)}
-        onSubmit={handlePinSubmit}
-        mode={pinMode}
-        isLoading={isPinLoading}
       />
 
       <FixMatchDialog
@@ -739,17 +830,9 @@ const Watchlist: React.FC = () => {
           if (success) {
             setToast({ message: `Updated details for "${movieToFix.title}"!`, type: 'success' });
           } else {
-            setToast({ message: `Failed to update metadata.`, type: 'error' });
+            setToast({ message: 'Failed to update metadata.', type: 'error' });
           }
         }}
-      />
-
-      <ConfirmDialog
-        isOpen={showRemovePinConfirm}
-        title="Remove PIN"
-        message="Are you sure you want to remove your PIN? Anyone will be able to mark movies as watched for you."
-        onConfirm={handleRemovePin}
-        onCancel={() => setShowRemovePinConfirm(false)}
       />
     </div>
   );

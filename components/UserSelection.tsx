@@ -1,19 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { usePins } from '../hooks/usePins';
-import { spacing, typography, colors } from '../design-system/tokens';
+import { spacing, typography } from '../design-system/tokens';
 import PinDialog from './PinDialog';
 
-interface UserSelectionProps {
-  onTakeQuiz: () => void;
-}
-
-const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
+const UserSelection: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin } = usePins();
-  const [hoveredUser, setHoveredUser] = useState<User | null>(null);
+  const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -67,26 +63,35 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onTakeQuiz }) => {
           width: '100%',
           flexWrap: 'nowrap',
           padding: `0 ${spacing.md}`,
+          position: 'relative',
         }}
       >
-        {(['Aaron', 'Electra'] as User[]).map((user, index) => (
-          <div
-            key={user}
-            style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}
-          >
-            <GelBubbleAvatar
-              user={user}
-              hasPin={userHasPin(user)}
-              isHovered={hoveredUser === user || currentUser === user}
-              onClick={() => handleUserClick(user)}
-              onMouseEnter={() => setHoveredUser(user)}
-              onMouseLeave={() => setHoveredUser(null)}
-              onFocus={() => setHoveredUser(user)}
-              onBlur={() => setHoveredUser(null)}
-              animationOffset={index % 2 === 1}
-            />
-          </div>
-        ))}
+        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+          <GelBubbleAvatar
+            user="Aaron"
+            hasPin={userHasPin('Aaron')}
+            isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
+            onClick={() => handleUserClick('Aaron')}
+            onMouseEnter={() => setHoveredAvatar('Aaron')}
+            onMouseLeave={() => setHoveredAvatar(null)}
+            onFocus={() => setHoveredAvatar('Aaron')}
+            onBlur={() => setHoveredAvatar(null)}
+          />
+        </div>
+
+        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+          <GelBubbleAvatar
+            user="Electra"
+            hasPin={userHasPin('Electra')}
+            isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
+            onClick={() => handleUserClick('Electra')}
+            onMouseEnter={() => setHoveredAvatar('Electra')}
+            onMouseLeave={() => setHoveredAvatar(null)}
+            onFocus={() => setHoveredAvatar('Electra')}
+            onBlur={() => setHoveredAvatar(null)}
+            animationOffset
+          />
+        </div>
       </div>
 
       <PinDialog

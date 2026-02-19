@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { typography } from '../design-system/tokens';
 
 interface GlossyQuizButtonProps {
   onClick: () => void;
@@ -8,9 +9,13 @@ interface GlossyQuizButtonProps {
 const GlossyQuizButton: React.FC<GlossyQuizButtonProps> = ({ onClick, children }) => {
   const [isPressed, setIsPressed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const buttonTransform = isPressed
+    ? 'translateY(4px) scale(0.98)'
+    : `translateY(${isHovered ? '-2px' : '0'}) scale(${isHovered ? '1.02' : '1'})`;
 
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
@@ -25,10 +30,10 @@ const GlossyQuizButton: React.FC<GlossyQuizButtonProps> = ({ onClick, children }
       className="glossy-quiz-button"
       style={{
         position: 'relative',
-        fontFamily: "'Papyrus', fantasy",
+        fontFamily: typography.fontFamily.heading.join(', '),
         fontSize: 'clamp(1rem, 4vw, 1.25rem)',
         fontWeight: 600,
-        letterSpacing: '0.05em',
+        letterSpacing: typography.letterSpacing.wide,
         color: '#fff',
         textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
         padding: 'clamp(14px, 3vw, 18px) clamp(28px, 6vw, 48px)',
@@ -58,11 +63,7 @@ const GlossyQuizButton: React.FC<GlossyQuizButtonProps> = ({ onClick, children }
             0 0 ${isHovered ? '40px' : '30px'} rgba(255, 105, 180, ${isHovered ? '0.7' : '0.5'}),
             inset 0 2px 0 rgba(255,255,255,0.4)
           `,
-        transform: isPressed
-          ? 'translateY(4px) scale(0.98)'
-          : isHovered
-            ? 'translateY(-2px) scale(1.02)'
-            : 'translateY(0) scale(1)',
+        transform: buttonTransform,
         transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
         overflow: 'hidden',
       }}

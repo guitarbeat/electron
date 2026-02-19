@@ -1,4 +1,5 @@
 export type User = 'Aaron' | 'Electra';
+export type MainTab = 'queue' | 'messages' | 'extras';
 
 export interface Movie {
   id: string;
@@ -43,4 +44,15 @@ export interface MovieSuggestion {
   createdAt: string;
   respondedAt?: string;
   respondedBy?: User; // Aaron or Electra
+}
+
+export interface SharedMemory {
+  id: string;
+  movieId?: string;
+  movieTitle: string;
+  author: string;
+  note: string;
+  createdAt: string;
+  updatedAt?: string;
+  isPinned?: boolean;
 }

@@ -1,15 +1,14 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { spacing, typography, colors, radius } from '../../design-system/tokens';
+import { spacing, typography, colors } from '../../design-system/tokens';
 import { MessageIcon, ChevronDownIcon } from '../icons';
-import Card from '../ui/Card';
-import IconButton from '../ui/IconButton';
 import MessageItem from '../MessageItem';
 import { Message, User } from '../../types';
+import './MessageList.css';
 
 interface MessageListProps {
   messages: Message[] | null;
   isLoading: boolean;
-  error: any;
+  error: Error | null;
   currentUser: User | null;
   onDelete: (id: string) => Promise<void>;
   onReaction: (messageId: string, emoji: string, username: string) => Promise<void>;
@@ -104,25 +103,11 @@ const MessageList: React.FC<MessageListProps> = ({
         padding: spacing.md,
         position: 'relative',
         minHeight: 0,
-        backgroundColor: '#ffffff',
+        backgroundColor: colors.surfaceElevated,
         WebkitOverflowScrolling: 'touch',
       }}
       className="messages-container-ios"
     >
-      <style>{`
-        .messages-container-ios {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .messages-container-ios::-webkit-scrollbar {
-          display: none;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
       {/* Scroll to Bottom Button - iOS style */}
       {showScrollToBottom && (
         <div
@@ -182,7 +167,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 style={{
                   padding: `${spacing.sm} ${spacing.md}`,
                   height: '40px',
-                  background: '#e5e5ea',
+                  background: 'rgba(255,255,255,0.08)',
                   borderRadius: '18px',
                   opacity: 0.5,
                   maxWidth: '60%',
@@ -199,14 +184,14 @@ const MessageList: React.FC<MessageListProps> = ({
             style={{
               textAlign: 'center',
               padding: spacing.lg,
-              color: '#ff3b30',
-              backgroundColor: 'rgba(255, 59, 48, 0.1)',
+              color: colors.error,
+              backgroundColor: 'rgba(248, 113, 113, 0.14)',
               borderRadius: '12px',
             }}
             role="alert"
             aria-live="assertive"
           >
-            <p style={{ margin: 0, fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+            <p style={{ margin: 0, fontFamily: typography.fontFamily.body.join(', ') }}>
               Error loading messages. Please refresh the page.
             </p>
           </div>
@@ -249,7 +234,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 width: '60px',
                 height: '60px',
                 borderRadius: '50%',
-                backgroundColor: '#007AFF',
+                backgroundColor: colors.secondary,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -260,7 +245,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 style={{
                   width: '32px',
                   height: '32px',
-                  color: '#ffffff',
+                  color: '#000000',
                 }}
               />
             </div>
@@ -269,7 +254,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 fontFamily: typography.fontFamily.heading.join(', '),
                 fontSize: typography.fontSize.lg,
                 margin: 0,
-                color: '#000000',
+                color: colors.textPrimary,
               }}
             >
               No messages yet
@@ -277,9 +262,9 @@ const MessageList: React.FC<MessageListProps> = ({
             <p
               style={{
                 fontSize: '15px',
-                color: '#8e8e93',
+                color: colors.textSecondary,
                 marginTop: spacing.xs,
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                fontFamily: typography.fontFamily.body.join(', '),
               }}
             >
               Be the first to start the conversation!
