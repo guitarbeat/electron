@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { colors, radius, spacing, typography, motion, borders } from '../../design-system/tokens';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,11 +10,16 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * Input component with retro inset styling.
  */
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = '', style, ...props }, ref) => {
+  ({ label, error, className = '', style, id: providedId, ...props }, ref) => {
+    const generatedId = useId();
+    const id = providedId || generatedId;
+    const errorId = `${id}-error`;
+
     return (
       <div style={{ width: '100%' }}>
         {label && (
           <label
+            htmlFor={id}
             style={{
               display: 'block',
               marginBottom: spacing.xs,
@@ -29,6 +34,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <input
           ref={ref}
+          id={id}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
           className={className}
           style={{
             width: '100%',
@@ -42,7 +50,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
             outline: 'none',
             WebkitAppearance: 'none', // * Prevent iOS default styling
-            textAlign: 'center',
+            textAlign: 'left',
             letterSpacing: '0.02em',
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
             ...style,
@@ -61,6 +69,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         />
         {error && (
           <div
+            id={errorId}
+            role="alert"
             style={{
               marginTop: spacing.xs,
               fontSize: typography.fontSize.sm,

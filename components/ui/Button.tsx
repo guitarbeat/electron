@@ -47,27 +47,34 @@ const Button: React.FC<ButtonProps> = ({
     },
   };
 
-  const variantStyles = {
-    primary: {
-      background: colors.gradientPink,
-      color: colors.textPrimary,
-      border: `${borders.buttonOutset} #fff`,
-    },
-    secondary: {
-      background: colors.gradientBlue,
-      color: colors.textPrimary,
-      border: `${borders.buttonOutset} #fff`,
-    },
-    danger: {
-      background: colors.error,
-      color: colors.textPrimary,
-      border: `${borders.buttonOutset} #fff`,
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-      color: colors.textSecondary,
-      border: 'none',
-    },
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'primary':
+        return {
+          backgroundImage: `${colors.gradientPink}, linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`,
+          color: colors.textPrimary,
+          border: `${borders.buttonOutset} #fff`,
+        };
+      case 'secondary':
+        return {
+          backgroundImage: `${colors.gradientBlue}, linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`,
+          color: colors.textPrimary,
+          border: `${borders.buttonOutset} #fff`,
+        };
+      case 'danger':
+        return {
+          backgroundColor: colors.error,
+          color: colors.textPrimary,
+          border: `${borders.buttonOutset} #fff`,
+        };
+      case 'ghost':
+      default:
+        return {
+          backgroundColor: 'transparent',
+          color: colors.textSecondary,
+          border: 'none',
+        };
+    }
   };
 
   const isDisabled = disabled || isLoading;
@@ -80,7 +87,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={isDisabled}
       style={{
         ...sizeStyles[size],
-        ...variantStyles[variant],
+        ...getVariantStyles(),
         borderRadius: radius.md,
         fontWeight: typography.fontWeight.medium,
         fontFamily: typography.fontFamily.heading.join(', '),
@@ -99,10 +106,6 @@ const Button: React.FC<ButtonProps> = ({
         minHeight: size === 'lg' ? '44px' : size === 'md' ? '36px' : '32px',
         overflow: 'hidden',
         letterSpacing: '0.03em',
-        backgroundImage:
-          variant !== 'ghost'
-            ? `linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`
-            : 'none',
         ...style,
       }}
       onMouseEnter={(e) => {

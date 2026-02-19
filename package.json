@@ -10,7 +10,10 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "format": "prettier --write .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test:snake": "node --test components/snake/snakeGameLogic.test.ts",
+    "test:memories": "node --test components/memories/memoryUtils.test.ts components/memories/memoryComposerAuth.test.ts",
+    "test:security": "node --test config/security.test.ts"
   },
   "dependencies": {
     "@types/react": "^19.2.14",
@@ -33,6 +36,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.26",
+    "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vite": "^7.3.1"

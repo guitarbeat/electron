@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import { usePins } from '../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import { colors } from '../design-system/tokens';
+import { colors, typography, spacing } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import GlossyQuizButton from './GlossyQuizButton';
 import PinDialog from './PinDialog';
@@ -99,20 +99,20 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         <h1
           className="title-entrance"
           style={{
-            fontFamily: "'Papyrus', fantasy",
+            fontFamily: typography.fontFamily.heading.join(', '),
             fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
             fontWeight: 600,
-            color: '#fff',
             margin: 0,
-            background: 'linear-gradient(135deg, #ff69b4 0%, #87cefa 50%, #ff69b4 100%)',
+            backgroundImage: 'linear-gradient(135deg, #ff69b4 0%, #87cefa 50%, #ff69b4 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
+            color: 'transparent',
             textShadow: 'none',
-            letterSpacing: '0.05em',
+            letterSpacing: typography.letterSpacing.wide,
           }}
         >
-          Who's Watching?
+          Who&apos;s Watching?
         </h1>
       </div>
 

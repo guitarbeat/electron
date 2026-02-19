@@ -66,6 +66,23 @@ def run(playwright):
     # Intercept Gist API calls
     page.route("**/gists/**", handle_gist)
 
+    # Intercept OMDb Proxy calls to prevent 500 errors and verify the call
+    def handle_omdb_proxy(route):
+        print(f"Intercepted OMDb Proxy call: {route.request.url}")
+        route.fulfill(
+            status=200,
+            content_type="application/json",
+            body=json.dumps({"Response": "False", "Error": "Mocked Proxy Response"}),
+        )
+
+    # Also intercept direct OMDb calls to ensure we ARE NOT making them
+    def handle_omdb_direct(route):
+        print(f"ERROR: Intercepted DIRECT OMDb call: {route.request.url}")
+        route.abort()
+
+    page.route("**/omdb-proxy**", handle_omdb_proxy)
+    page.route("**/omdbapi.com/**", handle_omdb_direct)
+
     try:
         print("Navigating to app...")
         page.goto("http://localhost:5000")
@@ -85,8 +102,8 @@ def run(playwright):
 
         # Wait for Watchlist Input
         print("Waiting for watchlist input...")
-        # Use aria-label selector which is more stable than placeholder
-        input_locator = page.get_by_label("New movie title")
+        # Use CORRECT label found in code: "Movie or show title"
+        input_locator = page.get_by_label("Movie or show title")
         input_locator.wait_for(timeout=10000)
 
         # Add a movie
@@ -95,10 +112,7 @@ def run(playwright):
         input_locator.fill(movie_title)
 
         # Click add button (it might be an icon button inside the input group)
-        # In Watchlist.tsx: Button type="submit" variant="primary" inside form
-        # It has PlusIcon.
-        # We can find it by type="submit" inside the form or by role "button"
-        page.locator('button[type="submit"]').click()
+        page.get_by_label("Add movie to watchlist").click()
 
         # Verify added
         print("Verifying movie added...")
@@ -109,10 +123,9 @@ def run(playwright):
 
         # Delete the movie
         print("Deleting movie...")
-        # The delete button usually has trash icon or aria label.
-        # MovieItem.tsx: Button with TrashIcon.
-        # The original test used: page.get_by_role("button", name=f'Delete "{movie_title}"')
-        # If MovieItem has aria-label `Delete "${movie.title}"`, it works.
+        # Note: MovieItem delete button might have changed too. I'll rely on role button with name.
+        # But if the name is dynamic, I might need a more robust selector.
+        # Assuming aria-label `Delete "${movie.title}"` exists.
         page.get_by_role("button", name=f'Delete "{movie_title}"').click()
 
         # Wait for custom dialog

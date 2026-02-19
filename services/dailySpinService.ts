@@ -1,8 +1,5 @@
-import { GIST_ID, GIST_TOKEN } from '../gistConfig';
+import { GIST_TOKEN, GIST_API_URL, GIST_DAILY_SPIN_FILENAME } from '../gistConfig';
 import { DailySpin } from '../types';
-
-const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
-const DAILY_SPIN_FILENAME = 'dailyspin.json';
 
 /**
  * Gets the current date in YYYY-MM-DD format (UTC).
@@ -30,7 +27,7 @@ export const getDailySpin = async (): Promise<DailySpin | null> => {
     }
 
     const gist = await response.json();
-    const file = gist.files[DAILY_SPIN_FILENAME];
+    const file = gist.files[GIST_DAILY_SPIN_FILENAME];
 
     if (!file || !file.content) {
       return null;
@@ -57,7 +54,7 @@ export const saveDailySpin = async (spin: DailySpin): Promise<void> => {
       },
       body: JSON.stringify({
         files: {
-          [DAILY_SPIN_FILENAME]: {
+          [GIST_DAILY_SPIN_FILENAME]: {
             content: JSON.stringify(spin, null, 2),
           },
         },

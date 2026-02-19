@@ -6,11 +6,15 @@
 // 5. Check the "gist" scope.
 // 6. Click "Generate token" and paste the token string below.
 // 7. Add it to your .env file as VITE_GIST_TOKEN
-const GIST_TOKEN = import.meta.env.VITE_GIST_TOKEN || '';
+const env = (import.meta.env || {}) as any;
+const GIST_TOKEN = env.VITE_GIST_TOKEN || '';
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.
-const GIST_ID = import.meta.env.VITE_GIST_ID || '';
+const GIST_ID = env.VITE_GIST_ID || '';
+
+// The API URL for Gist operations
+const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
 // The filename inside your Gist that contains the movie data.
 const GIST_FILENAME = 'movielist.json';
@@ -24,11 +28,20 @@ const GIST_QUIZ_FILENAME = 'quiz.json';
 // The filename for movie suggestions data.
 const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
 
+// The filename for shared memory wall data.
+const GIST_MEMORIES_FILENAME = 'memories.json';
+
+// The filename for the daily spin data.
+const GIST_DAILY_SPIN_FILENAME = 'dailyspin.json';
+
 export {
   GIST_TOKEN,
   GIST_ID,
+  GIST_API_URL,
   GIST_FILENAME,
   GIST_MESSAGES_FILENAME,
   GIST_QUIZ_FILENAME,
   GIST_SUGGESTIONS_FILENAME,
+  GIST_MEMORIES_FILENAME,
+  GIST_DAILY_SPIN_FILENAME,
 };

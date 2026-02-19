@@ -69,9 +69,9 @@ export const colors = {
 // * Typography scale (Legible and tight)
 export const typography = {
   fontFamily: {
-    heading: ['Papyrus', 'fantasy'],
-    body: ['Papyrus', 'fantasy'],
-    sans: ['Papyrus', 'fantasy'],
+    heading: ['Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
+    body: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
+    sans: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {
@@ -97,9 +97,9 @@ export const typography = {
   },
   letterSpacing: {
     tight: '-0.01em',
-    normal: '0.02em', // Slight spacing improves Papyrus readability
-    wide: '0.05em',
-    wider: '0.08em',
+    normal: '0.015em', // Slight spacing improves Papyrus readability
+    wide: '0.04em',
+    wider: '0.065em',
   },
 } as const;
 
@@ -183,4 +183,15 @@ export const zIndex = {
   overlay: 30,
   modal: 40,
   tooltip: 50,
+} as const;
+
+// * Layout constants for app shell/navigation
+export const layout = {
+  topBarHeight: '64px',
+  topBarMobileHeight: '58px',
+  tabBarHeight: '72px',
+  desktopNavHeight: '56px',
+  contentMaxWidth: '1200px',
+  contentPaddingX: '1rem',
+  contentPaddingXDesktop: '1.5rem',
 } as const;

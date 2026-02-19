@@ -1,30 +1,31 @@
 import React, { memo, useState } from 'react';
 import { Movie, User } from '../types';
-import {
-  TrashIcon,
-  EyeIcon,
-  EyeOffIcon,
-  TicketIcon,
-  MagicWandIcon,
-  Spinner,
-  FilmIcon,
-} from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
-import FixMatchDialog from './FixMatchDialog';
 import BottomSheet from './ui/BottomSheet';
+import WatcherBadge from './WatcherBadge';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+import MemoryList from './memories/MemoryList';
+import MemoryComposer from './memories/MemoryComposer';
+import { SharedMemory } from '../types';
 
 interface MovieItemProps {
   movie: Movie;
   currentUser: User | null;
-  onToggle: (movie: Movie) => void;
+  onToggle: (movie: Movie) => void | Promise<void>;
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
   animationDelay: string;
   layout?: 'list' | 'grid';
+  memories?: SharedMemory[];
+  onAddMemory?: (note: string) => Promise<void>;
+  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
+  onDeleteMemory?: (memoryId: string) => Promise<void>;
+  onTogglePin?: (memoryId: string) => Promise<void>;
+  isHighlighted?: boolean;
 }
 
 const getWatchedStatus = (movie: Movie) => {
@@ -44,13 +45,23 @@ const MovieItem: React.FC<MovieItemProps> = ({
   onFixMatch,
   animationDelay,
   layout = 'list',
+  memories = [],
+  onAddMemory,
+  onUpdateMemory,
+  onDeleteMemory,
+  onTogglePin,
+  isHighlighted = false,
 }) => {
   const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
-  const [isUpdating, setIsUpdating] = React.useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [showMemories, setShowMemories] = useState(false);
+  const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
+
+  // We don't need memoryPreview/Count props anymore as we have the full array
+  const hasSharedMemories = memories.length > 0;
 
   const handleCardClick = () => {
     if (isMobile && layout === 'grid') {
@@ -61,6 +72,19 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const handleAction = (action: () => void) => {
     action();
     setIsBottomSheetOpen(false);
+  };
+
+  const handleToggle = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (isGuest) return;
+
+    setIsUpdating(true);
+    try {
+      await onToggle(movie);
+    } finally {
+      setIsUpdating(false);
+      setIsBottomSheetOpen(false);
+    }
   };
 
   return (
@@ -75,17 +99,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           marginBottom: layout === 'grid' ? spacing.sm : spacing.md,
           borderWidth: watchedByBoth ? (layout === 'grid' ? '2px' : '3px') : '1px',
-          borderColor: watchedByBoth ? colors.accent : colors.border,
+          borderColor: isHighlighted
+            ? colors.secondary
+            : watchedByBoth
+              ? colors.accent
+              : colors.border,
           position: 'relative',
           overflow: 'hidden',
           animationDelay,
           display: 'flex',
           flexDirection: layout === 'grid' ? 'column' : 'row',
           minHeight: layout === 'grid' ? 'auto' : '160px',
-          boxShadow: layout === 'grid' ? shadows.card : shadows.card,
+          boxShadow: isHighlighted
+            ? '0 0 0 2px rgba(135, 206, 250, 0.55), 0 0 24px rgba(135, 206, 250, 0.45)'
+            : layout === 'grid'
+              ? shadows.card
+              : shadows.card,
           backgroundColor: colors.surfaceElevated,
           cursor: isMobile && layout === 'grid' ? 'pointer' : 'default',
           transform: 'translateZ(0)',
+          flexWrap: 'wrap', // Allow memories to take full width below
         }}
         onMouseEnter={(e) => {
           if (!isMobile) {
@@ -179,50 +212,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
               zIndex: 10,
             }}
           >
-            {movie.watchedBy.includes('Aaron') && (
-              <div
-                title="Watched by Aaron"
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  backgroundColor: colors.secondary,
-                  border: '2px solid white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: colors.background,
-                  boxShadow: `0 0 10px ${colors.secondary}80`,
-                  textShadow: 'none',
-                }}
-              >
-                A
-              </div>
-            )}
-            {movie.watchedBy.includes('Electra') && (
-              <div
-                title="Watched by Electra"
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  backgroundColor: colors.accent,
-                  border: '2px solid white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: 'white',
-                  boxShadow: `0 0 10px ${colors.accent}80`,
-                  textShadow: 'none',
-                }}
-              >
-                E
-              </div>
-            )}
+            {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
+            {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
           </div>
 
           {/* Grid View Overlay */}
@@ -262,60 +253,57 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 </h3>
               )}
 
+              {hasSharedMemories && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    handleToggleMemories(e);
+                  }}
+                  style={{
+                    alignSelf: 'flex-start',
+                    marginBottom: spacing.xs,
+                    padding: '2px 8px',
+                    borderRadius: radius.full,
+                    border: '1px solid rgba(255, 248, 210, 0.55)',
+                    backgroundColor: 'rgba(58, 41, 17, 0.55)',
+                    color: '#fff4d6',
+                    fontSize: '0.65rem',
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    letterSpacing: '0.04em',
+                    cursor: 'pointer',
+                    borderStyle: 'solid',
+                  }}
+                  aria-label={`View memories for "${movie.title}"`}
+                >
+                  {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
+                </button>
+              )}
+
               <div
                 style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
                   alignItems: 'center',
                   marginTop: '4px',
                   gap: '4px',
-                  flexWrap: 'wrap',
                 }}
               >
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: colors.textSecondary,
-                      fontWeight: typography.fontWeight.bold,
-                    }}
-                  >
-                    {movie.year || ''}
-                  </span>
-                  {movie.category && (
-                    <span
-                      style={{
-                        fontSize: '8px',
-                        color: colors.accentLight,
-                        backgroundColor: 'rgba(0,0,0,0.4)',
-                        padding: '1px 4px',
-                        borderRadius: '2px',
-                        border: `1px solid ${colors.accent}40`,
-                      }}
-                    >
-                      {movie.category}
-                    </span>
-                  )}
-                </div>
-
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: spacing.sm,
-                    marginTop: spacing.sm,
-                    flexWrap: 'wrap',
+                    width: '100%',
                   }}
                 >
                   <Button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggle(movie);
-                    }}
+                    onClick={handleToggle}
                     variant={watchedByCurrentUser ? 'primary' : 'secondary'}
                     size="sm"
+                    isLoading={isUpdating}
+                    loadingText="Updating..."
                     disabled={isGuest}
                     aria-label={
                       watchedByCurrentUser
@@ -324,8 +312,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     }
                     style={{
                       padding: `${spacing.xs} ${spacing.md}`,
-                      height: '28px',
-                      fontSize: '10px',
+                      minHeight: '44px',
+                      fontSize: '12px',
                       backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.6)',
                       borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.2)',
                       display: 'flex',
@@ -357,8 +345,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     aria-label={`Fix metadata for "${movie.title}"`}
                     style={{
                       padding: 0,
-                      width: '28px',
-                      height: '28px',
+                      width: '44px',
+                      height: '44px',
                       backgroundColor: 'rgba(0,0,0,0.6)',
                       borderRadius: radius.md,
                       color: colors.accent,
@@ -383,8 +371,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     aria-label={`Delete "${movie.title}"`}
                     style={{
                       padding: 0,
-                      width: '28px',
-                      height: '28px',
+                      width: '44px',
+                      height: '44px',
                       backgroundColor: 'rgba(0,0,0,0.6)',
                       borderRadius: radius.md,
                       color: colors.error,
@@ -463,48 +451,24 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   fontSize: typography.fontSize.sm,
                   color: colors.textTertiary,
                   marginBottom: spacing.md,
-                  flexWrap: 'wrap',
-                  fontWeight: typography.fontWeight.medium,
+                  fontWeight: typography.fontWeight.semibold,
                 }}
               >
                 {movie.year && <span style={{ color: colors.textSecondary }}>{movie.year}</span>}
-                {movie.year && (movie.imdbRating || movie.runtime) && <span>•</span>}
-
-                {movie.imdbRating && (
+                {movie.year && movie.category && <span>•</span>}
+                {movie.category && (
                   <span
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      color: colors.yellow,
-                      fontWeight: typography.fontWeight.bold,
-                      textShadow: '0 0 10px rgba(255, 235, 59, 0.3)',
+                      color: colors.accentLight,
+                      backgroundColor: `${colors.accent}15`,
+                      padding: '2px 8px',
+                      borderRadius: radius.sm,
+                      fontSize: '0.7rem',
+                      border: `1px solid ${colors.accent}30`,
                     }}
                   >
-                    ★ {movie.imdbRating}
+                    {movie.category}
                   </span>
-                )}
-                {movie.imdbRating && movie.runtime && (
-                  <span style={{ color: colors.textTertiary }}>•</span>
-                )}
-
-                {movie.runtime && <span>{movie.runtime}</span>}
-                {movie.category && (
-                  <>
-                    <span>•</span>
-                    <span
-                      style={{
-                        color: colors.accentLight,
-                        backgroundColor: `${colors.accent}15`,
-                        padding: '2px 8px',
-                        borderRadius: radius.sm,
-                        fontSize: '0.7rem',
-                        border: `1px solid ${colors.accent}30`,
-                      }}
-                    >
-                      {movie.category}
-                    </span>
-                  </>
                 )}
               </div>
 
@@ -526,6 +490,71 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   {movie.plot}
                 </p>
               )}
+
+              {/* Memory Toggle Button */}
+              <button
+                type="button"
+                onClick={handleToggleMemories}
+                style={{
+                  marginBottom: spacing.md,
+                  padding: `${spacing.xs} ${spacing.sm}`,
+                  borderRadius: radius.md,
+                  border: '1px solid rgba(255, 223, 167, 0.35)',
+                  background:
+                    'linear-gradient(145deg, rgba(64, 41, 18, 0.45) 0%, rgba(34, 24, 14, 0.55) 100%)',
+                  textAlign: 'left',
+                  width: '100%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+                aria-label={`View memories for "${movie.title}"`}
+                aria-expanded={showMemories}
+              >
+                <div>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: '#ffe9c0',
+                      fontSize: typography.fontSize.xs,
+                      fontFamily:
+                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                      letterSpacing: '0.03em',
+                    }}
+                  >
+                    {hasSharedMemories
+                      ? `${memories.length} shared memor${memories.length === 1 ? 'y' : 'ies'}`
+                      : 'Add a memory...'}
+                  </p>
+                  {hasSharedMemories && memories.length > 0 && (
+                    <p
+                      style={{
+                        margin: `${spacing.xs} 0 0`,
+                        color: colors.textSecondary,
+                        fontSize: typography.fontSize.xs,
+                        lineHeight: typography.lineHeight.normal,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      "{memories[0].note}"
+                    </p>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: colors.textTertiary,
+                    transform: showMemories ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                  }}
+                >
+                  ▼
+                </div>
+              </button>
             </div>
 
             <div
@@ -544,21 +573,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                   <span
                     style={{
-                      fontSize: '0.65rem',
-                      color: colors.textTertiary,
-                      fontWeight: typography.fontWeight.bold,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      padding: `2px 6px`,
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      borderRadius: radius.md,
-                      border: `1px solid ${colors.borderInset}`,
-                    }}
-                  >
-                    {movie.addedBy}
-                  </span>
-                  <span
-                    style={{
                       fontSize: typography.fontSize.xs,
                       color: watchedByBoth ? colors.textTertiary : colors.secondary,
                       fontStyle: watchedByBoth ? 'italic' : 'normal',
@@ -573,9 +587,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                 <IconButton
                   type="button"
-                  onClick={() => onToggle(movie)}
+                  onClick={handleToggle}
                   variant="ghost"
-                  disabled={isGuest}
+                  disabled={isGuest || isUpdating}
                   title={watchedByCurrentUser ? 'Mark as unwatched' : 'Mark as watched'}
                   aria-label={
                     watchedByCurrentUser
@@ -633,6 +647,93 @@ const MovieItem: React.FC<MovieItemProps> = ({
         )}
       </Card>
 
+      {/* Expanded Memory Section */}
+      {showMemories && (
+        <div
+          className="slide-down"
+          style={{
+            width: '100%',
+            marginTop: `-${spacing.sm}`,
+            marginBottom: spacing.md,
+            padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
+            background: 'rgba(20, 20, 25, 0.4)',
+            border: `1px solid ${colors.borderSecondary}30`,
+            borderTop: 'none',
+            borderRadius: `0 0 ${radius.md} ${radius.md}`,
+            borderLeft: `3px solid ${colors.accent}40`,
+          }}
+        >
+          {/* Add New Memory */}
+          {currentUser && onAddMemory && (
+            <div style={{ marginBottom: spacing.md }}>
+              <MemoryComposer
+                watchedMovieOptions={[movie]}
+                selectedMovieId={movie.id}
+                onSelectedMovieIdChange={() => { }}
+                currentUser={currentUser}
+                isExpanded={true}
+                onSubmit={async (e, note) => {
+                  e.preventDefault();
+                  await handleAddMemory(note);
+                }}
+                isSubmitting={isSubmittingMemory}
+                canSubmit={!isSubmittingMemory}
+                isMobile={isMobile}
+                // Props required by interface but unused in single-movie context
+                note=""
+                onNoteChange={() => { }}
+                isComposerOpen={true}
+                onComposerToggle={() => { }}
+                remainingChars={280}
+              />
+            </div>
+          )}
+
+          {/* List Memories */}
+          {memories.length > 0 ? (
+            <MemoryList
+              memories={memories}
+              visibleMemories={memories}
+              sortedMemories={memories}
+              currentUser={currentUser}
+              isMobile={isMobile}
+              // Actions
+              onEditMemory={async (memory, note) => {
+                if (onUpdateMemory) await onUpdateMemory(memory.id, note);
+              }}
+              onDeleteMemory={async (memory) => {
+                if (onDeleteMemory) await onDeleteMemory(memory.id);
+              }}
+              onTogglePin={async (memory) => {
+                if (onTogglePin) await onTogglePin(memory.id);
+              }}
+              // Props not needed for simple list but required by component
+              movieFilterOptions={[]}
+              activeMovieFilter={movie.id}
+              onActiveMovieFilterChange={() => { }}
+              sortMode="newest"
+              onSortModeChange={() => { }}
+              onShowMore={() => { }}
+              onShowLess={() => { }}
+              visibleCount={100}
+              isLoading={false}
+              memoriesError={null}
+              onJumpToMovie={() => { }}
+            />
+          ) : (
+            <p style={{
+              textAlign: 'center',
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.xs,
+              fontStyle: 'italic',
+              padding: spacing.sm
+            }}>
+              No memories yet. Add one above!
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Mobile Bottom Sheet for Actions */}
       <BottomSheet
         isOpen={isBottomSheetOpen}
@@ -679,42 +780,48 @@ const MovieItem: React.FC<MovieItemProps> = ({
               )}
               <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
                 {movie.watchedBy.includes('Aaron') && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      backgroundColor: colors.secondary,
-                      borderRadius: radius.full,
-                      color: colors.background,
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    Aaron ✓
-                  </span>
+                  <WatcherBadge user="Aaron" variant="text" showLabel />
                 )}
                 {movie.watchedBy.includes('Electra') && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      backgroundColor: colors.accent,
-                      borderRadius: radius.full,
-                      color: 'white',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    Electra ✓
-                  </span>
+                  <WatcherBadge user="Electra" variant="text" showLabel />
                 )}
               </div>
+              {hasSharedMemories && (
+                <button
+                  type="button"
+                  onClick={() => handleAction(() => setShowMemories(true))}
+                  style={{
+                    marginTop: spacing.sm,
+                    padding: `${spacing.xs} ${spacing.sm}`,
+                    borderRadius: radius.sm,
+                    border: `1px solid ${colors.borderSecondary}40`,
+                    color: '#ffe9c0',
+                    fontSize: typography.fontSize.xs,
+                    fontFamily:
+                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    background: 'transparent',
+                    textAlign: 'left',
+                    width: '100%',
+                    cursor: 'pointer',
+                  }}
+                  aria-label={`View memories for "${movie.title}"`}
+                >
+                  {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
+                  {memories[0]?.note
+                    ? `: "${memories[0].note.slice(0, 60)}${memories[0].note.length > 60 ? '...' : ''}"`
+                    : ''}
+                </button>
+              )}
             </div>
           </div>
 
           {/* Action Buttons */}
           <Button
             type="button"
-            onClick={() => handleAction(() => onToggle(movie))}
+            onClick={() => handleToggle()}
             variant={watchedByCurrentUser ? 'primary' : 'secondary'}
+            isLoading={isUpdating}
+            loadingText="Updating..."
             disabled={isGuest}
             style={{
               width: '100%',

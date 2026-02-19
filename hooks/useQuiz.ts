@@ -9,13 +9,16 @@ import { usePolling } from './usePolling';
 import { getQuizData, saveQuizData, QuizData } from '../services/quizService';
 import { QuizQuestion, QuizCharacter } from '../components/quiz/types';
 
-export const useQuiz = () => {
+export const useQuiz = (isPaused: boolean = false) => {
   const {
     data: quizData,
     error,
     isLoading,
     refresh,
-  } = usePolling(getQuizData, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
+  } = usePolling(getQuizData, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+    key: 'quiz',
+    isPaused,
+  });
   const [isSaving, setIsSaving] = useState(false);
   const isSavingRef = useRef(false);
 
