@@ -131,7 +131,75 @@ const App: React.FC = () => {
           </p>
           <UserSelection />
         </section>
-        <Watchlist />
+
+        {/* Tab Navigation */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: spacing.md,
+            marginBottom: spacing.xl,
+            borderBottom: `1px solid ${colors.borderSecondary}20`,
+            paddingBottom: spacing.md,
+          }}
+        >
+          <button
+            onClick={() => setActiveTab('queue')}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: `${spacing.sm} ${spacing.lg}`,
+              color: activeTab === 'queue' ? colors.accent : colors.textSecondary,
+              fontSize: typography.fontSize.base,
+              fontWeight: activeTab === 'queue' ? 'bold' : 'normal',
+              cursor: 'pointer',
+              borderBottom: activeTab === 'queue' ? `2px solid ${colors.accent}` : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            Queue
+          </button>
+          <button
+            onClick={() => setActiveTab('extras')}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: `${spacing.sm} ${spacing.lg}`,
+              color: activeTab === 'extras' ? colors.accent : colors.textSecondary,
+              fontSize: typography.fontSize.base,
+              fontWeight: activeTab === 'extras' ? 'bold' : 'normal',
+              cursor: 'pointer',
+              borderBottom: activeTab === 'extras' ? `2px solid ${colors.accent}` : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            Extras
+          </button>
+        </div>
+
+        {activeTab === 'queue' ? (
+          <Watchlist />
+        ) : (
+          <div className="animate-fade-in">
+            {showQuiz ? (
+              <QuizFlow
+                quizData={quizData}
+                onComplete={handleQuizComplete}
+                onCancel={() => setShowQuiz(false)}
+              />
+            ) : showQuizEditor ? (
+              <QuizEditor onClose={() => setShowQuizEditor(false)} />
+            ) : (
+              <ExtrasHub
+                currentUser={currentUser}
+                quizCompleted={quizCompleted}
+                onStartQuiz={handleStartQuiz}
+                onRetakeQuiz={handleRetakeQuiz}
+                onOpenQuizEditor={handleOpenQuizEditor}
+              />
+            )}
+          </div>
+        )}
       </main>
 
       <MessageBoard mode="floating" />
