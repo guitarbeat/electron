@@ -164,36 +164,17 @@ const ProfileSheet: React.FC<ProfileSheetProps> = ({ isOpen, onClose }) => {
                 fontFamily: typography.fontFamily.heading.join(', '),
               }}
             >
-              Security & Session
+              Session Management
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleOpenPinDialog}
-                disabled={isPinLoading}
-              >
-                {currentUser && userHasPin(currentUser) ? 'Change PIN' : 'Set PIN'}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRemovePin}
-                disabled={!currentUser || !userHasPin(currentUser) || isPinLoading}
-                style={{ border: `1px solid ${colors.error}55`, color: colors.error }}
-              >
-                Remove PIN
-              </Button>
-
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
                 style={{ border: `1px solid ${colors.borderSecondary}40` }}
               >
-                Log Out to Guest
+                Log Out to Anonymous Mode
               </Button>
 
               <Button variant="ghost" size="sm" onClick={onClose}>
