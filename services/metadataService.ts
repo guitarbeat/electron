@@ -100,6 +100,7 @@ interface TvMazeShow {
     name: string;
     country: { name: string; code: string; timezone: string } | null;
   } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dvdCountry: any | null;
   externals: { tvrage: number; thetvdb: number; imdb: string | null };
   image: TvMazeImage | null;
@@ -219,6 +220,7 @@ export const fetchMovieMetadata = async (
 
     return {};
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching metadata:', error);
     return {};
   }
@@ -277,6 +279,7 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
       return true;
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error searching metadata:', error);
     return [];
   }
