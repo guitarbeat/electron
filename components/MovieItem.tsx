@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Movie, User } from '../types';
+import { Movie, User, SharedMemory } from '../types';
 import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -10,7 +10,6 @@ import { spacing, typography, colors, radius, shadows } from '../design-system/t
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import MemoryList from './memories/MemoryList';
 import MemoryComposer from './memories/MemoryComposer';
-import { SharedMemory } from '../types';
 
 interface MovieItemProps {
   movie: Movie;
@@ -21,7 +20,7 @@ interface MovieItemProps {
   animationDelay: string;
   layout?: 'list' | 'grid';
   memories?: SharedMemory[];
-  onAddMemory?: (note: string) => Promise<void>;
+  onAddMemory?: (movie: Movie, note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
   onDeleteMemory?: (memoryId: string) => Promise<void>;
   onTogglePin?: (memoryId: string) => Promise<void>;
@@ -57,6 +56,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [memoryNote, setMemoryNote] = useState('');
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
 
@@ -72,6 +73,23 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const handleAction = (action: () => void) => {
     action();
     setIsBottomSheetOpen(false);
+  };
+
+  const handleToggleMemories = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setShowMemories((prev) => !prev);
+  };
+
+  const handleAddMemory = async (note: string) => {
+    if (onAddMemory) {
+      setIsSubmittingMemory(true);
+      try {
+        await onAddMemory(movie, note);
+        setIsSubmittingMemory(false);
+      } catch (err) {
+        setIsSubmittingMemory(false);
+      }
+    }
   };
 
   const handleToggle = async (e?: React.MouseEvent) => {
@@ -669,22 +687,23 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <MemoryComposer
                 watchedMovieOptions={[movie]}
                 selectedMovieId={movie.id}
-                onSelectedMovieIdChange={() => { }}
+                onSelectedMovieIdChange={() => {}}
                 currentUser={currentUser}
-                isExpanded={true}
-                onSubmit={async (e, note) => {
+                isExpanded
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  await handleAddMemory(note);
+                  await handleAddMemory(memoryNote);
+                  setMemoryNote('');
                 }}
                 isSubmitting={isSubmittingMemory}
-                canSubmit={!isSubmittingMemory}
+                canSubmit={!isSubmittingMemory && memoryNote.trim().length > 0}
                 isMobile={isMobile}
                 // Props required by interface but unused in single-movie context
-                note=""
-                onNoteChange={() => { }}
-                isComposerOpen={true}
-                onComposerToggle={() => { }}
-                remainingChars={280}
+                note={memoryNote}
+                onNoteChange={setMemoryNote}
+                isComposerOpen
+                onComposerToggle={() => {}}
+                remainingChars={280 - memoryNote.length}
               />
             </div>
           )}
@@ -710,24 +729,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
               // Props not needed for simple list but required by component
               movieFilterOptions={[]}
               activeMovieFilter={movie.id}
-              onActiveMovieFilterChange={() => { }}
+              onActiveMovieFilterChange={() => {}}
               sortMode="newest"
-              onSortModeChange={() => { }}
-              onShowMore={() => { }}
-              onShowLess={() => { }}
+              onSortModeChange={() => {}}
+              onShowMore={() => {}}
+              onShowLess={() => {}}
               visibleCount={100}
               isLoading={false}
               memoriesError={null}
-              onJumpToMovie={() => { }}
+              onJumpToMovie={() => {}}
             />
           ) : (
-            <p style={{
-              textAlign: 'center',
-              color: colors.textTertiary,
-              fontSize: typography.fontSize.xs,
-              fontStyle: 'italic',
-              padding: spacing.sm
-            }}>
+            <p
+              style={{
+                textAlign: 'center',
+                color: colors.textTertiary,
+                fontSize: typography.fontSize.xs,
+                fontStyle: 'italic',
+                padding: spacing.sm,
+              }}
+            >
               No memories yet. Add one above!
             </p>
           )}
