@@ -1,5 +1,6 @@
-const SUPABASE_PROJECT_ID = 'jectngcrpikxwnjdwana';
-const OMDB_PROXY_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/omdb-proxy`;
+const env = (import.meta.env || {}) as any;
+const OMDB_API_KEY = env.VITE_OMDB_API_KEY || '';
+const OMDB_BASE_URL = 'https://www.omdbapi.com';
 
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
