@@ -25,6 +25,95 @@ const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise
   }
 };
 
+interface OmdbSearchResultItem {
+  Title: string;
+  Year: string;
+  imdbID: string;
+  Type: string;
+  Poster: string;
+}
+
+interface OmdbSearchResponse {
+  Search?: OmdbSearchResultItem[];
+  totalResults?: string;
+  Response: 'True' | 'False';
+  Error?: string;
+}
+
+interface OmdbMovieResponse {
+  Title: string;
+  Year: string;
+  Rated: string;
+  Released: string;
+  Runtime: string;
+  Genre: string;
+  Director: string;
+  Writer: string;
+  Actors: string;
+  Plot: string;
+  Language: string;
+  Country: string;
+  Awards: string;
+  Poster: string;
+  Ratings: { Source: string; Value: string }[];
+  Metascore: string;
+  imdbRating: string;
+  imdbVotes: string;
+  imdbID: string;
+  Type: string;
+  DVD: string;
+  BoxOffice: string;
+  Production: string;
+  Website: string;
+  Response: 'True' | 'False';
+  Error?: string;
+}
+
+interface TvMazeImage {
+  medium: string;
+  original: string;
+}
+
+interface TvMazeShow {
+  id: number;
+  url: string;
+  name: string;
+  type: string;
+  language: string;
+  genres: string[];
+  status: string;
+  runtime: number | null;
+  averageRuntime: number | null;
+  premiered: string | null;
+  ended: string | null;
+  officialSite: string | null;
+  schedule: { time: string; days: string[] };
+  rating: { average: number | null };
+  weight: number;
+  network: {
+    id: number;
+    name: string;
+    country: { name: string; code: string; timezone: string };
+  } | null;
+  webChannel: {
+    id: number;
+    name: string;
+    country: { name: string; code: string; timezone: string } | null;
+  } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dvdCountry: any | null;
+  externals: { tvrage: number; thetvdb: number; imdb: string | null };
+  image: TvMazeImage | null;
+  summary: string | null;
+  updated: number;
+  _links: { self: { href: string }; previousepisode?: { href: string } };
+}
+
+interface TvMazeSearchResultItem {
+  score: number;
+  show: TvMazeShow;
+}
+
 export interface MetadataResult {
   id?: string; // Search result ID (imdbID or TVMaze ID)
   posterUrl?: string;
@@ -51,7 +140,7 @@ export const fetchMovieMetadata = async (
       const safeTvMazeId = encodeURIComponent(tvmazeId);
       const tvmazeUrl = `${TVMAZE_BASE_URL}/shows/${safeTvMazeId}`;
       const tvmazeRes = await fetchWithRetry(tvmazeUrl);
-      const show = await tvmazeRes.json();
+      const show: TvMazeShow = await tvmazeRes.json();
 
       if (show) {
         return {
@@ -73,7 +162,7 @@ export const fetchMovieMetadata = async (
       omdbUrl.searchParams.append('i', id);
 
       const omdbRes = await fetchWithRetry(omdbUrl.toString());
-      const omdbData = await omdbRes.json();
+      const omdbData: OmdbMovieResponse = await omdbRes.json();
 
       if (omdbData.Response === 'True') {
         return {
@@ -95,7 +184,7 @@ export const fetchMovieMetadata = async (
     omdbUrl.searchParams.append('t', title);
 
     const omdbRes = await fetchWithRetry(omdbUrl.toString());
-    const omdbData = await omdbRes.json();
+    const omdbData: OmdbMovieResponse = await omdbRes.json();
 
     if (omdbData.Response === 'True') {
       return {
@@ -115,7 +204,7 @@ export const fetchMovieMetadata = async (
     tvmazeUrl.searchParams.append('q', title);
 
     const tvmazeRes = await fetchWithRetry(tvmazeUrl.toString());
-    const tvmazeData = await tvmazeRes.json();
+    const tvmazeData: TvMazeSearchResultItem[] = await tvmazeRes.json();
 
     if (tvmazeData && tvmazeData.length > 0) {
       const { show } = tvmazeData[0];
@@ -131,6 +220,7 @@ export const fetchMovieMetadata = async (
 
     return {};
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching metadata:', error);
     return {};
   }
@@ -146,16 +236,16 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     omdbUrl.searchParams.append('s', query);
 
     const omdbRes = await fetchWithRetry(omdbUrl.toString());
-    const omdbData = await omdbRes.json();
+    const omdbData: OmdbSearchResponse = await omdbRes.json();
 
     if (omdbData.Response === 'True' && omdbData.Search) {
       results.push(
-        ...omdbData.Search.map((item: any) => ({
+        ...omdbData.Search.map((item) => ({
           id: item.imdbID,
           title: item.Title,
           year: item.Year,
           posterUrl: item.Poster !== 'N/A' ? item.Poster : undefined,
-          type: item.Type === 'series' ? 'series' : 'movie',
+          type: (item.Type === 'series' ? 'series' : 'movie') as 'movie' | 'series',
         }))
       );
     }
@@ -165,16 +255,16 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     tvmazeUrl.searchParams.append('q', query);
 
     const tvmazeRes = await fetchWithRetry(tvmazeUrl.toString());
-    const tvmazeData = await tvmazeRes.json();
+    const tvmazeData: TvMazeSearchResultItem[] = await tvmazeRes.json();
 
     if (tvmazeData && tvmazeData.length > 0) {
       results.push(
-        ...tvmazeData.map((item: any) => ({
+        ...tvmazeData.map((item) => ({
           id: `tv-${item.show.id}`,
           title: item.show.name,
           year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
           posterUrl: item.show.image?.medium || item.show.image?.original,
-          type: 'series',
+          type: 'series' as const,
           plot: item.show.summary ? item.show.summary.replace(/<[^>]*>?/gm, '') : undefined,
         }))
       );
@@ -189,6 +279,7 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
       return true;
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error searching metadata:', error);
     return [];
   }

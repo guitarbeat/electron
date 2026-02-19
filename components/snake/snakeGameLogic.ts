@@ -18,6 +18,13 @@ export interface SnakeGameState {
   status: GameStatus;
 }
 
+export interface SnakeLeaderboardEntry {
+  id: string;
+  name: string;
+  score: number;
+  createdAt: string;
+}
+
 interface SnakeGameConfig {
   width: number;
   height: number;

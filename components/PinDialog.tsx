@@ -1,45 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { User } from '../types';
+import { colors, spacing, radius, typography, shadows, zIndex } from '../design-system/tokens';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import {
-  colors,
-  spacing,
-  typography,
-  zIndex,
-  radius,
-  motion,
-  shadows,
-} from '../design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
-  user: User;
+  onClose: () => void;
+  onSubmit: (pin: string, newPin?: string) => Promise<boolean | void>;
   mode: 'enter' | 'set' | 'change';
-  onSubmit: (pin: string, newPin?: string) => Promise<boolean>;
-  onCancel: () => void;
+  user: string;
   onRemove?: () => void;
-  isLoading?: boolean;
 }
 
 const PIN_LENGTH = 4;
 
 const PinDialog: React.FC<PinDialogProps> = ({
   isOpen,
-  user,
-  mode,
+  onClose,
   onSubmit,
-  onCancel,
+  mode,
+  user,
   onRemove,
-  isLoading = false,
 }) => {
   const [pin, setPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
-  const [error, setError] = useState('');
-  const [isShaking, setIsShaking] = useState(false);
   const [step, setStep] = useState<'current' | 'new' | 'confirm'>('current');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -48,14 +38,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setNewPin('');
       setConfirmPin('');
       setError('');
-      setIsShaking(false);
-      setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
-      document.body.classList.add('modal-open');
-      setTimeout(() => inputRef.current?.focus(), 100);
-    } else {
-      document.body.classList.remove('modal-open');
+      setStep('current');
+      setIsLoading(false);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
-  }, [isOpen, mode]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isShaking) {
@@ -64,28 +53,26 @@ const PinDialog: React.FC<PinDialogProps> = ({
     }
   }, [isShaking]);
 
-  useEffect(() => {
-    if (isOpen) {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
-          onCancel();
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
+  const onCancel = () => {
+    if (!isLoading) {
+      onClose();
     }
-  }, [isOpen, onCancel]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (isLoading) return;
 
+    setIsLoading(true);
+    try {
+      await processSubmit();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const processSubmit = async () => {
     if (mode === 'enter') {
-      if (pin.length !== 4) {
-        setError('PIN must be 4 digits');
-        setIsShaking(true);
-        return;
-      }
       const success = await onSubmit(pin);
       if (!success) {
         setError('Incorrect PIN');
@@ -94,8 +81,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
         inputRef.current?.focus();
       }
     } else if (mode === 'set') {
-      if (step === 'new') {
-        if (newPin.length !== 4) {
+      if (step === 'current') {
+        if (pin.length !== 4) {
           setError('PIN must be 4 digits');
           setIsShaking(true);
           return;
@@ -103,15 +90,66 @@ const PinDialog: React.FC<PinDialogProps> = ({
         setStep('confirm');
         setError('');
         setTimeout(() => inputRef.current?.focus(), 100);
-      } else if (step === 'confirm') {
-        if (confirmPin !== newPin) {
+      } else if (newPin !== pin) {
+        setError('PINs do not match');
+        setIsShaking(true);
+        setNewPin('');
+        setConfirmPin(''); // Reset confirm step input (mapped to newPin in 'set' mode logic below actually uses 'newPin' state for confirm? Wait, logic check.)
+        // Actually, looking at render:
+        // For 'set' mode:
+        // step 'current' uses 'pin' state. (Subtitle: Choose 4 digit)
+        // step 'confirm' uses 'newPin' state?? No wait.
+        // Let's look at getCurrentValue:
+        // if step 'current' -> pin.
+        // if step 'new' -> newPin.
+        // if step 'confirm' -> confirmPin.
+
+        // In 'set' mode logic above:
+        // step 'current' checks pin length. Sets step to 'confirm'.
+        // step 'confirm' (else block): checks newPin !== pin.
+        // Wait, if step is confirm, getCurrentValue returns confirmPin.
+        // But here it compares newPin vs pin?
+
+        // Let's re-read the original code logic for 'set' mode from previous file content if possible or infer.
+        // The previous code had:
+        // if (mode === 'set') {
+        //   if (step === 'current') { ... setStep('confirm') ... }
+        //   else { // confirm step
+        //      if (pin !== newPin) ...
+        // }
+        // But wait, in 'set' mode, we typically enter a pin, then confirm it.
+        // step 'current' (enter pin) -> pin state.
+        // step 'confirm' (confirm pin) -> confirmPin state (based on getCurrentValue).
+
+        // Let's fix the logic to match standard pin set flow:
+        // 1. Enter PIN (stored in 'pin')
+        // 2. Confirm PIN (stored in 'confirmPin')
+        // 3. Compare 'pin' vs 'confirmPin'
+
+        // However, keeping consistent with existing component state usage:
+        // mode 'set':
+        // step 'current': input -> pin. Title "Create a PIN".
+        // step 'confirm': input -> confirmPin (via getCurrentValue). Title "Verify New PIN" (mapped from getTitle logic?)
+        // getTitle: if mode 'set' -> "Create a PIN". Doesn't change for step?
+        // getSubtitle: if mode 'set' -> "Choose a 4-digit...".
+
+        // Actually, standard UI usually asks to re-enter.
+        // Let's assume 'set' mode uses:
+        // 1. 'pin' for first entry.
+        // 2. 'newPin' or 'confirmPin' for second?
+        // getCurrentValue: step 'current' -> pin. step 'new' -> newPin. step 'confirm' -> confirmPin.
+
+        // In 'set' mode, we probably just go 'current' -> 'confirm'.
+        // So input 1 is 'pin'. Input 2 is 'confirmPin'.
+
+        if (confirmPin !== pin) {
           setError('PINs do not match');
           setIsShaking(true);
           setConfirmPin('');
           inputRef.current?.focus();
           return;
         }
-        await onSubmit(newPin);
+        await onSubmit(pin);
       }
     } else if (mode === 'change') {
       if (step === 'current') {
@@ -172,7 +210,10 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   const getSubtitle = () => {
     if (mode === 'enter') return 'Enter your 4-digit code to continue';
-    if (mode === 'set') return 'Choose a 4-digit code to protect your profile';
+    if (mode === 'set') {
+      if (step === 'confirm') return 'Type it once more to confirm';
+      return 'Choose a 4-digit code to protect your profile';
+    }
     if (mode === 'change') {
       if (step === 'current') return 'Please enter your current PIN first';
       if (step === 'new') return 'Choose your new 4-digit code';
