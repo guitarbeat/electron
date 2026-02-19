@@ -15,7 +15,7 @@ import { SharedMemory } from '../types';
 interface MovieItemProps {
   movie: Movie;
   currentUser: User | null;
-  onToggle: (movie: Movie) => void;
+  onToggle: (movie: Movie) => void | Promise<void>;
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
   animationDelay: string;
@@ -74,18 +74,16 @@ const MovieItem: React.FC<MovieItemProps> = ({
     setIsBottomSheetOpen(false);
   };
 
-  const handleToggleMemories = (e?: React.MouseEvent) => {
+  const handleToggle = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setShowMemories(!showMemories);
-  };
+    if (isGuest) return;
 
-  const handleAddMemory = async (note: string) => {
-    if (!onAddMemory) return;
-    setIsSubmittingMemory(true);
+    setIsUpdating(true);
     try {
-      await onAddMemory(note);
+      await onToggle(movie);
     } finally {
-      setIsSubmittingMemory(false);
+      setIsUpdating(false);
+      setIsBottomSheetOpen(false);
     }
   };
 
@@ -301,12 +299,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 >
                   <Button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggle(movie);
-                    }}
+                    onClick={handleToggle}
                     variant={watchedByCurrentUser ? 'primary' : 'secondary'}
                     size="sm"
+                    isLoading={isUpdating}
+                    loadingText="Updating..."
                     disabled={isGuest}
                     aria-label={
                       watchedByCurrentUser
@@ -590,9 +587,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                 <IconButton
                   type="button"
-                  onClick={() => onToggle(movie)}
+                  onClick={handleToggle}
                   variant="ghost"
-                  disabled={isGuest}
+                  disabled={isGuest || isUpdating}
                   title={watchedByCurrentUser ? 'Mark as unwatched' : 'Mark as watched'}
                   aria-label={
                     watchedByCurrentUser
@@ -821,8 +818,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
           {/* Action Buttons */}
           <Button
             type="button"
-            onClick={() => handleAction(() => onToggle(movie))}
+            onClick={() => handleToggle()}
             variant={watchedByCurrentUser ? 'primary' : 'secondary'}
+            isLoading={isUpdating}
+            loadingText="Updating..."
             disabled={isGuest}
             style={{
               width: '100%',
