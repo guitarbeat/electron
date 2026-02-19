@@ -7,8 +7,6 @@ import UserSelection from './components/UserSelection';
 import MessageBoard from './components/MessageBoard';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
-import MainTopBar from './components/main/MainTopBar';
-import MainTabNav from './components/main/MainTabNav';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import { spacing, colors, typography, layout } from './design-system/tokens';
@@ -18,7 +16,7 @@ const App: React.FC = () => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const { quizData, isLoading: isQuizLoading } = useQuiz(activeTab !== 'extras');
+  const { quizData, isLoading: isQuizLoading } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -87,15 +85,14 @@ const App: React.FC = () => {
         Skip to content
       </a>
 
-      {!isMobile && <MainTabNav activeTab={activeTab} onTabChange={setActiveTab} />}
-
+      {/* Main Content */}
       <main
         id="main-content"
         className="main-container"
         style={{
           paddingTop: spacing.md,
           paddingBottom: isMobile
-            ? `calc(${layout.tabBarHeight} + ${spacing.lg} + env(safe-area-inset-bottom, 0px))`
+            ? `calc(${spacing.lg} + env(safe-area-inset-bottom, 0px))`
             : spacing['3xl'],
           paddingLeft: isMobile ? spacing.md : spacing.lg,
           paddingRight: isMobile ? spacing.md : spacing.lg,
@@ -110,92 +107,40 @@ const App: React.FC = () => {
             margin: '0 auto',
           }}
         >
-          <div
+          <section
+            aria-label="Profile selection"
+            className="animate-fade-in"
             style={{
-              display: activeTab === 'queue' ? 'block' : 'none',
+              maxWidth: '980px',
+              margin: `0 auto ${spacing.lg}`,
+              padding: isMobile ? spacing.sm : spacing.md,
+              borderRadius: spacing.lg,
+              border: `1px solid ${colors.borderSecondary}35`,
+              background:
+                'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.2), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
+              boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
             }}
-            aria-hidden={activeTab !== 'queue'}
           >
-            {activeTab === 'queue' && (
-              <section
-                aria-label="Profile selection"
-                className="animate-fade-in"
-                style={{
-                  maxWidth: '980px',
-                  margin: `0 auto ${spacing.lg}`,
-                  padding: isMobile ? spacing.sm : spacing.md,
-                  borderRadius: spacing.lg,
-                  border: `1px solid ${colors.borderSecondary}35`,
-                  background:
-                    'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.2), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
-                  boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    marginBottom: spacing.sm,
-                    textAlign: 'center',
-                    color: colors.textTertiary,
-                    fontSize: typography.fontSize.xs,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.07em',
-                  }}
-                >
-                  Who&apos;s watching
-                </p>
-                <UserSelection />
-              </section>
-            )}
-            <Watchlist isPaused={activeTab !== 'queue'} />
-          </div>
-
-          {activeTab === 'messages' && (
-            <div
+            <p
               style={{
-                maxWidth: '960px',
-                margin: '0 auto',
+                margin: 0,
+                marginBottom: spacing.sm,
+                textAlign: 'center',
+                color: colors.textTertiary,
+                fontSize: typography.fontSize.xs,
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
               }}
             >
-              <MessageBoard mode="embedded" />
-            </div>
-          )}
-
-          {activeTab === 'extras' && (
-            <div className="animate-fade-in" style={{ width: '100%' }}>
-              {showQuizEditor ? (
-                <QuizEditor onClose={() => setShowQuizEditor(false)} />
-              ) : showQuiz ? (
-                isQuizLoading || !quizData ? (
-                  <div
-                    style={{
-                      textAlign: 'center',
-                      padding: spacing['2xl'],
-                      color: colors.textSecondary,
-                    }}
-                  >
-                    Loading quiz...
-                  </div>
-                ) : (
-                  <QuizFlow onComplete={handleQuizComplete} quizData={quizData} />
-                )
-              ) : (
-                <ExtrasHub
-                  currentUser={currentUser}
-                  quizCompleted={quizCompleted}
-                  onStartQuiz={handleStartQuiz}
-                  onRetakeQuiz={handleRetakeQuiz}
-                  onOpenQuizEditor={handleOpenQuizEditor}
-                />
-              )}
-            </div>
-          )}
+              Who&apos;s watching
+            </p>
+            <UserSelection />
+          </section>
+          <Watchlist />
         </div>
       </main>
 
-      {isMobile && <MainTabNav activeTab={activeTab} onTabChange={setActiveTab} />}
-
-      {activeTab !== 'messages' && <MessageBoard mode="floating" />}
+      <MessageBoard mode="floating" />
 
       <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
