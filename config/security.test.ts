@@ -4,9 +4,9 @@ import { sanitizeInput } from './security.ts';
 
 test('sanitizeInput returns empty string for null/undefined/empty input', () => {
   assert.equal(sanitizeInput(''), '');
-  // @ts-expect-error - testing runtime behavior for non-string inputs
+  // @ts-ignore - testing runtime behavior for non-string inputs
   assert.equal(sanitizeInput(null), '');
-  // @ts-expect-error - testing runtime behavior for non-string inputs
+  // @ts-ignore - testing runtime behavior for non-string inputs
   assert.equal(sanitizeInput(undefined), '');
 });
 
