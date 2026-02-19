@@ -23,6 +23,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
     error,
     refresh,
   } = usePolling<MovieSuggestion[]>(getSuggestions, POLLING_INTERVAL, suggestionsEqual, {
+    key: 'suggestions',
     isPaused,
   });
 
