@@ -25,16 +25,16 @@ const concurrentMap = async <T, R>(
 };
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
-const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
+export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
   if (posterUrl) result.posterUrl = posterUrl;
   if (year) result.year = year;
-  if (plot) result.plot = plot;
+  if (plot) result.plot = sanitizeInput(plot);
   if (imdbRating) result.imdbRating = imdbRating;
   if (runtime) result.runtime = runtime;
-  if (genre) result.genre = genre;
-  if (director) result.director = director;
+  if (genre) result.genre = sanitizeInput(genre);
+  if (director) result.director = sanitizeInput(director);
   return result;
 };
 
