@@ -1,4 +1,5 @@
 import { GIST_ID, GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '../gistConfig';
+import { sanitizeInput } from '../config/security';
 import { MovieSuggestion } from '../types';
 
 const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
@@ -68,9 +69,9 @@ export const addSuggestion = async (
 
   const newSuggestion: MovieSuggestion = {
     id: crypto.randomUUID(),
-    title: title.trim(),
-    suggestedBy: suggestedBy.trim(),
-    reason: reason?.trim() || undefined,
+    title: sanitizeInput(title),
+    suggestedBy: sanitizeInput(suggestedBy),
+    reason: reason ? sanitizeInput(reason) : undefined,
     status: 'pending',
     createdAt: new Date().toISOString(),
   };
