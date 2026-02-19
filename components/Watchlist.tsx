@@ -17,7 +17,6 @@ import MasonryGrid from './ui/MasonryGrid';
 import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
 import MemoryWall from './MemoryWall';
-import { useGuestProfile, isReservedProfileName } from '../hooks/useGuestProfile';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from './memories/memoryUtils';
@@ -33,7 +32,6 @@ interface WatchlistProps {
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-  const { guestName, hasGuestName } = useGuestProfile();
   const isMobile = useMediaQuery(breakpoints.sm);
   const {
     movies,
@@ -257,22 +255,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
     const title = newMovieTitle.trim();
-    const guestAuthor = guestName.trim();
 
     if (!title || isSubmitting || isAdding) {
-      return;
-    }
-
-    if (!currentUser && !guestAuthor) {
-      setToast({ message: 'Use the Guest bubble above in Who’s watching first.', type: 'info' });
-      return;
-    }
-
-    if (!currentUser && isReservedProfileName(guestAuthor)) {
-      setToast({
-        message: 'If this is Aaron or Electra, select that profile above to add directly.',
-        type: 'info',
-      });
       return;
     }
 
@@ -282,7 +266,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         await addMovie(title);
         setToast({ message: `"${title}" added successfully!`, type: 'success' });
       } else {
-        await addSuggestion(title, guestAuthor);
+        await addSuggestion(title, 'Anonymous');
         setToast({ message: `"${title}" suggested for review!`, type: 'success' });
         setContentTab('suggestions');
       }
@@ -570,7 +554,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 >
                   {currentUser
                     ? 'Quick add with one clear field.'
-                    : 'Choose the Guest bubble in the profile row above, then suggest in one tap.'}
+                    : 'Suggest a title for Aaron & Electra to watch.'}
                 </p>
               </div>
 
@@ -626,39 +610,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               }}
             >
               <span>
-                {currentUser
-                  ? 'Press Enter to add quickly.'
-                  : guestName
-                    ? `Suggesting as ${guestName}`
-                    : 'Pick Guest in the profile bubbles above to suggest titles.'}
+                Suggestions are reviewed by Aaron & Electra.
               </span>
               <span>
                 {newMovieTitle.length}/{MAX_SUGGESTION_TITLE_LENGTH}
               </span>
             </div>
-            {!currentUser && guestName && (
-              <div
-                style={{
-                  marginTop: spacing.sm,
-                  padding: spacing.sm,
-                  border: `1px solid ${colors.borderSecondary}35`,
-                  borderRadius: radius.full,
-                  background:
-                    'radial-gradient(circle at 22% 15%, rgba(255,255,255,0.16), rgba(255,255,255,0)), rgba(19, 31, 58, 0.66)',
-                  color: '#d8ecff',
-                  fontSize: typography.fontSize.xs,
-                  fontFamily:
-                    "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                  letterSpacing: '0.04em',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: spacing.xs,
-                  boxShadow: '0 0 16px rgba(116, 180, 235, 0.25)',
-                }}
-              >
-                Guest bubble active: {guestName}
-              </div>
-            )}
 
             <div
               style={{
@@ -673,8 +630,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 disabled={
                   isSubmitting ||
                   isAdding ||
-                  !newMovieTitle.trim() ||
-                  (!currentUser && !hasGuestName)
+                  !newMovieTitle.trim()
                 }
                 isLoading={isAdding}
                 aria-label={currentUser ? 'Add movie to watchlist' : 'Submit suggestion'}
