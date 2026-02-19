@@ -5,8 +5,27 @@ import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata, MetadataResult } from '../services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH } from '../config/security';
 
+// Helper to control concurrency when processing array items
+const concurrentMap = async <T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> => {
+  const results = new Array(items.length);
+  const iterator = items.entries();
+  const worker = async () => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [index, item] of iterator) {
+      // eslint-disable-next-line no-await-in-loop
+      results[index] = await fn(item);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(items.length, concurrency) }, worker));
+  return results;
+};
+
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
-const extractSafeMetadata = (metadata: MetadataResult | any): Partial<Movie> => {
+const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
   if (posterUrl) result.posterUrl = posterUrl;
@@ -26,6 +45,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     isLoading,
     refresh,
   } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+    key: 'movies',
     isPaused,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -135,11 +155,11 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible,
       //    but here we do it inside performMutation logic effectively by prepping it first)
       //    However, to keep UI responsive, we'll do it here.
-      let metadata = {};
+      let metadata: MetadataResult = {};
       try {
         metadata = await fetchMovieMetadata(title.trim());
-      } catch (error) {
-        console.error('Failed to fetch metadata, continuing without it:', error);
+      } catch (err) {
+        console.error('Failed to fetch metadata, continuing without it:', err);
       }
 
       const newMovie = { ...baseMovie, ...extractSafeMetadata(metadata) };
@@ -189,8 +209,8 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           return true;
         }
         return false;
-      } catch (error) {
-        console.error('Failed to manual update metadata:', error);
+      } catch (err) {
+        console.error('Failed to manual update metadata:', err);
         return false;
       }
     },
@@ -198,7 +218,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const manualMetadataUpdate = useCallback(
-    async (movie: Movie, metadata: any) => {
+    async (movie: Movie, metadata: MetadataResult) => {
       try {
         await performMutation((latestMovies) =>
           latestMovies.map((m) =>
@@ -206,8 +226,8 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           )
         );
         return true;
-      } catch (error) {
-        console.error('Failed to manual metadata update:', error);
+      } catch (err) {
+        console.error('Failed to manual metadata update:', err);
         return false;
       }
     },
@@ -221,36 +241,31 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
     try {
       const latestMovies = await getMovies();
-      // Fetch metadata for all movies in parallel (with some concurrency limit if needed, but for now simple)
+      // Fetch metadata for all movies in parallel (with some concurrency limit)
       console.log('Refreshing all metadata...');
 
-      const updatedMovies = await Promise.all(
-        latestMovies.map(async (movie) => {
-          try {
-            // Add a small delay to avoid rate limits if any
-            await new Promise((r) => {
-              setTimeout(r, Math.random() * 1000);
-            });
-            const metadata = await fetchMovieMetadata(movie.title);
-            // Merge mostly to keep existing IDs/User data, but overwrite metadata
-            // Only overwrite if we got data back
-            if (metadata.posterUrl) {
-              return { ...movie, ...extractSafeMetadata(metadata) };
-            }
-            return movie;
-          } catch (e) {
-            console.error(`Failed to refresh metadata for ${movie.title}`, e);
-            return movie;
+      const updatedMovies = await concurrentMap(latestMovies, 5, async (movie) => {
+        try {
+          // No artificial delay needed with concurrency limit
+          const metadata = await fetchMovieMetadata(movie.title);
+          // Merge mostly to keep existing IDs/User data, but overwrite metadata
+          // Only overwrite if we got data back
+          if (metadata.posterUrl) {
+            return { ...movie, ...extractSafeMetadata(metadata) };
           }
-        })
-      );
+          return movie;
+        } catch (e) {
+          console.error(`Failed to refresh metadata for ${movie.title}`, e);
+          return movie;
+        }
+      });
 
       await saveMovies(updatedMovies);
       refresh();
       return true;
-    } catch (error) {
-      console.error('Failed to refresh all metadata:', error);
-      throw error;
+    } catch (err) {
+      console.error('Failed to refresh all metadata:', err);
+      throw err;
     } finally {
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -279,34 +294,29 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       });
 
       let syncOccurred = false;
-      const updatedMovies = await Promise.all(
-        movies.map(async (movie) => {
-          const needsSync = !movie.posterUrl || !movie.plot || !movie.year;
-          if (needsSync) {
-            try {
-              // Random delay to spread out requests
-              await new Promise((r) => {
-                setTimeout(r, Math.random() * 2000);
-              });
-              const metadata = await fetchMovieMetadata(movie.title);
-              if (metadata.posterUrl || metadata.plot || metadata.year) {
-                syncOccurred = true;
-                return { ...movie, ...extractSafeMetadata(metadata) };
-              }
-            } catch (e) {
-              console.warn(`Auto-sync failed for ${movie.title}:`, e);
+      const updatedMovies = await concurrentMap(movies, 3, async (movie) => {
+        const needsSync = !movie.posterUrl || !movie.plot || !movie.year;
+        if (needsSync) {
+          try {
+            // No random delay needed with concurrency limit
+            const metadata = await fetchMovieMetadata(movie.title);
+            if (metadata.posterUrl || metadata.plot || metadata.year) {
+              syncOccurred = true;
+              return { ...movie, ...extractSafeMetadata(metadata) };
             }
+          } catch (e) {
+            console.warn(`Auto-sync failed for ${movie.title}:`, e);
           }
-          return movie;
-        })
-      );
+        }
+        return movie;
+      });
 
       if (syncOccurred) {
         await performMutation(() => updatedMovies);
         console.log('Auto-sync: Successfully updated missing metadata.');
       }
-    } catch (error) {
-      console.error('Auto-sync: Failed background metadata update:', error);
+    } catch (err) {
+      console.error('Auto-sync: Failed background metadata update:', err);
     }
   }, [movies, performMutation]);
 

@@ -6,6 +6,7 @@ def run(playwright):
     browser = playwright.chromium.launch(headless=True, args=["--disable-web-security"])
     context = browser.new_context()
     page = context.new_page()
+    page.on("console", lambda msg: print(f"Browser console: {msg.text}"))
 
     # Handle dialogs
     page.on("dialog", lambda dialog: dialog.accept())
@@ -77,7 +78,7 @@ def run(playwright):
 
         # Wait for Watchlist Input to confirm load
         print("Waiting for watchlist input...")
-        input_field = page.get_by_label("New movie title")
+        input_field = page.get_by_label("Movie or show title")
         input_field.wait_for(state="visible", timeout=10000)
 
         # Check for Spin Button (should be visible due to mock)

@@ -1,7 +1,5 @@
-import { GIST_ID, GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '../gistConfig';
+import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
 import { MovieSuggestion } from '../types';
-
-const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
 export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   try {
@@ -67,7 +65,7 @@ export const addSuggestion = async (
   const suggestions = await getSuggestions();
 
   const newSuggestion: MovieSuggestion = {
-    id: `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: crypto.randomUUID(),
     title: title.trim(),
     suggestedBy: suggestedBy.trim(),
     reason: reason?.trim() || undefined,

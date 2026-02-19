@@ -23,7 +23,10 @@ export const useMemories = (isPaused: boolean = false) => {
     isLoading,
     error,
     refresh,
-  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual, { isPaused });
+  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual, {
+    key: 'memories',
+    isPaused,
+  });
 
   const sortedMemories = useMemo(() => {
     return [...(memories || [])].sort((a, b) => {

@@ -1,7 +1,5 @@
-import { GIST_ID, GIST_FILENAME, GIST_TOKEN } from '../gistConfig';
+import { GIST_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
 import { Movie } from '../types';
-
-const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {

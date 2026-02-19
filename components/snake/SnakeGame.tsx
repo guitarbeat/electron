@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { useUser } from '../../context/UserContext';
@@ -7,17 +7,23 @@ import { colors, radius, spacing, typography, shadows } from '../../design-syste
 import {
   createInitialGameState,
   enqueueDirection,
-  getPositionKey,
   stepGame,
+  Direction,
+  SnakeGameState,
 } from './snakeGameLogic';
-import type { Direction, SnakeGameState } from './snakeGameLogic';
 
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
-const TICK_INTERVAL_MS = 140;
+
+const INITIAL_TICK_INTERVAL_MS = 140;
+const MIN_TICK_INTERVAL_MS = 50;
+const SPEED_DECREMENT_PER_FOOD = 2; // Speed up by 2ms per food eaten
 const SNAKE_LEADERBOARD_KEY = 'snakeLeaderboard';
+
 const GUEST_NAME_STORAGE_KEY = 'movieWatchlistGuestName';
 const MAX_LEADERBOARD_ENTRIES = 8;
+const CELL_SIZE = 20;
+const CELL_GAP = 2;
 
 interface SnakeLeaderboardEntry {
   id: string;
@@ -58,6 +64,7 @@ const loadLeaderboard = (): SnakeLeaderboardEntry[] => {
       .sort((a, b) => b.score - a.score || b.createdAt.localeCompare(a.createdAt))
       .slice(0, MAX_LEADERBOARD_ENTRIES);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to parse snake leaderboard:', error);
     return [];
   }
@@ -104,7 +111,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
+  const { playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
   const isGameVisible = isEmbedded || !isMinimized;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Best score state (derived)
+  const bestScore = leaderboard.length > 0 ? leaderboard[0].score : 0;
 
   useEffect(() => {
     if (isEmbedded) {
@@ -142,14 +154,21 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       return undefined;
     }
 
+    const currentTickInterval = Math.max(
+      MIN_TICK_INTERVAL_MS,
+      INITIAL_TICK_INTERVAL_MS - gameState.score * SPEED_DECREMENT_PER_FOOD
+    );
+
     const intervalId = window.setInterval(() => {
       setGameState((previousState) => stepGame(previousState));
-    }, TICK_INTERVAL_MS);
+      // Optional: tick sound? Might be annoying if too frequent.
+    }, currentTickInterval);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [gameState.status, isGameVisible]);
+
+  }, [gameState.status, isGameVisible, gameState.score]);
 
   useEffect(() => {
     if (!isGameVisible) {
@@ -199,82 +218,125 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       createdAt: new Date().toISOString(),
     };
 
-    setLeaderboard((previousEntries) => {
-      const nextEntries = [...previousEntries, newEntry]
+    setLeaderboard((prev) => {
+      const updated = [...prev, newEntry]
         .sort((a, b) => b.score - a.score || b.createdAt.localeCompare(a.createdAt))
         .slice(0, MAX_LEADERBOARD_ENTRIES);
-      saveLeaderboard(nextEntries);
-      return nextEntries;
+      saveLeaderboard(updated);
+      return updated;
     });
 
     setHasRecordedGameOverScore(true);
   }, [currentUser, gameState.score, gameState.status, hasRecordedGameOverScore]);
 
-  const snakeCells = useMemo(
-    () => new Set(gameState.snake.map((segment) => getPositionKey(segment))),
-    [gameState.snake]
-  );
-  const headCellKey = getPositionKey(gameState.snake[0]);
-  const foodCellKey = getPositionKey(gameState.food);
-  const totalCells = gameState.width * gameState.height;
-  let gameStatusLabel = 'Running';
+  // Canvas Drawing Effect
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  if (gameState.status === 'game-over') {
-    gameStatusLabel = 'Game Over';
-  } else if (gameState.status === 'paused') {
-    gameStatusLabel = 'Paused';
-  }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  const handleOpen = () => {
-    if (isEmbedded) return;
-    setIsMinimized(false);
-  };
+    const { width, height, snake, food } = gameState;
 
-  const handleMinimize = () => {
-    if (isEmbedded) return;
-    setIsMinimized(true);
-    setGameState((previousState) => {
-      if (previousState.status === 'running') {
-        return { ...previousState, status: 'paused' };
+    // Calculate canvas internal resolution
+    const totalWidth = width * CELL_SIZE + (width - 1) * CELL_GAP;
+    const totalHeight = height * CELL_SIZE + (height - 1) * CELL_GAP;
+
+    // Update canvas size if needed (avoids clearing if size matches, but we clear anyway)
+    if (canvas.width !== totalWidth || canvas.height !== totalHeight) {
+      canvas.width = totalWidth;
+      canvas.height = totalHeight;
+    }
+
+    // Clear background
+    ctx.fillStyle = colors.borderInset;
+    ctx.fillRect(0, 0, totalWidth, totalHeight);
+
+    // Helper for rounded rect (polyfilled logic for broad compatibility or standard)
+    const drawRoundedRect = (x: number, y: number, w: number, h: number, r: number) => {
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        ctx.fill();
+      } else {
+        // Fallback for older browsers
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.fill();
       }
-      return previousState;
+    };
+
+    // Draw grid cells (empty)
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const px = x * (CELL_SIZE + CELL_GAP);
+        const py = y * (CELL_SIZE + CELL_GAP);
+        drawRoundedRect(px, py, CELL_SIZE, CELL_SIZE, 2);
+      }
+    }
+
+    // Draw Food
+    ctx.fillStyle = colors.yellow;
+    const fx = food.x * (CELL_SIZE + CELL_GAP);
+    const fy = food.y * (CELL_SIZE + CELL_GAP);
+    drawRoundedRect(fx, fy, CELL_SIZE, CELL_SIZE, 2);
+
+    // Draw Snake
+    snake.forEach((segment, index) => {
+      const isHead = index === 0;
+      ctx.fillStyle = isHead ? colors.secondary : colors.accent;
+      const sx = segment.x * (CELL_SIZE + CELL_GAP);
+      const sy = segment.y * (CELL_SIZE + CELL_GAP);
+      drawRoundedRect(sx, sy, CELL_SIZE, CELL_SIZE, 2);
     });
-  };
+  }, [gameState]);
 
-  const renderDirectionButton = (direction: Direction, label: string) => {
-    return (
-      <Button
-        size="sm"
-        variant="secondary"
-        onClick={() => handleDirection(direction)}
-        style={{
-          minWidth: '44px',
-          minHeight: '44px',
-          padding: '0',
-          lineHeight: 1,
-          fontSize: typography.fontSize.base,
-        }}
-        aria-label={`Move ${direction}`}
-      >
-        {label}
-      </Button>
-    );
-  };
-
-  const bestScore = leaderboard[0]?.score || 0;
-
+  const handleMinimize = () => setIsMinimized(true);
+  const handleMaximize = () => setIsMinimized(false);
   const handleClearLeaderboard = () => {
+    localStorage.removeItem(SNAKE_LEADERBOARD_KEY);
     setLeaderboard([]);
-    saveLeaderboard([]);
   };
 
-  if (!isEmbedded && isMinimized) {
+  const renderDirectionButton = (direction: Direction, label: string) => (
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={() => handleDirection(direction)}
+      style={{
+        width: '44px',
+        height: '44px',
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.2rem',
+      }}
+      aria-label={`Move ${direction}`}
+    >
+      {label}
+    </Button>
+  );
+
+  let gameStatusLabel = 'Playing';
+  if (gameState.status === 'paused') gameStatusLabel = 'Paused';
+  if (gameState.status === 'game-over') gameStatusLabel = 'Game Over';
+
+  if (isMinimized && !isEmbedded) {
     return (
       <button
         type="button"
-        onClick={handleOpen}
-        aria-label="Open snake game"
-        className="gel-bubble"
+        onClick={handleMaximize}
         style={{
           position: 'fixed',
           bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
@@ -296,6 +358,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           padding: 0,
           zIndex: 1000,
         }}
+        aria-label="Open Snake Game"
       >
         🐍
         {bestScore > 0 && (
@@ -332,19 +395,36 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       style={
         isEmbedded
           ? {
-              position: 'relative',
-              width: '100%',
-            }
+            position: 'relative',
+            width: '100%',
+          }
           : {
-              position: 'fixed',
-              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-              right: isMobile ? spacing.md : spacing.lg,
-              left: isMobile ? spacing.md : 'auto',
-              width: isMobile ? 'auto' : 'min(440px, 90vw)',
-              zIndex: 1000,
-            }
+            position: 'fixed',
+            bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+            right: isMobile ? spacing.md : spacing.lg,
+            left: isMobile ? spacing.md : 'auto',
+            width: isMobile ? 'auto' : 'min(440px, 90vw)',
+            zIndex: 1000,
+          }
       }
     >
+      <style>
+        {`
+            @keyframes snake-shake {
+              0% { transform: translate(1px, 1px) rotate(0deg); }
+              10% { transform: translate(-1px, -2px) rotate(-1deg); }
+              20% { transform: translate(-3px, 0px) rotate(1deg); }
+              30% { transform: translate(3px, 2px) rotate(0deg); }
+              40% { transform: translate(1px, -1px) rotate(1deg); }
+              50% { transform: translate(-1px, 2px) rotate(-1deg); }
+              60% { transform: translate(-3px, 1px) rotate(0deg); }
+              70% { transform: translate(3px, 1px) rotate(-1deg); }
+              80% { transform: translate(-1px, -1px) rotate(1deg); }
+              90% { transform: translate(1px, 2px) rotate(0deg); }
+              100% { transform: translate(1px, -2px) rotate(-1deg); }
+            }
+          `}
+      </style>
       <Card
         style={{
           padding: spacing.lg,
@@ -354,7 +434,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           boxShadow: shadows.cardElevated,
           maxHeight: isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
           overflowY: 'auto',
+          animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
         }}
+        onAnimationEnd={() => setShake(0)}
       >
         <div
           style={{
@@ -402,48 +484,24 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             width: isMobile ? 'min(88vw, 340px)' : '360px',
             maxWidth: '100%',
             aspectRatio: '1 / 1',
-            display: 'grid',
-            gridTemplateColumns: `repeat(${gameState.width}, minmax(0, 1fr))`,
-            gap: '2px',
-            padding: '2px',
             borderRadius: radius.md,
             backgroundColor: colors.borderInset,
             marginBottom: spacing.md,
             marginLeft: 'auto',
             marginRight: 'auto',
+            padding: '2px',
+            display: 'flex',
           }}
         >
-          {Array.from({ length: totalCells }, (_, index) => {
-            const x = index % gameState.width;
-            const y = Math.floor(index / gameState.width);
-            const cellKey = getPositionKey({ x, y });
-            const isHead = cellKey === headCellKey;
-            const isFood = cellKey === foodCellKey;
-            const isSnake = snakeCells.has(cellKey);
-            let cellColor = 'rgba(255,255,255,0.06)';
-
-            if (isSnake) {
-              cellColor = colors.accent;
-            }
-
-            if (isFood) {
-              cellColor = colors.yellow;
-            }
-
-            if (isHead) {
-              cellColor = colors.secondary;
-            }
-
-            return (
-              <div
-                key={cellKey}
-                style={{
-                  borderRadius: '2px',
-                  backgroundColor: cellColor,
-                }}
-              />
-            );
-          })}
+          <canvas
+            ref={canvasRef}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              borderRadius: '4px',
+            }}
+          />
         </div>
 
         <div

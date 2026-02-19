@@ -342,15 +342,17 @@
         animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
       }
 
-      /* Y2K Gel Bubble Animations */
-      @keyframes gel-bounce {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-12px);
-        }
+      /* Y2K Gel Bubble Animations - Floating Wandering Effect */
+      @keyframes gel-float-1 {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(15px, -25px) rotate(3deg); }
+        66% { transform: translate(-12px, -10px) rotate(-2deg); }
+      }
+
+      @keyframes gel-float-2 {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(-18px, -15px) rotate(-3deg); }
+        66% { transform: translate(10px, -8px) rotate(2deg); }
       }
 
       /* Entrance animation - float in from above */
@@ -378,15 +380,15 @@
       .gel-bubble {
         animation:
           bubble-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-          gel-bounce 4s ease-in-out 1.2s infinite;
+          gel-float-1 8s ease-in-out 1.2s infinite;
         opacity: 0;
       }
 
       .gel-bubble-offset {
         animation:
           bubble-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s forwards,
-          gel-bounce 4s ease-in-out 1.35s infinite;
-        animation-delay: 0.15s, 2s;
+          gel-float-2 9s ease-in-out 1.35s infinite;
+        animation-delay: 0.15s, 0s;
         opacity: 0;
       }
 

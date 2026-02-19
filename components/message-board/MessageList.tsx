@@ -3,11 +3,12 @@ import { spacing, typography, colors } from '../../design-system/tokens';
 import { MessageIcon, ChevronDownIcon } from '../icons';
 import MessageItem from '../MessageItem';
 import { Message, User } from '../../types';
+import './MessageList.css';
 
 interface MessageListProps {
   messages: Message[] | null;
   isLoading: boolean;
-  error: any;
+  error: Error | null;
   currentUser: User | null;
   onDelete: (id: string) => Promise<void>;
   onReaction: (messageId: string, emoji: string, username: string) => Promise<void>;
@@ -107,20 +108,6 @@ const MessageList: React.FC<MessageListProps> = ({
       }}
       className="messages-container-ios"
     >
-      <style>{`
-        .messages-container-ios {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .messages-container-ios::-webkit-scrollbar {
-          display: none;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
       {/* Scroll to Bottom Button - iOS style */}
       {showScrollToBottom && (
         <div

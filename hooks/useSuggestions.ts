@@ -23,6 +23,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
     error,
     refresh,
   } = usePolling<MovieSuggestion[]>(getSuggestions, POLLING_INTERVAL, suggestionsEqual, {
+    key: 'suggestions',
     isPaused,
   });
 
@@ -75,7 +76,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
       // Add movie to watchlist
       const movies = await getMovies();
       const newMovie: Movie = {
-        id: `movie-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: crypto.randomUUID(),
         title: suggestion.title,
         addedBy: respondedBy,
         watchedBy: [],

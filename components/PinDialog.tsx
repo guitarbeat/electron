@@ -203,13 +203,14 @@ const PinDialog: React.FC<PinDialogProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: colors.overlay,
-        backdropFilter: 'blur(4px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.15)', // Very subtle overlay
+        backdropFilter: 'none',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: zIndex.modal,
         padding: spacing.md,
+        transition: 'all 0.3s ease',
       }}
       onClick={onCancel}
       role="dialog"
@@ -224,55 +225,50 @@ const PinDialog: React.FC<PinDialogProps> = ({
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
           }
+          @keyframes pop-in {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
         `}
       </style>
-      <div onClick={(e) => e.stopPropagation()}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: 'pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
+      >
         <Card
           variant="elevated"
           style={{
-            maxWidth: '400px',
+            maxWidth: '320px', // Slimmer
             width: '100%',
-            padding: spacing.xl,
-            borderRadius: radius.card,
-            border: `1px solid ${colors.border}`,
-            background: `linear-gradient(180deg, ${colors.surface} 0%, #1a1f2e 100%)`,
+            padding: `${spacing.lg} ${spacing.xl}`, // Reduced padding
+            borderRadius: radius.lg,
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
+            background: 'rgba(20, 25, 40, 0.75)', // Glassy
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           }}
         >
-          <div style={{ textAlign: 'center', marginBottom: spacing.xl }}>
-            <div
-              style={{
-                width: '64px',
-                height: '64px',
-                backgroundColor: `${colors.accent}15`,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto',
-                marginBottom: spacing.md,
-                border: `1px solid ${colors.accent}30`,
-                fontSize: '24px',
-              }}
-            >
-              {mode === 'enter' ? '🔐' : '🆕'}
-            </div>
+          <div style={{ textAlign: 'center', marginBottom: spacing.lg }}>
             <h2
               id="pin-dialog-title"
               style={{
                 marginTop: 0,
-                fontSize: typography.fontSize['2xl'],
-                fontWeight: typography.fontWeight.bold,
+                fontSize: typography.fontSize.lg, // Smaller title
+                fontWeight: typography.fontWeight.semibold,
                 color: colors.textPrimary,
-                marginBottom: spacing.xs,
+                marginBottom: '4px',
+                letterSpacing: '0.02em',
               }}
             >
               {getTitle()}
             </h2>
             <p
               style={{
-                fontSize: typography.fontSize.sm,
+                fontSize: typography.fontSize.xs,
                 color: colors.textSecondary,
                 margin: 0,
+                opacity: 0.8,
               }}
             >
               {getSubtitle()}
@@ -280,13 +276,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: spacing.xl }}>
+            <div style={{ marginBottom: spacing.lg }}>
               <div
                 style={{
                   display: 'flex',
                   gap: spacing.sm,
                   justifyContent: 'center',
-                  marginBottom: spacing.md,
+                  marginBottom: spacing.xs,
                   animation: isShaking ? 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
                 }}
               >
@@ -297,25 +293,24 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     <div
                       key={i}
                       style={{
-                        width: '56px',
-                        height: '64px',
-                        backgroundColor: val ? `${colors.accent}20` : '#162447',
-                        border: `2px solid ${
-                          error
-                            ? colors.error
-                            : isActive
-                              ? colors.accent
-                              : val
-                                ? `${colors.accent}40`
-                                : colors.borderInset
-                        }`,
-                        borderRadius: radius.lg,
+                        width: '44px', // Smaller dots
+                        height: '52px',
+                        backgroundColor: val ? `${colors.accent}25` : 'rgba(0, 0, 0, 0.2)',
+                        border: `1.5px solid ${error
+                          ? colors.error
+                          : isActive
+                            ? colors.accent
+                            : val
+                              ? `${colors.accent}40`
+                              : 'rgba(255, 255, 255, 0.1)'
+                          }`,
+                        borderRadius: radius.md,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: typography.fontSize['3xl'],
+                        fontSize: typography.fontSize['xl'],
                         color: colors.accent,
-                        boxShadow: isActive ? `0 0 15px ${colors.accent}30` : 'none',
+                        boxShadow: isActive ? `0 0 10px ${colors.accent}20` : 'none',
                         transition: 'all 0.2s ease',
                       }}
                     >
@@ -345,19 +340,18 @@ const PinDialog: React.FC<PinDialogProps> = ({
               {error && (
                 <div
                   style={{
-                    marginTop: spacing.sm,
-                    padding: `${spacing.xs} ${spacing.md}`,
-                    backgroundColor: `${colors.error}15`,
-                    borderRadius: radius.md,
-                    border: `1px solid ${colors.error}30`,
+                    marginTop: spacing.md,
+                    padding: '4px 8px',
+                    borderRadius: radius.sm,
                   }}
                 >
                   <p
                     style={{
-                      fontSize: typography.fontSize.sm,
+                      fontSize: typography.fontSize.xs,
                       color: colors.error,
                       textAlign: 'center',
                       margin: 0,
+                      fontWeight: 500,
                     }}
                   >
                     {error}
@@ -370,41 +364,41 @@ const PinDialog: React.FC<PinDialogProps> = ({
               <Button
                 type="submit"
                 variant="primary"
-                size="lg"
+                size="md" // Smaller button
                 isLoading={isLoading}
                 disabled={getCurrentValue().length !== 4}
                 style={{
                   width: '100%',
-                  height: '56px',
-                  fontSize: typography.fontSize.lg,
+                  fontSize: typography.fontSize.base,
                   borderRadius: radius.lg,
                   boxShadow: getCurrentValue().length === 4 && !isLoading ? shadows.glow : 'none',
+                  opacity: getCurrentValue().length === 4 ? 1 : 0.7,
                 }}
               >
-                {mode === 'enter' ? 'Unlock Profile' : step === 'confirm' ? 'Save PIN' : 'Continue'}
+                {mode === 'enter' ? 'Unlock' : step === 'confirm' ? 'Save' : 'Next'}
               </Button>
 
               <div style={{ display: 'flex', gap: spacing.sm }}>
                 <Button
                   type="button"
                   variant="ghost"
-                  size="md"
+                  size="sm"
                   onClick={onCancel}
                   disabled={isLoading}
-                  style={{ flex: 1, color: colors.textSecondary }}
+                  style={{ flex: 1, color: colors.textSecondary, fontSize: typography.fontSize.xs }}
                 >
-                  Go Back
+                  Cancel
                 </Button>
                 {mode === 'change' && onRemove && step === 'current' && (
                   <Button
                     type="button"
                     variant="danger"
-                    size="md"
+                    size="sm"
                     onClick={onRemove}
                     disabled={isLoading}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, fontSize: typography.fontSize.xs }}
                   >
-                    Remove PIN
+                    Remove
                   </Button>
                 )}
               </div>
