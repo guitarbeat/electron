@@ -2,8 +2,6 @@ import { GIST_ID, GIST_MEMORIES_FILENAME, GIST_TOKEN } from '../gistConfig';
 import { sanitizeInput } from '../config/security';
 import { SharedMemory } from '../types';
 
-const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
-
 export const getMemories = async (): Promise<SharedMemory[]> => {
   try {
     const response = await fetch(GIST_API_URL, {

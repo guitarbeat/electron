@@ -372,7 +372,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   fontSize: typography.fontSize.base,
                   borderRadius: radius.lg,
                   boxShadow: getCurrentValue().length === 4 && !isLoading ? shadows.glow : 'none',
-                  opacity: getCurrentValue().length === 4 ? 1 : 0.7,
                 }}
               >
                 {mode === 'enter' ? 'Unlock' : step === 'confirm' ? 'Save' : 'Next'}
