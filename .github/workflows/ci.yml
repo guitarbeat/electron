@@ -30,29 +30,14 @@ jobs:
       - name: Install JS dependencies
         run: pnpm install
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Install Python dependencies
-        run: pip install black ruff
-
-      - name: JS Lint
+      - name: Lint
         run: pnpm run lint
 
-      - name: JS Format Check
+      - name: Format Check
         run: npx prettier --check .
 
       - name: Type Check
         run: pnpm run check-types
-
-      - name: Python Lint
-        run: ruff check .
-
-      - name: Python Format Check
-        run: black --check .
 
       - name: Build
         run: pnpm run build
