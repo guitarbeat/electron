@@ -25,7 +25,7 @@ const concurrentMap = async <T, R>(
 };
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
-const extractSafeMetadata = (metadata: MetadataResult | any): Partial<Movie> => {
+const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
   if (posterUrl) result.posterUrl = posterUrl;
@@ -154,7 +154,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible,
       //    but here we do it inside performMutation logic effectively by prepping it first)
       //    However, to keep UI responsive, we'll do it here.
-      let metadata = {};
+      let metadata: MetadataResult = {};
       try {
         metadata = await fetchMovieMetadata(title.trim());
       } catch (err) {
@@ -217,7 +217,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const manualMetadataUpdate = useCallback(
-    async (movie: Movie, metadata: any) => {
+    async (movie: Movie, metadata: MetadataResult) => {
       try {
         await performMutation((latestMovies) =>
           latestMovies.map((m) =>
