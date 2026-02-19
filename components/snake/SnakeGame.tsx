@@ -1,179 +1,204 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import Button from '../ui/Button';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Card from '../ui/Card';
-import { useUser } from '../../context/UserContext';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
-import { colors, radius, spacing, typography, shadows } from '../../design-system/tokens';
+import Button from '../ui/Button';
 import {
+  SnakeGameState,
+  Direction,
   createInitialGameState,
-  enqueueDirection,
-  getPositionKey,
   stepGame,
+  enqueueDirection,
+  SnakeLeaderboardEntry,
 } from './snakeGameLogic';
-import type { Direction, SnakeGameState } from './snakeGameLogic';
-
-const BOARD_WIDTH = 16;
-const BOARD_HEIGHT = 16;
-const TICK_INTERVAL_MS = 140;
-const SNAKE_LEADERBOARD_KEY = 'snakeLeaderboard';
-const GUEST_NAME_STORAGE_KEY = 'movieWatchlistGuestName';
-const MAX_LEADERBOARD_ENTRIES = 8;
-
-interface SnakeLeaderboardEntry {
-  id: string;
-  name: string;
-  score: number;
-  createdAt: string;
-}
+import { colors, radius, spacing, shadows, typography } from '../../design-system/tokens';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import useSnakeAudio from './useSnakeAudio';
+import { useUser } from '../../context/UserContext';
+import { getStoredGuestName } from '../../services/movieService';
 
 interface SnakeGameProps {
-  mode?: 'floating' | 'embedded';
+  initialWidth?: number;
+  initialHeight?: number;
+  onMinimize?: () => void;
+  isEmbedded?: boolean;
+  mode?: string;
 }
 
-const loadLeaderboard = (): SnakeLeaderboardEntry[] => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
-
-  try {
-    const raw = localStorage.getItem(SNAKE_LEADERBOARD_KEY);
-    if (!raw) {
-      return [];
-    }
-
-    const parsed = JSON.parse(raw) as SnakeLeaderboardEntry[];
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed
-      .filter(
-        (entry) =>
-          typeof entry?.id === 'string' &&
-          typeof entry?.name === 'string' &&
-          typeof entry?.score === 'number' &&
-          Number.isFinite(entry.score) &&
-          typeof entry?.createdAt === 'string'
-      )
-      .sort((a, b) => b.score - a.score || b.createdAt.localeCompare(a.createdAt))
-      .slice(0, MAX_LEADERBOARD_ENTRIES);
-  } catch (error) {
-    console.error('Failed to parse snake leaderboard:', error);
-    return [];
-  }
-};
-
-const saveLeaderboard = (entries: SnakeLeaderboardEntry[]) => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  localStorage.setItem(SNAKE_LEADERBOARD_KEY, JSON.stringify(entries));
-};
-
-const getStoredGuestName = (): string => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-
-  return localStorage.getItem(GUEST_NAME_STORAGE_KEY)?.trim() || '';
-};
-
-const KEY_TO_DIRECTION: Record<string, Direction> = {
-  ArrowUp: 'up',
-  ArrowDown: 'down',
-  ArrowLeft: 'left',
-  ArrowRight: 'right',
-  w: 'up',
-  W: 'up',
-  a: 'left',
-  A: 'left',
-  s: 'down',
-  S: 'down',
-  d: 'right',
-  D: 'right',
-};
-
-const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
-  const { currentUser } = useUser();
-  const isMobile = useMediaQuery(breakpoints.sm);
-  const isEmbedded = mode === 'embedded';
+const SnakeGame: React.FC<SnakeGameProps> = ({
+  initialWidth = 20,
+  initialHeight = 20,
+  onMinimize,
+  isEmbedded = false,
+  mode, // Add mode usage
+}) => {
   const [gameState, setGameState] = useState<SnakeGameState>(() =>
-    createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT })
+    createInitialGameState({ width: initialWidth, height: initialHeight })
   );
-  const [isMinimized, setIsMinimized] = useState(mode === 'floating');
-  const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
+  const [isGameVisible, setIsGameVisible] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>([]);
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
-  const isGameVisible = isEmbedded || !isMinimized;
+  const [bestScore, setBestScore] = useState(0);
 
+  const gameLoopRef = useRef<number | null>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const { playTone, playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
+  const { currentUser } = useUser();
+
+  // Handle mode prop if necessary, or just acknowledge it
   useEffect(() => {
-    if (isEmbedded) {
-      setIsMinimized(false);
+    if (mode === 'test') {
+      // Could initialize in test mode
     }
-  }, [isEmbedded]);
+  }, [mode]);
+
+  // Load leaderboard and best score on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('snake_leaderboard');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setLeaderboard(parsed);
+        if (parsed.length > 0) {
+          setBestScore(parsed[0].score);
+        }
+      } catch (e) {
+        console.error('Failed to parse leaderboard', e);
+      }
+    }
+  }, []);
+
+  // Save leaderboard when it updates
+  useEffect(() => {
+    localStorage.setItem('snake_leaderboard', JSON.stringify(leaderboard));
+    if (leaderboard.length > 0) {
+      setBestScore(leaderboard[0].score);
+    }
+  }, [leaderboard]);
+
+  const handleDirection = useCallback(
+    (newDir: Direction) => {
+      setGameState((prev) => {
+        // Prevent 180 degree turns
+        const currentDir = prev.direction;
+        if (
+          (newDir === 'up' && currentDir === 'down') ||
+          (newDir === 'down' && currentDir === 'up') ||
+          (newDir === 'left' && currentDir === 'right') ||
+          (newDir === 'right' && currentDir === 'left')
+        ) {
+          return prev;
+        }
+        // Only play move sound if direction actually changes and game is running
+        if (newDir !== prev.queuedDirection && prev.status === 'running') {
+          playMoveSound();
+        }
+        return enqueueDirection(prev, newDir);
+      });
+    },
+    [playMoveSound]
+  );
 
   const restartGame = useCallback(() => {
-    setGameState(createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT }));
-  }, []);
-
-  const handleDirection = useCallback((direction: Direction) => {
-    setGameState((previousState) => enqueueDirection(previousState, direction));
-  }, []);
+    setGameState(createInitialGameState({ width: initialWidth, height: initialHeight }));
+    setHasRecordedGameOverScore(false);
+    if (gameLoopRef.current) {
+      cancelAnimationFrame(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
+  }, [initialWidth, initialHeight]);
 
   const togglePause = useCallback(() => {
-    setGameState((previousState) => {
-      if (previousState.status === 'game-over') {
-        return previousState;
-      }
-
+    setGameState((prev) => {
+      if (prev.status === 'game-over') return prev;
       return {
-        ...previousState,
-        status: previousState.status === 'running' ? 'paused' : 'running',
+        ...prev,
+        status: prev.status === 'running' ? 'paused' : 'running',
       };
     });
   }, []);
 
+  // Game Loop
   useEffect(() => {
-    if (!isGameVisible) {
-      return undefined;
-    }
+    let lastTime = 0;
+    const speed = Math.max(50, 150 - Math.floor(gameState.score / 2) * 5); // Speed up as score increases
 
-    if (gameState.status !== 'running') {
-      return undefined;
-    }
+    const loop = (time: number) => {
+      if (!lastTime) lastTime = time;
+      const deltaTime = time - lastTime;
 
-    const intervalId = window.setInterval(() => {
-      setGameState((previousState) => stepGame(previousState));
-    }, TICK_INTERVAL_MS);
+      if (deltaTime > speed) {
+        setGameState((prev) => {
+          if (prev.status !== 'running') return prev;
+
+          const nextState = stepGame(prev);
+
+          if (nextState.score > prev.score) {
+            playEatSound();
+          }
+
+          if (nextState.status === 'game-over' && prev.status === 'running') {
+            playGameOverSound();
+          }
+
+          return nextState;
+        });
+        lastTime = time;
+      }
+
+      gameLoopRef.current = requestAnimationFrame(loop);
+    };
+
+    if (gameState.status === 'running') {
+      gameLoopRef.current = requestAnimationFrame(loop);
+    } else if (gameLoopRef.current) {
+      cancelAnimationFrame(gameLoopRef.current);
+      gameLoopRef.current = null;
+    }
 
     return () => {
-      window.clearInterval(intervalId);
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
+      }
     };
-  }, [gameState.status, isGameVisible]);
+  }, [gameState.status, gameState.score, playEatSound, playGameOverSound]);
 
+  // Keyboard controls
   useEffect(() => {
-    if (!isGameVisible) {
-      return undefined;
-    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isGameVisible) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const direction = KEY_TO_DIRECTION[event.key];
-
-      if (direction) {
-        event.preventDefault();
-        handleDirection(direction);
-        return;
+      // Prevent default scrolling for arrow keys if game is focused/visible
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
       }
 
-      if (event.code === 'Space') {
-        event.preventDefault();
-        togglePause();
-        return;
-      }
-
-      if (event.key === 'r' || event.key === 'R') {
-        event.preventDefault();
-        restartGame();
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          handleDirection('up');
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          handleDirection('down');
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          handleDirection('left');
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          handleDirection('right');
+          break;
+        case ' ': // Spacebar
+          togglePause();
+          break;
+        case 'r':
+        case 'R':
+          restartGame();
+          break;
       }
     };
 
@@ -199,82 +224,69 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       createdAt: new Date().toISOString(),
     };
 
-    setLeaderboard((previousEntries) => {
-      const nextEntries = [...previousEntries, newEntry]
-        .sort((a, b) => b.score - a.score || b.createdAt.localeCompare(a.createdAt))
-        .slice(0, MAX_LEADERBOARD_ENTRIES);
-      saveLeaderboard(nextEntries);
-      return nextEntries;
+    setLeaderboard((prev) => {
+      const newLeaderboard = [...prev, newEntry].sort((a, b) => b.score - a.score).slice(0, 10); // Keep top 10
+      return newLeaderboard;
     });
 
     setHasRecordedGameOverScore(true);
-  }, [currentUser, gameState.score, gameState.status, hasRecordedGameOverScore]);
-
-  const snakeCells = useMemo(
-    () => new Set(gameState.snake.map((segment) => getPositionKey(segment))),
-    [gameState.snake]
-  );
-  const headCellKey = getPositionKey(gameState.snake[0]);
-  const foodCellKey = getPositionKey(gameState.food);
-  const totalCells = gameState.width * gameState.height;
-  let gameStatusLabel = 'Running';
-
-  if (gameState.status === 'game-over') {
-    gameStatusLabel = 'Game Over';
-  } else if (gameState.status === 'paused') {
-    gameStatusLabel = 'Paused';
-  }
-
-  const handleOpen = () => {
-    if (isEmbedded) return;
-    setIsMinimized(false);
-  };
+  }, [gameState.status, gameState.score, currentUser, hasRecordedGameOverScore]);
 
   const handleMinimize = () => {
-    if (isEmbedded) return;
-    setIsMinimized(true);
-    setGameState((previousState) => {
-      if (previousState.status === 'running') {
-        return { ...previousState, status: 'paused' };
-      }
-      return previousState;
-    });
+    setIsGameVisible(false);
+    if (onMinimize) onMinimize();
   };
 
-  const renderDirectionButton = (direction: Direction, label: string) => {
-    return (
-      <Button
-        size="sm"
-        variant="secondary"
-        onClick={() => handleDirection(direction)}
-        style={{
-          minWidth: '44px',
-          minHeight: '44px',
-          padding: '0',
-          lineHeight: 1,
-          fontSize: typography.fontSize.base,
-        }}
-        aria-label={`Move ${direction}`}
-      >
-        {label}
-      </Button>
-    );
+  const handleMaximize = () => {
+    setIsGameVisible(true);
   };
-
-  const bestScore = leaderboard[0]?.score || 0;
 
   const handleClearLeaderboard = () => {
-    setLeaderboard([]);
-    saveLeaderboard([]);
+    if (window.confirm('Are you sure you want to clear the leaderboard?')) {
+      setLeaderboard([]);
+      setBestScore(0);
+    }
   };
 
-  if (!isEmbedded && isMinimized) {
+  // Rendering helpers
+  const getPositionKey = (pos: { x: number; y: number }) => `${pos.x},${pos.y}`;
+  const snakeCells = new Set(gameState.snake.map(getPositionKey));
+  const foodCellKey = getPositionKey(gameState.food);
+  const headCellKey = getPositionKey(gameState.snake[0]);
+
+  // For grid rendering
+  const totalCells = gameState.width * gameState.height;
+
+  let gameStatusLabel = 'Playing';
+  if (gameState.status === 'paused') gameStatusLabel = 'Paused';
+  if (gameState.status === 'game-over') gameStatusLabel = 'Game Over';
+
+  const renderDirectionButton = (dir: Direction, label: string) => (
+    <Button
+      size="sm"
+      variant="secondary"
+      onClick={() => handleDirection(dir)}
+      style={{
+        width: '48px',
+        height: '48px',
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.2rem',
+      }}
+      aria-label={`Move ${dir}`}
+    >
+      {label}
+    </Button>
+  );
+
+  if (!isGameVisible) {
+    if (isEmbedded) return null; // If embedded and hidden, render nothing (parent handles visibility)
+
     return (
       <button
-        type="button"
-        onClick={handleOpen}
-        aria-label="Open snake game"
-        className="gel-bubble"
+        onClick={handleMaximize}
         style={{
           position: 'fixed',
           bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,

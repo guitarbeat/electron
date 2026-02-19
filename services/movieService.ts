@@ -22,6 +22,7 @@ export const getMovies = async (): Promise<Movie[]> => {
     const file = gist.files[GIST_FILENAME];
 
     if (!file) {
+      // eslint-disable-next-line no-console
       console.error(`File "${GIST_FILENAME}" not found in Gist.`);
       return [];
     }
@@ -32,6 +33,7 @@ export const getMovies = async (): Promise<Movie[]> => {
 
     return JSON.parse(file.content);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching movies from Gist:', error);
     throw error;
   }
@@ -57,11 +59,21 @@ export const saveMovies = async (movies: Movie[]): Promise<void> => {
 
     if (!response.ok) {
       const errorBody = await response.json();
+      // eslint-disable-next-line no-console
       console.error('GitHub API error details:', errorBody);
       throw new Error(`GitHub API responded with ${response.status}`);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error saving movies to Gist:', error);
     throw error;
+  }
+};
+
+export const getStoredGuestName = (): string | null => {
+  try {
+    return localStorage.getItem('guest_name');
+  } catch (e) {
+    return null;
   }
 };
