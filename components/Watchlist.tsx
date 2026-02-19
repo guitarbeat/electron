@@ -6,7 +6,6 @@ import { useMemories } from '../hooks/useMemories';
 import { useSuggestions } from '../hooks/useSuggestions';
 import { Movie, MovieSuggestion } from '../types';
 import { PlusIcon, DiceIcon, FilmIcon, LockIcon, LayoutGridIcon, LayoutListIcon } from './icons';
-import SpinWheel from './SpinWheel';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -62,7 +61,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [isWheelVisible, setIsWheelVisible] = useState(false);
+
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [toast, setToast] = useState<{
     message: string;
@@ -100,9 +99,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     () => (movies ? movies.filter((movie) => movie.watchedBy.length === 2) : []),
     [movies]
   );
-  const isSpinLocked = !currentUser;
-  const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
-  const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const movieMemorySummaries = useMemo(
     () => buildMovieMemorySummaries(movies || [], memories),
@@ -237,20 +233,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   }, [toast]);
 
-  const handleOpenWheel = () => {
-    if (!currentUser) {
-      showGuestWarning();
-      return;
-    }
-    if (unwatchedMovies.length > 1) {
-      setIsWheelVisible(true);
-    } else {
-      setToast({
-        message: 'You need at least two unwatched movies to spin the wheel!',
-        type: 'info',
-      });
-    }
-  };
+
 
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -647,84 +630,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           </form>
         </Card>
 
-        {/* Combined Spin Wheel Header/Card */}
-        <Card
-          variant="elevated"
-          className={currentUser && !canSpin ? 'neon-pulse' : undefined}
-          style={{
-            marginBottom: spacing.xl,
-            padding: isMobile ? spacing.md : spacing.lg,
-            border: `1px solid ${canSpin ? colors.secondary : colors.borderSecondary}55`,
-            background: isSpinLocked
-              ? 'linear-gradient(135deg, rgba(24, 33, 57, 0.92) 0%, rgba(16, 23, 42, 0.95) 100%)'
-              : canSpin
-                ? 'linear-gradient(135deg, rgba(18, 54, 90, 0.95) 0%, rgba(20, 39, 78, 0.92) 100%)'
-                : 'linear-gradient(135deg, rgba(80, 28, 66, 0.96) 0%, rgba(53, 21, 74, 0.92) 100%)',
-            boxShadow: isSpinLocked
-              ? shadows.card
-              : canSpin
-                ? shadows.glowBlue
-                : shadows.glowStrong,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              alignItems: isMobile ? 'stretch' : 'center',
-              justifyContent: 'space-between',
-              gap: spacing.md,
-            }}
-          >
-            <div style={{ flex: 1, textAlign: isMobile ? 'center' : 'left' }}>
-              <h2
-                style={{
-                  margin: 0,
-                  marginBottom: spacing.xs,
-                  color: colors.textPrimary,
-                  fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
-                  fontWeight: typography.fontWeight.bold,
-                  lineHeight: typography.lineHeight.tight,
-                }}
-              >
-                {!currentUser ? 'Movie Spin Wheel' : 'Spin the Wheel'}
-              </h2>
-              {!canSpin && currentUser && (
-                <p
-                  style={{
-                    margin: 0,
-                    color: colors.textSecondary,
-                    fontSize: typography.fontSize.sm,
-                    lineHeight: typography.lineHeight.normal,
-                  }}
-                >
-                  Add {moviesNeededForSpin} more unwatched{' '}
-                  {moviesNeededForSpin === 1 ? 'movie' : 'movies'}.
-                </p>
-              )}
-            </div>
-            <Button
-              onClick={handleOpenWheel}
-              variant={canSpin ? 'secondary' : 'ghost'}
-              size={isMobile ? 'sm' : 'md'}
-              style={{
-                width: isMobile ? '100%' : 'auto',
-                minWidth: isMobile ? '100%' : '180px',
-                fontWeight: typography.fontWeight.bold,
-                letterSpacing: '0.04em',
-                border: canSpin ? undefined : `1px solid ${colors.borderSecondary}40`,
-              }}
-              aria-label={!currentUser ? 'Login to spin the wheel' : 'Open spin wheel'}
-            >
-              {!currentUser ? <LockIcon /> : <DiceIcon />}
-              {!currentUser
-                ? 'Pick Profile First'
-                : canSpin
-                  ? 'Spin Wheel Now'
-                  : `Need ${moviesNeededForSpin} More`}
-            </Button>
-          </div>
-        </Card>
+
 
         <Card
           variant="elevated"
@@ -1009,17 +915,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         onConfirm={confirmDelete}
         onCancel={() => setMovieToDelete(null)}
       />
-
-      {isWheelVisible && (
-        <SpinWheel
-          isOpen={isWheelVisible}
-          onClose={() => setIsWheelVisible(false)}
-          movies={unwatchedMovies}
-          onWinner={(movie) => {
-            setToast({ message: `Winner: ${movie.title}!`, type: 'success' });
-          }}
-        />
-      )}
 
       <FixMatchDialog
         isOpen={!!movieToFix}

@@ -1,12 +1,12 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Movie } from '../types';
-import { useSpinWheel } from '../hooks/useSpinWheel';
-import { useUser } from '../context/UserContext';
-import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from './icons';
-import Card from './ui/Card';
-import Button from './ui/Button';
-import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
+import { Movie } from '../../../types';
+import { useSpinWheel } from '../../../hooks/useSpinWheel';
+import { useUser } from '../../../context/UserContext';
+import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from '../../icons';
+import Card from '../../ui/Card';
+import Button from '../../ui/Button';
+import { spacing, typography, colors, radius, shadows } from '../../../design-system/tokens';
 import './SpinWheel.css';
 
 const COLORS = [
