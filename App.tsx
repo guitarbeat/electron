@@ -182,11 +182,7 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-fade-in">
             {showQuiz ? (
-              <QuizFlow
-                quizData={quizData}
-                onComplete={handleQuizComplete}
-                onCancel={() => setShowQuiz(false)}
-              />
+              <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />
             ) : showQuizEditor ? (
               <QuizEditor onClose={() => setShowQuizEditor(false)} />
             ) : (
