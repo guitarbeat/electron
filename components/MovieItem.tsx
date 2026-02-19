@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Movie, User } from '../types';
+import { Movie, User, SharedMemory } from '../types';
 import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -10,7 +10,6 @@ import { spacing, typography, colors, radius, shadows } from '../design-system/t
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import MemoryList from './memories/MemoryList';
 import MemoryComposer from './memories/MemoryComposer';
-import { SharedMemory } from '../types';
 
 interface MovieItemProps {
   movie: Movie;
@@ -699,7 +698,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 // Props required by interface but unused in single-movie context
                 note={note}
                 onNoteChange={setNote}
-                isComposerOpen={true}
+                isComposerOpen
                 onComposerToggle={() => {}}
                 remainingChars={280}
                 error={null}

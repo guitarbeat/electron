@@ -3,10 +3,15 @@ type Listener<T> = (data: T | undefined, error: any | null) => void;
 
 class PollingManager {
   private subscribers = new Map<string, Set<Listener<any>>>();
+
   private intervals = new Map<string, ReturnType<typeof setInterval>>();
+
   private fetchFns = new Map<string, () => Promise<any>>();
+
   private cache = new Map<string, any>();
+
   private errors = new Map<string, any>();
+
   private activeIntervals = new Map<string, number>();
 
   subscribe<T>(key: string, fetchFn: () => Promise<T>, interval: number, listener: Listener<T>) {
