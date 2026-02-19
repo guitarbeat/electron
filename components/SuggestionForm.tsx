@@ -33,14 +33,14 @@ const SuggestionForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !suggestedBy.trim()) {
-      setError('Please fill in all required fields');
+    if (!title.trim()) {
+      setError('Please enter a title');
       return;
     }
     setIsSubmitting(true);
     setError(null);
     try {
-      await addSuggestion(title, suggestedBy, reason || undefined);
+      await addSuggestion(title, 'Anonymous', reason || undefined);
       setSubmitted(true);
       setTitle('');
       setSuggestedBy('');
@@ -138,7 +138,7 @@ const SuggestionForm: React.FC = () => {
                 border: `1px solid ${colors.borderSecondary}40`,
               }}
             >
-              <div style={{ flex: 2 }}>
+              <div style={{ flex: 1 }}>
                 <Input
                   placeholder={isMobile ? 'Title' : 'Movie or show title...'}
                   value={title}
@@ -154,26 +154,10 @@ const SuggestionForm: React.FC = () => {
                   }}
                 />
               </div>
-              <div style={{ flex: 1, minWidth: '100px' }}>
-                <Input
-                  placeholder={isMobile ? 'Name' : 'Your Name'}
-                  value={suggestedBy}
-                  onChange={(e) => setSuggestedBy(e.target.value.slice(0, MAX_NAME_LENGTH))}
-                  disabled={isSubmitting}
-                  style={{
-                    borderRadius: radius.md,
-                    border: 'none',
-                    height: '44px',
-                    textAlign: 'left',
-                    padding: isMobile ? spacing.sm : undefined,
-                    backgroundColor: 'transparent',
-                  }}
-                />
-              </div>
               <Button
                 type="submit"
                 variant="primary"
-                disabled={!title.trim() || !suggestedBy.trim() || isSubmitting}
+                disabled={!title.trim() || isSubmitting}
                 isLoading={isSubmitting}
                 style={{
                   borderRadius: radius.md,
