@@ -233,8 +233,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   }, [toast]);
 
-
-
   const handleAddMovie = async (e: React.FormEvent) => {
     e.preventDefault();
     const title = newMovieTitle.trim();
@@ -629,8 +627,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             </div>
           </form>
         </Card>
-
-
 
         <Card
           variant="elevated"
