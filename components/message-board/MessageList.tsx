@@ -7,7 +7,7 @@ import { Message, User } from '../../types';
 interface MessageListProps {
   messages: Message[] | null;
   isLoading: boolean;
-  error: any;
+  error: Error | null;
   currentUser: User | null;
   onDelete: (id: string) => Promise<void>;
   onReaction: (messageId: string, emoji: string, username: string) => Promise<void>;
