@@ -144,6 +144,7 @@ const SuggestionForm: React.FC = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
                   disabled={isSubmitting}
+                  aria-label="Movie or show title"
                   style={{
                     borderRadius: radius.md,
                     border: 'none',
@@ -159,6 +160,8 @@ const SuggestionForm: React.FC = () => {
                 variant="primary"
                 disabled={!title.trim() || isSubmitting}
                 isLoading={isSubmitting}
+                loadingText=""
+                aria-label="Add suggestion"
                 style={{
                   borderRadius: radius.md,
                   minWidth: '60px',
@@ -193,6 +196,7 @@ const SuggestionForm: React.FC = () => {
 
             {error && (
               <div
+                role="alert"
                 style={{
                   marginTop: spacing.sm,
                   color: colors.error,

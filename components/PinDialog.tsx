@@ -296,14 +296,15 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         width: '44px', // Smaller dots
                         height: '52px',
                         backgroundColor: val ? `${colors.accent}25` : 'rgba(0, 0, 0, 0.2)',
-                        border: `1.5px solid ${error
-                          ? colors.error
-                          : isActive
-                            ? colors.accent
-                            : val
-                              ? `${colors.accent}40`
-                              : 'rgba(255, 255, 255, 0.1)'
-                          }`,
+                        border: `1.5px solid ${
+                          error
+                            ? colors.error
+                            : isActive
+                              ? colors.accent
+                              : val
+                                ? `${colors.accent}40`
+                                : 'rgba(255, 255, 255, 0.1)'
+                        }`,
                         borderRadius: radius.md,
                         display: 'flex',
                         alignItems: 'center',

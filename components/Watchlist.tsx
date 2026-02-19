@@ -17,11 +17,7 @@ import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import {
-  getMemoryMovieKey,
-  getFallbackMovieKey,
-  sortMemories
-} from './memories/memoryUtils';
+import { getMemoryMovieKey, getFallbackMovieKey, sortMemories } from './memories/memoryUtils';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
@@ -321,8 +317,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     },
     [showGuestWarning]
   );
-
-
 
   const handleEditMemory = useCallback(
     async (memoryId: string, note: string) => {
@@ -820,8 +814,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               </div>
             )}
         </div>
-
-
       </div>
 
       <ConfirmDialog
