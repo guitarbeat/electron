@@ -96,48 +96,42 @@ const App: React.FC = () => {
             : spacing['3xl'],
           paddingLeft: isMobile ? spacing.md : spacing.lg,
           paddingRight: isMobile ? spacing.md : spacing.lg,
-          maxWidth: '100%',
+          maxWidth: layout.contentMaxWidth,
+          margin: '0 auto',
           outline: 'none',
         }}
         tabIndex={-1}
       >
-        <div
+        <section
+          aria-label="Profile selection"
+          className="animate-fade-in"
           style={{
-            maxWidth: layout.contentMaxWidth,
-            margin: '0 auto',
+            maxWidth: '980px',
+            margin: `0 auto ${spacing.lg}`,
+            padding: isMobile ? spacing.sm : spacing.md,
+            borderRadius: spacing.lg,
+            border: `1px solid ${colors.borderSecondary}35`,
+            background:
+              'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.2), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
+            boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
           }}
         >
-          <section
-            aria-label="Profile selection"
-            className="animate-fade-in"
+          <p
             style={{
-              maxWidth: '980px',
-              margin: `0 auto ${spacing.lg}`,
-              padding: isMobile ? spacing.sm : spacing.md,
-              borderRadius: spacing.lg,
-              border: `1px solid ${colors.borderSecondary}35`,
-              background:
-                'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.2), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
-              boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
+              margin: 0,
+              marginBottom: spacing.sm,
+              textAlign: 'center',
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.xs,
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
             }}
           >
-            <p
-              style={{
-                margin: 0,
-                marginBottom: spacing.sm,
-                textAlign: 'center',
-                color: colors.textTertiary,
-                fontSize: typography.fontSize.xs,
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-              }}
-            >
-              Who&apos;s watching
-            </p>
-            <UserSelection />
-          </section>
-          <Watchlist />
-        </div>
+            Who&apos;s watching
+          </p>
+          <UserSelection />
+        </section>
+        <Watchlist />
       </main>
 
       <MessageBoard mode="floating" />
