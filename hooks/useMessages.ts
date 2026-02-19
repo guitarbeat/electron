@@ -11,7 +11,9 @@ export const useMessages = () => {
     error,
     isLoading,
     refresh,
-  } = usePolling(getMessages, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next));
+  } = usePolling(getMessages, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+    key: 'messages',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 

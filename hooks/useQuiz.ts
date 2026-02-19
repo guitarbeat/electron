@@ -16,6 +16,7 @@ export const useQuiz = (isPaused: boolean = false) => {
     isLoading,
     refresh,
   } = usePolling(getQuizData, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+    key: 'quiz',
     isPaused,
   });
   const [isSaving, setIsSaving] = useState(false);
