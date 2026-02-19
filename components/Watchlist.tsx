@@ -83,6 +83,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const movieResultsRef = useRef<HTMLDivElement | null>(null);
 
+  // Keep a ref to currentUser for stable callbacks
+  const currentUserRef = useRef(currentUser);
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
+
   const showGuestWarning = useCallback(() => {
     setToast({
       message: 'Please select a profile above to make changes!',
@@ -296,18 +302,25 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const handleDeleteMovie = useCallback(
     (movie: Movie) => {
-      if (!currentUser) {
+      if (!currentUserRef.current) {
         showGuestWarning();
         return;
       }
       setMovieToDelete(movie);
     },
-    [currentUser, showGuestWarning]
+    [showGuestWarning]
   );
 
-  const handleFixMatch = useCallback((movie: Movie) => {
-    setMovieToFix(movie);
-  }, []);
+  const handleFixMatch = useCallback(
+    (movie: Movie) => {
+      if (!currentUserRef.current) {
+        showGuestWarning();
+        return;
+      }
+      setMovieToFix(movie);
+    },
+    [showGuestWarning]
+  );
 
 
 
