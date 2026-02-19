@@ -1,7 +1,5 @@
-import { GIST_ID, GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '../gistConfig';
+import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
 import { MovieSuggestion } from '../types';
-
-const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
 export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   try {
