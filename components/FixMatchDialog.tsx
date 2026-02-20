@@ -95,6 +95,8 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
     }
   };
 
+  const isSubmitDisabled = isSearching || !searchTerm.trim();
+
   return createPortal(
     <div
       style={{
@@ -228,7 +230,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
             onClick={handleSubmit} // Re-bind Search to handleSubmit
             type="button"
             variant="primary"
-            disabled={isSearching || !searchTerm.trim()}
+            disabled={isSubmitDisabled}
             style={{
               minWidth: '120px',
               fontWeight: typography.fontWeight.bold,
