@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Movie, User } from '../types';
+import { Movie, User, SharedMemory } from '../types';
 import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
@@ -10,7 +10,6 @@ import { spacing, typography, colors, radius, shadows } from '../design-system/t
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 import MemoryList from './memories/MemoryList';
 import MemoryComposer from './memories/MemoryComposer';
-import { SharedMemory } from '../types';
 
 interface MovieItemProps {
   movie: Movie;
@@ -57,6 +56,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
 
@@ -84,6 +84,22 @@ const MovieItem: React.FC<MovieItemProps> = ({
     } finally {
       setIsUpdating(false);
       setIsBottomSheetOpen(false);
+    }
+  };
+
+  const handleToggleMemories = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setShowMemories(!showMemories);
+  };
+
+  const handleAddMemory = async (note: string) => {
+    setIsSubmittingMemory(true);
+    try {
+      if (onAddMemory) {
+        await onAddMemory(note);
+      }
+    } finally {
+      setIsSubmittingMemory(false);
     }
   };
 
@@ -669,9 +685,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <MemoryComposer
                 watchedMovieOptions={[movie]}
                 selectedMovieId={movie.id}
-                onSelectedMovieIdChange={() => { }}
+                onSelectedMovieIdChange={() => {}}
                 currentUser={currentUser}
-                isExpanded={true}
+                isExpanded
                 onSubmit={async (e, note) => {
                   e.preventDefault();
                   await handleAddMemory(note);
@@ -681,9 +697,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 isMobile={isMobile}
                 // Props required by interface but unused in single-movie context
                 note=""
-                onNoteChange={() => { }}
-                isComposerOpen={true}
-                onComposerToggle={() => { }}
+                onNoteChange={() => {}}
+                isComposerOpen
+                onComposerToggle={() => {}}
                 remainingChars={280}
               />
             </div>
@@ -710,24 +726,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
               // Props not needed for simple list but required by component
               movieFilterOptions={[]}
               activeMovieFilter={movie.id}
-              onActiveMovieFilterChange={() => { }}
+              onActiveMovieFilterChange={() => {}}
               sortMode="newest"
-              onSortModeChange={() => { }}
-              onShowMore={() => { }}
-              onShowLess={() => { }}
+              onSortModeChange={() => {}}
+              onShowMore={() => {}}
+              onShowLess={() => {}}
               visibleCount={100}
               isLoading={false}
               memoriesError={null}
-              onJumpToMovie={() => { }}
+              onJumpToMovie={() => {}}
             />
           ) : (
-            <p style={{
-              textAlign: 'center',
-              color: colors.textTertiary,
-              fontSize: typography.fontSize.xs,
-              fontStyle: 'italic',
-              padding: spacing.sm
-            }}>
+            <p
+              style={{
+                textAlign: 'center',
+                color: colors.textTertiary,
+                fontSize: typography.fontSize.xs,
+                fontStyle: 'italic',
+                padding: spacing.sm,
+              }}
+            >
               No memories yet. Add one above!
             </p>
           )}
