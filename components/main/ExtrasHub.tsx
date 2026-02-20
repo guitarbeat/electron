@@ -14,7 +14,7 @@ interface ExtrasHubProps {
   onStartQuiz: () => void;
   onRetakeQuiz: () => void;
   onOpenQuizEditor: () => void;
-  initialView?: 'games' | 'quiz' | 'all';
+  initialView?: 'games' | 'quiz' | 'spin' | 'all';
 }
 
 const ExtrasHub: React.FC<ExtrasHubProps> = ({
@@ -25,13 +25,14 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
   onOpenQuizEditor,
   initialView = 'all',
 }) => {
-  const [isWheelVisible, setIsWheelVisible] = useState(false);
+  const [isWheelVisible, setIsWheelVisible] = useState(initialView === 'spin');
   const { movies } = useMovies(currentUser);
 
   const unwatchedMovies = movies ? movies.filter((movie) => movie.watchedBy.length < 2) : [];
   const moviesNeededForSpin = Math.max(0, 2 - unwatchedMovies.length);
   const canSpin = Boolean(currentUser) && moviesNeededForSpin === 0;
 
+  const showSpin = initialView === 'all' || initialView === 'spin';
   const showGames = initialView === 'all' || initialView === 'games';
   const showQuiz = initialView === 'all' || initialView === 'quiz';
 
@@ -45,7 +46,7 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
         gap: spacing.lg,
       }}
     >
-      {showGames && (
+      {showSpin && (
         <>
           {/* Spin Wheel Card */}
           <Card
@@ -108,40 +109,42 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
             onClose={() => setIsWheelVisible(false)}
             onWinner={(movie) => console.log('Winner:', movie.title)}
           />
+        </>
+      )}
 
-          <Card
+      {showGames && (
+        <Card
+          style={{
+            padding: spacing.lg,
+            borderRadius: radius.lg,
+            border: `1px solid ${colors.borderSecondary}35`,
+            background: 'linear-gradient(145deg, rgba(20, 31, 56, 0.88), rgba(12, 22, 41, 0.88))',
+          }}
+        >
+          <h2
             style={{
-              padding: spacing.lg,
-              borderRadius: radius.lg,
-              border: `1px solid ${colors.borderSecondary}35`,
-              background: 'linear-gradient(145deg, rgba(20, 31, 56, 0.88), rgba(12, 22, 41, 0.88))',
+              margin: 0,
+              marginBottom: spacing.sm,
+              color: colors.textPrimary,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              fontSize: typography.fontSize.lg,
             }}
           >
-            <h2
-              style={{
-                margin: 0,
-                marginBottom: spacing.sm,
-                color: colors.textPrimary,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.lg,
-              }}
-            >
-              Snake Arcade
-            </h2>
-            <p
-              style={{
-                margin: 0,
-                marginBottom: spacing.md,
-                color: colors.textSecondary,
-                fontSize: typography.fontSize.sm,
-              }}
-            >
-              Embedded mode for quick breaks between picks.
-            </p>
+            Snake Arcade
+          </h2>
+          <p
+            style={{
+              margin: 0,
+              marginBottom: spacing.md,
+              color: colors.textSecondary,
+              fontSize: typography.fontSize.sm,
+            }}
+          >
+            Embedded mode for quick breaks between picks.
+          </p>
 
-            <SnakeGame mode="embedded" />
-          </Card>
-        </>
+          <SnakeGame mode="embedded" />
+        </Card>
       )}
 
       {showQuiz && (

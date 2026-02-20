@@ -55,6 +55,19 @@ const App: React.FC = () => {
     switch (activeTab) {
       case 'queue':
         return <Watchlist />;
+      case 'spin':
+        return (
+          <div className="animate-fade-in">
+            <ExtrasHub
+              currentUser={currentUser}
+              quizCompleted={quizCompleted}
+              onStartQuiz={handleStartQuiz}
+              onRetakeQuiz={handleRetakeQuiz}
+              onOpenQuizEditor={handleOpenQuizEditor}
+              initialView="spin"
+            />
+          </div>
+        );
       case 'games':
         return (
           <div className="animate-fade-in">
@@ -191,6 +204,7 @@ const App: React.FC = () => {
         >
           {[
             { id: 'queue', label: 'Queue' },
+            { id: 'spin', label: 'Spin' },
             { id: 'games', label: 'Games' },
             { id: 'quiz', label: 'Quiz' },
             { id: 'messages', label: 'Chat' },
