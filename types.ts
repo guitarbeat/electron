@@ -1,5 +1,5 @@
 export type User = 'Aaron' | 'Electra';
-export type MainTab = 'queue' | 'games' | 'quiz' | 'messages';
+export type MainTab = 'queue' | 'spin' | 'games' | 'quiz' | 'messages';
 
 export interface Movie {
   id: string;
