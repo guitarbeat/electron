@@ -3,10 +3,15 @@ type Listener<T> = (data: T | undefined, error: any | null) => void;
 
 class PollingManager {
   private subscribers = new Map<string, Set<Listener<any>>>();
+
   private intervals = new Map<string, ReturnType<typeof setInterval>>();
+
   private fetchFns = new Map<string, () => Promise<any>>();
+
   private cache = new Map<string, any>();
+
   private errors = new Map<string, any>();
+
   private activeIntervals = new Map<string, number>();
 
   subscribe<T>(key: string, fetchFn: () => Promise<T>, interval: number, listener: Listener<T>) {
@@ -30,12 +35,12 @@ class PollingManager {
     if (!this.intervals.has(key)) {
       this.startPolling(key, interval);
     } else {
-        // If interval changed, restart polling
-        const currentInterval = this.activeIntervals.get(key);
-        if (currentInterval !== interval) {
-             this.stopPolling(key);
-             this.startPolling(key, interval);
-        }
+      // If interval changed, restart polling
+      const currentInterval = this.activeIntervals.get(key);
+      if (currentInterval !== interval) {
+        this.stopPolling(key);
+        this.startPolling(key, interval);
+      }
     }
 
     return () => this.unsubscribe(key, listener);
@@ -97,10 +102,10 @@ class PollingManager {
   }
 
   private notify(key: string, data: any, error: any) {
-      const listeners = this.subscribers.get(key);
-      if (listeners) {
-          listeners.forEach(l => l(data, error));
-      }
+    const listeners = this.subscribers.get(key);
+    if (listeners) {
+      listeners.forEach((l) => l(data, error));
+    }
   }
 
   getData(key: string) {
@@ -108,11 +113,11 @@ class PollingManager {
   }
 
   getError(key: string) {
-      return this.errors.get(key);
+    return this.errors.get(key);
   }
 
   refresh(key: string) {
-      return this.execute(key);
+    return this.execute(key);
   }
 }
 

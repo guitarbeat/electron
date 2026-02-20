@@ -154,7 +154,8 @@ export const fetchMovieMetadata = async (
 
     // If we have an IMDB ID, use OMDb by ID
     if (id && !id.startsWith('tv-')) {
-      const omdbUrl = new URL(OMDB_PROXY_URL);
+      const omdbUrl = new URL(OMDB_BASE_URL);
+      omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
       omdbUrl.searchParams.append('i', id);
 
       const omdbRes = await fetchWithRetry(omdbUrl.toString());
@@ -175,7 +176,8 @@ export const fetchMovieMetadata = async (
     }
 
     // 1. Try OMDb first (Best for Movies)
-    const omdbUrl = new URL(OMDB_PROXY_URL);
+    const omdbUrl = new URL(OMDB_BASE_URL);
+    omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
     omdbUrl.searchParams.append('t', title);
 
     const omdbRes = await fetchWithRetry(omdbUrl.toString());
@@ -226,7 +228,8 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     const results: MetadataResult[] = [];
 
     // 1. Search OMDb
-    const omdbUrl = new URL(OMDB_PROXY_URL);
+    const omdbUrl = new URL(OMDB_BASE_URL);
+    omdbUrl.searchParams.append('apikey', OMDB_API_KEY);
     omdbUrl.searchParams.append('s', query);
 
     const omdbRes = await fetchWithRetry(omdbUrl.toString());
