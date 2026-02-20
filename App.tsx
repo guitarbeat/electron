@@ -27,7 +27,7 @@ const App: React.FC = () => {
   const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
 
   const handleStartQuiz = () => {
-    setActiveTab('extras');
+    setActiveTab('quiz');
     setShowQuizEditor(false);
     setShowQuiz(true);
   };
@@ -36,18 +36,62 @@ const App: React.FC = () => {
     setShowQuiz(false);
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
+    setActiveTab('queue');
   };
 
   const handleRetakeQuiz = () => {
-    setActiveTab('extras');
+    setActiveTab('quiz');
     setShowQuizEditor(false);
     setShowQuiz(true);
   };
 
   const handleOpenQuizEditor = () => {
-    setActiveTab('extras');
+    setActiveTab('quiz');
     setShowQuiz(false);
     setShowQuizEditor(true);
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'queue':
+        return <Watchlist />;
+      case 'games':
+        return (
+          <div className="animate-fade-in">
+            <ExtrasHub
+              currentUser={currentUser}
+              quizCompleted={quizCompleted}
+              onStartQuiz={handleStartQuiz}
+              onRetakeQuiz={handleRetakeQuiz}
+              onOpenQuizEditor={handleOpenQuizEditor}
+              initialView="games"
+            />
+          </div>
+        );
+      case 'quiz':
+        return (
+          <div className="animate-fade-in">
+            {showQuiz ? (
+              <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />
+            ) : showQuizEditor ? (
+              <QuizEditor onClose={() => setShowQuizEditor(false)} />
+            ) : (
+              <ExtrasHub
+                currentUser={currentUser}
+                quizCompleted={quizCompleted}
+                onStartQuiz={handleStartQuiz}
+                onRetakeQuiz={handleRetakeQuiz}
+                onOpenQuizEditor={handleOpenQuizEditor}
+                initialView="quiz"
+              />
+            )}
+          </div>
+        );
+      case 'messages':
+        return <MessageBoard mode="full" />;
+      default:
+        return <Watchlist />;
+    }
   };
 
   return (
@@ -112,7 +156,7 @@ const App: React.FC = () => {
             borderRadius: spacing.lg,
             border: `1px solid ${colors.borderSecondary}35`,
             background:
-              'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.2), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
+              'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.15), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
             boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
           }}
         >
@@ -137,65 +181,56 @@ const App: React.FC = () => {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: spacing.md,
+            gap: isMobile ? spacing.xs : spacing.md,
             marginBottom: spacing.xl,
             borderBottom: `1px solid ${colors.borderSecondary}20`,
-            paddingBottom: spacing.md,
+            paddingBottom: spacing.sm,
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
           }}
         >
-          <button
-            onClick={() => setActiveTab('queue')}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: `${spacing.sm} ${spacing.lg}`,
-              color: activeTab === 'queue' ? colors.accent : colors.textSecondary,
-              fontSize: typography.fontSize.base,
-              fontWeight: activeTab === 'queue' ? 'bold' : 'normal',
-              cursor: 'pointer',
-              borderBottom: activeTab === 'queue' ? `2px solid ${colors.accent}` : 'none',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            Queue
-          </button>
-          <button
-            onClick={() => setActiveTab('extras')}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: `${spacing.sm} ${spacing.lg}`,
-              color: activeTab === 'extras' ? colors.accent : colors.textSecondary,
-              fontSize: typography.fontSize.base,
-              fontWeight: activeTab === 'extras' ? 'bold' : 'normal',
-              cursor: 'pointer',
-              borderBottom: activeTab === 'extras' ? `2px solid ${colors.accent}` : 'none',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            Extras
-          </button>
+          {[
+            { id: 'queue', label: 'Queue' },
+            { id: 'games', label: 'Games' },
+            { id: 'quiz', label: 'Quiz' },
+            { id: 'messages', label: 'Chat' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as MainTab)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: `${spacing.sm} ${isMobile ? spacing.md : spacing.lg}`,
+                color: activeTab === tab.id ? colors.accent : colors.textSecondary,
+                fontSize: typography.fontSize.base,
+                fontWeight: activeTab === tab.id ? '600' : '500',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: `-${spacing.sm}`,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: colors.accent,
+                    borderRadius: '3px 3px 0 0',
+                    boxShadow: `0 0 10px ${colors.accent}60`,
+                  }}
+                />
+              )}
+            </button>
+          ))}
         </div>
 
-        {activeTab === 'queue' ? (
-          <Watchlist />
-        ) : (
-          <div className="animate-fade-in">
-            {showQuiz ? (
-              <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />
-            ) : showQuizEditor ? (
-              <QuizEditor onClose={() => setShowQuizEditor(false)} />
-            ) : (
-              <ExtrasHub
-                currentUser={currentUser}
-                quizCompleted={quizCompleted}
-                onStartQuiz={handleStartQuiz}
-                onRetakeQuiz={handleRetakeQuiz}
-                onOpenQuizEditor={handleOpenQuizEditor}
-              />
-            )}
-          </div>
-        )}
+        {renderContent()}
       </main>
 
       <MessageBoard mode="floating" />
