@@ -18,29 +18,32 @@ import { searchMovies, MetadataResult, fetchMovieMetadata } from '../services/me
 
 interface FixMatchDialogProps {
   isOpen: boolean;
-  movieTitle: string;
+  movie: { id: string; title: string } | null;
   onClose: () => void;
   onSelect: (metadata: MetadataResult) => Promise<void>;
+  onRename: (newName: string) => Promise<void>;
 }
 
 const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
   isOpen,
-  movieTitle,
+  movie,
   onClose,
   onSelect,
+  onRename,
 }) => {
-  const [searchTerm, setSearchTerm] = useState(movieTitle);
+  const [searchTerm, setSearchTerm] = useState(movie?.title || '');
   const [isSearching, setIsSearching] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
   const [results, setResults] = useState<MetadataResult[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setSearchTerm(movieTitle);
+    if (isOpen && movie) {
+      setSearchTerm(movie.title);
       setResults([]);
       setError(null);
     }
-  }, [isOpen, movieTitle]);
+  }, [isOpen, movie]);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,7 +59,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !movie) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,11 +83,22 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
     }
   };
 
+  const handleRenameOnly = async () => {
+    if (!searchTerm.trim() || searchTerm === movie.title) return;
+    setIsRenaming(true);
+    try {
+      await onRename(searchTerm.trim());
+      onClose();
+    } catch (err) {
+      setError('Failed to rename movie.');
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
   const handleSelect = async (result: MetadataResult) => {
     setIsSearching(true);
     try {
-      // Result from 'search' might be partial (OMDb search doesn't give plot/rating)
-      // So we fetch the full metadata for the specific title/ID
       const fullMetadata = await fetchMovieMetadata(result.title!, result.type, result.id);
       await onSelect(fullMetadata);
       onClose();
@@ -119,7 +133,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
         variant="elevated"
         style={{
           width: '90%',
-          maxWidth: '400px',
+          maxWidth: '460px',
           padding: spacing.lg,
           transform: isOpen ? 'scale(1)' : 'scale(0.95)',
           transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -151,7 +165,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
             <MagicWandIcon
               style={{ color: colors.accent, filter: `drop-shadow(0 0 5px ${colors.accent})` }}
             />
-            Resolve Match
+            Edit Movie Details
           </h3>
           <IconButton
             onClick={onClose}
@@ -171,24 +185,24 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
           style={{
             fontSize: typography.fontSize.sm,
             color: colors.textSecondary,
-            marginBottom: spacing.xl,
+            marginBottom: spacing.lg,
             lineHeight: typography.lineHeight.normal,
             opacity: 0.8,
           }}
         >
-          If the current details aren't right, type the exact movie or show title below to fetch a
-          fresh set of metadata.
+          Update the title to rename it, or search to find better poster and details from the movie
+          database.
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: spacing.lg }}>
+          <div style={{ marginBottom: spacing.md }}>
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Movie title..."
               autoFocus
               style={{ width: '100%' }}
-              disabled={isSearching}
+              disabled={isSearching || isRenaming}
             />
             {error && (
               <p
@@ -205,57 +219,53 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
               </p>
             )}
           </div>
-        </form>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: spacing.md,
-            marginTop: spacing.md,
-          }}
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onClose}
-            disabled={isSearching}
-            style={{ fontWeight: typography.fontWeight.semibold }}
-          >
-            Close
-          </Button>
-          <Button
-            onClick={handleSubmit} // Re-bind Search to handleSubmit
-            type="button"
-            variant="primary"
-            disabled={isSearching || !searchTerm.trim()}
+          <div
             style={{
-              minWidth: '120px',
-              fontWeight: typography.fontWeight.bold,
-              boxShadow: `0 0 20px ${colors.accent}40`,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              fontSize: '0.75rem',
+              display: 'flex',
+              gap: spacing.sm,
+              marginBottom: spacing.xl,
             }}
           >
-            {isSearching ? (
-              <>
-                <Spinner style={{ width: '16px', height: '16px', marginRight: spacing.sm }} />
-                Updating...
-              </>
-            ) : (
-              'Search Results'
-            )}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleRenameOnly}
+              disabled={isSearching || isRenaming || !searchTerm.trim() || searchTerm === movie.title}
+              style={{ flex: 1, fontSize: '0.7rem' }}
+            >
+              {isRenaming ? 'Renaming...' : 'Rename Only'}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={isSearching || isRenaming || !searchTerm.trim()}
+              style={{
+                flex: 1,
+                fontSize: '0.7rem',
+                boxShadow: `0 0 15px ${colors.accent}30`,
+              }}
+            >
+              {isSearching ? (
+                <>
+                  <Spinner style={{ width: '12px', height: '12px', marginRight: spacing.xs }} />
+                  Searching...
+                </>
+              ) : (
+                'Search & Match'
+              )}
+            </Button>
+          </div>
+        </form>
 
         {results.length > 0 && (
           <div
             style={{
-              marginTop: spacing.md,
-              maxHeight: '300px',
+              maxHeight: '260px',
               overflowY: 'auto',
-              padding: '4px',
+              padding: '2px',
               borderRadius: radius.md,
               border: `1px solid ${colors.borderSecondary}20`,
               backgroundColor: 'rgba(0,0,0,0.2)',
@@ -267,7 +277,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                 color: colors.textTertiary,
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
-                padding: `${spacing.sm} ${spacing.md}`,
+                padding: `${spacing.xs} ${spacing.md}`,
                 margin: 0,
                 backgroundColor: 'rgba(0,0,0,0.3)',
                 borderBottom: `1px solid ${colors.borderSecondary}10`,
@@ -277,36 +287,18 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                 zIndex: 1,
               }}
             >
-              Search Results
+              Pick the correct match
             </p>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {results.map((result, idx) => (
                 <div
                   key={result.id || idx}
                   onClick={() => handleSelect(result)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleSelect(result);
-                    }
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,105,180,0.08)';
-                    e.currentTarget.style.outline = `2px solid ${colors.accent}`;
-                    e.currentTarget.style.outlineOffset = '-2px';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.outline = 'none';
-                  }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Select ${result.title} (${result.year})`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: spacing.md,
-                    padding: spacing.md,
+                    padding: spacing.sm,
                     borderBottom:
                       idx === results.length - 1 ? 'none' : `1px solid ${colors.borderSecondary}10`,
                     cursor: 'pointer',
@@ -316,20 +308,17 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                     e.currentTarget.style.backgroundColor = 'rgba(255,105,180,0.08)';
                   }}
                   onMouseLeave={(e) => {
-                    if (document.activeElement !== e.currentTarget) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }
+                    e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
                   <div
                     style={{
-                      width: '40px',
-                      height: '56px',
+                      width: '34px',
+                      height: '48px',
                       backgroundColor: colors.background,
                       borderRadius: radius.sm,
                       overflow: 'hidden',
                       flexShrink: 0,
-                      boxShadow: shadows.card,
                     }}
                   >
                     {result.posterUrl ? (
@@ -349,7 +338,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                           opacity: 0.2,
                         }}
                       >
-                        <MagicWandIcon style={{ width: '16px' }} />
+                        <MagicWandIcon style={{ width: '14px' }} />
                       </div>
                     )}
                   </div>
@@ -357,7 +346,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                     <h4
                       style={{
                         margin: 0,
-                        fontSize: typography.fontSize.sm,
+                        fontSize: typography.fontSize.xs,
                         color: colors.textPrimary,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -367,36 +356,14 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                     >
                       {result.title}
                     </h4>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        marginTop: '2px',
-                      }}
-                    >
-                      <span style={{ fontSize: '11px', color: colors.textSecondary }}>
-                        {result.year}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '9px',
-                          padding: '1px 4px',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          borderRadius: '4px',
-                          color: colors.textTertiary,
-                          textTransform: 'uppercase',
-                          fontWeight: typography.fontWeight.bold,
-                        }}
-                      >
-                        {result.type || 'Movie'}
-                      </span>
-                    </div>
+                    <span style={{ fontSize: '10px', color: colors.textSecondary }}>
+                      {result.year} • {result.type || 'Movie'}
+                    </span>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    style={{ padding: '4px 12px', fontSize: '11px', height: '28px' }}
+                    style={{ padding: '2px 8px', fontSize: '10px', height: '24px' }}
                   >
                     Select
                   </Button>
@@ -405,6 +372,25 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
             </div>
           </div>
         )}
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: spacing.md,
+          }}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={isSearching || isRenaming}
+            style={{ color: colors.textTertiary }}
+          >
+            Cancel
+          </Button>
+        </div>
       </Card>
     </div>,
     document.body

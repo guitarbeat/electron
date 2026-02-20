@@ -435,8 +435,18 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
       <FixMatchDialog
         isOpen={!!movieToFix}
-        movieTitle={movieToFix?.title || ''}
+        movie={movieToFix}
         onClose={() => setMovieToFix(null)}
+        onRename={async (newName) => {
+          if (!movieToFix) return;
+          setToast({ message: `Renaming to "${newName}"...`, type: 'info' });
+          const success = await manualMetadataUpdate(movieToFix, { title: newName });
+          if (success) {
+            setToast({ message: `Renamed to "${newName}"!`, type: 'success' });
+          } else {
+            setToast({ message: 'Failed to rename.', type: 'error' });
+          }
+        }}
         onSelect={async (metadata) => {
           if (!movieToFix) return;
           setToast({ message: `Updating details for "${movieToFix.title}"...`, type: 'info' });
