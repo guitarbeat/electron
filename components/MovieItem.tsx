@@ -57,6 +57,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
 
@@ -72,6 +73,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const handleAction = (action: () => void) => {
     action();
     setIsBottomSheetOpen(false);
+  };
+
+  const handleToggleMemories = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setShowMemories(!showMemories);
   };
 
   const handleToggle = async (e?: React.MouseEvent) => {

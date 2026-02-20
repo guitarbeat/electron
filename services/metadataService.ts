@@ -1,3 +1,5 @@
+import { OMDB_PROXY_URL } from '../config/security';
+
 const env = (import.meta.env || {}) as any;
 const OMDB_API_KEY = env.VITE_OMDB_API_KEY || '';
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
