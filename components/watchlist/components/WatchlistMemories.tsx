@@ -119,7 +119,7 @@ export const WatchlistMemories: React.FC<WatchlistMemoriesProps> = ({
           onTogglePin={async (memory) => {
             await onTogglePin(memory.id);
           }}
-          movieFilterOptions={watchedMovies.map(m => ({ id: m.id, title: m.title }))}
+          movieFilterOptions={watchedMovies.map((m) => ({ id: m.id, title: m.title }))}
           activeMovieFilter={activeFilter}
           onActiveMovieFilterChange={onFilterChange}
           onJumpToMovie={onJumpToMovie}

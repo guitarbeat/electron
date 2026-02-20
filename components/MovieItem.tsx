@@ -675,7 +675,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               <MemoryComposer
                 watchedMovieOptions={[movie]}
                 selectedMovieId={movie.id}
-                onSelectedMovieIdChange={() => { }}
+                onSelectedMovieIdChange={() => {}}
                 currentUser={currentUser}
                 onSubmit={async (e) => {
                   e.preventDefault();
@@ -689,9 +689,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 isMobile={isMobile}
                 // Props required by interface but unused in single-movie context
                 note=""
-                onNoteChange={() => { }}
+                onNoteChange={() => {}}
                 isComposerOpen={true}
-                onComposerToggle={() => { }}
+                onComposerToggle={() => {}}
                 remainingChars={280}
                 error={null}
                 successMessage={null}
@@ -721,24 +721,26 @@ const MovieItem: React.FC<MovieItemProps> = ({
               // Props not needed for simple list but required by component
               movieFilterOptions={[]}
               activeMovieFilter={movie.id}
-              onActiveMovieFilterChange={() => { }}
+              onActiveMovieFilterChange={() => {}}
               sortMode="newest"
-              onSortModeChange={() => { }}
-              onShowMore={() => { }}
-              onShowLess={() => { }}
+              onSortModeChange={() => {}}
+              onShowMore={() => {}}
+              onShowLess={() => {}}
               visibleCount={100}
               isLoading={false}
               memoriesError={null}
-              onJumpToMovie={() => { }}
+              onJumpToMovie={() => {}}
             />
           ) : (
-            <p style={{
-              textAlign: 'center',
-              color: colors.textTertiary,
-              fontSize: typography.fontSize.xs,
-              fontStyle: 'italic',
-              padding: spacing.sm
-            }}>
+            <p
+              style={{
+                textAlign: 'center',
+                color: colors.textTertiary,
+                fontSize: typography.fontSize.xs,
+                fontStyle: 'italic',
+                padding: spacing.sm,
+              }}
+            >
               No memories yet. Add one above!
             </p>
           )}
