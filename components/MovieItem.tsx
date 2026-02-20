@@ -677,10 +677,12 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 selectedMovieId={movie.id}
                 onSelectedMovieIdChange={() => { }}
                 currentUser={currentUser}
-                isExpanded={true}
-                onSubmit={async (e, note) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  await handleAddMemory(note);
+                  const form = e.currentTarget as HTMLFormElement;
+                  const note = (form.elements.namedItem('note') as HTMLTextAreaElement).value;
+                  if (onAddMemory) await onAddMemory(note);
+                  form.reset();
                 }}
                 isSubmitting={isSubmittingMemory}
                 canSubmit={!isSubmittingMemory}
@@ -691,6 +693,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 isComposerOpen={true}
                 onComposerToggle={() => { }}
                 remainingChars={280}
+                error={null}
+                successMessage={null}
+                noteInputRef={React.createRef()}
               />
             </div>
           )}
