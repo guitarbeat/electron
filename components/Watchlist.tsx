@@ -17,11 +17,7 @@ import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import {
-  getMemoryMovieKey,
-  getFallbackMovieKey,
-  sortMemories
-} from './memories/memoryUtils';
+import { getMemoryMovieKey, getFallbackMovieKey, sortMemories } from './memories/memoryUtils';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
@@ -322,7 +318,21 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     [showGuestWarning]
   );
 
-
+  const handleAddMemory = useCallback(
+    async (movieId: string, title: string, note: string) => {
+      if (!currentUserRef.current) {
+        showGuestWarning();
+        return;
+      }
+      try {
+        await addMemory(movieId, title, currentUserRef.current, note);
+        setToast({ message: 'Memory added!', type: 'success' });
+      } catch (err: any) {
+        setToast({ message: `Failed to add memory: ${err.message}`, type: 'error' });
+      }
+    },
+    [addMemory, showGuestWarning]
+  );
 
   const handleEditMemory = useCallback(
     async (memoryId: string, note: string) => {
@@ -745,10 +755,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     animationDelay="0s"
                     layout="grid"
                     memories={movieMemories}
-                    onAddMemory={async (note) => {
-                      await addMemory(movie.id, movie.title, currentUser!, note);
-                      setToast({ message: 'Memory added!', type: 'success' });
-                    }}
+                    onAddMemory={handleAddMemory}
                     onUpdateMemory={handleEditMemory}
                     onDeleteMemory={handleDeleteMemory}
                     onTogglePin={handleTogglePin}
@@ -783,10 +790,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     animationDelay="0s"
                     layout="list"
                     memories={movieMemories}
-                    onAddMemory={async (note) => {
-                      await addMemory(movie.id, movie.title, currentUser!, note);
-                      setToast({ message: 'Memory added!', type: 'success' });
-                    }}
+                    onAddMemory={handleAddMemory}
                     onUpdateMemory={handleEditMemory}
                     onDeleteMemory={handleDeleteMemory}
                     onTogglePin={handleTogglePin}
@@ -820,8 +824,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               </div>
             )}
         </div>
-
-
       </div>
 
       <ConfirmDialog
