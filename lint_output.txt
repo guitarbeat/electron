@@ -1,0 +1,403 @@
+
+> collaborative-movie-watchlist@0.0.0 lint /app
+> eslint . --ext ts,tsx --report-unused-disable-directives
+
+
+/app/App.tsx
+  146:11  warning  Missing an explicit type attribute for button  react/button-has-type
+  162:11  warning  Missing an explicit type attribute for button  react/button-has-type
+  184:14  warning  Do not nest ternary expressions                no-nested-ternary
+
+/app/components/DashboardCards.tsx
+  228:11  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  228:31  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/app/components/FixMatchDialog.tsx
+   11:3   warning  'motion' is defined but never used                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   45:16  warning  Expected to return a value at the end of arrow function                                                                                                                                            consistent-return
+   99:5   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+   99:5   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  179:38  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                    react/no-unescaped-entities
+
+/app/components/MessageBoard.tsx
+    8:44  warning  'zIndex' is defined but never used                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  173:14  warning  'error' is already declared in the upper scope on line 58 column 5                                                                                                                                 @typescript-eslint/no-shadow
+  193:7   warning  Missing an explicit type attribute for button                                                                                                                                                      react/button-has-type
+  288:7   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  288:7   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  304:11  warning  Missing an explicit type attribute for button                                                                                                                                                      react/button-has-type
+  344:31  warning  Unexpected console statement                                                                                                                                                                       no-console
+
+/app/components/MessageItem.tsx
+    4:39  warning  'radius' is defined but never used                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   16:9   warning  Unexpected use of 'isNaN'. Use Number.isNaN instead https://github.com/airbnb/javascript#standard-library--isnan                                                                                   no-restricted-globals
+   16:37  warning  Unexpected use of 'isNaN'. Use Number.isNaN instead https://github.com/airbnb/javascript#standard-library--isnan                                                                                   no-restricted-globals
+   71:5   warning  iterators/generators require regenerator-runtime, which is too heavyweight for this guide to allow them. Separately, loops should be avoided in favor of array iterations                          no-restricted-syntax
+  189:7   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  270:15  warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  270:15  warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  322:15  warning  Missing an explicit type attribute for button                                                                                                                                                      react/button-has-type
+  358:9   warning  Missing an explicit type attribute for button                                                                                                                                                      react/button-has-type
+
+/app/components/MovieItem.tsx
+    2:29  error    '/app/types.ts' imported multiple times                          import/no-duplicates
+   13:30  error    '/app/types.ts' imported multiple times                          import/no-duplicates
+   59:30  warning  'setIsSubmittingMemory' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  107:24  warning  Do not nest ternary expressions                                  no-nested-ternary
+  108:24  warning  Do not nest ternary expressions                                  no-nested-ternary
+  119:22  warning  Do not nest ternary expressions                                  no-nested-ternary
+  161:12  warning  Do not nest ternary expressions                                  no-nested-ternary
+  549:23  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  549:42  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/app/components/PinDialog.tsx
+   12:3   warning  'motion' is defined but never used                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   52:15  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+   60:16  warning  Expected to return a value at the end of arrow function                                                                                                                                            consistent-return
+   67:16  warning  Expected to return a value at the end of arrow function                                                                                                                                            consistent-return
+  199:5   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  199:5   warning  Non-interactive elements should not be assigned mouse or keyboard event listeners                                                                                                                  jsx-a11y/no-noninteractive-element-interactions
+  234:7   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  234:7   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  294:28  warning  Do not use Array index in keys                                                                                                                                                                     react/no-array-index-key
+  300:27  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+  302:31  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+  378:18  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+
+/app/components/ProfileSelectionScreen.tsx
+  6:30  warning  'spacing' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/SuggestionForm.tsx
+  11:7   warning  'MAX_NAME_LENGTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  18:10  warning  'suggestedBy' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  48:19  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+/app/components/SuggestionList.tsx
+   35:7   warning  Unexpected console statement                                     no-console
+   46:7   warning  Unexpected console statement                                     no-console
+   52:48  warning  Expected to return a value at the end of arrow function          consistent-return
+   53:5   warning  Expected a default case                                          default-case
+  185:13  warning  Missing an explicit type attribute for button                    react/button-has-type
+  275:25  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  275:45  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/app/components/UserSelection.tsx
+  1:17  warning  'useEffect' is defined but never used   @typescript-eslint/no-unused-vars
+  6:19  warning  'typography' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/WatchlistPreview.tsx
+  43:7  warning  `tabIndex` should only be declared on interactive elements  jsx-a11y/no-noninteractive-tabindex
+
+/app/components/effects/Confetti.tsx
+  42:16  warning  Expected to return a value at the end of arrow function  consistent-return
+
+/app/components/extras/spin-wheel/SpinWheel.tsx
+   72:5   warning  Arrow function expected no return value                                                                                                                                                            consistent-return
+   93:31  warning  'e' is defined but never used. Allowed unused args must match /^_/u                                                                                                                                @typescript-eslint/no-unused-vars
+  104:5   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  104:5   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  124:7   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  124:7   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  156:29  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                    react/no-unescaped-entities
+  322:22  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+  372:28  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                    react/no-unescaped-entities
+  493:28  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                    react/no-unescaped-entities
+  646:33  warning  Unexpected use of 'isNaN'. Use Number.isNaN instead https://github.com/airbnb/javascript#standard-library--isnan                                                                                   no-restricted-globals
+
+/app/components/main/ExtrasHub.tsx
+  102:30  warning  Unexpected console statement  no-console
+
+/app/components/main/ProfileSheet.tsx
+  18:11  warning  'userHasPin' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  18:35  warning  'removeUserPin' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  20:19  warning  'setPinMode' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+/app/components/memories/MemoryList.tsx
+  404:28  warning  Unexpected confirm  no-alert
+
+/app/components/memories/MemoryNoteText.tsx
+  22:39  warning  Do not use Array index in keys  react/no-array-index-key
+  28:18  warning  Do not use Array index in keys  react/no-array-index-key
+
+/app/components/memories/memoryUtils.ts
+  142:25  warning  'sortMemories' was used before it was defined  @typescript-eslint/no-use-before-define
+
+/app/components/message-board/ChatWindow.tsx
+  57:11  warning  Missing an explicit type attribute for button  react/button-has-type
+
+/app/components/message-board/MessageInput.tsx
+   3:39  warning  'radius' is defined but never used        @typescript-eslint/no-unused-vars
+  73:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/message-board/MessageList.tsx
+   48:5   warning  Arrow function expected no return value        consistent-return
+  122:11  warning  Missing an explicit type attribute for button  react/button-has-type
+
+/app/components/quiz/AgreeDisagreeQuestion.tsx
+  48:17  warning  Missing radix parameter  radix
+
+/app/components/quiz/ImageChoiceQuestion.tsx
+  41:11  warning  Missing an explicit type attribute for button  react/button-has-type
+  42:18  warning  Do not use Array index in keys                 react/no-array-index-key
+
+/app/components/quiz/IntroScreen.tsx
+  90:56  warning  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/components/quiz/MultipleChoiceQuestion.tsx
+   3:8   warning  'Card' is defined but never used  @typescript-eslint/no-unused-vars
+  41:18  warning  Do not use Array index in keys    react/no-array-index-key
+
+/app/components/quiz/QuestionPreview.tsx
+   11:3   warning  'AgreeDisagreeQuestion' is defined but never used       @typescript-eslint/no-unused-vars
+  100:14  warning  'MultipleChoicePreview' was used before it was defined  @typescript-eslint/no-use-before-define
+  103:51  warning  'AgreeDisagreePreview' was used before it was defined   @typescript-eslint/no-use-before-define
+  106:14  warning  'ImageChoicePreview' was used before it was defined     @typescript-eslint/no-use-before-define
+  109:44  warning  'XYAxisPreview' was used before it was defined          @typescript-eslint/no-use-before-define
+  119:7   warning  Missing an explicit type attribute for button           react/button-has-type
+  120:14  warning  Do not use Array index in keys                          react/no-array-index-key
+  154:11  warning  Missing an explicit type attribute for button           react/button-has-type
+  197:14  warning  Do not use Array index in keys                          react/no-array-index-key
+
+/app/components/quiz/QuizEditor.tsx
+   91:11  warning  Unexpected alert                               no-alert
+   97:9   warning  Unexpected alert                               no-alert
+  229:9   warning  Missing an explicit type attribute for button  react/button-has-type
+  247:9   warning  Missing an explicit type attribute for button  react/button-has-type
+
+/app/components/quiz/QuizFlow.tsx
+   3:3  warning  'QuizQuestion' is defined but never used           @typescript-eslint/no-unused-vars
+  81:7  warning  'calculateResults' was used before it was defined  @typescript-eslint/no-use-before-define
+
+/app/components/quiz/ResultsScreen.tsx
+  5:39  warning  'shadows' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/quiz/ScoreSlider.tsx
+   51:23  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+   63:24  warning  Arrow function should not return assignment                                                                                                                                                        no-return-assign
+   69:24  warning  Arrow function should not return assignment                                                                                                                                                        no-return-assign
+   75:24  warning  Arrow function should not return assignment                                                                                                                                                        no-return-assign
+  204:17  warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  204:17  warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  251:30  warning  Do not use Array index in keys                                                                                                                                                                     react/no-array-index-key
+
+/app/components/quiz/XYAxisQuestion.tsx
+  159:13  warning  Elements with the ARIA role "slider" must have the following attributes defined: aria-valuenow  jsx-a11y/role-has-required-aria-props
+
+/app/components/quiz/editor/DescriptionsTab.tsx
+  58:13  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  58:21  warning  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/app/components/quiz/editor/ImageChoiceEditor.tsx
+  24:7   warning  Unexpected alert                                                                                                                                                                                   no-alert
+  29:7   warning  Unexpected alert                                                                                                                                                                                   no-alert
+  78:16  warning  Do not use Array index in keys                                                                                                                                                                     react/no-array-index-key
+  96:13  warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  96:13  warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+
+/app/components/quiz/editor/MultipleChoiceEditor.tsx
+  44:16  warning  Do not use Array index in keys  react/no-array-index-key
+
+/app/components/quiz/editor/QuestionsTab.tsx
+   61:10  warning  Unexpected confirm                                                                                                                                                                                 no-alert
+  202:15  warning  Missing an explicit type attribute for button                                                                                                                                                      react/button-has-type
+  377:17  warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  377:17  warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  486:22  warning  'OptionsSummary' was used before it was defined                                                                                                                                                    @typescript-eslint/no-use-before-define
+  489:22  warning  'ImageOptionsSummary' was used before it was defined                                                                                                                                               @typescript-eslint/no-use-before-define
+  492:22  warning  'AgreeDisagreeSummary' was used before it was defined                                                                                                                                              @typescript-eslint/no-use-before-define
+  494:45  warning  'XYAxisSummary' was used before it was defined                                                                                                                                                     @typescript-eslint/no-use-before-define
+  520:19  warning  Do not use Array index in keys                                                                                                                                                                     react/no-array-index-key
+  534:14  warning  Do not use Array index in keys                                                                                                                                                                     react/no-array-index-key
+
+/app/components/snake/SnakeGame.tsx
+  116:11  warning  'playEatSound' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  116:25  warning  'playGameOverSound' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  116:44  warning  'playMoveSound' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+/app/components/snake/useSnakeAudio.ts
+  9:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/ui/BottomSheet.tsx
+  28:16  warning  Expected to return a value at the end of arrow function  consistent-return
+
+/app/components/ui/Button.tsx
+   85:13  warning  The button type attribute must be specified by a static string or a trivial ternary expression  react/button-has-type
+  101:20  warning  Do not nest ternary expressions                                                                 no-nested-ternary
+  106:20  warning  Do not nest ternary expressions                                                                 no-nested-ternary
+
+/app/components/ui/Card.tsx
+   2:10  warning  'colors' is defined but never used                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   2:26  warning  'shadows' is defined but never used                                                                                                                                                                @typescript-eslint/no-unused-vars
+   2:35  warning  'borders' is defined but never used                                                                                                                                                                @typescript-eslint/no-unused-vars
+  17:3   warning  'variant' is assigned a value but never used                                                                                                                                                       @typescript-eslint/no-unused-vars
+  54:5   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  54:5   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+
+/app/components/ui/ConfirmDialog.tsx
+  30:16  warning  Expected to return a value at the end of arrow function                                                                                                                                            consistent-return
+  49:5   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  49:5   warning  Non-interactive elements should not be assigned mouse or keyboard event listeners                                                                                                                  jsx-a11y/no-noninteractive-element-interactions
+  70:7   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  70:7   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+
+/app/components/ui/IconButton.tsx
+  44:13  warning  The button type attribute must be specified by a static string or a trivial ternary expression  react/button-has-type
+
+/app/components/ui/Menu.tsx
+  38:7   warning  Visible, non-interactive elements with click handlers must have at least one keyboard listener                                                                                                     jsx-a11y/click-events-have-key-events
+  38:7   warning  Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element  jsx-a11y/no-static-element-interactions
+  86:21  warning  Do not nest ternary expressions                                                                                                                                                                    no-nested-ternary
+
+/app/components/watchlist/components/WatchlistContent.tsx
+   40:3   warning  'onMemoryClick' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  121:14  warning  Do not nest ternary expressions                                                  no-nested-ternary
+
+/app/components/watchlist/components/WatchlistMemories.tsx
+  40:3  warning  'onAddMemory' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/watchlist/hooks/useWatchlistData.ts
+  72:5  warning  Do not nest ternary expressions  no-nested-ternary
+
+/app/components/watchlist/hooks/useWatchlistState.ts
+  66:16  warning  Expected to return a value at the end of arrow function  consistent-return
+
+/app/components/watchlist/index.tsx
+   29:5   warning  'successMovieId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   34:5   warning  'setViewMode' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  137:21  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  161:19  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  197:21  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  227:21  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  299:21  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  357:25  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+/app/config/security.test.ts
+  7:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/context/UserContext.tsx
+  35:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/app/gistConfig.ts
+  9:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/hooks/useChatLogic.ts
+  15:16  warning  Expected to return a value at the end of arrow function  consistent-return
+  27:21  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  37:12  warning  Unexpected confirm                                       no-alert
+  41:21  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  52:21  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+
+/app/hooks/useMessages.ts
+  31:9  warning  Unexpected console statement  no-console
+
+/app/hooks/useMovies.ts
+   61:9   warning  Unexpected console statement                   no-console
+   86:11  warning  Unexpected console statement                   no-console
+   99:9   warning  Unexpected console statement                   no-console
+  118:11  warning  Unexpected console statement                   no-console
+  162:9   warning  Unexpected console statement                   no-console
+  192:12  warning  Unexpected confirm                             no-alert
+  213:9   warning  Unexpected console statement                   no-console
+  230:9   warning  Unexpected console statement                   no-console
+  245:7   warning  Unexpected console statement                   no-console
+  258:11  warning  Unexpected console statement                   no-console
+  265:7   warning  Async arrow function expected no return value  consistent-return
+  267:7   warning  Unexpected console statement                   no-console
+  285:5   warning  Unexpected console statement                   no-console
+  308:13  warning  Unexpected console statement                   no-console
+  316:9   warning  Unexpected console statement                   no-console
+  319:7   warning  Unexpected console statement                   no-console
+
+/app/hooks/usePins.ts
+   3:49  warning  'hasPin' is defined but never used  @typescript-eslint/no-unused-vars
+  15:7   warning  Unexpected console statement        no-console
+
+/app/hooks/usePolling.ts
+  118:12  warning  Unnecessary 'else' after 'return'  no-else-return
+
+/app/hooks/useQuiz.ts
+  36:9  warning  Unexpected console statement  no-console
+
+/app/hooks/useSpinWheel.ts
+   58:9   warning  Assignment to property of function parameter 'wheelRef'  no-param-reassign
+   59:9   warning  Assignment to property of function parameter 'wheelRef'  no-param-reassign
+  110:9   warning  Unexpected console statement                             no-console
+  134:11  warning  Unexpected console statement                             no-console
+  227:5   warning  Arrow function expected no return value                  consistent-return
+  294:9   warning  Unexpected console statement                             no-console
+
+/app/hooks/useUndoRedo.ts
+  57:27  warning  'currentState' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  75:27  warning  'currentState' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/services/PollingManager.test.ts
+  20:30  warning  Return values from promise executor functions cannot be read  no-promise-executor-return
+  24:30  warning  Return values from promise executor functions cannot be read  no-promise-executor-return
+  31:30  warning  Return values from promise executor functions cannot be read  no-promise-executor-return
+  40:20  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  41:20  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  50:30  warning  Return values from promise executor functions cannot be read  no-promise-executor-return
+  65:30  warning  Return values from promise executor functions cannot be read  no-promise-executor-return
+  67:19  warning  Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  84:30  warning  Return values from promise executor functions cannot be read  no-promise-executor-return
+
+/app/services/dailySpinService.ts
+  39:5  warning  Unexpected console statement  no-console
+  66:7  warning  Unexpected console statement  no-console
+  70:5  warning  Unexpected console statement  no-console
+
+/app/services/memoryService.ts
+   1:10  warning  'GIST_ID' is defined but never used  @typescript-eslint/no-unused-vars
+  28:5   warning  Unexpected console statement         no-console
+  52:7   warning  Unexpected console statement         no-console
+  56:5   warning  Unexpected console statement         no-console
+
+/app/services/messageService.ts
+  32:5  warning  Unexpected console statement  no-console
+  56:7  warning  Unexpected console statement  no-console
+  60:5  warning  Unexpected console statement  no-console
+
+/app/services/metadataService.ts
+  1:40  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  3:7   warning  'OMDB_API_KEY' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  4:7   warning  'OMDB_BASE_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/services/movieService.ts
+  23:7  warning  Unexpected console statement  no-console
+  33:5  warning  Unexpected console statement  no-console
+  58:7  warning  Unexpected console statement  no-console
+  62:5  warning  Unexpected console statement  no-console
+
+/app/services/pinService.ts
+  63:5  warning  Unexpected console statement  no-console
+  97:5  warning  Unexpected console statement  no-console
+
+/app/services/quizService.ts
+   44:7  warning  Unexpected console statement  no-console
+   64:7  warning  Unexpected console statement  no-console
+   77:5  warning  Unexpected console statement  no-console
+  102:7  warning  Unexpected console statement  no-console
+  106:5  warning  Unexpected console statement  no-console
+
+/app/services/suggestionService.ts
+   1:10  warning  'GIST_ID' is defined but never used  @typescript-eslint/no-unused-vars
+  28:5   warning  Unexpected console statement         no-console
+  52:7   warning  Unexpected console statement         no-console
+  56:5   warning  Unexpected console statement         no-console
+
+/app/verification/pin_benchmark.ts
+   7:23  warning  'input' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   7:49  warning  'init' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  10:34  warning  Return values from promise executor functions cannot be read             no-promise-executor-return
+  29:3   warning  Unexpected console statement                                             no-console
+  43:3   warning  Unexpected console statement                                             no-console
+  44:3   warning  Unexpected console statement                                             no-console
+  45:3   warning  Unexpected console statement                                             no-console
+  46:3   warning  Unexpected console statement                                             no-console
+  49:22  warning  Unexpected console statement                                             no-console
+
+✖ 254 problems (2 errors, 252 warnings)
+  1 error and 1 warning potentially fixable with the `--fix` option.
+
+ ELIFECYCLE  Command failed with exit code 1.
