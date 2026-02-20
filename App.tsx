@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useUser } from './context/UserContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
-import Watchlist from './components/Watchlist';
+import Watchlist from './components/watchlist';
 import UserSelection from './components/UserSelection';
 import MessageBoard from './components/MessageBoard';
 import QuizFlow from './components/quiz/QuizFlow';
