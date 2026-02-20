@@ -48,6 +48,24 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
   isSubmitting,
   movieResultsRef,
 }) => {
+  const renderMovieItem = (movie: Movie, index?: number) => {
+    const memorySummary = movieMemorySummaries.get(movie.id);
+    return (
+      <MovieItem
+        key={movie.id}
+        movie={movie}
+        currentUser={currentUser}
+        onToggle={onToggleWatched}
+        onDelete={onDeleteMovie}
+        onFixMatch={onFixMatch}
+        animationDelay={index !== undefined ? `${index * 0.05}s` : '0s'}
+        layout={viewMode}
+        memories={memorySummary?.latest ? [memorySummary.latest] : []}
+        isHighlighted={highlightMovieId === movie.id}
+      />
+    );
+  };
+
   return (
     <div
       ref={movieResultsRef}
@@ -69,23 +87,7 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
             />
           ))}
 
-          {filteredMovies.map((movie) => {
-            const memorySummary = movieMemorySummaries.get(movie.id);
-            return (
-              <MovieItem
-                key={movie.id}
-                movie={movie}
-                currentUser={currentUser}
-                onToggle={onToggleWatched}
-                onDelete={onDeleteMovie}
-                onFixMatch={onFixMatch}
-                animationDelay="0s"
-                layout="grid"
-                memories={memorySummary?.latest ? [memorySummary.latest] : []}
-                isHighlighted={highlightMovieId === movie.id}
-              />
-            );
-          })}
+          {filteredMovies.map((movie) => renderMovieItem(movie))}
         </MasonryGrid>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
@@ -100,23 +102,7 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
               />
             ))}
 
-          {filteredMovies.map((movie, index) => {
-            const memorySummary = movieMemorySummaries.get(movie.id);
-            return (
-              <MovieItem
-                key={movie.id}
-                movie={movie}
-                currentUser={currentUser}
-                onToggle={onToggleWatched}
-                onDelete={onDeleteMovie}
-                onFixMatch={onFixMatch}
-                animationDelay={`${index * 0.05}s`}
-                layout="list"
-                memories={memorySummary?.latest ? [memorySummary.latest] : []}
-                isHighlighted={highlightMovieId === movie.id}
-              />
-            );
-          })}
+          {filteredMovies.map((movie, index) => renderMovieItem(movie, index))}
         </div>
       )}
 
