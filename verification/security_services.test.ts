@@ -61,8 +61,7 @@ test('security: extractSafeMetadata should sanitize fields', async () => {
     director: 'Dirty\x07Director',
   };
 
-  // @ts-expect-error - dirtyMetadata is incomplete MetadataResult
-  const result = extractSafeMetadata(dirtyMetadata);
+  const result = extractSafeMetadata(dirtyMetadata as any);
 
   if (result.plot.includes('\x07')) {
     console.log('FAIL: Plot contains control characters');
