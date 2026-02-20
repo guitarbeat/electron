@@ -4,6 +4,7 @@ import Card from '../ui/Card';
 import { useUser } from '../../context/UserContext';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import { colors, radius, spacing, typography, shadows } from '../../design-system/tokens';
+import { useSnakeAudio } from './useSnakeAudio';
 import {
   createInitialGameState,
   enqueueDirection,
@@ -111,6 +112,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
+  const [shake, setShake] = useState(0);
   const { playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
   const isGameVisible = isEmbedded || !isMinimized;
   const canvasRef = useRef<HTMLCanvasElement>(null);

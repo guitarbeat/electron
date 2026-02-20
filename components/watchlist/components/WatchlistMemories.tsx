@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
-import MemoryWall from '../../MemoryWall';
+import MemoryList from '../../memories/MemoryList';
 import { SharedMemory, Movie, User } from '../../../types';
 import { colors, spacing, typography } from '../../../design-system/tokens';
 
@@ -104,19 +104,32 @@ export const WatchlistMemories: React.FC<WatchlistMemoriesProps> = ({
       </Card>
 
       {!isCollapsed && (
-        <MemoryWall
-          watchedMovies={watchedMovies}
-          currentUser={currentUser}
+        <MemoryList
           memories={memories}
-          isLoading={isLoading}
-          memoriesError={error}
-          addMemory={onAddMemory}
-          updateMemory={onUpdateMemory}
-          deleteMemory={onDeleteMemory}
-          toggleMemoryPin={onTogglePin}
+          visibleMemories={memories}
+          sortedMemories={memories}
+          currentUser={currentUser}
+          isMobile={isMobile}
+          onEditMemory={async (memory, note) => {
+            await onUpdateMemory(memory.id, { note });
+          }}
+          onDeleteMemory={async (memory) => {
+            await onDeleteMemory(memory.id);
+          }}
+          onTogglePin={async (memory) => {
+            await onTogglePin(memory.id);
+          }}
+          movieFilterOptions={watchedMovies.map(m => ({ id: m.id, title: m.title }))}
           activeMovieFilter={activeFilter}
           onActiveMovieFilterChange={onFilterChange}
           onJumpToMovie={onJumpToMovie}
+          sortMode="newest"
+          onSortModeChange={() => {}}
+          onShowMore={() => {}}
+          onShowLess={() => {}}
+          visibleCount={100}
+          isLoading={isLoading}
+          memoriesError={error}
         />
       )}
     </div>

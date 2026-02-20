@@ -79,12 +79,9 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
                 onToggle={onToggleWatched}
                 onDelete={onDeleteMovie}
                 onFixMatch={onFixMatch}
-                onMemoryClick={onMemoryClick}
                 animationDelay="0s"
                 layout="grid"
-                memoryCount={memorySummary?.count}
-                memoryPreview={memorySummary?.latest?.note}
-                memoryAuthor={memorySummary?.latest?.author}
+                memories={memorySummary?.latest ? [memorySummary.latest] : []}
                 isHighlighted={highlightMovieId === movie.id}
               />
             );
@@ -113,12 +110,9 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
                 onToggle={onToggleWatched}
                 onDelete={onDeleteMovie}
                 onFixMatch={onFixMatch}
-                onMemoryClick={onMemoryClick}
                 animationDelay={`${index * 0.05}s`}
                 layout="list"
-                memoryCount={memorySummary?.count}
-                memoryPreview={memorySummary?.latest?.note}
-                memoryAuthor={memorySummary?.latest?.author}
+                memories={memorySummary?.latest ? [memorySummary.latest] : []}
                 isHighlighted={highlightMovieId === movie.id}
               />
             );
