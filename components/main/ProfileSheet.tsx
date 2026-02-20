@@ -6,6 +6,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import PinDialog from '../PinDialog';
 import UserSelection from '../UserSelection';
+import { spacing, colors, radius, typography } from '../../design-system/tokens';
 
 interface ProfileSheetProps {
   isOpen: boolean;

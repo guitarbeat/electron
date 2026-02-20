@@ -17,11 +17,7 @@ import Confetti from './effects/Confetti';
 import { SuggestionItemCard } from './DashboardCards';
 import { spacing, typography, colors, shadows, radius } from '../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import {
-  getMemoryMovieKey,
-  getFallbackMovieKey,
-  sortMemories
-} from './memories/memoryUtils';
+import { getMemoryMovieKey, getFallbackMovieKey, sortMemories } from './memories/memoryUtils';
 
 type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
 type SortMode = 'recent' | 'title' | 'year';
@@ -321,8 +317,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     },
     [showGuestWarning]
   );
-
-
 
   const handleEditMemory = useCallback(
     async (memoryId: string, note: string) => {
@@ -624,6 +618,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           }}
         >
           <div
+            role="tablist"
+            aria-label="Filter movies"
             style={{
               display: 'grid',
               gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))',
@@ -640,6 +636,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             ).map(([tabValue, label]) => (
               <Button
                 key={tabValue}
+                role="tab"
+                id={`tab-${tabValue}`}
+                aria-selected={contentTab === tabValue}
+                aria-controls="movie-list-panel"
                 variant={contentTab === tabValue ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => setContentTab(tabValue)}
@@ -699,6 +699,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             <Button
               type="button"
               size="sm"
+              aria-pressed={showMemoriesOnly}
               variant={showMemoriesOnly ? 'secondary' : 'ghost'}
               onClick={() => setShowMemoriesOnly((prev) => !prev)}
               style={{
@@ -713,12 +714,17 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </Card>
 
         <div
+          role="tabpanel"
+          id="movie-list-panel"
+          aria-labelledby={`tab-${contentTab}`}
           ref={movieResultsRef}
           style={{
             opacity: isSubmitting ? 0.5 : 1,
             pointerEvents: isSubmitting ? 'none' : 'auto',
             transition: 'opacity 0.2s ease',
+            outline: 'none',
           }}
+          tabIndex={-1}
         >
           {viewMode === 'grid' ? (
             <MasonryGrid>
@@ -820,8 +826,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               </div>
             )}
         </div>
-
-
       </div>
 
       <ConfirmDialog
