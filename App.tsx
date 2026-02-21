@@ -101,7 +101,7 @@ const App: React.FC = () => {
           </div>
         );
       case 'messages':
-        return <MessageBoard mode="full" />;
+        return <MessageBoard mode="embedded" />;
       default:
         return <Watchlist />;
     }
