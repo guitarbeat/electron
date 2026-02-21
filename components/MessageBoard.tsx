@@ -67,9 +67,13 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [lastViewedCount, setLastViewedCount] = useState(0);
   const isEmbedded = mode === 'embedded';
-  const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() =>
-    getDefaultBubblePosition(isMobile)
-  );
+  const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => {
+    if (typeof window === 'undefined') {
+      return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+    }
+    const isMobileWidth = window.innerWidth < 640;
+    return getDefaultBubblePosition(isMobileWidth);
+  });
   const [isDraggingBubble, setIsDraggingBubble] = useState(false);
   const dragStateRef = useRef<{
     pointerId: number;
@@ -89,6 +93,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     if (!hasCustomPositionRef.current) {
       setBubblePosition(getDefaultBubblePosition(isMobile));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEmbedded, isMobile]);
 
   useEffect(() => {
@@ -218,7 +223,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
           zIndex: FLOATING_Z_INDEX,
           transition: isDraggingBubble
             ? 'none'
-            : `transform ${motion.duration.fast} ${motion.easing.easeInOut}`,
+            : `top ${motion.duration.fast} ${motion.easing.easeInOut}, left ${motion.duration.fast} ${motion.easing.easeInOut}, transform ${motion.duration.fast} ${motion.easing.easeInOut}`,
           transform: isDraggingBubble ? 'scale(1.04)' : 'scale(1)',
           padding: 0,
           touchAction: 'none',
