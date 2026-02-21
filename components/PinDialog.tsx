@@ -91,7 +91,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
         setError('Incorrect PIN');
         setIsShaking(true);
         setPin('');
-        inputRef.current?.focus();
       }
     } else if (mode === 'set') {
       if (step === 'new') {
@@ -102,13 +101,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
         }
         setStep('confirm');
         setError('');
-        setTimeout(() => inputRef.current?.focus(), 100);
       } else if (step === 'confirm') {
         if (confirmPin !== newPin) {
           setError('PINs do not match');
           setIsShaking(true);
           setConfirmPin('');
-          inputRef.current?.focus();
           return;
         }
         await onSubmit(newPin);
@@ -125,12 +122,10 @@ const PinDialog: React.FC<PinDialogProps> = ({
           setError('Incorrect current PIN');
           setIsShaking(true);
           setPin('');
-          inputRef.current?.focus();
           return;
         }
         setStep('new');
         setError('');
-        setTimeout(() => inputRef.current?.focus(), 100);
       } else if (step === 'new') {
         if (newPin.length !== 4) {
           setError('PIN must be 4 digits');
@@ -139,17 +134,33 @@ const PinDialog: React.FC<PinDialogProps> = ({
         }
         setStep('confirm');
         setError('');
-        setTimeout(() => inputRef.current?.focus(), 100);
       } else if (step === 'confirm') {
         if (confirmPin !== newPin) {
           setError('PINs do not match');
           setIsShaking(true);
           setConfirmPin('');
-          inputRef.current?.focus();
           return;
         }
         await onSubmit(pin, newPin);
       }
+    }
+  };
+
+  const handleNumberClick = (num: number) => {
+    const setter = getCurrentSetter();
+    const value = getCurrentValue();
+    if (value.length < 4) {
+      setter(value + num.toString());
+      setError('');
+    }
+  };
+
+  const handleBackspace = () => {
+    const setter = getCurrentSetter();
+    const value = getCurrentValue();
+    if (value.length > 0) {
+      setter(value.slice(0, -1));
+      setError('');
     }
   };
 
@@ -282,7 +293,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   display: 'flex',
                   gap: spacing.sm,
                   justifyContent: 'center',
-                  marginBottom: spacing.xs,
+                  marginBottom: spacing.md,
                   animation: isShaking ? 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
                 }}
               >
@@ -317,6 +328,52 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     >
                       {val ? '•' : ''}
                     </div>
+                  );
+                })}
+              </div>
+
+              {/* Numeric Keypad */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: spacing.sm,
+                  marginBottom: spacing.md,
+                }}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'].map((num, i) => {
+                  if (num === '') return <div key={`empty-${i}`} />;
+                  if (num === 'del') {
+                    return (
+                      <Button
+                        key="del"
+                        variant="ghost"
+                        onClick={handleBackspace}
+                        style={{
+                          height: '48px',
+                          fontSize: '14px',
+                          color: colors.textSecondary,
+                        }}
+                      >
+                        ⌫
+                      </Button>
+                    );
+                  }
+                  return (
+                    <Button
+                      key={num}
+                      variant="ghost"
+                      onClick={() => handleNumberClick(num as number)}
+                      style={{
+                        height: '48px',
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                      }}
+                    >
+                      {num}
+                    </Button>
                   );
                 })}
               </div>
