@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
 import Input from '../../ui/Input';
-import { PlusIcon, Spinner } from '../../icons';
+import { PlusIcon } from '../../icons';
 import { SortMode, ContentTab } from '../types';
 import { colors, spacing, radius, typography } from '../../../design-system/tokens';
 import { useSuggestions } from '../../../hooks/useSuggestions';
@@ -97,6 +97,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             variant={contentTab === tabValue ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => setContentTab(tabValue)}
+            aria-current={contentTab === tabValue ? 'true' : undefined}
             style={{
               width: '100%',
               justifyContent: 'center',
@@ -139,10 +140,12 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
               size="sm"
               disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
+              loadingText=""
               style={{ height: '44px', minWidth: '44px', padding: 0 }}
+              aria-label="Add or Suggest"
               title="Add or Suggest"
             >
-              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+              <PlusIcon />
             </Button>
           )}
         </form>
@@ -172,6 +175,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
           size="sm"
           variant={showMemoriesOnly ? 'secondary' : 'ghost'}
           onClick={() => setShowMemoriesOnly((prev) => !prev)}
+          aria-pressed={showMemoriesOnly}
           style={{
             minHeight: '44px',
             border: `1px solid ${colors.borderSecondary}40`,
