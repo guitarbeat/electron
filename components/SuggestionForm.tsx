@@ -64,7 +64,10 @@ const SuggestionForm: React.FC = () => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}
+      >
         <div>
           <label
             htmlFor="suggestion-title"
