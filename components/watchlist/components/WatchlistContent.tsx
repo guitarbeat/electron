@@ -26,7 +26,7 @@ interface WatchlistContentProps {
   searchQuery: string;
   isSubmitting: boolean;
   movieResultsRef: React.RefObject<HTMLDivElement>;
-  onAddMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<SharedMemory>;
+  onAddMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<any>;
   onUpdateMemory: (memoryId: string, updates: { note?: string }) => Promise<void>;
   onDeleteMemory: (memoryId: string) => Promise<void>;
   onToggleMemoryPin: (memoryId: string) => Promise<void>;
@@ -71,8 +71,12 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
         animationDelay={index !== undefined ? `${index * 0.05}s` : '0s'}
         layout={viewMode}
         memories={movieMemories}
-        onAddMemory={(note) => onAddMemory(movie.id, movie.title, currentUser || 'Anonymous', note)}
-        onUpdateMemory={onUpdateMemory}
+        onAddMemory={async (note) => {
+          await onAddMemory(movie.id, movie.title, currentUser || 'Anonymous', note);
+        }}
+        onUpdateMemory={async (memoryId, note) => {
+          await onUpdateMemory(memoryId, { note });
+        }}
         onDeleteMemory={onDeleteMemory}
         onTogglePin={onToggleMemoryPin}
         isHighlighted={highlightMovieId === movie.id}

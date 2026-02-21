@@ -5,7 +5,6 @@ import FixMatchDialog from '../FixMatchDialog';
 import Confetti from '../effects/Confetti';
 import { WatchlistControls } from './components/WatchlistControls';
 import { WatchlistContent } from './components/WatchlistContent';
-import { WatchlistMemories } from './components/WatchlistMemories';
 import { useWatchlistState } from './hooks/useWatchlistState';
 import { useWatchlistData } from './hooks/useWatchlistData';
 import { WatchlistProps } from './types';
@@ -260,10 +259,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       setHighlightMovieId(targetMovie.id);
 
       requestAnimationFrame(() => {
-        movieResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-
-      setTimeout(() => {
         const el = movieResultsRef.current?.querySelector(`[data-movie-id="${targetMovie.id}"]`);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -276,7 +271,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             { duration: 1000, easing: 'ease-out' }
           );
         }
-      }, 300);
+      });
 
       setTimeout(() => setHighlightMovieId(null), 2000);
     },
@@ -393,8 +388,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         movieResultsRef={movieResultsRef}
         onAddMemory={addMemory}
         onUpdateMemory={handleUpdateMemory}
-        onDeleteMemory={deleteMemoryRecord}
-        onToggleMemoryPin={toggleMemoryPin}
+        onDeleteMemory={async (id) => {
+          await deleteMemoryRecord(id);
+        }}
+        onToggleMemoryPin={async (id) => {
+          await toggleMemoryPin(id);
+        }}
         memories={memories}
       />
 
