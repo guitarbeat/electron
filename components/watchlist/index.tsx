@@ -391,29 +391,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         searchQuery={searchQuery}
         isSubmitting={isSubmitting}
         movieResultsRef={movieResultsRef}
-      />
-
-      <WatchlistMemories
-        isCollapsed={isMemoryWallCollapsed}
-        setIsCollapsed={setIsMemoryWallCollapsed}
-        memories={memories}
-        watchedMovies={watchedMovies}
-        currentUser={currentUser}
-        isLoading={isMemoriesLoading}
-        error={memoriesError}
         onAddMemory={addMemory}
         onUpdateMemory={handleUpdateMemory}
-        onDeleteMemory={async (id) => {
-          await deleteMemoryRecord(id);
-        }}
-        onTogglePin={async (id) => {
-          await toggleMemoryPin(id);
-        }}
-        activeFilter={activeMemoryFilter}
-        onFilterChange={setActiveMemoryFilter}
-        onJumpToMovie={handleJumpFromMemory}
-        memorySectionRef={memorySectionRef}
-        isMobile={isMobile}
+        onDeleteMemory={deleteMemoryRecord}
+        onToggleMemoryPin={toggleMemoryPin}
+        memories={memories}
       />
 
       <ConfirmDialog

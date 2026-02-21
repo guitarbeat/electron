@@ -26,6 +26,11 @@ interface WatchlistContentProps {
   searchQuery: string;
   isSubmitting: boolean;
   movieResultsRef: React.RefObject<HTMLDivElement>;
+  onAddMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<SharedMemory>;
+  onUpdateMemory: (memoryId: string, updates: { note?: string }) => Promise<void>;
+  onDeleteMemory: (memoryId: string) => Promise<void>;
+  onToggleMemoryPin: (memoryId: string) => Promise<void>;
+  memories: SharedMemory[];
 }
 
 export const WatchlistContent: React.FC<WatchlistContentProps> = ({
@@ -47,9 +52,14 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
   searchQuery,
   isSubmitting,
   movieResultsRef,
+  onAddMemory,
+  onUpdateMemory,
+  onDeleteMemory,
+  onToggleMemoryPin,
+  memories,
 }) => {
   const renderMovieItem = (movie: Movie, index?: number) => {
-    const memorySummary = movieMemorySummaries.get(movie.id);
+    const movieMemories = memories.filter(m => m.movieId === movie.id || m.movieTitle.toLowerCase() === movie.title.toLowerCase());
     return (
       <MovieItem
         key={movie.id}
@@ -60,7 +70,11 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
         onFixMatch={onFixMatch}
         animationDelay={index !== undefined ? `${index * 0.05}s` : '0s'}
         layout={viewMode}
-        memories={memorySummary?.latest ? [memorySummary.latest] : []}
+        memories={movieMemories}
+        onAddMemory={(note) => onAddMemory(movie.id, movie.title, currentUser || 'Anonymous', note)}
+        onUpdateMemory={onUpdateMemory}
+        onDeleteMemory={onDeleteMemory}
+        onTogglePin={onToggleMemoryPin}
         isHighlighted={highlightMovieId === movie.id}
       />
     );
