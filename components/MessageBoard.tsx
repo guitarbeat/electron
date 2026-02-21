@@ -156,18 +156,22 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     setBubblePosition(clampBubblePosition(nextX, nextY));
   };
 
+  const handleDragEnd = () => {
+    if (didDragRef.current) {
+      hasCustomPositionRef.current = true;
+    }
+    setIsDraggingBubble(false);
+    dragStateRef.current = null;
+    didDragRef.current = false;
+  };
+
   const finishDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
     const dragState = dragStateRef.current;
     if (!dragState || dragState.pointerId !== event.pointerId) {
       return;
     }
 
-    if (didDragRef.current) {
-      hasCustomPositionRef.current = true;
-    }
-
-    setIsDraggingBubble(false);
-    dragStateRef.current = null;
+    handleDragEnd();
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch (error) {
@@ -179,7 +183,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     if (didDragRef.current) {
       event.preventDefault();
       event.stopPropagation();
-      didDragRef.current = false;
       return;
     }
 
@@ -267,10 +270,10 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
             }
           : {
               position: 'fixed',
-              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-              left: isMobile ? spacing.md : spacing.lg,
-              right: isMobile ? spacing.md : 'auto',
-              width: isMobile ? 'auto' : 'min(420px, 90vw)',
+              top: `${bubblePosition.y}px`,
+              left: isMobile ? `${bubblePosition.x}px` : 'auto',
+              right: isMobile ? 'auto' : `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)`,
+              width: isMobile ? 'calc(100vw - 32px)' : 'min(420px, 90vw)',
               maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
               display: 'flex',
               flexDirection: 'column',
@@ -281,6 +284,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
               border: `1px solid ${colors.accentMuted}`,
               overflow: 'hidden',
               animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              transformOrigin: 'bottom right',
             }
       }
       className="message-board-container"
