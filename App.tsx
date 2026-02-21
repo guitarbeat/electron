@@ -207,7 +207,6 @@ const App: React.FC = () => {
             { id: 'spin', label: 'Spin' },
             { id: 'games', label: 'Games' },
             { id: 'quiz', label: 'Quiz' },
-            { id: 'messages', label: 'Chat' },
           ].map((tab) => (
             <button
               key={tab.id}
