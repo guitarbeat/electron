@@ -3,7 +3,7 @@ import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata, MetadataResult } from '../services/metadataService';
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH } from '../config/security';
+import { sanitizeInput, isValidUrl, MAX_MOVIE_TITLE_LENGTH } from '../config/security';
 
 // Helper to control concurrency when processing array items
 const concurrentMap = async <T, R>(
@@ -28,7 +28,7 @@ const concurrentMap = async <T, R>(
 export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
-  if (posterUrl) result.posterUrl = posterUrl;
+  if (posterUrl && isValidUrl(posterUrl)) result.posterUrl = posterUrl;
   if (year) result.year = year;
   if (plot) result.plot = sanitizeInput(plot);
   if (imdbRating) result.imdbRating = imdbRating;
