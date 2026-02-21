@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
 import Input from '../../ui/Input';
+import { PlusIcon, Spinner } from '../../icons';
 import { SortMode, ContentTab } from '../types';
 import { colors, spacing, radius, typography } from '../../../design-system/tokens';
+import { useSuggestions } from '../../../hooks/useSuggestions';
 
 interface WatchlistControlsProps {
   contentTab: ContentTab;
@@ -17,6 +19,8 @@ interface WatchlistControlsProps {
   setShowMemoriesOnly: (show: boolean | ((prev: boolean) => boolean)) => void;
   memoriesCount: number;
   isMobile: boolean;
+  onAddMovie?: (title: string) => void;
+  isAdding?: boolean;
 }
 
 const TABS: { label: string; value: ContentTab }[] = [
@@ -38,7 +42,35 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
   setShowMemoriesOnly,
   memoriesCount,
   isMobile,
+  onAddMovie,
+  isAdding = false,
 }) => {
+  const { addSuggestion } = useSuggestions();
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+
+  const handleAddAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    if (onAddMovie) {
+      onAddMovie(searchQuery.trim());
+      setSearchQuery('');
+    } else {
+      setIsSuggesting(true);
+      setSuggestionError(null);
+      try {
+        await addSuggestion(searchQuery.trim(), 'Anonymous');
+        setSearchQuery('');
+        alert('Movie suggested successfully!');
+      } catch (err: any) {
+        setSuggestionError(err.message || 'Failed to suggest');
+      } finally {
+        setIsSuggesting(false);
+      }
+    }
+  };
+
   return (
     <Card
       variant="elevated"
@@ -86,16 +118,34 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
           alignItems: isMobile ? 'stretch' : 'center',
         }}
       >
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search movies and suggestions..."
-          aria-label="Search movies and suggestions"
-          style={{
-            height: '44px',
-            flex: 1,
-          }}
-        />
+        <form 
+          onSubmit={handleAddAction}
+          style={{ flex: 1, display: 'flex', gap: spacing.xs, alignItems: 'center' }}
+        >
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search or add a movie..."
+            aria-label="Search or add a movie"
+            style={{
+              height: '44px',
+              flex: 1,
+            }}
+          />
+          {searchQuery.trim() && (
+            <Button
+              type="submit"
+              variant="secondary"
+              size="sm"
+              disabled={isAdding || isSuggesting}
+              isLoading={isAdding || isSuggesting}
+              style={{ height: '44px', minWidth: '44px', padding: 0 }}
+              title="Add or Suggest"
+            >
+              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+            </Button>
+          )}
+        </form>
         <select
           value={sortMode}
           onChange={(e) => setSortMode(e.target.value as SortMode)}
@@ -131,6 +181,11 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
           Memories only ({memoriesCount})
         </Button>
       </div>
+      {suggestionError && (
+        <div style={{ color: colors.error, fontSize: '12px', marginTop: spacing.xs }}>
+          {suggestionError}
+        </div>
+      )}
     </Card>
   );
 };

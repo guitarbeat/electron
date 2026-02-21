@@ -3,7 +3,6 @@ import { useUser } from '../../context/UserContext';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import FixMatchDialog from '../FixMatchDialog';
 import Confetti from '../effects/Confetti';
-import { WatchlistHeader } from './components/WatchlistHeader';
 import { WatchlistControls } from './components/WatchlistControls';
 import { WatchlistContent } from './components/WatchlistContent';
 import { WatchlistMemories } from './components/WatchlistMemories';
@@ -333,14 +332,20 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      <WatchlistHeader
-        newMovieTitle={newMovieTitle}
-        setNewMovieTitle={setNewMovieTitle}
-        isAdding={isAdding}
-        onAddMovie={async (e) => {
-          e.preventDefault();
-          const title = newMovieTitle.trim();
-          if (!title || isAdding) return;
+      <WatchlistControls
+        contentTab={contentTab}
+        setContentTab={setContentTab}
+        tabCounts={tabCounts}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        showMemoriesOnly={showMemoriesOnly}
+        setShowMemoriesOnly={setShowMemoriesOnly}
+        memoriesCount={memories.length}
+        isMobile={isMobile}
+        onAddMovie={async (title) => {
+          if (!title) return;
           setIsAdding(true);
           try {
             if (currentUser) {
@@ -351,7 +356,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               setToast({ message: `"${title}" suggested for review!`, type: 'success' });
               setContentTab('suggestions');
             }
-            setNewMovieTitle('');
             setSuccessMovieId(title);
             setTimeout(() => setSuccessMovieId(null), 2000);
           } catch (err: any) {
@@ -365,20 +369,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             setIsAdding(false);
           }
         }}
-      />
-
-      <WatchlistControls
-        contentTab={contentTab}
-        setContentTab={setContentTab}
-        tabCounts={tabCounts}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        sortMode={sortMode}
-        setSortMode={setSortMode}
-        showMemoriesOnly={showMemoriesOnly}
-        setShowMemoriesOnly={setShowMemoriesOnly}
-        memoriesCount={memories.length}
-        isMobile={isMobile}
+        isAdding={isAdding}
       />
 
       <WatchlistContent
