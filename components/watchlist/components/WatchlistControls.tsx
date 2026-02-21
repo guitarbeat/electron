@@ -52,7 +52,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
   const handleAddAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    
+
     if (onAddMovie) {
       onAddMovie(searchQuery.trim());
       setSearchQuery('');
@@ -118,7 +118,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
           alignItems: isMobile ? 'stretch' : 'center',
         }}
       >
-        <form 
+        <form
           onSubmit={handleAddAction}
           style={{ flex: 1, display: 'flex', gap: spacing.xs, alignItems: 'center' }}
         >

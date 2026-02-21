@@ -93,7 +93,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     if (!hasCustomPositionRef.current) {
       setBubblePosition(getDefaultBubblePosition(isMobile));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEmbedded, isMobile]);
 
   useEffect(() => {
