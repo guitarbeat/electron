@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useUser } from './context/UserContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/watchlist';
 import UserSelection from './components/UserSelection';
 import MessageBoard from './components/MessageBoard';
-import QuizFlow from './components/quiz/QuizFlow';
-import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
-import ExtrasHub from './components/main/ExtrasHub';
 import { spacing, colors, typography, layout } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
+import { Spinner } from './components/icons';
+
+// Lazy load heavy components
+const QuizFlow = React.lazy(() => import('./components/quiz/QuizFlow'));
+const QuizEditor = React.lazy(() => import('./components/quiz/QuizEditor'));
+const ExtrasHub = React.lazy(() => import('./components/main/ExtrasHub'));
+
+const LoadingFallback = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', padding: spacing.xl }}>
+    <Spinner />
+  </div>
+);
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -243,7 +252,7 @@ const App: React.FC = () => {
           ))}
         </div>
 
-        {renderContent()}
+        <Suspense fallback={<LoadingFallback />}>{renderContent()}</Suspense>
       </main>
 
       <MessageBoard mode="floating" />
