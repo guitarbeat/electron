@@ -376,12 +376,16 @@ const SpinWheel: React.FC<{
               )}
             </Card>
 
-            <div
-              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
-              role="img"
-              aria-label="Movie selection wheel"
-              {...(hasSpunToday ? {} : getPointerHandlers())}
-            >
+          <div
+            className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
+            role="img"
+            aria-label="Movie selection wheel"
+            {...(hasSpunToday ? {} : getPointerHandlers())}
+            style={{
+              cursor: status === 'spinning' ? 'grabbing' : 'grab',
+              touchAction: 'none',
+            }}
+          >
               <div className="spin-wheel-container">
                 {hasSpunToday && (
                   <div className="lock-overlay">

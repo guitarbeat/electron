@@ -110,12 +110,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT })
   );
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
   const [shake, setShake] = useState(0);
   const { playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
   const isGameVisible = isEmbedded || !isMinimized;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Best score state (derived)
   const bestScore = leaderboard.length > 0 ? leaderboard[0].score : 0;
@@ -125,6 +127,29 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       setIsMinimized(false);
     }
   }, [isEmbedded]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    if (Math.max(absX, absY) > 30) {
+      if (absX > absY) {
+        handleDirection(deltaX > 0 ? 'right' : 'left');
+      } else {
+        handleDirection(deltaY > 0 ? 'down' : 'up');
+      }
+    }
+    touchStartRef.current = null;
+  };
 
   const restartGame = useCallback(() => {
     setGameState(createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT }));
@@ -410,19 +435,32 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   return (
     <div
       style={
-        isEmbedded
+        isFullscreen
           ? {
-              position: 'relative',
-              width: '100%',
-            }
-          : {
               position: 'fixed',
-              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-              right: isMobile ? spacing.md : spacing.lg,
-              left: isMobile ? spacing.md : 'auto',
-              width: isMobile ? 'auto' : 'min(440px, 90vw)',
-              zIndex: 1000,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 2000,
+              backgroundColor: colors.surface,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: spacing.md,
             }
+          : isEmbedded
+            ? {
+                position: 'relative',
+                width: '100%',
+              }
+            : {
+                position: 'fixed',
+                bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+                right: isMobile ? spacing.md : spacing.lg,
+                left: isMobile ? spacing.md : 'auto',
+                width: isMobile ? 'auto' : 'min(440px, 90vw)',
+                zIndex: 1000,
+              }
       }
     >
       <style>
@@ -440,18 +478,27 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
               90% { transform: translate(1px, 2px) rotate(0deg); }
               100% { transform: translate(1px, -2px) rotate(-1deg); }
             }
+            .snake-fullscreen-btn {
+              transition: all 0.2s ease;
+            }
+            .snake-fullscreen-btn:active {
+              transform: scale(0.92);
+            }
           `}
       </style>
       <Card
         style={{
           padding: spacing.lg,
-          border: `2px solid ${colors.border}`,
-          borderRadius: radius.card,
+          border: isFullscreen ? 'none' : `2px solid ${colors.border}`,
+          borderRadius: isFullscreen ? 0 : radius.card,
           background: colors.surface,
-          boxShadow: shadows.cardElevated,
-          maxHeight: isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
+          boxShadow: isFullscreen ? 'none' : shadows.cardElevated,
+          maxHeight: isFullscreen ? '100%' : isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
           overflowY: 'auto',
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
+          height: isFullscreen ? '100%' : 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         onAnimationEnd={() => setShake(0)}
       >
@@ -464,16 +511,27 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             gap: spacing.sm,
           }}
         >
-          <h2
-            style={{
-              margin: 0,
-              fontSize: typography.fontSize.lg,
-              color: colors.textPrimary,
-            }}
-          >
-            Snake
-          </h2>
-          {!isEmbedded && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: typography.fontSize.lg,
+                color: colors.textPrimary,
+              }}
+            >
+              Snake
+            </h2>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="snake-fullscreen-btn"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              style={{ padding: '4px 8px', fontSize: '12px', border: `1px solid ${colors.borderSecondary}30` }}
+            >
+              {isFullscreen ? 'Exit Full' : 'Fullscreen'}
+            </Button>
+          </div>
+          {!isEmbedded && !isFullscreen && (
             <Button size="sm" variant="ghost" onClick={handleMinimize}>
               Hide
             </Button>
@@ -497,8 +555,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         <div
           role="application"
           aria-label="Snake game board"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           style={{
-            width: isMobile ? 'min(88vw, 340px)' : '360px',
+            width: isFullscreen ? 'min(90vw, 90vh, 500px)' : isMobile ? 'min(88vw, 340px)' : '360px',
             maxWidth: '100%',
             aspectRatio: '1 / 1',
             borderRadius: radius.md,
@@ -508,6 +568,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             marginRight: 'auto',
             padding: '2px',
             display: 'flex',
+            touchAction: 'none',
           }}
         >
           <canvas
