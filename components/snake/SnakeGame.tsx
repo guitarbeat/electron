@@ -131,7 +131,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   }, []);
 
   const handleDirection = useCallback((direction: Direction) => {
-    setGameState((previousState) => enqueueDirection(previousState, direction));
+    setGameState((previousState) => {
+      if (previousState.status === 'paused' || previousState.status === 'game-over') {
+        return previousState;
+      }
+      return enqueueDirection(previousState, direction);
+    });
   }, []);
 
   const togglePause = useCallback(() => {
@@ -140,9 +145,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         return previousState;
       }
 
+      const nextStatus = previousState.status === 'running' ? 'paused' : 'running';
+      
+      // If resuming, make sure we don't immediately crash if the user was holding a key
       return {
         ...previousState,
-        status: previousState.status === 'running' ? 'paused' : 'running',
+        status: nextStatus,
       };
     });
   }, []);
@@ -313,15 +321,23 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     <Button
       variant="secondary"
       size="sm"
-      onClick={() => handleDirection(direction)}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        handleDirection(direction);
+      }}
       style={{
-        width: '44px',
-        height: '44px',
+        width: '56px',
+        height: '56px',
         padding: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '1.2rem',
+        fontSize: '1.5rem',
+        borderRadius: radius.lg,
+        touchAction: 'none',
+        userSelect: 'none',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        border: `1px solid ${colors.borderSecondary}40`,
       }}
       aria-label={`Move ${direction}`}
     >
@@ -530,13 +546,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         {isMobile && (
           <div
             style={{
-              width: '170px',
+              width: '200px',
               marginLeft: 'auto',
               marginRight: 'auto',
-              marginBottom: spacing.sm,
+              marginBottom: spacing.md,
+              marginTop: spacing.sm,
               display: 'grid',
               gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-              gap: spacing.xs,
+              gap: spacing.sm,
               justifyItems: 'center',
             }}
           >

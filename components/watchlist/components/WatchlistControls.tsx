@@ -103,30 +103,33 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             style={{
               padding: `${spacing.xs} ${spacing.md}`,
               borderRadius: radius.full,
-              border: 'none',
-              background: contentTab === tab.value ? colors.accent : 'transparent',
+              border: `1px solid ${contentTab === tab.value ? colors.accent : 'transparent'}`,
+              background: contentTab === tab.value ? colors.accent : 'rgba(255, 255, 255, 0.05)',
               color: contentTab === tab.value ? '#000' : colors.textSecondary,
               fontSize: typography.fontSize.xs,
-              fontWeight: '600',
+              fontWeight: '700',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               fontFamily: typography.fontFamily.heading.join(', '),
               textTransform: 'uppercase',
-              letterSpacing: typography.letterSpacing.wider,
+              letterSpacing: '0.05em',
               display: 'flex',
               alignItems: 'center',
               gap: spacing.xs,
+              boxShadow: contentTab === tab.value ? `0 0 12px ${colors.accent}40` : 'none',
             }}
           >
             {tab.label}
             <span
               style={{
                 fontSize: '10px',
-                opacity: 0.7,
-                background: contentTab === tab.value ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-                padding: '2px 6px',
+                fontWeight: '800',
+                background: contentTab === tab.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
+                padding: '2px 8px',
                 borderRadius: radius.sm,
+                minWidth: '20px',
+                textAlign: 'center',
               }}
             >
               {tabCounts[tab.value] || 0}
@@ -145,7 +148,17 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
       >
         <form 
           onSubmit={handleAddAction}
-          style={{ flex: 1, display: 'flex', gap: spacing.xs, alignItems: 'center' }}
+          style={{ 
+            flex: 1, 
+            display: 'flex', 
+            gap: 0, 
+            alignItems: 'center',
+            background: colors.surfaceElevated,
+            borderRadius: radius.md,
+            border: `1px solid ${colors.borderSecondary}40`,
+            overflow: 'hidden',
+            transition: 'border-color 0.2s ease',
+          }}
         >
           <Input
             value={searchQuery}
@@ -153,64 +166,95 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             placeholder="Search or add a movie..."
             aria-label="Search or add a movie"
             style={{
-              height: '44px',
+              height: '48px',
               flex: 1,
+              border: 'none',
+              background: 'transparent',
+              paddingLeft: spacing.md,
+              fontSize: typography.fontSize.sm,
             }}
           />
-          {searchQuery.trim() && (
+          {searchQuery.trim() ? (
             <Button
               type="submit"
               variant="secondary"
               size="sm"
               disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
-              style={{ height: '44px', minWidth: '44px', padding: 0 }}
+              style={{ 
+                height: '48px', 
+                minWidth: '60px', 
+                borderRadius: 0,
+                borderLeft: `1px solid ${colors.borderSecondary}40`,
+              }}
               title="Add or Suggest"
             >
               {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
             </Button>
+          ) : (
+            <div style={{ paddingRight: spacing.md, color: colors.textTertiary, opacity: 0.5 }}>
+              <PlusIcon style={{ width: '18px', height: '18px' }} />
+            </div>
           )}
         </form>
-        <select
-          value={sortMode}
-          onChange={(e) => setSortMode(e.target.value as SortMode)}
-          aria-label="Sort movies"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            height: '44px',
-            minWidth: isMobile ? '100%' : '160px',
-            borderRadius: radius.md,
-            border: `1px solid ${colors.borderSecondary}40`,
-            backgroundColor: colors.surfaceElevated,
-            color: colors.textPrimary,
-            padding: `0 ${spacing.sm}`,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            textTransform: 'uppercase',
-            letterSpacing: typography.letterSpacing.wide,
-            fontSize: typography.fontSize.xs,
-          }}
-        >
-          <option value="recent">Recently Added</option>
-          <option value="title">Title A-Z</option>
-          <option value="year">Year (Newest)</option>
-        </select>
-        <Button
-          type="button"
-          size="sm"
-          variant={showMemoriesOnly ? 'secondary' : 'ghost'}
-          onClick={() => setShowMemoriesOnly((prev) => !prev)}
-          style={{
-            minHeight: '44px',
-            border: `1px solid ${colors.borderSecondary}40`,
-            whiteSpace: 'nowrap',
-            fontFamily: typography.fontFamily.heading.join(', '),
-            textTransform: 'uppercase',
-            letterSpacing: typography.letterSpacing.wide,
-          }}
-        >
-          Memories only ({memoriesCount})
-        </Button>
+        
+        <div style={{ display: 'flex', gap: spacing.sm, flex: isMobile ? 'none' : '0 0 auto' }}>
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as SortMode)}
+            aria-label="Sort movies"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              height: '48px',
+              minWidth: isMobile ? '50%' : '160px',
+              flex: 1,
+              borderRadius: radius.md,
+              border: `1px solid ${colors.borderSecondary}40`,
+              backgroundColor: colors.surfaceElevated,
+              color: colors.textPrimary,
+              padding: `0 ${spacing.sm}`,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              fontSize: '11px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              appearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(colors.textSecondary)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              paddingRight: '32px',
+            }}
+          >
+            <option value="recent">Recently Added</option>
+            <option value="title">Title A-Z</option>
+            <option value="year">Year (Newest)</option>
+          </select>
+
+          <Button
+            type="button"
+            size="sm"
+            variant={showMemoriesOnly ? 'secondary' : 'ghost'}
+            onClick={() => setShowMemoriesOnly((prev) => !prev)}
+            style={{
+              height: '48px',
+              flex: 1,
+              minWidth: isMobile ? '50%' : '160px',
+              border: `1px solid ${showMemoriesOnly ? colors.accent : colors.borderSecondary + '40'}`,
+              whiteSpace: 'nowrap',
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              fontSize: '11px',
+              fontWeight: '600',
+              background: showMemoriesOnly ? colors.accent : 'rgba(255, 255, 255, 0.03)',
+              color: showMemoriesOnly ? '#000' : colors.textPrimary,
+            }}
+          >
+            Memories ({memoriesCount})
+          </Button>
+        </div>
       </div>
       {suggestionError && (
         <div style={{ color: colors.error, fontSize: '12px', marginTop: spacing.xs }}>
