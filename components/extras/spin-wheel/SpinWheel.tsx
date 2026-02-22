@@ -28,6 +28,7 @@ const SpinWheel: React.FC<{
 }> = ({ isOpen, movies, onClose, onWinner }) => {
   const wheelRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useUser();
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
 
   const {
     status,
@@ -111,13 +112,13 @@ const SpinWheel: React.FC<{
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: colors.overlay,
-        backdropFilter: 'blur(8px)',
+        backgroundColor: isFullscreen ? colors.background : colors.overlay,
+        backdropFilter: isFullscreen ? 'none' : 'blur(8px)',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-start',
-        zIndex: 50,
-        padding: spacing.lg,
+        alignItems: isFullscreen ? 'center' : 'flex-start',
+        zIndex: 2000,
+        padding: isFullscreen ? 0 : spacing.lg,
         overflowY: 'auto',
       }}
     >
@@ -129,10 +130,31 @@ const SpinWheel: React.FC<{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: `${spacing.md} 0`,
-          maxWidth: '500px',
+          padding: isFullscreen ? spacing.md : `${spacing.md} 0`,
+          maxWidth: isFullscreen ? 'none' : '500px',
+          height: isFullscreen ? '100%' : 'auto',
+          backgroundColor: isFullscreen ? colors.background : 'transparent',
         }}
       >
+        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.sm, marginBottom: spacing.md }}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            style={{ border: `1px solid ${colors.borderSecondary}30`, borderRadius: radius.full }}
+          >
+            {isFullscreen ? 'Exit Full' : 'Fullscreen'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onClose}
+            disabled={status === 'spinning' || status === 'loading' || status === 'saving'}
+            style={{ border: `1px solid ${colors.borderSecondary}30`, borderRadius: radius.full }}
+          >
+            Close
+          </Button>
+        </div>
         {status === 'loading' && (
           <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
             <Spinner
