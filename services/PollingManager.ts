@@ -8,6 +8,7 @@ class PollingManager {
   private cache = new Map<string, any>();
   private errors = new Map<string, any>();
   private activeIntervals = new Map<string, number>();
+  private inFlight = new Map<string, Promise<void>>();
 
   subscribe<T>(key: string, fetchFn: () => Promise<T>, interval: number, listener: Listener<T>) {
     if (!this.subscribers.has(key)) {
@@ -52,14 +53,15 @@ class PollingManager {
         this.cache.delete(key);
         this.errors.delete(key);
         this.fetchFns.delete(key);
+        this.inFlight.delete(key);
       }
     }
   }
 
   private startPolling(key: string, interval: number) {
     // Execute immediately
-    this.execute(key);
-    const id = setInterval(() => this.execute(key), interval);
+    void this.execute(key);
+    const id = setInterval(() => void this.execute(key), interval);
     this.intervals.set(key, id);
     this.activeIntervals.set(key, interval);
   }
@@ -73,27 +75,54 @@ class PollingManager {
     }
   }
 
-  private async execute(key: string) {
-    const fetchFn = this.fetchFns.get(key);
-    if (!fetchFn) return;
-
-    try {
-      const data = await fetchFn();
-
-      // Validation check similar to original hook
-      if (data === undefined || data === null) {
-        throw new Error('Fetched data is null or undefined');
-      }
-
-      this.cache.set(key, data);
-      this.errors.delete(key);
-      this.notify(key, data, null);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(`Polling failed for ${key}`, e);
-      this.errors.set(key, e);
-      this.notify(key, undefined, e);
+  private execute(key: string): Promise<void> {
+    const existingRequest = this.inFlight.get(key);
+    if (existingRequest) {
+      return existingRequest;
     }
+
+    const fetchFn = this.fetchFns.get(key);
+    if (!fetchFn) {
+      return Promise.resolve();
+    }
+
+    const request = (async () => {
+      try {
+        const data = await fetchFn();
+
+        // Validation check similar to original hook
+        if (data === undefined || data === null) {
+          throw new Error('Fetched data is null or undefined');
+        }
+
+        // Ignore stale responses from previous subscriptions/fetch functions.
+        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== fetchFn) {
+          return;
+        }
+
+        this.cache.set(key, data);
+        this.errors.delete(key);
+        this.notify(key, data, null);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(`Polling failed for ${key}`, e);
+
+        // Ignore stale responses from previous subscriptions/fetch functions.
+        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== fetchFn) {
+          return;
+        }
+
+        this.errors.set(key, e);
+        this.notify(key, undefined, e);
+      } finally {
+        if (this.inFlight.get(key) === request) {
+          this.inFlight.delete(key);
+        }
+      }
+    })();
+
+    this.inFlight.set(key, request);
+    return request;
   }
 
   private notify(key: string, data: any, error: any) {
