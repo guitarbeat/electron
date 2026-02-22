@@ -86,7 +86,54 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-    
+      <div
+        style={{
+          display: 'flex',
+          gap: spacing.xs,
+          marginBottom: spacing.md,
+          overflowX: 'auto',
+          paddingBottom: spacing.xs,
+          scrollbarWidth: 'none',
+        }}
+      >
+        {TABS.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setContentTab(tab.value)}
+            style={{
+              padding: `${spacing.xs} ${spacing.md}`,
+              borderRadius: radius.full,
+              border: 'none',
+              background: contentTab === tab.value ? colors.accent : 'transparent',
+              color: contentTab === tab.value ? '#000' : colors.textSecondary,
+              fontSize: typography.fontSize.xs,
+              fontWeight: '600',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'all 0.2s ease',
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: typography.letterSpacing.wider,
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.xs,
+            }}
+          >
+            {tab.label}
+            <span
+              style={{
+                fontSize: '10px',
+                opacity: 0.7,
+                background: contentTab === tab.value ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                padding: '2px 6px',
+                borderRadius: radius.sm,
+              }}
+            >
+              {tabCounts[tab.value] || 0}
+            </span>
+          </button>
+        ))}
+      </div>
 
       <div
         style={{
