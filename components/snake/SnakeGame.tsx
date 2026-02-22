@@ -172,7 +172,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       }
 
       const nextStatus = previousState.status === 'running' ? 'paused' : 'running';
-      
+
       // If resuming, make sure we don't immediately crash if the user was holding a key
       return {
         ...previousState,
@@ -527,7 +527,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
               variant="ghost"
               className="snake-fullscreen-btn"
               onClick={() => setIsFullscreen(!isFullscreen)}
-              style={{ padding: '4px 8px', fontSize: '12px', border: `1px solid ${colors.borderSecondary}30` }}
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                border: `1px solid ${colors.borderSecondary}30`,
+              }}
             >
               {isFullscreen ? 'Exit Full' : 'Fullscreen'}
             </Button>
@@ -560,7 +564,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           onTouchEnd={handleTouchEnd}
           onTouchMove={(e) => e.preventDefault()}
           style={{
-            width: isFullscreen ? 'min(90vw, 70vh, 500px)' : isMobile ? 'min(88vw, 340px)' : '360px',
+            width: isFullscreen
+              ? 'min(90vw, 70vh, 500px)'
+              : isMobile
+                ? 'min(88vw, 340px)'
+                : '360px',
             maxWidth: '100%',
             aspectRatio: '1 / 1',
             borderRadius: radius.md,

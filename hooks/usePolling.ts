@@ -115,13 +115,13 @@ export const usePolling = <T>(
       );
 
       return unsubscribe;
-    } else {
-      executeLocal(true); // initial fetch
-      if (interval !== null) {
-        const intervalId = setInterval(() => executeLocal(false), interval);
-        return () => clearInterval(intervalId);
-      }
     }
+    executeLocal(true); // initial fetch
+    if (interval !== null) {
+      const intervalId = setInterval(() => executeLocal(false), interval);
+      return () => clearInterval(intervalId);
+    }
+
     return undefined;
   }, [interval, executeLocal, isPaused, key]);
 
