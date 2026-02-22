@@ -136,7 +136,14 @@ const SpinWheel: React.FC<{
           backgroundColor: isFullscreen ? colors.background : 'transparent',
         }}
       >
-        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.sm, marginBottom: spacing.md }}>
+        <div
+          style={{
+            alignSelf: 'flex-end',
+            display: 'flex',
+            gap: spacing.sm,
+            marginBottom: spacing.md,
+          }}
+        >
           <Button
             size="sm"
             variant="ghost"
@@ -398,16 +405,16 @@ const SpinWheel: React.FC<{
               )}
             </Card>
 
-          <div
-            className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
-            role="img"
-            aria-label="Movie selection wheel"
-            {...(hasSpunToday ? {} : getPointerHandlers())}
-            style={{
-              cursor: status === 'spinning' ? 'grabbing' : 'grab',
-              touchAction: 'none',
-            }}
-          >
+            <div
+              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
+              role="img"
+              aria-label="Movie selection wheel"
+              {...(hasSpunToday ? {} : getPointerHandlers())}
+              style={{
+                cursor: status === 'spinning' ? 'grabbing' : 'grab',
+                touchAction: 'none',
+              }}
+            >
               <div className="spin-wheel-container">
                 {hasSpunToday && (
                   <div className="lock-overlay">

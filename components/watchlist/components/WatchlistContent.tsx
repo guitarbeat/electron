@@ -26,7 +26,12 @@ interface WatchlistContentProps {
   searchQuery: string;
   isSubmitting: boolean;
   movieResultsRef: React.RefObject<HTMLDivElement>;
-  onAddMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<any>;
+  onAddMemory: (
+    movieId: string | undefined,
+    movieTitle: string,
+    author: string,
+    note: string
+  ) => Promise<any>;
   onUpdateMemory: (memoryId: string, updates: { note?: string }) => Promise<void>;
   onDeleteMemory: (memoryId: string) => Promise<void>;
   onToggleMemoryPin: (memoryId: string) => Promise<void>;
@@ -59,7 +64,9 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
   memories,
 }) => {
   const renderMovieItem = (movie: Movie, index?: number) => {
-    const movieMemories = memories.filter(m => m.movieId === movie.id || m.movieTitle.toLowerCase() === movie.title.toLowerCase());
+    const movieMemories = memories.filter(
+      (m) => m.movieId === movie.id || m.movieTitle.toLowerCase() === movie.title.toLowerCase()
+    );
     return (
       <MovieItem
         key={movie.id}
