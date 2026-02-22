@@ -152,19 +152,26 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         createdAt: new Date().toISOString(),
       };
 
-      // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible,
-      //    but here we do it inside performMutation logic effectively by prepping it first)
-      //    However, to keep UI responsive, we'll do it here.
-      let metadata: MetadataResult = {};
-      try {
-        metadata = await fetchMovieMetadata(title.trim());
-      } catch (err) {
-        console.error('Failed to fetch metadata, continuing without it:', err);
-      }
+      // 2. Add the base movie immediately to the list (optimistic UI update).
+      //    This makes the "Add" action feel instant to the user.
+      await performMutation((latestMovies) => [...latestMovies, baseMovie]);
 
-      const newMovie = { ...baseMovie, ...extractSafeMetadata(metadata) };
-
-      await performMutation((latestMovies) => [...latestMovies, newMovie]);
+      // 3. Fetch metadata in the background and update the movie when ready.
+      //    This prevents blocking the UI while waiting for external APIs (OMDb/TVMaze).
+      fetchMovieMetadata(cleanTitle)
+        .then(async (metadata) => {
+          if (metadata.posterUrl || metadata.year || metadata.plot) {
+            await performMutation((latestMovies) =>
+              latestMovies.map((m) =>
+                m.id === baseMovie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
+              )
+            );
+          }
+        })
+        .catch((err) => {
+          // eslint-disable-next-line no-console
+          console.error('Background metadata fetch failed:', err);
+        });
     },
     [currentUser, performMutation]
   );
