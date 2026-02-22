@@ -25,3 +25,8 @@
 
 **Learning:** Users lack feedback during async operations like "Mark as Watched", which feels unresponsive on slow networks.
 **Action:** Implement local `isUpdating` state in components to show loading spinners on buttons immediately, even if the parent manages the actual data mutation.
+
+## 2026-02-22 - Accessible ID Generation
+
+**Learning:** Reusable form components like `Textarea` often break accessibility when multiple instances exist on a page because they lack unique IDs for label association. Hardcoding IDs or relying on props (which might be omitted) is insufficient.
+**Action:** Implement `React.useId()` to auto-generate unique IDs, ensuring reliable `htmlFor` association for screen readers even when consumers forget to pass an ID.
