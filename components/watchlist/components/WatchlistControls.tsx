@@ -52,7 +52,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
   const handleAddAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    
+
     if (onAddMovie) {
       onAddMovie(searchQuery.trim());
       setSearchQuery('');
@@ -125,7 +125,8 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
               style={{
                 fontSize: '10px',
                 fontWeight: '800',
-                background: contentTab === tab.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
+                background:
+                  contentTab === tab.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                 padding: '2px 8px',
                 borderRadius: radius.sm,
                 minWidth: '20px',
@@ -146,12 +147,12 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
           alignItems: isMobile ? 'stretch' : 'center',
         }}
       >
-        <form 
+        <form
           onSubmit={handleAddAction}
-          style={{ 
-            flex: 1, 
-            display: 'flex', 
-            gap: 0, 
+          style={{
+            flex: 1,
+            display: 'flex',
+            gap: 0,
             alignItems: 'center',
             background: colors.surfaceElevated,
             borderRadius: radius.md,
@@ -181,9 +182,9 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
               size="sm"
               disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
-              style={{ 
-                height: '48px', 
-                minWidth: '60px', 
+              style={{
+                height: '48px',
+                minWidth: '60px',
                 borderRadius: 0,
                 borderLeft: `1px solid ${colors.borderSecondary}40`,
               }}
@@ -197,7 +198,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             </div>
           )}
         </form>
-        
+
         <div style={{ display: 'flex', gap: spacing.sm, flex: isMobile ? 'none' : '0 0 auto' }}>
           <select
             value={sortMode}

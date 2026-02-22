@@ -93,7 +93,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     if (!hasCustomPositionRef.current) {
       setBubblePosition(getDefaultBubblePosition(isMobile));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEmbedded, isMobile]);
 
   useEffect(() => {
@@ -294,21 +293,30 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
       }
       className="message-board-container"
     >
-        <div
+      <div
+        style={{
+          padding: `${spacing.sm} ${spacing.md}`,
+          backgroundColor: colors.surface,
+          color: colors.textPrimary,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: 'bold',
+          cursor: isEmbedded ? 'default' : 'pointer',
+          borderBottom: `1px solid ${colors.accentMuted}`,
+        }}
+        onClick={handleToggle}
+      >
+        <span
           style={{
-            padding: `${spacing.sm} ${spacing.md}`,
-            backgroundColor: colors.surface,
-            color: colors.textPrimary,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontWeight: 'bold',
-            cursor: isEmbedded ? 'default' : 'pointer',
-            borderBottom: `1px solid ${colors.accentMuted}`,
+            fontFamily: typography.fontFamily.heading.join(', '),
+            textTransform: 'uppercase',
+            letterSpacing: typography.letterSpacing.wide,
+            textShadow: shadows.textGlow,
           }}
-          onClick={handleToggle}
         >
-          <span style={{ fontFamily: typography.fontFamily.heading.join(', '), textTransform: 'uppercase', letterSpacing: typography.letterSpacing.wide, textShadow: shadows.textGlow }}>Messages</span>
+          Messages
+        </span>
         {!isEmbedded && (
           <button
             onClick={(event) => {
