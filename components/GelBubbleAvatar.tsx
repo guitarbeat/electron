@@ -205,9 +205,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       <span
         style={{
           fontFamily: typography.fontFamily.heading.join(', '),
-          fontSize: 'clamp(1.25rem, 5vw, 1.75rem)',
+          fontSize: 'clamp(1rem, 4vw, 1.25rem)',
           fontWeight: 600,
           color: '#fff',
+          textTransform: 'uppercase',
           textShadow: `
             0 0 10px rgba(255, 105, 180, 0.8),
             0 0 20px rgba(255, 105, 180, 0.5),

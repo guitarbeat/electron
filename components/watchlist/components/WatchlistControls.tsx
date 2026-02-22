@@ -25,9 +25,9 @@ interface WatchlistControlsProps {
 
 const TABS: { label: string; value: ContentTab }[] = [
   { label: 'All', value: 'all' },
-  { label: 'To Watch', value: 'to-watch' },
+  { label: 'Queue', value: 'to-watch' },
   { label: 'Watched', value: 'watched' },
-  { label: 'For You', value: 'suggestions' },
+  { label: 'Suggestions', value: 'suggestions' },
 ];
 
 export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
@@ -81,34 +81,12 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.md,
+        background: 'rgba(23, 33, 58, 0.4)',
+        backdropFilter: 'blur(8px)',
+        fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
-          gap: spacing.sm,
-          marginBottom: spacing.xs,
-        }}
-      >
-        {TABS.map(({ label, value: tabValue }) => (
-          <Button
-            key={tabValue}
-            variant={contentTab === tabValue ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setContentTab(tabValue)}
-            style={{
-              width: '100%',
-              justifyContent: 'center',
-              border: contentTab === tabValue ? undefined : `1px solid ${colors.borderSecondary}30`,
-              color: contentTab === tabValue ? colors.textPrimary : colors.textSecondary,
-              minHeight: '44px',
-            }}
-          >
-            {label} ({tabCounts[tabValue]})
-          </Button>
-        ))}
-      </div>
+    
 
       <div
         style={{
@@ -160,7 +138,10 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             backgroundColor: colors.surfaceElevated,
             color: colors.textPrimary,
             padding: `0 ${spacing.sm}`,
-            fontFamily: typography.fontFamily.body.join(', '),
+            fontFamily: typography.fontFamily.heading.join(', '),
+            textTransform: 'uppercase',
+            letterSpacing: typography.letterSpacing.wide,
+            fontSize: typography.fontSize.xs,
           }}
         >
           <option value="recent">Recently Added</option>
@@ -176,6 +157,9 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             minHeight: '44px',
             border: `1px solid ${colors.borderSecondary}40`,
             whiteSpace: 'nowrap',
+            fontFamily: typography.fontFamily.heading.join(', '),
+            textTransform: 'uppercase',
+            letterSpacing: typography.letterSpacing.wide,
           }}
         >
           Memories only ({memoriesCount})
