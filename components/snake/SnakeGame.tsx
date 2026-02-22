@@ -141,7 +141,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     const absX = Math.abs(deltaX);
     const absY = Math.abs(deltaY);
 
-    if (Math.max(absX, absY) > 30) {
+    // Swipe threshold
+    if (Math.max(absX, absY) > 20) {
       if (absX > absY) {
         handleDirection(deltaX > 0 ? 'right' : 'left');
       } else {
@@ -557,8 +558,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           aria-label="Snake game board"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onTouchMove={(e) => e.preventDefault()}
           style={{
-            width: isFullscreen ? 'min(90vw, 90vh, 500px)' : isMobile ? 'min(88vw, 340px)' : '360px',
+            width: isFullscreen ? 'min(90vw, 70vh, 500px)' : isMobile ? 'min(88vw, 340px)' : '360px',
             maxWidth: '100%',
             aspectRatio: '1 / 1',
             borderRadius: radius.md,
@@ -569,6 +571,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             padding: '2px',
             display: 'flex',
             touchAction: 'none',
+            boxShadow: isFullscreen ? '0 0 30px rgba(0,0,0,0.5)' : shadows.card,
           }}
         >
           <canvas
