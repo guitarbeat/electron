@@ -207,7 +207,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
               display: 'flex',
               alignItems: 'center',
               height: '48px',
-              minWidth: isMobile ? '50%' : '160px',
+              minWidth: isMobile ? '100%' : '160px',
               flex: 1,
               borderRadius: radius.md,
               border: `1px solid ${colors.borderSecondary}40`,
@@ -231,29 +231,6 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             <option value="title">Title A-Z</option>
             <option value="year">Year (Newest)</option>
           </select>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={showMemoriesOnly ? 'secondary' : 'ghost'}
-            onClick={() => setShowMemoriesOnly((prev) => !prev)}
-            style={{
-              height: '48px',
-              flex: 1,
-              minWidth: isMobile ? '50%' : '160px',
-              border: `1px solid ${showMemoriesOnly ? colors.accent : colors.borderSecondary + '40'}`,
-              whiteSpace: 'nowrap',
-              fontFamily: typography.fontFamily.heading.join(', '),
-              textTransform: 'uppercase',
-              letterSpacing: '0.03em',
-              fontSize: '11px',
-              fontWeight: '600',
-              background: showMemoriesOnly ? colors.accent : 'rgba(255, 255, 255, 0.03)',
-              color: showMemoriesOnly ? '#000' : colors.textPrimary,
-            }}
-          >
-            Memories ({memoriesCount})
-          </Button>
         </div>
       </div>
       {suggestionError && (
