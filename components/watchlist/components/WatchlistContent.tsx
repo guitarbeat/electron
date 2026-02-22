@@ -5,7 +5,7 @@ import { SuggestionItemCard } from '../../DashboardCards';
 import { FilmIcon } from '../../icons';
 import { Movie, MovieSuggestion, SharedMemory, User } from '../../../types';
 import { ContentTab } from '../types';
-import { spacing, colors } from '../../../design-system/tokens';
+import { spacing, colors, typography } from '../../../design-system/tokens';
 
 interface WatchlistContentProps {
   viewMode: 'list' | 'grid';

@@ -9,7 +9,7 @@ import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
-import { spacing, colors, typography, layout } from './design-system/tokens';
+import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 
 const App: React.FC = () => {
