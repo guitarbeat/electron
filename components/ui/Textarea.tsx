@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { colors, radius, spacing, typography, motion, borders } from '../../design-system/tokens';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -10,11 +10,16 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
  * Textarea component with retro inset styling.
  */
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, className = '', style, ...props }, ref) => {
+  ({ label, error, className = '', style, id: providedId, ...props }, ref) => {
+    const generatedId = useId();
+    const id = providedId || generatedId;
+    const errorId = `${id}-error`;
+
     return (
       <div style={{ width: '100%' }}>
         {label && (
           <label
+            htmlFor={id}
             style={{
               display: 'block',
               marginBottom: spacing.xs,
@@ -29,6 +34,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         <textarea
           ref={ref}
+          id={id}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
           className={className}
           style={{
             width: '100%',
@@ -64,6 +72,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         />
         {error && (
           <div
+            id={errorId}
+            role="alert"
             style={{
               marginTop: spacing.xs,
               fontSize: typography.fontSize.sm,
