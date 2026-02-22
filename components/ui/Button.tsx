@@ -105,7 +105,8 @@ const Button: React.FC<ButtonProps> = ({
         top: 0,
         minHeight: size === 'lg' ? '44px' : size === 'md' ? '36px' : '32px',
         overflow: 'hidden',
-        letterSpacing: '0.03em',
+        letterSpacing: typography.letterSpacing.wider,
+        textTransform: 'uppercase',
         ...style,
       }}
       onMouseEnter={(e) => {

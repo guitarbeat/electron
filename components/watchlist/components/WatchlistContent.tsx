@@ -135,7 +135,13 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
           <FilmIcon
             style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
           />
-          <p>
+          <p
+            style={{
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: typography.letterSpacing.wide,
+            }}
+          >
             {searchQuery
               ? 'No results match your search.'
               : contentTab === 'suggestions'

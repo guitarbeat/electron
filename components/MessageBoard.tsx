@@ -294,21 +294,21 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
       }
       className="message-board-container"
     >
-      <div
-        style={{
-          padding: `${spacing.sm} ${spacing.md}`,
-          backgroundColor: colors.surface,
-          color: colors.textPrimary,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontWeight: 'bold',
-          cursor: isEmbedded ? 'default' : 'pointer',
-          borderBottom: `1px solid ${colors.accentMuted}`,
-        }}
-        onClick={handleToggle}
-      >
-        <span>Messages</span>
+        <div
+          style={{
+            padding: `${spacing.sm} ${spacing.md}`,
+            backgroundColor: colors.surface,
+            color: colors.textPrimary,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontWeight: 'bold',
+            cursor: isEmbedded ? 'default' : 'pointer',
+            borderBottom: `1px solid ${colors.accentMuted}`,
+          }}
+          onClick={handleToggle}
+        >
+          <span style={{ fontFamily: typography.fontFamily.heading.join(', '), textTransform: 'uppercase', letterSpacing: typography.letterSpacing.wide, textShadow: shadows.textGlow }}>Messages</span>
         {!isEmbedded && (
           <button
             onClick={(event) => {

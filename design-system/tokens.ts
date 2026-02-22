@@ -69,20 +69,20 @@ export const colors = {
 // * Typography scale (Legible and tight)
 export const typography = {
   fontFamily: {
-    heading: ['Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
-    body: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
-    sans: ['Avenir Next', 'Trebuchet MS', 'Gill Sans', 'sans-serif'],
+    heading: ['Papyrus', 'Copperplate', 'serif'],
+    body: ['Papyrus', 'Trebuchet MS', 'sans-serif'],
+    sans: ['Papyrus', 'Trebuchet MS', 'sans-serif'],
     mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
   },
   fontSize: {
-    xs: 'calc(0.7rem + 0.25vw)',
-    sm: 'calc(0.8rem + 0.35vw)',
-    base: 'calc(0.95rem + 0.5vw)',
-    lg: 'calc(1.05rem + 0.75vw)',
-    xl: 'calc(1.15rem + 1vw)',
-    '2xl': 'calc(1.35rem + 1.5vw)',
-    '3xl': 'calc(1.65rem + 2vw)',
-    '4xl': 'calc(2rem + 3vw)',
+    xs: 'calc(0.7rem + 0.2vw)',
+    sm: 'calc(0.8rem + 0.3vw)',
+    base: 'calc(0.9rem + 0.4vw)',
+    lg: 'calc(1rem + 0.6vw)',
+    xl: 'calc(1.1rem + 0.8vw)',
+    '2xl': 'calc(1.3rem + 1.2vw)',
+    '3xl': 'calc(1.5rem + 1.8vw)',
+    '4xl': 'calc(1.8rem + 2.5vw)',
   },
   fontWeight: {
     normal: 400,

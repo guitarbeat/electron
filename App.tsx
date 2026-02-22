@@ -216,12 +216,16 @@ const App: React.FC = () => {
                 border: 'none',
                 padding: `${spacing.sm} ${isMobile ? spacing.md : spacing.lg}`,
                 color: activeTab === tab.id ? colors.accent : colors.textSecondary,
-                fontSize: typography.fontSize.base,
-                fontWeight: activeTab === tab.id ? '600' : '500',
+                fontFamily: typography.fontFamily.heading.join(', '),
+                fontSize: typography.fontSize.lg,
+                fontWeight: activeTab === tab.id ? '600' : '400',
+                textTransform: 'uppercase',
+                letterSpacing: typography.letterSpacing.wider,
                 cursor: 'pointer',
                 position: 'relative',
                 transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
+                textShadow: activeTab === tab.id ? shadows.textGlow : 'none',
               }}
             >
               {tab.label}

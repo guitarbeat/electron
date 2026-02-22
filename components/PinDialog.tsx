@@ -270,6 +270,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 color: colors.textPrimary,
                 marginBottom: '4px',
                 letterSpacing: '0.02em',
+                fontFamily: typography.fontFamily.heading.join(', '),
+                textTransform: 'uppercase',
               }}
             >
               {getTitle()}
@@ -321,6 +323,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: typography.fontSize['xl'],
+                        fontFamily: typography.fontFamily.heading.join(', '),
                         color: colors.accent,
                         boxShadow: isActive ? `0 0 10px ${colors.accent}20` : 'none',
                         transition: 'all 0.2s ease',
