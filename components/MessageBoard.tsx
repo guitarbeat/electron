@@ -5,7 +5,7 @@ import ChatWindow from './message-board/ChatWindow';
 import MessageList from './message-board/MessageList';
 import MessageInput from './message-board/MessageInput';
 import Toast from './ui/Toast';
-import { spacing, colors, shadows, radius, zIndex, motion } from '../design-system/tokens';
+import { spacing, colors, shadows, radius, zIndex, motion, typography } from '../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
@@ -205,7 +205,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
         aria-label="Open messages"
-        className="gel-bubble"
+        className="message-launcher-bubble"
         style={{
           position: 'fixed',
           top: `${bubblePosition.y}px`,

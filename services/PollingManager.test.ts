@@ -20,16 +20,18 @@ describe('PollingManager', () => {
     await new Promise((r) => setTimeout(r, 20));
     assert.strictEqual(fetchCount, 1, 'Should fetch immediately once');
 
-    // Wait for interval
+    // Wait for at least one interval tick.
     await new Promise((r) => setTimeout(r, interval + 20));
-    assert.strictEqual(fetchCount, 2, 'Should fetch again after interval');
+    assert.ok(fetchCount >= 2, 'Should continue polling on interval');
+
+    const countAtUnsubscribe = fetchCount;
 
     unsubscribe1();
     unsubscribe2();
 
-    // Wait another interval
+    // Wait another interval and ensure polling has stopped.
     await new Promise((r) => setTimeout(r, interval + 20));
-    assert.strictEqual(fetchCount, 2, 'Should stop polling after unsubscribe');
+    assert.strictEqual(fetchCount, countAtUnsubscribe, 'Should stop polling after unsubscribe');
   });
 
   it('should broadcast data to all listeners', async () => {

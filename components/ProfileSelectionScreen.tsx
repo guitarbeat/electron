@@ -7,7 +7,6 @@ import { colors, typography, spacing } from '../design-system/tokens';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import GlossyQuizButton from './GlossyQuizButton';
 import PinDialog from './PinDialog';
-import SuggestionForm from './SuggestionForm';
 
 interface ProfileSelectionScreenProps {
   onTakeQuiz: () => void;
@@ -250,15 +249,6 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
         {/* Quiz Button */}
         <GlossyQuizButton onClick={onTakeQuiz}>✨ Take Personality Quiz ✨</GlossyQuizButton>
 
-        {/* Suggestion Form */}
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '700px',
-          }}
-        >
-          <SuggestionForm />
-        </div>
       </div>
 
       {/* PIN Dialog */}

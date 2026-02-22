@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { mock, test, after, beforeEach } from 'node:test';
-import { hasSpunToday } from './dailySpinService';
+import { hasSpunToday } from './dailySpinService.ts';
 
 // A fixed Wednesday for testing
 const MOCK_DATE = new Date('2024-03-20T12:00:00Z');
