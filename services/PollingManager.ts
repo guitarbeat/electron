@@ -3,11 +3,17 @@ type Listener<T> = (data: T | undefined, error: any | null) => void;
 
 class PollingManager {
   private subscribers = new Map<string, Set<Listener<any>>>();
+
   private intervals = new Map<string, ReturnType<typeof setInterval>>();
+
   private fetchFns = new Map<string, () => Promise<any>>();
+
   private cache = new Map<string, any>();
+
   private errors = new Map<string, any>();
+
   private activeIntervals = new Map<string, number>();
+
   private inFlight = new Map<string, Promise<void>>();
 
   subscribe<T>(key: string, fetchFn: () => Promise<T>, interval: number, listener: Listener<T>) {
@@ -60,8 +66,10 @@ class PollingManager {
 
   private startPolling(key: string, interval: number) {
     // Execute immediately
-    void this.execute(key);
-    const id = setInterval(() => void this.execute(key), interval);
+    this.execute(key);
+    const id = setInterval(() => {
+      this.execute(key);
+    }, interval);
     this.intervals.set(key, id);
     this.activeIntervals.set(key, interval);
   }

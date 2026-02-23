@@ -404,7 +404,9 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
               opacity: !canProceed ? 0.5 : 1,
               cursor: !canProceed ? 'not-allowed' : 'pointer',
             }}
-            aria-label={currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'}
+            aria-label={
+              currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'
+            }
           >
             {currentQuestionIndex === totalQuestions - 1 ? 'See Results ✨' : 'Next →'}
           </Button>
