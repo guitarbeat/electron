@@ -524,15 +524,17 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           borderRadius: isFullscreen ? 0 : radius.card,
           background: colors.surface,
           boxShadow: isFullscreen ? 'none' : shadows.cardElevated,
-          maxHeight: isFullscreen ? '100%' : isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
+          maxHeight: isFullscreen ? '100vh' : isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
           overflowY: 'auto',
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
-          height: isFullscreen ? '100%' : 'auto',
-          width: isFullscreen ? '100%' : 'auto',
-          maxWidth: isFullscreen ? '800px' : 'none',
+          height: isFullscreen ? '100vh' : 'auto',
+          width: isFullscreen ? '100vw' : 'auto',
+          maxWidth: isFullscreen ? 'none' : 'none',
           display: 'flex',
           flexDirection: 'column',
-          margin: isFullscreen ? '0 auto' : '0',
+          margin: isFullscreen ? '0' : '0',
+          alignItems: isFullscreen ? 'center' : 'stretch',
+          justifyContent: isFullscreen ? 'center' : 'flex-start',
         }}
         onAnimationEnd={() => setShake(0)}
       >
@@ -604,7 +606,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           onTouchEnd={handleTouchEnd}
           onTouchMove={(e) => e.preventDefault()}
           style={{
-            width: isFullscreen ? 'min(90vw, 70vh, 500px)' : isMobile ? 'min(88vw, 340px)' : '360px',
+            width: isFullscreen ? 'min(95vw, 80vh)' : isMobile ? 'min(88vw, 340px)' : '360px',
             maxWidth: '100%',
             aspectRatio: '1 / 1',
             borderRadius: radius.md,
@@ -615,7 +617,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             padding: '2px',
             display: 'flex',
             touchAction: 'none',
-            boxShadow: isFullscreen ? '0 0 30px rgba(0,0,0,0.5)' : shadows.card,
+            boxShadow: isFullscreen ? '0 0 50px rgba(0,0,0,0.6)' : shadows.card,
           }}
         >
           <canvas
