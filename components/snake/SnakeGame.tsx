@@ -172,7 +172,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       }
 
       const nextStatus = previousState.status === 'running' ? 'paused' : 'running';
-      
+
       // If resuming, make sure we don't immediately crash if the user was holding a key
       return {
         ...previousState,
