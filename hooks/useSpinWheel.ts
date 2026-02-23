@@ -295,7 +295,7 @@ export const useSpinWheel = (
         if (isMounted) {
           setStatus('idle');
           setSaveError(
-            'Could not load today\'s spin history. You can still spin, but results may not sync.'
+            "Could not load today's spin history. You can still spin, but results may not sync."
           );
         }
       }

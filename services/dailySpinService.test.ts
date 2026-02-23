@@ -51,29 +51,32 @@ test('dailySpinService – hasSpunToday (legacy shim)', async (t) => {
     assert.equal(result, true);
   });
 
-  await t.test('returns true when spin date matches today (legacy single-spin format)', async () => {
-    fetchMock.mock.mockImplementationOnce(async () => {
-      return new Response(
-        JSON.stringify({
-          files: {
-            'dailyspin.json': {
-              content: JSON.stringify({
-                date: '2024-03-20',
-                movieId: 'abc',
-                movieTitle: 'Test Movie',
-                spunBy: 'Aaron',
-                createdAt: '2024-03-20T12:00:00.000Z',
-              }),
+  await t.test(
+    'returns true when spin date matches today (legacy single-spin format)',
+    async () => {
+      fetchMock.mock.mockImplementationOnce(async () => {
+        return new Response(
+          JSON.stringify({
+            files: {
+              'dailyspin.json': {
+                content: JSON.stringify({
+                  date: '2024-03-20',
+                  movieId: 'abc',
+                  movieTitle: 'Test Movie',
+                  spunBy: 'Aaron',
+                  createdAt: '2024-03-20T12:00:00.000Z',
+                }),
+              },
             },
-          },
-        }),
-        { status: 200 }
-      );
-    });
+          }),
+          { status: 200 }
+        );
+      });
 
-    const result = await hasSpunToday();
-    assert.equal(result, true);
-  });
+      const result = await hasSpunToday();
+      assert.equal(result, true);
+    }
+  );
 
   await t.test('returns false when spin date is different', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
@@ -83,7 +86,14 @@ test('dailySpinService – hasSpunToday (legacy shim)', async (t) => {
             'dailyspin.json': {
               content: JSON.stringify({
                 date: '2024-03-19',
-                spins: [{ movieId: 'abc', movieTitle: 'Old Movie', spunBy: 'Aaron', createdAt: '2024-03-19T10:00:00.000Z' }],
+                spins: [
+                  {
+                    movieId: 'abc',
+                    movieTitle: 'Old Movie',
+                    spunBy: 'Aaron',
+                    createdAt: '2024-03-19T10:00:00.000Z',
+                  },
+                ],
               }),
             },
           },
@@ -98,10 +108,7 @@ test('dailySpinService – hasSpunToday (legacy shim)', async (t) => {
 
   await t.test('returns false when spin file does not exist', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-      return new Response(
-        JSON.stringify({ files: {} }),
-        { status: 200 }
-      );
+      return new Response(JSON.stringify({ files: {} }), { status: 200 });
     });
 
     const result = await hasSpunToday();
@@ -145,8 +152,18 @@ test('dailySpinService – getTodayRecord', async (t) => {
 
   await t.test('returns a DailySpinRecord with all spins when date matches today', async () => {
     const spins = [
-      { movieId: 'a1', movieTitle: 'Movie A', spunBy: 'Aaron', createdAt: '2024-03-20T10:00:00.000Z' },
-      { movieId: 'b2', movieTitle: 'Movie B', spunBy: 'Electra', createdAt: '2024-03-20T11:00:00.000Z' },
+      {
+        movieId: 'a1',
+        movieTitle: 'Movie A',
+        spunBy: 'Aaron',
+        createdAt: '2024-03-20T10:00:00.000Z',
+      },
+      {
+        movieId: 'b2',
+        movieTitle: 'Movie B',
+        spunBy: 'Electra',
+        createdAt: '2024-03-20T11:00:00.000Z',
+      },
     ];
     fetchMock.mock.mockImplementationOnce(async () => {
       return new Response(
