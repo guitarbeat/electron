@@ -443,11 +443,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 2000,
+              zIndex: 2100,
               backgroundColor: colors.surface,
               display: 'flex',
               flexDirection: 'column',
-              padding: spacing.md,
+              padding: isMobile ? spacing.sm : spacing.xl,
+              alignItems: 'center',
+              justifyContent: 'center',
             }
           : isEmbedded
             ? {
@@ -489,7 +491,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       </style>
       <Card
         style={{
-          padding: spacing.lg,
+          padding: isFullscreen ? (isMobile ? spacing.md : spacing.xl) : spacing.lg,
           border: isFullscreen ? 'none' : `2px solid ${colors.border}`,
           borderRadius: isFullscreen ? 0 : radius.card,
           background: colors.surface,
@@ -498,8 +500,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           overflowY: 'auto',
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
           height: isFullscreen ? '100%' : 'auto',
+          width: isFullscreen ? '100%' : 'auto',
+          maxWidth: isFullscreen ? '800px' : 'none',
           display: 'flex',
           flexDirection: 'column',
+          margin: isFullscreen ? '0 auto' : '0',
         }}
         onAnimationEnd={() => setShake(0)}
       >

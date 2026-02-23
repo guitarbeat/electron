@@ -116,8 +116,8 @@ const SpinWheel: React.FC<{
         backdropFilter: isFullscreen ? 'none' : 'blur(8px)',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: isFullscreen ? 'center' : 'flex-start',
-        zIndex: 2000,
+        alignItems: 'center',
+        zIndex: 2100,
         padding: isFullscreen ? 0 : spacing.lg,
         overflowY: 'auto',
       }}
@@ -130,9 +130,11 @@ const SpinWheel: React.FC<{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: isFullscreen ? spacing.md : `${spacing.md} 0`,
-          maxWidth: isFullscreen ? 'none' : '500px',
+          padding: isFullscreen ? spacing.xl : `${spacing.md} 0`,
+          maxWidth: isFullscreen ? '800px' : '500px',
           height: isFullscreen ? '100%' : 'auto',
+          maxHeight: isFullscreen ? '100vh' : 'none',
+          overflowY: isFullscreen ? 'auto' : 'visible',
           backgroundColor: isFullscreen ? colors.background : 'transparent',
         }}
       >
