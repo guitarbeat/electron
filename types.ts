@@ -27,12 +27,27 @@ export interface Message {
   reactions?: { [emoji: string]: string[] }; // emoji -> array of usernames who reacted
 }
 
-export interface DailySpin {
-  date: string; // ISO date string (YYYY-MM-DD)
+/** A single spin result within a day. */
+export interface SpinEntry {
   movieId: string;
   movieTitle: string;
   spunBy: User;
   createdAt: string; // ISO timestamp
+}
+
+/** The daily spin record stored in the Gist — one record per calendar day. */
+export interface DailySpinRecord {
+  date: string; // ISO date string (YYYY-MM-DD)
+  spins: SpinEntry[];
+}
+
+/** @deprecated Use DailySpinRecord instead. Kept for backwards-compat reads. */
+export interface DailySpin {
+  date: string;
+  movieId: string;
+  movieTitle: string;
+  spunBy: User;
+  createdAt: string;
 }
 
 export interface MovieSuggestion {

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Movie } from '../../../types';
 import { useSpinWheel } from '../../../hooks/useSpinWheel';
 import { useUser } from '../../../context/UserContext';
-import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from '../../icons';
+import { CalendarIcon, SyncIcon, CheckIcon, Spinner } from '../../icons';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
 import { spacing, typography, colors, radius, shadows } from '../../../design-system/tokens';
@@ -34,8 +34,8 @@ const SpinWheel: React.FC<{
     status,
     activeMovie,
     selectedMovie,
-    hasSpunToday,
-    todaySpinData,
+    spinCount,
+    todayRecord,
     saveError,
     handlePrimarySpin,
     handleSpinAgain,
@@ -56,12 +56,10 @@ const SpinWheel: React.FC<{
   useEffect(() => {
     if (!isOpen) return;
 
-    // * Prevent body scroll when modal is open
     document.body.classList.add('modal-open');
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        // * Don't allow closing during spin, loading, or saving
         if (status === 'spinning' || status === 'loading' || status === 'saving') {
           return;
         }
@@ -90,9 +88,7 @@ const SpinWheel: React.FC<{
     };
   }, [filteredMovies, segmentAngle]);
 
-  // * Prevent closing during critical states
   const handleOverlayClick = (e: React.MouseEvent) => {
-    // * Don't allow closing during spin, loading, or while saving
     if (status === 'spinning' || status === 'loading' || status === 'saving') {
       return;
     }
@@ -165,6 +161,7 @@ const SpinWheel: React.FC<{
             Close
           </Button>
         </div>
+
         {status === 'loading' && (
           <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
             <Spinner
@@ -185,7 +182,7 @@ const SpinWheel: React.FC<{
                 marginBottom: spacing.sm,
               }}
             >
-              Checking today's spin...
+              Loading spin history...
             </p>
             <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0 }}>
               Please wait...
@@ -252,8 +249,8 @@ const SpinWheel: React.FC<{
 
         {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
           <>
-            {/* Category Selector */}
-            {!hasSpunToday && status === 'idle' && (
+            {/* Category Selector — always visible when not spinning */}
+            {status === 'idle' && (
               <div
                 style={{
                   display: 'flex',
@@ -284,6 +281,7 @@ const SpinWheel: React.FC<{
               </div>
             )}
 
+            {/* Current / active movie display */}
             <Card
               variant="default"
               className="current-movie-display"
@@ -372,6 +370,42 @@ const SpinWheel: React.FC<{
                 </div>
               </div>
 
+              {/* Daily spin counter badge */}
+              {spinCount > 0 && status !== 'result' && (
+                <div
+                  style={{
+                    marginTop: spacing.sm,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: spacing.xs,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: spacing.xs,
+                      padding: `${spacing.xs} ${spacing.sm}`,
+                      borderRadius: '9999px',
+                      backgroundColor: `${colors.accent}15`,
+                      border: `1px solid ${colors.accent}40`,
+                    }}
+                  >
+                    <CalendarIcon style={{ width: '12px', height: '12px', color: colors.accent }} />
+                    <span
+                      style={{
+                        fontSize: typography.fontSize.xs,
+                        color: colors.accent,
+                        fontWeight: typography.fontWeight.medium,
+                      }}
+                    >
+                      {spinCount} spin{spinCount !== 1 ? 's' : ''} today
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {status === 'result' && selectedMovie && (
                 <div
                   style={{
@@ -401,40 +435,34 @@ const SpinWheel: React.FC<{
                         fontWeight: typography.fontWeight.medium,
                       }}
                     >
-                      Today's Pick
+                      Latest Pick
                     </span>
                   </div>
                 </div>
               )}
             </Card>
 
-          <div
-            className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
-            role="img"
-            aria-label="Movie selection wheel"
-            {...(hasSpunToday ? {} : getPointerHandlers())}
-            style={{
-              cursor: status === 'spinning' ? 'grabbing' : 'grab',
-              touchAction: 'none',
-            }}
-          >
+            {/* Wheel */}
+            <div
+              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''}`}
+              role="img"
+              aria-label="Movie selection wheel"
+              {...getPointerHandlers()}
+              style={{
+                cursor: status === 'spinning' ? 'grabbing' : 'grab',
+                touchAction: 'none',
+              }}
+            >
               <div className="spin-wheel-container">
-                {hasSpunToday && (
-                  <div className="lock-overlay">
-                    <div className="lock-icon-wrapper">
-                      <LockIcon style={{ width: '32px', height: '32px' }} />
-                    </div>
-                  </div>
-                )}
                 <div className="spin-marker" />
                 <div
                   ref={wheelRef}
-                  className={`spin-wheel ${hasSpunToday ? 'grayscale' : ''}`}
+                  className="spin-wheel"
                   style={wheelBackgroundStyle}
                 />
                 <div className="spin-hub" />
               </div>
-              {(status === 'idle' || status === 'spinning') && !hasSpunToday && (
+              {(status === 'idle' || status === 'spinning') && (
                 <div className="spin-content">
                   <Button
                     variant="secondary"
@@ -460,40 +488,6 @@ const SpinWheel: React.FC<{
                   >
                     {status === 'spinning' ? '...' : 'Spin!'}
                   </Button>
-                </div>
-              )}
-              {hasSpunToday && status === 'idle' && (
-                <div className="spin-content locked-content">
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: spacing.md,
-                    }}
-                  >
-                    <LockIcon style={{ width: '48px', height: '48px', color: colors.accent }} />
-                    <p
-                      style={{
-                        fontSize: typography.fontSize.lg,
-                        fontWeight: typography.fontWeight.medium,
-                        color: colors.textPrimary,
-                        textAlign: 'center',
-                        margin: 0,
-                      }}
-                    >
-                      Already spun today!
-                    </p>
-                    <p
-                      style={{
-                        fontSize: typography.fontSize.sm,
-                        color: colors.textSecondary,
-                        margin: 0,
-                      }}
-                    >
-                      Come back tomorrow for another spin
-                    </p>
-                  </div>
                 </div>
               )}
             </div>
@@ -526,7 +520,7 @@ const SpinWheel: React.FC<{
                       margin: 0,
                     }}
                   >
-                    Tonight's Movie:
+                    Tonight's Pick:
                   </h2>
                 </div>
                 <div
@@ -582,6 +576,7 @@ const SpinWheel: React.FC<{
                     {selectedMovie.title}
                   </h3>
                 </div>
+
                 {saveError && (
                   <Card
                     variant="outlined"
@@ -604,7 +599,9 @@ const SpinWheel: React.FC<{
                     </p>
                   </Card>
                 )}
-                {todaySpinData && (
+
+                {/* Today's spin history */}
+                {todayRecord && todayRecord.spins.length > 0 && (
                   <div
                     style={{
                       display: 'flex',
@@ -614,6 +611,7 @@ const SpinWheel: React.FC<{
                       width: '100%',
                     }}
                   >
+                    {/* Sync indicator */}
                     <div
                       style={{
                         display: 'flex',
@@ -628,42 +626,8 @@ const SpinWheel: React.FC<{
                       />
                       <span style={{ color: colors.textSecondary }}>Synced for both of you</span>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: spacing.sm,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: spacing.sm,
-                          padding: `${spacing.xs} ${spacing.md}`,
-                          borderRadius: '9999px',
-                          border: `1px solid ${todaySpinData.spunBy === currentUser ? `${colors.success}80` : `${colors.accent}80`}`,
-                          backgroundColor:
-                            todaySpinData.spunBy === currentUser
-                              ? `${colors.success}20`
-                              : colors.accentMuted,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontWeight: typography.fontWeight.medium,
-                            fontSize: typography.fontSize.sm,
-                            color:
-                              todaySpinData.spunBy === currentUser ? colors.success : colors.accent,
-                          }}
-                        >
-                          {todaySpinData.spunBy === currentUser
-                            ? '✓ You spun it!'
-                            : `Spun by ${todaySpinData.spunBy}`}
-                        </span>
-                      </div>
-                    </div>
+
+                    {/* Spin count for today */}
                     <div
                       style={{
                         display: 'flex',
@@ -676,28 +640,138 @@ const SpinWheel: React.FC<{
                     >
                       <CalendarIcon style={{ width: '12px', height: '12px' }} />
                       <span>
+                        {spinCount} spin{spinCount !== 1 ? 's' : ''} today
+                        {' · '}
                         {(() => {
                           try {
-                            const date = new Date(`${todaySpinData.date}T00:00:00`);
-                            if (isNaN(date.getTime())) {
-                              return todaySpinData.date;
-                            }
-                            const today = new Date().toISOString().split('T')[0];
-                            const isToday = todaySpinData.date === today;
-                            const formatted = date.toLocaleDateString('en-US', {
+                            const date = new Date(`${todayRecord.date}T00:00:00`);
+                            if (isNaN(date.getTime())) return todayRecord.date;
+                            return date.toLocaleDateString('en-US', {
                               weekday: 'long',
                               month: 'long',
                               day: 'numeric',
                             });
-                            return isToday ? `Today (${formatted})` : formatted;
                           } catch {
-                            return todaySpinData.date;
+                            return todayRecord.date;
                           }
                         })()}
                       </span>
                     </div>
+
+                    {/* Who spun last */}
+                    {todayRecord.spins.length > 0 && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: spacing.sm,
+                            padding: `${spacing.xs} ${spacing.md}`,
+                            borderRadius: '9999px',
+                            border: `1px solid ${
+                              todayRecord.spins[todayRecord.spins.length - 1].spunBy === currentUser
+                                ? `${colors.success}80`
+                                : `${colors.accent}80`
+                            }`,
+                            backgroundColor:
+                              todayRecord.spins[todayRecord.spins.length - 1].spunBy === currentUser
+                                ? `${colors.success}20`
+                                : colors.accentMuted,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: typography.fontWeight.medium,
+                              fontSize: typography.fontSize.sm,
+                              color:
+                                todayRecord.spins[todayRecord.spins.length - 1].spunBy === currentUser
+                                  ? colors.success
+                                  : colors.accent,
+                            }}
+                          >
+                            {todayRecord.spins[todayRecord.spins.length - 1].spunBy === currentUser
+                              ? '✓ You spun it!'
+                              : `Spun by ${todayRecord.spins[todayRecord.spins.length - 1].spunBy}`}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Spin history list (only when more than one spin today) */}
+                    {todayRecord.spins.length > 1 && (
+                      <div
+                        style={{
+                          marginTop: spacing.sm,
+                          borderTop: `1px solid ${colors.borderSecondary}30`,
+                          paddingTop: spacing.sm,
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontSize: typography.fontSize.xs,
+                            color: colors.textTertiary,
+                            textAlign: 'center',
+                            marginBottom: spacing.xs,
+                            margin: `0 0 ${spacing.xs} 0`,
+                          }}
+                        >
+                          Today's spin history
+                        </p>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: spacing.xs,
+                            maxHeight: '120px',
+                            overflowY: 'auto',
+                          }}
+                        >
+                          {[...todayRecord.spins].reverse().map((spin, idx) => (
+                            <div
+                              key={`${spin.createdAt}-${idx}`}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: `${spacing.xs} ${spacing.sm}`,
+                                borderRadius: radius.sm,
+                                backgroundColor: `${colors.surface}80`,
+                                fontSize: typography.fontSize.xs,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color: colors.textPrimary,
+                                  fontWeight: typography.fontWeight.medium,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: '60%',
+                                }}
+                              >
+                                {spin.movieTitle}
+                              </span>
+                              <span style={{ color: colors.textTertiary, flexShrink: 0 }}>
+                                {spin.spunBy} ·{' '}
+                                {new Date(spin.createdAt).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
+
                 <div
                   style={{
                     display: 'flex',
@@ -707,23 +781,20 @@ const SpinWheel: React.FC<{
                     marginTop: spacing.md,
                   }}
                 >
-                  {!hasSpunToday && (
-                    <Button
-                      onClick={handleSpinAgain}
-                      variant="secondary"
-                      style={{ width: '100%' }}
-                      size="md"
-                      autoFocus
-                    >
-                      Spin Again
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleSpinAgain}
+                    variant="secondary"
+                    style={{ width: '100%' }}
+                    size="md"
+                    autoFocus
+                  >
+                    Spin Again
+                  </Button>
                   <Button
                     onClick={onClose}
                     variant="primary"
                     style={{ width: '100%' }}
                     size="md"
-                    autoFocus={hasSpunToday}
                   >
                     Close
                   </Button>

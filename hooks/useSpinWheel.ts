@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { Movie, User, DailySpin } from '../types';
-import { getTodaySpin, saveDailySpin } from '../services/dailySpinService';
+import { Movie, User, DailySpinRecord, SpinEntry } from '../types';
+import { getTodayRecord, addSpinEntry } from '../services/dailySpinService';
 
 const FRICTION = 0.988; // How quickly the wheel slows down. Closer to 1 is less friction.
 const MIN_VELOCITY_TO_SPIN = 0.5; // Requires a minimum flick speed to start a spin
@@ -20,8 +20,9 @@ export const useSpinWheel = (
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [isDragging, setIsDragging] = useState(false);
   const [activeMovie, setActiveMovie] = useState<Movie | null>(null);
-  const [hasSpunToday, setHasSpunToday] = useState(false);
-  const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
+
+  // Daily spin record — resets automatically when the date changes
+  const [todayRecord, setTodayRecord] = useState<DailySpinRecord | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const rotationRef = useRef(0);
@@ -39,6 +40,9 @@ export const useSpinWheel = (
 
   const numMovies = filteredMovies.length;
   const segmentAngle = numMovies > 0 ? 360 / numMovies : 0;
+
+  // Derived: how many spins have happened today
+  const spinCount = todayRecord?.spins.length ?? 0;
 
   const getPointerAngle = useCallback((e: MouseEvent | TouchEvent, targetElement: HTMLElement) => {
     const rect = targetElement.getBoundingClientRect();
@@ -103,7 +107,7 @@ export const useSpinWheel = (
       // The marker is at the top (270deg in a typical coordinate system), so we adjust
       const winningAngle = (360 + 270 - finalAngle) % 360;
       const winnerIndex = Math.floor(winningAngle / segmentAngle);
-      // * Ensure winnerIndex is within bounds
+      // Ensure winnerIndex is within bounds
       const safeIndex = Math.max(0, Math.min(winnerIndex, filteredMovies.length - 1));
       const winner = filteredMovies[safeIndex];
       if (!winner) {
@@ -112,28 +116,25 @@ export const useSpinWheel = (
       }
       setSelectedMovie(winner);
 
-      // * Save the daily spin result to Gist
+      // Save the spin entry to the daily record
       if (currentUser && winner) {
         setStatus('saving');
         setSaveError(null);
         try {
-          const today = new Date().toISOString().split('T')[0];
-          const dailySpin: DailySpin = {
-            date: today,
+          const entry: SpinEntry = {
             movieId: winner.id,
             movieTitle: winner.title,
             spunBy: currentUser,
             createdAt: new Date().toISOString(),
           };
-          await saveDailySpin(dailySpin);
-          setTodaySpinData(dailySpin);
-          setHasSpunToday(true);
+          const updatedRecord = await addSpinEntry(entry);
+          setTodayRecord(updatedRecord);
           setStatus('result');
           if (onWinner) onWinner(winner);
         } catch (error) {
-          console.error('Error saving daily spin:', error);
-          setSaveError('Could not save daily spin. The result may not sync properly.');
-          setStatus('result'); // * Still show the result even if save failed
+          console.error('Error saving spin entry:', error);
+          setSaveError('Could not save spin. The result may not sync properly.');
+          setStatus('result'); // Still show the result even if save failed
           if (onWinner) onWinner(winner);
         }
       } else if (winner) {
@@ -153,7 +154,8 @@ export const useSpinWheel = (
 
   const handlePointerDown = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
-      if (status === 'spinning' || hasSpunToday || !e.currentTarget) return;
+      // Allow spinning any number of times; only block while already spinning
+      if (status === 'spinning' || !e.currentTarget) return;
 
       interactionElementRef.current = e.currentTarget as HTMLElement;
 
@@ -166,7 +168,7 @@ export const useSpinWheel = (
       }
       setIsDragging(true);
     },
-    [status, hasSpunToday, getPointerAngle]
+    [status, getPointerAngle]
   );
 
   // Effect to handle drag logic using document-level event listeners
@@ -180,7 +182,7 @@ export const useSpinWheel = (
     ownerDoc.body.classList.add('grabbing');
 
     const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-      // * Prevent default scroll behavior during drag on mobile
+      // Prevent default scroll behavior during drag on mobile
       if (e.cancelable) {
         e.preventDefault();
       }
@@ -246,13 +248,12 @@ export const useSpinWheel = (
   }, []);
 
   const handleButtonClick = useCallback(() => {
-    if (status === 'spinning' || hasSpunToday || filteredMovies.length === 0) return;
+    if (status === 'spinning' || filteredMovies.length === 0) return;
     velocityRef.current = 15 + Math.random() * 10;
     startSpinAnimation();
-  }, [status, hasSpunToday, startSpinAnimation, filteredMovies.length]);
+  }, [status, startSpinAnimation, filteredMovies.length]);
 
   const resetAndSpin = () => {
-    if (hasSpunToday) return; // * Prevent spinning again if already spun today
     setStatus('idle');
     setSelectedMovie(null);
     if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
@@ -260,71 +261,85 @@ export const useSpinWheel = (
     spinTimeoutRef.current = window.setTimeout(handleButtonClick, 500);
   };
 
-  // * Effect to check for existing daily spin on mount
+  // Effect to load today's spin record on mount
   useEffect(() => {
     let isMounted = true;
 
-    const checkTodaySpin = async () => {
+    const loadTodayRecord = async () => {
       try {
-        const todaySpin = await getTodaySpin();
+        const record = await getTodayRecord();
         if (!isMounted) return;
 
-        if (todaySpin) {
-          // * Find the movie in the current movies list (using a local search when data arrives)
-          setTodaySpinData(todaySpin);
-          setHasSpunToday(true);
-          setStatus('result');
-
-          const movie = movies.find((m) => m.id === todaySpin.movieId);
+        if (record && record.spins.length > 0) {
+          setTodayRecord(record);
+          // Show the last spin result
+          const lastSpin = record.spins[record.spins.length - 1];
+          const movie = movies.find((m) => m.id === lastSpin.movieId);
           if (movie) {
             setSelectedMovie(movie);
           } else {
             setSelectedMovie({
-              id: todaySpin.movieId,
-              title: todaySpin.movieTitle,
-              addedBy: 'Aaron',
+              id: lastSpin.movieId,
+              title: lastSpin.movieTitle,
+              addedBy: lastSpin.spunBy,
               watchedBy: [],
-              createdAt: todaySpin.createdAt,
+              createdAt: lastSpin.createdAt,
             });
           }
+          setStatus('result');
         } else {
           setStatus('idle');
         }
       } catch (error) {
-        console.error("Error checking today's spin:", error);
+        console.error("Error loading today's spin record:", error);
         if (isMounted) {
           setStatus('idle');
           setSaveError(
-            'Could not check for existing spin. You can still spin, but results may not sync.'
+            'Could not load today\'s spin history. You can still spin, but results may not sync.'
           );
         }
       }
     };
 
-    checkTodaySpin();
+    loadTodayRecord();
 
     return () => {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // * Only run on mount. Subsequent updates handled by saveDailySpin.
+  }, []); // Only run on mount.
 
-  // * Sync selectedMovie if movies list updates and we have todaySpinData
+  // Sync selectedMovie if movies list updates and we have a todayRecord
   useEffect(() => {
-    if (todaySpinData && !selectedMovie) {
-      const movie = movies.find((m) => m.id === todaySpinData.movieId);
+    if (todayRecord && todayRecord.spins.length > 0 && !selectedMovie) {
+      const lastSpin = todayRecord.spins[todayRecord.spins.length - 1];
+      const movie = movies.find((m) => m.id === lastSpin.movieId);
       if (movie) {
         setSelectedMovie(movie);
       }
     }
-  }, [movies, todaySpinData, selectedMovie]);
+  }, [movies, todayRecord, selectedMovie]);
 
   return {
     status,
     selectedMovie,
     activeMovie,
-    hasSpunToday,
-    todaySpinData,
+    /** @deprecated Use spinCount instead */
+    hasSpunToday: spinCount > 0,
+    /** Number of spins recorded today (resets at midnight). */
+    spinCount,
+    /** Full daily spin record for today (null if no spins yet). */
+    todayRecord,
+    /** @deprecated Use todayRecord instead */
+    todaySpinData: todayRecord
+      ? {
+          date: todayRecord.date,
+          movieId: todayRecord.spins[todayRecord.spins.length - 1]?.movieId ?? '',
+          movieTitle: todayRecord.spins[todayRecord.spins.length - 1]?.movieTitle ?? '',
+          spunBy: todayRecord.spins[todayRecord.spins.length - 1]?.spunBy ?? currentUser,
+          createdAt: todayRecord.spins[todayRecord.spins.length - 1]?.createdAt ?? '',
+        }
+      : null,
     saveError,
     selectedCategory,
     setSelectedCategory,
