@@ -3,6 +3,10 @@ import { Message } from '../types';
 
 export const getMessages = async (): Promise<Message[]> => {
   try {
+    if (!GIST_API_URL || !GIST_TOKEN) {
+      console.warn('Gist configuration missing. Message board will be empty.');
+      return [];
+    }
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,

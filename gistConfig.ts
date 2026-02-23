@@ -14,7 +14,7 @@ const GIST_TOKEN = env.VITE_GIST_TOKEN || '';
 const GIST_ID = env.VITE_GIST_ID || '';
 
 // The API URL for Gist operations
-const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
+const GIST_API_URL = GIST_ID ? `https://api.github.com/gists/${GIST_ID}` : '';
 
 // The filename inside your Gist that contains the movie data.
 const GIST_FILENAME = 'movielist.json';

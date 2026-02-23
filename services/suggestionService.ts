@@ -4,6 +4,10 @@ import { MovieSuggestion } from '../types';
 
 export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   try {
+    if (!GIST_API_URL || !GIST_TOKEN) {
+      console.warn('Gist configuration missing. Suggestions will be empty.');
+      return [];
+    }
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,

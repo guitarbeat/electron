@@ -35,6 +35,11 @@ export const getPins = async (): Promise<UserPins> => {
     return cachedPins;
   }
 
+  if (!GIST_ID || !GIST_TOKEN) {
+    console.warn('Gist configuration missing. PINs will be unavailable.');
+    return {};
+  }
+
   try {
     const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: {

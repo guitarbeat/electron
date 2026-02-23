@@ -4,6 +4,10 @@ import { Movie } from '../types';
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
   try {
+    if (!GIST_API_URL || !GIST_TOKEN) {
+      console.warn('Gist configuration missing. Movie list will be empty.');
+      return [];
+    }
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,
