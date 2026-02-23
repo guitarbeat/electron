@@ -1,3 +1,6 @@
+import { Movie } from '../types';
+import { sanitizeInput, isValidUrl } from '../config/security';
+
 const env = (import.meta.env || {}) as any;
 const OMDB_PROXY_URL = env.VITE_OMDB_PROXY_URL || '';
 const OMDB_API_KEY = env.VITE_OMDB_API_KEY || '';
@@ -327,4 +330,18 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     seen.add(key);
     return true;
   });
+};
+
+// Helper to extract only safe metadata fields to prevent overwriting critical fields like id
+export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
+  const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
+  const result: Partial<Movie> = {};
+  if (posterUrl && isValidUrl(posterUrl)) result.posterUrl = posterUrl;
+  if (year) result.year = year;
+  if (plot) result.plot = sanitizeInput(plot);
+  if (imdbRating) result.imdbRating = imdbRating;
+  if (runtime) result.runtime = runtime;
+  if (genre) result.genre = sanitizeInput(genre);
+  if (director) result.director = sanitizeInput(director);
+  return result;
 };

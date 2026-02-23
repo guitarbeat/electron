@@ -13,3 +13,11 @@
 **Learning:** Codebase relies on Vite-specific `import.meta.env` without fallbacks in some files, making unit testing in Node.js difficult.
 
 **Prevention:** Always use a safe accessor for environment variables (e.g., `const env = (import.meta.env || {}) as any;`) or a configuration module that handles environment differences, to ensure code is testable in non-browser environments.
+
+## 2025-02-12 - Unvalidated URL Logic in Hooks
+
+**Vulnerability:** `extractSafeMetadata` in `hooks/useMovies.ts` did not validate `posterUrl`, potentially allowing malicious schemes (e.g., `javascript:`). This logic was buried inside a React Hook, making it hard to test in isolation.
+
+**Learning:** Important business logic (like data sanitization) should not live inside React components or hooks if it doesn't depend on React state/lifecycle.
+
+**Prevention:** Move pure logic to utility functions or services (`services/metadataService.ts`) where it can be unit tested easily with standard tools (`node --test`, `tsx`). Always validate external URLs before use.

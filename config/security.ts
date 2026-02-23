@@ -16,3 +16,17 @@ export const sanitizeInput = (input: string): string => {
   // eslint-disable-next-line no-control-regex
   return input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '').trim();
 };
+
+/**
+ * Validates that a given string is a valid URL with http or https protocol.
+ * This prevents usage of javascript: or other potentially malicious schemes.
+ */
+export const isValidUrl = (url: string): boolean => {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
