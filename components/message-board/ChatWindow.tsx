@@ -39,22 +39,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           position: 'relative',
         }}
       >
-        <div style={{ textAlign: 'center' }}>
-          <span
-            style={{
-              fontFamily: typography.fontFamily.heading.join(', '),
-              fontWeight: typography.fontWeight.semibold,
-              fontSize: '17px',
-              color: colors.textPrimary,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            Messages
-          </span>
-        </div>
-
         {onToggleEditMode && (
           <button
+            type="button"
             onClick={onToggleEditMode}
             style={{
               position: 'absolute',
