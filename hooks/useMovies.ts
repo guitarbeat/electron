@@ -94,7 +94,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   }, [movies, isLoading, refresh]);
 
   const performMutation = useCallback(
-    async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
+    async (mutationFn: (latestMovies: Movie[]) => Movie[], options?: { silent?: boolean }) => {
       if (!currentUser) {
         console.warn('Mutation attempted without user');
         return undefined;
@@ -107,7 +107,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           // Ignore previous mutation errors so the next mutation can proceed.
         }
 
-        setIsSubmitting(true);
+        if (!options?.silent) setIsSubmitting(true);
         isSubmittingRef.current = true;
         try {
           const latestMovies = await getMovies();
@@ -118,7 +118,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           console.error('Mutation failed:', err);
           throw err;
         } finally {
-          setIsSubmitting(false);
+          if (!options?.silent) setIsSubmitting(false);
           isSubmittingRef.current = false;
         }
       })();
@@ -152,19 +152,25 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         createdAt: new Date().toISOString(),
       };
 
-      // 2. Fetch metadata (this might take a second, so we do it before locking the mutation if possible,
-      //    but here we do it inside performMutation logic effectively by prepping it first)
-      //    However, to keep UI responsive, we'll do it here.
-      let metadata: MetadataResult = {};
-      try {
-        metadata = await fetchMovieMetadata(title.trim());
-      } catch (err) {
-        console.error('Failed to fetch metadata, continuing without it:', err);
-      }
+      // 2. Add base movie immediately (optimistic UI update)
+      await performMutation((latestMovies) => [...latestMovies, baseMovie]);
 
-      const newMovie = { ...baseMovie, ...extractSafeMetadata(metadata) };
-
-      await performMutation((latestMovies) => [...latestMovies, newMovie]);
+      // 3. Fetch metadata in background and update silently
+      fetchMovieMetadata(cleanTitle.trim())
+        .then(async (metadata) => {
+          if (metadata.posterUrl || metadata.year || metadata.plot) {
+            await performMutation(
+              (latestMovies) =>
+                latestMovies.map((m) =>
+                  m.id === baseMovie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
+                ),
+              { silent: true }
+            );
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to fetch metadata in background:', err);
+        });
     },
     [currentUser, performMutation]
   );
