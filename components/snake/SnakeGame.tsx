@@ -529,12 +529,23 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             </h2>
             <Button
               size="sm"
-              variant="ghost"
+              variant="secondary"
               className="snake-fullscreen-btn"
               onClick={() => setIsFullscreen(!isFullscreen)}
-              style={{ padding: '4px 8px', fontSize: '12px', border: `1px solid ${colors.borderSecondary}30` }}
+              style={{
+                padding: '6px 12px',
+                fontSize: '13px',
+                fontWeight: '600',
+                border: `1px solid ${colors.accent}80`,
+                boxShadow: shadows.glow,
+                backgroundColor: `${colors.accent}15`,
+                color: colors.accent,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
             >
-              {isFullscreen ? 'Exit Full' : 'Fullscreen'}
+              {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
             </Button>
           </div>
           {!isEmbedded && !isFullscreen && (

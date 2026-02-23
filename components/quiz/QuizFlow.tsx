@@ -244,15 +244,19 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         >
           <Button
             size="sm"
-            variant="ghost"
+            variant="secondary"
             onClick={() => setIsFullscreen(!isFullscreen)}
             style={{
-              border: `1px solid ${colors.borderSecondary}30`,
+              border: `1px solid ${colors.accent}80`,
               borderRadius: radius.full,
-              padding: '4px 12px',
+              padding: '6px 14px',
+              fontWeight: '600',
+              boxShadow: shadows.glow,
+              backgroundColor: `${colors.accent}15`,
+              color: colors.accent,
             }}
           >
-            {isFullscreen ? 'Exit Full' : 'Fullscreen'}
+            {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
           </Button>
         </div>
 

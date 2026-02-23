@@ -141,11 +141,19 @@ const SpinWheel: React.FC<{
         <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.sm, marginBottom: spacing.md }}>
           <Button
             size="sm"
-            variant="ghost"
+            variant="secondary"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            style={{ border: `1px solid ${colors.borderSecondary}30`, borderRadius: radius.full }}
+            style={{
+              border: `1px solid ${colors.accent}80`,
+              borderRadius: radius.full,
+              padding: '6px 12px',
+              fontWeight: '600',
+              boxShadow: shadows.glow,
+              backgroundColor: `${colors.accent}15`,
+              color: colors.accent,
+            }}
           >
-            {isFullscreen ? 'Exit Full' : 'Fullscreen'}
+            {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
           </Button>
           <Button
             size="sm"

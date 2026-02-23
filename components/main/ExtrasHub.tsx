@@ -155,6 +155,8 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
             border: `1px solid ${colors.borderSecondary}35`,
             background:
               'radial-gradient(circle at 15% 0%, rgba(255, 105, 180, 0.22), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(27, 40, 69, 0.86), rgba(18, 29, 54, 0.9))',
+            position: 'relative',
+            zIndex: 1,
           }}
         >
           <h2
