@@ -4,8 +4,8 @@ import { sanitizeInput, isValidUrl } from './security.ts';
 
 test('sanitizeInput returns empty string for null/undefined/empty input', () => {
   assert.equal(sanitizeInput(''), '');
-  assert.equal(sanitizeInput(null as any), '');
-  assert.equal(sanitizeInput(undefined as any), '');
+  assert.equal(sanitizeInput(null as unknown as string), '');
+  assert.equal(sanitizeInput(undefined as unknown as string), '');
 });
 
 test('sanitizeInput trims leading and trailing whitespace', () => {
@@ -49,8 +49,7 @@ test('isValidUrl returns true for valid http/https URLs', () => {
 });
 
 test('isValidUrl returns false for invalid schemes', () => {
-  // eslint-disable-next-line no-script-url
-  assert.equal(isValidUrl('javascript:alert(1)'), false);
+  assert.equal(isValidUrl('javascript:alert(1)'), false); // eslint-disable-line no-script-url
   assert.equal(isValidUrl('file:///etc/passwd'), false);
   assert.equal(isValidUrl('ftp://example.com'), false);
   assert.equal(isValidUrl('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='), false);
@@ -62,6 +61,6 @@ test('isValidUrl returns false for malformed URLs', () => {
   // In Node, new URL('http:') throws.
   assert.equal(isValidUrl('http:'), false);
   assert.equal(isValidUrl(''), false);
-  assert.equal(isValidUrl(null as any), false);
-  assert.equal(isValidUrl(undefined as any), false);
+  assert.equal(isValidUrl(null as unknown as string), false);
+  assert.equal(isValidUrl(undefined as unknown as string), false);
 });
