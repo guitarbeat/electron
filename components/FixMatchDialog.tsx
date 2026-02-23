@@ -74,7 +74,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
       if (searchResults.length > 0) {
         setResults(searchResults);
       } else {
-        setError('No matches found. Please try a different title.');
+        setError('No matches found. Please try a different title or use Rename Only.');
       }
     } catch (err) {
       setError('An error occurred while searching.');

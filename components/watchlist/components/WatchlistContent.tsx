@@ -94,7 +94,7 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
       }}
     >
       {viewMode === 'grid' ? (
-        <MasonryGrid>
+        <MasonryGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
           {filteredSuggestions.map((suggestion) => (
             <SuggestionItemCard
               key={suggestion.id}

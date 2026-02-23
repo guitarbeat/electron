@@ -116,8 +116,8 @@ const SpinWheel: React.FC<{
         backdropFilter: isFullscreen ? 'none' : 'blur(8px)',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: isFullscreen ? 'center' : 'flex-start',
-        zIndex: 2000,
+        alignItems: 'center',
+        zIndex: 2100,
         padding: isFullscreen ? 0 : spacing.lg,
         overflowY: 'auto',
       }}
@@ -130,20 +130,30 @@ const SpinWheel: React.FC<{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: isFullscreen ? spacing.md : `${spacing.md} 0`,
-          maxWidth: isFullscreen ? 'none' : '500px',
+          padding: isFullscreen ? spacing.xl : `${spacing.md} 0`,
+          maxWidth: isFullscreen ? '800px' : '500px',
           height: isFullscreen ? '100%' : 'auto',
+          maxHeight: isFullscreen ? '100vh' : 'none',
+          overflowY: isFullscreen ? 'auto' : 'visible',
           backgroundColor: isFullscreen ? colors.background : 'transparent',
         }}
       >
         <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.sm, marginBottom: spacing.md }}>
           <Button
             size="sm"
-            variant="ghost"
+            variant="secondary"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            style={{ border: `1px solid ${colors.borderSecondary}30`, borderRadius: radius.full }}
+            style={{
+              border: `1px solid ${colors.accent}80`,
+              borderRadius: radius.full,
+              padding: '6px 12px',
+              fontWeight: '600',
+              boxShadow: shadows.glow,
+              backgroundColor: `${colors.accent}15`,
+              color: colors.accent,
+            }}
           >
-            {isFullscreen ? 'Exit Full' : 'Fullscreen'}
+            {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
           </Button>
           <Button
             size="sm"

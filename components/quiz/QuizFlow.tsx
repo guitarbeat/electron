@@ -15,7 +15,7 @@ import XYAxisQuestion from './XYAxisQuestion';
 import ResultsScreen from './ResultsScreen';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { spacing, colors, typography, shadows } from '../../design-system/tokens';
+import { spacing, colors, typography, shadows, radius } from '../../design-system/tokens';
 
 interface QuizFlowProps {
   onComplete: () => void;
@@ -27,6 +27,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const questions = quizData.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
@@ -204,159 +205,210 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
 
   return (
     <div
-      style={{
-        maxWidth: '48rem',
-        margin: '0 auto',
-      }}
+      style={
+        isFullscreen
+          ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 2100,
+              backgroundColor: colors.background,
+              padding: spacing.xl,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }
+          : {
+              maxWidth: '48rem',
+              margin: '0 auto',
+            }
+      }
     >
-      {/* Progress bar */}
       <div
         style={{
-          marginBottom: spacing.xl,
+          width: '100%',
+          maxWidth: '48rem',
+          display: 'flex',
+          flexDirection: 'column',
         }}
-        role="progressbar"
-        aria-valuenow={currentQuestionIndex + 1}
-        aria-valuemin={1}
-        aria-valuemax={totalQuestions}
-        aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
       >
         <div
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.sm,
+            justifyContent: 'flex-end',
+            marginBottom: spacing.md,
           }}
         >
-          <span
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setIsFullscreen(!isFullscreen)}
             style={{
-              fontSize: typography.fontSize.sm,
-              color: colors.textSecondary,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
-            Question {currentQuestionIndex + 1} of {totalQuestions}
-          </span>
-          <span
-            style={{
-              fontSize: typography.fontSize.sm,
+              border: `1px solid ${colors.accent}80`,
+              borderRadius: radius.full,
+              padding: '6px 14px',
+              fontWeight: '600',
+              boxShadow: shadows.glow,
+              backgroundColor: `${colors.accent}15`,
               color: colors.accent,
-              fontWeight: typography.fontWeight.semibold,
             }}
           >
-            {Math.round(progress)}%
-          </span>
+            {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
+          </Button>
         </div>
+
+        {/* Progress bar */}
         <div
           style={{
-            height: '8px',
-            backgroundColor: colors.surface,
-            borderRadius: '4px',
-            overflow: 'hidden',
-            border: `2px solid ${colors.borderSecondary}`,
-            position: 'relative',
+            marginBottom: spacing.xl,
           }}
+          role="progressbar"
+          aria-valuenow={currentQuestionIndex + 1}
+          aria-valuemin={1}
+          aria-valuemax={totalQuestions}
+          aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
         >
           <div
             style={{
-              width: `${progress}%`,
-              height: '100%',
-              backgroundColor: colors.accent,
-              transition: 'width 0.3s ease-out',
-              boxShadow: shadows.glow,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: spacing.sm,
+            }}
+          >
+            <span
+              style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                fontWeight: typography.fontWeight.semibold,
+              }}
+            >
+              Question {currentQuestionIndex + 1} of {totalQuestions}
+            </span>
+            <span
+              style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.accent,
+                fontWeight: typography.fontWeight.semibold,
+              }}
+            >
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <div
+            style={{
+              height: '8px',
+              backgroundColor: colors.surface,
+              borderRadius: '4px',
+              overflow: 'hidden',
+              border: `2px solid ${colors.borderSecondary}`,
               position: 'relative',
             }}
           >
-            {/* Animated shimmer effect */}
             <div
               style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-                animation: 'shimmer 2s infinite',
+                width: `${progress}%`,
+                height: '100%',
+                backgroundColor: colors.accent,
+                transition: 'width 0.3s ease-out',
+                boxShadow: shadows.glow,
+                position: 'relative',
               }}
-            />
+            >
+              {/* Animated shimmer effect */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                  animation: 'shimmer 2s infinite',
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Question card */}
-      <Card variant="elevated" className="animate-fade-in" key={currentQuestion.id}>
-        <div style={{ padding: spacing['2xl'] }}>
-          {currentQuestion.type === 'multiple-choice' && (
-            <MultipleChoiceQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              selectedIndex={currentAnswer?.answerIndex ?? null}
-              onSelect={(index) => handleAnswer(index)}
-            />
-          )}
-          {currentQuestion.type === 'agree-disagree' && (
-            <AgreeDisagreeQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              selectedValue={currentAnswer?.scaleValue ?? null}
-              onSelect={(value) => handleAnswer(undefined, value)}
-            />
-          )}
-          {currentQuestion.type === 'image-choice' && (
-            <ImageChoiceQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              selectedIndex={currentAnswer?.answerIndex ?? null}
-              onSelect={(index) => handleAnswer(index)}
-            />
-          )}
-          {currentQuestion.type === 'xy-axis' && (
-            <XYAxisQuestion
-              key={currentQuestion.id}
-              question={currentQuestion as XYAxisQuestionType}
-              selectedPosition={currentAnswer?.xyPosition ?? null}
-              onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
-            />
-          )}
+        {/* Question card */}
+        <Card variant="elevated" className="animate-fade-in" key={currentQuestion.id}>
+          <div style={{ padding: spacing['2xl'] }}>
+            {currentQuestion.type === 'multiple-choice' && (
+              <MultipleChoiceQuestion
+                key={currentQuestion.id}
+                question={currentQuestion}
+                selectedIndex={currentAnswer?.answerIndex ?? null}
+                onSelect={(index) => handleAnswer(index)}
+              />
+            )}
+            {currentQuestion.type === 'agree-disagree' && (
+              <AgreeDisagreeQuestion
+                key={currentQuestion.id}
+                question={currentQuestion}
+                selectedValue={currentAnswer?.scaleValue ?? null}
+                onSelect={(value) => handleAnswer(undefined, value)}
+              />
+            )}
+            {currentQuestion.type === 'image-choice' && (
+              <ImageChoiceQuestion
+                key={currentQuestion.id}
+                question={currentQuestion}
+                selectedIndex={currentAnswer?.answerIndex ?? null}
+                onSelect={(index) => handleAnswer(index)}
+              />
+            )}
+            {currentQuestion.type === 'xy-axis' && (
+              <XYAxisQuestion
+                key={currentQuestion.id}
+                question={currentQuestion as XYAxisQuestionType}
+                selectedPosition={currentAnswer?.xyPosition ?? null}
+                onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
+              />
+            )}
+          </div>
+        </Card>
+
+        {/* Navigation buttons */}
+        <div
+          style={{
+            display: 'flex',
+            gap: spacing.md,
+            marginTop: spacing.xl,
+            justifyContent: 'space-between',
+          }}
+        >
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            style={{
+              fontSize: typography.fontSize.base,
+              opacity: currentQuestionIndex === 0 ? 0.5 : 1,
+              cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
+            }}
+            aria-label="Previous question"
+          >
+            ← Previous
+          </Button>
+
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleNext}
+            disabled={!canProceed}
+            style={{
+              fontSize: typography.fontSize.base,
+              opacity: !canProceed ? 0.5 : 1,
+              cursor: !canProceed ? 'not-allowed' : 'pointer',
+            }}
+            aria-label={currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'}
+          >
+            {currentQuestionIndex === totalQuestions - 1 ? 'See Results ✨' : 'Next →'}
+          </Button>
         </div>
-      </Card>
-
-      {/* Navigation buttons */}
-      <div
-        style={{
-          display: 'flex',
-          gap: spacing.md,
-          marginTop: spacing.xl,
-          justifyContent: 'space-between',
-        }}
-      >
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={handlePrevious}
-          disabled={currentQuestionIndex === 0}
-          style={{
-            fontSize: typography.fontSize.base,
-            opacity: currentQuestionIndex === 0 ? 0.5 : 1,
-            cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
-          }}
-          aria-label="Previous question"
-        >
-          ← Previous
-        </Button>
-
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleNext}
-          disabled={!canProceed}
-          style={{
-            fontSize: typography.fontSize.base,
-            opacity: !canProceed ? 0.5 : 1,
-            cursor: !canProceed ? 'not-allowed' : 'pointer',
-          }}
-          aria-label={currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'}
-        >
-          {currentQuestionIndex === totalQuestions - 1 ? 'See Results ✨' : 'Next →'}
-        </Button>
       </div>
     </div>
   );

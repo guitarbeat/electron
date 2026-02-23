@@ -4,6 +4,10 @@ import { SharedMemory } from '../types';
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
   try {
+    if (!GIST_API_URL || !GIST_TOKEN) {
+      console.warn('Gist configuration missing. Memories will be empty.');
+      return [];
+    }
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,
