@@ -134,7 +134,14 @@ const SpinWheel: React.FC<{
           backgroundColor: isFullscreen ? colors.background : 'transparent',
         }}
       >
-        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.sm, marginBottom: spacing.md }}>
+        <div
+          style={{
+            alignSelf: 'flex-end',
+            display: 'flex',
+            gap: spacing.sm,
+            marginBottom: spacing.md,
+          }}
+        >
           <Button
             size="sm"
             variant="secondary"
@@ -455,11 +462,7 @@ const SpinWheel: React.FC<{
             >
               <div className="spin-wheel-container">
                 <div className="spin-marker" />
-                <div
-                  ref={wheelRef}
-                  className="spin-wheel"
-                  style={wheelBackgroundStyle}
-                />
+                <div ref={wheelRef} className="spin-wheel" style={wheelBackgroundStyle} />
                 <div className="spin-hub" />
               </div>
               {(status === 'idle' || status === 'spinning') && (
@@ -690,7 +693,8 @@ const SpinWheel: React.FC<{
                               fontWeight: typography.fontWeight.medium,
                               fontSize: typography.fontSize.sm,
                               color:
-                                todayRecord.spins[todayRecord.spins.length - 1].spunBy === currentUser
+                                todayRecord.spins[todayRecord.spins.length - 1].spunBy ===
+                                currentUser
                                   ? colors.success
                                   : colors.accent,
                             }}
@@ -790,12 +794,7 @@ const SpinWheel: React.FC<{
                   >
                     Spin Again
                   </Button>
-                  <Button
-                    onClick={onClose}
-                    variant="primary"
-                    style={{ width: '100%' }}
-                    size="md"
-                  >
+                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }} size="md">
                     Close
                   </Button>
                 </div>
