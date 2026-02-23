@@ -336,6 +336,34 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     });
   }, [gameState]);
 
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenEnabled) {
+      setIsFullscreen(!isFullscreen);
+      return;
+    }
+
+    if (!isFullscreen) {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => setIsFullscreen(true));
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => setIsFullscreen(false));
+      }
+      setIsFullscreen(false);
+    }
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   const handleMinimize = () => setIsMinimized(true);
   const handleMaximize = () => setIsMinimized(false);
   const handleClearLeaderboard = () => {
@@ -531,7 +559,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
               size="sm"
               variant="secondary"
               className="snake-fullscreen-btn"
-              onClick={() => setIsFullscreen(!isFullscreen)}
+              onClick={toggleFullscreen}
               style={{
                 padding: '6px 12px',
                 fontSize: '13px',
@@ -545,7 +573,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
                 gap: '4px',
               }}
             >
-              {isFullscreen ? 'Exit Full' : '⛶ Fullscreen'}
+              {isFullscreen ? 'Exit Fullscreen' : '⛶ Fullscreen'}
             </Button>
           </div>
           {!isEmbedded && !isFullscreen && (
