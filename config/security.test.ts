@@ -49,6 +49,7 @@ test('isValidUrl returns true for valid http/https URLs', () => {
 });
 
 test('isValidUrl returns false for invalid schemes', () => {
+  // eslint-disable-next-line no-script-url
   assert.equal(isValidUrl('javascript:alert(1)'), false);
   assert.equal(isValidUrl('file:///etc/passwd'), false);
   assert.equal(isValidUrl('ftp://example.com'), false);
