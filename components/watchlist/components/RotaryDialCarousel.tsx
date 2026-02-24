@@ -110,65 +110,45 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
         setRotation(targetRotation);
     };
 
-    // Card position and 3D transformation
+    // Card position and circular transformation
     const getCardStyle = (index: number) => {
         if (totalCards === 0) return {};
 
-        // Find relative distance from center in terms of cards
-        const cardAngle = index * anglePerCard - rotation;
-        const normalizedAngle = ((cardAngle % 360) + 360) % 360;
+        // angle logic: 0 is top
+        const angle = index * anglePerCard - rotation;
+        const rad = (angle - 90) * Math.PI / 180; // Start at 12 o'clock (90deg offset)
+
+        const radius = 350;
+        const x = radius * Math.cos(rad);
+        const y = radius * Math.sin(rad);
+
+        // Find relative distance from center for scaling/opacity
+        const normalizedAngle = ((angle % 360) + 360) % 360;
         let offsetAngle = normalizedAngle > 180 ? normalizedAngle - 360 : normalizedAngle;
+        const absDiffIndex = Math.abs(offsetAngle / anglePerCard);
 
-        // How many "cards away" from center
-        const diffIndex = offsetAngle / anglePerCard;
-        const absDiffIndex = Math.abs(diffIndex);
-
-        // X translation: Center card is 0. Side cards are spaced out.
-        let x = 0;
-        if (absDiffIndex > 0) {
-            const sign = diffIndex > 0 ? 1 : -1;
-            // Base shift ensures the immediate neighbor clears the flat center card
-            const baseShift = 100 * Math.min(1, absDiffIndex);
-            // Extra shift spaces out the tilted side cards nicely
-            const extraShift = Math.max(0, absDiffIndex - 1) * 60;
-            x = sign * (baseShift + extraShift);
-        }
-
-        // Z translation: center is 0, sides are pushed back
-        let z = 0;
-        if (absDiffIndex > 0) {
-            z = -Math.min(1, absDiffIndex) * 120 - Math.max(0, absDiffIndex - 1) * 60;
-        }
-
-        // Y rotation: side cards face inward
-        let rotateY = 0;
-        if (absDiffIndex > 0) {
-            const sign = diffIndex > 0 ? -1 : 1;
-            // Reduced max rotation from 60 to 40 to avoid distortion
-            rotateY = sign * 40 * Math.min(1, absDiffIndex);
-        }
-
-        // Scale and Z-index
         const isActive = isActiveCard(index);
-        const scale = isActive ? 1.1 : 0.95;
-        const zIndex = 100 - Math.floor(absDiffIndex * 10);
-        const opacity = Math.max(0, 1 - (absDiffIndex / 4.5));
+        const scale = isActive ? 1.2 : 0.75;
+        const zIndex = 110 - Math.floor(absDiffIndex * 10);
+
+        // Circular carousels often show more cards or a full loop
+        // Let's fade out cards as they go to the back
+        const opacity = Math.max(0, 1 - (absDiffIndex / (totalCards / 1.5)));
 
         return {
             transform: `
-        translate(-50%, -50%) 
-        translateX(${x}px) 
-        translateZ(${z}px) 
-        rotateY(${rotateY}deg)
-        scale(${scale})
-      `,
+                translate(-50%, -50%) 
+                translateX(${x}px) 
+                translateY(${y}px) 
+                scale(${scale})
+            `,
             opacity,
             zIndex,
-            transition: isDragging ? 'none' : 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: isDragging ? 'none' : 'all 0.6s cubic-bezier(0.15, 0.85, 0.35, 1)',
         };
     };
 
-    // Check if card is the active (front) one
+    // Check if card is the active (top) one
     const isActiveCard = (index: number) => {
         return index === activeIndex;
     };
@@ -179,16 +159,35 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
 
     return (
         <div className="rotary-dial-container" style={{ margin: `${spacing.xl} 0` }}>
-            {/* 3D Wheel Container */}
+            {/* 2D Wheel Track Background */}
+            <div className="rdc-wheel-track" style={{ top: '55%' }} />
+
+            {/* Selection Cursor (Top Indicator) */}
+            <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '0',
+                height: '0',
+                borderLeft: '20px solid transparent',
+                borderRight: '20px solid transparent',
+                borderTop: `25px solid ${colors.accent}`,
+                zIndex: 150,
+                filter: `drop-shadow(0 0 15px ${colors.accent}CC)`
+            }} />
+
+            {/* Wheel Container */}
             <div
                 ref={containerRef}
                 className="relative cursor-grab active:cursor-grabbing"
                 style={{
-                    perspective: '1500px',
+                    perspective: '1000px',
                     perspectiveOrigin: 'center center',
                     width: '100%',
-                    height: '500px',
+                    height: '800px',
                     overflow: 'visible',
+                    marginTop: '50px'
                 }}
                 onMouseDown={(e) => handleStart(e.clientX)}
                 onMouseMove={(e) => handleMove(e.clientX)}
@@ -203,10 +202,9 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
                     style={{
                         position: 'absolute',
                         left: '50%',
-                        top: '50%',
+                        top: '55%',
                         width: '0px',
                         height: '0px',
-                        transformStyle: 'preserve-3d',
                     }}
                 >
                     {movies.map((movie, index) => {
@@ -224,8 +222,8 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
                                 style={{
                                     ...getCardStyle(index),
                                     borderColor: isActive ? colors.accent : 'rgba(255, 255, 255, 0.1)',
-                                    width: '180px',
-                                    height: '270px',
+                                    width: '160px',
+                                    height: '240px',
                                 }}
                                 onClick={() => {
                                     if (isActive) {
