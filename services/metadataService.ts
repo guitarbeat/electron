@@ -31,7 +31,7 @@ const buildOmdbUrl = (params: Record<string, string>): string | null => {
   const usingProxy = Boolean(proxyUrl);
   const baseUrl = usingProxy ? proxyUrl : new URL(OMDB_BASE_URL);
 
-  const url = new URL(baseUrl.toString());
+  const url = new URL(baseUrl!.toString());
 
   if (!usingProxy && OMDB_API_KEY) {
     url.searchParams.set('apikey', OMDB_API_KEY);
