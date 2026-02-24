@@ -322,7 +322,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: typography.fontSize['xl'],
+                        fontSize: typography.fontSize.xl,
                         fontFamily: typography.fontFamily.heading.join(', '),
                         color: colors.accent,
                         boxShadow: isActive ? `0 0 10px ${colors.accent}20` : 'none',

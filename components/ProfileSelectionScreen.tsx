@@ -248,7 +248,6 @@ const ProfileSelectionScreen: React.FC<ProfileSelectionScreenProps> = ({ onTakeQ
       >
         {/* Quiz Button */}
         <GlossyQuizButton onClick={onTakeQuiz}>✨ Take Personality Quiz ✨</GlossyQuizButton>
-
       </div>
 
       {/* PIN Dialog */}

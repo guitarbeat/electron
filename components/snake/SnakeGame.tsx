@@ -57,7 +57,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
   const [shake, setShake] = useState(0);
 
-  const { leaderboard, recordScore, clearLeaderboard, bestScore } = useSnakeLeaderboard(currentUser);
+  const { leaderboard, recordScore, clearLeaderboard, bestScore } =
+    useSnakeLeaderboard(currentUser);
   const { playEatSound, playGameOverSound, playMoveSound } = useSnakeAudio();
 
   const isGameVisible = isEmbedded || !isMinimized;
@@ -140,7 +141,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         } else if (nextState.status === 'game-over' && previousState.status === 'running') {
           playGameOverSound();
           setShake(10);
-        } else if (nextState.snake[0].x !== previousState.snake[0].x || nextState.snake[0].y !== previousState.snake[0].y) {
+        } else if (
+          nextState.snake[0].x !== previousState.snake[0].x ||
+          nextState.snake[0].y !== previousState.snake[0].y
+        ) {
           // Optional move sound
         }
 
@@ -257,30 +261,30 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       style={
         isFullscreen
           ? {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 2000,
-            backgroundColor: colors.surface,
-            display: 'flex',
-            flexDirection: 'column',
-            padding: spacing.md,
-          }
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 2000,
+              backgroundColor: colors.surface,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: spacing.md,
+            }
           : isEmbedded
             ? {
-              position: 'relative',
-              width: '100%',
-            }
+                position: 'relative',
+                width: '100%',
+              }
             : {
-              position: 'fixed',
-              bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-              right: isMobile ? spacing.md : spacing.lg,
-              left: isMobile ? spacing.md : 'auto',
-              width: isMobile ? 'auto' : 'min(440px, 90vw)',
-              zIndex: 1000,
-            }
+                position: 'fixed',
+                bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+                right: isMobile ? spacing.md : spacing.lg,
+                left: isMobile ? spacing.md : 'auto',
+                width: isMobile ? 'auto' : 'min(440px, 90vw)',
+                zIndex: 1000,
+              }
       }
     >
       <style>
@@ -346,7 +350,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
               variant="ghost"
               className="snake-fullscreen-btn"
               onClick={() => setIsFullscreen(!isFullscreen)}
-              style={{ padding: '4px 8px', fontSize: '12px', border: `1px solid ${colors.borderSecondary}30` }}
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                border: `1px solid ${colors.borderSecondary}30`,
+              }}
             >
               {isFullscreen ? 'Exit Full' : 'Fullscreen'}
             </Button>
@@ -390,10 +398,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           onDirection={handleDirection}
         />
 
-        <SnakeLeaderboard
-          entries={leaderboard}
-          onClear={clearLeaderboard}
-        />
+        <SnakeLeaderboard entries={leaderboard} onClear={clearLeaderboard} />
 
         <p
           style={{

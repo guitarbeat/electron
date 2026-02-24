@@ -121,8 +121,7 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
               padding: spacing.lg,
               borderRadius: radius.lg,
               border: `1px solid ${colors.borderTertiary}35`,
-              background:
-                'linear-gradient(145deg, rgba(30, 20, 50, 0.88), rgba(20, 10, 40, 0.88))',
+              background: 'linear-gradient(145deg, rgba(30, 20, 50, 0.88), rgba(20, 10, 40, 0.88))',
               boxShadow: shadows.glow,
             }}
           >
