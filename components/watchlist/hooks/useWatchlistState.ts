@@ -18,7 +18,7 @@ export const useWatchlistState = () => {
   } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'dial'>('grid');
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');

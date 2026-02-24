@@ -4,7 +4,7 @@ import Button from '../../ui/Button';
 import Input from '../../ui/Input';
 import { PlusIcon, Spinner } from '../../icons';
 import { SortMode, ContentTab } from '../types';
-import { colors, spacing, radius, typography } from '../../../design-system/tokens';
+import { colors, spacing, radius, typography, shadows } from '../../../design-system/tokens';
 import { useSuggestions } from '../../../hooks/useSuggestions';
 
 interface WatchlistControlsProps {
@@ -21,6 +21,8 @@ interface WatchlistControlsProps {
   isMobile: boolean;
   onAddMovie?: (title: string) => void;
   isAdding?: boolean;
+  viewMode: 'list' | 'grid' | 'dial';
+  setViewMode: (mode: 'list' | 'grid' | 'dial') => void;
 }
 
 const TABS: { label: string; value: ContentTab }[] = [
@@ -44,6 +46,8 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
   isMobile,
   onAddMovie,
   isAdding = false,
+  viewMode,
+  setViewMode,
 }) => {
   const { addSuggestion } = useSuggestions();
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -52,7 +56,7 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
   const handleAddAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    
+
     if (onAddMovie) {
       onAddMovie(searchQuery.trim());
       setSearchQuery('');
@@ -146,12 +150,12 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
           alignItems: isMobile ? 'stretch' : 'center',
         }}
       >
-        <form 
+        <form
           onSubmit={handleAddAction}
-          style={{ 
-            flex: 1, 
-            display: 'flex', 
-            gap: 0, 
+          style={{
+            flex: 1,
+            display: 'flex',
+            gap: 0,
             alignItems: 'center',
             background: colors.surfaceElevated,
             borderRadius: radius.md,
@@ -181,9 +185,9 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
               size="sm"
               disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
-              style={{ 
-                height: '48px', 
-                minWidth: '60px', 
+              style={{
+                height: '48px',
+                minWidth: '60px',
                 borderRadius: 0,
                 borderLeft: `1px solid ${colors.borderSecondary}40`,
               }}
@@ -197,8 +201,66 @@ export const WatchlistControls: React.FC<WatchlistControlsProps> = ({
             </div>
           )}
         </form>
-        
-        <div style={{ display: 'flex', gap: spacing.sm, flex: isMobile ? 'none' : '0 0 auto' }}>
+
+        <div style={{ display: 'flex', gap: spacing.sm, flex: isMobile ? 'none' : '0 0 auto', alignItems: 'center' }}>
+          {/* View Mode Toggle */}
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: radius.md, padding: '4px', border: `1px solid ${colors.borderSecondary}40` }}>
+            <button
+              onClick={() => setViewMode('list')}
+              style={{
+                background: viewMode === 'list' ? colors.surfaceElevated : 'transparent',
+                border: 'none',
+                borderRadius: radius.sm,
+                padding: '8px',
+                color: viewMode === 'list' ? colors.accent : colors.textSecondary,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: viewMode === 'list' ? shadows.card : 'none'
+              }}
+              title="List View"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              style={{
+                background: viewMode === 'grid' ? colors.surfaceElevated : 'transparent',
+                border: 'none',
+                borderRadius: radius.sm,
+                padding: '8px',
+                color: viewMode === 'grid' ? colors.accent : colors.textSecondary,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: viewMode === 'grid' ? shadows.card : 'none'
+              }}
+              title="Grid View"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('dial')}
+              style={{
+                background: viewMode === 'dial' ? colors.surfaceElevated : 'transparent',
+                border: 'none',
+                borderRadius: radius.sm,
+                padding: '8px',
+                color: viewMode === 'dial' ? colors.accent : colors.textSecondary,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: viewMode === 'dial' ? shadows.card : 'none'
+              }}
+              title="Dial View"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as SortMode)}

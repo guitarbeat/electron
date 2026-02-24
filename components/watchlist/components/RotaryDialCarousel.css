@@ -1,0 +1,183 @@
+.rotary-dial-container {
+  touch-action: none;
+  /* Critical for mobile touch-drag */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.rotary-dial-container * {
+  transform-style: preserve-3d;
+}
+
+.rdc-card {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  /* shadow-2xl shadow-black/60 */
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.rdc-card-active {
+  /* Dynamic border color handled in inline styles */
+}
+
+.rdc-watched-both {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.rdc-poster {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.rdc-gradient {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.2), transparent);
+}
+
+.rdc-gradient-active {
+  background-image: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.4), transparent);
+}
+
+.rdc-ring {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 12px;
+}
+
+.rdc-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  color: white;
+}
+
+.rdc-title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.rdc-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.rdc-status-watched {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.rdc-icon {
+  width: 16px;
+  height: 16px;
+  color: black;
+}
+
+.rdc-status-queue {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rdc-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  /* gap-6 */
+}
+
+.rdc-btn-spin {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rdc-btn-spin:hover {
+  transform: scale(1.1);
+}
+
+.rdc-btn-spin:active {
+  transform: scale(0.95);
+}
+
+.rdc-btn-spin svg {
+  width: 24px;
+  height: 24px;
+}
+
+.rdc-hint {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rdc-hint-desktop {
+  display: none;
+}
+
+.rdc-hint-mobile {
+  display: inline;
+}
+
+@media (min-width: 768px) {
+  .rdc-hint-desktop {
+    display: inline;
+  }
+
+  .rdc-hint-mobile {
+    display: none;
+  }
+}
