@@ -68,3 +68,15 @@ export interface SharedMemory {
   updatedAt?: string;
   isPinned?: boolean;
 }
+
+export interface MatchmakerGame {
+  id: string;
+  moviePool: string[]; // Array of movie IDs
+  aaronLikes: string[]; // Array of movie IDs
+  electraLikes: string[]; // Array of movie IDs
+  aaronDislikes: string[]; // Array of movie IDs
+  electraDislikes: string[]; // Array of movie IDs
+  status: 'active' | 'completed';
+  createdAt: string;
+  startedBy: User;
+}
