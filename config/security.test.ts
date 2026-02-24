@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { sanitizeInput } from './security.ts';
+import { sanitizeInput, isValidUrl } from './security.ts';
 
 test('sanitizeInput returns empty string for null/undefined/empty input', () => {
   assert.equal(sanitizeInput(''), '');
@@ -40,4 +40,31 @@ test('sanitizeInput handles complex mixed input', () => {
   // \x01 (SOH) and \x1B (ESC) should be removed.
   // Trimming should remove outer spaces.
   assert.equal(sanitizeInput(input), 'Clean \n This \t Up');
+});
+
+test('isValidUrl returns true for valid http/https URLs', () => {
+  assert.equal(isValidUrl('https://example.com'), true);
+  assert.equal(isValidUrl('http://example.com'), true);
+  assert.equal(isValidUrl('https://sub.domain.co.uk/path?query=1'), true);
+});
+
+test('isValidUrl returns false for javascript: URLs', () => {
+  assert.equal(isValidUrl('javascript:alert(1)'), false);
+  // eslint-disable-next-line no-script-url
+  assert.equal(isValidUrl('javascript:void(0)'), false);
+});
+
+test('isValidUrl returns false for data: URLs', () => {
+  assert.equal(isValidUrl('data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=='), false);
+});
+
+test('isValidUrl returns false for file: URLs', () => {
+  assert.equal(isValidUrl('file:///etc/passwd'), false);
+});
+
+test('isValidUrl returns false for invalid URLs', () => {
+  assert.equal(isValidUrl('not-a-url'), false);
+  assert.equal(isValidUrl(''), false);
+  assert.equal(isValidUrl(null as any), false);
+  assert.equal(isValidUrl(undefined as any), false);
 });
