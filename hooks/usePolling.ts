@@ -104,7 +104,11 @@ export const usePolling = <T>(
           } else {
             setError(null);
             setData((prev) => {
-              if (savedEqualityFn.current && newData !== undefined && savedEqualityFn.current(prev, newData as T)) {
+              if (
+                savedEqualityFn.current &&
+                newData !== undefined &&
+                savedEqualityFn.current(prev, newData as T)
+              ) {
                 return prev;
               }
               return newData;
@@ -115,13 +119,13 @@ export const usePolling = <T>(
       );
 
       return unsubscribe;
-    } else {
-      executeLocal(true); // initial fetch
-      if (interval !== null) {
-        const intervalId = setInterval(() => executeLocal(false), interval);
-        return () => clearInterval(intervalId);
-      }
     }
+    executeLocal(true); // initial fetch
+    if (interval !== null) {
+      const intervalId = setInterval(() => executeLocal(false), interval);
+      return () => clearInterval(intervalId);
+    }
+
     return undefined;
   }, [interval, executeLocal, isPaused, key]);
 

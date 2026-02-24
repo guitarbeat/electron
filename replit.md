@@ -74,6 +74,7 @@ This is a **client-side only** React application bundled with Vite. There is no 
 ### Data Layer Pattern
 
 All data flows through this pattern:
+
 1. **Service** (`services/*.ts`) — Raw fetch calls to GitHub Gist API for CRUD
 2. **PollingManager** (`services/PollingManager.ts`) — Singleton that deduplicates polling; multiple hooks subscribing to the same key share one fetch interval
 3. **usePolling hook** — Generic hook that subscribes to PollingManager, provides data/error/loading/refresh
@@ -83,6 +84,7 @@ All data flows through this pattern:
 ### Data Storage: GitHub Gist as Database
 
 All persistent state is stored as JSON files within a single GitHub Gist:
+
 - `movielist.json` — Movie queue
 - `messages.json` — Message board
 - `quiz.json` — Quiz questions and character data
@@ -96,6 +98,7 @@ Mutations use optimistic-style read-modify-write: fetch latest → apply change 
 ### Authentication
 
 Lightweight, trust-based system for two known users:
+
 - User selects their profile (Aaron or Electra) on a selection screen
 - Optional 4-digit PIN protection per profile (hashed with a simple hash function, stored in Gist)
 - Session persisted in `sessionStorage`
@@ -130,20 +133,24 @@ Uses `useMediaQuery` hook with breakpoint constants. Components use inline style
 ## External Dependencies
 
 ### GitHub Gist API
+
 - **Purpose**: Primary data store for all app data
 - **Auth**: Personal access token with `gist` scope, set via `VITE_GIST_TOKEN` env var
 - **Config**: `VITE_GIST_ID` identifies the specific Gist
 - **Rate limits**: GitHub API rate limits apply (5000 req/hr authenticated)
 
 ### OMDb API
+
 - **Purpose**: Movie metadata (poster, year, plot, rating, runtime, genre, director)
 - **Config**: `VITE_OMDB_API_KEY` for direct access, or `VITE_OMDB_PROXY_URL` for proxied access (Supabase Edge Function)
 - **Fallback**: TVMaze API (`api.tvmaze.com`) used as secondary source for TV show metadata
 
 ### Gemini API
+
 - **Purpose**: AI features (placeholder — `geminiService.ts` is empty)
 - **Config**: `GEMINI_API_KEY` in `.env.local`
 
 ### NPM Dependencies
+
 - **Runtime**: React 19, ReactDOM 19 (no other runtime dependencies)
 - **Dev**: Vite, TypeScript, ESLint (Airbnb config), Prettier, Playwright
