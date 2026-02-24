@@ -1,5 +1,0 @@
-{
-  "name": "Collaborative Movie Watchlist",
-  "description": "A shared movie watchlist for you and your partner. Add movies, update their status, and see changes in real-time. Powered by Gemini for easy importing.",
-  "requestFramePermissions": []
-}

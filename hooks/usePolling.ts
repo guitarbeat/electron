@@ -1,14 +1,47 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // FIX: Implemented the usePolling custom hook to resolve compilation errors.
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { pollingManager } from '../services/PollingManager';
 
 export const usePolling = <T>(
   fetchFn: () => Promise<T>,
   interval: number | null,
   equalityFn?: (prev: T | undefined, next: T) => boolean,
+  options: { isPaused?: boolean; key?: string } = {}
 ) => {
-  const [data, setData] = useState<T | undefined>(undefined);
-  const [error, setError] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isPaused = false, key } = options;
+
+  // Initialize state with cached data if available
+  const [data, setData] = useState<T | undefined>(() => {
+    if (key) {
+      const cached = pollingManager.getData(key);
+      if (cached !== undefined) return cached;
+    }
+    return undefined;
+  });
+
+  const [error, setError] = useState<any>(() => {
+    if (key) {
+      const cachedError = pollingManager.getError(key);
+      if (cachedError) return cachedError;
+    }
+    return null;
+  });
+
+  const [isLoading, setIsLoading] = useState(() => {
+    if (key) {
+      return (
+        pollingManager.getData(key) === undefined && pollingManager.getError(key) === undefined
+      );
+    }
+    return true;
+  });
+
+  // ⚡ Bolt Optimization: Use a ref for data to keep 'execute' stable.
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   const savedFetchFn = useRef(fetchFn);
   const savedEqualityFn = useRef(equalityFn);
@@ -21,13 +54,20 @@ export const usePolling = <T>(
     savedEqualityFn.current = equalityFn;
   }, [equalityFn]);
 
-  const execute = useCallback(async (isInitialLoad: boolean) => {
-    if (isInitialLoad) {
+  const executeLocal = useCallback(async (isInitialLoad: boolean) => {
+    // Only show loading if we don't have data yet
+    if (isInitialLoad && !dataRef.current) {
       setIsLoading(true);
     }
     setError(null);
     try {
       const result = await savedFetchFn.current();
+
+      // Validation check: if result is empty/invalid but we expect data, handle it
+      if (result === undefined || result === null) {
+        throw new Error('Fetched data is null or undefined');
+      }
+
       setData((prevData) => {
         if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
           return prevData;
@@ -35,23 +75,66 @@ export const usePolling = <T>(
         return result;
       });
     } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Polling execution failed:', e);
       setError(e);
     } finally {
-      if (isInitialLoad) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    execute(true); // initial fetch
-    if (interval !== null) {
-      const intervalId = setInterval(() => execute(false), interval);
-      return () => clearInterval(intervalId);
+    if (isPaused) {
+      return undefined;
     }
-  }, [interval, execute]);
 
-  const refresh = useCallback(() => execute(true), [execute]);
+    if (key && interval !== null) {
+      // Use shared polling manager
+      // Pass a proxy function to ensure we always call the latest fetchFn
+      const proxyFetch = () => savedFetchFn.current();
+
+      const unsubscribe = pollingManager.subscribe(
+        key,
+        proxyFetch,
+        interval,
+        (newData, newError) => {
+          if (newError) {
+            setError(newError);
+            setIsLoading(false);
+          } else {
+            setError(null);
+            setData((prev) => {
+              if (savedEqualityFn.current && savedEqualityFn.current(prev, newData)) {
+                return prev;
+              }
+              return newData;
+            });
+            setIsLoading(false);
+          }
+        }
+      );
+
+      return unsubscribe;
+    } else {
+      executeLocal(true); // initial fetch
+      if (interval !== null) {
+        const intervalId = setInterval(() => executeLocal(false), interval);
+        return () => clearInterval(intervalId);
+      }
+    }
+    return undefined;
+  }, [interval, executeLocal, isPaused, key]);
+
+  const refresh = useCallback(() => {
+    if (key) {
+      setIsLoading(true);
+      pollingManager.refresh(key).catch(() => {
+        setIsLoading(false);
+      });
+    } else {
+      executeLocal(true);
+    }
+  }, [executeLocal, key]);
 
   return { data, error, isLoading, refresh };
 };

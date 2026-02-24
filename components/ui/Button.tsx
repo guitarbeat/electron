@@ -1,5 +1,13 @@
 import React from 'react';
-import { colors, radius, spacing, typography, motion, shadows, borders } from '../../design-system/tokens';
+import {
+  colors,
+  radius,
+  spacing,
+  typography,
+  motion,
+  shadows,
+  borders,
+} from '../../design-system/tokens';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -21,44 +29,52 @@ const Button: React.FC<ButtonProps> = ({
   children,
   className = '',
   style,
+  type = 'button',
   ...props
 }) => {
   const sizeStyles = {
     sm: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      fontSize: typography.fontSize.sm,
+      padding: `${spacing.xs} ${spacing.md}`,
+      fontSize: typography.fontSize.xs,
     },
     md: {
-      padding: `${spacing.md} ${spacing.lg}`,
-      fontSize: typography.fontSize.base,
+      padding: `${spacing.sm} ${spacing.lg}`,
+      fontSize: typography.fontSize.sm,
     },
     lg: {
-      padding: `${spacing.lg} ${spacing.xl}`,
-      fontSize: typography.fontSize.lg,
+      padding: `${spacing.md} ${spacing.xl}`,
+      fontSize: typography.fontSize.base,
     },
   };
 
-  const variantStyles = {
-    primary: {
-      background: colors.gradientPink,
-      color: colors.textPrimary,
-      border: `${borders.buttonOutset} #fff`,
-    },
-    secondary: {
-      background: colors.gradientBlue,
-      color: colors.textPrimary,
-      border: `${borders.buttonOutset} #fff`,
-    },
-    danger: {
-      background: colors.error,
-      color: colors.textPrimary,
-      border: `${borders.buttonOutset} #fff`,
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-      color: colors.textSecondary,
-      border: 'none',
-    },
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'primary':
+        return {
+          backgroundImage: `${colors.gradientPink}, linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`,
+          color: colors.textPrimary,
+          border: `${borders.buttonOutset} #fff`,
+        };
+      case 'secondary':
+        return {
+          backgroundImage: `${colors.gradientBlue}, linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)`,
+          color: colors.textPrimary,
+          border: `${borders.buttonOutset} #fff`,
+        };
+      case 'danger':
+        return {
+          backgroundColor: colors.error,
+          color: colors.textPrimary,
+          border: `${borders.buttonOutset} #fff`,
+        };
+      case 'ghost':
+      default:
+        return {
+          backgroundColor: 'transparent',
+          color: colors.textSecondary,
+          border: 'none',
+        };
+    }
   };
 
   const isDisabled = disabled || isLoading;
@@ -66,37 +82,52 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      type={type}
       className={`${className} ripple-effect`}
       disabled={isDisabled}
       style={{
         ...sizeStyles[size],
-        ...variantStyles[variant],
+        ...getVariantStyles(),
         borderRadius: radius.md,
-        fontWeight: typography.fontWeight.normal,
+        fontWeight: typography.fontWeight.medium,
         fontFamily: typography.fontFamily.heading.join(', '),
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled ? 0.5 : 1,
-        transition: `all ${motion.duration.button} ${motion.easing.linear}`,
+        transition: `all ${motion.duration.normal} ${motion.easing.easeOut}`,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: spacing.sm,
-        boxShadow: variant === 'ghost' ? 'none' : (isLarge ? shadows.buttonLarge : shadows.button),
-        textShadow: variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
+        boxShadow: variant === 'ghost' ? 'none' : isLarge ? shadows.buttonLarge : shadows.button,
+        textShadow:
+          variant === 'ghost' ? 'none' : '1px 1px 3px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.4)',
         position: 'relative',
         top: 0,
-        minHeight: size === 'lg' ? '48px' : size === 'md' ? '44px' : '36px', // * Better touch targets
+        minHeight: size === 'lg' ? '44px' : size === 'md' ? '36px' : '32px',
         overflow: 'hidden',
-        // Add subtle inner highlight
-        backgroundImage: variant !== 'ghost' 
-          ? `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)`
-          : 'none',
+        letterSpacing: typography.letterSpacing.wider,
+        textTransform: 'uppercase',
         ...style,
+      }}
+      onMouseEnter={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.filter = 'brightness(1.1)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.filter = 'brightness(1)';
+          e.currentTarget.style.top = '0';
+          e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
+        }
       }}
       onMouseDown={(e) => {
         if (!isDisabled && variant !== 'ghost') {
           e.currentTarget.style.top = isLarge ? '6px' : '4px';
-          e.currentTarget.style.boxShadow = isLarge 
+          e.currentTarget.style.transform = 'translateY(0) scale(0.98)';
+          e.currentTarget.style.boxShadow = isLarge
             ? '0 0px 0 #000, 0 2px 0 rgba(255,255,255,0.3) inset, 0 0 20px rgba(0,0,0,0.5)'
             : shadows.buttonActive;
         }
@@ -104,14 +135,25 @@ const Button: React.FC<ButtonProps> = ({
       onMouseUp={(e) => {
         if (!isDisabled && variant !== 'ghost') {
           e.currentTarget.style.top = '0';
+          e.currentTarget.style.transform = 'translateY(-2px) scale(1)';
           e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
         }
       }}
-      onMouseLeave={(e) => {
+      onFocus={(e) => {
         if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.filter = 'brightness(1.1)';
+        }
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        if (!isDisabled && variant !== 'ghost') {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.filter = 'brightness(1)';
           e.currentTarget.style.top = '0';
           e.currentTarget.style.boxShadow = isLarge ? shadows.buttonLarge : shadows.button;
         }
+        props.onBlur?.(e);
       }}
       {...props}
     >
@@ -138,11 +180,7 @@ const Button: React.FC<ButtonProps> = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          {loadingText ? (
-            <span>{loadingText}</span>
-          ) : (
-            <span className="sr-only">Loading</span>
-          )}
+          {loadingText ? <span>{loadingText}</span> : <span className="sr-only">Loading</span>}
         </>
       ) : (
         children

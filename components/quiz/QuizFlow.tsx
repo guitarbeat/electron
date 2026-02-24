@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
-import { QuizQuestion, QuizAnswer, CharacterScores, QuizResult, QuizCharacter } from './types';
-import { quizQuestions } from './data';
+import {
+  QuizQuestion,
+  QuizAnswer,
+  CharacterScores,
+  QuizResult,
+  QuizCharacter,
+  XYAxisQuestion as XYAxisQuestionType,
+} from './types';
+import { QuizData } from '../../services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
 import ImageChoiceQuestion from './ImageChoiceQuestion';
+import XYAxisQuestion from './XYAxisQuestion';
 import ResultsScreen from './ResultsScreen';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -11,38 +19,63 @@ import { spacing, colors, typography, shadows } from '../../design-system/tokens
 
 interface QuizFlowProps {
   onComplete: () => void;
+  quizData: QuizData;
 }
 
-const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
+const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-  const totalQuestions = quizQuestions.length;
-  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+  const questions = quizData.questions || [];
+  const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
+  const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
+
+  // Handle case where questions are missing or index is invalid
+  if (!currentQuestion) {
+    return (
+      <div
+        style={{
+          textAlign: 'center',
+          padding: spacing['2xl'],
+          color: colors.textSecondary,
+        }}
+      >
+        <p style={{ marginBottom: spacing.md }}>No quiz questions available.</p>
+        <Button onClick={onComplete} variant="primary" size="md">
+          Continue
+        </Button>
+      </div>
+    );
+  }
 
   // Get current answer for this question
-  const currentAnswer = answers.find(a => a.questionId === currentQuestion.id);
+  const currentAnswer = answers.find((a) => a.questionId === currentQuestion.id);
 
-  const handleAnswer = (answerIndex?: number, scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree') => {
+  const handleAnswer = (
+    answerIndex?: number,
+    scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree',
+    xyPosition?: { x: number; y: number }
+  ) => {
     const newAnswer: QuizAnswer = {
       questionId: currentQuestion.id,
       answerIndex,
       scaleValue,
+      xyPosition,
     };
 
     // Update or add answer
-    setAnswers(prev => {
-      const filtered = prev.filter(a => a.questionId !== currentQuestion.id);
+    setAnswers((prev) => {
+      const filtered = prev.filter((a) => a.questionId !== currentQuestion.id);
       return [...filtered, newAnswer];
     });
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       // Calculate results
       calculateResults();
@@ -51,38 +84,66 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
 
   const calculateResults = () => {
     const scores: CharacterScores = {
-      'Electra': 0,
-      'Aaron': 0,
-      'Madeleine': 0,
+      Electra: 0,
+      Aaron: 0,
+      Madeleine: 0,
       'Nosferatu/Smeemo': 0,
     };
 
     // Calculate scores from answers
-    answers.forEach(answer => {
-      const question = quizQuestions.find(q => q.id === answer.questionId);
+    answers.forEach((answer) => {
+      const question = questions.find((q) => q.id === answer.questionId);
       if (!question) return;
 
       if (question.type === 'multiple-choice' && answer.answerIndex !== undefined) {
         const option = question.options[answer.answerIndex];
         Object.entries(option.scores).forEach(([char, score]) => {
-          scores[char as QuizCharacter] += (score as number);
+          scores[char as QuizCharacter] += score as number;
         });
       } else if (question.type === 'agree-disagree' && answer.scaleValue) {
         const scaleScores = question.scores[answer.scaleValue];
         Object.entries(scaleScores).forEach(([char, score]) => {
-          scores[char as QuizCharacter] += (score as number);
+          scores[char as QuizCharacter] += score as number;
         });
       } else if (question.type === 'image-choice' && answer.answerIndex !== undefined) {
         const option = question.options[answer.answerIndex];
         Object.entries(option.scores).forEach(([char, score]) => {
-          scores[char as QuizCharacter] += (score as number);
+          scores[char as QuizCharacter] += score as number;
         });
+      } else if (question.type === 'xy-axis' && answer.xyPosition) {
+        // Calculate quadrant weights based on position
+        const { x, y } = answer.xyPosition;
+        const { quadrantScores } = question;
+
+        // Weight calculation: how much each quadrant contributes
+        // topLeft: x < 0, y > 0
+        // topRight: x > 0, y > 0
+        // bottomLeft: x < 0, y < 0
+        // bottomRight: x > 0, y < 0
+        const tlWeight = Math.max(0, -x) * Math.max(0, y);
+        const trWeight = Math.max(0, x) * Math.max(0, y);
+        const blWeight = Math.max(0, -x) * Math.max(0, -y);
+        const brWeight = Math.max(0, x) * Math.max(0, -y);
+
+        const totalWeight = tlWeight + trWeight + blWeight + brWeight || 1;
+
+        // Apply weighted scores from each quadrant
+        const applyQuadrant = (qScores: Partial<Record<QuizCharacter, number>>, weight: number) => {
+          Object.entries(qScores).forEach(([char, score]) => {
+            scores[char as QuizCharacter] += ((score as number) * weight) / totalWeight;
+          });
+        };
+
+        applyQuadrant(quadrantScores.topLeft, tlWeight);
+        applyQuadrant(quadrantScores.topRight, trWeight);
+        applyQuadrant(quadrantScores.bottomLeft, blWeight);
+        applyQuadrant(quadrantScores.bottomRight, brWeight);
       }
     });
 
@@ -95,16 +156,16 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
     // Calculate percentages
     const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
     const percentages: Record<QuizCharacter, number> = {
-      'Electra': Math.round((scores['Electra'] / totalScore) * 100) || 0,
-      'Aaron': Math.round((scores['Aaron'] / totalScore) * 100) || 0,
-      'Madeleine': Math.round((scores['Madeleine'] / totalScore) * 100) || 0,
+      Electra: Math.round((scores.Electra / totalScore) * 100) || 0,
+      Aaron: Math.round((scores.Aaron / totalScore) * 100) || 0,
+      Madeleine: Math.round((scores.Madeleine / totalScore) * 100) || 0,
       'Nosferatu/Smeemo': Math.round((scores['Nosferatu/Smeemo'] / totalScore) * 100) || 0,
     };
 
     // Determine if result is "Neither"
     // If the top character has less than 35% of the total score, it's a weak match
     const topScore = scores[topCharacter];
-    const isNeither = totalScore > 0 && (topScore / totalScore) < 0.35;
+    const isNeither = totalScore > 0 && topScore / totalScore < 0.35;
 
     const result: QuizResult = {
       character: isNeither ? 'Neither' : topCharacter,
@@ -124,10 +185,22 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
   };
 
   if (showResults && quizResult) {
-    return <ResultsScreen result={quizResult} onContinue={onComplete} onRetake={handleRetake} />;
+    return (
+      <ResultsScreen
+        result={quizResult}
+        onContinue={onComplete}
+        onRetake={handleRetake}
+        characterDescriptions={quizData.characterDescriptions}
+        neitherDescription={quizData.neitherDescription}
+      />
+    );
   }
 
-  const canProceed = currentAnswer !== undefined;
+  const canProceed =
+    currentAnswer !== undefined &&
+    (currentAnswer.answerIndex !== undefined ||
+      currentAnswer.scaleValue !== undefined ||
+      currentAnswer.xyPosition !== undefined);
 
   return (
     <div
@@ -141,6 +214,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
         style={{
           marginBottom: spacing.xl,
         }}
+        role="progressbar"
+        aria-valuenow={currentQuestionIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={totalQuestions}
+        aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
       >
         <div
           style={{
@@ -176,6 +254,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
             borderRadius: '4px',
             overflow: 'hidden',
             border: `2px solid ${colors.borderSecondary}`,
+            position: 'relative',
           }}
         >
           <div
@@ -185,8 +264,20 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
               backgroundColor: colors.accent,
               transition: 'width 0.3s ease-out',
               boxShadow: shadows.glow,
+              position: 'relative',
             }}
-          />
+          >
+            {/* Animated shimmer effect */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                animation: 'shimmer 2s infinite',
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -215,6 +306,14 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete }) => {
               question={currentQuestion}
               selectedIndex={currentAnswer?.answerIndex ?? null}
               onSelect={(index) => handleAnswer(index)}
+            />
+          )}
+          {currentQuestion.type === 'xy-axis' && (
+            <XYAxisQuestion
+              key={currentQuestion.id}
+              question={currentQuestion as XYAxisQuestionType}
+              selectedPosition={currentAnswer?.xyPosition ?? null}
+              onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
             />
           )}
         </div>

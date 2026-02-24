@@ -1,6 +1,5 @@
 import React from 'react';
 import { QuizResult, QuizCharacter } from './types';
-import { characterDescriptions, neitherDescription } from './data';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { spacing, typography, colors, shadows } from '../../design-system/tokens';
@@ -9,30 +8,39 @@ interface ResultsScreenProps {
   result: QuizResult;
   onContinue: () => void;
   onRetake: () => void;
+  characterDescriptions: Record<QuizCharacter, string>;
+  neitherDescription: string;
 }
 
 const characterEmojis: Record<string, string> = {
-  'Electra': '💖',
-  'Aaron': '🦉',
-  'Madeleine': '👑',
+  Electra: '💖',
+  Aaron: '🦉',
+  Madeleine: '👑',
   'Nosferatu/Smeemo': '🦇',
-  'Neither': '🤷',
+  Neither: '🤷',
 };
 
 const characterColors: Record<string, string> = {
-  'Electra': colors.accent,
-  'Aaron': colors.secondary,
-  'Madeleine': colors.tertiary,
+  Electra: colors.accent,
+  Aaron: colors.secondary,
+  Madeleine: colors.tertiary,
   'Nosferatu/Smeemo': colors.yellow,
-  'Neither': colors.textSecondary,
+  Neither: colors.textSecondary,
 };
 
-const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onContinue, onRetake }) => {
+const ResultsScreen: React.FC<ResultsScreenProps> = ({
+  result,
+  onContinue,
+  onRetake,
+  characterDescriptions,
+  neitherDescription,
+}) => {
   const characterColor = characterColors[result.character];
   const characterEmoji = characterEmojis[result.character];
-  const description = result.character === 'Neither' 
-    ? neitherDescription 
-    : characterDescriptions[result.character as QuizCharacter];
+  const description =
+    result.character === 'Neither'
+      ? neitherDescription
+      : characterDescriptions[result.character as QuizCharacter];
 
   return (
     <div
@@ -145,7 +153,10 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onContinue, onRet
                         textAlign: 'right',
                         fontSize: typography.fontSize.sm,
                         color: colors.textSecondary,
-                        fontWeight: char === result.character ? typography.fontWeight.bold : typography.fontWeight.normal,
+                        fontWeight:
+                          char === result.character
+                            ? typography.fontWeight.bold
+                            : typography.fontWeight.normal,
                       }}
                     >
                       {char}
@@ -166,7 +177,10 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onContinue, onRet
                           height: '100%',
                           backgroundColor: characterColors[char],
                           transition: 'width 1s ease-out',
-                          boxShadow: char === result.character ? `0 0 10px ${characterColors[char]}` : 'none',
+                          boxShadow:
+                            char === result.character
+                              ? `0 0 10px ${characterColors[char]}`
+                              : 'none',
                         }}
                         className="slide-up"
                       />
@@ -176,7 +190,10 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onContinue, onRet
                         width: '50px',
                         fontSize: typography.fontSize.sm,
                         color: colors.textPrimary,
-                        fontWeight: char === result.character ? typography.fontWeight.bold : typography.fontWeight.normal,
+                        fontWeight:
+                          char === result.character
+                            ? typography.fontWeight.bold
+                            : typography.fontWeight.normal,
                       }}
                     >
                       {result.percentages[char]}%
