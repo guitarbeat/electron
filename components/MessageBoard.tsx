@@ -1,839 +1,360 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useMessages } from '../hooks/useMessages';
+import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { MessageIcon, Spinner, CheckIcon, ChevronDownIcon } from './icons';
-import Card from './ui/Card';
-import IconButton from './ui/IconButton';
-import MessageItem from './MessageItem';
-import { spacing, typography, colors, shadows, radius, borders } from '../design-system/tokens';
+import { useChatLogic } from '../hooks/useChatLogic';
+import ChatWindow from './message-board/ChatWindow';
+import MessageList from './message-board/MessageList';
+import MessageInput from './message-board/MessageInput';
+import Toast from './ui/Toast';
+import { spacing, colors, shadows, radius, zIndex, motion, typography } from '../design-system/tokens';
+import { MessageIcon } from './icons';
+import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
-const MAX_MESSAGE_LENGTH = 500;
-const MAX_AUTHOR_LENGTH = 50;
+interface MessageBoardProps {
+  mode?: 'floating' | 'embedded';
+}
 
-const MessageBoard: React.FC = () => {
-    const { currentUser } = useUser();
-    const { messages, isLoading, error, isSubmitting, addMessage, deleteMessage } = useMessages();
-    const [author, setAuthor] = useState('');
-    const [content, setContent] = useState('');
-    const [submitError, setSubmitError] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-    const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-    const [isMinimized, setIsMinimized] = useState(false); // New state for minimize
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const messagesContainerRef = useRef<HTMLDivElement>(null);
-    const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const previousMessagesLengthRef = useRef<number>(0);
-    
-    useEffect(() => {
-        setAuthor(currentUser || '');
-    }, [currentUser]);
+interface BubblePosition {
+  x: number;
+  y: number;
+}
 
-    // * Auto-hide toast
-    useEffect(() => {
-        if (toast) {
-            const timer = setTimeout(() => setToast(null), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [toast]);
+const BUBBLE_SIZE = 60;
+const BUBBLE_EDGE_MARGIN = 16;
+const DRAG_THRESHOLD = 4;
+const FLOATING_Z_INDEX = 220;
 
-    // * Check scroll position to show/hide scroll-to-bottom button
-    useEffect(() => {
-        const container = messagesContainerRef.current;
-        if (!container) return;
+const clampBubblePosition = (x: number, y: number): BubblePosition => {
+  if (typeof window === 'undefined') {
+    return { x, y };
+  }
 
-        const checkScrollPosition = () => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100; // * 100px threshold
-            setShowScrollToBottom(!isNearBottom);
-        };
+  const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
+  const maxY = Math.max(BUBBLE_EDGE_MARGIN, window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
 
-        container.addEventListener('scroll', checkScrollPosition);
-        checkScrollPosition(); // * Initial check
+  return {
+    x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
+    y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
+  };
+};
 
-        return () => container.removeEventListener('scroll', checkScrollPosition);
-    }, [messages]);
+const getDefaultBubblePosition = (isMobile: boolean): BubblePosition => {
+  if (typeof window === 'undefined') {
+    return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+  }
 
-    // * Auto-scroll to bottom when new messages arrive (only if already near bottom)
-    useEffect(() => {
-        if (messages && messages.length > previousMessagesLengthRef.current) {
-            const container = messagesContainerRef.current;
-            if (container) {
-                const { scrollTop, scrollHeight, clientHeight } = container;
-                const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-                
-                if (isNearBottom) {
-                    // * Use requestAnimationFrame for better iOS compatibility
-                    requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            container.scrollTo({
-                                top: container.scrollHeight,
-                                behavior: 'smooth',
-                            });
-                        }, 100);
-                    });
-                }
-            }
-        }
-        previousMessagesLengthRef.current = messages?.length || 0;
-    }, [messages]);
+  const defaultX = isMobile
+    ? window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
+    : BUBBLE_EDGE_MARGIN + 4;
+  const defaultY = window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 4;
 
-    // * Scroll to bottom function
-    const scrollToBottom = () => {
-        const container = messagesContainerRef.current;
-        if (container) {
-            container.scrollTo({
-                top: container.scrollHeight,
-                behavior: 'smooth',
-            });
-        } else {
-            messagesEndRef.current?.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'nearest',
-                inline: 'nearest'
-            });
-        }
+  return clampBubblePosition(defaultX, defaultY);
+};
+
+const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
+  const { currentUser } = useUser();
+  const {
+    messages,
+    isLoading,
+    error,
+    isSubmitting,
+    handleSend,
+    handleDelete,
+    handleReaction,
+    toast,
+  } = useChatLogic();
+  const isMobile = useMediaQuery(breakpoints.sm);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(mode === 'floating');
+  const [lastViewedCount, setLastViewedCount] = useState(0);
+  const isEmbedded = mode === 'embedded';
+  const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => {
+    if (typeof window === 'undefined') {
+      return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+    }
+    const isMobileWidth = window.innerWidth < 640;
+    return getDefaultBubblePosition(isMobileWidth);
+  });
+  const [isDraggingBubble, setIsDraggingBubble] = useState(false);
+  const dragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    origin: BubblePosition;
+  } | null>(null);
+  const didDragRef = useRef(false);
+  const hasCustomPositionRef = useRef(false);
+
+  useEffect(() => {
+    if (isEmbedded) {
+      setIsMinimized(false);
+      return;
+    }
+
+    if (!hasCustomPositionRef.current) {
+      setBubblePosition(getDefaultBubblePosition(isMobile));
+    }
+  }, [isEmbedded, isMobile]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isEmbedded) {
+      return undefined;
+    }
+
+    const handleResize = () => {
+      setBubblePosition((previous) => clampBubblePosition(previous.x, previous.y));
     };
 
-    // * Auto-resize textarea based on content
-    useEffect(() => {
-        const textarea = contentTextareaRef.current;
-        if (textarea) {
-            // * Use requestAnimationFrame to prevent layout shifts on iOS
-            requestAnimationFrame(() => {
-                textarea.style.height = 'auto';
-                const newHeight = Math.min(textarea.scrollHeight, 120); // * Max 120px (matches maxHeight)
-                textarea.style.height = `${Math.max(newHeight, 44)}px`; // * Min 44px
-            });
-        }
-    }, [content]);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isEmbedded]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitError(null);
-        
-        // * Blur active element to dismiss iOS keyboard before validation
-        const activeElement = document.activeElement as HTMLElement;
-        if (activeElement && activeElement.blur) {
-            activeElement.blur();
-        }
-        
-        if (!content.trim()) {
-            setSubmitError('Please enter a message');
-            // * Delay focus to allow keyboard to dismiss on iOS
-            setTimeout(() => {
-                contentTextareaRef.current?.focus();
-            }, 100);
-            return;
-        }
-        
-        if (content.length > MAX_MESSAGE_LENGTH) {
-            setSubmitError(`Message is too long (max ${MAX_MESSAGE_LENGTH} characters)`);
-            return;
-        }
-        
-        if (author.length > MAX_AUTHOR_LENGTH) {
-            setSubmitError(`Name is too long (max ${MAX_AUTHOR_LENGTH} characters)`);
-            return;
-        }
-        
-        if (!isSubmitting) {
-            try {
-                await addMessage(author, content);
-                setContent('');
-                setToast({ message: 'Message posted successfully!', type: 'success' });
-                // * Scroll to bottom after posting
-                setTimeout(() => {
-                    scrollToBottom();
-                }, 200);
-                // * Delay focus to allow keyboard to dismiss on iOS after submission
-                setTimeout(() => {
-                    contentTextareaRef.current?.focus();
-                }, 300);
-            } catch (err: any) {
-                const errorMessage = err.message || 'Failed to post message. Please try again.';
-                setSubmitError(errorMessage);
-                setToast({ message: errorMessage, type: 'error' });
-            }
-        }
+  const handleToggle = () => {
+    if (isEmbedded) {
+      return;
+    }
+
+    if (isMinimized) {
+      setLastViewedCount(messages?.length || 0);
+    }
+    setIsMinimized(!isMinimized);
+  };
+
+  const handleBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
+
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      origin: bubblePosition,
     };
-    
-    const handleDelete = useCallback(async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this message?")) return;
-        try {
-            await deleteMessage(id);
-            setToast({ message: 'Message deleted', type: 'success' });
-        } catch (err: any) {
-            setToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
-        }
-    }, [deleteMessage]);
-    
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        // * Allow submitting with Ctrl+Enter or Cmd+Enter
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            const form = e.currentTarget.form;
-            if (form) {
-                form.requestSubmit();
-            }
-        }
-    };
+    didDragRef.current = false;
+    setIsDraggingBubble(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
 
-    // * Memoize the reversed messages array to avoid re-reversing on every render
-    const reversedMessages = useMemo(() => {
-        return messages ? [...messages].reverse() : [];
-    }, [messages]);
+  const handleBubblePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
 
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+
+    if (
+      !didDragRef.current &&
+      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+    ) {
+      didDragRef.current = true;
+    }
+
+    if (!didDragRef.current) {
+      return;
+    }
+
+    const nextX = dragState.origin.x + deltaX;
+    const nextY = dragState.origin.y + deltaY;
+    setBubblePosition(clampBubblePosition(nextX, nextY));
+  };
+
+  const handleDragEnd = () => {
+    if (didDragRef.current) {
+      hasCustomPositionRef.current = true;
+    }
+    setIsDraggingBubble(false);
+    dragStateRef.current = null;
+    didDragRef.current = false;
+  };
+
+  const finishDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    handleDragEnd();
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch (error) {
+      // Ignore capture errors from canceled pointer interactions.
+    }
+  };
+
+  const handleBubbleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (didDragRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    handleToggle();
+  };
+
+  const unreadCount = Math.max(0, (messages?.length || 0) - lastViewedCount);
+
+  if (!isEmbedded && isMinimized) {
     return (
-        <div 
-            style={{ 
-                maxWidth: '64rem', // Wider for chat window
-                margin: '0 auto', 
-                padding: spacing.md,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
+      <button
+        onClick={handleBubbleClick}
+        onPointerDown={handleBubblePointerDown}
+        onPointerMove={handleBubblePointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        aria-label="Open messages"
+        className="message-launcher-bubble"
+        style={{
+          position: 'fixed',
+          top: `${bubblePosition.y}px`,
+          left: `${bubblePosition.x}px`,
+          width: `${BUBBLE_SIZE}px`,
+          height: `${BUBBLE_SIZE}px`,
+          borderRadius: '50%',
+          backgroundColor: colors.accent,
+          border: `3px solid ${colors.surfaceElevated}`,
+          boxShadow: shadows.glow,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: isDraggingBubble ? 'grabbing' : 'grab',
+          zIndex: FLOATING_Z_INDEX,
+          transition: isDraggingBubble
+            ? 'none'
+            : `top ${motion.duration.fast} ${motion.easing.easeInOut}, left ${motion.duration.fast} ${motion.easing.easeInOut}, transform ${motion.duration.fast} ${motion.easing.easeInOut}`,
+          transform: isDraggingBubble ? 'scale(1.04)' : 'scale(1)',
+          padding: 0,
+          touchAction: 'none',
+        }}
+      >
+        <MessageIcon style={{ width: '30px', height: '30px', color: '#000' }} />
+        {unreadCount > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '-5px',
+              right: '-5px',
+              backgroundColor: colors.error,
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              border: '2px solid white',
             }}
-            className="message-board-container"
-        >
-            {/* Toast Notification */}
-            {toast && (
-                <Card 
-                    variant="elevated" 
-                    style={{ 
-                        position: 'fixed',
-                        top: spacing.lg,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        zIndex: 1000,
-                        maxWidth: '90%',
-                        padding: spacing.lg,
-                        backgroundColor: toast.type === 'error' ? colors.error + '30' : colors.success + '30',
-                        borderColor: toast.type === 'error' ? colors.error : colors.success,
-                        borderWidth: '2px',
-                        animation: 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        boxShadow: toast.type === 'error' 
-                          ? `0 4px 12px ${colors.error}40, ${shadows.card}` 
-                          : `0 4px 12px ${colors.success}40, ${shadows.card}`,
-                    }}
-                >
-                    <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: spacing.md, 
-                        color: colors.textPrimary,
-                        justifyContent: 'center',
-                    }}>
-                        {toast.type === 'success' && (
-                          <CheckIcon style={{ 
-                            color: colors.success, 
-                            flexShrink: 0,
-                            filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
-                          }} />
-                        )}
-                        {toast.type === 'error' && (
-                          <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
-                        )}
-                        <span style={{ 
-                            fontSize: typography.fontSize.base, 
-                            textAlign: 'center',
-                            fontWeight: typography.fontWeight.medium,
-                            wordBreak: 'break-word',
-                            overflowWrap: 'break-word',
-                            hyphens: 'auto',
-                            maxWidth: '100%',
-                            flex: '1 1 auto', // * Allow flex item to grow and shrink
-                            minWidth: 0, // * Allow shrinking below content size for proper wrapping
-                        }}>
-                            {toast.message}
-                        </span>
-                    </div>
-                </Card>
-            )}
-            
-            {/* Retro Window Container */}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: isMinimized ? 'auto' : '100%', // Auto height when minimized
-                backgroundColor: '#c0c0c0', // Classic Windows Gray
-                border: '2px solid #dfdfdf',
-                borderRightColor: '#404040',
-                borderBottomColor: '#404040',
-                boxShadow: '4px 4px 10px rgba(0,0,0,0.5)',
-                fontFamily: 'Tahoma, sans-serif', // Fallback for UI elements
-                transition: 'height 0.3s ease',
-            }}>
-                {/* Title Bar */}
-                <div 
-                    onDoubleClick={() => setIsMinimized(!isMinimized)}
-                    style={{
-                        background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)', // Classic Blue Gradient
-                        padding: `${spacing.xs} ${spacing.sm}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        color: '#ffffff',
-                        height: '32px',
-                        cursor: 'default',
-                        userSelect: 'none',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
-                        <MessageIcon style={{ width: '16px', height: '16px', color: '#ffffff' }} />
-                        <span style={{ 
-                            fontWeight: 'bold', 
-                            fontSize: '13px', 
-                            letterSpacing: '0.5px',
-                            textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-                        }}>
-                            Electra & Aaron's Chat Room v1.0
-                        </span>
-                    </div>
-                    
-                    {/* Window Controls */}
-                    <div style={{ display: 'flex', gap: '2px' }}>
-                        <button 
-                            onClick={() => setIsMinimized(!isMinimized)}
-                            aria-label={isMinimized ? "Restore" : "Minimize"}
-                            style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: '#c0c0c0',
-                                border: '1px solid #fff',
-                                borderRightColor: '#404040',
-                                borderBottomColor: '#404040',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px',
-                                fontWeight: 'bold',
-                                lineHeight: 1,
-                                padding: 0,
-                                cursor: 'pointer',
-                                color: '#000',
-                                boxShadow: 'inset 1px 1px 0px #fff',
-                            }}
-                        >
-                            <span style={{ marginTop: '-6px' }}>_</span>
-                        </button>
-                        <button style={{
-                            width: '20px',
-                            height: '20px',
-                            backgroundColor: '#c0c0c0',
-                            border: '1px solid #fff',
-                            borderRightColor: '#404040',
-                            borderBottomColor: '#404040',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            lineHeight: 1,
-                            padding: 0,
-                            cursor: 'default',
-                            color: '#808080', // Disabled look
-                            boxShadow: 'inset 1px 1px 0px #fff',
-                        }}>
-                            <span>□</span>
-                        </button>
-                        <button style={{
-                            width: '20px',
-                            height: '20px',
-                            backgroundColor: '#c0c0c0',
-                            border: '1px solid #fff',
-                            borderRightColor: '#404040',
-                            borderBottomColor: '#404040',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            lineHeight: 1,
-                            padding: 0,
-                            cursor: 'default',
-                            color: '#000',
-                            boxShadow: 'inset 1px 1px 0px #fff',
-                        }}>
-                            <span>×</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Window Body */}
-                {!isMinimized && (
-                    <div style={{
-                        flex: 1,
-                        display: 'flex',
-                        padding: '2px',
-                        gap: '2px',
-                        overflow: 'hidden', // Contain children
-                    }}>
-                    {/* Main Chat Area */}
-                    <div style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        backgroundColor: colors.background, // Keep dark theme for chat content
-                        border: '2px solid #808080', // Inset border
-                        borderRightColor: '#fff',
-                        borderBottomColor: '#fff',
-                        overflow: 'hidden',
-                    }}>
-                        {/* Messages Header (Inside Window) */}
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between',
-                            padding: spacing.sm,
-                            borderBottom: `1px solid ${colors.borderInset}`,
-                            backgroundColor: colors.surface,
-                        }}>
-                            <h2 style={{
-                                fontSize: typography.fontSize.lg,
-                                fontWeight: typography.fontWeight.bold,
-                                color: colors.textPrimary,
-                                margin: 0,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: spacing.xs,
-                                textShadow: shadows.textGlowBlue,
-                            }}>
-                                #general
-                            </h2>
-                            <span style={{
-                                fontSize: typography.fontSize.xs,
-                                color: colors.textTertiary,
-                            }}>
-                                Topic: Movie Night Planning 🍿
-                            </span>
-                        </div>
-            
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                            
-                            {/* Messages Container - Scrollable */}
-                            <div
-                                ref={messagesContainerRef}
-                                style={{
-                                    flex: 1,
-                                    overflowY: 'auto',
-                                    overflowX: 'hidden',
-                                    padding: spacing.md,
-                                    position: 'relative',
-                                    minHeight: 0,
-                                    // * Custom scrollbar styling
-                                    scrollbarWidth: 'thin',
-                                    scrollbarColor: `${colors.secondary}40 transparent`,
-                                }}
-                                className="messages-container"
-                            >
-                                <style>{`
-                                    .messages-container::-webkit-scrollbar {
-                                        width: 12px;
-                                    }
-                                    .messages-container::-webkit-scrollbar-track {
-                                        background: #1a1a2e;
-                                        border-left: 1px solid #333;
-                                    }
-                                    .messages-container::-webkit-scrollbar-thumb {
-                                        background: #404040;
-                                        border: 1px solid #808080;
-                                        border-radius: 0;
-                                    }
-                                    .messages-container::-webkit-scrollbar-thumb:hover {
-                                        background: #505050;
-                                    }
-                                    @keyframes pulse-glow {
-                                        0% { filter: drop-shadow(0 0 10px ${colors.secondary}40); transform: scale(1); }
-                                        50% { filter: drop-shadow(0 0 20px ${colors.secondary}80); transform: scale(1.05); }
-                                        100% { filter: drop-shadow(0 0 10px ${colors.secondary}40); transform: scale(1); }
-                                    }
-                                `}</style>
-                                {/* Scroll to Bottom Button */}
-                                {showScrollToBottom && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        bottom: spacing.md,
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        zIndex: 10,
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                    }}>
-                                        <IconButton
-                                            onClick={scrollToBottom}
-                                            aria-label="Scroll to bottom"
-                                            style={{
-                                                background: colors.secondary,
-                                                boxShadow: shadows.card,
-                                                borderRadius: radius.full,
-                                                padding: spacing.sm,
-                                                minWidth: '40px',
-                                                minHeight: '40px',
-                                                transition: 'all 0.2s ease',
-                                            }}
-                                        >
-                                            <ChevronDownIcon style={{ width: '20px', height: '20px', color: '#ffffff' }} />
-                                        </IconButton>
-                                    </div>
-                                )}
-
-                                {/* Message List - Retro iMessage Style */}
-                                <div 
-                                    style={{ 
-                                        display: 'flex', 
-                                        flexDirection: 'column', 
-                                        gap: spacing.md,
-                                    }} 
-                                    role="log" 
-                                    aria-label="Message board messages" 
-                                    aria-live="polite" 
-                                    aria-atomic="false"
-                                >
-                                {isLoading && !messages && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-                                        {[1, 2, 3].map((i) => (
-                                            <div key={i} style={{ 
-                                                padding: `${spacing.sm} ${spacing.md}`,
-                                                height: '50px',
-                                                background: colors.surface,
-                                                borderRadius: radius.lg,
-                                                opacity: 0.5,
-                                            }} />
-                                        ))}
-                                    </div>
-                                )}
-                                {error && (
-                                    <Card variant="default">
-                                        <div style={{ textAlign: 'center', padding: spacing.lg, color: colors.error }} role="alert" aria-live="assertive">
-                                            <p style={{ margin: 0 }}>Error loading messages. Please refresh the page.</p>
-                                        </div>
-                                    </Card>
-                                )}
-                                
-                                {reversedMessages.map((msg, index) => {
-                                    const authorName = msg.author || 'Anonymous';
-                                    const prevMsg = index > 0 ? reversedMessages[index - 1] : null;
-                                    const isSameSender = prevMsg && (prevMsg.author || 'Anonymous') === authorName;
-                                    const showSenderName = !isSameSender || index === 0;
-                                    
-                                    return (
-                                        <MessageItem
-                                            key={msg.id}
-                                            msg={msg}
-                                            currentUser={currentUser}
-                                            showSenderName={showSenderName}
-                                            onDelete={handleDelete}
-                                        />
-                                    );
-                                })}
-                                {messages?.length === 0 && !isLoading && (
-                                    <div style={{ 
-                                        textAlign: 'center', 
-                                        padding: spacing['2xl'], 
-                                        color: colors.textTertiary,
-                                        opacity: 0.8,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        height: '100%',
-                                    }} role="status">
-                                        <div style={{
-                                            animation: 'pulse-glow 3s infinite ease-in-out',
-                                        }}>
-                                            <MessageIcon style={{ 
-                                                width: '64px', 
-                                                height: '64px', 
-                                                marginBottom: spacing.md, 
-                                                color: colors.secondary,
-                                            }} />
-                                        </div>
-                                        <p style={{ 
-                                            fontSize: typography.fontSize.lg, 
-                                            margin: 0,
-                                            color: colors.textSecondary,
-                                            textShadow: shadows.textGlowBlue,
-                                        }}>
-                                            No messages yet...
-                                        </p>
-                                        <p style={{
-                                            fontSize: typography.fontSize.sm,
-                                            color: colors.textTertiary,
-                                            marginTop: spacing.xs,
-                                        }}>
-                                            Be the first to start the conversation!
-                                        </p>
-                                    </div>
-                                )}
-                                <div ref={messagesEndRef} aria-hidden="true" />
-                                </div>
-                            </div>
-
-                            {/* Post Message Form - Streamlined Chat Input */}
-                            <div style={{
-                                background: colors.surface,
-                                padding: spacing.sm,
-                                borderTop: `1px solid ${colors.borderInset}`,
-                            }}>
-                                <form 
-                                    onSubmit={handleSubmit} 
-                                    aria-label="Post a new message"
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: spacing.sm,
-                                    }}
-                                >
-                                    {/* Author field - compact inline */}
-                                    {!currentUser && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
-                                            <label htmlFor="message-author" style={{
-                                                fontSize: typography.fontSize.xs,
-                                                color: colors.textTertiary,
-                                                whiteSpace: 'nowrap',
-                                                fontWeight: typography.fontWeight.bold,
-                                            }}>
-                                                FROM:
-                                            </label>
-                                            <input
-                                                id="message-author"
-                                                type="text"
-                                                value={author}
-                                                onChange={(e) => {
-                                                    const value = e.target.value.slice(0, MAX_AUTHOR_LENGTH);
-                                                    setAuthor(value);
-                                                    setSubmitError(null);
-                                                }}
-                                                placeholder="YOUR NAME"
-                                                maxLength={MAX_AUTHOR_LENGTH}
-                                                disabled={isSubmitting}
-                                                aria-label="Your name"
-                                                style={{
-                                                    flex: 1,
-                                                    padding: `${spacing.xs} ${spacing.sm}`,
-                                                    backgroundColor: '#000',
-                                                    border: borders.inputInset,
-                                                    borderRadius: 0, // Retro sharp corners
-                                                    color: colors.secondary,
-                                                    fontSize: typography.fontSize.sm,
-                                                    fontFamily: typography.fontFamily.mono.join(', '),
-                                                    outline: 'none',
-                                                    transition: 'all 0.2s ease',
-                                                    letterSpacing: '0.05em',
-                                                }}
-                                                onFocus={(e) => {
-                                                    e.currentTarget.style.borderColor = colors.secondary;
-                                                    e.currentTarget.style.boxShadow = `0 0 8px ${colors.secondary}40`;
-                                                }}
-                                                onBlur={(e) => {
-                                                    e.currentTarget.style.borderColor = colors.borderInset;
-                                                    e.currentTarget.style.boxShadow = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-                                    
-                                    {/* Message input and send button - chat bar style */}
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: spacing.sm,
-                                        alignItems: 'flex-end',
-                                    }}>
-                                        <div style={{ flex: 1, position: 'relative' }}>
-                                            <label htmlFor="message-content" className="sr-only">Message content</label>
-                                            <textarea
-                                                id="message-content"
-                                                ref={contentTextareaRef}
-                                                value={content}
-                                                onChange={(e) => {
-                                                    const value = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
-                                                    setContent(value);
-                                                    setSubmitError(null);
-                                                }}
-                                                onKeyDown={handleKeyDown}
-                                                placeholder="Type a message..."
-                                                maxLength={MAX_MESSAGE_LENGTH}
-                                                rows={1}
-                                                disabled={isSubmitting}
-                                                aria-label="Message content"
-                                                aria-invalid={submitError ? 'true' : 'false'}
-                                                style={{
-                                                    width: '100%',
-                                                    padding: `${spacing.sm} ${spacing.md}`,
-                                                    backgroundColor: '#fff', // White background for classic chat feel
-                                                    border: borders.inputInset,
-                                                    borderRadius: 0, // Sharp corners
-                                                    color: '#000', // Black text
-                                                    fontSize: typography.fontSize.base,
-                                                    fontFamily: 'Arial, sans-serif', // Classic chat font
-                                                    lineHeight: typography.lineHeight.normal,
-                                                    resize: 'none',
-                                                    minHeight: '44px',
-                                                    maxHeight: '120px',
-                                                    outline: 'none',
-                                                    transition: 'all 0.2s ease',
-                                                    overflow: 'hidden',
-                                                }}
-                                                onFocus={(e) => {
-                                                    e.currentTarget.style.borderColor = colors.accent;
-                                                    e.currentTarget.style.boxShadow = `inset 0 0 4px rgba(0,0,0,0.2)`;
-                                                }}
-                                                onBlur={(e) => {
-                                                    e.currentTarget.style.borderColor = colors.borderInset;
-                                                    e.currentTarget.style.boxShadow = 'none';
-                                                }}
-                                            />
-                                            
-                                            {/* Character count - subtle */}
-                                            {content.length > 0 && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    bottom: spacing.xs,
-                                                    right: spacing.sm,
-                                                    fontSize: typography.fontSize.xs,
-                                                    color: content.length > MAX_MESSAGE_LENGTH * 0.9 
-                                                        ? (content.length >= MAX_MESSAGE_LENGTH ? colors.error : colors.warning)
-                                                        : '#666',
-                                                    pointerEvents: 'none',
-                                                    opacity: 0.6,
-                                                    fontFamily: typography.fontFamily.mono.join(', '),
-                                                }}>
-                                                    {content.length}/{MAX_MESSAGE_LENGTH}
-                                                </div>
-                                            )}
-                                        </div>
-                                        
-                                        {/* Send button - Retro Windows Button */}
-                                        <button
-                                            type="submit"
-                                            disabled={!content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
-                                            aria-label="Send message"
-                                            style={{
-                                                width: '60px',
-                                                height: '44px',
-                                                borderRadius: 0, // Sharp corners
-                                                backgroundColor: '#c0c0c0',
-                                                border: '2px outset #fff',
-                                                borderRightColor: '#404040',
-                                                borderBottomColor: '#404040',
-                                                color: '#000',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: (content.trim() && content.length <= MAX_MESSAGE_LENGTH && !isSubmitting) ? 'pointer' : 'not-allowed',
-                                                boxShadow: '1px 1px 0px #000',
-                                                transition: 'all 0.1s ease',
-                                                fontWeight: 'bold',
-                                                fontSize: '14px',
-                                            }}
-                                            onMouseDown={(e) => {
-                                                if (!e.currentTarget.disabled) {
-                                                    e.currentTarget.style.border = '2px inset #fff';
-                                                    e.currentTarget.style.borderRightColor = '#dfdfdf';
-                                                    e.currentTarget.style.borderBottomColor = '#dfdfdf';
-                                                    e.currentTarget.style.transform = 'translate(1px, 1px)';
-                                                }
-                                            }}
-                                            onMouseUp={(e) => {
-                                                if (!e.currentTarget.disabled) {
-                                                    e.currentTarget.style.border = '2px outset #fff';
-                                                    e.currentTarget.style.borderRightColor = '#404040';
-                                                    e.currentTarget.style.borderBottomColor = '#404040';
-                                                    e.currentTarget.style.transform = 'translate(0, 0)';
-                                                }
-                                            }}
-                                        >
-                                            {isSubmitting ? (
-                                                <Spinner style={{ width: '16px', height: '16px', color: '#000' }} />
-                                            ) : (
-                                                'Send'
-                                            )}
-                                        </button>
-                                    </div>
-                                    
-                                    {/* Error message */}
-                                    {submitError && (
-                                        <div id="submit-error" style={{
-                                            color: colors.error,
-                                            fontSize: typography.fontSize.xs,
-                                            padding: `${spacing.xs} ${spacing.sm}`,
-                                            backgroundColor: colors.error + '20',
-                                            borderRadius: radius.sm,
-                                            border: `1px solid ${colors.error}40`,
-                                        }} role="alert" aria-live="polite">
-                                            {submitError}
-                                        </div>
-                                    )}
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {/* Online Users Sidebar - Hidden on very small screens if needed, but keeping simple for now */}
-                    <div 
-                        className="online-users-sidebar"
-                        style={{
-                        width: '180px',
-                        backgroundColor: '#fff',
-                        border: '2px inset #dfdfdf',
-                        borderRightColor: '#fff',
-                        borderBottomColor: '#fff',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        fontFamily: 'Tahoma, sans-serif',
-                        marginLeft: '2px',
-                    }}>
-                        <div style={{
-                            padding: '4px',
-                            backgroundColor: '#c0c0c0',
-                            borderBottom: '1px solid #808080',
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            color: '#000',
-                        }}>
-                            Online Users (3)
-                        </div>
-                        <div style={{ padding: '4px', overflowY: 'auto', flex: 1, backgroundColor: '#fff' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00ff00', border: '1px solid #008000' }}></span>
-                                <span style={{ fontSize: '12px', color: '#000' }}>Electra (Admin)</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00ff00', border: '1px solid #008000' }}></span>
-                                <span style={{ fontSize: '12px', color: '#000' }}>Aaron (Admin)</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00ff00', border: '1px solid #008000' }}></span>
-                                <span style={{ fontSize: '12px', color: '#000' }}>Guest_123</span>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-
-                )}
-                </div>
-
-            
-            <style>{`
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-                @keyframes toast-slide-in {
-                    from { transform: translate(-50%, -100%); opacity: 0; }
-                    to { transform: translate(-50%, 0); opacity: 1; }
-                }
-
-                @media (max-width: 768px) {
-                    .online-users-sidebar {
-                        display: none !important;
-                    }
-                    .message-board-container {
-                        padding: 0.5rem !important;
-                    }
-                }
-            `}</style>
-        </div>
+          >
+            {unreadCount}
+          </div>
+        )}
+      </button>
     );
+  }
+
+  return (
+    <div
+      style={
+        isEmbedded
+          ? {
+              position: 'relative',
+              width: '100%',
+              maxHeight: isMobile ? 'min(78vh, 720px)' : 'min(780px, 80vh)',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: colors.surfaceElevated,
+              borderRadius: radius.lg,
+              boxShadow: shadows.cardElevated,
+              border: `1px solid ${colors.accentMuted}`,
+              overflow: 'hidden',
+            }
+          : {
+              position: 'fixed',
+              top: `${bubblePosition.y}px`,
+              left: isMobile ? `${bubblePosition.x}px` : 'auto',
+              right: isMobile ? 'auto' : `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)`,
+              width: isMobile ? 'calc(100vw - 32px)' : 'min(420px, 90vw)',
+              maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: FLOATING_Z_INDEX,
+              backgroundColor: colors.surfaceElevated,
+              borderRadius: radius.lg,
+              boxShadow: shadows.cardElevated,
+              border: `1px solid ${colors.accentMuted}`,
+              overflow: 'hidden',
+              animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              transformOrigin: 'bottom right',
+            }
+      }
+      className="message-board-container"
+    >
+        <div
+          style={{
+            padding: `${spacing.sm} ${spacing.md}`,
+            backgroundColor: colors.surface,
+            color: colors.textPrimary,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontWeight: 'bold',
+            cursor: isEmbedded ? 'default' : 'pointer',
+            borderBottom: `1px solid ${colors.accentMuted}`,
+          }}
+          onClick={handleToggle}
+        >
+          <span style={{ fontFamily: typography.fontFamily.heading.join(', '), textTransform: 'uppercase', letterSpacing: typography.letterSpacing.wide, textShadow: shadows.textGlow }}>Messages</span>
+        {!isEmbedded && (
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              handleToggle();
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer',
+              padding: '4px',
+              lineHeight: 1,
+              color: colors.textPrimary,
+            }}
+            aria-label="Minimize"
+          >
+            −
+          </button>
+        )}
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {toast && <Toast message={toast.message} type={toast.type} />}
+
+        <ChatWindow isEditMode={isEditMode} onToggleEditMode={() => setIsEditMode(!isEditMode)}>
+          <MessageList
+            messages={messages ?? null}
+            isLoading={isLoading}
+            error={error}
+            currentUser={currentUser}
+            onDelete={handleDelete}
+            onReaction={handleReaction}
+            isSubmitting={isSubmitting}
+            isEditMode={isEditMode}
+          />
+          <MessageInput
+            key={currentUser || 'anonymous'}
+            currentUser={currentUser}
+            isSubmitting={isSubmitting}
+            onSend={handleSend}
+            onError={(msg) => console.error(msg)}
+          />
+        </ChatWindow>
+      </div>
+    </div>
+  );
 };
 
 export default MessageBoard;

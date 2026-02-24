@@ -96,12 +96,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <Button variant="ghost" onClick={onCancel} disabled={isLoading}>
               {cancelText}
             </Button>
-            <Button
-              variant={variant}
-              onClick={onConfirm}
-              isLoading={isLoading}
-              autoFocus
-            >
+            <Button variant={variant} onClick={onConfirm} isLoading={isLoading} autoFocus>
               {confirmText}
             </Button>
           </div>

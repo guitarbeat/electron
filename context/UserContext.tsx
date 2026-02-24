@@ -14,23 +14,22 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return sessionStorage.getItem('currentUser') as User | null;
   });
 
-  const value = useMemo(() => ({
-    currentUser,
-    setCurrentUser: (user: User | null) => {
+  const value = useMemo(
+    () => ({
+      currentUser,
+      setCurrentUser: (user: User | null) => {
         if (user) {
-            sessionStorage.setItem('currentUser', user);
+          sessionStorage.setItem('currentUser', user);
         } else {
-            sessionStorage.removeItem('currentUser');
+          sessionStorage.removeItem('currentUser');
         }
         setCurrentUser(user);
-    }
-  }), [currentUser]);
-
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
+      },
+    }),
+    [currentUser]
   );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 export const useUser = (): UserContextType => {

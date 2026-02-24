@@ -18,7 +18,15 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
       }}
       className="animate-fade-in"
     >
-      <Card variant="elevated">
+      <Card
+        variant="elevated"
+        style={{
+          backgroundImage: `${colors.gradientCard}, linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 50%, transparent 100%)`,
+          border: `2px solid ${colors.border}`,
+          boxShadow: shadows.cardElevated,
+          backdropFilter: 'blur(8px)',
+        }}
+      >
         <div style={{ padding: spacing['2xl'] }}>
           {/* Decorative sparkle effect */}
           <div
@@ -35,14 +43,14 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
             style={{
               fontSize: typography.fontSize['3xl'],
               fontWeight: typography.fontWeight.bold,
-              color: colors.accent,
-              background: shadows.textGradientPink,
+              backgroundImage: shadows.textGradientPink,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               marginBottom: spacing.lg,
               marginTop: 0,
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 105, 180, 0.3)',
+              color: 'transparent',
+              textShadow: 'none',
               letterSpacing: '0.02em',
               filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))',
             }}
@@ -79,7 +87,11 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onStartQuiz, onSkip }) => {
                 lineHeight: typography.lineHeight.relaxed,
               }}
             >
-              Answer 9 fun questions to find out if you're <strong style={{ color: colors.accent }}>Electra</strong>, <strong style={{ color: colors.secondary }}>Aaron</strong>, <strong style={{ color: colors.tertiary }}>Madeleine</strong>, or <strong style={{ color: colors.yellow }}>Nosferatu/Smeemo</strong>!
+              Answer 9 fun questions to find out if you're{' '}
+              <strong style={{ color: colors.accent }}>Electra</strong>,{' '}
+              <strong style={{ color: colors.secondary }}>Aaron</strong>,{' '}
+              <strong style={{ color: colors.tertiary }}>Madeleine</strong>, or{' '}
+              <strong style={{ color: colors.yellow }}>Nosferatu/Smeemo</strong>!
             </p>
           </div>
 

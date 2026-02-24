@@ -4,6 +4,7 @@ import { colors, radius, spacing, motion, borders } from '../../design-system/to
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'default' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 /**
@@ -15,6 +16,7 @@ const IconButton: React.FC<IconButtonProps> = ({
   className = '',
   disabled,
   style,
+  type = 'button',
   ...props
 }) => {
   const variantStyles = {
@@ -39,6 +41,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 
   return (
     <button
+      type={type}
       className={className}
       disabled={isDisabled}
       style={{
@@ -58,12 +61,12 @@ const IconButton: React.FC<IconButtonProps> = ({
       onMouseEnter={(e) => {
         if (!isDisabled) {
           if (variant === 'default') {
-            e.currentTarget.style.backgroundColor = colors.tertiaryHover + '40';
+            e.currentTarget.style.backgroundColor = `${colors.tertiaryHover}40`;
           } else if (variant === 'ghost') {
             e.currentTarget.style.backgroundColor = colors.surfaceElevated;
             e.currentTarget.style.color = colors.textPrimary;
           } else if (variant === 'danger') {
-            e.currentTarget.style.backgroundColor = colors.error + '20';
+            e.currentTarget.style.backgroundColor = `${colors.error}20`;
             e.currentTarget.style.opacity = '0.9';
           }
         }
@@ -86,6 +89,30 @@ const IconButton: React.FC<IconButtonProps> = ({
         if (!isDisabled && variant === 'default') {
           e.currentTarget.style.borderStyle = 'outset';
         }
+      }}
+      onFocus={(e) => {
+        if (!isDisabled) {
+          if (variant === 'default') {
+            e.currentTarget.style.backgroundColor = `${colors.tertiaryHover}40`;
+          } else if (variant === 'ghost') {
+            e.currentTarget.style.backgroundColor = colors.surfaceElevated;
+            e.currentTarget.style.color = colors.textPrimary;
+          } else if (variant === 'danger') {
+            e.currentTarget.style.backgroundColor = `${colors.error}20`;
+            e.currentTarget.style.opacity = '0.9';
+          }
+        }
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        if (!isDisabled) {
+          e.currentTarget.style.backgroundColor = variantStyles[variant].backgroundColor;
+          e.currentTarget.style.color = variantStyles[variant].color;
+          if (variant === 'danger') {
+            e.currentTarget.style.opacity = '1';
+          }
+        }
+        props.onBlur?.(e);
       }}
       {...props}
     >

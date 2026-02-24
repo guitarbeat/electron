@@ -1,12 +1,12 @@
 /**
  * Quiz Type Definitions
- * 
+ *
  * Type definitions for the personality quiz system
  */
 
 export type QuizCharacter = 'Electra' | 'Aaron' | 'Madeleine' | 'Nosferatu/Smeemo';
 
-export type QuestionType = 'multiple-choice' | 'agree-disagree' | 'image-choice';
+export type QuestionType = 'multiple-choice' | 'agree-disagree' | 'image-choice' | 'xy-axis';
 
 // Multiple Choice Question
 export interface MultipleChoiceOption {
@@ -50,18 +50,46 @@ export interface ImageChoiceQuestion {
   options: ImageChoiceOption[];
 }
 
+// XY Axis Question (2D grid placement)
+export interface XYAxisQuestion {
+  id: string;
+  type: 'xy-axis';
+  question: string;
+  xAxis: {
+    leftLabel: string;
+    rightLabel: string;
+  };
+  yAxis: {
+    topLabel: string;
+    bottomLabel: string;
+  };
+  quadrantScores: {
+    topLeft: Partial<Record<QuizCharacter, number>>;
+    topRight: Partial<Record<QuizCharacter, number>>;
+    bottomLeft: Partial<Record<QuizCharacter, number>>;
+    bottomRight: Partial<Record<QuizCharacter, number>>;
+  };
+}
+
 // Union type for all questions
-export type QuizQuestion = MultipleChoiceQuestion | AgreeDisagreeQuestion | ImageChoiceQuestion;
+export type QuizQuestion =
+  | MultipleChoiceQuestion
+  | AgreeDisagreeQuestion
+  | ImageChoiceQuestion
+  | XYAxisQuestion;
 
 // User's answer to a question
 export interface QuizAnswer {
   questionId: string;
   answerIndex?: number; // For multiple choice and image choice
   scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree'; // For agree/disagree
+  xyPosition?: { x: number; y: number }; // For xy-axis (-1 to 1 range)
 }
 
 // Character scores
 export type CharacterScores = Record<QuizCharacter, number>;
+
+export const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo'];
 
 // Quiz result
 export interface QuizResult {
