@@ -365,6 +365,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           }
         }}
         isAdding={isAdding}
+        viewMode={viewMode as any}
+        setViewMode={setViewMode as any}
       />
 
       <WatchlistContent

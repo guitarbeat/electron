@@ -1,4 +1,5 @@
 import React from 'react';
+import { RotaryDialCarousel } from './RotaryDialCarousel';
 import MasonryGrid from '../../ui/MasonryGrid';
 import MovieItem from '../../MovieItem';
 import { SuggestionItemCard } from '../../DashboardCards';
@@ -8,7 +9,7 @@ import { ContentTab } from '../types';
 import { spacing, colors, typography } from '../../../design-system/tokens';
 
 interface WatchlistContentProps {
-  viewMode: 'list' | 'grid';
+  viewMode: 'list' | 'grid' | 'dial';
   filteredMovies: Movie[];
   filteredSuggestions: MovieSuggestion[];
   isSuggestionsLoading: boolean;
@@ -93,7 +94,17 @@ export const WatchlistContent: React.FC<WatchlistContentProps> = ({
         transition: 'opacity 0.2s ease',
       }}
     >
-      {viewMode === 'grid' ? (
+      {viewMode === 'dial' ? (
+        <RotaryDialCarousel
+          movies={filteredMovies}
+          currentUser={currentUser}
+          onMovieClick={(movie) => {
+            // Re-using the click-to-highlight/focus logic we have, or simply toggle watched status
+            // For now, let's toggle watched state or jump to it if they want to interact
+            onToggleWatched(movie);
+          }}
+        />
+      ) : viewMode === 'grid' ? (
         <MasonryGrid>
           {filteredSuggestions.map((suggestion) => (
             <SuggestionItemCard
