@@ -3,6 +3,7 @@ import { User } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import SnakeGame from '../snake/SnakeGame';
+import Matchmaker from '../matchmaker/Matchmaker';
 import SpinWheel from '../extras/spin-wheel/SpinWheel';
 import { useMovies } from '../../hooks/useMovies';
 import { DiceIcon } from '../icons';
@@ -113,38 +114,55 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
       )}
 
       {showGames && (
-        <Card
-          style={{
-            padding: spacing.lg,
-            borderRadius: radius.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
-            background: 'linear-gradient(145deg, rgba(20, 31, 56, 0.88), rgba(12, 22, 41, 0.88))',
-          }}
-        >
-          <h2
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+          {/* Matchmaker Game */}
+          <Card
             style={{
-              margin: 0,
-              marginBottom: spacing.sm,
-              color: colors.textPrimary,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              fontSize: typography.fontSize.lg,
+              padding: spacing.lg,
+              borderRadius: radius.lg,
+              border: `1px solid ${colors.borderTertiary}35`,
+              background:
+                'linear-gradient(145deg, rgba(30, 20, 50, 0.88), rgba(20, 10, 40, 0.88))',
+              boxShadow: shadows.glow,
             }}
           >
-            Snake Arcade
-          </h2>
-          <p
-            style={{
-              margin: 0,
-              marginBottom: spacing.md,
-              color: colors.textSecondary,
-              fontSize: typography.fontSize.sm,
-            }}
-          >
-            Embedded mode for quick breaks between picks.
-          </p>
+            <Matchmaker currentUser={currentUser} />
+          </Card>
 
-          <SnakeGame mode="embedded" />
-        </Card>
+          {/* Snake Arcade */}
+          <Card
+            style={{
+              padding: spacing.lg,
+              borderRadius: radius.lg,
+              border: `1px solid ${colors.borderSecondary}35`,
+              background: 'linear-gradient(145deg, rgba(20, 31, 56, 0.88), rgba(12, 22, 41, 0.88))',
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+                marginBottom: spacing.sm,
+                color: colors.textPrimary,
+                fontFamily: typography.fontFamily.heading.join(', '),
+                fontSize: typography.fontSize.lg,
+              }}
+            >
+              Snake Arcade
+            </h2>
+            <p
+              style={{
+                margin: 0,
+                marginBottom: spacing.md,
+                color: colors.textSecondary,
+                fontSize: typography.fontSize.sm,
+              }}
+            >
+              Embedded mode for quick breaks between picks.
+            </p>
+
+            <SnakeGame mode="embedded" />
+          </Card>
+        </div>
       )}
 
       {showQuiz && (

@@ -37,6 +37,9 @@ const GIST_DAILY_SPIN_FILENAME = 'dailyspin.json';
 // The filename for the spin history data.
 const GIST_SPIN_HISTORY_FILENAME = 'spinhistory.json';
 
+// The filename for the matchmaker game data.
+const GIST_MATCHMAKER_FILENAME = 'matchmaker.json';
+
 export {
   GIST_TOKEN,
   GIST_ID,
@@ -48,4 +51,5 @@ export {
   GIST_MEMORIES_FILENAME,
   GIST_DAILY_SPIN_FILENAME,
   GIST_SPIN_HISTORY_FILENAME,
+  GIST_MATCHMAKER_FILENAME,
 };
