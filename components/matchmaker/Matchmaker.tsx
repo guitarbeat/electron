@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { User, Movie } from '../../types';
 import { useMatchmaker } from '../../hooks/useMatchmaker';
 import { useMovies } from '../../hooks/useMovies';
@@ -18,8 +18,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         isSubmitting,
         startNewGame,
         swipe,
+        undo,
         endCurrentGame,
     } = useMatchmaker(currentUser);
+
+    const [isPickingRandom, setIsPickingRandom] = useState(false);
+    const [randomWinner, setRandomWinner] = useState<Movie | null>(null);
 
     const unwatchedMovies = useMemo(
         () => (movies ? movies.filter((m) => m.watchedBy.length < 2) : []),
@@ -55,29 +59,70 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     const lastMatchCount = useRef(matches.length);
 
     // Trigger celebration and alert when a new match is found
-    useMemo(() => {
+    useEffect(() => {
         if (matches.length > lastMatchCount.current && matches.length > 0) {
-            const newMatch = matches[matches.length - 1];
-            setLastMatchedMovie(newMatch);
-            setShowConfetti(true);
-            setTimeout(() => {
-                setShowConfetti(false);
-                setLastMatchedMovie(null);
-            }, 4000);
+            const newMatchId = matches[matches.length - 1].id;
+            const newMatch = movies?.find(m => m.id === newMatchId);
+            if (newMatch) {
+                setLastMatchedMovie(newMatch);
+                setShowConfetti(true);
+                setTimeout(() => {
+                    setShowConfetti(false);
+                    setLastMatchedMovie(null);
+                }, 4000);
+            }
         }
         lastMatchCount.current = matches.length;
-    }, [matches.length]);
+    }, [matches.length, movies]);
 
-    const handleStart = () => {
+    const availableVibes = useMemo(() => {
+        const counts: Record<string, number> = {};
+        unwatchedMovies.forEach(m => {
+            const tags = [
+                ...(m.genre ? m.genre.split(',').map(g => g.trim()) : []),
+                ...(m.category ? [m.category] : [])
+            ];
+            tags.forEach(tag => {
+                const clean = tag?.trim();
+                if (!clean) return;
+                counts[clean] = (counts[clean] || 0) + 1;
+            });
+        });
+
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 8)
+            .map(([vibe]) => vibe);
+    }, [unwatchedMovies]);
+
+    const [vibe, setVibe] = useState<string | null>(null);
+
+    const handleStart = (selectedVibe: string | null = null) => {
         if (!currentUser) return;
-        if (unwatchedMovies.length < 3) {
-            alert('Add at least 3 movies to your queue to start a Matchmaker session!');
+
+        let poolSource = [...unwatchedMovies];
+        if (selectedVibe === 'Short & Sweet') {
+            poolSource = poolSource.filter(m => {
+                const mins = parseInt(m.runtime || '120');
+                return mins > 0 && mins < 100;
+            });
+        } else if (selectedVibe) {
+            poolSource = poolSource.filter(m =>
+                m.genre?.toLowerCase().includes(selectedVibe.toLowerCase()) ||
+                m.category?.toLowerCase().includes(selectedVibe.toLowerCase())
+            );
+        }
+
+        if (poolSource.length < 3) {
+            alert(`Not enough ${selectedVibe || ''} movies in your queue! (Need at least 3)`);
             return;
         }
-        // Shuffle and pick up to 15
-        const shuffled = [...unwatchedMovies].sort(() => 0.5 - Math.random());
-        const pool = shuffled.slice(0, 15).map((m) => m.id);
+
+        // Shuffle and pick up to 12 (fewer is better for indecisive people)
+        const shuffled = poolSource.sort(() => 0.5 - Math.random());
+        const pool = shuffled.slice(0, 10).map((m) => m.id);
         startNewGame(pool);
+        setVibe(selectedVibe);
     };
 
     const handleSwipe = (direction: 'left' | 'right') => {
@@ -91,6 +136,25 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         if (cardRef.current && remainingMovies.length > 0) {
             cardRef.current.swipe(direction);
         }
+    };
+
+    const handlePickRandom = () => {
+        if (matches.length < 2) return;
+        setIsPickingRandom(true);
+        // Simulate a "thinking" phase
+        setTimeout(() => {
+            const winner = matches[Math.floor(Math.random() * matches.length)];
+            setRandomWinner(winner);
+            setIsPickingRandom(false);
+            // Show the match celebration for the winner
+            setLastMatchedMovie(winner);
+            setShowConfetti(true);
+            setTimeout(() => {
+                setShowConfetti(false);
+                setLastMatchedMovie(null);
+                setRandomWinner(null);
+            }, 4000);
+        }, 1500);
     };
 
     if (isGameLoading || isMoviesLoading) {
@@ -117,17 +181,52 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 </h2>
                 <div style={{ fontSize: '3rem', marginBottom: spacing.md }}>💖 🎬 💖</div>
                 <p style={{ color: colors.textSecondary, marginBottom: spacing.xl, maxWidth: '500px', margin: '0 auto 2rem' }}>
-                    Pick 15 movies from your queue and swipe on them. When you both swipe right on the same one, it's a match!
+                    Pick a vibe and swipe on 10 random movies. If you both like one, it's a match!
                 </p>
-                <Button
-                    variant="secondary"
-                    onClick={handleStart}
-                    isLoading={isSubmitting}
-                    size="lg"
-                    disabled={!currentUser}
-                >
-                    {currentUser ? 'Start New Session' : 'Pick User to Start'}
-                </Button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap', justifyContent: 'center', marginBottom: spacing.md, maxWidth: '600px' }}>
+                        {availableVibes.length > 0 ? (
+                            availableVibes.map(v => (
+                                <Button
+                                    key={v}
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleStart(v)}
+                                    disabled={!currentUser || isSubmitting}
+                                    style={{ border: `1px solid ${colors.borderSecondary}50`, borderRadius: radius.full, textTransform: 'capitalize' }}
+                                >
+                                    {v}
+                                </Button>
+                            ))
+                        ) : (
+                            <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs }}>Add movies with genres to filter by vibe!</div>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStart('Short & Sweet')}
+                            disabled={!currentUser || isSubmitting}
+                            style={{
+                                border: `1px solid ${colors.secondary}50`,
+                                color: colors.secondary,
+                                borderRadius: radius.full
+                            }}
+                        >
+                            ⏱️ Under 100m
+                        </Button>
+                    </div>
+
+                    <Button
+                        variant="secondary"
+                        onClick={() => handleStart(null)}
+                        isLoading={isSubmitting}
+                        size="lg"
+                        disabled={!currentUser}
+                    >
+                        {currentUser ? 'Surprise Us (Random 10)' : 'Pick User to Start'}
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -295,50 +394,80 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             </div>
 
             {/* Action Buttons */}
-            {remainingMovies.length > 0 && (
-                <div style={{ display: 'flex', gap: spacing.xl, marginBottom: spacing.md, zIndex: 10 }}>
-                    <Button
-                        variant="ghost"
-                        style={{
-                            borderRadius: '50%',
-                            width: '70px',
-                            height: '70px',
-                            border: `2px solid ${colors.error}`,
-                            color: colors.error,
-                            fontSize: '1.8rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: shadows.glow,
-                            padding: 0,
-                            background: 'rgba(248, 113, 113, 0.1)',
-                        }}
-                        onClick={() => handleButtonClick('left')}
-                        disabled={isSubmitting}
-                    >
-                        ✕
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        style={{
-                            borderRadius: '50%',
-                            width: '70px',
-                            height: '70px',
-                            border: `2px solid ${colors.success}`,
-                            color: colors.success,
-                            fontSize: '1.8rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: shadows.glow,
-                            padding: 0,
-                            background: 'rgba(74, 222, 128, 0.1)',
-                        }}
-                        onClick={() => handleButtonClick('right')}
-                        disabled={isSubmitting}
-                    >
-                        💖
-                    </Button>
+            {(remainingMovies.length > 0 || swipedIds.length > 0) && (
+                <div style={{ display: 'flex', gap: spacing.xl, alignItems: 'center', marginBottom: spacing.md, zIndex: 10 }}>
+                    {remainingMovies.length > 0 && (
+                        <Button
+                            variant="ghost"
+                            style={{
+                                borderRadius: '50%',
+                                width: '60px',
+                                height: '60px',
+                                border: `2px solid ${colors.error}`,
+                                color: colors.error,
+                                fontSize: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: shadows.glow,
+                                padding: 0,
+                                background: 'rgba(248, 113, 113, 0.1)',
+                            }}
+                            onClick={() => handleButtonClick('left')}
+                            disabled={isSubmitting}
+                        >
+                            ✕
+                        </Button>
+                    )}
+
+                    {/* Undo Button */}
+                    {swipedIds.length > 0 && (
+                        <Button
+                            variant="ghost"
+                            style={{
+                                borderRadius: '50%',
+                                width: '50px',
+                                height: '50px',
+                                border: `2px solid ${colors.textTertiary}`,
+                                color: colors.textTertiary,
+                                fontSize: '1.2rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 0,
+                                opacity: isSubmitting ? 0.5 : 1,
+                            }}
+                            onClick={undo}
+                            disabled={isSubmitting}
+                            title="Undo last swipe"
+                        >
+                            ↺
+                        </Button>
+                    )}
+
+                    {remainingMovies.length > 0 && (
+                        <Button
+                            variant="ghost"
+                            style={{
+                                borderRadius: '50%',
+                                width: '60px',
+                                height: '60px',
+                                border: `2px solid ${colors.success}`,
+                                color: colors.success,
+                                fontSize: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: shadows.glow,
+                                padding: 0,
+                                background: 'rgba(74, 222, 128, 0.1)',
+                            }}
+                            onClick={() => handleButtonClick('right')}
+                            disabled={isSubmitting}
+                        >
+                            💖
+                        </Button>
+                    )}
                 </div>
             )}
 
@@ -348,21 +477,35 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                     style={{
                         width: '100%',
                         padding: spacing.md,
-                        animation: `fadeInUp ${motionTokens.duration.normal} ${motionTokens.easing.easeOut}`
+                        animation: `fadeInUp ${motionTokens.duration.normal} ${motionTokens.easing.easeOut}`,
+                        borderTop: `1px solid ${colors.borderSecondary}30`,
+                        marginTop: spacing.md,
                     }}
                 >
-                    <h4
-                        style={{
-                            color: colors.accent,
-                            fontFamily: typography.fontFamily.heading.join(', '),
-                            fontSize: typography.fontSize.base,
-                            marginBottom: spacing.sm,
-                            textAlign: 'center',
-                            textShadow: shadows.textGlow,
-                        }}
-                    >
-                        It's a Match!
-                    </h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm }}>
+                        <h4
+                            style={{
+                                color: colors.accent,
+                                fontFamily: typography.fontFamily.heading.join(', '),
+                                fontSize: typography.fontSize.base,
+                                margin: 0,
+                                textShadow: shadows.textGlow,
+                            }}
+                        >
+                            It's a Match!
+                        </h4>
+                        {matches.length >= 2 && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handlePickRandom}
+                                isLoading={isPickingRandom}
+                                style={{ fontSize: '10px', textTransform: 'uppercase', color: colors.secondary, border: `1px solid ${colors.secondary}50` }}
+                            >
+                                {isPickingRandom ? 'Choosing...' : 'Pick for Us'}
+                            </Button>
+                        )}
+                    </div>
                     <div
                         style={{
                             display: 'flex',
