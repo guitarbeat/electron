@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { User, Movie } from '../../types';
 import { useMatchmaker } from '../../hooks/useMatchmaker';
 import { useMovies } from '../../hooks/useMovies';
@@ -49,6 +49,25 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             .filter((m): m is Movie => !!m);
     }, [game, movies]);
 
+    const cardRef = useRef<any>(null);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [lastMatchedMovie, setLastMatchedMovie] = useState<Movie | null>(null);
+    const lastMatchCount = useRef(matches.length);
+
+    // Trigger celebration and alert when a new match is found
+    useMemo(() => {
+        if (matches.length > lastMatchCount.current && matches.length > 0) {
+            const newMatch = matches[matches.length - 1];
+            setLastMatchedMovie(newMatch);
+            setShowConfetti(true);
+            setTimeout(() => {
+                setShowConfetti(false);
+                setLastMatchedMovie(null);
+            }, 4000);
+        }
+        lastMatchCount.current = matches.length;
+    }, [matches.length]);
+
     const handleStart = () => {
         if (!currentUser) return;
         if (unwatchedMovies.length < 3) {
@@ -65,6 +84,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         if (remainingMovies.length > 0) {
             const activeMovie = remainingMovies[0];
             swipe(activeMovie.id, direction === 'right');
+        }
+    };
+
+    const handleButtonClick = (direction: 'left' | 'right') => {
+        if (cardRef.current && remainingMovies.length > 0) {
+            cardRef.current.swipe(direction);
         }
     };
 
@@ -90,6 +115,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 >
                     Matchmaker
                 </h2>
+                <div style={{ fontSize: '3rem', marginBottom: spacing.md }}>💖 🎬 💖</div>
                 <p style={{ color: colors.textSecondary, marginBottom: spacing.xl, maxWidth: '500px', margin: '0 auto 2rem' }}>
                     Pick 15 movies from your queue and swipe on them. When you both swipe right on the same one, it's a match!
                 </p>
@@ -100,14 +126,82 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                     size="lg"
                     disabled={!currentUser}
                 >
-                    {currentUser ? 'Start New Session' : 'Pick Aaron or Electra to start'}
+                    {currentUser ? 'Start New Session' : 'Pick User to Start'}
                 </Button>
             </div>
         );
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: spacing.lg }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: spacing.lg, position: 'relative' }}>
+            {/* Confetti and Match Popup Overlay */}
+            {(showConfetti || lastMatchedMovie) && (
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 200,
+                    pointerEvents: 'none',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.4)',
+                    backdropFilter: 'blur(4px)',
+                    animation: 'fadeIn 0.3s ease-out'
+                }}>
+                    {/* Confetti particles */}
+                    {[...Array(30)].map((_, i) => (
+                        <div key={i} className="confetti" style={{
+                            position: 'absolute',
+                            left: `${Math.random() * 100}%`,
+                            top: `-20px`,
+                            width: '10px',
+                            height: '10px',
+                            backgroundColor: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
+                            borderRadius: Math.random() > 0.5 ? '50%' : '0',
+                            animation: `confettiFall ${2 + Math.random() * 2}s linear forwards`,
+                            animationDelay: `${Math.random() * 0.5}s`
+                        }} />
+                    ))}
+
+                    {lastMatchedMovie && (
+                        <div style={{
+                            textAlign: 'center',
+                            animation: 'popInMatch 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            background: 'rgba(20, 20, 40, 0.95)',
+                            padding: spacing.xl,
+                            borderRadius: radius.lg,
+                            border: `2px solid ${colors.accent}`,
+                            boxShadow: shadows.glowStrong,
+                        }}>
+                            <div style={{ fontSize: '1.2rem', color: colors.accent, marginBottom: spacing.sm, fontWeight: 'bold', textShadow: shadows.textGlow }}>
+                                IT'S A MATCH!
+                            </div>
+                            <img
+                                src={lastMatchedMovie.posterUrl}
+                                alt={lastMatchedMovie.title}
+                                style={{
+                                    width: '180px',
+                                    height: '270px',
+                                    borderRadius: radius.md,
+                                    objectFit: 'cover',
+                                    marginBottom: spacing.md,
+                                    border: `1px solid ${colors.textPrimary}40`
+                                }}
+                            />
+                            <h3 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary, textShadow: shadows.textGlow }}>
+                                {lastMatchedMovie.title}
+                            </h3>
+                            <div style={{ marginTop: spacing.md, fontSize: '2rem' }}>💖🍿🎬🍿💖</div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Stats Header */}
             <div
                 style={{
@@ -118,11 +212,17 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                     padding: `0 ${spacing.md}`,
                 }}
             >
-                <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
-                    Matches:{' '}
-                    <span style={{ color: colors.accent, fontWeight: 'bold', textShadow: shadows.textGlow }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                    <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>Matches:</div>
+                    <div style={{
+                        color: colors.accent,
+                        fontWeight: 'bold',
+                        textShadow: shadows.textGlow,
+                        fontSize: typography.fontSize.lg,
+                        animation: showConfetti ? 'pulse 0.5s ease infinite' : 'none'
+                    }}>
                         {matches.length}
-                    </span>
+                    </div>
                 </div>
                 <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
                     {swipedIds.length} / {game.moviePool.length} swiped
@@ -136,7 +236,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 </Button>
             </div>
 
-            {/* Swipe Area */}
+            {/* Swipe Area with Card Stack */}
             <div
                 style={{
                     position: 'relative',
@@ -150,11 +250,25 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 }}
             >
                 {remainingMovies.length > 0 ? (
-                    <SwipeCard
-                        key={remainingMovies[0].id}
-                        movie={remainingMovies[0]}
-                        onSwipe={handleSwipe}
-                    />
+                    <>
+                        {/* Background Card (Next) */}
+                        {remainingMovies.length > 1 && (
+                            <SwipeCard
+                                key={remainingMovies[1].id}
+                                movie={remainingMovies[1]}
+                                onSwipe={() => { }}
+                                active={false}
+                            />
+                        )}
+                        {/* Active Card (Top) */}
+                        <SwipeCard
+                            ref={cardRef}
+                            key={remainingMovies[0].id}
+                            movie={remainingMovies[0]}
+                            onSwipe={handleSwipe}
+                            active={true}
+                        />
+                    </>
                 ) : (
                     <div
                         style={{
@@ -182,7 +296,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
             {/* Action Buttons */}
             {remainingMovies.length > 0 && (
-                <div style={{ display: 'flex', gap: spacing.xl, marginBottom: spacing.md }}>
+                <div style={{ display: 'flex', gap: spacing.xl, marginBottom: spacing.md, zIndex: 10 }}>
                     <Button
                         variant="ghost"
                         style={{
@@ -197,8 +311,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                             justifyContent: 'center',
                             boxShadow: shadows.glow,
                             padding: 0,
+                            background: 'rgba(248, 113, 113, 0.1)',
                         }}
-                        onClick={() => handleSwipe('left')}
+                        onClick={() => handleButtonClick('left')}
                         disabled={isSubmitting}
                     >
                         ✕
@@ -217,8 +332,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                             justifyContent: 'center',
                             boxShadow: shadows.glow,
                             padding: 0,
+                            background: 'rgba(74, 222, 128, 0.1)',
                         }}
-                        onClick={() => handleSwipe('right')}
+                        onClick={() => handleButtonClick('right')}
                         disabled={isSubmitting}
                     >
                         💖
@@ -301,6 +417,20 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes confettiFall {
+          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+        }
+        @keyframes popInMatch {
+          0% { transform: scale(0.5); opacity: 0; }
+          60% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
       `}</style>
         </div>

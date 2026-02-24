@@ -5,37 +5,54 @@ import { colors, spacing, radius, shadows, typography, borders, motion as motion
 interface SwipeCardProps {
     movie: Movie;
     onSwipe: (direction: 'left' | 'right') => void;
+    active?: boolean;
+    style?: React.CSSProperties;
 }
 
-const SwipeCard: React.FC<SwipeCardProps> = ({ movie, onSwipe }) => {
+const SwipeCard = React.forwardRef<any, SwipeCardProps>(({ movie, onSwipe, active = true, style: customStyle }, ref) => {
     const [offsetX, setOffsetX] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
     const startX = useRef(0);
 
+    React.useImperativeHandle(ref, () => ({
+        swipe: (direction: 'left' | 'right') => {
+            setIsExiting(true);
+            setOffsetX(direction === 'right' ? 500 : -500);
+            setTimeout(() => onSwipe(direction), 300);
+        }
+    }));
+
     const handleStart = (clientX: number) => {
+        if (!active || isExiting) return;
         startX.current = clientX;
         setIsDragging(true);
     };
 
     const handleMove = (clientX: number) => {
-        if (!isDragging) return;
+        if (!isDragging || isExiting) return;
         setOffsetX(clientX - startX.current);
     };
 
     const handleEnd = () => {
-        if (!isDragging) return;
+        if (!isDragging || isExiting) return;
         setIsDragging(false);
 
         if (offsetX > 150) {
-            onSwipe('right');
+            setIsExiting(true);
+            setOffsetX(500);
+            setTimeout(() => onSwipe('right'), 300);
         } else if (offsetX < -150) {
-            onSwipe('left');
+            setIsExiting(true);
+            setOffsetX(-500);
+            setTimeout(() => onSwipe('left'), 300);
+        } else {
+            setOffsetX(0);
         }
-        setOffsetX(0);
     };
 
     const rotation = offsetX / 10;
-    const opacity = Math.max(0, 1 - (Math.abs(offsetX) > 250 ? (Math.abs(offsetX) - 250) / 100 : 0));
+    const opacity = isExiting ? 0 : Math.max(0, 1 - (Math.abs(offsetX) > 250 ? (Math.abs(offsetX) - 250) / 100 : 0));
     const likeOpacity = Math.min(1, Math.max(0, (offsetX - 50) / 100));
     const nopeOpacity = Math.min(1, Math.max(0, (-offsetX - 50) / 100));
 
@@ -53,13 +70,15 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ movie, onSwipe }) => {
                 width: '100%',
                 maxWidth: '350px',
                 height: '500px',
-                cursor: isDragging ? 'grabbing' : 'grab',
+                cursor: isExiting ? 'default' : isDragging ? 'grabbing' : active ? 'grab' : 'default',
                 transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
                 opacity: opacity,
-                transition: isDragging ? 'none' : `transform ${motionTokens.duration.normal} ${motionTokens.easing.easeOut}, opacity ${motionTokens.duration.normal} ${motionTokens.easing.easeOut}`,
-                zIndex: 1,
+                transition: isDragging ? 'none' : `all ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
+                zIndex: active ? 2 : 1,
                 touchAction: 'none',
                 userSelect: 'none',
+                pointerEvents: active && !isExiting ? 'auto' : 'none',
+                ...customStyle,
             }}
         >
             <div
@@ -69,11 +88,14 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ movie, onSwipe }) => {
                     borderRadius: radius.card,
                     overflow: 'hidden',
                     backgroundColor: colors.surface,
-                    boxShadow: shadows.card,
+                    boxShadow: active ? shadows.card : shadows.cardElevated,
                     display: 'flex',
                     flexDirection: 'column',
                     border: borders.cardOutset,
                     position: 'relative',
+                    filter: active ? 'none' : 'brightness(0.7) blur(1px)',
+                    transform: active ? 'scale(1)' : 'scale(0.95) translateY(10px)',
+                    transition: `transform ${motionTokens.duration.normal} ${motionTokens.easing.easeOut}, filter ${motionTokens.duration.normal} ${motionTokens.easing.easeOut}`,
                 }}
             >
                 {/* Like/Nope Overlays */}
@@ -160,6 +182,6 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ movie, onSwipe }) => {
             </div>
         </div>
     );
-};
+});
 
 export default SwipeCard;
