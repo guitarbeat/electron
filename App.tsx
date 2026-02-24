@@ -9,7 +9,6 @@ import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
-import AgentPanel from './components/agent/AgentPanel';
 import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 
@@ -103,8 +102,6 @@ const App: React.FC = () => {
         );
       case 'messages':
         return <MessageBoard mode="embedded" />;
-      case 'agent':
-        return <AgentPanel />;
       default:
         return <Watchlist />;
     }
@@ -210,7 +207,6 @@ const App: React.FC = () => {
             { id: 'spin', label: 'Spin' },
             { id: 'games', label: 'Games' },
             { id: 'quiz', label: 'Quiz' },
-            { id: 'agent', label: 'Agent' },
           ].map((tab) => (
             <button
               key={tab.id}
