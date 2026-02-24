@@ -11,7 +11,8 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
  */
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, className = '', style, id: idProp, 'aria-label': ariaLabel, ...props }, ref) => {
-    const id = idProp ?? (label ? `textarea-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+    const id =
+      idProp ?? (label ? `textarea-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
     const errorId = error && id ? `${id}-error` : undefined;
     return (
       <div style={{ width: '100%' }}>
