@@ -293,7 +293,15 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
               {results.map((result, idx) => (
                 <div
                   key={result.id || idx}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(result)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelect(result);
+                    }
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -324,7 +332,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                     {result.posterUrl ? (
                       <img
                         src={result.posterUrl}
-                        alt=""
+                        alt={`Poster for ${result.title}`}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     ) : (
@@ -363,6 +371,8 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
+                    tabIndex={-1}
+                    aria-hidden="true"
                     style={{ padding: '2px 8px', fontSize: '10px', height: '24px' }}
                   >
                     Select
