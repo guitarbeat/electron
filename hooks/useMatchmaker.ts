@@ -89,20 +89,16 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
                         if (!al.includes(movieId) && !ad.includes(movieId)) {
                             updatedGame.aaronLikes = [...al, movieId];
                         }
-                    } else {
-                        if (!ad.includes(movieId) && !al.includes(movieId)) {
-                            updatedGame.aaronDislikes = [...ad, movieId];
-                        }
+                    } else if (!ad.includes(movieId) && !al.includes(movieId)) {
+                        updatedGame.aaronDislikes = [...ad, movieId];
                     }
                 } else if (currentUser === 'Electra') {
                     if (liked) {
                         if (!el.includes(movieId) && !ed.includes(movieId)) {
                             updatedGame.electraLikes = [...el, movieId];
                         }
-                    } else {
-                        if (!ed.includes(movieId) && !el.includes(movieId)) {
-                            updatedGame.electraDislikes = [...ed, movieId];
-                        }
+                    } else if (!ed.includes(movieId) && !el.includes(movieId)) {
+                        updatedGame.electraDislikes = [...ed, movieId];
                     }
                 }
                 return updatedGame;
