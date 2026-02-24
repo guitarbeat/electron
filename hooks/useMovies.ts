@@ -147,7 +147,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       const baseMovie: Movie = {
         id: crypto.randomUUID(),
         title: cleanTitle,
-        addedBy: currentUser,
+        addedBy: currentUser!,
         watchedBy: [],
         createdAt: new Date().toISOString(),
       };
@@ -174,10 +174,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       await performMutation((latestMovies) =>
         latestMovies.map((movie) => {
           if (movie.id === movieId) {
-            const isWatched = movie.watchedBy.includes(currentUser);
+            const isWatched = movie.watchedBy.includes(currentUser!);
             const newWatchedBy = isWatched
               ? movie.watchedBy.filter((user) => user !== currentUser)
-              : [...movie.watchedBy, currentUser];
+              : [...movie.watchedBy, currentUser!];
             return { ...movie, watchedBy: newWatchedBy };
           }
           return movie;
