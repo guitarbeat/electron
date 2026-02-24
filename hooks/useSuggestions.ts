@@ -5,8 +5,7 @@ import {
   saveSuggestions,
   addSuggestion as addSuggestionService,
 } from '../services/suggestionService';
-import { MovieSuggestion, User, Movie } from '../types';
-import { getMovies, saveMovies } from '../services/movieService';
+import { MovieSuggestion, User } from '../types';
 
 const POLLING_INTERVAL = 30000; // 30 seconds
 
@@ -60,7 +59,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
         throw new Error('Suggestion not found');
       }
 
-      // Update suggestion status
+      // Update suggestion status only — movie is already added by the caller
       const updatedSuggestions = currentSuggestions.map((s) =>
         s.id === suggestionId
           ? {
@@ -72,18 +71,6 @@ export const useSuggestions = (isPaused: boolean = false) => {
           : s
       );
       await saveSuggestions(updatedSuggestions);
-
-      // Add movie to watchlist
-      const movies = await getMovies();
-      const newMovie: Movie = {
-        id: crypto.randomUUID(),
-        title: suggestion.title,
-        addedBy: respondedBy,
-        watchedBy: [],
-        createdAt: new Date().toISOString(),
-      };
-      movies.unshift(newMovie);
-      await saveMovies(movies);
 
       refresh();
     },
