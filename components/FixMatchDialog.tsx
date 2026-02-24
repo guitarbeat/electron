@@ -232,7 +232,9 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
               variant="secondary"
               size="sm"
               onClick={handleRenameOnly}
-              disabled={isSearching || isRenaming || !searchTerm.trim() || searchTerm === movie.title}
+              disabled={
+                isSearching || isRenaming || !searchTerm.trim() || searchTerm === movie.title
+              }
               style={{ flex: 1, fontSize: '0.7rem' }}
             >
               {isRenaming ? 'Renaming...' : 'Rename Only'}
