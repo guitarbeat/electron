@@ -25,7 +25,7 @@ interface WatchlistContentProps {
   contentTab: ContentTab;
   searchQuery: string;
   isSubmitting: boolean;
-  movieResultsRef: React.RefObject<HTMLDivElement>;
+  movieResultsRef: React.RefObject<HTMLDivElement | null>;
   onAddMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<any>;
   onUpdateMemory: (memoryId: string, updates: { note?: string }) => Promise<void>;
   onDeleteMemory: (memoryId: string) => Promise<void>;

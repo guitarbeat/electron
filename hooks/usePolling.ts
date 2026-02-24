@@ -104,7 +104,7 @@ export const usePolling = <T>(
           } else {
             setError(null);
             setData((prev) => {
-              if (savedEqualityFn.current && savedEqualityFn.current(prev, newData)) {
+              if (savedEqualityFn.current && newData !== undefined && savedEqualityFn.current(prev, newData as T)) {
                 return prev;
               }
               return newData;
