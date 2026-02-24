@@ -71,7 +71,7 @@ export const useSnakeLeaderboard = (currentUser: string | null) => {
         const newEntry: SnakeLeaderboardEntry = {
             id: `snake-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             name: playerName,
-            score: score,
+            score,
             createdAt: new Date().toISOString(),
         };
 

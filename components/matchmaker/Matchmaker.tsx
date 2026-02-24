@@ -37,9 +37,11 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             .filter((m): m is Movie => !!m);
     }, [game, movies]);
 
-    const userLikes = currentUser === 'Aaron' ? game?.aaronLikes || [] : game?.electraLikes || [];
-    const userDislikes = currentUser === 'Aaron' ? game?.aaronDislikes || [] : game?.electraDislikes || [];
-    const swipedIds = [...userLikes, ...userDislikes];
+    const swipedIds = useMemo(() => {
+        const userLikes = currentUser === 'Aaron' ? game?.aaronLikes || [] : game?.electraLikes || [];
+        const userDislikes = currentUser === 'Aaron' ? game?.aaronDislikes || [] : game?.electraDislikes || [];
+        return [...userLikes, ...userDislikes];
+    }, [currentUser, game]);
 
     const remainingMovies = useMemo(() => {
         return activePoolMovies.filter((m) => !swipedIds.includes(m.id));
@@ -73,7 +75,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             }
         }
         lastMatchCount.current = matches.length;
-    }, [matches.length, movies]);
+    }, [matches, movies]);
 
     const availableVibes = useMemo(() => {
         const counts: Record<string, number> = {};

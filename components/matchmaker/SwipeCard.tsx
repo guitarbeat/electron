@@ -72,7 +72,7 @@ const SwipeCard = React.forwardRef<any, SwipeCardProps>(({ movie, onSwipe, activ
                 height: '500px',
                 cursor: isExiting ? 'default' : isDragging ? 'grabbing' : active ? 'grab' : 'default',
                 transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
-                opacity: opacity,
+                opacity,
                 transition: isDragging ? 'none' : `all ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
                 zIndex: active ? 2 : 1,
                 touchAction: 'none',

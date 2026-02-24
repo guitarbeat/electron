@@ -56,7 +56,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
 
         if (!isDragging && Math.abs(currentVelocity) > 0.05) {
             const animate = () => {
-                currentVelocity = currentVelocity * 0.95; // Balanced friction for control
+                currentVelocity *= 0.95; // Balanced friction for control
                 setRotation(r => r + currentVelocity);
                 setVelocity(currentVelocity);
 
@@ -145,7 +145,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
         // Find relative distance from "active" position for scaling/opacity
         const cardAngle = index * anglePerCard - rotation;
         const normalizedAngle = ((cardAngle % 360) + 360) % 360;
-        let offsetAngle = normalizedAngle > 180 ? normalizedAngle - 360 : normalizedAngle;
+        const offsetAngle = normalizedAngle > 180 ? normalizedAngle - 360 : normalizedAngle;
         const absDiffIndex = Math.abs(offsetAngle / anglePerCard);
 
         let x = 0;
@@ -385,6 +385,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
             {/* Navigation Controls */}
             <div className="rdc-controls" style={{ bottom: isMobile ? '20px' : '0px' }}>
                 <button
+                    aria-label="Previous"
                     onClick={() => spin(-1)}
                     className="rdc-btn-spin"
                     style={{
@@ -414,6 +415,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
                     Select {activeMovie?.title}
                 </button>
                 <button
+                    aria-label="Next"
                     onClick={() => spin(1)}
                     className="rdc-btn-spin"
                     style={{
