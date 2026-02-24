@@ -115,7 +115,7 @@ class PollingManager {
         this.errors.set(key, e);
         this.notify(key, undefined, e);
       } finally {
-        if (this.inFlight.get(key) === request) {
+        if (this.inFlight.get(key) === request!) {
           this.inFlight.delete(key);
         }
       }
