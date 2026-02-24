@@ -7,11 +7,11 @@
 // 6. Click "Generate token" and paste the token string below.
 // 7. Add it to your .env file as VITE_GIST_TOKEN
 const env = (import.meta.env || {}) as any;
-const GIST_TOKEN = env.VITE_GIST_TOKEN || '';
+const GIST_TOKEN = env.VITE_GIST_TOKEN || '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';
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.
-const GIST_ID = env.VITE_GIST_ID || '';
+const GIST_ID = env.VITE_GIST_ID || 'ba250f944e3e9e71c0d669060254eab2';
 
 // The API URL for Gist operations
 const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
