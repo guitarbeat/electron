@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import { mock, test, after, beforeEach } from 'node:test';
-import { hasSpunToday, deleteDailySpin } from './dailySpinService.ts';
-import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../gistConfig.ts';
 import {
   getDailySpin,
   saveDailySpin,
@@ -10,8 +8,8 @@ import {
   hasSpunToday,
   getTodaySpin,
 } from './dailySpinService.ts';
+import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../gistConfig.ts';
 import type { DailySpin } from '../types.ts';
-import { GIST_DAILY_SPIN_FILENAME } from '../gistConfig.ts';
 
 // A fixed Wednesday for testing
 const MOCK_DATE = new Date('2024-03-20T12:00:00Z');
@@ -214,10 +212,9 @@ test('dailySpinService', async (t) => {
       return new Response(JSON.stringify({ message: 'Internal Server Error' }), { status: 500 });
     });
 
-    await assert.rejects(
-      async () => await deleteDailySpin(),
-      { message: 'GitHub API responded with 500' }
-    );
+    await assert.rejects(async () => deleteDailySpin(), {
+      message: 'GitHub API responded with 500',
+    });
   });
 
   await t.test('deleteDailySpin throws error when fetch fails', async () => {
@@ -225,10 +222,9 @@ test('dailySpinService', async (t) => {
       throw new Error('Network error');
     });
 
-    await assert.rejects(
-      async () => await deleteDailySpin(),
-      { message: 'Network error' }
-    );
+    await assert.rejects(async () => deleteDailySpin(), { message: 'Network error' });
+  });
+
   // --- getTodaySpin ---
   await t.test('getTodaySpin returns spin if date matches today', async () => {
     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(JSON.stringify(mockSpin)));
