@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 const SNAKE_LEADERBOARD_KEY = 'snakeLeaderboard';
 const GUEST_NAME_STORAGE_KEY = 'movieWatchlistGuestName';
@@ -62,41 +62,6 @@ const getStoredGuestName = (): string => {
 };
 
 export const useSnakeLeaderboard = (currentUser: string | null) => {
-    const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
-
-    const recordScore = useCallback((score: number) => {
-        if (score <= 0) return;
-
-        const playerName = currentUser || getStoredGuestName() || 'Guest';
-        const newEntry: SnakeLeaderboardEntry = {
-            id: `snake-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            name: playerName,
-            score,
-            createdAt: new Date().toISOString(),
-        };
-
-        setLeaderboard((prev) => {
-            const updated = [...prev, newEntry]
-                .sort((a, b) => b.score - a.score || b.createdAt.localeCompare(a.createdAt))
-                .slice(0, MAX_LEADERBOARD_ENTRIES);
-            saveLeaderboardLocal(updated);
-            return updated;
-        });
-    }, [currentUser]);
-
-    const clearLeaderboard = useCallback(() => {
-        localStorage.removeItem(SNAKE_LEADERBOARD_KEY);
-        setLeaderboard([]);
-    }, []);
-
-    const bestScore = leaderboard.length > 0 ? leaderboard[0].score : 0;
-
-    return {
-        leaderboard,
-        recordScore,
-        clearLeaderboard,
-        bestScore
-    };
   const [leaderboard, setLeaderboard] = useState<SnakeLeaderboardEntry[]>(() => loadLeaderboard());
 
   const recordScore = useCallback(
