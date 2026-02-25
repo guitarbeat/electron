@@ -4,7 +4,7 @@
 
 **Learning:** The codebase splits logic between Hooks and Services inconsistently. Some data mutations happen in Hooks (Messages), others in Services (Suggestions, Memories). This led to security controls being applied in one place but forgotten in others.
 
-**Prevention:** Enforce input sanitization at the lowest possible level (the Service layer) for all data ingress points. Ensure all data-handling services import and use `sanitizeInput` before persisting data.
+**Prevention:** Enforce input sanitization at the lowest possible level (the Service layer) for all data ingress points. Ensure all data-handling services import and use `stripControlCharacters` before persisting data.
 
 ## 2025-02-12 - Node.js Test Environment vs Vite Environment
 

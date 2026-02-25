@@ -1,4 +1,4 @@
-import { isValidUrl, sanitizeInput } from '../config/security.ts';
+import { isValidUrl, stripControlCharacters, stripHtmlTags } from '../config/security.ts';
 
 const env = (import.meta.env || {}) as Record<string, string | undefined>;
 const OMDB_PROXY_URL = env.VITE_OMDB_PROXY_URL || '';
@@ -7,10 +7,6 @@ const OMDB_BASE_URL = 'https://www.omdbapi.com';
 
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
-const stripHtml = (value?: string | null): string | undefined => {
-  if (!value) return undefined;
-  return value.replace(/<[^>]*>?/gm, '');
-};
 
 const toResolvedUrl = (url: string): URL | null => {
   if (!url) return null;
@@ -169,12 +165,12 @@ export interface MetadataResult {
 const toMetadataResultFromOmdb = (omdbData: OmdbMovieResponse): MetadataResult => ({
   posterUrl: omdbData.Poster !== 'N/A' && isValidUrl(omdbData.Poster) ? omdbData.Poster : undefined,
   year: omdbData.Year !== 'N/A' ? omdbData.Year : undefined,
-  plot: omdbData.Plot !== 'N/A' ? sanitizeInput(omdbData.Plot) : undefined,
+  plot: omdbData.Plot !== 'N/A' ? stripControlCharacters(omdbData.Plot) : undefined,
   imdbRating: omdbData.imdbRating !== 'N/A' ? omdbData.imdbRating : undefined,
   runtime: omdbData.Runtime !== 'N/A' ? omdbData.Runtime : undefined,
-  genre: omdbData.Genre !== 'N/A' ? sanitizeInput(omdbData.Genre) : undefined,
-  director: omdbData.Director !== 'N/A' ? sanitizeInput(omdbData.Director) : undefined,
-  title: omdbData.Title !== 'N/A' ? sanitizeInput(omdbData.Title) : undefined,
+  genre: omdbData.Genre !== 'N/A' ? stripControlCharacters(omdbData.Genre) : undefined,
+  director: omdbData.Director !== 'N/A' ? stripControlCharacters(omdbData.Director) : undefined,
+  title: omdbData.Title !== 'N/A' ? stripControlCharacters(omdbData.Title) : undefined,
   type: omdbData.Type === 'series' ? 'series' : 'movie',
 });
 
@@ -198,10 +194,10 @@ export const fetchMovieMetadata = async (
         return {
           posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
           year: show.premiered ? show.premiered.split('-')[0] : undefined,
-          plot: sanitizeInput(stripHtml(show.summary) || ''),
+          plot: stripControlCharacters(stripHtmlTags(show.summary) || ''),
           imdbRating: show.rating?.average?.toString(),
-          genre: sanitizeInput(show.genres?.join(', ') || ''),
-          title: sanitizeInput(show.name),
+          genre: stripControlCharacters(show.genres?.join(', ') || ''),
+          title: stripControlCharacters(show.name),
           type: 'series',
         };
       }
@@ -253,9 +249,9 @@ export const fetchMovieMetadata = async (
         return {
           posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
           year: show.premiered ? show.premiered.split('-')[0] : undefined,
-          plot: sanitizeInput(stripHtml(show.summary) || ''),
+          plot: stripControlCharacters(stripHtmlTags(show.summary) || ''),
           imdbRating: show.rating?.average?.toString(),
-          genre: sanitizeInput(show.genres?.join(', ') || ''),
+          genre: stripControlCharacters(show.genres?.join(', ') || ''),
           type: 'series',
         };
       }
@@ -285,7 +281,7 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
         results.push(
           ...omdbData.Search.map((item) => ({
             id: item.imdbID,
-            title: sanitizeInput(item.Title),
+            title: stripControlCharacters(item.Title),
             year: item.Year,
             posterUrl: item.Poster !== 'N/A' && isValidUrl(item.Poster) ? item.Poster : undefined,
             type: (item.Type === 'series' ? 'series' : 'movie') as 'movie' | 'series',
@@ -312,11 +308,11 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
           const posterUrl = item.show.image?.medium || item.show.image?.original;
           return {
             id: `tv-${item.show.id}`,
-            title: sanitizeInput(item.show.name),
+            title: stripControlCharacters(item.show.name),
             year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
             posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
             type: 'series' as const,
-            plot: sanitizeInput(stripHtml(item.show.summary) || ''),
+            plot: stripControlCharacters(stripHtmlTags(item.show.summary) || ''),
           };
         })
       );

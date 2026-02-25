@@ -106,7 +106,7 @@ Lightweight, trust-based system for two known users:
 
 ### Input Sanitization
 
-All user input is sanitized via `config/security.ts` (`sanitizeInput`) which strips control characters and trims whitespace. Applied in both hooks and services. Max length constants defined for messages, authors, and movie titles.
+All user input is sanitized via `config/security.ts` (`stripControlCharacters`) which strips control characters and trims whitespace. Applied in both hooks and services. Max length constants defined for messages, authors, and movie titles.
 
 ### Responsive Design
 

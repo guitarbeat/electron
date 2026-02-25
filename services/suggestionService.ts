@@ -1,5 +1,5 @@
 import { GIST_ID, GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
-import { sanitizeInput } from '../config/security';
+import { stripControlCharacters } from '../config/security';
 import { MovieSuggestion } from '../types';
 
 export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
@@ -67,9 +67,9 @@ export const addSuggestion = async (
 
   const newSuggestion: MovieSuggestion = {
     id: crypto.randomUUID(),
-    title: sanitizeInput(title),
-    suggestedBy: sanitizeInput(suggestedBy),
-    reason: reason ? sanitizeInput(reason) : undefined,
+    title: stripControlCharacters(title),
+    suggestedBy: stripControlCharacters(suggestedBy),
+    reason: reason ? stripControlCharacters(reason) : undefined,
     status: 'pending',
     createdAt: new Date().toISOString(),
   };

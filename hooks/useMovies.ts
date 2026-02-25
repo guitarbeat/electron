@@ -3,7 +3,7 @@ import { Movie, User } from '../types';
 import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata, MetadataResult } from '../services/metadataService';
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../config/security';
+import { stripControlCharacters, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../config/security';
 
 // Helper to control concurrency when processing array items
 const concurrentMap = async <T, R>(
@@ -30,11 +30,11 @@ export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> =>
   const result: Partial<Movie> = {};
   if (posterUrl && isValidUrl(posterUrl)) result.posterUrl = posterUrl;
   if (year) result.year = year;
-  if (plot) result.plot = sanitizeInput(plot);
+  if (plot) result.plot = stripControlCharacters(plot);
   if (imdbRating) result.imdbRating = imdbRating;
   if (runtime) result.runtime = runtime;
-  if (genre) result.genre = sanitizeInput(genre);
-  if (director) result.director = sanitizeInput(director);
+  if (genre) result.genre = stripControlCharacters(genre);
+  if (director) result.director = stripControlCharacters(director);
   return result;
 };
 
@@ -131,7 +131,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
   const addMovie = useCallback(
     async (title: string) => {
-      const cleanTitle = sanitizeInput(title);
+      const cleanTitle = stripControlCharacters(title);
 
       if (!cleanTitle) {
         throw new Error('Movie title cannot be empty');
