@@ -189,67 +189,71 @@ const App: React.FC = () => {
           <UserSelection />
         </section>
 
-        {/* Unified Command Bar */}
-        <nav
-          aria-label="Main navigation"
+        {/* Unified Command Panel */}
+        <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '2px',
-            marginBottom: activeTab === 'queue' ? 0 : spacing.xl,
-            padding: '4px',
             background: 'rgba(23, 33, 58, 0.5)',
             backdropFilter: 'blur(12px)',
             borderRadius: activeTab === 'queue' ? `${spacing.md} ${spacing.md} 0 0` : spacing.md,
             border: `1px solid ${colors.borderSecondary}25`,
             borderBottom: activeTab === 'queue' ? 'none' : `1px solid ${colors.borderSecondary}25`,
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
+            marginBottom: activeTab === 'queue' ? 0 : spacing.xl,
+            overflow: 'hidden',
           }}
         >
-          {[
-            { id: 'queue', label: 'Queue', icon: '📋' },
-            { id: 'spin', label: 'Spin', icon: '🎰' },
-            { id: 'games', label: 'Games', icon: '🎮' },
-            { id: 'quiz', label: 'Quiz', icon: '❓' },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as MainTab)}
-                style={{
-                  background: isActive
-                    ? `linear-gradient(135deg, ${colors.accent}25, ${colors.secondary}15)`
-                    : 'transparent',
-                  border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
-                  borderRadius: `calc(${spacing.md} - 4px)`,
-                  padding: `${spacing.sm} ${isMobile ? spacing.md : spacing.lg}`,
-                  color: isActive ? colors.accent : colors.textSecondary,
-                  fontFamily: typography.fontFamily.heading.join(', '),
-                  fontSize: isMobile ? typography.fontSize.sm : typography.fontSize.base,
-                  fontWeight: isActive ? '700' : '500',
-                  textTransform: 'uppercase',
-                  letterSpacing: typography.letterSpacing.wider,
-                  cursor: 'pointer',
-                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                  whiteSpace: 'nowrap',
-                  textShadow: isActive ? shadows.textGlow : 'none',
-                  boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: spacing.xs,
-                  flex: 1,
-                  justifyContent: 'center',
-                }}
-              >
-                <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{tab.icon}</span>
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
+          <nav
+            aria-label="Main navigation"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '2px',
+              padding: '4px',
+            }}
+          >
+            {[
+              { id: 'queue', label: 'Queue', icon: '📋' },
+              { id: 'spin', label: 'Spin', icon: '🎰' },
+              { id: 'games', label: 'Games', icon: '🎮' },
+              { id: 'quiz', label: 'Quiz', icon: '❓' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as MainTab)}
+                  style={{
+                    background: isActive
+                      ? `linear-gradient(135deg, ${colors.accent}25, ${colors.secondary}15)`
+                      : 'transparent',
+                    border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
+                    borderRadius: `calc(${spacing.md} - 4px)`,
+                    padding: `${spacing.sm} ${isMobile ? spacing.md : spacing.lg}`,
+                    color: isActive ? colors.accent : colors.textSecondary,
+                    fontFamily: typography.fontFamily.heading.join(', '),
+                    fontSize: isMobile ? typography.fontSize.sm : typography.fontSize.base,
+                    fontWeight: isActive ? '700' : '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: typography.letterSpacing.wider,
+                    cursor: 'pointer',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    whiteSpace: 'nowrap',
+                    textShadow: isActive ? shadows.textGlow : 'none',
+                    boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.xs,
+                    flex: 1,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{tab.icon}</span>
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {renderContent()}
       </main>
