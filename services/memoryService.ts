@@ -1,5 +1,5 @@
 import { GIST_ID, GIST_MEMORIES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
-import { sanitizeInput } from '../config/security';
+import { stripControlCharacters } from '../config/security';
 import { SharedMemory } from '../types';
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
@@ -69,9 +69,9 @@ export const addMemory = async (
   const newMemory: SharedMemory = {
     id: `memory-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     movieId,
-    movieTitle: sanitizeInput(movieTitle),
-    author: sanitizeInput(author),
-    note: sanitizeInput(note),
+    movieTitle: stripControlCharacters(movieTitle),
+    author: stripControlCharacters(author),
+    note: stripControlCharacters(note),
     createdAt: new Date().toISOString(),
   };
 
@@ -102,9 +102,9 @@ export const updateMemory = async (
   const nextMemory: SharedMemory = {
     ...memories[memoryIndex],
     ...updates,
-    note: updates.note ? sanitizeInput(updates.note) : memories[memoryIndex].note,
+    note: updates.note ? stripControlCharacters(updates.note) : memories[memoryIndex].note,
     movieTitle: updates.movieTitle
-      ? sanitizeInput(updates.movieTitle)
+      ? stripControlCharacters(updates.movieTitle)
       : memories[memoryIndex].movieTitle,
     updatedAt: new Date().toISOString(),
   };

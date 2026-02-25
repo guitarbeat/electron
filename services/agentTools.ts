@@ -1,5 +1,5 @@
 import {
-  sanitizeInput,
+  stripControlCharacters,
   MAX_AUTHOR_LENGTH,
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
@@ -99,7 +99,7 @@ export const runAgentToolCall = async (
       }
       case 'movies.add': {
         const user = requireUser(currentUser);
-        const title = sanitizeInput(asString(call.args?.title));
+        const title = stripControlCharacters(asString(call.args?.title));
         if (!title) throw new Error('Movie title cannot be empty');
         if (title.length > MAX_MOVIE_TITLE_LENGTH) {
           throw new Error(`Movie title exceeds max length (${MAX_MOVIE_TITLE_LENGTH})`);
@@ -142,20 +142,20 @@ export const runAgentToolCall = async (
       }
       case 'memories.add': {
         const movieId = asOptionalString(call.args?.movieId);
-        const movieTitle = sanitizeInput(asString(call.args?.movieTitle));
-        const author = sanitizeInput(asString(call.args?.author));
-        const note = sanitizeInput(asString(call.args?.note));
+        const movieTitle = stripControlCharacters(asString(call.args?.movieTitle));
+        const author = stripControlCharacters(asString(call.args?.author));
+        const note = stripControlCharacters(asString(call.args?.note));
         const created = await addMemory(movieId, movieTitle, author, note);
         return { id: call.id, name: call.name, ok: true, result: created };
       }
       case 'memories.update': {
         const memoryId = asString(call.args?.memoryId);
         const note =
-          call.args?.note !== undefined ? sanitizeInput(asString(call.args?.note)) : undefined;
+          call.args?.note !== undefined ? stripControlCharacters(asString(call.args?.note)) : undefined;
         const movieId = asOptionalString(call.args?.movieId);
         const movieTitle =
           call.args?.movieTitle !== undefined
-            ? sanitizeInput(asString(call.args?.movieTitle))
+            ? stripControlCharacters(asString(call.args?.movieTitle))
             : undefined;
         const updated = await updateMemory(memoryId, { note, movieId, movieTitle });
         return { id: call.id, name: call.name, ok: true, result: updated };
@@ -171,8 +171,8 @@ export const runAgentToolCall = async (
         return { id: call.id, name: call.name, ok: true, result: updated };
       }
       case 'messages.add': {
-        const author = sanitizeInput(asString(call.args?.author));
-        const content = sanitizeInput(asString(call.args?.content));
+        const author = stripControlCharacters(asString(call.args?.author));
+        const content = stripControlCharacters(asString(call.args?.content));
         if (!content) throw new Error('Message cannot be empty');
         if (content.length > MAX_MESSAGE_LENGTH) {
           throw new Error(`Message exceeds max length (${MAX_MESSAGE_LENGTH})`);
@@ -191,10 +191,10 @@ export const runAgentToolCall = async (
         return { id: call.id, name: call.name, ok: true, result: newMessage };
       }
       case 'suggestions.add': {
-        const title = sanitizeInput(asString(call.args?.title));
-        const suggestedBy = sanitizeInput(asString(call.args?.suggestedBy));
+        const title = stripControlCharacters(asString(call.args?.title));
+        const suggestedBy = stripControlCharacters(asString(call.args?.suggestedBy));
         const reasonRaw = call.args?.reason;
-        const reason = reasonRaw ? sanitizeInput(asString(reasonRaw)) : undefined;
+        const reason = reasonRaw ? stripControlCharacters(asString(reasonRaw)) : undefined;
 
         if (!title) throw new Error('Suggestion title cannot be empty');
         if (!suggestedBy) throw new Error('suggestedBy cannot be empty');
@@ -271,7 +271,7 @@ export const runAgentToolCall = async (
       case 'spin.setToday': {
         const user = requireUser(currentUser);
         const movieId = asString(call.args?.movieId);
-        const movieTitle = sanitizeInput(asString(call.args?.movieTitle));
+        const movieTitle = stripControlCharacters(asString(call.args?.movieTitle));
         const today = new Date().toISOString().split('T')[0];
         const dailySpin: DailySpin = {
           date: today,
@@ -303,7 +303,7 @@ export const runAgentToolCall = async (
         const movieId = asOptionalString(call.args?.movieId);
         const movieTitle =
           call.args?.movieTitle !== undefined
-            ? sanitizeInput(asString(call.args?.movieTitle))
+            ? stripControlCharacters(asString(call.args?.movieTitle))
             : undefined;
         const spunBy = call.args?.spunBy as User | undefined;
         const date = asOptionalString(call.args?.date);

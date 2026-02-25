@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { Message } from '../types';
 import { usePolling } from './usePolling';
 import { getMessages, saveMessages } from '../services/messageService';
-import { sanitizeInput, MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../config/security';
+import { stripControlCharacters, MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../config/security';
 
 export const useMessages = () => {
   // * Use JSON.stringify for deep equality check to prevent unnecessary re-renders
@@ -40,8 +40,8 @@ export const useMessages = () => {
 
   const addMessage = useCallback(
     async (author: string, content: string) => {
-      const cleanAuthor = sanitizeInput(author);
-      const cleanContent = sanitizeInput(content);
+      const cleanAuthor = stripControlCharacters(author);
+      const cleanContent = stripControlCharacters(content);
 
       if (!cleanContent) {
         throw new Error('Message cannot be empty');
