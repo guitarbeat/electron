@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Card from './Card';
 import { CheckIcon } from '../icons';
 import { colors, shadows, spacing, typography, radius } from '../../design-system/tokens';
@@ -9,6 +9,27 @@ interface ToastProps {
   onDismiss?: () => void;
   duration?: number;
 }
+
+const TOAST_STYLES = {
+  error: {
+    backgroundColor: `${colors.error}30`,
+    borderColor: colors.error,
+    iconColor: colors.error,
+    shadow: `0 4px 12px ${colors.error}40, ${shadows.card}`,
+  },
+  success: {
+    backgroundColor: `${colors.success}30`,
+    borderColor: colors.success,
+    iconColor: colors.success,
+    shadow: `0 4px 12px ${colors.success}40, ${shadows.card}`,
+  },
+  info: {
+    backgroundColor: `${colors.secondary}30`,
+    borderColor: colors.secondary,
+    iconColor: colors.secondary,
+    shadow: `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
+  },
+} as const;
 
 const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000 }) => {
   const [isExiting, setIsExiting] = useState(false);
@@ -30,47 +51,27 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
     setTimeout(() => onDismiss?.(), 300);
   };
 
-  const getTypeStyles = () => {
+  const styles = TOAST_STYLES[type] || TOAST_STYLES.info;
+
+  const icon = useMemo(() => {
     switch (type) {
-      case 'error':
-        return {
-          backgroundColor: `${colors.error}30`,
-          borderColor: colors.error,
-          iconColor: colors.error,
-          shadow: `0 4px 12px ${colors.error}40, ${shadows.card}`,
-        };
       case 'success':
-        return {
-          backgroundColor: `${colors.success}30`,
-          borderColor: colors.success,
-          iconColor: colors.success,
-          shadow: `0 4px 12px ${colors.success}40, ${shadows.card}`,
-        };
+        return (
+          <CheckIcon
+            style={{
+              color: styles.iconColor,
+              flexShrink: 0,
+              filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
+            }}
+          />
+        );
+      case 'error':
+        return <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>;
       case 'info':
       default:
-        return {
-          backgroundColor: `${colors.secondary}30`,
-          borderColor: colors.secondary,
-          iconColor: colors.secondary,
-          shadow: `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
-        };
+        return <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>;
     }
-  };
-
-  const styles = getTypeStyles();
-  const icons = {
-    success: (
-      <CheckIcon
-        style={{
-          color: styles.iconColor,
-          flexShrink: 0,
-          filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
-        }}
-      />
-    ),
-    error: <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>,
-    info: <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>,
-  };
+  }, [type, styles.iconColor]);
 
   return (
     <Card
@@ -109,7 +110,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
           justifyContent: 'center',
         }}
       >
-        {icons[type]}
+        {icon}
         <span
           style={{
             fontSize: typography.fontSize.base,
