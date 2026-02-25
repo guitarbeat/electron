@@ -6,7 +6,6 @@ import { fetchMovieMetadata, MetadataResult } from '../services/metadataService'
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../config/security';
 import { concurrentMap } from '../utils/concurrency';
 
-
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
 export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
