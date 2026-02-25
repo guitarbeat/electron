@@ -4,7 +4,7 @@ import { verifyPin } from '../services/pinService';
 // Mock fetch to simulate network latency
 let fetchCount = 0;
 
-global.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+global.fetch = async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> => {
   fetchCount++;
   // Simulate network latency (e.g., 100ms)
   await new Promise((resolve) => setTimeout(resolve, 100));
