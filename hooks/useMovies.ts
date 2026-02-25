@@ -38,6 +38,26 @@ export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> =>
   return result;
 };
 
+const getSortKey = (movie: Movie) =>
+  `${movie.watchedBy.length === 2 ? '1' : '0'}:${movie.createdAt}`;
+
+const sortMovies = (a: Movie, b: Movie) => {
+  const aWatchedByBoth = a.watchedBy.length === 2;
+  const bWatchedByBoth = b.watchedBy.length === 2;
+
+  if (aWatchedByBoth && !bWatchedByBoth) {
+    return 1; // a (watched) comes after b (unwatched)
+  }
+  if (!aWatchedByBoth && bWatchedByBoth) {
+    return -1; // a (unwatched) comes before b (watched)
+  }
+
+  // For movies in the same group (both watched or both unwatched), sort by creation date
+  if (b.createdAt > a.createdAt) return 1;
+  if (b.createdAt < a.createdAt) return -1;
+  return 0;
+};
+
 export const useMovies = (currentUser: User | null, isPaused: boolean = false) => {
   const {
     data: movies,
@@ -327,30 +347,75 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     }
   }, [isLoading, movies, autoSyncMetadata]);
 
+  // Refs for smart memoization
+  const prevSortKeysRef = useRef<Map<string, string>>(new Map());
+  const prevSortedIdsRef = useRef<string[]>([]);
+
   // Memoize sortedMovies to prevent unnecessary re-renders in consumers (like Watchlist)
-  // when other states in Watchlist change (e.g. input field typing)
-  const sortedMovies = useMemo(
-    () =>
-      movies
-        ? [...movies].sort((a, b) => {
-            const aWatchedByBoth = a.watchedBy.length === 2;
-            const bWatchedByBoth = b.watchedBy.length === 2;
+  // when other states in Watchlist change (e.g. input field typing).
+  // Optimization: Only re-sort if sort-relevant fields (watchedBy, createdAt) change.
+  const sortedMovies = useMemo(() => {
+    if (!movies) return [];
 
-            if (aWatchedByBoth && !bWatchedByBoth) {
-              return 1; // a (watched) comes after b (unwatched)
-            }
-            if (!aWatchedByBoth && bWatchedByBoth) {
-              return -1; // a (unwatched) comes before b (watched)
-            }
+    let canReuseOrder = false;
+    const currentMap = new Map<string, Movie>();
 
-            // For movies in the same group (both watched or both unwatched), sort by creation date
-            if (b.createdAt > a.createdAt) return 1;
-            if (b.createdAt < a.createdAt) return -1;
-            return 0;
-          })
-        : [],
-    [movies]
-  );
+    // Check if we can reuse the previous sort order
+    if (movies.length === prevSortedIdsRef.current.length) {
+      canReuseOrder = true;
+      // eslint-disable-next-line no-restricted-syntax
+      for (const m of movies) {
+        const key = getSortKey(m);
+        // If key mismatch or ID mismatch (new ID not in prev keys), fallback to sort
+        if (prevSortKeysRef.current.get(m.id) !== key) {
+          canReuseOrder = false;
+          break;
+        }
+        currentMap.set(m.id, m);
+      }
+    }
+
+    if (canReuseOrder) {
+      // Reconstruct list using previous order
+      // Using map.get(id)! is safe because we verified length and key presence
+      // (Wait, key presence check ensures ID exists in prevSortKeys, but prevSortedIds might differ?)
+      // prevSortedIds contains ALL IDs from prevSortKeys.
+      // So if currentMap contains ALL IDs (which it should if length matches and keys match), we are good.
+      // However, duplicate IDs or missing IDs would break this.
+      // Given we iterate all movies and check keys, if length matches, sets must be identical.
+
+      const reused = new Array(prevSortedIdsRef.current.length);
+      let isValid = true;
+      for (let i = 0; i < prevSortedIdsRef.current.length; i++) {
+        const movie = currentMap.get(prevSortedIdsRef.current[i]);
+        if (!movie) {
+          isValid = false;
+          break;
+        }
+        reused[i] = movie;
+      }
+
+      if (isValid) {
+        return reused;
+      }
+    }
+
+    // Fallback to full sort
+    const sorted = [...movies].sort(sortMovies);
+
+    // Update refs
+    const newKeys = new Map<string, string>();
+    const newIds = new Array(sorted.length);
+    for (let i = 0; i < sorted.length; i++) {
+      const m = sorted[i];
+      newKeys.set(m.id, getSortKey(m));
+      newIds[i] = m.id;
+    }
+    prevSortKeysRef.current = newKeys;
+    prevSortedIdsRef.current = newIds;
+
+    return sorted;
+  }, [movies]);
 
   return {
     movies: sortedMovies,
