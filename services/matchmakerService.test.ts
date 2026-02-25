@@ -98,7 +98,7 @@ test('matchmakerService', async (t) => {
 
   await t.test('getMatchmakerGame returns null on fetch error', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {
-        return new Response(null, { status: 500 });
+      return new Response(null, { status: 500 });
     });
 
     const game = await getMatchmakerGame();
