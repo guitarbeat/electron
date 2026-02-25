@@ -189,63 +189,67 @@ const App: React.FC = () => {
           <UserSelection />
         </section>
 
-        {/* Tab Navigation */}
-        <div
+        {/* Unified Command Bar */}
+        <nav
+          aria-label="Main navigation"
           style={{
             display: 'flex',
+            alignItems: 'center',
             justifyContent: 'center',
-            gap: isMobile ? spacing.xs : spacing.md,
-            marginBottom: spacing.xl,
-            borderBottom: `1px solid ${colors.borderSecondary}20`,
-            paddingBottom: spacing.sm,
+            gap: '2px',
+            marginBottom: activeTab === 'queue' ? 0 : spacing.xl,
+            padding: '4px',
+            background: 'rgba(23, 33, 58, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: activeTab === 'queue' ? `${spacing.md} ${spacing.md} 0 0` : spacing.md,
+            border: `1px solid ${colors.borderSecondary}25`,
+            borderBottom: activeTab === 'queue' ? 'none' : `1px solid ${colors.borderSecondary}25`,
             overflowX: 'auto',
             scrollbarWidth: 'none',
           }}
         >
           {[
-            { id: 'queue', label: 'Queue' },
-            { id: 'spin', label: 'Spin' },
-            { id: 'games', label: 'Games' },
-            { id: 'quiz', label: 'Quiz' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as MainTab)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: `${spacing.sm} ${isMobile ? spacing.md : spacing.lg}`,
-                color: activeTab === tab.id ? colors.accent : colors.textSecondary,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.lg,
-                fontWeight: activeTab === tab.id ? '600' : '400',
-                textTransform: 'uppercase',
-                letterSpacing: typography.letterSpacing.wider,
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap',
-                textShadow: activeTab === tab.id ? shadows.textGlow : 'none',
-              }}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: `-${spacing.sm}`,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: colors.accent,
-                    borderRadius: '3px 3px 0 0',
-                    boxShadow: `0 0 10px ${colors.accent}60`,
-                  }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
+            { id: 'queue', label: 'Queue', icon: '📋' },
+            { id: 'spin', label: 'Spin', icon: '🎰' },
+            { id: 'games', label: 'Games', icon: '🎮' },
+            { id: 'quiz', label: 'Quiz', icon: '❓' },
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as MainTab)}
+                style={{
+                  background: isActive
+                    ? `linear-gradient(135deg, ${colors.accent}25, ${colors.secondary}15)`
+                    : 'transparent',
+                  border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
+                  borderRadius: `calc(${spacing.md} - 4px)`,
+                  padding: `${spacing.sm} ${isMobile ? spacing.md : spacing.lg}`,
+                  color: isActive ? colors.accent : colors.textSecondary,
+                  fontFamily: typography.fontFamily.heading.join(', '),
+                  fontSize: isMobile ? typography.fontSize.sm : typography.fontSize.base,
+                  fontWeight: isActive ? '700' : '500',
+                  textTransform: 'uppercase',
+                  letterSpacing: typography.letterSpacing.wider,
+                  cursor: 'pointer',
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                  whiteSpace: 'nowrap',
+                  textShadow: isActive ? shadows.textGlow : 'none',
+                  boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.xs,
+                  flex: 1,
+                  justifyContent: 'center',
+                }}
+              >
+                <span style={{ fontSize: isMobile ? '14px' : '16px' }}>{tab.icon}</span>
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
 
         {renderContent()}
       </main>

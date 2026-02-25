@@ -391,18 +391,20 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {/* --- Controls Section --- */}
+      {/* --- Controls Section (visually continues from unified nav bar) --- */}
       <Card
         variant="elevated"
         style={{
           padding: isMobile ? spacing.sm : spacing.md,
-          border: `1px solid ${colors.borderSecondary}40`,
+          border: `1px solid ${colors.borderSecondary}25`,
+          borderTop: 'none',
           marginBottom: spacing.xl,
           display: 'flex',
           flexDirection: 'column',
           gap: spacing.md,
-          background: 'rgba(23, 33, 58, 0.4)',
-          backdropFilter: 'blur(8px)',
+          background: 'rgba(23, 33, 58, 0.5)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: `0 0 ${spacing.md} ${spacing.md}`,
           fontFamily: typography.fontFamily.body.join(', '),
         }}
       >
