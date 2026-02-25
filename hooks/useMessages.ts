@@ -4,6 +4,8 @@ import { usePolling } from './usePolling';
 import { getMessages, saveMessages } from '../services/messageService';
 import { sanitizeInput, MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../config/security';
 
+export const MESSAGE_POLLING_INTERVAL = 10000;
+
 export const useMessages = () => {
   // * Use JSON.stringify for deep equality check to prevent unnecessary re-renders
   const {
@@ -11,9 +13,14 @@ export const useMessages = () => {
     error,
     isLoading,
     refresh,
-  } = usePolling(getMessages, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
-    key: 'messages',
-  });
+  } = usePolling(
+    getMessages,
+    MESSAGE_POLLING_INTERVAL,
+    (prev, next) => JSON.stringify(prev) === JSON.stringify(next),
+    {
+      key: 'messages',
+    }
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
