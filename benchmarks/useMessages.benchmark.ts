@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,7 +49,11 @@ async function runBenchmark() {
 
   const unsubscribe = pollingManager.subscribe(key, mockFetch, interval, () => {});
 
-  await new Promise((resolve) => setTimeout(resolve, SIMULATION_DURATION_MS));
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, SIMULATION_DURATION_MS);
+  });
 
   unsubscribe();
 
