@@ -140,7 +140,12 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, onSwipe,
 
             <div style={{ color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
               {movie.year ? <span>{movie.year}</span> : null}
-              {movie.runtime ? <span>{movie.year ? ' • ' : ''}{movie.runtime}</span> : null}
+              {movie.runtime ? (
+                <span>
+                  {movie.year ? ' • ' : ''}
+                  {movie.runtime}
+                </span>
+              ) : null}
             </div>
 
             {(movie.genre || movie.category) && (
