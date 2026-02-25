@@ -7,7 +7,7 @@ import {
 } from '../services/suggestionService';
 import { MovieSuggestion, User } from '../types';
 
-const POLLING_INTERVAL = 30000; // 30 seconds
+const POLLING_INTERVAL = 300000; // 5 minutes
 
 const suggestionsEqual = (prev: MovieSuggestion[] | undefined, next: MovieSuggestion[]) => {
   if (!prev) return false;
