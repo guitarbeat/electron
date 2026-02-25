@@ -32,12 +32,6 @@ export const getMovies = async (): Promise<Movie[]> => {
       throw new Error(`GitHub API responded with ${response.status}`);
     }
 
-    // Update ETag from the response
-    const etag = response.headers.get('ETag');
-    if (etag) {
-      lastETag = etag;
-    }
-
     const gist = await response.json();
     const file = gist.files[GIST_FILENAME];
 
@@ -52,8 +46,13 @@ export const getMovies = async (): Promise<Movie[]> => {
 
     const movies = JSON.parse(file.content);
 
-    // Update cache
+    // Update cache and ETag only after successful parsing
     cachedMovies = movies;
+
+    const etag = response.headers.get('ETag');
+    if (etag) {
+      lastETag = etag;
+    }
 
     return movies;
   } catch (error) {
