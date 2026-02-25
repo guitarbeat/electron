@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, no-promise-executor-return, no-console, no-await-in-loop */
 import { test } from 'node:test';
 import assert from 'node:assert';
 
