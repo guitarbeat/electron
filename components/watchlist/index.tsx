@@ -3,7 +3,6 @@ import { useUser } from '../../context/UserContext';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import FixMatchDialog from '../FixMatchDialog';
 import Confetti from '../effects/Confetti';
-import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { PlusIcon, Spinner, FilmIcon } from '../icons';
@@ -14,7 +13,7 @@ import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps, SortMode, ContentTab } from './types';
 import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
-import { spacing, colors, radius, typography, shadows } from '../../design-system/tokens';
+import { spacing, colors, radius, typography } from '../../design-system/tokens';
 
 const TABS: { label: string; value: ContentTab }[] = [
   { label: 'All', value: 'all' },
@@ -40,8 +39,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setSuccessMovieId,
     processingSuggestionId,
     setProcessingSuggestionId,
-    viewMode,
-    setViewMode,
     contentTab,
     setContentTab,
     sortMode,
@@ -342,7 +339,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         onDelete={handleDeleteMovie}
         onFixMatch={handleFixMatch}
         animationDelay={index !== undefined ? `${index * 0.05}s` : '0s'}
-        layout={viewMode}
         memories={movieMemories}
         onAddMemory={async (note) => {
           await addMemory(movie.id, movie.title, currentUser || 'Anonymous', note);
@@ -450,7 +446,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: spacing.xs,
-                  boxShadow: contentTab === tab.value ? `0 0 12px ${colors.accent}40` : 'none',
                 }}
               >
                 {tab.label}
@@ -534,109 +529,38 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               )}
             </form>
 
-            <div
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              aria-label="Sort movies"
               style={{
                 display: 'flex',
-                gap: spacing.sm,
-                flex: isMobile ? 'none' : '0 0 auto',
                 alignItems: 'center',
+                height: '48px',
+                minWidth: isMobile ? '100%' : '160px',
+                flex: 1,
+                borderRadius: radius.md,
+                border: `1px solid ${colors.borderSecondary}40`,
+                backgroundColor: colors.surfaceElevated,
+                color: colors.textPrimary,
+                padding: `0 ${spacing.sm}`,
+                fontFamily: typography.fontFamily.heading.join(', '),
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(colors.textSecondary)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
+                paddingRight: '32px',
               }}
             >
-              {/* View Mode Toggle */}
-              <div
-                style={{
-                  display: 'flex',
-                  background: 'rgba(255,255,255,0.05)',
-                  borderRadius: radius.md,
-                  padding: '4px',
-                  border: `1px solid ${colors.borderSecondary}40`,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setViewMode('list')}
-                  aria-label="List View"
-                  style={{
-                    background: viewMode === 'list' ? colors.surfaceElevated : 'transparent',
-                    border: 'none',
-                    borderRadius: radius.sm,
-                    padding: '8px',
-                    color: viewMode === 'list' ? colors.accent : colors.textSecondary,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    boxShadow: viewMode === 'list' ? shadows.card : 'none',
-                  }}
-                  title="List View"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  aria-label="Grid View"
-                  style={{
-                    background: viewMode === 'grid' ? colors.surfaceElevated : 'transparent',
-                    border: 'none',
-                    borderRadius: radius.sm,
-                    padding: '8px',
-                    color: viewMode === 'grid' ? colors.accent : colors.textSecondary,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    boxShadow: viewMode === 'grid' ? shadows.card : 'none',
-                  }}
-                  title="Grid View"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              <select
-                value={sortMode}
-                onChange={(e) => setSortMode(e.target.value as SortMode)}
-                aria-label="Sort movies"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '48px',
-                  minWidth: isMobile ? '100%' : '160px',
-                  flex: 1,
-                  borderRadius: radius.md,
-                  border: `1px solid ${colors.borderSecondary}40`,
-                  backgroundColor: colors.surfaceElevated,
-                  color: colors.textPrimary,
-                  padding: `0 ${spacing.sm}`,
-                  fontFamily: typography.fontFamily.heading.join(', '),
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.03em',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  appearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(colors.textSecondary)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 12px center',
-                  paddingRight: '32px',
-                }}
-              >
-                <option value="recent">Recently Added</option>
-                <option value="title">Title A-Z</option>
-                <option value="year">Year (Newest)</option>
-              </select>
-            </div>
+              <option value="recent">Recently Added</option>
+              <option value="title">Title A-Z</option>
+              <option value="year">Year (Newest)</option>
+            </select>
           </div>
         </div>
         {suggestionError && (
@@ -655,36 +579,19 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           transition: 'opacity 0.2s ease',
         }}
       >
-        {viewMode === 'grid' ? (
-          <MasonryGrid>
-            {filteredSuggestions.map((suggestion) => (
-              <SuggestionItemCard
-                key={suggestion.id}
-                suggestion={suggestion}
-                onAccept={handleAcceptSuggestion}
-                onReject={(s) => handleRejectSuggestion(s.id)}
-                isProcessing={processingSuggestionId === suggestion.id}
-              />
-            ))}
+        <MasonryGrid>
+          {filteredSuggestions.map((suggestion) => (
+            <SuggestionItemCard
+              key={suggestion.id}
+              suggestion={suggestion}
+              onAccept={handleAcceptSuggestion}
+              onReject={(s) => handleRejectSuggestion(s.id)}
+              isProcessing={processingSuggestionId === suggestion.id}
+            />
+          ))}
 
-            {filteredMovies.map((movie) => renderMovieItem(movie))}
-          </MasonryGrid>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-            {(contentTab === 'all' || contentTab === 'suggestions') &&
-              filteredSuggestions.map((suggestion) => (
-                <SuggestionItemCard
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  onAccept={handleAcceptSuggestion}
-                  onReject={(s) => handleRejectSuggestion(s.id)}
-                  isProcessing={processingSuggestionId === suggestion.id}
-                />
-              ))}
-
-            {filteredMovies.map((movie, index) => renderMovieItem(movie, index))}
-          </div>
-        )}
+          {filteredMovies.map((movie, index) => renderMovieItem(movie, index))}
+        </MasonryGrid>
 
         {filteredMovies.length === 0 &&
           filteredSuggestions.length === 0 &&
