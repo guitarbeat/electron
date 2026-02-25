@@ -45,7 +45,7 @@ const SpinWheel: React.FC<{
             setSelectedMovie({
               id: todaySpin.movieId,
               title: todaySpin.movieTitle,
-              addedBy: 'System',
+              addedBy: 'System' as any,
               watchedBy: [],
               createdAt: todaySpin.createdAt,
               year: 'Unknown',
