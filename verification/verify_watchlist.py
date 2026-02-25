@@ -102,8 +102,8 @@ def run(playwright):
 
         # Wait for Watchlist Input
         print("Waiting for watchlist input...")
-        # Use CORRECT label found in code: "Movie or show title"
-        input_locator = page.get_by_label("Movie or show title")
+        # Use CORRECT label found in code: "Search or add a movie"
+        input_locator = page.get_by_label("Search or add a movie")
         input_locator.wait_for(timeout=10000)
 
         # Add a movie
@@ -112,7 +112,7 @@ def run(playwright):
         input_locator.fill(movie_title)
 
         # Click add button (it might be an icon button inside the input group)
-        page.get_by_label("Add movie to watchlist").click()
+        page.get_by_title("Add or Suggest").click()
 
         # Verify added
         print("Verifying movie added...")
