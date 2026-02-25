@@ -1,6 +1,6 @@
 import { isValidUrl, sanitizeInput } from '../config/security.ts';
 
-const env = (import.meta.env || {}) as any;
+const env = (import.meta.env || {}) as Record<string, string | undefined>;
 const OMDB_PROXY_URL = env.VITE_OMDB_PROXY_URL || '';
 const OMDB_API_KEY = env.VITE_OMDB_API_KEY || '';
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
