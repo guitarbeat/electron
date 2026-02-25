@@ -6,7 +6,7 @@ import {
   updateDailySpin,
   deleteDailySpin,
   hasSpunToday,
-  getTodaySpin
+  getTodaySpin,
 } from './dailySpinService.ts';
 import type { DailySpin } from '../types.ts';
 import { GIST_DAILY_SPIN_FILENAME } from '../gistConfig.ts';
@@ -20,23 +20,25 @@ const MOCK_SPIN: DailySpin = {
   movieId: 'tt1234567',
   movieTitle: 'Test Movie',
   spunBy: 'Aaron',
-  createdAt: new Date().toISOString()
+  createdAt: new Date().toISOString(),
 };
 
 describe('dailySpinService', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let fetchMock: any;
 
   beforeEach((t) => {
     // Mock Date globally for the test context if possible, or try to enable it
     try {
-        if (t && t.mock && t.mock.timers) {
-            t.mock.timers.enable({ apis: ['Date'], now: MOCK_DATE });
-        }
+      if (t && t.mock && t.mock.timers) {
+        t.mock.timers.enable({ apis: ['Date'], now: MOCK_DATE });
+      }
     } catch (e: any) {
-        // Ignore if already enabled
-        if (e.code !== 'ERR_INVALID_STATE') {
-            throw e;
-        }
+      // eslint-disable-line @typescript-eslint/no-explicit-any
+      // Ignore if already enabled
+      if (e.code !== 'ERR_INVALID_STATE') {
+        throw e;
+      }
     }
 
     // Create a fresh mock for each test
@@ -45,16 +47,12 @@ describe('dailySpinService', () => {
 
   afterEach(() => {
     if (fetchMock) {
-        fetchMock.mock.restore();
+      fetchMock.mock.restore();
     }
-    // Note: timers might persist?
-    // Usually t.mock.timers.reset() is good practice if we want clean state,
-    // but enabling again in next test might fail if not disabled.
-    // However, node:test creates new context for each test?
   });
 
   describe('getDailySpin', () => {
-    it('returns spin data when fetch succeeds', async (t) => {
+    it('returns spin data when fetch succeeds', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
           JSON.stringify({
@@ -72,7 +70,7 @@ describe('dailySpinService', () => {
       assert.deepEqual(result, MOCK_SPIN);
     });
 
-    it('returns null when file does not exist', async (t) => {
+    it('returns null when file does not exist', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
           JSON.stringify({
@@ -86,7 +84,7 @@ describe('dailySpinService', () => {
       assert.equal(result, null);
     });
 
-    it('returns null when fetch fails (500)', async (t) => {
+    it('returns null when fetch fails (500)', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(null, { status: 500 });
       });
@@ -95,7 +93,7 @@ describe('dailySpinService', () => {
       assert.equal(result, null);
     });
 
-    it('returns null when fetch throws network error', async (t) => {
+    it('returns null when fetch throws network error', async () => {
       fetchMock.mock.mockImplementation(async () => {
         throw new Error('Network error');
       });
@@ -106,7 +104,7 @@ describe('dailySpinService', () => {
   });
 
   describe('saveDailySpin', () => {
-    it('successfully saves spin data', async (t) => {
+    it('successfully saves spin data', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(JSON.stringify({}), { status: 200 });
       });
@@ -123,7 +121,7 @@ describe('dailySpinService', () => {
       assert.deepEqual(content, MOCK_SPIN);
     });
 
-    it('throws error when fetch fails', async (t) => {
+    it('throws error when fetch fails', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(JSON.stringify({ message: 'Error' }), { status: 500 });
       });
@@ -135,12 +133,13 @@ describe('dailySpinService', () => {
   });
 
   describe('updateDailySpin', () => {
-    it('successfully updates existing spin', async (t) => {
+    it('successfully updates existing spin', async () => {
       // Use explicit implementation to handle multiple calls
-      fetchMock.mock.mockImplementation(async (url, init) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      fetchMock.mock.mockImplementation(async (_url: string, init: RequestInit) => {
         // If it's a PATCH, it's the save call
         if (init && init.method === 'PATCH') {
-            return new Response(JSON.stringify({}), { status: 200 });
+          return new Response(JSON.stringify({}), { status: 200 });
         }
         // Otherwise assume GET
         return new Response(
@@ -172,7 +171,7 @@ describe('dailySpinService', () => {
       assert.equal(savedContent.movieTitle, 'Updated Title');
     });
 
-    it('throws error when no daily spin exists', async (t) => {
+    it('throws error when no daily spin exists', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
           JSON.stringify({
@@ -189,7 +188,7 @@ describe('dailySpinService', () => {
   });
 
   describe('deleteDailySpin', () => {
-    it('successfully clears spin data', async (t) => {
+    it('successfully clears spin data', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(JSON.stringify({}), { status: 200 });
       });
@@ -205,7 +204,7 @@ describe('dailySpinService', () => {
       assert.equal(body.files[GIST_DAILY_SPIN_FILENAME].content, '');
     });
 
-    it('throws error when fetch fails', async (t) => {
+    it('throws error when fetch fails', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(JSON.stringify({ message: 'Error' }), { status: 500 });
       });
@@ -217,7 +216,7 @@ describe('dailySpinService', () => {
   });
 
   describe('hasSpunToday', () => {
-    it('returns true when spin date matches today', async (t) => {
+    it('returns true when spin date matches today', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
           JSON.stringify({
@@ -235,7 +234,7 @@ describe('dailySpinService', () => {
       assert.equal(result, true);
     });
 
-    it('returns false when spin date is different', async (t) => {
+    it('returns false when spin date is different', async () => {
       const oldSpin = { ...MOCK_SPIN, date: '2024-03-19' };
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
@@ -254,7 +253,7 @@ describe('dailySpinService', () => {
       assert.equal(result, false);
     });
 
-    it('returns false when fetch fails', async (t) => {
+    it('returns false when fetch fails', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(null, { status: 500 });
       });
@@ -265,7 +264,7 @@ describe('dailySpinService', () => {
   });
 
   describe('getTodaySpin', () => {
-    it('returns spin when date matches today', async (t) => {
+    it('returns spin when date matches today', async () => {
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
           JSON.stringify({
@@ -283,7 +282,7 @@ describe('dailySpinService', () => {
       assert.deepEqual(result, MOCK_SPIN);
     });
 
-    it('returns null when spin date is different', async (t) => {
+    it('returns null when spin date is different', async () => {
       const oldSpin = { ...MOCK_SPIN, date: '2024-03-19' };
       fetchMock.mock.mockImplementation(async () => {
         return new Response(
