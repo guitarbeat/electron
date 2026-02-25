@@ -46,7 +46,7 @@ test('getSuggestions parses response correctly', async (t) => {
       id: '2',
       title: 'Another Movie',
       suggestedBy: 'User2',
-      status: 'approved',
+      status: 'accepted',
       createdAt: '2024-01-02T00:00:00.000Z',
     },
   ];
