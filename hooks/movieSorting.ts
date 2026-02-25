@@ -6,10 +6,7 @@ export interface SortState {
   prevMovies: Movie[];
 }
 
-export const getSortedMovies = (
-  movies: Movie[],
-  lastState?: SortState
-): SortState => {
+export const getSortedMovies = (movies: Movie[], lastState?: SortState): SortState => {
   // If we have previous state, try to reuse the sort order
   if (
     lastState &&
