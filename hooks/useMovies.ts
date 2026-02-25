@@ -4,6 +4,7 @@ import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata, MetadataResult } from '../services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../config/security';
+import { getSortedMovies, SortState } from './movieSorting';
 
 // Helper to control concurrency when processing array items
 const concurrentMap = async <T, R>(
@@ -329,28 +330,15 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
   // Memoize sortedMovies to prevent unnecessary re-renders in consumers (like Watchlist)
   // when other states in Watchlist change (e.g. input field typing)
-  const sortedMovies = useMemo(
-    () =>
-      movies
-        ? [...movies].sort((a, b) => {
-            const aWatchedByBoth = a.watchedBy.length === 2;
-            const bWatchedByBoth = b.watchedBy.length === 2;
+  const lastSortStateRef = useRef<SortState | undefined>(undefined);
 
-            if (aWatchedByBoth && !bWatchedByBoth) {
-              return 1; // a (watched) comes after b (unwatched)
-            }
-            if (!aWatchedByBoth && bWatchedByBoth) {
-              return -1; // a (unwatched) comes before b (watched)
-            }
+  const sortedMovies = useMemo(() => {
+    if (!movies) return [];
 
-            // For movies in the same group (both watched or both unwatched), sort by creation date
-            if (b.createdAt > a.createdAt) return 1;
-            if (b.createdAt < a.createdAt) return -1;
-            return 0;
-          })
-        : [],
-    [movies]
-  );
+    const newState = getSortedMovies(movies, lastSortStateRef.current);
+    lastSortStateRef.current = newState;
+    return newState.sortedMovies;
+  }, [movies]);
 
   return {
     movies: sortedMovies,
