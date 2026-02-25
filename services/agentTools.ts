@@ -151,7 +151,9 @@ export const runAgentToolCall = async (
       case 'memories.update': {
         const memoryId = asString(call.args?.memoryId);
         const note =
-          call.args?.note !== undefined ? stripControlCharacters(asString(call.args?.note)) : undefined;
+          call.args?.note !== undefined
+            ? stripControlCharacters(asString(call.args?.note))
+            : undefined;
         const movieId = asOptionalString(call.args?.movieId);
         const movieTitle =
           call.args?.movieTitle !== undefined
