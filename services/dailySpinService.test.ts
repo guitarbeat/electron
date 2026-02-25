@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mock, test, after, beforeEach } from 'node:test';
-import { hasSpunToday } from './dailySpinService.ts';
+import { hasSpunToday, deleteDailySpin } from './dailySpinService.ts';
+import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../gistConfig.ts';
 
 // A fixed Wednesday for testing
 const MOCK_DATE = new Date('2024-03-20T12:00:00Z');
@@ -89,5 +90,51 @@ test('dailySpinService', async (t) => {
 
     const result = await hasSpunToday();
     assert.equal(result, false);
+  });
+
+  await t.test('deleteDailySpin sends correct PATCH request on success', async () => {
+    fetchMock.mock.mockImplementationOnce(async () => {
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+
+    await deleteDailySpin();
+
+    assert.equal(fetchMock.mock.callCount(), 1);
+    const call = fetchMock.mock.calls[0];
+    assert.equal(call.arguments[0], GIST_API_URL);
+
+    const options = call.arguments[1] as RequestInit;
+    assert.equal(options.method, 'PATCH');
+
+    const body = JSON.parse(options.body as string);
+    assert.deepEqual(body, {
+      files: {
+        [GIST_DAILY_SPIN_FILENAME]: {
+          content: '',
+        },
+      },
+    });
+  });
+
+  await t.test('deleteDailySpin throws error when API response is not ok', async () => {
+    fetchMock.mock.mockImplementationOnce(async () => {
+      return new Response(JSON.stringify({ message: 'Internal Server Error' }), { status: 500 });
+    });
+
+    await assert.rejects(
+      async () => await deleteDailySpin(),
+      { message: 'GitHub API responded with 500' }
+    );
+  });
+
+  await t.test('deleteDailySpin throws error when fetch fails', async () => {
+    fetchMock.mock.mockImplementationOnce(async () => {
+      throw new Error('Network error');
+    });
+
+    await assert.rejects(
+      async () => await deleteDailySpin(),
+      { message: 'Network error' }
+    );
   });
 });
