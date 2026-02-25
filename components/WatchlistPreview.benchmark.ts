@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { performance } from 'perf_hooks';
 
 interface MovieMock {
@@ -10,11 +11,19 @@ interface MovieMock {
 
 // Mock a Movie object
 function createMovie(id: number): MovieMock {
+  let watchedBy: string[] = [];
+  const rand = Math.random();
+  if (rand > 0.66) {
+    watchedBy = ['Aaron', 'Electra'];
+  } else if (rand > 0.33) {
+    watchedBy = ['Aaron'];
+  }
+
   return {
     id: `movie-${id}`,
     title: `Movie Title ${id}`,
     addedBy: 'Aaron',
-    watchedBy: Math.random() > 0.5 ? ['Aaron', 'Electra'] : (Math.random() > 0.5 ? ['Aaron'] : []),
+    watchedBy,
     createdAt: new Date().toISOString(),
   };
 }
@@ -28,8 +37,9 @@ console.log(`Benchmarking filter operation with ${MOVIE_COUNT} movies...`);
 // Measure filtering time
 const start = performance.now();
 for (let i = 0; i < 1000; i++) {
-    // Simulate 1000 re-renders
-    const unwatchedMovies = movies.filter((m) => m.watchedBy.length < 2);
+  // Simulate 1000 re-renders
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const unwatchedMovies = movies.filter((m) => m.watchedBy.length < 2);
 }
 const end = performance.now();
 
