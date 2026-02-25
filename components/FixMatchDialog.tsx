@@ -128,6 +128,11 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
         transition: 'opacity 0.2s ease-out',
       }}
       onClick={onClose}
+      role="button"
+      tabIndex={-1}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClose();
+      }}
     >
       <Card
         variant="elevated"
@@ -169,6 +174,11 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
           </h3>
           <IconButton
             onClick={onClose}
+            role="button"
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') onClose();
+            }}
             variant="ghost"
             size="sm"
             aria-label="Close"
@@ -397,6 +407,11 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
+            role="button"
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') onClose();
+            }}
             disabled={isSearching || isRenaming}
             style={{ color: colors.textTertiary }}
           >
