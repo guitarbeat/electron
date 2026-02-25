@@ -49,6 +49,7 @@ test('isValidUrl returns true for valid http/https URLs', () => {
 });
 
 test('isValidUrl returns false for javascript: URLs', () => {
+  // eslint-disable-next-line no-script-url
   assert.equal(isValidUrl('javascript:alert(1)'), false);
   // eslint-disable-next-line no-script-url
   assert.equal(isValidUrl('javascript:void(0)'), false);
