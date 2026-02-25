@@ -1,24 +1,15 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Movie } from '../../../types';
-import { useSpinWheel } from '../../../hooks/useSpinWheel';
+import { Movie, DailySpin } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { LockIcon, CalendarIcon, SyncIcon, CheckIcon, Spinner } from '../../icons';
+import { CheckIcon, SyncIcon } from '../../icons';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
-import { spacing, typography, colors, radius, shadows } from '../../../design-system/tokens';
+import { RotaryDialCarousel } from '../../watchlist/components/RotaryDialCarousel';
+import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
+import { upsertTodaySpinEntry } from '../../../services/spinHistoryService';
+import { typography, colors, shadows } from '../../../design-system/tokens';
 import './SpinWheel.css';
-
-const COLORS = [
-  '#2E3B4E',
-  '#E74C3C',
-  '#AF7AC5',
-  '#5DADE2',
-  '#FADBD8',
-  '#C39BD3',
-  '#A9CCE3',
-  '#F5B7B1',
-];
 
 const SpinWheel: React.FC<{
   isOpen: boolean;
@@ -26,708 +17,231 @@ const SpinWheel: React.FC<{
   onClose: () => void;
   onWinner: (movie: Movie) => void;
 }> = ({ isOpen, movies, onClose, onWinner }) => {
-  const wheelRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useUser();
-  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [status, setStatus] = useState<'idle' | 'spinning' | 'saving' | 'result'>('idle');
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [hasSpunToday, setHasSpunToday] = useState(false);
+  const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const {
-    status,
-    activeMovie,
-    selectedMovie,
-    hasSpunToday,
-    todaySpinData,
-    saveError,
-    handlePrimarySpin,
-    handleSpinAgain,
-    getPointerHandlers,
-    selectedCategory,
-    setSelectedCategory,
-    filteredMovies,
-  } = useSpinWheel(movies, wheelRef, currentUser, onWinner);
-
-  const categories = useMemo(() => {
-    const cats = Array.from(new Set(movies.map((m) => m.category || 'Movies')));
-    return ['All', ...cats.sort()];
-  }, [movies]);
-
-  const segmentAngle = filteredMovies.length > 0 ? 360 / filteredMovies.length : 0;
-
-  // Effect to prevent body scroll when modal is open and handle Escape key
+  // Check spin on mount
   useEffect(() => {
-    if (!isOpen) return;
+    let isMounted = true;
+    const checkTodaySpin = async () => {
+      try {
+        const todaySpin = await getTodaySpin();
+        if (!isMounted) return;
 
-    // * Prevent body scroll when modal is open
-    document.body.classList.add('modal-open');
+        if (todaySpin) {
+          setTodaySpinData(todaySpin);
+          setHasSpunToday(true);
+          setStatus('result');
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        // * Don't allow closing during spin, loading, or saving
-        if (status === 'spinning' || status === 'loading' || status === 'saving') {
-          return;
+          const movie = movies.find((m) => m.id === todaySpin.movieId);
+          if (movie) {
+            setSelectedMovie(movie);
+          } else {
+            // Fallback if movie not in list (e.g. deleted or filtered)
+            setSelectedMovie({
+              id: todaySpin.movieId,
+              title: todaySpin.movieTitle,
+              addedBy: 'System',
+              watchedBy: [],
+              createdAt: todaySpin.createdAt,
+              year: 'Unknown',
+              genre: 'Unknown',
+            } as Movie);
+          }
+        } else {
+          setStatus('idle');
         }
-        onClose();
+      } catch (e) {
+        console.error("Error checking today's spin:", e);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+
+    if (isOpen) {
+      checkTodaySpin();
+    }
 
     return () => {
-      document.body.classList.remove('modal-open');
-      window.removeEventListener('keydown', handleKeyDown);
+      isMounted = false;
     };
-  }, [onClose, status, isOpen]);
+  }, [isOpen, movies]);
 
-  const wheelBackgroundStyle = useMemo(() => {
-    if (filteredMovies.length === 0) return {};
-    const gradientColors = filteredMovies
-      .map(
-        (_, i) =>
-          `${COLORS[i % COLORS.length]} ${i * segmentAngle}deg, ${COLORS[i % COLORS.length]} ${(i + 1) * segmentAngle}deg`
-      )
-      .join(', ');
+  const handleSpinResult = async (movie: Movie) => {
+    if (!currentUser) return;
 
-    return {
-      backgroundImage: `conic-gradient(${gradientColors})`,
-    };
-  }, [filteredMovies, segmentAngle]);
+    setStatus('saving');
+    setSelectedMovie(movie);
+    setSaveError(null);
 
-  // * Prevent closing during critical states
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    // * Don't allow closing during spin, loading, or while saving
-    if (status === 'spinning' || status === 'loading' || status === 'saving') {
-      return;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const dailySpin: DailySpin = {
+        date: today,
+        movieId: movie.id,
+        movieTitle: movie.title,
+        spunBy: currentUser,
+        createdAt: new Date().toISOString(),
+      };
+
+      await saveDailySpin(dailySpin);
+
+      // Also update history
+      try {
+        await upsertTodaySpinEntry(today, currentUser, movie.id, movie.title);
+      } catch (histErr) {
+        console.error('History save failed', histErr);
+      }
+
+      setTodaySpinData(dailySpin);
+      setHasSpunToday(true);
+      setStatus('result');
+      onWinner(movie);
+    } catch (err) {
+      console.error('Save failed', err);
+      setSaveError('Could not save result. It may not sync.');
+      setStatus('result');
+      onWinner(movie);
     }
-    onClose();
   };
 
   if (!isOpen) return null;
 
   return createPortal(
     <div
-      className="wheel-modal-overlay"
-      onClick={handleOverlayClick}
-      tabIndex={-1}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: isFullscreen ? colors.background : colors.overlay,
-        backdropFilter: isFullscreen ? 'none' : 'blur(8px)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: isFullscreen ? 'center' : 'flex-start',
-        zIndex: 2000,
-        padding: isFullscreen ? 0 : spacing.lg,
-        overflowY: 'auto',
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div
-        className="modal-content-wrapper"
+        className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: isFullscreen ? spacing.md : `${spacing.md} 0`,
-          maxWidth: isFullscreen ? 'none' : '500px',
-          height: isFullscreen ? '100%' : 'auto',
-          backgroundColor: isFullscreen ? colors.background : 'transparent',
-        }}
       >
+        {/* Main Dial Component */}
         <div
+          className="w-full flex items-center justify-center transition-opacity duration-500"
           style={{
-            alignSelf: 'flex-end',
-            display: 'flex',
-            gap: spacing.sm,
-            marginBottom: spacing.md,
+            height: '100%',
+            opacity: status === 'result' ? 0.3 : 1,
+            pointerEvents: status === 'result' ? 'none' : 'auto',
+            filter: status === 'result' ? 'blur(4px)' : 'none',
           }}
         >
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            style={{ border: `1px solid ${colors.borderSecondary}30`, borderRadius: radius.full }}
-          >
-            {isFullscreen ? 'Exit Full' : 'Fullscreen'}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onClose}
-            disabled={status === 'spinning' || status === 'loading' || status === 'saving'}
-            style={{ border: `1px solid ${colors.borderSecondary}30`, borderRadius: radius.full }}
-          >
-            Close
-          </Button>
+          <RotaryDialCarousel
+            movies={movies}
+            currentUser={currentUser}
+            mode={hasSpunToday ? 'browse' : 'spin'}
+            onSpinComplete={handleSpinResult}
+            className="w-full h-full"
+            style={{ height: '100%' }}
+          />
         </div>
-        {status === 'loading' && (
-          <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
-            <Spinner
-              style={{
-                width: '48px',
-                height: '48px',
-                color: colors.accent,
-                margin: '0 auto',
-                marginBottom: spacing.lg,
-              }}
-            />
-            <p
-              style={{
-                fontSize: typography.fontSize.lg,
-                fontWeight: typography.fontWeight.medium,
-                color: colors.textPrimary,
-                margin: 0,
-                marginBottom: spacing.sm,
-              }}
-            >
-              Checking today's spin...
-            </p>
-            <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0 }}>
-              Please wait...
-            </p>
-          </Card>
-        )}
 
-        {status === 'saving' && (
-          <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
-            <Spinner
-              style={{
-                width: '48px',
-                height: '48px',
-                color: colors.secondary,
-                margin: '0 auto',
-                marginBottom: spacing.lg,
-              }}
-            />
-            <p
-              style={{
-                fontSize: typography.fontSize.lg,
-                fontWeight: typography.fontWeight.medium,
-                color: colors.textPrimary,
-                margin: 0,
-                marginBottom: spacing.sm,
-              }}
-            >
-              Saving your spin...
-            </p>
-            <p style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, margin: 0 }}>
-              Syncing with your partner...
-            </p>
-          </Card>
-        )}
-
-        {status !== 'loading' && movies.length === 0 && (
-          <Card variant="elevated" style={{ padding: spacing['3xl'], textAlign: 'center' }}>
-            <p
-              style={{
-                fontSize: typography.fontSize.lg,
-                fontWeight: typography.fontWeight.medium,
-                color: colors.textPrimary,
-                margin: 0,
-                marginBottom: spacing.sm,
-              }}
-            >
-              No movies available
-            </p>
-            <p
-              style={{
-                fontSize: typography.fontSize.sm,
-                color: colors.textSecondary,
-                margin: 0,
-                marginBottom: spacing.lg,
-              }}
-            >
-              Add some movies to your watchlist first!
-            </p>
-            <Button variant="primary" onClick={onClose} autoFocus>
-              Close
-            </Button>
-          </Card>
-        )}
-
-        {status !== 'loading' && status !== 'saving' && movies.length > 0 && (
-          <>
-            {/* Category Selector */}
-            {!hasSpunToday && status === 'idle' && (
-              <div
-                style={{
-                  display: 'flex',
-                  gap: spacing.xs,
-                  overflowX: 'auto',
-                  width: '100%',
-                  padding: `0 ${spacing.md}`,
-                  marginBottom: spacing.md,
-                  scrollbarWidth: 'none',
-                }}
-              >
-                {categories.map((cat) => (
-                  <Button
-                    key={cat}
-                    variant={selectedCategory === cat ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setSelectedCategory(cat)}
-                    style={{
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      borderRadius: '9999px',
-                      padding: `${spacing.xs} ${spacing.md}`,
-                    }}
-                  >
-                    {cat}
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            <Card
-              variant="default"
-              className="current-movie-display"
-              style={{
-                marginBottom: spacing.md,
-                padding: `${spacing.sm} ${spacing.md}`,
-                minHeight: '120px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-                width: 'min(400px, 90vw)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: spacing.md,
-                  width: '100%',
-                }}
-              >
-                {activeMovie?.posterUrl && status !== 'result' && (
-                  <div
-                    className="spin-poster-preview"
-                    key={activeMovie.id}
-                    style={{
-                      width: '60px',
-                      aspectRatio: '2/3',
-                      borderRadius: radius.sm,
-                      overflow: 'hidden',
-                      boxShadow: shadows.card,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <img
-                      src={activeMovie.posterUrl}
-                      alt=""
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <h3
-                    className={
-                      status === 'result'
-                        ? 'current-movie-title current-movie-title--result'
-                        : 'current-movie-title'
-                    }
-                    style={{
-                      wordBreak: 'break-word',
-                      overflowWrap: 'break-word',
-                      hyphens: 'auto',
-                      maxWidth: '100%',
-                      padding: '0',
-                      boxSizing: 'border-box',
-                      fontSize:
-                        status === 'result' ? typography.fontSize.lg : typography.fontSize.base,
-                      fontWeight:
-                        status === 'result'
-                          ? typography.fontWeight.bold
-                          : typography.fontWeight.medium,
-                      margin: 0,
-                      color: status === 'result' ? colors.accent : colors.textPrimary,
-                    }}
-                  >
-                    {status === 'result' && selectedMovie
-                      ? selectedMovie.title
-                      : activeMovie
-                        ? activeMovie.title
-                        : 'Ready to spin?'}
-                  </h3>
-                  {activeMovie?.category && status !== 'result' && (
-                    <span
-                      style={{
-                        fontSize: typography.fontSize.xs,
-                        color: colors.textSecondary,
-                        marginTop: spacing.xs,
-                        display: 'block',
-                      }}
-                    >
-                      {activeMovie.category}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {status === 'result' && selectedMovie && (
-                <div
-                  style={{
-                    marginTop: spacing.sm,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: spacing.xs,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: spacing.xs,
-                      padding: `${spacing.xs} ${spacing.sm}`,
-                      borderRadius: '9999px',
-                      backgroundColor: `${colors.success}20`,
-                      border: `1px solid ${colors.success}80`,
-                    }}
-                  >
-                    <CheckIcon style={{ width: '12px', height: '12px', color: colors.success }} />
-                    <span
-                      style={{
-                        fontSize: typography.fontSize.xs,
-                        color: colors.success,
-                        fontWeight: typography.fontWeight.medium,
-                      }}
-                    >
-                      Today's Pick
-                    </span>
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            <div
-              className={`spin-wheel-wrapper ${status === 'result' ? 'result-state' : ''} ${hasSpunToday ? 'locked-state' : ''}`}
-              role="img"
-              aria-label="Movie selection wheel"
-              {...(hasSpunToday ? {} : getPointerHandlers())}
-              style={{
-                cursor: status === 'spinning' ? 'grabbing' : 'grab',
-                touchAction: 'none',
-              }}
-            >
-              <div className="spin-wheel-container">
-                {hasSpunToday && (
-                  <div className="lock-overlay">
-                    <div className="lock-icon-wrapper">
-                      <LockIcon style={{ width: '32px', height: '32px' }} />
-                    </div>
-                  </div>
-                )}
-                <div className="spin-marker" />
-                <div
-                  ref={wheelRef}
-                  className={`spin-wheel ${hasSpunToday ? 'grayscale' : ''}`}
-                  style={wheelBackgroundStyle}
-                />
-                <div className="spin-hub" />
-              </div>
-              {(status === 'idle' || status === 'spinning') && !hasSpunToday && (
-                <div className="spin-content">
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={handlePrimarySpin}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    disabled={status === 'spinning' || filteredMovies.length === 0}
-                    autoFocus
-                    style={{
-                      width: 'min(128px, 20vw)',
-                      height: 'min(128px, 20vw)',
-                      minWidth: '80px',
-                      minHeight: '80px',
-                      borderRadius: '50%',
-                      fontSize: typography.fontSize['2xl'],
-                      fontWeight: typography.fontWeight.bold,
-                      pointerEvents: 'auto',
-                      position: 'relative',
-                      zIndex: 60,
-                      boxShadow: status === 'spinning' ? 'none' : shadows.glow,
-                    }}
-                  >
-                    {status === 'spinning' ? '...' : 'Spin!'}
-                  </Button>
-                </div>
-              )}
-              {hasSpunToday && status === 'idle' && (
-                <div className="spin-content locked-content">
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: spacing.md,
-                    }}
-                  >
-                    <LockIcon style={{ width: '48px', height: '48px', color: colors.accent }} />
-                    <p
-                      style={{
-                        fontSize: typography.fontSize.lg,
-                        fontWeight: typography.fontWeight.medium,
-                        color: colors.textPrimary,
-                        textAlign: 'center',
-                        margin: 0,
-                      }}
-                    >
-                      Already spun today!
-                    </p>
-                    <p
-                      style={{
-                        fontSize: typography.fontSize.sm,
-                        color: colors.textSecondary,
-                        margin: 0,
-                      }}
-                    >
-                      Come back tomorrow for another spin
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Result Display */}
-            {status === 'result' && selectedMovie && (
+        {/* Result Overlay */}
+        {status === 'result' && selectedMovie && (
+          <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none z-50">
+            <div className="pointer-events-auto max-w-md w-full">
               <Card
                 variant="elevated"
-                className="result-display-container"
-                onClick={(e) => e?.stopPropagation()}
+                style={{
+                  padding: 0,
+                  overflow: 'hidden',
+                  border: `1px solid ${colors.accent}`,
+                  boxShadow: shadows.glowStrong,
+                  animation: 'zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                }}
               >
+                {/* Header */}
                 <div
+                  className="p-6 text-center relative overflow-hidden"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: spacing.sm,
-                    marginBottom: spacing.md,
+                    background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`,
                   }}
                 >
-                  <CheckIcon style={{ width: '24px', height: '24px', color: colors.success }} />
-                  <h2
-                    style={{
-                      fontSize: typography.fontSize.xl,
-                      fontWeight: typography.fontWeight.semibold,
-                      fontFamily: typography.fontFamily.heading.join(', '),
-                      letterSpacing: typography.letterSpacing.wide,
-                      lineHeight: typography.lineHeight.tight,
-                      color: colors.textPrimary,
-                      margin: 0,
-                    }}
-                  >
-                    Tonight's Movie:
-                  </h2>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: spacing.md,
-                    marginBottom: spacing.xl,
-                    width: '100%',
-                  }}
-                >
+                  <div className="flex items-center justify-center gap-2 mb-4 text-emerald-400">
+                    <CheckIcon style={{ width: 24, height: 24 }} />
+                    <span className="font-bold uppercase tracking-wider text-sm">Winner</span>
+                  </div>
+
                   {selectedMovie.posterUrl && (
-                    <div
-                      style={{
-                        width: '180px',
-                        aspectRatio: '2/3',
-                        borderRadius: radius.md,
-                        overflow: 'hidden',
-                        boxShadow: shadows.glow,
-                        marginBottom: spacing.sm,
-                        animation: 'scale-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        border: `2px solid ${colors.accent}`,
-                      }}
-                    >
+                    <div className="w-40 mx-auto mb-4 rounded-lg shadow-2xl overflow-hidden border-2 border-white/10 transform hover:scale-105 transition-transform">
                       <img
                         src={selectedMovie.posterUrl}
                         alt={selectedMovie.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   )}
-                  <h3
-                    className="current-movie-title current-movie-title--hero"
-                    style={{
-                      fontSize: typography.fontSize['3xl'],
-                      fontWeight: typography.fontWeight.bold,
-                      fontFamily: typography.fontFamily.heading.join(', '),
-                      letterSpacing: typography.letterSpacing.wide,
-                      lineHeight: typography.lineHeight.tight,
-                      color: colors.accent,
-                      wordBreak: 'break-word',
-                      overflowWrap: 'break-word',
-                      hyphens: 'auto',
-                      margin: 0,
-                      maxWidth: '100%',
-                      padding: '0 0.5rem',
-                      boxSizing: 'border-box',
-                      textAlign: 'center',
-                      textShadow: '0 0 15px rgba(255, 105, 180, 0.4)',
-                    }}
+
+                  <h2
+                    className="text-3xl font-bold mb-2 text-white"
+                    style={{ fontFamily: typography.fontFamily.heading.join(',') }}
                   >
                     {selectedMovie.title}
-                  </h3>
+                  </h2>
+
+                  <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                    <span>{selectedMovie.year}</span>
+                    {selectedMovie.genre && <span>• {selectedMovie.genre.split(',')[0]}</span>}
+                  </div>
                 </div>
-                {saveError && (
-                  <Card
-                    variant="outlined"
-                    style={{
-                      marginBottom: spacing.lg,
-                      padding: spacing.md,
-                      backgroundColor: `${colors.warning}20`,
-                      borderColor: `${colors.warning}80`,
-                    }}
-                  >
-                    <p
-                      style={{
-                        color: colors.warning,
-                        fontSize: typography.fontSize.sm,
-                        textAlign: 'center',
-                        margin: 0,
-                      }}
-                    >
-                      {saveError}
-                    </p>
-                  </Card>
-                )}
-                {todaySpinData && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: spacing.sm,
-                      marginBottom: spacing.lg,
-                      width: '100%',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: spacing.sm,
-                        fontSize: typography.fontSize.sm,
-                      }}
-                    >
-                      <SyncIcon
-                        style={{ width: '16px', height: '16px', color: colors.secondary }}
-                      />
-                      <span style={{ color: colors.textSecondary }}>Synced for both of you</span>
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: spacing.sm,
-                      }}
-                    >
+
+                {/* Footer Info */}
+                <div className="p-4 bg-slate-900/50 border-t border-white/5 space-y-4">
+                  {todaySpinData && (
+                    <div className="flex items-center justify-center gap-3 text-sm">
+                      <div className="flex items-center gap-1.5 text-slate-400">
+                        <SyncIcon style={{ width: 14, height: 14 }} />
+                        <span>Synced</span>
+                      </div>
                       <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: spacing.sm,
-                          padding: `${spacing.xs} ${spacing.md}`,
-                          borderRadius: '9999px',
-                          border: `1px solid ${todaySpinData.spunBy === currentUser ? `${colors.success}80` : `${colors.accent}80`}`,
-                          backgroundColor:
-                            todaySpinData.spunBy === currentUser
-                              ? `${colors.success}20`
-                              : colors.accentMuted,
-                        }}
+                        className={`px-3 py-1 rounded-full border text-xs font-medium ${
+                          todaySpinData.spunBy === currentUser
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                            : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+                        }`}
                       >
-                        <span
-                          style={{
-                            fontWeight: typography.fontWeight.medium,
-                            fontSize: typography.fontSize.sm,
-                            color:
-                              todaySpinData.spunBy === currentUser ? colors.success : colors.accent,
-                          }}
-                        >
-                          {todaySpinData.spunBy === currentUser
-                            ? '✓ You spun it!'
-                            : `Spun by ${todaySpinData.spunBy}`}
-                        </span>
+                        Spun by{' '}
+                        {todaySpinData.spunBy === currentUser ? 'You' : todaySpinData.spunBy}
                       </div>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: spacing.xs,
-                        fontSize: typography.fontSize.xs,
-                        color: colors.textTertiary,
-                      }}
-                    >
-                      <CalendarIcon style={{ width: '12px', height: '12px' }} />
-                      <span>
-                        {(() => {
-                          try {
-                            const date = new Date(`${todaySpinData.date}T00:00:00`);
-                            if (isNaN(date.getTime())) {
-                              return todaySpinData.date;
-                            }
-                            const today = new Date().toISOString().split('T')[0];
-                            const isToday = todaySpinData.date === today;
-                            const formatted = date.toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              month: 'long',
-                              day: 'numeric',
-                            });
-                            return isToday ? `Today (${formatted})` : formatted;
-                          } catch {
-                            return todaySpinData.date;
-                          }
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: spacing.sm,
-                    width: '100%',
-                    marginTop: spacing.md,
-                  }}
-                >
-                  {!hasSpunToday && (
-                    <Button
-                      onClick={handleSpinAgain}
-                      variant="secondary"
-                      style={{ width: '100%' }}
-                      size="md"
-                      autoFocus
-                    >
-                      Spin Again
-                    </Button>
                   )}
-                  <Button
-                    onClick={onClose}
-                    variant="primary"
-                    style={{ width: '100%' }}
-                    size="md"
-                    autoFocus={hasSpunToday}
-                  >
+
+                  {saveError && (
+                    <div className="text-center p-2 rounded bg-red-500/10 text-red-400 text-xs">
+                      {saveError}
+                    </div>
+                  )}
+
+                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }}>
                     Close
                   </Button>
                 </div>
               </Card>
-            )}
-          </>
+            </div>
+          </div>
+        )}
+
+        {/* Close button for non-result state */}
+        {status !== 'result' && status !== 'spinning' && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-6 right-6 p-2 rounded-full bg-black/20 hover:bg-white/10 text-white/70 hover:text-white transition-all z-50 backdrop-blur-sm"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         )}
       </div>
     </div>,
