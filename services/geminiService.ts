@@ -1,13 +1,11 @@
 import type { User } from '../types';
 import { buildAgentContextSnapshot, getAgentCapabilities } from './agentContext';
 import type { AgentToolCall } from './agentTools';
+import { supabase } from '../src/integrations/supabase/client';
 
 const env = (import.meta.env || {}) as any;
 
-const GEMINI_API_KEY = env.VITE_GEMINI_API_KEY || '';
 const GEMINI_MODEL = env.VITE_GEMINI_MODEL || 'gemini-2.0-flash';
-const GEMINI_BASE_URL =
-  env.VITE_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
 
 export interface AgentTurnInput {
   currentUser: User | null;
@@ -20,7 +18,7 @@ export interface AgentTurnOutput {
   rawText: string;
 }
 
-export const isGeminiConfigured = () => Boolean(GEMINI_API_KEY);
+export const isGeminiConfigured = () => true;
 
 const extractJson = (text: string): string | null => {
   const start = text.indexOf('{');
@@ -88,45 +86,25 @@ export const runAgentTurn = async ({
   currentUser,
   message,
 }: AgentTurnInput): Promise<AgentTurnOutput> => {
-  if (!GEMINI_API_KEY) {
-    return {
-      assistantMessage:
-        'Agent is not configured. Set VITE_GEMINI_API_KEY (and optionally VITE_GEMINI_MODEL) in your .env and reload.',
-      toolCalls: [],
-      rawText: '',
-    };
-  }
-
   const prompt = await buildPrompt(currentUser, message);
-  const url = `${GEMINI_BASE_URL}/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(
-    GEMINI_API_KEY
-  )}`;
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const { data, error } = await supabase.functions.invoke('gemini-proxy', {
+    body: {
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 1024,
       },
-    }),
+      model: GEMINI_MODEL,
+    },
   });
 
-  if (!response.ok) {
-    let details = '';
-    try {
-      details = JSON.stringify(await response.json());
-    } catch {
-      details = await response.text();
-    }
-    throw new Error(`Gemini API error (${response.status}): ${details}`);
+  if (error) {
+    throw new Error(`Gemini Proxy error: ${error.message}`);
   }
 
-  const json = await response.json();
+  // The proxy returns the raw Gemini response data directly
+  const json = data;
   const rawText =
     json?.candidates?.[0]?.content?.parts
       ?.map((p: any) => p?.text)
