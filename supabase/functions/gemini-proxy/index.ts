@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,17 +32,17 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         contents,
-        generationConfig
+        generationConfig,
       }),
     });
 
     if (!geminiResponse.ok) {
-        const errorText = await geminiResponse.text();
-        console.error('Gemini API Error:', geminiResponse.status, errorText);
-        return new Response(errorText, {
-            status: geminiResponse.status,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+      const errorText = await geminiResponse.text();
+      console.error('Gemini API Error:', geminiResponse.status, errorText);
+      return new Response(errorText, {
+        status: geminiResponse.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await geminiResponse.json();
@@ -51,9 +51,12 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Edge Function Error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
