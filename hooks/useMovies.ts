@@ -58,7 +58,6 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     const seedMovies = async () => {
       const hasBeenSeeded = localStorage.getItem('movieListSeeded_gist_refactored');
       if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
-        console.log('Gist is empty, seeding initial movies...');
         const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
           { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
           { title: 'Renfield', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
@@ -242,7 +241,6 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     try {
       const latestMovies = await getMovies();
       // Fetch metadata for all movies in parallel (with some concurrency limit)
-      console.log('Refreshing all metadata...');
 
       const updatedMovies = await concurrentMap(latestMovies, 5, async (movie) => {
         try {
@@ -282,9 +280,6 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       return;
     }
 
-    console.log(
-      `Auto-sync: Found ${moviesMissingMetadata.length} movies missing metadata. Starting background sync...`
-    );
     hasAutoSyncedRef.current = true;
 
     try {
@@ -313,7 +308,6 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
       if (syncOccurred) {
         await performMutation(() => updatedMovies);
-        console.log('Auto-sync: Successfully updated missing metadata.');
       }
     } catch (err) {
       console.error('Auto-sync: Failed background metadata update:', err);
