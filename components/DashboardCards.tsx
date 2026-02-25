@@ -225,7 +225,7 @@ export const SuggestionItemCard: React.FC<SuggestionItemCardProps> = ({
             overflow: 'hidden',
           }}
         >
-          "{suggestion.reason}"
+          &quot;{suggestion.reason}&quot;
         </p>
       )}
 

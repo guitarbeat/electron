@@ -81,25 +81,26 @@ const App: React.FC = () => {
             />
           </div>
         );
-      case 'quiz':
-        return (
-          <div className="animate-fade-in">
-            {showQuiz && quizData ? (
-              <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />
-            ) : showQuizEditor ? (
-              <QuizEditor onClose={() => setShowQuizEditor(false)} />
-            ) : (
-              <ExtrasHub
-                currentUser={currentUser}
-                quizCompleted={quizCompleted}
-                onStartQuiz={handleStartQuiz}
-                onRetakeQuiz={handleRetakeQuiz}
-                onOpenQuizEditor={handleOpenQuizEditor}
-                initialView="quiz"
-              />
-            )}
-          </div>
-        );
+      case 'quiz': {
+        let content;
+        if (showQuiz && quizData) {
+          content = <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />;
+        } else if (showQuizEditor) {
+          content = <QuizEditor onClose={() => setShowQuizEditor(false)} />;
+        } else {
+          content = (
+            <ExtrasHub
+              currentUser={currentUser}
+              quizCompleted={quizCompleted}
+              onStartQuiz={handleStartQuiz}
+              onRetakeQuiz={handleRetakeQuiz}
+              onOpenQuizEditor={handleOpenQuizEditor}
+              initialView="quiz"
+            />
+          );
+        }
+        return <div className="animate-fade-in">{content}</div>;
+      }
       case 'messages':
         return <MessageBoard mode="embedded" />;
       default:

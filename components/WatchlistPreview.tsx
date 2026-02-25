@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useMovies } from '../hooks/useMovies';
 import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
 import { FilmIcon } from './icons';
@@ -123,6 +123,11 @@ const PosterCard: React.FC<PosterCardProps> = ({ movie }) => {
 const WatchlistPreview: React.FC = () => {
   const { movies, isLoading } = useMovies('Aaron'); // Read-only proxy access
 
+  const unwatchedMovies = useMemo(
+    () => movies?.filter((m) => m.watchedBy.length < 2) || [],
+    [movies]
+  );
+
   if (isLoading) {
     return (
       <div style={{ marginTop: spacing.md }}>
@@ -143,8 +148,6 @@ const WatchlistPreview: React.FC = () => {
       </div>
     );
   }
-
-  const unwatchedMovies = movies?.filter((m) => m.watchedBy.length < 2) || [];
 
   if (unwatchedMovies.length === 0) {
     return (
