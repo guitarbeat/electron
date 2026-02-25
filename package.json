@@ -21,6 +21,10 @@
     "test:all": "node --experimental-strip-types --test **/*.test.ts"
   },
   "dependencies": {
+    "@capacitor/android": "7.4.4",
+    "@capacitor/cli": "7.4.4",
+    "@capacitor/core": "7.4.4",
+    "@capacitor/ios": "7.4.4",
     "@supabase/supabase-js": "^2.97.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
