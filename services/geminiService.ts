@@ -1,6 +1,7 @@
 import type { User } from '../types';
 import { buildAgentContextSnapshot, getAgentCapabilities } from './agentContext';
 import type { AgentToolCall } from './agentTools';
+import { extractTextFromResponse, type GeminiResponse } from './geminiUtils';
 
 const env = (import.meta.env || {}) as any;
 
@@ -126,12 +127,8 @@ export const runAgentTurn = async ({
     throw new Error(`Gemini API error (${response.status}): ${details}`);
   }
 
-  const json = await response.json();
-  const rawText =
-    json?.candidates?.[0]?.content?.parts
-      ?.map((p: any) => p?.text)
-      .filter(Boolean)
-      .join('\n') || '';
+  const json = (await response.json()) as GeminiResponse;
+  const rawText = extractTextFromResponse(json);
 
   const parsed = parseAgentTurn(rawText);
   return { ...parsed, rawText };
