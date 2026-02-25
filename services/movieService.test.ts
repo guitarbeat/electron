@@ -50,7 +50,7 @@ test('getMovies returns empty array if file is missing in Gist', async () => {
   });
 
   try {
-    const mockConsoleError = mock.method(console, 'error', () => { });
+    const mockConsoleError = mock.method(console, 'error', () => {});
     const movies = await getMovies();
     assert.deepEqual(movies, []);
     mockConsoleError.mock.restore();
@@ -90,7 +90,7 @@ test('getMovies throws error on network failure', async () => {
   });
 
   try {
-    const mockConsoleError = mock.method(console, 'error', () => { });
+    const mockConsoleError = mock.method(console, 'error', () => {});
     await assert.rejects(getMovies(), /GitHub API responded with 500/);
     mockConsoleError.mock.restore();
   } finally {
@@ -130,7 +130,7 @@ test('saveMovies throws error on network failure', async () => {
   });
 
   try {
-    const mockConsoleError = mock.method(console, 'error', () => { });
+    const mockConsoleError = mock.method(console, 'error', () => {});
     await assert.rejects(saveMovies(mockMovies), /GitHub API responded with 500/);
     mockConsoleError.mock.restore();
   } finally {
