@@ -18,6 +18,128 @@ interface MatchmakerProps {
 }
 
 const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
+    const { movies, isLoading: isMoviesLoading } = useMovies(currentUser);
+    const {
+        game,
+        isLoading: isGameLoading,
+        isSubmitting,
+        startNewGame,
+        swipe,
+        undo,
+        endCurrentGame,
+    } = useMatchmaker(currentUser);
+
+    const [isPickingRandom, setIsPickingRandom] = useState(false);
+    const [randomWinner, setRandomWinner] = useState<Movie | null>(null);
+
+    const unwatchedMovies = useMemo(
+        () => (movies ? movies.filter((m) => m.watchedBy.length < 2) : []),
+        [movies]
+    );
+
+    const activePoolMovies = useMemo(() => {
+        if (!game || !movies) return [];
+        return game.moviePool
+            .map((id) => movies.find((m) => m.id === id))
+            .filter((m): m is Movie => !!m);
+    }, [game, movies]);
+
+    const swipedIds = useMemo(() => {
+        const userLikes = currentUser === 'Aaron' ? game?.aaronLikes || [] : game?.electraLikes || [];
+        const userDislikes = currentUser === 'Aaron' ? game?.aaronDislikes || [] : game?.electraDislikes || [];
+        return [...userLikes, ...userDislikes];
+    }, [currentUser, game]);
+
+    const remainingMovies = useMemo(() => {
+        return activePoolMovies.filter((m) => !swipedIds.includes(m.id));
+    }, [activePoolMovies, swipedIds]);
+
+    const matches = useMemo(() => {
+        if (!game || !movies) return [];
+        const intersection = game.aaronLikes.filter((id) => game.electraLikes.includes(id));
+        return intersection
+            .map((id) => movies.find((m) => m.id === id))
+            .filter((m): m is Movie => !!m);
+    }, [game, movies]);
+
+    const cardRef = useRef<any>(null);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [lastMatchedMovie, setLastMatchedMovie] = useState<Movie | null>(null);
+    const lastMatchCount = useRef(matches.length);
+
+    // Trigger celebration and alert when a new match is found
+    useEffect(() => {
+        if (matches.length > lastMatchCount.current && matches.length > 0) {
+            const newMatchId = matches[matches.length - 1].id;
+            const newMatch = movies?.find(m => m.id === newMatchId);
+            if (newMatch) {
+                setLastMatchedMovie(newMatch);
+                setShowConfetti(true);
+                setTimeout(() => {
+                    setShowConfetti(false);
+                    setLastMatchedMovie(null);
+                }, 4000);
+            }
+        }
+        lastMatchCount.current = matches.length;
+    }, [matches, movies]);
+
+    const availableVibes = useMemo(() => {
+        const counts: Record<string, number> = {};
+        unwatchedMovies.forEach(m => {
+            const tags = [
+                ...(m.genre ? m.genre.split(',').map(g => g.trim()) : []),
+                ...(m.category ? [m.category] : [])
+            ];
+            tags.forEach(tag => {
+                const clean = tag?.trim();
+                if (!clean) return;
+                counts[clean] = (counts[clean] || 0) + 1;
+            });
+        });
+
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 8)
+            .map(([vibe]) => vibe);
+    }, [unwatchedMovies]);
+
+    const [vibe, setVibe] = useState<string | null>(null);
+
+    const handleStart = (selectedVibe: string | null = null) => {
+        if (!currentUser) return;
+
+        let poolSource = [...unwatchedMovies];
+        if (selectedVibe === 'Short & Sweet') {
+            poolSource = poolSource.filter(m => {
+                const mins = parseInt(m.runtime || '120');
+                return mins > 0 && mins < 100;
+            });
+        } else if (selectedVibe) {
+            poolSource = poolSource.filter(m =>
+                m.genre?.toLowerCase().includes(selectedVibe.toLowerCase()) ||
+                m.category?.toLowerCase().includes(selectedVibe.toLowerCase())
+            );
+        }
+
+        if (poolSource.length < 3) {
+            alert(`Not enough ${selectedVibe || ''} movies in your queue! (Need at least 3)`);
+            return;
+        }
+
+        // Shuffle and pick up to 12 (fewer is better for indecisive people)
+        const shuffled = poolSource.sort(() => 0.5 - Math.random());
+        const pool = shuffled.slice(0, 10).map((m) => m.id);
+        startNewGame(pool);
+        setVibe(selectedVibe);
+    };
+
+    const handleSwipe = (direction: 'left' | 'right') => {
+        if (remainingMovies.length > 0) {
+            const activeMovie = remainingMovies[0];
+            swipe(activeMovie.id, direction === 'right');
+        }
+    };
   const { movies, isLoading: isMoviesLoading } = useMovies(currentUser);
   const {
     game,

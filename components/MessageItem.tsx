@@ -466,4 +466,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
   );
 };
 
-export default memo(MessageItem);
+// Deep comparison to prevent re-renders when polling returns new object references
+// We use JSON.stringify for the message object as it is a small, plain object without circular references.
+// This is more robust than manual field comparison as it handles future schema changes automatically.
+const arePropsEqual = (prevProps: MessageItemProps, nextProps: MessageItemProps) => {
+  return (
+    prevProps.currentUser === nextProps.currentUser &&
+    prevProps.showSenderName === nextProps.showSenderName &&
+    prevProps.isEditMode === nextProps.isEditMode &&
+    prevProps.onDelete === nextProps.onDelete &&
+    prevProps.onReaction === nextProps.onReaction &&
+    JSON.stringify(prevProps.msg) === JSON.stringify(nextProps.msg)
+  );
+};
+
+export default memo(MessageItem, arePropsEqual);

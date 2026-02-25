@@ -20,6 +20,95 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
   currentUser,
   onMovieClick,
 }) => {
+    const [rotation, setRotation] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const [velocity, setVelocity] = useState(0);
+    const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+    const lastX = useRef(0);
+    const lastTime = useRef(Date.now());
+    const animationRef = useRef<number | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Responsive configuration
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const isMobile = windowWidth < 768;
+    const radius = isMobile ? Math.min(windowWidth * 0.35, 260) : 350;
+    const cardSize = isMobile ? { w: 120, h: 180 } : { w: 160, h: 240 };
+    const containerHeight = isMobile ? 600 : 800;
+
+    const totalCards = movies.length;
+    const anglePerCard = totalCards > 0 ? 360 / totalCards : 0;
+
+    // Calculate which card is focused
+    const normalizedRotation = ((rotation % 360) + 360) % 360;
+    const activeIndex = totalCards > 0 ? Math.round(normalizedRotation / anglePerCard) % totalCards : 0;
+    const activeMovie = movies[activeIndex];
+
+    // Momentum physics
+    useEffect(() => {
+        let currentVelocity = velocity;
+
+        if (!isDragging && Math.abs(currentVelocity) > 0.05) {
+            const animate = () => {
+                currentVelocity *= 0.95; // Balanced friction for control
+                setRotation(r => r + currentVelocity);
+                setVelocity(currentVelocity);
+
+                if (Math.abs(currentVelocity) > 0.05) {
+                    animationRef.current = requestAnimationFrame(animate);
+                } else {
+                    // Snap to nearest card when momentum stops
+                    const targetRotation = Math.round((rotation + currentVelocity) / anglePerCard) * anglePerCard;
+                    setRotation(targetRotation);
+                    setVelocity(0);
+                }
+            };
+            animationRef.current = requestAnimationFrame(animate);
+        } else if (!isDragging && Math.abs(velocity) <= 0.05 && totalCards > 0) {
+            // Instant snap if no velocity
+            const targetRotation = Math.round(rotation / anglePerCard) * anglePerCard;
+            if (Math.abs(rotation - targetRotation) > 0.1) {
+                setRotation(targetRotation);
+            }
+        }
+
+        return () => {
+            if (animationRef.current) cancelAnimationFrame(animationRef.current);
+        };
+    }, [isDragging, velocity, rotation, anglePerCard, totalCards]);
+
+    // Mouse/Touch handlers for spinning
+    const handleStart = (clientX: number) => {
+        if (totalCards === 0) return;
+        setIsDragging(true);
+        setVelocity(0);
+        lastX.current = clientX;
+        lastTime.current = Date.now();
+        if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+
+    const handleMove = (clientX: number) => {
+        if (!isDragging || totalCards === 0) return;
+
+        const deltaX = clientX - lastX.current;
+        const deltaTime = Date.now() - lastTime.current;
+
+        // Higher sensitivity for mobile
+        const sensitivity = isMobile ? 0.6 : 0.4;
+        const rotationDelta = deltaX * sensitivity;
+        setRotation(r => r + rotationDelta);
+
+        if (deltaTime > 0) {
+            const newVelocity = rotationDelta / Math.max(deltaTime / 16, 1);
+            // Cap velocity to prevent extreme spinning
+            const maxVelocity = 15;
+            setVelocity(Math.sign(newVelocity) * Math.min(Math.abs(newVelocity), maxVelocity));
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [velocity, setVelocity] = useState(0);
@@ -115,6 +204,42 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
       setVelocity(Math.sign(newVelocity) * Math.min(Math.abs(newVelocity), maxVelocity));
     }
 
+    // Card position and circular transformation
+    const getCardStyle = (index: number) => {
+        if (totalCards === 0) return {};
+
+        const isActive = isActiveCard(index);
+
+        // Find relative distance from "active" position for scaling/opacity
+        const cardAngle = index * anglePerCard - rotation;
+        const normalizedAngle = ((cardAngle % 360) + 360) % 360;
+        const offsetAngle = normalizedAngle > 180 ? normalizedAngle - 360 : normalizedAngle;
+        const absDiffIndex = Math.abs(offsetAngle / anglePerCard);
+
+        let x = 0;
+        let y = 0;
+        let scale = 1;
+        let zIndex = 110;
+        let opacity = 1;
+
+        if (isActive) {
+            // Position at center
+            x = 0;
+            y = 0;
+            scale = isMobile ? 1.4 : 1.6;
+            zIndex = 200;
+            opacity = 1;
+        } else {
+            // Polar coordinates on the circle
+            const rad = (cardAngle - 90) * Math.PI / 180;
+            x = radius * Math.cos(rad);
+            y = radius * Math.sin(rad);
+
+            // Sub-scaling and fading for background cards
+            scale = Math.max(0.3, 0.75 - (absDiffIndex / (totalCards * 0.4)));
+            zIndex = 100 - Math.floor(absDiffIndex * 10);
+            opacity = Math.max(0.1, 0.85 - (absDiffIndex / (totalCards * 0.35)));
+        }
     lastX.current = clientX;
     lastTime.current = Date.now();
   };
@@ -387,6 +512,61 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
                   </div>
                 </div>
 
+            {/* Navigation Controls */}
+            <div className="rdc-controls" style={{ bottom: isMobile ? '20px' : '0px' }}>
+                <button
+                    aria-label="Previous"
+                    onClick={() => spin(-1)}
+                    className="rdc-btn-spin"
+                    style={{
+                        width: isMobile ? '40px' : '48px',
+                        height: isMobile ? '40px' : '48px',
+                        backgroundColor: colors.surfaceElevated,
+                        borderColor: `${colors.borderSecondary}40`,
+                        color: colors.textPrimary
+                    }}
+                >
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button
+                    onClick={() => onMovieClick(activeMovie)}
+                    className="rounded-full font-bold uppercase tracking-wide transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    style={{
+                        padding: isMobile ? '10px 20px' : '12px 32px',
+                        fontSize: isMobile ? '11px' : '13px',
+                        background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
+                        color: '#fff',
+                        boxShadow: shadows.glow,
+                        border: 'none',
+                    }}
+                >
+                    Select {activeMovie?.title}
+                </button>
+                <button
+                    aria-label="Next"
+                    onClick={() => spin(1)}
+                    className="rdc-btn-spin"
+                    style={{
+                        width: isMobile ? '40px' : '48px',
+                        height: isMobile ? '40px' : '48px',
+                        backgroundColor: colors.surfaceElevated,
+                        borderColor: `${colors.borderSecondary}40`,
+                        color: colors.textPrimary
+                    }}
+                >
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: isMobile ? '16px' : '20px', height: isMobile ? '16px' : '20px' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Spin hint */}
+            <div className="rdc-hint" style={{ color: colors.textTertiary, marginTop: isMobile ? '40px' : '16px' }}>
+                <span className="rdc-hint-desktop">Scroll or drag to spin through your watchlist</span>
+                <span className="rdc-hint-mobile">Swipe to spin through your watchlist</span>
+            </div>
                 {/* Status Indicators (Avatars) */}
                 <div className="rdc-status-container" style={{ top: isMobile ? '-20px' : '-30px' }}>
                   {movie.watchedBy.length > 0 ? (
