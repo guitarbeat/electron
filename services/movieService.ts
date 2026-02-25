@@ -1,5 +1,5 @@
-import { GIST_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
-import { Movie } from '../types';
+import { GIST_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig.ts';
+import type { Movie } from '../types.ts';
 
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
