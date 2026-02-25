@@ -1,3 +1,5 @@
+import { isValidUrl, sanitizeInput } from '../config/security.ts';
+
 const env = (import.meta.env || {}) as any;
 const OMDB_PROXY_URL = env.VITE_OMDB_PROXY_URL || '';
 const OMDB_API_KEY = env.VITE_OMDB_API_KEY || '';
@@ -165,14 +167,14 @@ export interface MetadataResult {
 }
 
 const toMetadataResultFromOmdb = (omdbData: OmdbMovieResponse): MetadataResult => ({
-  posterUrl: omdbData.Poster !== 'N/A' ? omdbData.Poster : undefined,
+  posterUrl: omdbData.Poster !== 'N/A' && isValidUrl(omdbData.Poster) ? omdbData.Poster : undefined,
   year: omdbData.Year !== 'N/A' ? omdbData.Year : undefined,
-  plot: omdbData.Plot !== 'N/A' ? omdbData.Plot : undefined,
+  plot: omdbData.Plot !== 'N/A' ? sanitizeInput(omdbData.Plot) : undefined,
   imdbRating: omdbData.imdbRating !== 'N/A' ? omdbData.imdbRating : undefined,
   runtime: omdbData.Runtime !== 'N/A' ? omdbData.Runtime : undefined,
-  genre: omdbData.Genre !== 'N/A' ? omdbData.Genre : undefined,
-  director: omdbData.Director !== 'N/A' ? omdbData.Director : undefined,
-  title: omdbData.Title !== 'N/A' ? omdbData.Title : undefined,
+  genre: omdbData.Genre !== 'N/A' ? sanitizeInput(omdbData.Genre) : undefined,
+  director: omdbData.Director !== 'N/A' ? sanitizeInput(omdbData.Director) : undefined,
+  title: omdbData.Title !== 'N/A' ? sanitizeInput(omdbData.Title) : undefined,
   type: omdbData.Type === 'series' ? 'series' : 'movie',
 });
 
@@ -192,13 +194,14 @@ export const fetchMovieMetadata = async (
       const show: TvMazeShow = await tvmazeRes.json();
 
       if (show) {
+        const posterUrl = show.image?.medium || show.image?.original;
         return {
-          posterUrl: show.image?.medium || show.image?.original,
+          posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
           year: show.premiered ? show.premiered.split('-')[0] : undefined,
-          plot: stripHtml(show.summary),
+          plot: sanitizeInput(stripHtml(show.summary) || ''),
           imdbRating: show.rating?.average?.toString(),
-          genre: show.genres?.join(', '),
-          title: show.name,
+          genre: sanitizeInput(show.genres?.join(', ') || ''),
+          title: sanitizeInput(show.name),
           type: 'series',
         };
       }
@@ -246,12 +249,13 @@ export const fetchMovieMetadata = async (
 
       if (tvmazeData && tvmazeData.length > 0) {
         const { show } = tvmazeData[0];
+        const posterUrl = show.image?.medium || show.image?.original;
         return {
-          posterUrl: show.image?.medium || show.image?.original,
+          posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
           year: show.premiered ? show.premiered.split('-')[0] : undefined,
-          plot: stripHtml(show.summary),
+          plot: sanitizeInput(stripHtml(show.summary) || ''),
           imdbRating: show.rating?.average?.toString(),
-          genre: show.genres?.join(', '),
+          genre: sanitizeInput(show.genres?.join(', ') || ''),
           type: 'series',
         };
       }
@@ -281,9 +285,9 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
         results.push(
           ...omdbData.Search.map((item) => ({
             id: item.imdbID,
-            title: item.Title,
+            title: sanitizeInput(item.Title),
             year: item.Year,
-            posterUrl: item.Poster !== 'N/A' ? item.Poster : undefined,
+            posterUrl: item.Poster !== 'N/A' && isValidUrl(item.Poster) ? item.Poster : undefined,
             type: (item.Type === 'series' ? 'series' : 'movie') as 'movie' | 'series',
           }))
         );
@@ -304,14 +308,17 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
 
     if (tvmazeData && tvmazeData.length > 0) {
       results.push(
-        ...tvmazeData.map((item) => ({
-          id: `tv-${item.show.id}`,
-          title: item.show.name,
-          year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
-          posterUrl: item.show.image?.medium || item.show.image?.original,
-          type: 'series' as const,
-          plot: stripHtml(item.show.summary),
-        }))
+        ...tvmazeData.map((item) => {
+          const posterUrl = item.show.image?.medium || item.show.image?.original;
+          return {
+            id: `tv-${item.show.id}`,
+            title: sanitizeInput(item.show.name),
+            year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
+            posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
+            type: 'series' as const,
+            plot: sanitizeInput(stripHtml(item.show.summary) || ''),
+          };
+        })
       );
     }
   } catch (error) {
