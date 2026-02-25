@@ -1,6 +1,6 @@
-import { GIST_ID, GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
-import { sanitizeInput } from '../config/security';
-import { MovieSuggestion } from '../types';
+import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig.ts';
+import { sanitizeInput } from '../config/security.ts';
+import type { MovieSuggestion } from '../types.ts';
 
 export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   try {
@@ -41,7 +41,7 @@ export const saveSuggestions = async (suggestions: MovieSuggestion[]): Promise<v
       body: JSON.stringify({
         files: {
           [GIST_SUGGESTIONS_FILENAME]: {
-            content: JSON.stringify(suggestions, null, 2),
+            content: JSON.stringify(suggestions),
           },
         },
       }),
