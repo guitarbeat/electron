@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { Movie, User, SharedMemory } from '../types';
-import { TrashIcon, EyeIcon, EyeOffIcon, TicketIcon, MagicWandIcon, FilmIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
@@ -18,7 +18,6 @@ interface MovieItemProps {
   onDelete: (movie: Movie) => void;
   onFixMatch?: (movie: Movie) => void;
   animationDelay: string;
-  layout?: 'list' | 'grid';
   memories?: SharedMemory[];
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
@@ -27,15 +26,6 @@ interface MovieItemProps {
   isHighlighted?: boolean;
 }
 
-const getWatchedStatus = (movie: Movie) => {
-  const aaronWatched = movie.watchedBy.includes('Aaron');
-  const electraWatched = movie.watchedBy.includes('Electra');
-  if (aaronWatched && electraWatched) return 'Watched by both';
-  if (aaronWatched) return 'Watched by Aaron';
-  if (electraWatched) return 'Watched by Electra';
-  return 'Not watched yet';
-};
-
 const MovieItem: React.FC<MovieItemProps> = ({
   movie,
   currentUser,
@@ -43,7 +33,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
   onDelete,
   onFixMatch,
   animationDelay,
-  layout = 'list',
   memories = [],
   onAddMemory,
   onUpdateMemory,
@@ -57,14 +46,14 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const [showMemories, setShowMemories] = useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
 
-  // We don't need memoryPreview/Count props anymore as we have the full array
   const hasSharedMemories = memories.length > 0;
 
   const handleCardClick = () => {
-    if (isMobile && layout === 'grid') {
+    if (isMobile) {
       setIsBottomSheetOpen(true);
     }
   };
@@ -103,8 +92,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
           padding: 0,
           opacity: 1,
           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          marginBottom: layout === 'grid' ? spacing.sm : spacing.md,
-          borderWidth: watchedByBoth ? (layout === 'grid' ? '2px' : '3px') : '1px',
+          marginBottom: spacing.sm,
+          borderWidth: watchedByBoth ? '2px' : '1px',
           borderColor: isHighlighted
             ? colors.secondary
             : watchedByBoth
@@ -114,26 +103,25 @@ const MovieItem: React.FC<MovieItemProps> = ({
           overflow: 'hidden',
           animationDelay,
           display: 'flex',
-          flexDirection: layout === 'grid' ? 'column' : 'row',
-          minHeight: layout === 'grid' ? 'auto' : '160px',
+          flexDirection: 'column',
           boxShadow: isHighlighted
             ? '0 0 0 2px rgba(135, 206, 250, 0.55), 0 0 24px rgba(135, 206, 250, 0.45)'
-            : layout === 'grid'
-              ? shadows.card
-              : shadows.card,
+            : shadows.card,
           backgroundColor: colors.surfaceElevated,
-          cursor: isMobile && layout === 'grid' ? 'pointer' : 'default',
+          cursor: isMobile ? 'pointer' : 'default',
           transform: 'translateZ(0)',
-          flexWrap: 'wrap', // Allow memories to take full width below
+          flexWrap: 'wrap',
         }}
         onMouseEnter={(e) => {
           if (!isMobile) {
+            setIsHovered(true);
             e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
             e.currentTarget.style.boxShadow = shadows.glow;
           }
         }}
         onMouseLeave={(e) => {
           if (!isMobile) {
+            setIsHovered(false);
             e.currentTarget.style.transform = 'translateY(0) scale(1)';
             e.currentTarget.style.boxShadow = shadows.card;
           }
@@ -142,9 +130,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
         {/* Poster Image or Text Fallback */}
         <div
           style={{
-            width: layout === 'grid' ? '100%' : '110px',
-            height: layout === 'grid' ? 'auto' : 'auto',
-            aspectRatio: layout === 'grid' ? '2/3' : 'unset',
+            width: '100%',
+            aspectRatio: '2/3',
             flexShrink: 0,
             position: 'relative',
             overflow: 'hidden',
@@ -152,10 +139,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background:
-              !movie.posterUrl && layout === 'grid'
-                ? `linear-gradient(135deg, ${colors.secondary} 0%, ${colors.accent} 100%)`
-                : colors.background,
+            background: !movie.posterUrl
+              ? `linear-gradient(135deg, ${colors.secondary} 0%, ${colors.accent} 100%)`
+              : colors.background,
           }}
         >
           {movie.posterUrl ? (
@@ -170,7 +156,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 transition: 'transform 0.5s ease',
               }}
             />
-          ) : layout === 'grid' ? (
+          ) : (
             <div
               style={{
                 padding: isMobile ? spacing.sm : spacing.md,
@@ -205,7 +191,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 {movie.title}
               </h3>
             </div>
-          ) : null}
+          )}
 
           {/* Watcher Badges - Floating on Top-Left */}
           <div
@@ -222,23 +208,24 @@ const MovieItem: React.FC<MovieItemProps> = ({
             {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
           </div>
 
-          {/* Grid View Overlay */}
-          {layout === 'grid' && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: movie.posterUrl
-                  ? 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%)'
-                  : 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-                padding: spacing.sm,
-                opacity: 1,
-                zIndex: 2,
-              }}
-            >
+          {/* Grid Overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: movie.posterUrl
+                ? 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.45) 42%, transparent 100%)'
+                : 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              padding: spacing.sm,
+              opacity: 1,
+              zIndex: 2,
+              gap: '6px',
+            }}
+          >
+            <div>
               {movie.posterUrl && (
                 <h3
                   style={{
@@ -246,7 +233,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     fontWeight: typography.fontWeight.bold,
                     color: colors.textPrimary,
                     margin: 0,
-                    marginBottom: '2px',
+                    marginBottom: '4px',
                     lineHeight: 1.2,
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
@@ -259,398 +246,176 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 </h3>
               )}
 
-              {hasSharedMemories && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    handleToggleMemories(e);
-                  }}
-                  style={{
-                    alignSelf: 'flex-start',
-                    marginBottom: spacing.xs,
-                    padding: '2px 8px',
-                    borderRadius: radius.full,
-                    border: '1px solid rgba(255, 248, 210, 0.55)',
-                    backgroundColor: 'rgba(58, 41, 17, 0.55)',
-                    color: '#fff4d6',
-                    fontSize: '0.65rem',
-                    fontFamily:
-                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                    letterSpacing: '0.04em',
-                    cursor: 'pointer',
-                    borderStyle: 'solid',
-                  }}
-                  aria-label={`View memories for "${movie.title}"`}
-                >
-                  {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
-                </button>
-              )}
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginTop: '4px',
-                  gap: '4px',
-                }}
-              >
+              {(movie.year || movie.category) && (
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: 'center',
                     alignItems: 'center',
-                    gap: spacing.sm,
-                    width: '100%',
+                    gap: '6px',
+                    flexWrap: 'wrap',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.02em',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                   }}
                 >
-                  <Button
-                    type="button"
-                    onClick={handleToggle}
-                    variant={watchedByCurrentUser ? 'primary' : 'secondary'}
-                    size="sm"
-                    isLoading={isUpdating}
-                    loadingText="Updating..."
-                    disabled={isGuest}
-                    aria-label={
-                      watchedByCurrentUser
-                        ? `Mark "${movie.title}" as unwatched`
-                        : `Mark "${movie.title}" as watched`
-                    }
-                    style={{
-                      padding: `${spacing.xs} ${spacing.md}`,
-                      minHeight: '44px',
-                      fontSize: '12px',
-                      backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.6)',
-                      borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      flex: 1,
-                      opacity: isGuest ? 0.5 : 1,
-                      cursor: isGuest ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {watchedByCurrentUser ? (
-                      <EyeIcon style={{ width: '12px' }} />
-                    ) : (
-                      <EyeOffIcon style={{ width: '12px' }} />
-                    )}
-                    {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
-                  </Button>
-
-                  <IconButton
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onFixMatch?.(movie);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    disabled={isGuest}
-                    title="Fix Metadata Match"
-                    aria-label={`Fix metadata for "${movie.title}"`}
-                    style={{
-                      padding: 0,
-                      width: '44px',
-                      height: '44px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      borderRadius: radius.md,
-                      color: colors.accent,
-                      border: `1px solid ${colors.accent}40`,
-                      opacity: isGuest ? 0.5 : 1,
-                      cursor: isGuest ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <MagicWandIcon style={{ width: '14px', height: '14px' }} />
-                  </IconButton>
-
-                  <IconButton
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(movie);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    disabled={isGuest}
-                    title="Delete Movie"
-                    aria-label={`Delete "${movie.title}"`}
-                    style={{
-                      padding: 0,
-                      width: '44px',
-                      height: '44px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      borderRadius: radius.md,
-                      color: colors.error,
-                      border: `1px solid ${colors.error}40`,
-                      opacity: isGuest ? 0.5 : 1,
-                      cursor: isGuest ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <TrashIcon style={{ width: '14px', height: '14px' }} />
-                  </IconButton>
+                  {movie.year && <span>{movie.year}</span>}
+                  {movie.year && movie.category && <span style={{ opacity: 0.7 }}>•</span>}
+                  {movie.category && (
+                    <span
+                      style={{
+                        color: colors.accentLight,
+                        backgroundColor: 'rgba(0,0,0,0.35)',
+                        padding: '2px 8px',
+                        borderRadius: radius.full,
+                        border: '1px solid rgba(255,255,255,0.18)',
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {movie.category}
+                    </span>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
+              )}
 
-        {/* List View Content (Only if NOT grid) */}
-        {layout !== 'grid' && (
-          <div
-            style={{
-              flex: 1,
-              padding: isMobile ? spacing.sm : spacing.md,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              position: 'relative',
-              minWidth: 0,
-              zIndex: 2,
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: spacing.sm,
-                }}
-              >
-                <h3
-                  className="movie-title"
-                  style={{
-                    fontSize: isMobile ? typography.fontSize.lg : typography.fontSize.xl,
-                    fontWeight: typography.fontWeight.bold,
-                    color: watchedByBoth ? colors.textSecondary : colors.textPrimary,
-                    textDecoration: watchedByBoth ? 'line-through' : 'none',
-                    margin: 0,
-                    marginBottom: spacing.xs,
-                    wordBreak: 'break-word',
-                    lineHeight: typography.lineHeight.tight,
-                    textShadow: watchedByBoth ? 'none' : shadows.textGlow,
-                    maxWidth: '90%',
-                  }}
-                >
-                  {movie.title}
-                </h3>
-                {watchedByBoth && (
-                  <div
-                    style={{
-                      color: colors.accent,
-                      flexShrink: 0,
-                      filter: 'drop-shadow(0 0 8px rgba(255, 105, 180, 0.6))',
-                      animation: 'pulse-glow 2s ease-in-out infinite',
-                    }}
-                  >
-                    <TicketIcon style={{ width: '24px', height: '24px' }} />
-                  </div>
-                )}
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: spacing.sm,
-                  fontSize: typography.fontSize.sm,
-                  color: colors.textTertiary,
-                  marginBottom: spacing.md,
-                  fontWeight: typography.fontWeight.semibold,
-                }}
-              >
-                {movie.year && <span style={{ color: colors.textSecondary }}>{movie.year}</span>}
-                {movie.year && movie.category && <span>•</span>}
-                {movie.category && (
-                  <span
-                    style={{
-                      color: colors.accentLight,
-                      backgroundColor: `${colors.accent}15`,
-                      padding: '2px 8px',
-                      borderRadius: radius.sm,
-                      fontSize: '0.7rem',
-                      border: `1px solid ${colors.accent}30`,
-                    }}
-                  >
-                    {movie.category}
-                  </span>
-                )}
-              </div>
-
-              {movie.plot && (
+              {movie.plot && !isMobile && (
                 <p
                   style={{
-                    fontSize: isMobile ? typography.fontSize.xs : typography.fontSize.base,
-                    color: colors.textSecondary,
-                    opacity: 0.9,
-                    margin: 0,
-                    marginBottom: isMobile ? spacing.sm : spacing.lg,
-                    display: '-webkit-box',
-                    WebkitLineClamp: isMobile ? 2 : 3,
+                    margin: '8px 0 0',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: '12px',
+                    lineHeight: 1.35,
+                    display: isHovered ? '-webkit-box' : 'none',
+                    WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    lineHeight: typography.lineHeight.normal,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                   }}
                 >
                   {movie.plot}
                 </p>
               )}
+            </div>
 
-              {/* Memory Toggle Button */}
+            {hasSharedMemories && (
               <button
                 type="button"
-                onClick={handleToggleMemories}
+                onClick={(e) => {
+                  handleToggleMemories(e);
+                }}
                 style={{
-                  marginBottom: spacing.md,
-                  padding: `${spacing.xs} ${spacing.sm}`,
-                  borderRadius: radius.md,
-                  border: '1px solid rgba(255, 223, 167, 0.35)',
-                  background:
-                    'linear-gradient(145deg, rgba(64, 41, 18, 0.45) 0%, rgba(34, 24, 14, 0.55) 100%)',
-                  textAlign: 'left',
-                  width: '100%',
+                  alignSelf: 'flex-start',
+                  padding: '2px 8px',
+                  borderRadius: radius.full,
+                  border: '1px solid rgba(255, 248, 210, 0.55)',
+                  backgroundColor: 'rgba(58, 41, 17, 0.55)',
+                  color: '#fff4d6',
+                  fontSize: '0.65rem',
+                  fontFamily:
+                    "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                  letterSpacing: '0.04em',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  borderStyle: 'solid',
                 }}
                 aria-label={`View memories for "${movie.title}"`}
-                aria-expanded={showMemories}
               >
-                <div>
-                  <p
-                    style={{
-                      margin: 0,
-                      color: '#ffe9c0',
-                      fontSize: typography.fontSize.xs,
-                      fontFamily:
-                        "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                      letterSpacing: '0.03em',
-                    }}
-                  >
-                    {hasSharedMemories
-                      ? `${memories.length} shared memor${memories.length === 1 ? 'y' : 'ies'}`
-                      : 'Add a memory...'}
-                  </p>
-                  {hasSharedMemories && memories.length > 0 && (
-                    <p
-                      style={{
-                        margin: `${spacing.xs} 0 0`,
-                        color: colors.textSecondary,
-                        fontSize: typography.fontSize.xs,
-                        lineHeight: typography.lineHeight.normal,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      "{memories[0].note}"
-                    </p>
-                  )}
-                </div>
-                <div
-                  style={{
-                    fontSize: '10px',
-                    color: colors.textTertiary,
-                    transform: showMemories ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
-                  }}
-                >
-                  ▼
-                </div>
+                {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
               </button>
-            </div>
+            )}
 
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginTop: 'auto',
-                flexWrap: 'wrap',
-                gap: spacing.md,
-                borderTop: `1px solid ${colors.borderInset}`,
-                paddingTop: spacing.sm,
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                  <span
-                    style={{
-                      fontSize: typography.fontSize.xs,
-                      color: watchedByBoth ? colors.textTertiary : colors.secondary,
-                      fontStyle: watchedByBoth ? 'italic' : 'normal',
-                      fontWeight: typography.fontWeight.medium,
-                    }}
-                  >
-                    {getWatchedStatus(movie)}
-                  </span>
-                </div>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px' }}>
+              <Button
+                type="button"
+                onClick={handleToggle}
+                variant={watchedByCurrentUser ? 'primary' : 'secondary'}
+                size="sm"
+                isLoading={isUpdating}
+                loadingText="Updating..."
+                disabled={isGuest}
+                aria-label={
+                  watchedByCurrentUser
+                    ? `Mark "${movie.title}" as unwatched`
+                    : `Mark "${movie.title}" as watched`
+                }
+                style={{
+                  padding: `${spacing.xs} ${spacing.md}`,
+                  minHeight: '44px',
+                  fontSize: '12px',
+                  backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.6)',
+                  borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  flex: 1,
+                  opacity: isGuest ? 0.5 : 1,
+                  cursor: isGuest ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {watchedByCurrentUser ? (
+                  <EyeIcon style={{ width: '12px' }} />
+                ) : (
+                  <EyeOffIcon style={{ width: '12px' }} />
+                )}
+                {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
+              </Button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                <IconButton
-                  type="button"
-                  onClick={handleToggle}
-                  variant="ghost"
-                  disabled={isGuest || isUpdating}
-                  title={watchedByCurrentUser ? 'Mark as unwatched' : 'Mark as watched'}
-                  aria-label={
-                    watchedByCurrentUser
-                      ? `Mark "${movie.title}" as unwatched`
-                      : `Mark "${movie.title}" as watched`
-                  }
-                  style={{
-                    backgroundColor: watchedByCurrentUser ? `${colors.success}20` : 'transparent',
-                    border: watchedByCurrentUser
-                      ? `1px solid ${colors.success}40`
-                      : '1px solid transparent',
-                    opacity: isGuest ? 0.5 : 1,
-                    cursor: isGuest ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
-                </IconButton>
+              <IconButton
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFixMatch?.(movie);
+                }}
+                variant="ghost"
+                size="sm"
+                disabled={isGuest}
+                title="Fix Metadata Match"
+                aria-label={`Fix metadata for "${movie.title}"`}
+                style={{
+                  padding: 0,
+                  width: '44px',
+                  height: '44px',
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  borderRadius: radius.md,
+                  color: colors.accent,
+                  border: `1px solid ${colors.accent}40`,
+                  opacity: isGuest ? 0.5 : 1,
+                  cursor: isGuest ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <MagicWandIcon style={{ width: '14px', height: '14px' }} />
+              </IconButton>
 
-                <IconButton
-                  type="button"
-                  onClick={() => onFixMatch?.(movie)}
-                  variant="ghost"
-                  disabled={isGuest}
-                  title="Fix Incorrect Match"
-                  aria-label={`Fix metadata for "${movie.title}"`}
-                  style={{
-                    border: `1px solid ${colors.borderSecondary}40`,
-                    color: colors.accent,
-                    opacity: isGuest ? 0.5 : 1,
-                    cursor: isGuest ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  <MagicWandIcon />
-                </IconButton>
-
-                <IconButton
-                  type="button"
-                  onClick={() => onDelete(movie)}
-                  variant="ghost"
-                  disabled={isGuest}
-                  title="Delete Movie"
-                  aria-label={`Delete "${movie.title}"`}
-                  style={{
-                    border: `1px solid ${colors.error}40`,
-                    color: colors.error,
-                    opacity: isGuest ? 0.5 : 1,
-                    cursor: isGuest ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  <TrashIcon />
-                </IconButton>
-              </div>
+              <IconButton
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(movie);
+                }}
+                variant="ghost"
+                size="sm"
+                disabled={isGuest}
+                title="Delete Movie"
+                aria-label={`Delete "${movie.title}"`}
+                style={{
+                  padding: 0,
+                  width: '44px',
+                  height: '44px',
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  borderRadius: radius.md,
+                  color: colors.error,
+                  border: `1px solid ${colors.error}40`,
+                  opacity: isGuest ? 0.5 : 1,
+                  cursor: isGuest ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <TrashIcon style={{ width: '14px', height: '14px' }} />
+              </IconButton>
             </div>
           </div>
-        )}
+        </div>
       </Card>
 
       {/* Expanded Memory Section */}
@@ -669,7 +434,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
             borderLeft: `3px solid ${colors.accent}40`,
           }}
         >
-          {/* Add New Memory */}
           {currentUser && onAddMemory && (
             <div style={{ marginBottom: spacing.md }}>
               <MemoryComposer
@@ -679,15 +443,19 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 currentUser={currentUser}
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  const form = e.currentTarget as HTMLFormElement;
-                  const note = (form.elements.namedItem('note') as HTMLTextAreaElement).value;
-                  if (onAddMemory) await onAddMemory(note);
-                  form.reset();
+                  setIsSubmittingMemory(true);
+                  try {
+                    const form = e.currentTarget as HTMLFormElement;
+                    const note = (form.elements.namedItem('note') as HTMLTextAreaElement).value;
+                    await onAddMemory(note);
+                    form.reset();
+                  } finally {
+                    setIsSubmittingMemory(false);
+                  }
                 }}
                 isSubmitting={isSubmittingMemory}
                 canSubmit={!isSubmittingMemory}
                 isMobile={isMobile}
-                // Props required by interface but unused in single-movie context
                 note=""
                 onNoteChange={() => {}}
                 isComposerOpen
@@ -700,7 +468,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
             </div>
           )}
 
-          {/* List Memories */}
           {memories.length > 0 ? (
             <MemoryList
               memories={memories}
@@ -708,7 +475,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
               sortedMemories={memories}
               currentUser={currentUser}
               isMobile={isMobile}
-              // Actions
               onEditMemory={async (memory, note) => {
                 if (onUpdateMemory) await onUpdateMemory(memory.id, note);
               }}
@@ -718,7 +484,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
               onTogglePin={async (memory) => {
                 if (onTogglePin) await onTogglePin(memory.id);
               }}
-              // Props not needed for simple list but required by component
               movieFilterOptions={[]}
               activeMovieFilter={movie.id}
               onActiveMovieFilterChange={() => {}}
@@ -754,11 +519,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
         title={movie.title}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-          {/* Movie Info */}
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               gap: spacing.md,
               marginBottom: spacing.sm,
             }}
@@ -777,20 +541,53 @@ const MovieItem: React.FC<MovieItemProps> = ({
               />
             )}
             <div style={{ flex: 1 }}>
-              {movie.year && (
-                <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
-                  {movie.year}
-                </span>
-              )}
-              {movie.imdbRating && (
+              {(movie.year || movie.category) && (
                 <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    marginBottom: spacing.xs,
+                  }}
                 >
-                  <span style={{ color: colors.yellow, fontWeight: typography.fontWeight.bold }}>
-                    ★ {movie.imdbRating}
-                  </span>
+                  {movie.year && (
+                    <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
+                      {movie.year}
+                    </span>
+                  )}
+                  {movie.category && (
+                    <span
+                      style={{
+                        color: colors.accentLight,
+                        backgroundColor: `${colors.accent}15`,
+                        padding: '2px 8px',
+                        borderRadius: radius.full,
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        border: `1px solid ${colors.accent}30`,
+                      }}
+                    >
+                      {movie.category}
+                    </span>
+                  )}
                 </div>
               )}
+
+              {movie.plot && (
+                <p
+                  style={{
+                    margin: 0,
+                    color: colors.textSecondary,
+                    fontSize: typography.fontSize.sm,
+                    lineHeight: typography.lineHeight.normal,
+                  }}
+                >
+                  {movie.plot}
+                </p>
+              )}
+
               <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
                 {movie.watchedBy.includes('Aaron') && (
                   <WatcherBadge user="Aaron" variant="text" showLabel />
@@ -799,6 +596,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   <WatcherBadge user="Electra" variant="text" showLabel />
                 )}
               </div>
+
               {hasSharedMemories && (
                 <button
                   type="button"
@@ -828,7 +626,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <Button
             type="button"
             onClick={() => handleToggle()}
