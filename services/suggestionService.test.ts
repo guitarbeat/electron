@@ -119,7 +119,6 @@ describe('suggestionService', () => {
       const existingSuggestions: MovieSuggestion[] = [];
 
       // Mock getSuggestions (GET) then saveSuggestions (PATCH)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       fetchMock.mock.mockImplementation(async (_url: string, options: RequestInit) => {
         if (options?.method === 'PATCH') {
           return mockResponse({});
