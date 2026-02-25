@@ -565,6 +565,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     boxShadow: viewMode === 'list' ? shadows.card : 'none',
                   }}
                   title="List View"
+                  aria-label="List View"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -590,6 +591,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     boxShadow: viewMode === 'grid' ? shadows.card : 'none',
                   }}
                   title="Grid View"
+                  aria-label="Grid View"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -615,6 +617,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     boxShadow: viewMode === 'dial' ? shadows.card : 'none',
                   }}
                   title="Dial View"
+                  aria-label="Dial View"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
