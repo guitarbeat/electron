@@ -13,7 +13,7 @@ const createMovie = (
   id,
   title: `Movie ${id}`,
   addedBy: 'Aaron',
-  // @ts-expect-error: Mocking User[] with array of correct length
+  //  with array of correct length
   watchedBy: new Array(watchedByLength).fill('Aaron'),
   createdAt,
   category: 'Movies',
