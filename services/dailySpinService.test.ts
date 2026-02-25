@@ -30,14 +30,16 @@ describe('dailySpinService', () => {
   beforeEach((t) => {
     // Mock Date globally for the test context if possible, or try to enable it
     try {
-      if (t && t.mock && t.mock.timers) {
-        t.mock.timers.enable({ apis: ['Date'], now: MOCK_DATE });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (t && t.mock && (t.mock as any).timers) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (t.mock as any).timers.enable({ apis: ['Date'], now: MOCK_DATE });
       }
-    } catch (e: any) {
-      // eslint-disable-line @typescript-eslint/no-explicit-any
+    } catch (error) {
+      const e = error as { code?: string };
       // Ignore if already enabled
       if (e.code !== 'ERR_INVALID_STATE') {
-        throw e;
+        throw error;
       }
     }
 
