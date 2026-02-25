@@ -1,5 +1,5 @@
-import { GIST_TOKEN, GIST_ID } from '../gistConfig';
-import { User } from '../types';
+import { GIST_TOKEN, GIST_ID } from '../gistConfig.ts';
+import type { User } from '../types.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
