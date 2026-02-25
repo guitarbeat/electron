@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { concurrentMap } from '../utils/concurrency.ts';
+import { concurrentMap } from '../utils/concurrency';
 
 describe('concurrentMap Benchmark', () => {
   it('measures execution time with different concurrency levels', async () => {
@@ -8,7 +8,7 @@ describe('concurrentMap Benchmark', () => {
     const delay = 50; // 50ms per item
 
     const worker = async (item: number) => {
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       return item * 2;
     };
 
