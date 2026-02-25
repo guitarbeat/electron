@@ -5,15 +5,7 @@ import ChatWindow from './message-board/ChatWindow';
 import MessageList from './message-board/MessageList';
 import MessageInput from './message-board/MessageInput';
 import Toast from './ui/Toast';
-import {
-  spacing,
-  colors,
-  shadows,
-  radius,
-  zIndex,
-  motion,
-  typography,
-} from '../design-system/tokens';
+import { spacing, colors, shadows, radius, motion, typography } from '../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
