@@ -29,12 +29,16 @@
   background: #1e293b;
   overflow: visible;
   /* Allow avatars to pop out */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   will-change: transform, opacity;
 }
 
 .rdc-card-active {
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1), 0 20px 40px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 30px rgba(255, 255, 255, 0.1),
+    0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 .rdc-watched-both {

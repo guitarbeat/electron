@@ -13,6 +13,7 @@
 **Learning:** Codebase relies on Vite-specific `import.meta.env` without fallbacks in some files, making unit testing in Node.js difficult.
 
 **Prevention:** Always use a safe accessor for environment variables (e.g., `const env = (import.meta.env || {}) as any;`) or a configuration module that handles environment differences, to ensure code is testable in non-browser environments.
+
 ## 2024-05-22 - Client-Side Gist Storage
 
 **Vulnerability:** Hardcoded PAT in `gistConfig.ts` for Gist access.

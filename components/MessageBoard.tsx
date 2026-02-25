@@ -5,7 +5,15 @@ import ChatWindow from './message-board/ChatWindow';
 import MessageList from './message-board/MessageList';
 import MessageInput from './message-board/MessageInput';
 import Toast from './ui/Toast';
-import { spacing, colors, shadows, radius, zIndex, motion, typography } from '../design-system/tokens';
+import {
+  spacing,
+  colors,
+  shadows,
+  radius,
+  zIndex,
+  motion,
+  typography,
+} from '../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
 
@@ -256,49 +264,51 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     );
   }
 
-  const isBottomHalf = bubblePosition.y > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400);
-  const isRightHalf = bubblePosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 400);
+  const isBottomHalf =
+    bubblePosition.y > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400);
+  const isRightHalf =
+    bubblePosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 400);
 
   const containerStyle: React.CSSProperties = isEmbedded
     ? {
-      position: 'relative',
-      width: '100%',
-      maxHeight: isMobile ? 'min(78vh, 720px)' : 'min(780px, 80vh)',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: colors.surfaceElevated,
-      borderRadius: radius.lg,
-      boxShadow: shadows.cardElevated,
-      border: `1px solid ${colors.accentMuted}`,
-      overflow: 'hidden',
-    }
+        position: 'relative',
+        width: '100%',
+        maxHeight: isMobile ? 'min(78vh, 720px)' : 'min(780px, 80vh)',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: colors.surfaceElevated,
+        borderRadius: radius.lg,
+        boxShadow: shadows.cardElevated,
+        border: `1px solid ${colors.accentMuted}`,
+        overflow: 'hidden',
+      }
     : {
-      position: 'fixed',
-      width: isMobile ? 'calc(100vw - 32px)' : 'min(420px, 90vw)',
-      maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: FLOATING_Z_INDEX,
-      backgroundColor: colors.surfaceElevated,
-      borderRadius: radius.lg,
-      boxShadow: shadows.cardElevated,
-      border: `1px solid ${colors.accentMuted}`,
-      overflow: 'hidden',
-      animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-      transformOrigin: `${isBottomHalf ? 'bottom' : 'top'} ${isRightHalf ? 'right' : 'left'}`,
-      ...(isBottomHalf
-        ? { bottom: `calc(100vh - ${bubblePosition.y}px - ${BUBBLE_SIZE}px)` }
-        : { top: `${bubblePosition.y}px` }),
-      ...(isRightHalf
-        ? { right: `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)` }
-        : { left: `${bubblePosition.x}px` }),
-      ...(isMobile && {
-        left: '16px',
-        right: '16px',
-        bottom: isBottomHalf ? '16px' : 'auto',
-        top: !isBottomHalf ? '16px' : 'auto',
-      }),
-    };
+        position: 'fixed',
+        width: isMobile ? 'calc(100vw - 32px)' : 'min(420px, 90vw)',
+        maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: FLOATING_Z_INDEX,
+        backgroundColor: colors.surfaceElevated,
+        borderRadius: radius.lg,
+        boxShadow: shadows.cardElevated,
+        border: `1px solid ${colors.accentMuted}`,
+        overflow: 'hidden',
+        animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        transformOrigin: `${isBottomHalf ? 'bottom' : 'top'} ${isRightHalf ? 'right' : 'left'}`,
+        ...(isBottomHalf
+          ? { bottom: `calc(100vh - ${bubblePosition.y}px - ${BUBBLE_SIZE}px)` }
+          : { top: `${bubblePosition.y}px` }),
+        ...(isRightHalf
+          ? { right: `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)` }
+          : { left: `${bubblePosition.x}px` }),
+        ...(isMobile && {
+          left: '16px',
+          right: '16px',
+          bottom: isBottomHalf ? '16px' : 'auto',
+          top: !isBottomHalf ? '16px' : 'auto',
+        }),
+      };
 
   return (
     <div style={containerStyle} className="message-board-container">
@@ -316,7 +326,16 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         }}
         onClick={handleToggle}
       >
-        <span style={{ fontFamily: typography.fontFamily.heading.join(', '), textTransform: 'uppercase', letterSpacing: typography.letterSpacing.wide, textShadow: shadows.textGlow }}>Messages</span>
+        <span
+          style={{
+            fontFamily: typography.fontFamily.heading.join(', '),
+            textTransform: 'uppercase',
+            letterSpacing: typography.letterSpacing.wide,
+            textShadow: shadows.textGlow,
+          }}
+        >
+          Messages
+        </span>
         {!isEmbedded && (
           <button
             onClick={(event) => {

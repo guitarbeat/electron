@@ -434,7 +434,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   padding: `${spacing.xs} ${spacing.md}`,
                   borderRadius: radius.full,
                   border: `1px solid ${contentTab === tab.value ? colors.accent : 'transparent'}`,
-                  background: contentTab === tab.value ? colors.accent : 'rgba(255, 255, 255, 0.05)',
+                  background:
+                    contentTab === tab.value ? colors.accent : 'rgba(255, 255, 255, 0.05)',
                   color: contentTab === tab.value ? '#000' : colors.textSecondary,
                   fontSize: typography.fontSize.xs,
                   fontWeight: '700',
@@ -455,7 +456,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   style={{
                     fontSize: '10px',
                     fontWeight: '800',
-                    background: contentTab === tab.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
+                    background:
+                      contentTab === tab.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                     padding: '2px 8px',
                     borderRadius: radius.sm,
                     minWidth: '20px',
@@ -530,11 +532,28 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               )}
             </form>
 
-            <div style={{ display: 'flex', gap: spacing.sm, flex: isMobile ? 'none' : '0 0 auto', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: spacing.sm,
+                flex: isMobile ? 'none' : '0 0 auto',
+                alignItems: 'center',
+              }}
+            >
               {/* View Mode Toggle */}
-              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: radius.md, padding: '4px', border: `1px solid ${colors.borderSecondary}40` }}>
+              <div
+                style={{
+                  display: 'flex',
+                  background: 'rgba(255,255,255,0.05)',
+                  borderRadius: radius.md,
+                  padding: '4px',
+                  border: `1px solid ${colors.borderSecondary}40`,
+                }}
+              >
                 <button
+                  type="button"
                   onClick={() => setViewMode('list')}
+                  aria-label="List View"
                   style={{
                     background: viewMode === 'list' ? colors.surfaceElevated : 'transparent',
                     border: 'none',
@@ -543,17 +562,24 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     color: viewMode === 'list' ? colors.accent : colors.textSecondary,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    boxShadow: viewMode === 'list' ? shadows.card : 'none'
+                    boxShadow: viewMode === 'list' ? shadows.card : 'none',
                   }}
                   title="List View"
                   aria-label="List View"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode('grid')}
+                  aria-label="Grid View"
                   style={{
                     background: viewMode === 'grid' ? colors.surfaceElevated : 'transparent',
                     border: 'none',
@@ -562,17 +588,24 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     color: viewMode === 'grid' ? colors.accent : colors.textSecondary,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    boxShadow: viewMode === 'grid' ? shadows.card : 'none'
+                    boxShadow: viewMode === 'grid' ? shadows.card : 'none',
                   }}
                   title="Grid View"
                   aria-label="Grid View"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
                   </svg>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode('dial')}
+                  aria-label="Dial View"
                   style={{
                     background: viewMode === 'dial' ? colors.surfaceElevated : 'transparent',
                     border: 'none',
@@ -581,13 +614,18 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     color: viewMode === 'dial' ? colors.accent : colors.textSecondary,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    boxShadow: viewMode === 'dial' ? shadows.card : 'none'
+                    boxShadow: viewMode === 'dial' ? shadows.card : 'none',
                   }}
                   title="Dial View"
                   aria-label="Dial View"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
                   </svg>
                 </button>
               </div>
@@ -682,32 +720,34 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           </div>
         )}
 
-        {filteredMovies.length === 0 && filteredSuggestions.length === 0 && !isSuggestionsLoading && (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: spacing['3xl'],
-              color: colors.textSecondary,
-            }}
-          >
-            <FilmIcon
-              style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
-            />
-            <p
+        {filteredMovies.length === 0 &&
+          filteredSuggestions.length === 0 &&
+          !isSuggestionsLoading && (
+            <div
               style={{
-                fontFamily: typography.fontFamily.heading.join(', '),
-                textTransform: 'uppercase',
-                letterSpacing: typography.letterSpacing.wide,
+                textAlign: 'center',
+                padding: spacing['3xl'],
+                color: colors.textSecondary,
               }}
             >
-              {searchQuery
-                ? 'No results match your search.'
-                : contentTab === 'suggestions'
-                  ? 'No pending suggestions right now.'
-                  : 'No movies in this section yet.'}
-            </p>
-          </div>
-        )}
+              <FilmIcon
+                style={{ width: '64px', height: '64px', opacity: 0.3, marginBottom: spacing.md }}
+              />
+              <p
+                style={{
+                  fontFamily: typography.fontFamily.heading.join(', '),
+                  textTransform: 'uppercase',
+                  letterSpacing: typography.letterSpacing.wide,
+                }}
+              >
+                {searchQuery
+                  ? 'No results match your search.'
+                  : contentTab === 'suggestions'
+                    ? 'No pending suggestions right now.'
+                    : 'No movies in this section yet.'}
+              </p>
+            </div>
+          )}
       </div>
 
       <ConfirmDialog
