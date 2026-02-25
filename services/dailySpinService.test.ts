@@ -6,7 +6,7 @@ import {
   updateDailySpin,
   deleteDailySpin,
   hasSpunToday,
-  getTodaySpin
+  getTodaySpin,
 } from './dailySpinService.ts';
 import type { DailySpin } from '../types.ts';
 import { GIST_DAILY_SPIN_FILENAME } from '../gistConfig.ts';
@@ -27,6 +27,7 @@ test('dailySpinService', async (t) => {
   // Mock Date using mock.timers to freeze time
   t.mock.timers.enable({ apis: ['Date'], now: MOCK_DATE });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let fetchMock: any;
 
   // Restore fetch after all tests in this suite
@@ -61,7 +62,9 @@ test('dailySpinService', async (t) => {
   });
 
   await t.test('getDailySpin returns null when file is missing', async () => {
-    fetchMock.mock.mockImplementationOnce(async () => new Response(JSON.stringify({ files: {} }), { status: 200 }));
+    fetchMock.mock.mockImplementationOnce(
+      async () => new Response(JSON.stringify({ files: {} }), { status: 200 })
+    );
 
     const result = await getDailySpin();
     assert.equal(result, null);
@@ -79,7 +82,9 @@ test('dailySpinService', async (t) => {
 
   // --- saveDailySpin ---
   await t.test('saveDailySpin sends PATCH request with correct body', async () => {
-    fetchMock.mock.mockImplementationOnce(async () => new Response(JSON.stringify({}), { status: 200 }));
+    fetchMock.mock.mockImplementationOnce(
+      async () => new Response(JSON.stringify({}), { status: 200 })
+    );
 
     await saveDailySpin(mockSpin);
 
@@ -94,7 +99,9 @@ test('dailySpinService', async (t) => {
 
   await t.test('saveDailySpin throws error on non-ok response', async () => {
     const consoleErrorMock = mock.method(console, 'error', () => {});
-    fetchMock.mock.mockImplementationOnce(async () => new Response(JSON.stringify({ message: 'Error' }), { status: 500 }));
+    fetchMock.mock.mockImplementationOnce(
+      async () => new Response(JSON.stringify({ message: 'Error' }), { status: 500 })
+    );
 
     await assert.rejects(async () => saveDailySpin(mockSpin), /GitHub API responded with 500/);
     consoleErrorMock.mock.restore();
@@ -105,14 +112,14 @@ test('dailySpinService', async (t) => {
     // Explicitly using mockImplementation to handle multiple calls robustly
     let callCount = 0;
     fetchMock.mock.mockImplementation(async () => {
-        callCount++;
-        if (callCount === 1) {
-            return mockGistResponse(JSON.stringify(mockSpin));
-        }
-        if (callCount === 2) {
-            return new Response(JSON.stringify({}), { status: 200 });
-        }
-        return new Response(null, { status: 500 });
+      callCount++;
+      if (callCount === 1) {
+        return mockGistResponse(JSON.stringify(mockSpin));
+      }
+      if (callCount === 2) {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(null, { status: 500 });
     });
 
     const updates = { movieTitle: 'Updated Title' };
@@ -133,12 +140,17 @@ test('dailySpinService', async (t) => {
     // Mock getDailySpin response (null)
     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(null));
 
-    await assert.rejects(async () => updateDailySpin({ movieTitle: 'New' }), /No daily spin exists to update/);
+    await assert.rejects(
+      async () => updateDailySpin({ movieTitle: 'New' }),
+      /No daily spin exists to update/
+    );
   });
 
   // --- deleteDailySpin ---
   await t.test('deleteDailySpin sends PATCH with empty content', async () => {
-    fetchMock.mock.mockImplementationOnce(async () => new Response(JSON.stringify({}), { status: 200 }));
+    fetchMock.mock.mockImplementationOnce(
+      async () => new Response(JSON.stringify({}), { status: 200 })
+    );
 
     await deleteDailySpin();
 
@@ -149,7 +161,9 @@ test('dailySpinService', async (t) => {
 
   await t.test('deleteDailySpin throws error on failure', async () => {
     const consoleErrorMock = mock.method(console, 'error', () => {});
-    fetchMock.mock.mockImplementationOnce(async () => new Response(JSON.stringify({}), { status: 500 }));
+    fetchMock.mock.mockImplementationOnce(
+      async () => new Response(JSON.stringify({}), { status: 500 })
+    );
 
     await assert.rejects(async () => deleteDailySpin(), /GitHub API responded with 500/);
     consoleErrorMock.mock.restore();
@@ -184,9 +198,8 @@ test('dailySpinService', async (t) => {
   });
 
   await t.test('getTodaySpin returns null if no spin exists', async () => {
-     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(null));
-     const result = await getTodaySpin();
-     assert.equal(result, null);
+    fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(null));
+    const result = await getTodaySpin();
+    assert.equal(result, null);
   });
-
 });
