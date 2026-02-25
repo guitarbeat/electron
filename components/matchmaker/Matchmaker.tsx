@@ -37,12 +37,14 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     [movies]
   );
 
+  const movieMap = useMemo(() => {
+    return new Map(movies?.map((m) => [m.id, m]));
+  }, [movies]);
+
   const activePoolMovies = useMemo(() => {
-    if (!game || !movies) return [];
-    return game.moviePool
-      .map((id) => movies.find((m) => m.id === id))
-      .filter((m): m is Movie => !!m);
-  }, [game, movies]);
+    if (!game || !movieMap) return [];
+    return game.moviePool.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
+  }, [game, movieMap]);
 
   const swipedIds = useMemo(() => {
     const userLikes = currentUser === 'Aaron' ? game?.aaronLikes || [] : game?.electraLikes || [];
@@ -62,10 +64,10 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   }, [activePoolMovies, swipedIds]);
 
   const matches = useMemo(() => {
-    if (!game || !movies) return [];
+    if (!game || !movieMap) return [];
     const intersection = game.aaronLikes.filter((id) => game.electraLikes.includes(id));
-    return intersection.map((id) => movies.find((m) => m.id === id)).filter((m): m is Movie => !!m);
-  }, [game, movies]);
+    return intersection.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
+  }, [game, movieMap]);
 
   const cardRef = useRef<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);

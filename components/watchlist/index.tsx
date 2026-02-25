@@ -10,9 +10,9 @@ import { PlusIcon, Spinner, FilmIcon } from '../icons';
 import MasonryGrid from '../ui/MasonryGrid';
 import MovieItem from '../MovieItem';
 import { SuggestionItemCard } from '../DashboardCards';
-import { RotaryDialCarousel } from './components/RotaryDialCarousel';
 import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps, SortMode, ContentTab } from './types';
+import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
 import { spacing, colors, radius, typography, shadows } from '../../design-system/tokens';
 
@@ -342,7 +342,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         onDelete={handleDeleteMovie}
         onFixMatch={handleFixMatch}
         animationDelay={index !== undefined ? `${index * 0.05}s` : '0s'}
-        layout={viewMode === 'dial' ? 'grid' : viewMode}
+        layout={viewMode}
         memories={movieMemories}
         onAddMemory={async (note) => {
           await addMemory(movie.id, movie.title, currentUser || 'Anonymous', note);
@@ -602,31 +602,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('dial')}
-                  aria-label="Dial View"
-                  style={{
-                    background: viewMode === 'dial' ? colors.surfaceElevated : 'transparent',
-                    border: 'none',
-                    borderRadius: radius.sm,
-                    padding: '8px',
-                    color: viewMode === 'dial' ? colors.accent : colors.textSecondary,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    boxShadow: viewMode === 'dial' ? shadows.card : 'none',
-                  }}
-                  title="Dial View"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                </button>
               </div>
 
               <select
@@ -680,15 +655,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           transition: 'opacity 0.2s ease',
         }}
       >
-        {viewMode === 'dial' ? (
-          <RotaryDialCarousel
-            movies={filteredMovies}
-            currentUser={currentUser}
-            onMovieClick={(movie) => {
-              handleToggleWatched(movie);
-            }}
-          />
-        ) : viewMode === 'grid' ? (
+        {viewMode === 'grid' ? (
           <MasonryGrid>
             {filteredSuggestions.map((suggestion) => (
               <SuggestionItemCard
@@ -739,11 +706,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   letterSpacing: typography.letterSpacing.wide,
                 }}
               >
-                {searchQuery
-                  ? 'No results match your search.'
-                  : contentTab === 'suggestions'
-                    ? 'No pending suggestions right now.'
-                    : 'No movies in this section yet.'}
+                {getEmptyStateMessage(searchQuery, contentTab)}
               </p>
             </div>
           )}

@@ -1,5 +1,5 @@
-import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
-import { MatchmakerGame } from '../types';
+import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig.ts';
+import type { MatchmakerGame } from '../types.ts';
 
 /**
  * Fetches the current matchmaker game state from GitHub Gist.
