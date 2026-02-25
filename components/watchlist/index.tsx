@@ -391,20 +391,20 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {/* --- Controls Section (visually continues from unified nav bar) --- */}
-      <Card
-        variant="elevated"
+      {/* --- Controls Section (inside unified panel) --- */}
+      <div
         style={{
           padding: isMobile ? spacing.sm : spacing.md,
-          border: `1px solid ${colors.borderSecondary}25`,
-          borderTop: 'none',
           marginBottom: spacing.xl,
+          marginTop: `-${spacing.md}`,
           display: 'flex',
           flexDirection: 'column',
           gap: spacing.md,
           background: 'rgba(23, 33, 58, 0.5)',
           backdropFilter: 'blur(12px)',
           borderRadius: `0 0 ${spacing.md} ${spacing.md}`,
+          border: `1px solid ${colors.borderSecondary}25`,
+          borderTop: `1px solid ${colors.borderSecondary}15`,
           fontFamily: typography.fontFamily.body.join(', '),
         }}
       >
@@ -669,7 +669,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             {suggestionError}
           </div>
         )}
-      </Card>
+      </div>
 
       {/* --- Content Section --- */}
       <div
