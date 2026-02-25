@@ -1,5 +1,5 @@
-import { GIST_TOKEN, GIST_ID } from '../gistConfig';
-import { User } from '../types';
+import { GIST_TOKEN, GIST_ID } from '../gistConfig.ts';
+import type { User } from '../types.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -11,6 +11,7 @@ export interface UserPins {
 
 let cachedPins: UserPins | null = null;
 let lastFetchTime = 0;
+let fetchPromise: Promise<UserPins> | null = null;
 
 /**
  * Simple hash function for PIN codes.
@@ -35,34 +36,48 @@ export const getPins = async (): Promise<UserPins> => {
     return cachedPins;
   }
 
-  try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-    });
+  if (fetchPromise) {
+    return fetchPromise;
+  }
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch gist: ${response.status}`);
-    }
+  const promise = (async () => {
+    try {
+      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        headers: {
+          Authorization: `token ${GIST_TOKEN}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+      });
 
-    const gist = await response.json();
-    const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
+      if (!response.ok) {
+        throw new Error(`Failed to fetch gist: ${response.status}`);
+      }
 
-    if (!fileContent) {
-      cachedPins = {};
-      lastFetchTime = now;
+      const gist = await response.json();
+      const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
+
+      if (!fileContent) {
+        cachedPins = {};
+        lastFetchTime = Date.now();
+        return {};
+      }
+
+      cachedPins = JSON.parse(fileContent);
+      lastFetchTime = Date.now();
+      return cachedPins as UserPins;
+    } catch (error) {
+      console.error('Error fetching PINs:', error);
       return {};
     }
+  })();
 
-    cachedPins = JSON.parse(fileContent);
-    lastFetchTime = now;
-    return cachedPins as UserPins;
-  } catch (error) {
-    console.error('Error fetching PINs:', error);
-    return {};
-  }
+  fetchPromise = promise;
+
+  promise.finally(() => {
+    fetchPromise = null;
+  });
+
+  return promise;
 };
 
 /**
