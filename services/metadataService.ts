@@ -7,7 +7,6 @@ const OMDB_BASE_URL = 'https://www.omdbapi.com';
 
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
-
 const toResolvedUrl = (url: string): URL | null => {
   if (!url) return null;
   try {
