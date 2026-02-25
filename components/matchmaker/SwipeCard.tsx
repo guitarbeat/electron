@@ -114,6 +114,19 @@ const SwipeCard = React.forwardRef<any, SwipeCardProps>(
           {/* Like/Nope Overlays */}
           <div
             style={{
+                position: 'absolute',
+                width: '100%',
+                maxWidth: '350px',
+                height: '500px',
+                cursor: isExiting ? 'default' : isDragging ? 'grabbing' : active ? 'grab' : 'default',
+                transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
+                opacity,
+                transition: isDragging ? 'none' : `all ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
+                zIndex: active ? 2 : 1,
+                touchAction: 'none',
+                userSelect: 'none',
+                pointerEvents: active && !isExiting ? 'auto' : 'none',
+                ...customStyle,
               position: 'absolute',
               top: 40,
               left: 20,
