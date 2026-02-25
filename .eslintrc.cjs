@@ -7,7 +7,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs', 'vite.config.ts', 'coverage'],
+  ignorePatterns: ['supabase/functions', 'dist', '.eslintrc.cjs', 'vite.config.ts', 'coverage'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
