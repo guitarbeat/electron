@@ -12,6 +12,7 @@ import MovieItem from '../MovieItem';
 import { SuggestionItemCard } from '../DashboardCards';
 import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps, SortMode, ContentTab } from './types';
+import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
 import { spacing, colors, radius, typography, shadows } from '../../design-system/tokens';
 
@@ -705,11 +706,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   letterSpacing: typography.letterSpacing.wide,
                 }}
               >
-                {searchQuery
-                  ? 'No results match your search.'
-                  : contentTab === 'suggestions'
-                    ? 'No pending suggestions right now.'
-                    : 'No movies in this section yet.'}
+                {getEmptyStateMessage(searchQuery, contentTab)}
               </p>
             </div>
           )}
