@@ -7,13 +7,10 @@ test('extractTextFromResponse extracts text from valid response', () => {
     candidates: [
       {
         content: {
-          parts: [
-            { text: 'Part 1' },
-            { text: 'Part 2' }
-          ]
-        }
-      }
-    ]
+          parts: [{ text: 'Part 1' }, { text: 'Part 2' }],
+        },
+      },
+    ],
   };
 
   const result = extractTextFromResponse(mockResponse);
@@ -25,10 +22,10 @@ test('extractTextFromResponse returns empty string for empty parts', () => {
     candidates: [
       {
         content: {
-          parts: []
-        }
-      }
-    ]
+          parts: [],
+        },
+      },
+    ],
   };
 
   const result = extractTextFromResponse(mockResponse);
@@ -42,14 +39,14 @@ test('extractTextFromResponse handles missing candidates', () => {
 });
 
 test('extractTextFromResponse handles null/undefined parts', () => {
-   const mockResponse = {
+  const mockResponse = {
     candidates: [
       {
         content: {
-          parts: undefined
-        }
-      }
-    ]
+          parts: undefined,
+        },
+      },
+    ],
   };
   const result = extractTextFromResponse(mockResponse as any);
   assert.equal(result, '');
@@ -63,11 +60,11 @@ test('extractTextFromResponse filters out empty/undefined text', () => {
           parts: [
             { text: 'Valid' },
             { text: '' }, // Should be filtered? Boolean('') is false.
-            { text: undefined }
-          ]
-        }
-      }
-    ]
+            { text: undefined },
+          ],
+        },
+      },
+    ],
   };
   // Original code: .filter(Boolean). Boolean('') is false.
   // So 'Valid' should be the only result.
