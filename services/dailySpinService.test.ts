@@ -212,7 +212,7 @@ test('dailySpinService', async (t) => {
       return new Response(JSON.stringify({ message: 'Internal Server Error' }), { status: 500 });
     });
 
-    await assert.rejects(async () => await deleteDailySpin(), {
+    await assert.rejects(async () => deleteDailySpin(), {
       message: 'GitHub API responded with 500',
     });
   });
@@ -222,7 +222,7 @@ test('dailySpinService', async (t) => {
       throw new Error('Network error');
     });
 
-    await assert.rejects(async () => await deleteDailySpin(), { message: 'Network error' });
+    await assert.rejects(async () => deleteDailySpin(), { message: 'Network error' });
   });
 
   // --- getTodaySpin ---
