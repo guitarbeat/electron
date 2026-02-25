@@ -4,25 +4,7 @@ import { usePolling } from './usePolling';
 import { getMovies, saveMovies } from '../services/movieService';
 import { fetchMovieMetadata, MetadataResult } from '../services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../config/security';
-
-// Helper to control concurrency when processing array items
-const concurrentMap = async <T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<R>
-): Promise<R[]> => {
-  const results = new Array(items.length);
-  const iterator = items.entries();
-  const worker = async () => {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [index, item] of iterator) {
-      // eslint-disable-next-line no-await-in-loop
-      results[index] = await fn(item);
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(items.length, concurrency) }, worker));
-  return results;
-};
+import { concurrentMap } from '../utils/concurrency';
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
 export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
@@ -244,7 +226,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       // Fetch metadata for all movies in parallel (with some concurrency limit)
       console.log('Refreshing all metadata...');
 
-      const updatedMovies = await concurrentMap(latestMovies, 5, async (movie) => {
+      const updatedMovies = await concurrentMap(latestMovies, 20, async (movie) => {
         try {
           // No artificial delay needed with concurrency limit
           const metadata = await fetchMovieMetadata(movie.title);
