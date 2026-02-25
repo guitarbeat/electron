@@ -16,8 +16,9 @@ let fetchPromise: Promise<UserPins> | null = null;
 /**
  * Simple hash function for PIN codes.
  * Note: This is basic obfuscation for a private app between trusted users.
+ * @deprecated Use secureHashPin instead. Kept for backward compatibility.
  */
-export const hashPin = (pin: string): string => {
+export const legacyHashPin = (pin: string): string => {
   let hash = 0;
   for (let i = 0; i < pin.length; i++) {
     const char = pin.charCodeAt(i);
@@ -25,6 +26,79 @@ export const hashPin = (pin: string): string => {
     hash &= hash; // Convert to 32-bit integer
   }
   return hash.toString(36);
+};
+
+/**
+ * Alias for legacyHashPin to maintain compatibility with tests.
+ * @deprecated
+ */
+export const hashPin = legacyHashPin;
+
+/**
+ * Generates a secure PBKDF2 hash for a PIN.
+ * Format: pbkdf2:iterations:salt:hash
+ */
+export const secureHashPin = async (
+  pin: string,
+  saltInput: string | null = null
+): Promise<string> => {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(pin),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits', 'deriveKey']
+  );
+
+  let salt: Uint8Array;
+  if (saltInput) {
+    // Decode hex salt
+    const matches = saltInput.match(/.{1,2}/g);
+    if (!matches) throw new Error('Invalid salt format');
+    salt = new Uint8Array(matches.map((byte) => parseInt(byte, 16)));
+  } else {
+    salt = crypto.getRandomValues(new Uint8Array(16));
+  }
+
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: salt as BufferSource,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'HMAC', hash: 'SHA-256', length: 256 },
+    true,
+    ['sign', 'verify']
+  );
+
+  const exported = await crypto.subtle.exportKey('raw', key);
+  const hashHex = Array.from(new Uint8Array(exported))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  const saltHex = Array.from(salt)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return `pbkdf2:100000:${saltHex}:${hashHex}`;
+};
+
+/**
+ * Verifies a PIN against a secure hash.
+ */
+export const verifySecurePin = async (pin: string, storedHash: string): Promise<boolean> => {
+  const parts = storedHash.split(':');
+  if (parts.length !== 4 || parts[0] !== 'pbkdf2') {
+    return false;
+  }
+
+  const saltHex = parts[2];
+
+  // Re-hash with the same salt and compare
+  const computedHashFull = await secureHashPin(pin, saltHex);
+  return computedHashFull === storedHash;
 };
 
 /**
@@ -119,7 +193,7 @@ export const savePins = async (pins: UserPins): Promise<boolean> => {
  */
 export const setPin = async (user: User, pin: string): Promise<boolean> => {
   const pins = await getPins();
-  pins[user] = hashPin(pin);
+  pins[user] = await secureHashPin(pin);
   return savePins(pins);
 };
 
@@ -143,7 +217,24 @@ export const verifyPin = async (user: User, pin: string): Promise<boolean> => {
     return true; // No PIN set, allow access
   }
 
-  return storedHash === hashPin(pin);
+  // Check for new secure format
+  if (storedHash.startsWith('pbkdf2:')) {
+    return verifySecurePin(pin, storedHash);
+  }
+
+  // Check legacy format
+  if (storedHash === legacyHashPin(pin)) {
+    // Automatically upgrade to secure hash
+    try {
+      await setPin(user, pin);
+    } catch (error) {
+      console.error('Failed to upgrade legacy PIN hash:', error);
+      // Continue to allow login even if upgrade fails
+    }
+    return true;
+  }
+
+  return false;
 };
 
 /**
