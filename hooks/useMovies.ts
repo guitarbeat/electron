@@ -242,7 +242,6 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     try {
       const latestMovies = await getMovies();
       // Fetch metadata for all movies in parallel (with some concurrency limit)
-      console.log('Refreshing all metadata...');
 
       const updatedMovies = await concurrentMap(latestMovies, 5, async (movie) => {
         try {
