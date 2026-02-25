@@ -6,7 +6,7 @@ interface MovieSuggestion {
   title: string;
   suggestedBy: string;
   reason?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
 }
 
