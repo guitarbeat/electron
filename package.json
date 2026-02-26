@@ -26,6 +26,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
