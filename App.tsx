@@ -190,26 +190,34 @@ const App: React.FC = () => {
           <UserSelection />
         </section>
 
-        {/* Unified Command Panel */}
+        {/* Main Navigation Panel */}
         <div
           style={{
             background: 'rgba(23, 33, 58, 0.5)',
             backdropFilter: 'blur(12px)',
-            borderRadius: activeTab === 'queue' ? `${spacing.md} ${spacing.md} 0 0` : spacing.md,
+            borderRadius: spacing.md,
             border: `1px solid ${colors.borderSecondary}25`,
-            borderBottom: activeTab === 'queue' ? 'none' : `1px solid ${colors.borderSecondary}25`,
-            marginBottom: activeTab === 'queue' ? 0 : spacing.xl,
-            overflow: 'hidden',
+            marginBottom: spacing.md,
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           }}
         >
+          <style>{`
+            div::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
           <nav
             aria-label="Main navigation"
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: isMobile ? 'flex-start' : 'center',
               gap: '2px',
               padding: '4px',
+              minWidth: 'max-content',
             }}
           >
             {[
@@ -244,7 +252,7 @@ const App: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: spacing.xs,
-                    flex: 1,
+                    flex: isMobile ? '0 0 auto' : 1,
                     justifyContent: 'center',
                   }}
                 >
