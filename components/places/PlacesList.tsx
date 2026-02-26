@@ -98,6 +98,18 @@ const PlacesList: React.FC = () => {
         Add places you’d like to visit together. Mark them when you’ve been.
       </p>
 
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+        <h2 style={{ margin: 0, fontSize: typography.fontSize.base, color: colors.textSecondary, fontWeight: 600 }}>
+          📍 Map
+        </h2>
+        <PlacesMap places={places} />
+        {places.length > 0 && places.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number').length === 0 && (
+          <p style={{ margin: 0, color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
+            Add places using the search below to see them on the map.
+          </p>
+        )}
+      </div>
+
       <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
         <Input
           ref={nameInputRef}
