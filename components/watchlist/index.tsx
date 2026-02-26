@@ -329,14 +329,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             flexWrap: 'wrap',
           }}
         >
-          <span style={{ color: colors.error, flex: 1, minWidth: 0 }}>
-            {moviesError.message}
-          </span>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => refreshMovies()}
-          >
+          <span style={{ color: colors.error, flex: 1, minWidth: 0 }}>{moviesError.message}</span>
+          <Button variant="secondary" size="sm" onClick={() => refreshMovies()}>
             Retry
           </Button>
         </div>
@@ -378,7 +372,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: isMobile ? spacing.md : spacing.lg,
+          }}
+        >
           <SubNav
             ariaLabel="Movies: filter and sort"
             scrollClassName="watchlist-tabs-scroll"
@@ -398,66 +398,66 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
           {/* Search + Add: full-width bar */}
           <form
-          onSubmit={handleAddAction}
-          style={{
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: 0,
-            background: colors.surfaceElevated,
-            borderRadius: radius.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
-            overflow: 'hidden',
-            minHeight: '48px',
-            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-          }}
-        >
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search or add a movie…"
-            aria-label="Search or add a movie"
+            onSubmit={handleAddAction}
             style={{
+              display: 'flex',
+              alignItems: 'stretch',
+              gap: 0,
+              background: colors.surfaceElevated,
+              borderRadius: radius.lg,
+              border: `1px solid ${colors.borderSecondary}35`,
+              overflow: 'hidden',
               minHeight: '48px',
-              flex: 1,
-              border: 'none',
-              background: 'transparent',
-              paddingLeft: spacing.md,
-              paddingRight: spacing.sm,
-              fontSize: typography.fontSize.sm,
+              transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
             }}
-          />
-          {searchQuery.trim() ? (
-            <Button
-              type="submit"
-              variant="secondary"
-              size="sm"
-              disabled={isAdding || isSuggesting}
-              isLoading={isAdding || isSuggesting}
+          >
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search or add a movie…"
+              aria-label="Search or add a movie"
               style={{
                 minHeight: '48px',
-                minWidth: '56px',
-                borderRadius: 0,
-                borderLeft: `1px solid ${colors.borderSecondary}40`,
+                flex: 1,
+                border: 'none',
+                background: 'transparent',
+                paddingLeft: spacing.md,
+                paddingRight: spacing.sm,
+                fontSize: typography.fontSize.sm,
               }}
-              title="Add or suggest movie"
-              aria-label="Add or suggest movie"
-            >
-              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-            </Button>
-          ) : (
-            <div
-              style={{
-                padding: `0 ${spacing.md}`,
-                display: 'flex',
-                alignItems: 'center',
-                color: colors.textTertiary,
-                opacity: 0.6,
-              }}
-              aria-hidden
-            >
-              <PlusIcon style={{ width: 20, height: 20 }} />
-            </div>
-          )}
+            />
+            {searchQuery.trim() ? (
+              <Button
+                type="submit"
+                variant="secondary"
+                size="sm"
+                disabled={isAdding || isSuggesting}
+                isLoading={isAdding || isSuggesting}
+                style={{
+                  minHeight: '48px',
+                  minWidth: '56px',
+                  borderRadius: 0,
+                  borderLeft: `1px solid ${colors.borderSecondary}40`,
+                }}
+                title="Add or suggest movie"
+                aria-label="Add or suggest movie"
+              >
+                {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+              </Button>
+            ) : (
+              <div
+                style={{
+                  padding: `0 ${spacing.md}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: colors.textTertiary,
+                  opacity: 0.6,
+                }}
+                aria-hidden
+              >
+                <PlusIcon style={{ width: 20, height: 20 }} />
+              </div>
+            )}
           </form>
         </div>
 
