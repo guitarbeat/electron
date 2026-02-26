@@ -1,5 +1,9 @@
-import { GIST_TOKEN, GIST_API_URL, GIST_DAILY_SPIN_FILENAME } from '../config/gistConfig';
+import { GIST_TOKEN, GIST_API_URL, GIST_DAILY_SPIN_FILENAME } from '../config/gistConfig.ts';
 import type { DailySpin } from '../types.ts';
+
+// Cache variables to store the last known state
+let cachedSpin: DailySpin | null = null;
+let lastETag: string | null = null;
 
 /**
  * Gets the current date in YYYY-MM-DD format (UTC).
@@ -14,13 +18,23 @@ const getTodayDateString = (): string => {
  */
 export const getDailySpin = async (): Promise<DailySpin | null> => {
   try {
+    const headers: Record<string, string> = {
+      Authorization: `token ${GIST_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+    };
+
+    if (lastETag) {
+      headers['If-None-Match'] = lastETag;
+    }
+
     const response = await fetch(GIST_API_URL, {
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
+      headers,
       cache: 'no-cache',
     });
+
+    if (response.status === 304) {
+      return cachedSpin;
+    }
 
     if (!response.ok) {
       throw new Error(`GitHub API responded with ${response.status}`);
@@ -30,10 +44,18 @@ export const getDailySpin = async (): Promise<DailySpin | null> => {
     const file = gist.files[GIST_DAILY_SPIN_FILENAME];
 
     if (!file || !file.content) {
+      cachedSpin = null;
       return null;
     }
 
     const spinData: DailySpin = JSON.parse(file.content);
+
+    cachedSpin = spinData;
+    const etag = response.headers.get('ETag');
+    if (etag) {
+      lastETag = etag;
+    }
+
     return spinData;
   } catch (error) {
     console.error('Error fetching daily spin from Gist:', error);
