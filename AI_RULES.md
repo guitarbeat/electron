@@ -4,7 +4,7 @@
 
 - **React 19 + TypeScript** (functional components, hooks) for the UI.
 - **Vite** for dev server and builds.
-- **Supabase** via `@supabase/supabase-js` (client in `src/integrations/supabase/client.ts`) plus **Supabase Edge Functions** under `supabase/functions/*`.
+- **Supabase** via `@supabase/supabase-js` (client in `integrations/supabase/client.ts`) plus **Supabase Edge Functions** under `supabase/functions/*`.
 - **ES Modules** (`"type": "module"` in `package.json`).
 - **ESLint (Airbnb) + Prettier** for linting/formatting.
 - **Node test runner** (`node --test ...`) for unit tests.
@@ -34,9 +34,9 @@
 ### Data access (Supabase)
 
 - Import the Supabase client only from:
-  - `@/src/integrations/supabase/client`
+  - `@/integrations/supabase/client`
 - Keep database/network logic in `services/*` (e.g. `movieService.ts`, `messageService.ts`) and call those from hooks/components.
-- Prefer typed DB access using the generated types in `src/integrations/supabase/types.ts`.
+- Prefer typed DB access using the generated types in `integrations/supabase/types.ts`.
 
 ### “AI” / external API calls
 
