@@ -10,13 +10,14 @@ import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import PlacesList from './components/places/PlacesList';
+import Dashboard from './components/main/Dashboard';
 import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
-  const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const [activeTab, setActiveTab] = useState<MainTab>('home');
   const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
@@ -54,6 +55,8 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'home':
+        return <Dashboard onNavigate={setActiveTab} />;
       case 'queue':
         return <Watchlist />;
       case 'spin':
@@ -228,7 +231,8 @@ const App: React.FC = () => {
             }}
           >
             {[
-              { id: 'queue', label: 'Queue', icon: '📋' },
+              { id: 'home', label: 'Home', icon: '🏠' },
+              { id: 'queue', label: 'Movies', icon: '🎬' },
               { id: 'places', label: 'Places', icon: '📍' },
               { id: 'spin', label: 'Spin', icon: '🎰' },
               { id: 'games', label: 'Games', icon: '🎮' },

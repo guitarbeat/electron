@@ -1,5 +1,5 @@
 export type User = 'Aaron' | 'Electra';
-export type MainTab = 'queue' | 'spin' | 'games' | 'quiz' | 'messages' | 'places';
+export type MainTab = 'home' | 'queue' | 'spin' | 'games' | 'quiz' | 'messages' | 'places';
 
 export interface Place {
   id: string;
