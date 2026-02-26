@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Movie, DailySpin } from '../../../types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Movie, DailySpin, SpinEntry } from '../../../types';
 import { useUser } from '../../../context/UserContext';
 import { CheckIcon, SyncIcon } from '../../common/icons';
 import Card from '../../ui/Card';
@@ -7,7 +7,7 @@ import Button from '../../ui/Button';
 import MinigameModal from '../../ui/MinigameModal';
 import { RotaryDialCarousel } from '../../watchlist/components/RotaryDialCarousel';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
-import { upsertTodaySpinEntry } from '../../../services/spinHistoryService';
+import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
 import { typography, colors, shadows, spacing } from '../../../design-system/tokens';
 import './SpinWheel.css';
 
@@ -18,56 +18,71 @@ const SpinWheel: React.FC<{
   onWinner: (movie: Movie) => void;
 }> = ({ isOpen, movies, onClose, onWinner }) => {
   const { currentUser } = useUser();
-  const [status, setStatus] = useState<'idle' | 'spinning' | 'saving' | 'result'>('idle');
+  const [status, setStatus] = useState<'loading' | 'idle' | 'spinning' | 'saving' | 'result'>('idle');
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [spinHistory, setSpinHistory] = useState<SpinEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
-  // Check spin on mount
-  useEffect(() => {
-    let isMounted = true;
-    const checkTodaySpin = async () => {
-      try {
-        const todaySpin = await getTodaySpin();
-        if (!isMounted) return;
+  const loadTodaySpin = useCallback(async () => {
+    setStatus('loading');
+    setSaveError(null);
+    try {
+      const todaySpin = await getTodaySpin();
 
-        if (todaySpin) {
-          setTodaySpinData(todaySpin);
-          setHasSpunToday(true);
-          setStatus('result');
+      if (todaySpin) {
+        setTodaySpinData(todaySpin);
+        setHasSpunToday(true);
+        setStatus('result');
 
-          const movie = movies.find((m) => m.id === todaySpin.movieId);
-          if (movie) {
-            setSelectedMovie(movie);
-          } else {
-            // Fallback if movie not in list (e.g. deleted or filtered)
-            setSelectedMovie({
-              id: todaySpin.movieId,
-              title: todaySpin.movieTitle,
-              addedBy: 'System' as any,
-              watchedBy: [],
-              createdAt: todaySpin.createdAt,
-              year: 'Unknown',
-              genre: 'Unknown',
-            } as Movie);
-          }
+        const movie = movies.find((m) => m.id === todaySpin.movieId);
+        if (movie) {
+          setSelectedMovie(movie);
         } else {
-          setStatus('idle');
+          setSelectedMovie({
+            id: todaySpin.movieId,
+            title: todaySpin.movieTitle,
+            addedBy: 'System' as any,
+            watchedBy: [],
+            createdAt: todaySpin.createdAt,
+            year: 'Unknown',
+            genre: 'Unknown',
+          } as Movie);
         }
-      } catch (e) {
-        console.error("Error checking today's spin:", e);
+      } else {
+        setStatus('idle');
       }
-    };
-
-    if (isOpen) {
-      checkTodaySpin();
+    } catch (e) {
+      console.error("Error checking today's spin:", e);
+      setSaveError('Could not load today\'s spin.');
+      setStatus('idle');
     }
+  }, [movies]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [isOpen, movies]);
+  useEffect(() => {
+    if (isOpen) {
+      loadTodaySpin();
+    }
+  }, [isOpen, loadTodaySpin]);
+
+  useEffect(() => {
+    if (!isOpen || status === 'loading') return;
+    let isMounted = true;
+    setHistoryLoading(true);
+    getSpinHistory()
+      .then((history) => {
+        if (isMounted) setSpinHistory(history.slice(0, 7));
+      })
+      .catch(() => {
+        if (isMounted) setSpinHistory([]);
+      })
+      .finally(() => {
+        if (isMounted) setHistoryLoading(false);
+      });
+    return () => { isMounted = false; };
+  }, [isOpen, status]);
 
   const handleSpinResult = async (movie: Movie) => {
     if (!currentUser) return;
@@ -88,9 +103,12 @@ const SpinWheel: React.FC<{
 
       await saveDailySpin(dailySpin);
 
-      // Also update history
       try {
         await upsertTodaySpinEntry(today, currentUser, movie.id, movie.title);
+        setSpinHistory((prev) => [
+          { id: '', date: today, movieId: movie.id, movieTitle: movie.title, spunBy: currentUser, createdAt: dailySpin.createdAt },
+          ...prev.slice(0, 6),
+        ]);
       } catch (histErr) {
         console.error('History save failed', histErr);
       }
@@ -111,6 +129,55 @@ const SpinWheel: React.FC<{
 
   return (
     <MinigameModal isOpen={isOpen} onClose={onClose} title="Spin" ariaLabel="Movie spin wheel">
+      {(status === 'loading' || (status === 'idle' && saveError === "Could not load today's spin.")) && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: status === 'loading' ? 'rgba(0,0,0,0.4)' : 'transparent',
+            zIndex: 1000,
+          }}
+        >
+          {status === 'loading' ? (
+            <div
+              style={{
+                padding: spacing.xl,
+                borderRadius: 12,
+                background: colors.surfaceElevated,
+                border: `1px solid ${colors.borderSecondary}40`,
+                color: colors.textSecondary,
+                fontSize: typography.fontSize.sm,
+              }}
+            >
+              Loading…
+            </div>
+          ) : (
+            <div
+              style={{
+                padding: spacing.lg,
+                borderRadius: 12,
+                background: colors.surfaceElevated,
+                border: `1px solid ${colors.error}40`,
+                color: colors.textSecondary,
+                fontSize: typography.fontSize.sm,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: spacing.sm,
+              }}
+            >
+              <span>{saveError}</span>
+              <Button onClick={() => loadTodaySpin()} variant="primary" style={{ minWidth: 100 }}>
+                Retry
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Dial */}
       <div
         style={{
@@ -152,14 +219,15 @@ const SpinWheel: React.FC<{
             <div style={{ pointerEvents: 'auto', maxWidth: '28rem', width: '100%' }}>
               <Card
                 variant="elevated"
+                className="spin-wheel-result-card"
                 style={{
                   padding: 0,
                   overflow: 'hidden',
                   border: `1px solid ${colors.accent}`,
                   boxShadow: shadows.glowStrong,
-                  animation: 'zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                 }}
               >
+                <div className="spin-result-glow" style={{ borderRadius: 'inherit', position: 'absolute', inset: 0, pointerEvents: 'none' }} />
                 {/* Header */}
                 <div
                   style={{
@@ -171,6 +239,7 @@ const SpinWheel: React.FC<{
                   }}
                 >
                   <div
+                    className="spin-winner-badge"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -281,13 +350,48 @@ const SpinWheel: React.FC<{
                         background: 'rgba(248, 113, 113, 0.1)',
                         color: colors.error,
                         fontSize: 12,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: spacing.xs,
                       }}
                     >
-                      {saveError}
+                      <span>{saveError}</span>
+                      <Button onClick={() => setSaveError(null)} variant="ghost" style={{ fontSize: 11 }}>
+                        Dismiss
+                      </Button>
                     </div>
                   )}
 
-                  <Button onClick={onClose} variant="primary" style={{ width: '100%' }}>
+                  {spinHistory.length > 0 && !historyLoading && (
+                    <div style={{ marginTop: spacing.sm }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: colors.textTertiary, marginBottom: 6 }}>
+                        Recent spins
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {spinHistory.map((entry) => {
+                          const d = entry.date;
+                          const label = d === new Date().toISOString().split('T')[0] ? 'Today' : (d.slice(5) || d);
+                          return (
+                            <span
+                              key={entry.id || entry.date + entry.movieId}
+                              style={{
+                                padding: '4px 8px',
+                                borderRadius: 6,
+                                background: 'rgba(255,255,255,0.06)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                fontSize: 11,
+                                color: colors.textSecondary,
+                              }}
+                            >
+                              {label}: {entry.movieTitle} ({entry.spunBy})
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <Button onClick={onClose} variant="primary" style={{ width: '100%', marginTop: saveError ? 0 : spacing.sm }}>
                     Close
                   </Button>
                 </div>

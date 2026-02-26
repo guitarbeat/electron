@@ -1,4 +1,27 @@
-@keyframes zoomIn {
+@keyframes spin-zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin-glow-in {
+  from {
+    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0);
+  }
+  50% {
+    box-shadow: 0 0 40px 8px rgba(255, 105, 180, 0.25), 0 0 20px rgba(135, 206, 250, 0.15);
+  }
+  to {
+    box-shadow: 0 0 24px 4px rgba(255, 105, 180, 0.15), 0 0 12px rgba(135, 206, 250, 0.1);
+  }
+}
+
+@keyframes spin-winner-badge {
   from {
     opacity: 0;
     transform: scale(0.5);
@@ -10,5 +33,13 @@
 }
 
 .spin-wheel-result-card {
-  animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: spin-zoomIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.spin-wheel-result-card .spin-result-glow {
+  animation: spin-glow-in 0.8s ease-out forwards;
+}
+
+.spin-wheel-result-card .spin-winner-badge {
+  animation: spin-winner-badge 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
 }

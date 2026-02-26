@@ -107,17 +107,21 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
 
     if (diff <= 0) diff += 360;
 
-    const extraSpins = 360 * (5 + Math.floor(Math.random() * 3));
+    // 6–8 full rotations with slot-machine style slowdown at the end
+    const fullSpins = 6 + Math.floor(Math.random() * 3);
+    const extraSpins = 360 * fullSpins;
     const finalRotation = currentRot + diff + extraSpins;
 
     setRotation(finalRotation);
 
+    // Duration 4.2s to match CSS ease-out curve (feels like wheel settling)
+    const spinDurationMs = 4200;
     setTimeout(() => {
       setIsSpinning(false);
       if (onSpinComplete) {
         onSpinComplete(winnerMovie);
       }
-    }, 4000);
+    }, spinDurationMs);
   };
 
   const handleCardClick = (movie: Movie, index: number) => {
@@ -148,13 +152,13 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
       onTouchEnd={handleEnd}
     >
       <div
-        className="rdc-wheel-track"
+        className={cn('rdc-wheel-track', isSpinning && 'rdc-wheel-track-spinning')}
         style={{
           transform: `translate(-50%, -50%) rotateY(${-rotation}deg)`,
           transition: isDragging
             ? 'none'
             : isSpinning
-              ? 'transform 4s cubic-bezier(0.15, 0, 0.15, 1)'
+              ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.12, 1)'
               : 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
       >
@@ -428,6 +432,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
           <button
             type="button"
             onClick={handleRandomSpin}
+            className="rdc-spin-btn"
             aria-label="Spin the wheel"
             style={{
               padding: '16px 48px',
@@ -437,27 +442,32 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
               color: 'white',
               borderRadius: '9999px',
               boxShadow: shadows.glowStrong,
-              border: '2px solid rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.25)',
               cursor: 'pointer',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
             }}
           >
-            SPIN!
+            <span className="rdc-spin-btn-inner">
+              <svg className="rdc-spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              SPIN!
+            </span>
           </button>
         </div>
       )}
 
       {isSpinning && (
         <div className="rdc-spinning-text-wrap">
+          <div className="rdc-spinning-dots" aria-hidden>
+            <span /><span /><span />
+          </div>
           <h2
+            className="rdc-spinning-title"
             style={{
               color: colors.accent,
-              textShadow: '0 0 20px rgba(0,0,0,0.8), 0 0 10px #ff69b4',
-              fontSize: '2rem',
               fontFamily: typography.fontFamily.heading.join(','),
-              margin: 0,
-              animation: 'rdc-pulse 1.5s ease-in-out infinite',
             }}
           >
             Spinning...

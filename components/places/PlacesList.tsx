@@ -5,6 +5,7 @@ import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import SubNav from '../ui/SubNav';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { PlusIcon, TrashIcon, CheckIcon } from '../common/icons';
 import { colors, spacing, typography, radius } from '../../design-system/tokens';
@@ -39,6 +40,8 @@ const PlacesList: React.FC = () => {
   const nameInputRef = useRef<HTMLInputElement>(null);
   usePlacesAutocomplete(nameInputRef, setNameInput);
 
+  const wantCount = places.filter((p) => !p.visitedAt).length;
+  const visitedCount = places.filter((p) => p.visitedAt).length;
   const filtered = filter === 'want'
     ? places.filter((p) => !p.visitedAt)
     : places.filter((p) => p.visitedAt);
@@ -111,40 +114,15 @@ const PlacesList: React.FC = () => {
         </Button>
       </form>
 
-      <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-        <button
-          type="button"
-          onClick={() => setFilter('want')}
-          style={{
-            padding: `${spacing.xs} ${spacing.sm}`,
-            borderRadius: radius.md,
-            border: `1px solid ${filter === 'want' ? colors.accent : colors.borderSecondary}40`,
-            background: filter === 'want' ? colors.accentMuted : 'transparent',
-            color: filter === 'want' ? colors.accent : colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Want to go
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilter('visited')}
-          style={{
-            padding: `${spacing.xs} ${spacing.sm}`,
-            borderRadius: radius.md,
-            border: `1px solid ${filter === 'visited' ? colors.secondary : colors.borderSecondary}40`,
-            background: filter === 'visited' ? colors.secondaryMuted : 'transparent',
-            color: filter === 'visited' ? colors.secondary : colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Visited
-        </button>
-      </div>
+      <SubNav
+        ariaLabel="Places: filter by list"
+        tabs={[
+          { id: 'want', label: 'Want to go', icon: '📍', count: wantCount },
+          { id: 'visited', label: 'Visited', icon: '✅', count: visitedCount },
+        ]}
+        activeId={filter}
+        onSelect={(id) => setFilter(id as PlaceFilter)}
+      />
 
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
         {filtered.length === 0 && (

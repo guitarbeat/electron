@@ -247,7 +247,7 @@ const App: React.FC = () => {
                   aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: '1 1 0',
-                    minWidth: 'min(80px, 100%)',
+                    minWidth: 'min(72px, 28vw)',
                     maxWidth: '200px',
                     minHeight: '44px',
                     display: 'flex',
@@ -259,7 +259,7 @@ const App: React.FC = () => {
                       : 'transparent',
                     border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
                     borderRadius: `calc(${spacing.md} - 4px)`,
-                    padding: '0.35em 0.6em',
+                    padding: '0.4em 0.5em',
                     color: isActive ? colors.accent : colors.textSecondary,
                     fontFamily: typography.fontFamily.heading.join(', '),
                     fontSize: 'clamp(0.7rem, 1.2vw + 0.5rem, 0.95rem)',
@@ -268,15 +268,17 @@ const App: React.FC = () => {
                     letterSpacing: typography.letterSpacing.wider,
                     cursor: 'pointer',
                     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'normal',
+                    textAlign: 'center',
+                    wordBreak: 'break-word',
                     textShadow: isActive ? shadows.textGlow : 'none',
                     boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
                   }}
                 >
-                  <span style={{ fontSize: '1.1em', lineHeight: 1 }} aria-hidden>
+                  <span style={{ fontSize: '1.1em', lineHeight: 1, flexShrink: 0 }} aria-hidden>
                     {tab.icon}
                   </span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{tab.label}</span>
+                  <span style={{ lineHeight: 1.2 }}>{tab.label}</span>
                 </button>
               );
             })}
