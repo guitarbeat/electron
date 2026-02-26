@@ -18,6 +18,7 @@ test('getMovies returns movies when Gist fetch is successful', async () => {
   const mockFetch = mock.method(global, 'fetch', async () => {
     return {
       ok: true,
+      headers: new Headers(),
       json: async () => ({
         files: {
           [GIST_FILENAME]: {
