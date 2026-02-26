@@ -164,17 +164,15 @@ const App: React.FC = () => {
         Skip to content
       </a>
 
-      {/* Main Content */}
+      {/* Main Content - liquid layout, same structure at every size */}
       <main
         id="main-content"
         className="main-container"
         style={{
-          paddingTop: spacing.md,
-          paddingBottom: isMobile
-            ? `calc(${BOTTOM_NAV_HEIGHT}px + ${spacing.lg} + env(safe-area-inset-bottom, 0px))`
-            : spacing['3xl'],
-          paddingLeft: isMobile ? spacing.md : spacing.lg,
-          paddingRight: isMobile ? spacing.md : spacing.lg,
+          paddingTop: 'clamp(0.75rem, 2vw, 1.25rem)',
+          paddingBottom: 'clamp(1.25rem, 4vw, 3.5rem)',
+          paddingLeft: 'clamp(0.75rem, 3vw, 1.5rem)',
+          paddingRight: 'clamp(0.75rem, 3vw, 1.5rem)',
           maxWidth: layout.contentMaxWidth,
           margin: '0 auto',
           outline: 'none',
@@ -183,16 +181,17 @@ const App: React.FC = () => {
       >
         <section
           aria-label="Profile selection"
-          className="animate-fade-in"
+          className="animate-fade-in retro-card-shine"
           style={{
             maxWidth: '980px',
-            margin: `0 auto ${spacing.lg}`,
-            padding: isMobile ? spacing.sm : spacing.md,
+            margin: '0 auto clamp(1rem, 2vw, 1.25rem)',
+            padding: 'clamp(0.5rem, 1.5vw, 1rem)',
             borderRadius: spacing.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
+            border: `1px solid ${colors.accent}30`,
+            borderTop: `2px solid ${colors.accent}50`,
             background:
-              'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.15), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
-            boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
+              'radial-gradient(ellipse at 20% -20%, rgba(255, 105, 180, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 120%, rgba(135, 206, 250, 0.08) 0%, transparent 50%), linear-gradient(165deg, rgba(23, 33, 58, 0.85) 0%, rgba(10, 16, 32, 0.92) 100%)',
+            boxShadow: `0 14px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 30px rgba(255, 105, 180, 0.06)`,
           }}
         >
           <p
@@ -200,148 +199,92 @@ const App: React.FC = () => {
               margin: 0,
               marginBottom: spacing.sm,
               textAlign: 'center',
-              color: colors.textTertiary,
+              color: colors.accent,
               fontSize: typography.fontSize.xs,
               textTransform: 'uppercase',
-              letterSpacing: '0.07em',
+              letterSpacing: '0.12em',
+              opacity: 0.7,
             }}
           >
-            Who&apos;s watching
+            ✦ Who&apos;s watching ✦
           </p>
           <UserSelection />
+          <hr className="retro-divider" />
         </section>
 
-        {/* Top nav: desktop only */}
-        {!isMobile && (
-          <div
-            role="region"
-            aria-label="Main navigation"
+        {/* Main navigation - one liquid nav for all screen sizes */}
+        <div
+          role="region"
+          aria-label="Main navigation"
+          style={{
+            width: '100%',
+            minWidth: 0,
+            background: 'rgba(23, 33, 58, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: spacing.md,
+            border: `1px solid ${colors.borderSecondary}25`,
+            marginBottom: spacing.md,
+          }}
+        >
+          <nav
+            aria-label="Tab navigation"
             style={{
-              width: '100%',
-              minWidth: 0,
-              maxWidth: '100%',
-              background: 'rgba(23, 33, 58, 0.5)',
-              backdropFilter: 'blur(12px)',
-              borderRadius: spacing.md,
-              border: `1px solid ${colors.borderSecondary}25`,
-              marginBottom: spacing.md,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'stretch',
+              justifyContent: 'center',
+              gap: '2px',
+              padding: '4px',
             }}
           >
-            <nav
-              aria-label="Tab navigation"
-              style={{
-                display: 'flex',
-                alignItems: 'stretch',
-                justifyContent: 'center',
-                gap: '2px',
-                padding: '4px',
-                minWidth: 'max-content',
-              }}
-            >
-              {MAIN_TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    style={{
-                      background: isActive
-                        ? `linear-gradient(135deg, ${colors.accent}25, ${colors.secondary}15)`
-                        : 'transparent',
-                      border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
-                      borderRadius: `calc(${spacing.md} - 4px)`,
-                      padding: `${spacing.sm} ${spacing.lg}`,
-                      color: isActive ? colors.accent : colors.textSecondary,
-                      fontFamily: typography.fontFamily.heading.join(', '),
-                      fontSize: typography.fontSize.base,
-                      fontWeight: isActive ? '700' : '500',
-                      textTransform: 'uppercase',
-                      letterSpacing: typography.letterSpacing.wider,
-                      cursor: 'pointer',
-                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                      whiteSpace: 'nowrap',
-                      textShadow: isActive ? shadows.textGlow : 'none',
-                      boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: spacing.xs,
-                      flex: 1,
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <span style={{ fontSize: '16px' }}>{tab.icon}</span>
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+            {MAIN_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  style={{
+                    flex: '1 1 0',
+                    minWidth: 'min(80px, 100%)',
+                    maxWidth: '200px',
+                    minHeight: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.25rem',
+                    background: isActive
+                      ? `linear-gradient(135deg, ${colors.accent}25, ${colors.secondary}15)`
+                      : 'transparent',
+                    border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
+                    borderRadius: `calc(${spacing.md} - 4px)`,
+                    padding: '0.35em 0.6em',
+                    color: isActive ? colors.accent : colors.textSecondary,
+                    fontFamily: typography.fontFamily.heading.join(', '),
+                    fontSize: 'clamp(0.7rem, 1.2vw + 0.5rem, 0.95rem)',
+                    fontWeight: isActive ? 700 : 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: typography.letterSpacing.wider,
+                    cursor: 'pointer',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    whiteSpace: 'nowrap',
+                    textShadow: isActive ? shadows.textGlow : 'none',
+                    boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
+                  }}
+                >
+                  <span style={{ fontSize: '1.1em', lineHeight: 1 }} aria-hidden>
+                    {tab.icon}
+                  </span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {renderContent()}
       </main>
-
-      {/* Bottom nav: mobile only */}
-      {isMobile && (
-        <nav
-          aria-label="Main navigation"
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: BOTTOM_NAV_HEIGHT,
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-            background: 'rgba(23, 33, 58, 0.95)',
-            backdropFilter: 'blur(12px)',
-            borderTop: `1px solid ${colors.borderSecondary}35`,
-            display: 'flex',
-            alignItems: 'stretch',
-            justifyContent: 'space-around',
-            zIndex: 40,
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.2)',
-          }}
-        >
-          {MAIN_TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                aria-current={isActive ? 'page' : undefined}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 2,
-                  padding: `${spacing.xs} ${spacing.xs}`,
-                  background: 'transparent',
-                  border: 'none',
-                  color: isActive ? colors.accent : colors.textSecondary,
-                  fontFamily: typography.fontFamily.body.join(', '),
-                  fontSize: '10px',
-                  fontWeight: isActive ? 600 : 500,
-                  cursor: 'pointer',
-                  transition: 'color 0.2s',
-                  textShadow: isActive ? shadows.textGlow : 'none',
-                }}
-              >
-                <span style={{ fontSize: '20px', lineHeight: 1 }} aria-hidden>
-                  {tab.icon}
-                </span>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
-      )}
 
       <MessageBoard mode="floating" />
 
