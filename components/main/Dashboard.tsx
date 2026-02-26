@@ -129,13 +129,29 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
             {unvisitedPlaces.slice(0, MAX_PREVIEW).map((place: Place) => (
-              <div key={place.id} style={itemStyle}>
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {place.name}
-                </span>
-                {place.addedBy && (
-                  <span style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs, flexShrink: 0 }}>
-                    by {place.addedBy}
+              <div key={place.id} style={{ ...itemStyle, flexDirection: 'column', alignItems: 'stretch', gap: spacing.xs }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, minWidth: 0 }}>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {place.name}
+                  </span>
+                  {place.addedBy && (
+                    <span style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs, flexShrink: 0 }}>
+                      by {place.addedBy}
+                    </span>
+                  )}
+                </div>
+                {place.notes && (
+                  <span
+                    style={{
+                      color: colors.textTertiary,
+                      fontSize: typography.fontSize.xs,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'block',
+                    }}
+                  >
+                    {place.notes}
                   </span>
                 )}
               </div>
