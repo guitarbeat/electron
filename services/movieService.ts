@@ -42,6 +42,12 @@ export const getMovies = async (): Promise<Movie[]> => {
     if (!response.ok) {
       const status = response.status;
       let msg = `GitHub API responded with ${status}.`;
+      try {
+        const errBody = await response.clone().json();
+        if (errBody?.message) msg += ` GitHub says: "${errBody.message}".`;
+      } catch {
+        /* ignore parse error */
+      }
       if (status === 401 || status === 404) {
         msg += ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
       } else if (status === 403) {
