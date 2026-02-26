@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useUser } from '../../context/UserContext';
 import { usePlaces } from '../../hooks/usePlaces';
+import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -35,6 +36,8 @@ const PlacesList: React.FC = () => {
   const [nameInput, setNameInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  usePlacesAutocomplete(nameInputRef, setNameInput);
 
   const filtered = filter === 'want'
     ? places.filter((p) => !p.visitedAt)
@@ -83,6 +86,7 @@ const PlacesList: React.FC = () => {
 
       <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
         <Input
+          ref={nameInputRef}
           value={nameInput}
           onChange={(e) => setNameInput(e.target.value)}
           placeholder="Place name or address"
