@@ -326,14 +326,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               </button>
             )}
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-            >
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', width: '100%' }}>
               <Button
                 type="button"
                 onClick={handleToggle}
@@ -369,57 +362,61 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
               </Button>
 
-              <IconButton
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFixMatch?.(movie);
-                }}
-                variant="ghost"
-                size="sm"
-                disabled={isGuest}
-                title="Fix Metadata Match"
-                aria-label={`Fix metadata for "${movie.title}"`}
-                style={{
-                  padding: 0,
-                  width: '44px',
-                  height: '44px',
-                  backgroundColor: 'rgba(0,0,0,0.6)',
-                  borderRadius: radius.md,
-                  color: colors.accent,
-                  border: `1px solid ${colors.accent}40`,
-                  opacity: isGuest ? 0.5 : 1,
-                  cursor: isGuest ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <MagicWandIcon style={{ width: '14px', height: '14px' }} />
-              </IconButton>
+              {!isMobile && (
+                <>
+                  <IconButton
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFixMatch?.(movie);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    disabled={isGuest}
+                    title="Fix Metadata Match"
+                    aria-label={`Fix metadata for "${movie.title}"`}
+                    style={{
+                      padding: 0,
+                      width: '44px',
+                      height: '44px',
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      borderRadius: radius.md,
+                      color: colors.accent,
+                      border: `1px solid ${colors.accent}40`,
+                      opacity: isGuest ? 0.5 : 1,
+                      cursor: isGuest ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    <MagicWandIcon style={{ width: '14px', height: '14px' }} />
+                  </IconButton>
 
-              <IconButton
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(movie);
-                }}
-                variant="ghost"
-                size="sm"
-                disabled={isGuest}
-                title="Delete Movie"
-                aria-label={`Delete "${movie.title}"`}
-                style={{
-                  padding: 0,
-                  width: '44px',
-                  height: '44px',
-                  backgroundColor: 'rgba(0,0,0,0.6)',
-                  borderRadius: radius.md,
-                  color: colors.error,
-                  border: `1px solid ${colors.error}40`,
-                  opacity: isGuest ? 0.5 : 1,
-                  cursor: isGuest ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <TrashIcon style={{ width: '14px', height: '14px' }} />
-              </IconButton>
+                  <IconButton
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(movie);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    disabled={isGuest}
+                    title="Delete Movie"
+                    aria-label={`Delete "${movie.title}"`}
+                    style={{
+                      padding: 0,
+                      width: '44px',
+                      height: '44px',
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      borderRadius: radius.md,
+                      color: colors.error,
+                      border: `1px solid ${colors.error}40`,
+                      opacity: isGuest ? 0.5 : 1,
+                      cursor: isGuest ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    <TrashIcon style={{ width: '14px', height: '14px' }} />
+                  </IconButton>
+                </>
+              )}
             </div>
           </div>
         </div>
