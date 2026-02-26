@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import FixMatchDialog from '../common/FixMatchDialog';
@@ -276,10 +276,51 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   };
 
+  // Optimization: Index memories for O(1) lookup to prevent O(N*M) filtering in render
+  const memoryIndex = useMemo(() => {
+    const byId = new Map<string, SharedMemory[]>();
+    const byTitle = new Map<string, SharedMemory[]>();
+
+    memories.forEach((m) => {
+      // Index by ID
+      if (m.movieId) {
+        const list = byId.get(m.movieId) || [];
+        list.push(m);
+        byId.set(m.movieId, list);
+      }
+      // Index by Title
+      const title = m.movieTitle.toLowerCase();
+      if (title) {
+        const list = byTitle.get(title) || [];
+        list.push(m);
+        byTitle.set(title, list);
+      }
+    });
+
+    return { byId, byTitle };
+  }, [memories]);
+
+  const getMovieMemories = useCallback(
+    (movie: Movie) => {
+      const fromId = memoryIndex.byId.get(movie.id) || [];
+      const fromTitle = memoryIndex.byTitle.get(movie.title.toLowerCase()) || [];
+
+      if (fromId.length === 0 && fromTitle.length === 0) return [];
+      if (fromId.length === 0) return fromTitle;
+      if (fromTitle.length === 0) return fromId;
+
+      // Deduplicate by ID if we have matches from both sources
+      const combined = new Map<string, SharedMemory>();
+      fromId.forEach((m) => combined.set(m.id, m));
+      fromTitle.forEach((m) => combined.set(m.id, m));
+
+      return Array.from(combined.values());
+    },
+    [memoryIndex]
+  );
+
   const renderMovieItem = (movie: Movie, index?: number) => {
-    const movieMemories = memories.filter(
-      (m) => m.movieId === movie.id || m.movieTitle.toLowerCase() === movie.title.toLowerCase()
-    );
+    const movieMemories = getMovieMemories(movie);
     return (
       <MovieItem
         key={movie.id}
