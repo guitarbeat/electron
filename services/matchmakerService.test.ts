@@ -108,9 +108,9 @@ test('matchmakerService', async (t) => {
   await t.test('saveMatchmakerGame sends correct data', async () => {
     fetchMock.mock.mockImplementationOnce(async (url, options) => {
       assert.equal(url, GIST_API_URL);
-      assert.equal(options.method, 'PATCH');
+      assert.equal(options!.method, 'PATCH');
 
-      const body = JSON.parse(options.body as string);
+      const body = JSON.parse(options!.body as string);
       const content = JSON.parse(body.files[GIST_MATCHMAKER_FILENAME].content);
 
       assert.deepEqual(content, MOCK_GAME);
@@ -124,7 +124,7 @@ test('matchmakerService', async (t) => {
 
   await t.test('saveMatchmakerGame clears game when passed null', async () => {
     fetchMock.mock.mockImplementationOnce(async (url, options) => {
-      const body = JSON.parse(options.body as string);
+      const body = JSON.parse(options!.body as string);
       assert.equal(body.files[GIST_MATCHMAKER_FILENAME].content, '');
       return new Response(JSON.stringify({}), { status: 200 });
     });
