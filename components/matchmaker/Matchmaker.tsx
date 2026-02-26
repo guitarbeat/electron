@@ -181,7 +181,15 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   if (!game) {
     return (
       <div style={{ textAlign: 'center', padding: spacing.sm }}>
-        <p style={{ color: colors.textSecondary, margin: '0 auto', marginBottom: spacing.lg, maxWidth: 420, fontSize: typography.fontSize.sm }}>
+        <p
+          style={{
+            color: colors.textSecondary,
+            margin: '0 auto',
+            marginBottom: spacing.lg,
+            maxWidth: 420,
+            fontSize: typography.fontSize.sm,
+          }}
+        >
           Pick a vibe and swipe on 10 movies. If you both like one, it's a match.
         </p>
 

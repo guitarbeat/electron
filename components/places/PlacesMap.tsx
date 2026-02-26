@@ -23,8 +23,9 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
 
-    const placesWithCoords = places.filter((p): p is Place & { lat: number; lng: number } =>
-      typeof p.lat === 'number' && typeof p.lng === 'number'
+    const placesWithCoords = places.filter(
+      (p): p is Place & { lat: number; lng: number } =>
+        typeof p.lat === 'number' && typeof p.lng === 'number'
     );
 
     const updateMarkersAndBounds = (map: google.maps.Map) => {

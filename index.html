@@ -29,7 +29,12 @@
           /* Tiny scattered crosses — old web dingbat feel */
           url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M59 25v10M54 30h10' stroke='%23ff69b4' stroke-width='0.7' opacity='0.05'/%3E%3Cpath d='M19 85v6M16 88h6' stroke='%2387cefa' stroke-width='0.5' opacity='0.06'/%3E%3Cpath d='M99 65v6M96 68h6' stroke='%239370db' stroke-width='0.5' opacity='0.05'/%3E%3Ccircle cx='80' cy='15' r='1' fill='%23ff69b4' opacity='0.04'/%3E%3Ccircle cx='40' cy='105' r='0.8' fill='%2387cefa' opacity='0.04'/%3E%3C/svg%3E");
         background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
-        background-size: 100% 100%, 100% 100%, 80px 80px, 60px 60px, 120px 120px;
+        background-size:
+          100% 100%,
+          100% 100%,
+          80px 80px,
+          60px 60px,
+          120px 120px;
         background-attachment: fixed;
         color: #f0f0f5;
         margin: 0;
@@ -128,7 +133,14 @@
       .retro-divider {
         height: 2px;
         border: none;
-        background: linear-gradient(90deg, transparent 0%, #ff69b4 20%, #87cefa 50%, #9370db 80%, transparent 100%);
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          #ff69b4 20%,
+          #87cefa 50%,
+          #9370db 80%,
+          transparent 100%
+        );
         opacity: 0.25;
         margin: 0.75rem 0;
       }
