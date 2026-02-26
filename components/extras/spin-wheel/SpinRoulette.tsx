@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Movie } from '../../../types';
 import { colors, typography } from '../../../design-system/tokens';
+import ImageWithFallback from '../../common/ImageWithFallback';
 import './SpinRoulette.css';
 
 const DEG = Math.PI / 180;
@@ -60,14 +61,14 @@ export const SpinRoulette: React.FC<SpinRouletteProps> = ({
   const innerRadiusPct = 28;
   const outerRadiusPct = 48;
   const labelRadiusPct = 38;
+  const posterRadiusPct = 40;
 
-  const labelPosition = (i: number) => {
+  const radialPosition = (i: number, radiusPct: number) => {
     const angleDeg = (i + 0.5) * anglePerSegment - 90;
     const rad = angleDeg * DEG;
     return {
-      left: `${50 + labelRadiusPct * Math.cos(rad)}%`,
-      top: `${50 + labelRadiusPct * Math.sin(rad)}%`,
-      transform: `translate(-50%, -50%) rotate(${(i + 0.5) * anglePerSegment}deg)`,
+      left: `${50 + radiusPct * Math.cos(rad)}%`,
+      top: `${50 + radiusPct * Math.sin(rad)}%`,
     };
   };
 
@@ -123,6 +124,17 @@ export const SpinRoulette: React.FC<SpinRouletteProps> = ({
               : 'none',
           }}
         >
+          {/* Segment divider lines for clarity */}
+          {n > 1 && movies.map((_, i) => (
+            <div
+              key={`line-${i}`}
+              className="spin-roulette__segment-line"
+              style={{
+                transform: `rotate(${i * anglePerSegment}deg)`,
+              }}
+              aria-hidden
+            />
+          ))}
           {movies.map((movie, i) => (
             <div
               key={movie.id}
@@ -130,14 +142,36 @@ export const SpinRoulette: React.FC<SpinRouletteProps> = ({
               style={{
                 clipPath: wedgeClipPath(i, n, innerRadiusPct, outerRadiusPct),
                 background: i % 2 === 0
-                  ? 'rgba(255, 105, 180, 0.18)'
-                  : 'rgba(135, 206, 250, 0.18)',
+                  ? 'rgba(255, 105, 180, 0.14)'
+                  : 'rgba(135, 206, 250, 0.14)',
               }}
             >
+              {/* Poster thumbnail in the wedge */}
+              <div
+                className="spin-roulette__segment-poster-wrap"
+                style={{
+                  ...radialPosition(i, posterRadiusPct),
+                  transform: `translate(-50%, -50%) rotate(${(i + 0.5) * anglePerSegment}deg)`,
+                }}
+              >
+                {movie.posterUrl ? (
+                  <ImageWithFallback
+                    sources={[movie.posterUrl]}
+                    alt={movie.title}
+                    className="spin-roulette__segment-poster"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div className="spin-roulette__segment-poster spin-roulette__segment-poster--fallback">
+                    <span>{movie.title.slice(0, 2)}</span>
+                  </div>
+                )}
+              </div>
               <span
                 className="spin-roulette__label"
                 style={{
-                  ...labelPosition(i),
+                  ...radialPosition(i, labelRadiusPct),
+                  transform: `translate(-50%, -50%) rotate(${(i + 0.5) * anglePerSegment}deg)`,
                   fontFamily: typography.fontFamily.heading.join(', '),
                 }}
               >

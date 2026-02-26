@@ -45,7 +45,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const addPlace = useCallback(
-    async (name: string, notes?: string) => {
+    async (name: string, notes?: string, lat?: number, lng?: number) => {
       const trimmed = name.trim();
       if (!trimmed) throw new Error('Place name cannot be empty');
       const place: Place = {
@@ -54,6 +54,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
         addedBy: currentUser ?? undefined,
         notes: notes?.trim() || undefined,
         createdAt: new Date().toISOString(),
+        ...(typeof lat === 'number' && typeof lng === 'number' && { lat, lng }),
       };
       await performMutation((list) => [...list, place]);
     },
