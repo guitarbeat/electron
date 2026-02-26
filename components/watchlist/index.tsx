@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { PlusIcon, Spinner, FilmIcon } from '../common/icons';
 import MasonryGrid from '../ui/MasonryGrid';
+import SubNav from '../ui/SubNav';
 import MovieItem from '../common/MovieItem';
 import { SuggestionItemCard } from '../common/DashboardCards';
 import { useWatchlist } from './hooks/useWatchlist';
@@ -16,17 +17,17 @@ import { Movie, MovieSuggestion, SharedMemory } from '../../types';
 import { spacing, colors, radius, typography } from '../../design-system/tokens';
 import './Watchlist.css';
 
-const TABS: { label: string; value: ContentTab }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Queue', value: 'to-watch' },
-  { label: 'Watched', value: 'watched' },
-  { label: 'Suggestions', value: 'suggestions' },
+const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
+  { id: 'all', label: 'All', icon: '🎬' },
+  { id: 'to-watch', label: 'Queue', icon: '📋' },
+  { id: 'watched', label: 'Watched', icon: '✅' },
+  { id: 'suggestions', label: 'Suggestions', icon: '💡' },
 ];
 
-const SORT_OPTIONS: { label: string; value: SortMode }[] = [
-  { label: 'Recent', value: 'recent' },
-  { label: 'A–Z', value: 'title' },
-  { label: 'Year', value: 'year' },
+const SORT_OPTIONS: { id: SortMode; label: string }[] = [
+  { id: 'recent', label: 'Recent' },
+  { id: 'title', label: 'A–Z' },
+  { id: 'year', label: 'Year' },
 ];
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
@@ -363,12 +364,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {/* --- Controls: tabs, search, sort (mobile-first) --- */}
+      {/* --- Sub-nav: tabs + sort (shared SubNav component) --- */}
       <div
-        role="region"
-        aria-label="Watchlist filters and sort"
         style={{
-          marginBottom: spacing.xl,
+          marginBottom: spacing.lg,
           marginTop: `-${spacing.md}`,
           padding: isMobile ? spacing.sm : spacing.md,
           background: 'rgba(23, 33, 58, 0.55)',
@@ -377,84 +376,29 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           borderRadius: `0 0 ${radius.lg} ${radius.lg}`,
           border: `1px solid ${colors.borderSecondary}20`,
           borderTop: 'none',
-          fontFamily: typography.fontFamily.body.join(', '),
-          display: 'flex',
-          flexDirection: 'column',
-          gap: isMobile ? spacing.md : spacing.lg,
           boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
-        {/* Tabs: horizontal scroll, pill style, 44px min touch target */}
-        <div
-          style={{
-            display: 'flex',
-            gap: spacing.xs,
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            paddingBottom: spacing.xs,
-            minHeight: '44px',
-            alignItems: 'center',
-          }}
-          className="watchlist-tabs-scroll"
-        >
-          {TABS.map((tab) => {
-            const isActive = contentTab === tab.value;
-            const count = tabCounts[tab.value] ?? 0;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setContentTab(tab.value)}
-                aria-pressed={isActive}
-                aria-label={`${tab.label}, ${count} items`}
-                style={{
-                  flex: '0 0 auto',
-                  minHeight: '44px',
-                  minWidth: isMobile ? '72px' : '80px',
-                  padding: `0 ${isMobile ? spacing.sm : spacing.md}`,
-                  borderRadius: radius.full,
-                  border: `2px solid ${isActive ? colors.accent : 'transparent'}`,
-                  background: isActive
-                    ? `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentLight} 100%)`
-                    : 'rgba(255,255,255,0.06)',
-                  color: isActive ? '#1a1a2e' : colors.textSecondary,
-                  fontSize: typography.fontSize.xs,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.2s ease',
-                  fontFamily: typography.fontFamily.heading.join(', '),
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: spacing.xs,
-                  boxShadow: isActive ? '0 0 16px rgba(255,105,180,0.35)' : 'none',
-                }}
-              >
-                <span>{tab.label}</span>
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                    background: isActive ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.1)',
-                    padding: '2px 6px',
-                    borderRadius: radius.sm,
-                    minWidth: '18px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
+          <SubNav
+            ariaLabel="Movies: filter and sort"
+            scrollClassName="watchlist-tabs-scroll"
+            tabs={MOVIE_TABS.map((t) => ({
+              id: t.id,
+              label: t.label,
+              icon: t.icon,
+              count: tabCounts[t.id] ?? 0,
+            }))}
+            activeId={contentTab}
+            onSelect={(id) => setContentTab(id as ContentTab)}
+            chips={SORT_OPTIONS}
+            activeChipId={sortMode}
+            onChipSelect={(id) => setSortMode(id as SortMode)}
+            chipLabel="Sort by"
+          />
 
-        {/* Search + Add: full-width bar */}
-        <form
+          {/* Search + Add: full-width bar */}
+          <form
           onSubmit={handleAddAction}
           style={{
             display: 'flex',
@@ -515,46 +459,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               <PlusIcon style={{ width: 20, height: 20 }} />
             </div>
           )}
-        </form>
-
-        {/* Sort: chip group (one-tap, no dropdown) */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: spacing.xs,
-            alignItems: 'center',
-          }}
-          role="group"
-          aria-label="Sort by"
-        >
-          {SORT_OPTIONS.map((opt) => {
-            const isActive = sortMode === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setSortMode(opt.value)}
-                aria-pressed={isActive}
-                aria-label={`Sort by ${opt.label}`}
-                style={{
-                  minHeight: '40px',
-                  padding: `0 ${spacing.sm}`,
-                  borderRadius: radius.md,
-                  border: `1px solid ${isActive ? colors.secondary : colors.borderSecondary}40`,
-                  background: isActive ? colors.secondaryMuted : 'rgba(255,255,255,0.04)',
-                  color: isActive ? colors.secondary : colors.textTertiary,
-                  fontSize: typography.fontSize.xs,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  fontFamily: typography.fontFamily.body.join(', '),
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
+          </form>
         </div>
 
         {suggestionError && (
