@@ -57,7 +57,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setActiveMemoryFilter,
     setIsMemoryWallCollapsed,
     previousMoviesRef,
-    memorySectionRef,
     movieResultsRef,
 
     // Data returns
@@ -231,15 +230,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       }
     },
     [currentUser, rejectSuggestion, setToast, setProcessingSuggestionId, showGuestWarning]
-  );
-
-  const handleJumpToMovieMemories = useCallback(
-    (movie: Movie) => {
-      setActiveMemoryFilter(movie.id);
-      setIsMemoryWallCollapsed(false);
-      memorySectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-    },
-    [setActiveMemoryFilter, setIsMemoryWallCollapsed, memorySectionRef]
   );
 
   const handleUpdateMemory = useCallback(
