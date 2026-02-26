@@ -1,4 +1,4 @@
-import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
+import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
 import { sanitizeInput } from '../config/security';
 import { MovieSuggestion } from '../types';
 

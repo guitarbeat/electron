@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Spinner } from '../icons';
+import { Spinner } from '../common/icons';
 import { spacing, typography, colors, radius } from '../../design-system/tokens';
 import { User } from '../../types';
 import { MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../../config/security';

@@ -1,14 +1,14 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import FixMatchDialog from '../FixMatchDialog';
+import FixMatchDialog from '../common/FixMatchDialog';
 import Confetti from '../effects/Confetti';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { PlusIcon, Spinner, FilmIcon } from '../icons';
+import { PlusIcon, Spinner, FilmIcon } from '../common/icons';
 import MasonryGrid from '../ui/MasonryGrid';
-import MovieItem from '../MovieItem';
-import { SuggestionItemCard } from '../DashboardCards';
+import MovieItem from '../common/MovieItem';
+import { SuggestionItemCard } from '../common/DashboardCards';
 import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps, SortMode, ContentTab } from './types';
 import { getEmptyStateMessage } from './utils';
@@ -66,6 +66,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     // Data returns
     movies,
+    moviesError,
+    refreshMovies,
     addMovie,
     toggleWatched,
     deleteMovie,
@@ -371,6 +373,34 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: spacing.md }}>
       {showConfetti && <Confetti isActive={showConfetti} />}
+
+      {moviesError && (
+        <div
+          style={{
+            background: colors.error + '20',
+            border: `1px solid ${colors.error}`,
+            borderRadius: radius.md,
+            padding: spacing.md,
+            marginBottom: spacing.md,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: spacing.md,
+            flexWrap: 'wrap',
+          }}
+        >
+          <span style={{ color: colors.error, flex: 1, minWidth: 0 }}>
+            {moviesError.message}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => refreshMovies()}
+          >
+            Retry
+          </Button>
+        </div>
+      )}
 
       {toast && (
         <div

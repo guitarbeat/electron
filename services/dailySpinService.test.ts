@@ -8,7 +8,7 @@ import {
   hasSpunToday,
   getTodaySpin,
 } from './dailySpinService.ts';
-import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../gistConfig.ts';
+import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../config/gistConfig';
 import type { DailySpin } from '../types.ts';
 
 // A fixed Wednesday for testing

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Movie, User } from '../../../types';
 import { colors, shadows, typography } from '../../../design-system/tokens';
-import ImageWithFallback from '../../ImageWithFallback';
+import ImageWithFallback from '../../common/ImageWithFallback';
 import { userImageSources } from '../../../config/imageConfig';
 import './RotaryDialCarousel.css';
 

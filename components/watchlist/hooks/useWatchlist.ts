@@ -84,10 +84,11 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     movies,
     isLoading,
     isSubmitting,
+    error: moviesError,
+    refresh: refreshMovies,
     addMovie,
     toggleWatched,
     deleteMovie,
-    refresh: refreshMovies,
     manualMetadataUpdate,
   } = useMovies(currentUser, isPaused);
 
@@ -231,6 +232,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     movies,
     isLoading,
     isSubmitting,
+    moviesError,
     addMovie,
     toggleWatched,
     deleteMovie,

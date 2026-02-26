@@ -1,7 +1,7 @@
 import React from 'react';
-import { User } from '../types';
-import { useUserColors } from '../hooks/useUserColors';
-import { radius } from '../design-system/tokens';
+import { User } from '../../types';
+import { useUserColors } from '../../hooks/useUserColors';
+import { radius } from '../../design-system/tokens';
 
 interface WatcherBadgeProps {
   user: User;

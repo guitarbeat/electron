@@ -3,12 +3,13 @@ import { useUser } from './context/UserContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/watchlist';
-import UserSelection from './components/UserSelection';
-import MessageBoard from './components/MessageBoard';
+import UserSelection from './components/common/UserSelection';
+import MessageBoard from './components/common/MessageBoard';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
+import PlacesList from './components/places/PlacesList';
 import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 
@@ -101,6 +102,12 @@ const App: React.FC = () => {
         }
         return <div className="animate-fade-in">{content}</div>;
       }
+      case 'places':
+        return (
+          <div className="animate-fade-in">
+            <PlacesList />
+          </div>
+        );
       case 'messages':
         return <MessageBoard mode="embedded" />;
       default:
@@ -222,6 +229,7 @@ const App: React.FC = () => {
           >
             {[
               { id: 'queue', label: 'Queue', icon: '📋' },
+              { id: 'places', label: 'Places', icon: '📍' },
               { id: 'spin', label: 'Spin', icon: '🎰' },
               { id: 'games', label: 'Games', icon: '🎮' },
               { id: 'quiz', label: 'Quiz', icon: '❓' },

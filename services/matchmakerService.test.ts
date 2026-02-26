@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mock, test, after, beforeEach } from 'node:test';
 import { getMatchmakerGame, saveMatchmakerGame } from './matchmakerService.ts';
-import { GIST_MATCHMAKER_FILENAME, GIST_API_URL } from '../gistConfig.ts';
+import { GIST_MATCHMAKER_FILENAME, GIST_API_URL } from '../config/gistConfig';
 import type { MatchmakerGame } from '../types.ts';
 
 const MOCK_GAME: MatchmakerGame = {

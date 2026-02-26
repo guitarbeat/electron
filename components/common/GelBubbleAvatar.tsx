@@ -1,9 +1,9 @@
 import React from 'react';
-import { User } from '../types';
+import { User } from '../../types';
 import ImageWithFallback from './ImageWithFallback';
-import { userImageSources } from '../config/imageConfig';
+import { userImageSources } from '../../config/imageConfig';
 import { LockIcon } from './icons';
-import { typography } from '../design-system/tokens';
+import { typography } from '../../design-system/tokens';
 
 interface GelBubbleAvatarProps {
   user: User;

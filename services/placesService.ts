@@ -1,7 +1,7 @@
-import { GIST_MESSAGES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
-import { Message } from '../types';
+import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
+import type { Place } from '../types';
 
-export const getMessages = async (): Promise<Message[]> => {
+export const getPlaces = async (): Promise<Place[]> => {
   try {
     const response = await fetch(GIST_API_URL, {
       headers: {
@@ -16,25 +16,21 @@ export const getMessages = async (): Promise<Message[]> => {
     }
 
     const gist = await response.json();
-    const file = gist.files[GIST_MESSAGES_FILENAME];
+    const file = gist.files[GIST_PLACES_FILENAME];
 
-    if (!file) {
-      // If the file doesn't exist yet, return an empty array.
+    if (!file || !file.content) {
       return [];
     }
 
-    if (!file.content) {
-      return [];
-    }
-
-    return JSON.parse(file.content);
+    const places = JSON.parse(file.content);
+    return Array.isArray(places) ? places : [];
   } catch (error) {
-    console.error('Error fetching messages from Gist:', error);
+    console.error('Error fetching places from Gist:', error);
     throw error;
   }
 };
 
-export const saveMessages = async (messages: Message[]): Promise<void> => {
+export const savePlaces = async (places: Place[]): Promise<void> => {
   try {
     const response = await fetch(GIST_API_URL, {
       method: 'PATCH',
@@ -44,8 +40,8 @@ export const saveMessages = async (messages: Message[]): Promise<void> => {
       },
       body: JSON.stringify({
         files: {
-          [GIST_MESSAGES_FILENAME]: {
-            content: JSON.stringify(messages, null, 2),
+          [GIST_PLACES_FILENAME]: {
+            content: JSON.stringify(places, null, 2),
           },
         },
       }),
@@ -57,7 +53,7 @@ export const saveMessages = async (messages: Message[]): Promise<void> => {
       throw new Error(`GitHub API responded with ${response.status}`);
     }
   } catch (error) {
-    console.error('Error saving messages to Gist:', error);
+    console.error('Error saving places to Gist:', error);
     throw error;
   }
 };

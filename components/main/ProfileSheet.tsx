@@ -4,8 +4,8 @@ import { usePins } from '../../hooks/usePins';
 import BottomSheet from '../ui/BottomSheet';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import PinDialog from '../PinDialog';
-import UserSelection from '../UserSelection';
+import PinDialog from '../common/PinDialog';
+import UserSelection from '../common/UserSelection';
 import { spacing, colors, typography, radius } from '../../design-system/tokens';
 
 interface ProfileSheetProps {

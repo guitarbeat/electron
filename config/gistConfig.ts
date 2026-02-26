@@ -40,6 +40,9 @@ const GIST_SPIN_HISTORY_FILENAME = 'spinhistory.json';
 // The filename for the matchmaker game data.
 const GIST_MATCHMAKER_FILENAME = 'matchmaker.json';
 
+// The filename for places we want to go.
+const GIST_PLACES_FILENAME = 'places.json';
+
 export {
   GIST_TOKEN,
   GIST_ID,
@@ -52,4 +55,5 @@ export {
   GIST_DAILY_SPIN_FILENAME,
   GIST_SPIN_HISTORY_FILENAME,
   GIST_MATCHMAKER_FILENAME,
+  GIST_PLACES_FILENAME,
 };

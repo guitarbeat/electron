@@ -6,7 +6,7 @@ import SnakeGame from '../snake/SnakeGame';
 import Matchmaker from '../matchmaker/Matchmaker';
 import SpinWheel from '../extras/spin-wheel/SpinWheel';
 import { useMovies } from '../../hooks/useMovies';
-import { DiceIcon } from '../icons';
+import { DiceIcon } from '../common/icons';
 import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
 
 /** Shared card style for all extras sections (spin, games, quiz) */
