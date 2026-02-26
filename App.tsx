@@ -9,8 +9,8 @@ import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
-import PlacesList from './components/places/PlacesList';
 import Dashboard from './components/main/Dashboard';
+import PlacesList from './components/places/PlacesList';
 import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 
@@ -38,7 +38,7 @@ const App: React.FC = () => {
     setShowQuiz(false);
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
-    setActiveTab('queue');
+    setActiveTab('home');
   };
 
   const handleRetakeQuiz = () => {
@@ -56,7 +56,11 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Dashboard onNavigate={setActiveTab} />;
+        return (
+          <div className="animate-fade-in">
+            <Dashboard onNavigate={setActiveTab} />
+          </div>
+        );
       case 'queue':
         return <Watchlist />;
       case 'spin':
