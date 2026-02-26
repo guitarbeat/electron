@@ -67,17 +67,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+    <div
+      className="animate-fade-in"
+      style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}
+    >
       {/* Movies Section */}
       <div style={sectionCardStyle} className="retro-card-shine">
         <p style={sectionLabel}>✦ Up Next</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.md,
+          }}
+        >
           <h2 style={sectionTitleStyle}>
             <span style={{ marginRight: spacing.sm }}>🎬</span>
             What to watch
           </h2>
-          <Button variant="ghost" size="sm" onClick={() => onNavigate('queue')}
-            style={{ color: colors.accent, opacity: 0.8 }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate('queue')}
+            style={{ color: colors.accent, opacity: 0.8 }}
+          >
             See all →
           </Button>
         </div>
@@ -91,7 +105,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             ))}
           </div>
         ) : unwatchedMovies.length === 0 ? (
-          <p style={{ margin: 0, color: colors.textTertiary, fontSize: typography.fontSize.sm, textAlign: 'center', padding: spacing.lg }}>
+          <p
+            style={{
+              margin: 0,
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.sm,
+              textAlign: 'center',
+              padding: spacing.lg,
+            }}
+          >
             ✧ Your queue is empty — add movies to get started! ✧
           </p>
         ) : (
@@ -102,21 +124,50 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   <img
                     src={movie.posterUrl}
                     alt=""
-                    style={{ width: 28, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0, border: `1px solid ${colors.accent}20` }}
+                    style={{
+                      width: 28,
+                      height: 40,
+                      objectFit: 'cover',
+                      borderRadius: 4,
+                      flexShrink: 0,
+                      border: `1px solid ${colors.accent}20`,
+                    }}
                   />
                 )}
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span
+                  style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {movie.title}
                 </span>
                 {movie.year && (
-                  <span style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs, flexShrink: 0, opacity: 0.7 }}>
+                  <span
+                    style={{
+                      color: colors.textTertiary,
+                      fontSize: typography.fontSize.xs,
+                      flexShrink: 0,
+                      opacity: 0.7,
+                    }}
+                  >
                     {movie.year}
                   </span>
                 )}
               </div>
             ))}
             {unwatchedMovies.length > MAX_PREVIEW && (
-              <p style={{ margin: 0, color: colors.accent, fontSize: typography.fontSize.xs, textAlign: 'center', opacity: 0.5 }}>
+              <p
+                style={{
+                  margin: 0,
+                  color: colors.accent,
+                  fontSize: typography.fontSize.xs,
+                  textAlign: 'center',
+                  opacity: 0.5,
+                }}
+              >
                 +{unwatchedMovies.length - MAX_PREVIEW} more
               </p>
             )}
@@ -125,20 +176,34 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       </div>
 
       {/* Places Section */}
-      <div style={{
-        ...sectionCardStyle,
-        borderTop: `2px solid ${colors.secondary}35`,
-        background:
-          'radial-gradient(ellipse at 90% -10%, rgba(135, 206, 250, 0.06) 0%, transparent 40%), linear-gradient(165deg, rgba(23, 33, 58, 0.8) 0%, rgba(12, 18, 35, 0.85) 100%)',
-      }} className="retro-card-shine">
+      <div
+        style={{
+          ...sectionCardStyle,
+          borderTop: `2px solid ${colors.secondary}35`,
+          background:
+            'radial-gradient(ellipse at 90% -10%, rgba(135, 206, 250, 0.06) 0%, transparent 40%), linear-gradient(165deg, rgba(23, 33, 58, 0.8) 0%, rgba(12, 18, 35, 0.85) 100%)',
+        }}
+        className="retro-card-shine"
+      >
         <p style={{ ...sectionLabel, color: colors.secondary }}>✦ Explore</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.md,
+          }}
+        >
           <h2 style={sectionTitleStyle}>
             <span style={{ marginRight: spacing.sm }}>📍</span>
             Where to go
           </h2>
-          <Button variant="ghost" size="sm" onClick={() => onNavigate('places')}
-            style={{ color: colors.secondary, opacity: 0.8 }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate('places')}
+            style={{ color: colors.secondary, opacity: 0.8 }}
+          >
             See all →
           </Button>
         </div>
@@ -152,19 +217,50 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             ))}
           </div>
         ) : unvisitedPlaces.length === 0 ? (
-          <p style={{ margin: 0, color: colors.textTertiary, fontSize: typography.fontSize.sm, textAlign: 'center', padding: spacing.lg }}>
+          <p
+            style={{
+              margin: 0,
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.sm,
+              textAlign: 'center',
+              padding: spacing.lg,
+            }}
+          >
             ✧ No places yet — add spots you want to visit! ✧
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
             {unvisitedPlaces.slice(0, MAX_PREVIEW).map((place: Place) => (
-              <div key={place.id} style={{ ...itemStyle, flexDirection: 'column', alignItems: 'stretch', gap: spacing.xs }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, minWidth: 0 }}>
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div
+                key={place.id}
+                style={{
+                  ...itemStyle,
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: spacing.xs,
+                }}
+              >
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, minWidth: 0 }}
+                >
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {place.name}
                   </span>
                   {place.addedBy && (
-                    <span style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs, flexShrink: 0 }}>
+                    <span
+                      style={{
+                        color: colors.textTertiary,
+                        fontSize: typography.fontSize.xs,
+                        flexShrink: 0,
+                      }}
+                    >
                       by {place.addedBy}
                     </span>
                   )}
@@ -186,7 +282,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
             ))}
             {unvisitedPlaces.length > MAX_PREVIEW && (
-              <p style={{ margin: 0, color: colors.secondary, fontSize: typography.fontSize.xs, textAlign: 'center', opacity: 0.5 }}>
+              <p
+                style={{
+                  margin: 0,
+                  color: colors.secondary,
+                  fontSize: typography.fontSize.xs,
+                  textAlign: 'center',
+                  opacity: 0.5,
+                }}
+              >
                 +{unvisitedPlaces.length - MAX_PREVIEW} more
               </p>
             )}

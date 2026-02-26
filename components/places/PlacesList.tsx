@@ -24,15 +24,8 @@ type PlaceFilter = 'want' | 'visited';
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
-  const {
-    places,
-    isLoading,
-    isSubmitting,
-    addPlace,
-    removePlace,
-    markVisited,
-    markUnvisited,
-  } = usePlaces(currentUser);
+  const { places, isLoading, isSubmitting, addPlace, removePlace, markVisited, markUnvisited } =
+    usePlaces(currentUser);
 
   const [filter, setFilter] = useState<PlaceFilter>('want');
   const [nameInput, setNameInput] = useState('');
@@ -47,9 +40,8 @@ const PlacesList: React.FC = () => {
 
   const wantCount = places.filter((p) => !p.visitedAt).length;
   const visitedCount = places.filter((p) => p.visitedAt).length;
-  const filtered = filter === 'want'
-    ? places.filter((p) => !p.visitedAt)
-    : places.filter((p) => p.visitedAt);
+  const filtered =
+    filter === 'want' ? places.filter((p) => !p.visitedAt) : places.filter((p) => p.visitedAt);
 
   const handleAdd = useCallback(
     async (e: React.FormEvent) => {
@@ -92,25 +84,46 @@ const PlacesList: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+    <div
+      style={{
+        maxWidth: 960,
+        margin: '0 auto',
+        padding: spacing.md,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.lg,
+      }}
+    >
       <h1 style={{ ...sectionTitleStyle, marginBottom: spacing.xs }}>Places we want to go</h1>
       <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
         Add places you’d like to visit together. Mark them when you’ve been.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-        <h2 style={{ margin: 0, fontSize: typography.fontSize.base, color: colors.textSecondary, fontWeight: 600 }}>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: typography.fontSize.base,
+            color: colors.textSecondary,
+            fontWeight: 600,
+          }}
+        >
           📍 Map
         </h2>
         <PlacesMap places={places} />
-        {places.length > 0 && places.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number').length === 0 && (
-          <p style={{ margin: 0, color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
-            Add places using the search below to see them on the map.
-          </p>
-        )}
+        {places.length > 0 &&
+          places.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number').length ===
+            0 && (
+            <p style={{ margin: 0, color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
+              Add places using the search below to see them on the map.
+            </p>
+          )}
       </div>
 
-      <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+      <form
+        onSubmit={handleAdd}
+        style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}
+      >
         <Input
           ref={nameInputRef}
           value={nameInput}
@@ -147,7 +160,16 @@ const PlacesList: React.FC = () => {
         onSelect={(id) => setFilter(id as PlaceFilter)}
       />
 
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+      <ul
+        style={{
+          listStyle: 'none',
+          margin: 0,
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.sm,
+        }}
+      >
         {filtered.length === 0 && (
           <li style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
             {filter === 'want' ? 'No places yet. Add one above.' : 'No visited places yet.'}
@@ -166,7 +188,14 @@ const PlacesList: React.FC = () => {
                 gap: spacing.xs,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.sm }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: spacing.sm,
+                }}
+              >
                 <div>
                   <span style={{ fontWeight: 600, color: colors.textPrimary }}>{place.name}</span>
                   {place.visitedAt && (
@@ -191,11 +220,21 @@ const PlacesList: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', gap: spacing.xs }}>
                   {place.visitedAt ? (
-                    <Button size="sm" variant="ghost" onClick={() => markUnvisited(place.id)} disabled={isSubmitting}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => markUnvisited(place.id)}
+                      disabled={isSubmitting}
+                    >
                       Mark unvisited
                     </Button>
                   ) : (
-                    <Button size="sm" variant="ghost" onClick={() => markVisited(place.id)} disabled={isSubmitting}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => markVisited(place.id)}
+                      disabled={isSubmitting}
+                    >
                       Mark visited
                     </Button>
                   )}
@@ -212,7 +251,15 @@ const PlacesList: React.FC = () => {
                 </div>
               </div>
               {place.notes && (
-                <p style={{ margin: 0, fontSize: typography.fontSize.sm, color: colors.textSecondary }}>{place.notes}</p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: typography.fontSize.sm,
+                    color: colors.textSecondary,
+                  }}
+                >
+                  {place.notes}
+                </p>
               )}
             </Card>
           </li>
