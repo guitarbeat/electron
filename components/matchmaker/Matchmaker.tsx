@@ -180,28 +180,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
   if (!game) {
     return (
-      <div style={{ textAlign: 'center', padding: spacing.xl }}>
-        <h2
-          style={{
-            color: colors.textPrimary,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            marginBottom: spacing.md,
-            fontSize: typography.fontSize['2xl'],
-            textShadow: shadows.textGlow,
-          }}
-        >
-          Matchmaker
-        </h2>
-        <div style={{ fontSize: '3rem', marginBottom: spacing.md }}>💖 🎬 💖</div>
-        <p
-          style={{
-            color: colors.textSecondary,
-            marginBottom: spacing.xl,
-            maxWidth: '500px',
-            margin: '0 auto 2rem',
-          }}
-        >
-          Pick a vibe and swipe on 10 random movies. If you both like one, it's a match!
+      <div style={{ textAlign: 'center', padding: spacing.sm }}>
+        <p style={{ color: colors.textSecondary, margin: '0 auto', marginBottom: spacing.lg, maxWidth: 420, fontSize: typography.fontSize.sm }}>
+          Pick a vibe and swipe on 10 movies. If you both like one, it's a match.
         </p>
 
         <div

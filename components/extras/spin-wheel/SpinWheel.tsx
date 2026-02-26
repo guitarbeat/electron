@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Movie, DailySpin } from '../../../types';
 import { useUser } from '../../../context/UserContext';
 import { CheckIcon, SyncIcon } from '../../icons';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
+import MinigameModal from '../../ui/MinigameModal';
 import { RotaryDialCarousel } from '../../watchlist/components/RotaryDialCarousel';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { upsertTodaySpinEntry } from '../../../services/spinHistoryService';
@@ -107,71 +107,33 @@ const SpinWheel: React.FC<{
     }
   };
 
-  // Lock body scroll when modal is open to prevent background scroll / layout shift
-  useEffect(() => {
-    if (!isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
-  return createPortal(
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(0,0,0,0.9)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      }}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Movie spin wheel"
-    >
+  return (
+    <MinigameModal isOpen={isOpen} onClose={onClose} title="Spin" ariaLabel="Movie spin wheel">
+      {/* Main Dial */}
       <div
         style={{
-          position: 'relative',
           width: '100%',
-          height: '100%',
+          flex: 1,
+          minHeight: 0,
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
+          opacity: status === 'result' ? 0.3 : 1,
+          pointerEvents: status === 'result' ? 'none' : 'auto',
+          filter: status === 'result' ? 'blur(4px)' : 'none',
+          transition: 'opacity 0.3s ease, filter 0.3s ease',
         }}
-        onClick={(e) => e.stopPropagation()}
       >
-        {/* Main Dial Component */}
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: status === 'result' ? 0.3 : 1,
-            pointerEvents: status === 'result' ? 'none' : 'auto',
-            filter: status === 'result' ? 'blur(4px)' : 'none',
-            transition: 'opacity 0.3s ease, filter 0.3s ease',
-          }}
-        >
-          <RotaryDialCarousel
-            movies={movies}
-            currentUser={currentUser}
-            mode={hasSpunToday ? 'browse' : 'spin'}
-            onSpinComplete={handleSpinResult}
-            style={{ width: '100%', height: '100%' }}
-          />
-        </div>
+        <RotaryDialCarousel
+          movies={movies}
+          currentUser={currentUser}
+          mode={hasSpunToday ? 'browse' : 'spin'}
+          onSpinComplete={handleSpinResult}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
 
         {/* Result Overlay */}
         {status === 'result' && selectedMovie && (
@@ -333,54 +295,7 @@ const SpinWheel: React.FC<{
             </div>
           </div>
         )}
-
-        {/* Close button for non-result state */}
-        {status !== 'result' && status !== 'spinning' && (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close spin wheel"
-            style={{
-              position: 'absolute',
-              top: spacing.xl,
-              right: spacing.xl,
-              width: 44,
-              height: 44,
-              padding: spacing.sm,
-              borderRadius: '50%',
-              background: 'rgba(0,0,0,0.2)',
-              color: 'rgba(255,255,255,0.7)',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10000,
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-              e.currentTarget.style.color = '#fff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
-              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-            }}
-          >
-            <svg width={24} height={24} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        )}
-      </div>
-    </div>,
-    document.body
+    </MinigameModal>
   );
 };
 
