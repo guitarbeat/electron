@@ -8,7 +8,7 @@ import {
   hasSpunToday,
   getTodaySpin,
 } from './dailySpinService.ts';
-import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../config/gistConfig';
+import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../config/gistConfig.ts';
 import type { DailySpin } from '../types.ts';
 
 // A fixed Wednesday for testing
@@ -49,13 +49,34 @@ test('dailySpinService', async (t) => {
           [GIST_DAILY_SPIN_FILENAME]: content ? { content } : undefined,
         },
       }),
-      { status: 200 }
+      {
+        status: 200,
+        headers: { ETag: 'test-etag' },
+      }
     );
   };
 
   // --- getDailySpin ---
   await t.test('getDailySpin returns parsed data when file exists', async () => {
     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(JSON.stringify(mockSpin)));
+
+    const result = await getDailySpin();
+    assert.deepEqual(result, mockSpin);
+  });
+
+  await t.test('getDailySpin uses 304 Not Modified cache', async () => {
+    // First call: returns 200 and sets ETag
+    fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(JSON.stringify(mockSpin)));
+    await getDailySpin();
+
+    // Second call: returns 304 Not Modified
+    fetchMock.mock.mockImplementationOnce(async (url: string, options: RequestInit) => {
+      // Verify ETag was sent
+      const headers = options.headers as Record<string, string>;
+      assert.equal(headers['If-None-Match'], 'test-etag');
+
+      return new Response(null, { status: 304 });
+    });
 
     const result = await getDailySpin();
     assert.deepEqual(result, mockSpin);
