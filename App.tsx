@@ -172,16 +172,17 @@ const App: React.FC = () => {
       >
         <section
           aria-label="Profile selection"
-          className="animate-fade-in"
+          className="animate-fade-in retro-card-shine"
           style={{
             maxWidth: '980px',
             margin: `0 auto ${spacing.lg}`,
             padding: isMobile ? spacing.sm : spacing.md,
             borderRadius: spacing.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
+            border: `1px solid ${colors.accent}30`,
+            borderTop: `2px solid ${colors.accent}50`,
             background:
-              'radial-gradient(circle at 10% 0%, rgba(255, 105, 180, 0.15), rgba(255, 105, 180, 0)), linear-gradient(145deg, rgba(23, 33, 58, 0.76), rgba(14, 23, 43, 0.82))',
-            boxShadow: '0 14px 28px rgba(0,0,0,0.3)',
+              'radial-gradient(ellipse at 20% -20%, rgba(255, 105, 180, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 120%, rgba(135, 206, 250, 0.08) 0%, transparent 50%), linear-gradient(165deg, rgba(23, 33, 58, 0.85) 0%, rgba(10, 16, 32, 0.92) 100%)',
+            boxShadow: `0 14px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 30px rgba(255, 105, 180, 0.06)`,
           }}
         >
           <p
@@ -189,29 +190,33 @@ const App: React.FC = () => {
               margin: 0,
               marginBottom: spacing.sm,
               textAlign: 'center',
-              color: colors.textTertiary,
+              color: colors.accent,
               fontSize: typography.fontSize.xs,
               textTransform: 'uppercase',
-              letterSpacing: '0.07em',
+              letterSpacing: '0.12em',
+              opacity: 0.7,
             }}
           >
-            Who&apos;s watching
+            ✦ Who&apos;s watching ✦
           </p>
           <UserSelection />
+          <hr className="retro-divider" />
         </section>
 
         {/* Main Navigation Panel */}
         <div
           style={{
-            background: 'rgba(23, 33, 58, 0.5)',
-            backdropFilter: 'blur(12px)',
+            background: 'linear-gradient(180deg, rgba(20, 30, 55, 0.6) 0%, rgba(15, 22, 42, 0.5) 100%)',
+            backdropFilter: 'blur(16px)',
             borderRadius: spacing.md,
-            border: `1px solid ${colors.borderSecondary}25`,
+            border: `1px solid ${colors.borderSecondary}20`,
+            borderBottom: `2px solid ${colors.accent}18`,
             marginBottom: spacing.md,
             overflowX: 'auto',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
+            boxShadow: `0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)`,
           }}
         >
           <style>{`
