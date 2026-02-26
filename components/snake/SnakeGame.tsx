@@ -326,44 +326,16 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         }}
         onAnimationEnd={() => setShake(0)}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.sm,
-            gap: spacing.sm,
-          }}
-        >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-            <h2
-              style={{
-                margin: 0,
-                fontSize: typography.fontSize.lg,
-                color: colors.textPrimary,
-              }}
-            >
-              Snake
-            </h2>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="snake-fullscreen-btn"
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              style={{
-                padding: '4px 8px',
-                fontSize: '12px',
-                border: `1px solid ${colors.borderSecondary}30`,
-              }}
-            >
+            {!isEmbedded && (
+              <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>Snake</h2>
+            )}
+            <Button size="sm" variant="ghost" className="snake-fullscreen-btn" onClick={() => setIsFullscreen(!isFullscreen)} style={{ padding: '4px 8px', fontSize: 12, border: `1px solid ${colors.borderSecondary}30` }}>
               {isFullscreen ? 'Exit Full' : 'Fullscreen'}
             </Button>
           </div>
-          {!isEmbedded && !isFullscreen && (
-            <Button size="sm" variant="ghost" onClick={handleMinimize}>
-              Hide
-            </Button>
-          )}
+          {!isEmbedded && !isFullscreen && <Button size="sm" variant="ghost" onClick={handleMinimize}>Hide</Button>}
         </div>
 
         <div
