@@ -14,12 +14,19 @@ import { WatchlistProps, SortMode, ContentTab } from './types';
 import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
 import { spacing, colors, radius, typography } from '../../design-system/tokens';
+import './Watchlist.css';
 
 const TABS: { label: string; value: ContentTab }[] = [
   { label: 'All', value: 'all' },
   { label: 'Queue', value: 'to-watch' },
   { label: 'Watched', value: 'watched' },
   { label: 'Suggestions', value: 'suggestions' },
+];
+
+const SORT_OPTIONS: { label: string; value: SortMode }[] = [
+  { label: 'Recent', value: 'recent' },
+  { label: 'A–Z', value: 'title' },
+  { label: 'Year', value: 'year' },
 ];
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
@@ -387,184 +394,208 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {/* --- Controls Section (inside unified panel) --- */}
+      {/* --- Controls: tabs, search, sort (mobile-first) --- */}
       <div
+        role="region"
+        aria-label="Watchlist filters and sort"
         style={{
-          padding: isMobile ? spacing.sm : spacing.md,
           marginBottom: spacing.xl,
           marginTop: `-${spacing.md}`,
+          padding: isMobile ? spacing.sm : spacing.md,
+          background: 'rgba(23, 33, 58, 0.55)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: `0 0 ${radius.lg} ${radius.lg}`,
+          border: `1px solid ${colors.borderSecondary}20`,
+          borderTop: 'none',
+          fontFamily: typography.fontFamily.body.join(', '),
           display: 'flex',
           flexDirection: 'column',
-          gap: spacing.md,
-          background: 'rgba(23, 33, 58, 0.5)',
-          backdropFilter: 'blur(12px)',
-          borderRadius: `0 0 ${spacing.md} ${spacing.md}`,
-          border: `1px solid ${colors.borderSecondary}25`,
-          borderTop: `1px solid ${colors.borderSecondary}15`,
-          fontFamily: typography.fontFamily.body.join(', '),
+          gap: isMobile ? spacing.md : spacing.lg,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >
+        {/* Tabs: horizontal scroll, pill style, 44px min touch target */}
         <div
           style={{
             display: 'flex',
-            gap: spacing.sm,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
+            gap: spacing.xs,
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            paddingBottom: spacing.xs,
+            minHeight: '44px',
             alignItems: 'center',
-            width: '100%',
           }}
+          className="watchlist-tabs-scroll"
         >
-          <div
-            style={{
-              display: 'flex',
-              gap: spacing.xs,
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              flex: isMobile ? '1 1 100%' : '0 0 auto',
-              paddingBottom: isMobile ? spacing.xs : 0,
-            }}
-          >
-            {TABS.map((tab) => (
+          {TABS.map((tab) => {
+            const isActive = contentTab === tab.value;
+            const count = tabCounts[tab.value] ?? 0;
+            return (
               <button
                 key={tab.value}
+                type="button"
                 onClick={() => setContentTab(tab.value)}
+                aria-pressed={isActive}
+                aria-label={`${tab.label}, ${count} items`}
                 style={{
-                  padding: `${spacing.xs} ${spacing.md}`,
+                  flex: '0 0 auto',
+                  minHeight: '44px',
+                  minWidth: isMobile ? '72px' : '80px',
+                  padding: `0 ${isMobile ? spacing.sm : spacing.md}`,
                   borderRadius: radius.full,
-                  border: `1px solid ${contentTab === tab.value ? colors.accent : 'transparent'}`,
-                  background:
-                    contentTab === tab.value ? colors.accent : 'rgba(255, 255, 255, 0.05)',
-                  color: contentTab === tab.value ? '#000' : colors.textSecondary,
+                  border: `2px solid ${isActive ? colors.accent : 'transparent'}`,
+                  background: isActive
+                    ? `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentLight} 100%)`
+                    : 'rgba(255,255,255,0.06)',
+                  color: isActive ? '#1a1a2e' : colors.textSecondary,
                   fontSize: typography.fontSize.xs,
-                  fontWeight: '700',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'all 0.2s ease',
                   fontFamily: typography.fontFamily.heading.join(', '),
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.06em',
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: spacing.xs,
+                  boxShadow: isActive ? '0 0 16px rgba(255,105,180,0.35)' : 'none',
                 }}
               >
-                {tab.label}
+                <span>{tab.label}</span>
                 <span
                   style={{
-                    fontSize: '10px',
-                    fontWeight: '800',
-                    background:
-                      contentTab === tab.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
-                    padding: '2px 8px',
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    background: isActive ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.1)',
+                    padding: '2px 6px',
                     borderRadius: radius.sm,
-                    minWidth: '20px',
+                    minWidth: '18px',
                     textAlign: 'center',
                   }}
                 >
-                  {tabCounts[tab.value] || 0}
+                  {count}
                 </span>
               </button>
-            ))}
-          </div>
+            );
+          })}
+        </div>
 
+        {/* Search + Add: full-width bar */}
+        <form
+          onSubmit={handleAddAction}
+          style={{
+            display: 'flex',
+            alignItems: 'stretch',
+            gap: 0,
+            background: colors.surfaceElevated,
+            borderRadius: radius.lg,
+            border: `1px solid ${colors.borderSecondary}35`,
+            overflow: 'hidden',
+            minHeight: '48px',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+          }}
+        >
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search or add a movie…"
+            aria-label="Search or add a movie"
+            style={{
+              minHeight: '48px',
+              flex: 1,
+              border: 'none',
+              background: 'transparent',
+              paddingLeft: spacing.md,
+              paddingRight: spacing.sm,
+              fontSize: typography.fontSize.sm,
+            }}
+          />
+          {searchQuery.trim() ? (
+            <Button
+              type="submit"
+              variant="secondary"
+              size="sm"
+              disabled={isAdding || isSuggesting}
+              isLoading={isAdding || isSuggesting}
+              style={{
+                minHeight: '48px',
+                minWidth: '56px',
+                borderRadius: 0,
+                borderLeft: `1px solid ${colors.borderSecondary}40`,
+              }}
+              title="Add or suggest movie"
+              aria-label="Add or suggest movie"
+            >
+              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+            </Button>
+          ) : (
+            <div
+              style={{
+                padding: `0 ${spacing.md}`,
+                display: 'flex',
+                alignItems: 'center',
+                color: colors.textTertiary,
+                opacity: 0.6,
+              }}
+              aria-hidden
+            >
+              <PlusIcon style={{ width: 20, height: 20 }} />
+            </div>
+          )}
+        </form>
+
+        {/* Sort: chip group (one-tap, no dropdown) */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: spacing.xs,
+            alignItems: 'center',
+          }}
+          role="group"
+          aria-label="Sort by"
+        >
+          {SORT_OPTIONS.map((opt) => {
+            const isActive = sortMode === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setSortMode(opt.value)}
+                aria-pressed={isActive}
+                aria-label={`Sort by ${opt.label}`}
+                style={{
+                  minHeight: '40px',
+                  padding: `0 ${spacing.sm}`,
+                  borderRadius: radius.md,
+                  border: `1px solid ${isActive ? colors.secondary : colors.borderSecondary}40`,
+                  background: isActive ? colors.secondaryMuted : 'rgba(255,255,255,0.04)',
+                  color: isActive ? colors.secondary : colors.textTertiary,
+                  fontSize: typography.fontSize.xs,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontFamily: typography.fontFamily.body.join(', '),
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {suggestionError && (
           <div
             style={{
-              display: 'flex',
-              gap: spacing.sm,
-              flex: '1 1 auto',
-              minWidth: isMobile ? '100%' : '0',
-              flexDirection: isMobile ? 'column' : 'row',
-              alignItems: isMobile ? 'stretch' : 'center',
+              color: colors.error,
+              fontSize: typography.fontSize.xs,
+              marginTop: -spacing.xs,
             }}
           >
-            <form
-              onSubmit={handleAddAction}
-              style={{
-                flex: 1,
-                display: 'flex',
-                gap: 0,
-                alignItems: 'center',
-                background: colors.surfaceElevated,
-                borderRadius: radius.md,
-                border: `1px solid ${colors.borderSecondary}40`,
-                overflow: 'hidden',
-                transition: 'border-color 0.2s ease',
-              }}
-            >
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search or add a movie..."
-                aria-label="Search or add a movie"
-                style={{
-                  height: '48px',
-                  flex: 1,
-                  border: 'none',
-                  background: 'transparent',
-                  paddingLeft: spacing.md,
-                  fontSize: typography.fontSize.sm,
-                }}
-              />
-              {searchQuery.trim() ? (
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  size="sm"
-                  disabled={isAdding || isSuggesting}
-                  isLoading={isAdding || isSuggesting}
-                  style={{
-                    height: '48px',
-                    minWidth: '60px',
-                    borderRadius: 0,
-                    borderLeft: `1px solid ${colors.borderSecondary}40`,
-                  }}
-                  title="Add or Suggest"
-                >
-                  {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-                </Button>
-              ) : (
-                <div style={{ paddingRight: spacing.md, color: colors.textTertiary, opacity: 0.5 }}>
-                  <PlusIcon style={{ width: '18px', height: '18px' }} />
-                </div>
-              )}
-            </form>
-
-            <select
-              value={sortMode}
-              onChange={(e) => setSortMode(e.target.value as SortMode)}
-              aria-label="Sort movies"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                height: '48px',
-                minWidth: isMobile ? '100%' : '160px',
-                flex: 1,
-                borderRadius: radius.md,
-                border: `1px solid ${colors.borderSecondary}40`,
-                backgroundColor: colors.surfaceElevated,
-                color: colors.textPrimary,
-                padding: `0 ${spacing.sm}`,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                fontSize: '11px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                appearance: 'none',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(colors.textSecondary)}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-                paddingRight: '32px',
-              }}
-            >
-              <option value="recent">Recently Added</option>
-              <option value="title">Title A-Z</option>
-              <option value="year">Year (Newest)</option>
-            </select>
-          </div>
-        </div>
-        {suggestionError && (
-          <div style={{ color: colors.error, fontSize: '12px', marginTop: spacing.xs }}>
             {suggestionError}
           </div>
         )}

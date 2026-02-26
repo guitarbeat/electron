@@ -188,7 +188,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
-                  <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">
+                  <div className="rdc-no-poster">
                     <span>No Poster</span>
                   </div>
                 )}
@@ -273,14 +273,19 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
               {/* Status Indicators (Avatars) */}
               <div className="rdc-status-container" style={{ top: isMobile ? '-20px' : '-30px' }}>
                 {movie.watchedBy.length > 0 ? (
-                  <div className="flex -space-x-3">
-                    {movie.watchedBy.map((user) => (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {movie.watchedBy.map((user, idx) => (
                       <div
                         key={user}
-                        className="relative rounded-full flex items-center justify-center transform hover:-translate-y-1 transition-transform duration-300"
                         style={{
-                          width: isMobile ? '36px' : '48px',
-                          height: isMobile ? '36px' : '48px',
+                          marginLeft: idx === 0 ? 0 : -12,
+                          position: 'relative',
+                          width: isMobile ? 36 : 48,
+                          height: isMobile ? 36 : 48,
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                           background: `linear-gradient(135deg, rgba(147, 112, 219, 0.8) 0%, rgba(100, 80, 160, 0.8) 100%)`,
                           boxShadow: `0 4px 12px rgba(0, 0, 0, 0.4), 0 0 10px ${colors.accent}40`,
                           border: '2px solid rgba(255, 255, 255, 0.8)',
@@ -360,14 +365,18 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
             <button
               type="button"
               onClick={() => onMovieClick?.(activeMovie)}
-              className="rounded-full font-bold uppercase tracking-wide transition-all hover:scale-105 active:scale-95 cursor-pointer"
               style={{
                 padding: isMobile ? '10px 20px' : '12px 32px',
                 fontSize: isMobile ? '11px' : '13px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                borderRadius: 9999,
                 background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
                 color: '#fff',
                 boxShadow: shadows.glow,
                 border: 'none',
+                cursor: 'pointer',
               }}
             >
               Select {activeMovie?.title}
@@ -415,11 +424,11 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
       )}
 
       {mode === 'spin' && !isSpinning && (
-        <div className="absolute bottom-10 left-0 right-0 flex justify-center z-50 pointer-events-auto">
+        <div className="rdc-spin-btn-wrap">
           <button
             type="button"
             onClick={handleRandomSpin}
-            className="transition-transform hover:scale-110 active:scale-95"
+            aria-label="Spin the wheel"
             style={{
               padding: '16px 48px',
               fontSize: '24px',
@@ -428,7 +437,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
               color: 'white',
               borderRadius: '9999px',
               boxShadow: shadows.glowStrong,
-              border: `2px solid rgba(255,255,255,0.2)`,
+              border: '2px solid rgba(255,255,255,0.2)',
               cursor: 'pointer',
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
@@ -440,15 +449,15 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
       )}
 
       {isSpinning && (
-        <div className="absolute bottom-20 left-0 right-0 text-center z-50 pointer-events-none">
+        <div className="rdc-spinning-text-wrap">
           <h2
-            className="animate-pulse"
             style={{
               color: colors.accent,
               textShadow: '0 0 20px rgba(0,0,0,0.8), 0 0 10px #ff69b4',
               fontSize: '2rem',
               fontFamily: typography.fontFamily.heading.join(','),
               margin: 0,
+              animation: 'rdc-pulse 1.5s ease-in-out infinite',
             }}
           >
             Spinning...
