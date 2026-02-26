@@ -13,8 +13,6 @@ interface RotaryDialCarouselProps {
   movies: Movie[];
   currentUser: User | null;
   onMovieClick?: (movie: Movie) => void;
-  mode?: 'browse' | 'spin';
-  onSpinComplete?: (movie: Movie) => void;
   style?: React.CSSProperties;
   className?: string;
 }
@@ -23,14 +21,11 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
   movies,
   currentUser: _currentUser,
   onMovieClick,
-  mode = 'browse',
-  onSpinComplete,
   style,
   className,
 }) => {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isSpinning, setIsSpinning] = useState(false);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
@@ -58,7 +53,6 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
   const activeMovie = movies[activeIndex] || movies[0];
 
   const handleStart = (clientX: number) => {
-    if (mode === 'spin' || isSpinning) return;
     setIsDragging(true);
     lastX.current = clientX;
     lastTime.current = Date.now();
@@ -69,7 +63,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
   };
 
   const handleMove = (clientX: number) => {
-    if (!isDragging || mode === 'spin' || isSpinning) return;
+    if (!isDragging) return;
     const deltaX = clientX - lastX.current;
 
     const sensitivity = 0.5;
@@ -80,7 +74,6 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
   };
 
   const handleEnd = () => {
-    if (mode === 'spin' || isSpinning) return;
     setIsDragging(false);
 
     const snapAngle = Math.round(rotation / anglePerCard) * anglePerCard;
@@ -88,44 +81,10 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
   };
 
   const spin = (direction: number) => {
-    if (mode === 'spin' || isSpinning) return;
     setRotation((prev) => prev + direction * anglePerCard);
   };
 
-  const handleRandomSpin = () => {
-    if (isSpinning || totalCards === 0) return;
-    setIsSpinning(true);
-
-    const winnerIndex = Math.floor(Math.random() * totalCards);
-    const winnerMovie = movies[winnerIndex];
-
-    const currentRot = rotation;
-    const targetAngleLocal = winnerIndex * anglePerCard;
-
-    const currentMod = ((currentRot % 360) + 360) % 360;
-    let diff = targetAngleLocal - currentMod;
-
-    if (diff <= 0) diff += 360;
-
-    // 6–8 full rotations with slot-machine style slowdown at the end
-    const fullSpins = 6 + Math.floor(Math.random() * 3);
-    const extraSpins = 360 * fullSpins;
-    const finalRotation = currentRot + diff + extraSpins;
-
-    setRotation(finalRotation);
-
-    // Duration 4.2s to match CSS ease-out curve (feels like wheel settling)
-    const spinDurationMs = 4200;
-    setTimeout(() => {
-      setIsSpinning(false);
-      if (onSpinComplete) {
-        onSpinComplete(winnerMovie);
-      }
-    }, spinDurationMs);
-  };
-
   const handleCardClick = (movie: Movie, index: number) => {
-    if (mode === 'spin' || isSpinning) return;
     const isActive = index === activeIndex;
     if (isActive) {
       onMovieClick?.(movie);
@@ -152,14 +111,10 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
       onTouchEnd={handleEnd}
     >
       <div
-        className={cn('rdc-wheel-track', isSpinning && 'rdc-wheel-track-spinning')}
+        className="rdc-wheel-track"
         style={{
           transform: `translate(-50%, -50%) rotateY(${-rotation}deg)`,
-          transition: isDragging
-            ? 'none'
-            : isSpinning
-              ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.12, 1)'
-              : 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          transition: isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
       >
         {movies.map((movie, index) => {
@@ -333,9 +288,7 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
         })}
       </div>
 
-      {mode === 'browse' && !isSpinning && (
-        <>
-          <div className="rdc-controls" style={{ bottom: isMobile ? '20px' : '0px' }}>
+      <div className="rdc-controls" style={{ bottom: isMobile ? '20px' : '0px' }}>
             <button
               type="button"
               onClick={() => spin(-1)}
@@ -417,63 +370,13 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
             </button>
           </div>
 
-          <div
-            className="rdc-hint"
-            style={{ color: colors.textTertiary, marginTop: isMobile ? '40px' : '16px' }}
-          >
-            <span className="rdc-hint-desktop">Scroll or drag to spin through your watchlist</span>
-            <span className="rdc-hint-mobile">Swipe to spin through your watchlist</span>
-          </div>
-        </>
-      )}
-
-      {mode === 'spin' && !isSpinning && (
-        <div className="rdc-spin-btn-wrap">
-          <button
-            type="button"
-            onClick={handleRandomSpin}
-            className="rdc-spin-btn"
-            aria-label="Spin the wheel"
-            style={{
-              padding: '16px 48px',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
-              color: 'white',
-              borderRadius: '9999px',
-              boxShadow: shadows.glowStrong,
-              border: '2px solid rgba(255,255,255,0.25)',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-            }}
-          >
-            <span className="rdc-spin-btn-inner">
-              <svg className="rdc-spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              SPIN!
-            </span>
-          </button>
-        </div>
-      )}
-
-      {isSpinning && (
-        <div className="rdc-spinning-text-wrap">
-          <div className="rdc-spinning-dots" aria-hidden>
-            <span /><span /><span />
-          </div>
-          <h2
-            className="rdc-spinning-title"
-            style={{
-              color: colors.accent,
-              fontFamily: typography.fontFamily.heading.join(','),
-            }}
-          >
-            Spinning...
-          </h2>
-        </div>
-      )}
+      <div
+        className="rdc-hint"
+        style={{ color: colors.textTertiary, marginTop: isMobile ? '40px' : '16px' }}
+      >
+        <span className="rdc-hint-desktop">Scroll or drag to spin through your watchlist</span>
+        <span className="rdc-hint-mobile">Swipe to spin through your watchlist</span>
+      </div>
     </div>
   );
 };

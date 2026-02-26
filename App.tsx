@@ -169,13 +169,14 @@ const App: React.FC = () => {
         id="main-content"
         className="main-container"
         style={{
-          paddingTop: 'clamp(0.75rem, 2vw, 1.25rem)',
+          paddingTop: 'clamp(1rem, 3vw, 1.5rem)',
           paddingBottom: 'clamp(1.25rem, 4vw, 3.5rem)',
           paddingLeft: 'clamp(0.75rem, 3vw, 1.5rem)',
           paddingRight: 'clamp(0.75rem, 3vw, 1.5rem)',
           maxWidth: layout.contentMaxWidth,
           margin: '0 auto',
           outline: 'none',
+          overflow: 'visible',
         }}
         tabIndex={-1}
       >
@@ -212,7 +213,17 @@ const App: React.FC = () => {
           <hr className="retro-divider" />
         </section>
 
-        {/* Main navigation - one liquid nav for all screen sizes */}
+        {/* Main navigation - vertical tiles, icon on top / label below, liquid wrap */}
+        <style>{`
+          .main-nav-tile:focus-visible {
+            outline: 2px solid ${colors.accent};
+            outline-offset: 2px;
+          }
+          .main-nav-tile:not([aria-current="page"]):hover {
+            background: rgba(255,255,255,0.08) !important;
+            box-shadow: 0 0 12px rgba(255,105,180,0.2);
+          }
+        `}</style>
         <div
           role="region"
           aria-label="Main navigation"
@@ -223,6 +234,7 @@ const App: React.FC = () => {
             backdropFilter: 'blur(12px)',
             borderRadius: spacing.md,
             border: `1px solid ${colors.borderSecondary}25`,
+            borderBottom: `2px solid ${colors.accent}30`,
             marginBottom: spacing.md,
           }}
         >
@@ -243,42 +255,41 @@ const App: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
+                  className="main-nav-tile"
                   onClick={() => setActiveTab(tab.id)}
                   aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: '1 1 0',
-                    minWidth: 'min(72px, 28vw)',
+                    minWidth: 'min(110px, 30vw)',
                     maxWidth: '200px',
                     minHeight: '44px',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.25rem',
-                    background: isActive
-                      ? `linear-gradient(135deg, ${colors.accent}25, ${colors.secondary}15)`
-                      : 'transparent',
-                    border: isActive ? `1px solid ${colors.accent}40` : '1px solid transparent',
+                    gap: '0.2rem',
+                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.04)',
+                    border: isActive ? `2px solid ${colors.accent}` : '1px solid transparent',
                     borderRadius: `calc(${spacing.md} - 4px)`,
-                    padding: '0.4em 0.5em',
-                    color: isActive ? colors.accent : colors.textSecondary,
+                    padding: '0.5em 0.75em',
+                    color: isActive ? '#1a1a2e' : colors.textSecondary,
                     fontFamily: typography.fontFamily.heading.join(', '),
                     fontSize: 'clamp(0.7rem, 1.2vw + 0.5rem, 0.95rem)',
                     fontWeight: isActive ? 700 : 500,
                     textTransform: 'uppercase',
-                    letterSpacing: typography.letterSpacing.wider,
+                    letterSpacing: typography.letterSpacing.normal,
                     cursor: 'pointer',
                     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    whiteSpace: 'normal',
-                    textAlign: 'center',
-                    wordBreak: 'break-word',
                     textShadow: isActive ? shadows.textGlow : 'none',
-                    boxShadow: isActive ? `0 0 16px ${colors.accent}20` : 'none',
+                    boxShadow: isActive ? shadows.glow : 'none',
                   }}
                 >
-                  <span style={{ fontSize: '1.1em', lineHeight: 1, flexShrink: 0 }} aria-hidden>
+                  <span style={{ fontSize: '1.25em', lineHeight: 1, flexShrink: 0 }} aria-hidden>
                     {tab.icon}
                   </span>
-                  <span style={{ lineHeight: 1.2 }}>{tab.label}</span>
+                  <span style={{ lineHeight: 1.1, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {tab.label}
+                  </span>
                 </button>
               );
             })}
