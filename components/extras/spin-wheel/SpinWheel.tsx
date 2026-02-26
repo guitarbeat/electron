@@ -18,7 +18,9 @@ const SpinWheel: React.FC<{
   onWinner: (movie: Movie) => void;
 }> = ({ isOpen, movies, onClose, onWinner }) => {
   const { currentUser } = useUser();
-  const [status, setStatus] = useState<'loading' | 'idle' | 'spinning' | 'saving' | 'result'>('idle');
+  const [status, setStatus] = useState<'loading' | 'idle' | 'spinning' | 'saving' | 'result'>(
+    'idle'
+  );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
@@ -56,7 +58,7 @@ const SpinWheel: React.FC<{
       }
     } catch (e) {
       console.error("Error checking today's spin:", e);
-      setSaveError('Could not load today\'s spin.');
+      setSaveError("Could not load today's spin.");
       setStatus('idle');
     }
   }, [movies]);
@@ -81,7 +83,9 @@ const SpinWheel: React.FC<{
       .finally(() => {
         if (isMounted) setHistoryLoading(false);
       });
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [isOpen, status]);
 
   const handleSpinResult = async (movie: Movie) => {
@@ -106,7 +110,14 @@ const SpinWheel: React.FC<{
       try {
         await upsertTodaySpinEntry(today, currentUser, movie.id, movie.title);
         setSpinHistory((prev) => [
-          { id: '', date: today, movieId: movie.id, movieTitle: movie.title, spunBy: currentUser, createdAt: dailySpin.createdAt },
+          {
+            id: '',
+            date: today,
+            movieId: movie.id,
+            movieTitle: movie.title,
+            spunBy: currentUser,
+            createdAt: dailySpin.createdAt,
+          },
           ...prev.slice(0, 6),
         ]);
       } catch (histErr) {
@@ -128,8 +139,16 @@ const SpinWheel: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <MinigameModal isOpen={isOpen} onClose={onClose} title="Spin" ariaLabel="Movie spin wheel" maxWidth={540} maxHeight={760}>
-      {(status === 'loading' || (status === 'idle' && saveError === "Could not load today's spin.")) && (
+    <MinigameModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Spin"
+      ariaLabel="Movie spin wheel"
+      maxWidth={540}
+      maxHeight={760}
+    >
+      {(status === 'loading' ||
+        (status === 'idle' && saveError === "Could not load today's spin.")) && (
         <div
           style={{
             position: 'absolute',
@@ -211,7 +230,8 @@ const SpinWheel: React.FC<{
             overflow: 'auto',
             padding: spacing.md,
             borderTop: `2px solid ${colors.accent}50`,
-            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%)',
+            background:
+              'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%)',
             pointerEvents: 'auto',
           }}
         >
@@ -239,7 +259,15 @@ const SpinWheel: React.FC<{
                 boxShadow: shadows.glowStrong,
               }}
             >
-              <div className="spin-result-glow" style={{ borderRadius: 'inherit', position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+              <div
+                className="spin-result-glow"
+                style={{
+                  borderRadius: 'inherit',
+                  position: 'absolute',
+                  inset: 0,
+                  pointerEvents: 'none',
+                }}
+              />
               <div
                 style={{
                   padding: spacing.xl,
@@ -303,7 +331,17 @@ const SpinWheel: React.FC<{
                     }}
                   >
                     <CheckIcon style={{ width: 20, height: 20, flexShrink: 0 }} />
-                    <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: typography.fontSize.sm, whiteSpace: 'nowrap' }}>Winner</span>
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontSize: typography.fontSize.sm,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Winner
+                    </span>
                   </div>
                   <h2
                     style={{
@@ -337,85 +375,110 @@ const SpinWheel: React.FC<{
                   gap: spacing.sm,
                 }}
               >
-                  {todaySpinData && (
+                {todaySpinData && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: spacing.md,
+                      fontSize: typography.fontSize.sm,
+                    }}
+                  >
                     <div
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: spacing.md,
-                        fontSize: typography.fontSize.sm,
+                        gap: spacing.sm,
+                        color: colors.textTertiary,
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, color: colors.textTertiary }}>
-                        <SyncIcon style={{ width: 14, height: 14 }} />
-                        <span>Synced</span>
-                      </div>
-                      <div
-                        style={{
-                          padding: '4px 12px',
-                          borderRadius: 9999,
-                          border: `1px solid ${todaySpinData.spunBy === currentUser ? 'rgba(52, 211, 153, 0.2)' : 'rgba(99, 102, 241, 0.2)'}`,
-                          background: todaySpinData.spunBy === currentUser ? 'rgba(52, 211, 153, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                          fontSize: 12,
-                          fontWeight: 500,
-                          color: todaySpinData.spunBy === currentUser ? colors.success : colors.tertiary,
-                        }}
-                      >
-                        Spun by {todaySpinData.spunBy === currentUser ? 'You' : todaySpinData.spunBy}
-                      </div>
+                      <SyncIcon style={{ width: 14, height: 14 }} />
+                      <span>Synced</span>
                     </div>
-                  )}
-
-                  {saveError && (
                     <div
                       style={{
-                        textAlign: 'center',
-                        padding: spacing.sm,
-                        borderRadius: 4,
-                        background: 'rgba(248, 113, 113, 0.1)',
-                        color: colors.error,
+                        padding: '4px 12px',
+                        borderRadius: 9999,
+                        border: `1px solid ${todaySpinData.spunBy === currentUser ? 'rgba(52, 211, 153, 0.2)' : 'rgba(99, 102, 241, 0.2)'}`,
+                        background:
+                          todaySpinData.spunBy === currentUser
+                            ? 'rgba(52, 211, 153, 0.1)'
+                            : 'rgba(99, 102, 241, 0.1)',
                         fontSize: 12,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: spacing.xs,
+                        fontWeight: 500,
+                        color:
+                          todaySpinData.spunBy === currentUser ? colors.success : colors.tertiary,
                       }}
                     >
-                      <span>{saveError}</span>
-                      <Button onClick={() => setSaveError(null)} variant="ghost" style={{ fontSize: 11 }}>
-                        Dismiss
-                      </Button>
+                      Spun by {todaySpinData.spunBy === currentUser ? 'You' : todaySpinData.spunBy}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {spinHistory.length > 0 && !historyLoading && (
-                    <div style={{ marginTop: spacing.sm }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: colors.textTertiary, marginBottom: 6 }}>
-                        Recent spins
-                      </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {spinHistory.map((entry) => {
-                          const d = entry.date;
-                          const label = d === new Date().toISOString().split('T')[0] ? 'Today' : (d.slice(5) || d);
-                          return (
-                            <span
-                              key={entry.id || entry.date + entry.movieId}
-                              style={{
-                                padding: '4px 8px',
-                                borderRadius: 6,
-                                background: 'rgba(255,255,255,0.06)',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                fontSize: 11,
-                                color: colors.textSecondary,
-                              }}
-                            >
-                              {label}: {entry.movieTitle} ({entry.spunBy})
-                            </span>
-                          );
-                        })}
-                      </div>
+                {saveError && (
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: spacing.sm,
+                      borderRadius: 4,
+                      background: 'rgba(248, 113, 113, 0.1)',
+                      color: colors.error,
+                      fontSize: 12,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: spacing.xs,
+                    }}
+                  >
+                    <span>{saveError}</span>
+                    <Button
+                      onClick={() => setSaveError(null)}
+                      variant="ghost"
+                      style={{ fontSize: 11 }}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                )}
+
+                {spinHistory.length > 0 && !historyLoading && (
+                  <div style={{ marginTop: spacing.sm }}>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                        color: colors.textTertiary,
+                        marginBottom: 6,
+                      }}
+                    >
+                      Recent spins
                     </div>
-                  )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {spinHistory.map((entry) => {
+                        const d = entry.date;
+                        const label =
+                          d === new Date().toISOString().split('T')[0] ? 'Today' : d.slice(5) || d;
+                        return (
+                          <span
+                            key={entry.id || entry.date + entry.movieId}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: 6,
+                              background: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              fontSize: 11,
+                              color: colors.textSecondary,
+                            }}
+                          >
+                            {label}: {entry.movieTitle} ({entry.spunBy})
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <Button onClick={onClose} variant="primary" style={{ width: '100%' }}>
                   Close
