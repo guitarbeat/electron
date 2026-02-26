@@ -102,12 +102,17 @@ const SubNav: React.FC<SubNavProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: spacing.sm,
-                boxShadow: isActive ? '0 0 20px rgba(255,105,180,0.4)' : '0 1px 3px rgba(0,0,0,0.15)',
+                boxShadow: isActive
+                  ? '0 0 20px rgba(255,105,180,0.4)'
+                  : '0 1px 3px rgba(0,0,0,0.15)',
               }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
                 {tab.icon && (
-                  <span style={{ fontSize: '1.1em', lineHeight: 1, opacity: isActive ? 1 : 0.9 }} aria-hidden>
+                  <span
+                    style={{ fontSize: '1.1em', lineHeight: 1, opacity: isActive ? 1 : 0.9 }}
+                    aria-hidden
+                  >
                     {tab.icon}
                   </span>
                 )}

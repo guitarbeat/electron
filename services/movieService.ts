@@ -49,9 +49,11 @@ export const getMovies = async (): Promise<Movie[]> => {
         /* ignore parse error */
       }
       if (status === 401 || status === 404) {
-        msg += ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
+        msg +=
+          ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
       } else if (status === 403) {
-        msg += ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
+        msg +=
+          ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
       }
       throw new Error(msg);
     }
@@ -73,7 +75,9 @@ export const getMovies = async (): Promise<Movie[]> => {
     try {
       movies = JSON.parse(file.content);
     } catch (parseErr) {
-      throw new Error(`${GIST_FILENAME} contains invalid JSON. It must be a JSON array of movie objects.`);
+      throw new Error(
+        `${GIST_FILENAME} contains invalid JSON. It must be a JSON array of movie objects.`
+      );
     }
     if (!Array.isArray(movies)) {
       throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
