@@ -3,6 +3,13 @@ import { GOOGLE_PLACES_API_KEY } from '../../config/googlePlaces';
 import { colors, spacing, radius, typography } from '../../design-system/tokens';
 import type { Place } from '../../types';
 
+// Add missing types for Google Maps
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };
 const DEFAULT_ZOOM = 4;
 
@@ -17,27 +24,27 @@ interface PlacesMapProps {
  */
 const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
 
     const placesWithCoords = places.filter(
       (p): p is Place & { lat: number; lng: number } =>
-        typeof p.lat === 'number' && typeof p.lng === 'number'
+        typeof p.lat === 'number' && typeof p.lng === 'number',
     );
 
-    const updateMarkersAndBounds = (map: google.maps.Map) => {
+    const updateMarkersAndBounds = (map: any) => {
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
 
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new window.google.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
         const position = { lat: place.lat, lng: place.lng };
-        const marker = new google.maps.Marker({
+        const marker = new window.google.maps.Marker({
           position,
           map,
           title: place.name,
