@@ -55,11 +55,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     showConfetti,
     setShowConfetti,
     setActiveMemoryFilter,
-    showMemoriesOnly,
-    setShowMemoriesOnly,
     setIsMemoryWallCollapsed,
-    highlightMovieId,
-    setHighlightMovieId,
     previousMoviesRef,
     memorySectionRef,
     movieResultsRef,
@@ -246,52 +242,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     [setActiveMemoryFilter, setIsMemoryWallCollapsed, memorySectionRef]
   );
 
-  const handleJumpFromMemory = useCallback(
-    (memory: SharedMemory) => {
-      const targetMovie =
-        (movies || []).find((m) => m.id === memory.movieId) ||
-        (movies || []).find(
-          (m) => m.title.trim().toLowerCase() === memory.movieTitle.trim().toLowerCase()
-        );
-
-      if (!targetMovie) {
-        setToast({ message: 'Movie is no longer in the queue.', type: 'info' });
-        return;
-      }
-
-      setShowMemoriesOnly(false);
-      setContentTab('watched');
-      setSearchQuery('');
-      setHighlightMovieId(targetMovie.id);
-
-      requestAnimationFrame(() => {
-        const el = movieResultsRef.current?.querySelector(`[data-movie-id="${targetMovie.id}"]`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.animate(
-            [
-              { transform: 'scale(1)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
-              { transform: 'scale(1.02)', boxShadow: '0 0 20px rgba(255,215,0,0.3)' },
-              { transform: 'scale(1)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
-            ],
-            { duration: 1000, easing: 'ease-out' }
-          );
-        }
-      });
-
-      setTimeout(() => setHighlightMovieId(null), 2000);
-    },
-    [
-      movies,
-      setContentTab,
-      setSearchQuery,
-      setHighlightMovieId,
-      setShowMemoriesOnly,
-      setToast,
-      movieResultsRef,
-    ]
-  );
-
   const handleUpdateMemory = useCallback(
     async (memoryId: string, updates: { note?: string }) => {
       try {
@@ -361,7 +311,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         onTogglePin={async (id) => {
           await toggleMemoryPin(id);
         }}
-        isHighlighted={highlightMovieId === movie.id}
       />
     );
   };
