@@ -2,6 +2,7 @@ import React from 'react';
 import { User } from '../../types';
 import ImageWithFallback from './ImageWithFallback';
 import { userImageSources } from '../../config/imageConfig';
+import { useRandomCatImage } from '../../hooks/useRandomCatImage';
 import { LockIcon } from './icons';
 import { typography } from '../../design-system/tokens';
 
@@ -30,12 +31,19 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   disabled = false,
   animationOffset = false,
 }) => {
-  const sources = userImageSources[user];
+  const [catSources, refetchCat] = useRandomCatImage();
+  const sources =
+    catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
+
+  const handleClick = () => {
+    refetchCat();
+    onClick();
+  };
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}

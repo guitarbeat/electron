@@ -364,18 +364,17 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {/* --- Sub-nav: tabs + sort (shared SubNav component) --- */}
+      {/* --- Sub-nav: tabs + sort (full card so top is never cut off) --- */}
       <div
         style={{
           marginBottom: spacing.lg,
-          marginTop: `-${spacing.md}`,
+          marginTop: spacing.md,
           padding: isMobile ? spacing.sm : spacing.md,
           background: 'rgba(23, 33, 58, 0.55)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: `0 0 ${radius.lg} ${radius.lg}`,
-          border: `1px solid ${colors.borderSecondary}20`,
-          borderTop: 'none',
+          borderRadius: radius.lg,
+          border: `1px solid ${colors.borderSecondary}25`,
           boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
         }}
       >

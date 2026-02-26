@@ -50,15 +50,16 @@ const SubNav: React.FC<SubNavProps> = ({
         gap: spacing.md,
       }}
     >
-      {/* Main tabs */}
+      {/* Main tabs: clearer hierarchy (icon + label) | count badge */}
       <div
         className={scrollClassName}
         style={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: spacing.sm,
-          alignItems: 'center',
+          gap: spacing.md,
+          alignItems: 'stretch',
           minHeight: '44px',
+          padding: spacing.xs,
           overflowX: 'auto',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -77,41 +78,53 @@ const SubNav: React.FC<SubNavProps> = ({
               style={{
                 flex: '0 1 auto',
                 minHeight: '44px',
-                minWidth: 'min(72px, 100%)',
-                padding: `0 ${spacing.md}`,
-                borderRadius: radius.full,
-                border: `2px solid ${isActive ? colors.accent : 'transparent'}`,
+                paddingLeft: spacing.md,
+                paddingRight: tab.count !== undefined ? spacing.sm : spacing.md,
+                paddingTop: spacing.sm,
+                paddingBottom: spacing.sm,
+                borderRadius: radius.lg,
+                border: isActive
+                  ? `2px solid ${colors.accent}`
+                  : `1px solid ${colors.borderSecondary}30`,
                 background: isActive
                   ? `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentLight} 100%)`
-                  : 'rgba(255,255,255,0.06)',
+                  : 'rgba(255,255,255,0.05)',
                 color: isActive ? '#1a1a2e' : colors.textSecondary,
-                fontSize: 'clamp(0.7rem, 1vw + 0.5rem, 0.8rem)',
+                fontSize: 'clamp(0.72rem, 1vw + 0.45rem, 0.85rem)',
                 fontWeight: 700,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
                 fontFamily: typography.fontFamily.heading.join(', '),
                 textTransform: 'uppercase',
-                letterSpacing: '0.06em',
+                letterSpacing: '0.05em',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: spacing.xs,
-                boxShadow: isActive ? '0 0 16px rgba(255,105,180,0.35)' : 'none',
+                gap: spacing.sm,
+                boxShadow: isActive ? '0 0 20px rgba(255,105,180,0.4)' : '0 1px 3px rgba(0,0,0,0.15)',
               }}
             >
-              {tab.icon && <span style={{ fontSize: '1em', lineHeight: 1 }} aria-hidden>{tab.icon}</span>}
-              <span>{tab.label}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                {tab.icon && (
+                  <span style={{ fontSize: '1.1em', lineHeight: 1, opacity: isActive ? 1 : 0.9 }} aria-hidden>
+                    {tab.icon}
+                  </span>
+                )}
+                <span>{tab.label}</span>
+              </span>
               {tab.count !== undefined && (
                 <span
                   style={{
                     fontSize: '0.7rem',
                     fontWeight: 800,
-                    background: isActive ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.1)',
-                    padding: '2px 6px',
-                    borderRadius: radius.sm,
-                    minWidth: '18px',
+                    background: isActive ? 'rgba(0,0,0,0.15)' : colors.overlay,
+                    color: isActive ? '#1a1a2e' : colors.textPrimary,
+                    padding: '3px 6px',
+                    borderRadius: radius.full,
+                    minWidth: '20px',
                     textAlign: 'center',
+                    lineHeight: 1,
                   }}
                 >
                   {tab.count}
@@ -130,7 +143,7 @@ const SubNav: React.FC<SubNavProps> = ({
           style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: spacing.xs,
+            gap: spacing.sm,
             alignItems: 'center',
           }}
         >
@@ -156,13 +169,13 @@ const SubNav: React.FC<SubNavProps> = ({
                 aria-pressed={isActive}
                 aria-label={`${chipLabel} ${chip.label}`}
                 style={{
-                  minHeight: '36px',
-                  padding: `0 ${spacing.sm}`,
+                  minHeight: '34px',
+                  padding: `0 ${spacing.md}`,
                   borderRadius: radius.md,
                   border: `1px solid ${isActive ? colors.secondary : `${colors.borderSecondary}40`}`,
                   background: isActive ? colors.secondaryMuted : 'rgba(255,255,255,0.04)',
                   color: isActive ? colors.secondary : colors.textTertiary,
-                  fontSize: typography.fontSize.xs,
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',

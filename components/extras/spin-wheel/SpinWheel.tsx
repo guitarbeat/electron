@@ -5,7 +5,7 @@ import { CheckIcon, SyncIcon } from '../../common/icons';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
 import MinigameModal from '../../ui/MinigameModal';
-import { RotaryDialCarousel } from '../../watchlist/components/RotaryDialCarousel';
+import { SpinRoulette } from './SpinRoulette';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
 import { typography, colors, shadows, spacing } from '../../../design-system/tokens';
@@ -128,7 +128,7 @@ const SpinWheel: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <MinigameModal isOpen={isOpen} onClose={onClose} title="Spin" ariaLabel="Movie spin wheel">
+    <MinigameModal isOpen={isOpen} onClose={onClose} title="Spin" ariaLabel="Movie spin wheel" maxWidth={540} maxHeight={760}>
       {(status === 'loading' || (status === 'idle' && saveError === "Could not load today's spin.")) && (
         <div
           style={{
@@ -178,7 +178,7 @@ const SpinWheel: React.FC<{
         </div>
       )}
 
-      {/* Main Dial */}
+      {/* Roulette wheel - main focus, takes most of the modal */}
       <div
         style={{
           width: '100%',
@@ -187,130 +187,120 @@ const SpinWheel: React.FC<{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: status === 'result' ? 0.3 : 1,
+          opacity: status === 'result' ? 0.4 : 1,
           pointerEvents: status === 'result' ? 'none' : 'auto',
-          filter: status === 'result' ? 'blur(4px)' : 'none',
+          filter: status === 'result' ? 'blur(2px)' : 'none',
           transition: 'opacity 0.3s ease, filter 0.3s ease',
         }}
       >
-        <RotaryDialCarousel
+        <SpinRoulette
           movies={movies}
-          currentUser={currentUser}
-          mode={hasSpunToday ? 'browse' : 'spin'}
+          disabled={hasSpunToday}
           onSpinComplete={handleSpinResult}
           style={{ width: '100%', height: '100%' }}
         />
       </div>
 
-        {/* Result Overlay */}
-        {status === 'result' && selectedMovie && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: spacing.md,
-              pointerEvents: 'none',
-              zIndex: 10000,
-            }}
-          >
-            <div style={{ pointerEvents: 'auto', maxWidth: '28rem', width: '100%' }}>
-              <Card
-                variant="elevated"
-                className="spin-wheel-result-card"
+      {/* Result panel - below wheel so wheel stays visible */}
+      {status === 'result' && selectedMovie && (
+        <div
+          style={{
+            flex: '0 0 auto',
+            width: '100%',
+            maxHeight: '42%',
+            overflow: 'auto',
+            padding: spacing.sm,
+            borderTop: `1px solid ${colors.borderSecondary}40`,
+            background: 'rgba(15, 23, 42, 0.6)',
+            pointerEvents: 'auto',
+          }}
+        >
+          <div style={{ maxWidth: 360, margin: '0 auto' }}>
+            <Card
+              variant="elevated"
+              className="spin-wheel-result-card"
+              style={{
+                padding: 0,
+                overflow: 'hidden',
+                border: `1px solid ${colors.accent}`,
+                boxShadow: shadows.glowStrong,
+              }}
+            >
+              <div className="spin-result-glow" style={{ borderRadius: 'inherit', position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+              <div
                 style={{
-                  padding: 0,
+                  padding: spacing.lg,
+                  textAlign: 'center',
+                  position: 'relative',
                   overflow: 'hidden',
-                  border: `1px solid ${colors.accent}`,
-                  boxShadow: shadows.glowStrong,
+                  background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.md,
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
                 }}
               >
-                <div className="spin-result-glow" style={{ borderRadius: 'inherit', position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-                {/* Header */}
-                <div
-                  style={{
-                    padding: spacing['2xl'],
-                    textAlign: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`,
-                  }}
-                >
+                {selectedMovie.posterUrl && (
+                  <div
+                    style={{
+                      width: 72,
+                      height: 108,
+                      flexShrink: 0,
+                      borderRadius: 6,
+                      overflow: 'hidden',
+                      border: `1px solid ${colors.borderSecondary}40`,
+                    }}
+                  >
+                    <img
+                      src={selectedMovie.posterUrl}
+                      alt={selectedMovie.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                )}
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <div
                     className="spin-winner-badge"
                     style={{
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: spacing.sm,
-                      marginBottom: spacing.md,
+                      gap: spacing.xs,
+                      marginBottom: 4,
                       color: colors.success,
                     }}
                   >
-                    <CheckIcon style={{ width: 24, height: 24 }} />
-                    <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: typography.fontSize.sm }}>Winner</span>
+                    <CheckIcon style={{ width: 16, height: 16 }} />
+                    <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: typography.fontSize.xs }}>Winner</span>
                   </div>
-
-                  {selectedMovie.posterUrl && (
-                    <div
-                      style={{
-                        width: 160,
-                        margin: '0 auto',
-                        marginBottom: spacing.md,
-                        borderRadius: 8,
-                        overflow: 'hidden',
-                        border: '2px solid rgba(255,255,255,0.1)',
-                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
-                      }}
-                    >
-                      <img
-                        src={selectedMovie.posterUrl}
-                        alt={selectedMovie.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                  )}
-
                   <h2
                     style={{
                       fontFamily: typography.fontFamily.heading.join(','),
-                      fontSize: '1.875rem',
+                      fontSize: typography.fontSize.lg,
                       fontWeight: 700,
-                      marginBottom: spacing.sm,
+                      margin: 0,
                       color: colors.textPrimary,
                     }}
                   >
                     {selectedMovie.title}
                   </h2>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: spacing.sm,
-                      fontSize: typography.fontSize.sm,
-                      color: colors.textTertiary,
-                    }}
-                  >
-                    <span>{selectedMovie.year}</span>
-                    {selectedMovie.genre && <span>• {selectedMovie.genre.split(',')[0]}</span>}
+                  <div style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
+                    {selectedMovie.year}
+                    {selectedMovie.genre ? ` · ${selectedMovie.genre.split(',')[0]}` : ''}
                   </div>
                 </div>
+              </div>
 
-                {/* Footer Info */}
-                <div
-                  style={{
-                    padding: spacing.md,
-                    background: 'rgba(15, 23, 42, 0.5)',
-                    borderTop: '1px solid rgba(255,255,255,0.05)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: spacing.md,
-                  }}
-                >
+              <div
+                style={{
+                  padding: spacing.sm,
+                  background: 'rgba(15, 23, 42, 0.5)',
+                  borderTop: '1px solid rgba(255,255,255,0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: spacing.sm,
+                }}
+              >
                   {todaySpinData && (
                     <div
                       style={{
@@ -391,14 +381,14 @@ const SpinWheel: React.FC<{
                     </div>
                   )}
 
-                  <Button onClick={onClose} variant="primary" style={{ width: '100%', marginTop: saveError ? 0 : spacing.sm }}>
-                    Close
-                  </Button>
-                </div>
-              </Card>
-            </div>
+                <Button onClick={onClose} variant="primary" style={{ width: '100%' }}>
+                  Close
+                </Button>
+              </div>
+            </Card>
           </div>
-        )}
+        </div>
+      )}
     </MinigameModal>
   );
 };
