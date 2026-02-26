@@ -14,16 +14,7 @@ interface GooglePlacesAutocomplete {
 
 declare global {
   interface Window {
-    google?: {
-      maps?: {
-        places?: {
-          Autocomplete: new (
-            input: HTMLInputElement,
-            opts?: { types?: string[]; fields?: string[] }
-          ) => GooglePlacesAutocomplete;
-        };
-      };
-    };
+    google: any;
   }
 }
 
