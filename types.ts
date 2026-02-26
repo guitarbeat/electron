@@ -1,5 +1,14 @@
 export type User = 'Aaron' | 'Electra';
-export type MainTab = 'queue' | 'spin' | 'games' | 'quiz' | 'messages';
+export type MainTab = 'queue' | 'spin' | 'games' | 'quiz' | 'messages' | 'places';
+
+export interface Place {
+  id: string;
+  name: string;
+  addedBy?: User;
+  notes?: string;
+  createdAt: string;
+  visitedAt?: string; // optional: when you went (ISO string)
+}
 
 export interface Movie {
   id: string;

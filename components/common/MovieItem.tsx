@@ -1,15 +1,15 @@
 import React, { memo, useState } from 'react';
-import { Movie, User, SharedMemory } from '../types';
+import { Movie, User, SharedMemory } from '../../types';
 import { TrashIcon, EyeIcon, EyeOffIcon, MagicWandIcon, FilmIcon } from './icons';
-import Card from './ui/Card';
-import Button from './ui/Button';
-import IconButton from './ui/IconButton';
-import BottomSheet from './ui/BottomSheet';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import IconButton from '../ui/IconButton';
+import BottomSheet from '../ui/BottomSheet';
 import WatcherBadge from './WatcherBadge';
-import { spacing, typography, colors, radius, shadows } from '../design-system/tokens';
-import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
-import MemoryList from './memories/MemoryList';
-import MemoryComposer from './memories/MemoryComposer';
+import { spacing, typography, colors, radius, shadows } from '../../design-system/tokens';
+import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
+import MemoryList from '../memories/MemoryList';
+import MemoryComposer from '../memories/MemoryComposer';
 
 interface MovieItemProps {
   movie: Movie;

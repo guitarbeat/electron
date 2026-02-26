@@ -9,12 +9,12 @@ import {
   zIndex,
   shadows,
   motion,
-} from '../design-system/tokens';
-import Card from './ui/Card';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import IconButton from './ui/IconButton';
-import { searchMovies, MetadataResult, fetchMovieMetadata } from '../services/metadataService';
+} from '../../design-system/tokens';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import IconButton from '../ui/IconButton';
+import { searchMovies, MetadataResult, fetchMovieMetadata } from '../../services/metadataService';
 
 interface FixMatchDialogProps {
   isOpen: boolean;

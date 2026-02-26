@@ -24,4 +24,15 @@ package-lock.json
 *.sln
 *.sw?
 .env
+.env.local
+.env*.local
 
+.vercel
+
+# Lint / script output and temp files
+lint_results*.txt
+lint_output.txt
+git_status.txt
+server.pid
+pr_branches.json
+pr_status.json

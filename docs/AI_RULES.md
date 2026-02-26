@@ -38,7 +38,7 @@
 - Keep database/network logic in `services/*` (e.g. `movieService.ts`, `messageService.ts`) and call those from hooks/components.
 - Prefer typed DB access using the generated types in `integrations/supabase/types.ts`.
 
-### “AI” / external API calls
+### "AI" / external API calls
 
 - Centralize LLM-related logic in `services/geminiService.ts` and related helpers.
 - If secrets are needed, route requests through **Supabase Edge Functions** (never expose private keys in the client).
@@ -46,7 +46,7 @@
 ### Testing
 
 - Add unit tests alongside the relevant module when changing core logic (e.g. `services/*.test.ts`, `components/**/**/*.test.ts`).
-- Use Node’s built-in test runner patterns consistent with existing tests.
+- Use Node's built-in test runner patterns consistent with existing tests.
 
 ### Dependencies
 

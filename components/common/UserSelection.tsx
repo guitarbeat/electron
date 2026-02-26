@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useUser } from '../context/UserContext';
-import { User } from '../types';
+import { useUser } from '../../context/UserContext';
+import { User } from '../../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
-import { usePins } from '../hooks/usePins';
-import { spacing, typography } from '../design-system/tokens';
+import { usePins } from '../../hooks/usePins';
+import { spacing, typography } from '../../design-system/tokens';
 import PinDialog from './PinDialog';
 
 const UserSelection: React.FC = () => {

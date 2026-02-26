@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useUser } from '../context/UserContext';
-import { useChatLogic } from '../hooks/useChatLogic';
-import ChatWindow from './message-board/ChatWindow';
-import MessageList from './message-board/MessageList';
-import MessageInput from './message-board/MessageInput';
-import Toast from './ui/Toast';
-import { spacing, colors, shadows, radius, motion, typography } from '../design-system/tokens';
+import { useUser } from '../../context/UserContext';
+import { useChatLogic } from '../../hooks/useChatLogic';
+import ChatWindow from '../message-board/ChatWindow';
+import MessageList from '../message-board/MessageList';
+import MessageInput from '../message-board/MessageInput';
+import Toast from '../ui/Toast';
+import { spacing, colors, shadows, radius, motion, typography } from '../../design-system/tokens';
 import { MessageIcon } from './icons';
-import { useMediaQuery, breakpoints } from '../hooks/useMediaQuery';
+import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 
 interface MessageBoardProps {
   mode?: 'floating' | 'embedded';

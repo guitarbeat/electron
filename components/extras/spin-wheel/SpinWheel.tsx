@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Movie, DailySpin } from '../../../types';
 import { useUser } from '../../../context/UserContext';
-import { CheckIcon, SyncIcon } from '../../icons';
+import { CheckIcon, SyncIcon } from '../../common/icons';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
 import MinigameModal from '../../ui/MinigameModal';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Card from './Card';
-import { CheckIcon } from '../icons';
+import { CheckIcon } from '../common/icons';
 import { colors, shadows, spacing, typography, radius } from '../../design-system/tokens';
 
 interface ToastProps {

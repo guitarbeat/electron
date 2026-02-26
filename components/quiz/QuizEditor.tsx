@@ -16,7 +16,7 @@ import DescriptionsTab from './editor/DescriptionsTab';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { spacing, colors, typography, radius } from '../../design-system/tokens';
-import { ArrowLeftIcon } from '../icons';
+import { ArrowLeftIcon } from '../common/icons';
 
 interface QuizEditorProps {
   onClose: () => void;

@@ -1,4 +1,4 @@
-import { GIST_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig';
+import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig';
 import type { Movie } from '../types';
 
 // Cache variables to store the last known state
@@ -8,6 +8,17 @@ let lastETag: string | null = null;
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
   try {
+    if (!GIST_TOKEN?.trim()) {
+      throw new Error(
+        'VITE_GIST_TOKEN is missing or empty. Add it to your .env (GitHub token with "gist" scope), then restart the dev server.'
+      );
+    }
+    if (!GIST_ID?.trim()) {
+      throw new Error(
+        'VITE_GIST_ID is missing or empty. Add your Gist ID to .env (from the Gist URL), then restart the dev server.'
+      );
+    }
+
     const headers: Record<string, string> = {
       Authorization: `token ${GIST_TOKEN}`,
       Accept: 'application/vnd.github.v3+json',
@@ -29,22 +40,38 @@ export const getMovies = async (): Promise<Movie[]> => {
     }
 
     if (!response.ok) {
-      throw new Error(`GitHub API responded with ${response.status}`);
+      const status = response.status;
+      let msg = `GitHub API responded with ${status}.`;
+      if (status === 401 || status === 404) {
+        msg += ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
+      } else if (status === 403) {
+        msg += ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
+      }
+      throw new Error(msg);
     }
 
     const gist = await response.json();
     const file = gist.files[GIST_FILENAME];
 
     if (!file) {
-      console.error(`File "${GIST_FILENAME}" not found in Gist.`);
-      return [];
+      const hint = `Your Gist must contain a file named "${GIST_FILENAME}" with a JSON array of movie objects. Create that file in the Gist (e.g. paste [] and save) then refresh.`;
+      console.error(hint);
+      throw new Error(`Gist is missing "${GIST_FILENAME}". ${hint}`);
     }
 
     if (!file.content) {
       return [];
     }
 
-    const movies = JSON.parse(file.content);
+    let movies: Movie[];
+    try {
+      movies = JSON.parse(file.content);
+    } catch (parseErr) {
+      throw new Error(`${GIST_FILENAME} contains invalid JSON. It must be a JSON array of movie objects.`);
+    }
+    if (!Array.isArray(movies)) {
+      throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
+    }
 
     // Update cache and ETag only after successful parsing
     cachedMovies = movies;

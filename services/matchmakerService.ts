@@ -1,4 +1,4 @@
-import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN, GIST_API_URL } from '../gistConfig.ts';
+import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
 import type { MatchmakerGame } from '../types.ts';
 
 /**
