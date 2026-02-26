@@ -3,12 +3,19 @@ import { useState, useEffect, useCallback } from 'react';
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=3';
 const CATAAS_RANDOM = 'https://cataas.com/cat';
 
+export interface UseRandomCatImageResult {
+  sources: string[];
+  refetch: () => void;
+  isLoading: boolean;
+}
+
 /**
  * Fetches random cat image URL(s) from The Cat API (with Cataas as fallback).
- * Returns [sources, refetch] for use with ImageWithFallback; call refetch to load a new cat.
+ * Returns { sources, refetch, isLoading } for use with ImageWithFallback.
  */
-export function useRandomCatImage(): [string[], () => void] {
+export function useRandomCatImage(): UseRandomCatImageResult {
   const [sources, setSources] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [refetchKey, setRefetchKey] = useState(0);
 
   const refetch = useCallback(() => {
@@ -17,6 +24,7 @@ export function useRandomCatImage(): [string[], () => void] {
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
 
     async function fetchCatUrls() {
       try {
@@ -29,6 +37,8 @@ export function useRandomCatImage(): [string[], () => void] {
         else if (!cancelled) setSources([CATAAS_RANDOM]);
       } catch {
         if (!cancelled) setSources([CATAAS_RANDOM]);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     }
 
@@ -38,5 +48,5 @@ export function useRandomCatImage(): [string[], () => void] {
     };
   }, [refetchKey]);
 
-  return [sources, refetch];
+  return { sources, refetch, isLoading };
 }

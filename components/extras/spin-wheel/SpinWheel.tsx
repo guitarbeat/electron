@@ -178,7 +178,7 @@ const SpinWheel: React.FC<{
         </div>
       )}
 
-      {/* Roulette wheel - main focus, takes most of the modal */}
+      {/* Roulette wheel - stays sharp and visible even when result is shown */}
       <div
         style={{
           width: '100%',
@@ -187,10 +187,9 @@ const SpinWheel: React.FC<{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: status === 'result' ? 0.4 : 1,
+          opacity: status === 'result' ? 0.82 : 1,
           pointerEvents: status === 'result' ? 'none' : 'auto',
-          filter: status === 'result' ? 'blur(2px)' : 'none',
-          transition: 'opacity 0.3s ease, filter 0.3s ease',
+          transition: 'opacity 0.3s ease',
         }}
       >
         <SpinRoulette
@@ -201,55 +200,69 @@ const SpinWheel: React.FC<{
         />
       </div>
 
-      {/* Result panel - below wheel so wheel stays visible */}
+      {/* Result panel - clearly visible below wheel */}
       {status === 'result' && selectedMovie && (
         <div
           style={{
             flex: '0 0 auto',
             width: '100%',
-            maxHeight: '42%',
+            minHeight: 180,
+            maxHeight: '48%',
             overflow: 'auto',
-            padding: spacing.sm,
-            borderTop: `1px solid ${colors.borderSecondary}40`,
-            background: 'rgba(15, 23, 42, 0.6)',
+            padding: spacing.md,
+            borderTop: `2px solid ${colors.accent}50`,
+            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%)',
             pointerEvents: 'auto',
           }}
         >
-          <div style={{ maxWidth: 360, margin: '0 auto' }}>
+          <div style={{ maxWidth: 400, margin: '0 auto' }}>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: colors.accent,
+                marginBottom: spacing.sm,
+                textAlign: 'center',
+              }}
+            >
+              Today&apos;s pick
+            </div>
             <Card
               variant="elevated"
               className="spin-wheel-result-card"
               style={{
                 padding: 0,
                 overflow: 'hidden',
-                border: `1px solid ${colors.accent}`,
+                border: `2px solid ${colors.accent}`,
                 boxShadow: shadows.glowStrong,
               }}
             >
               <div className="spin-result-glow" style={{ borderRadius: 'inherit', position: 'absolute', inset: 0, pointerEvents: 'none' }} />
               <div
                 style={{
-                  padding: spacing.lg,
-                  textAlign: 'center',
+                  padding: spacing.xl,
                   position: 'relative',
                   overflow: 'hidden',
                   background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: spacing.md,
+                  gap: spacing.lg,
                   flexWrap: 'wrap',
                   justifyContent: 'center',
                 }}
               >
-                {selectedMovie.posterUrl && (
+                {selectedMovie.posterUrl ? (
                   <div
                     style={{
-                      width: 72,
-                      height: 108,
+                      width: 100,
+                      height: 150,
                       flexShrink: 0,
-                      borderRadius: 6,
+                      borderRadius: 8,
                       overflow: 'hidden',
-                      border: `1px solid ${colors.borderSecondary}40`,
+                      border: `2px solid ${colors.accent}60`,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                     }}
                   >
                     <img
@@ -258,33 +271,56 @@ const SpinWheel: React.FC<{
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </div>
+                ) : (
+                  <div
+                    style={{
+                      width: 100,
+                      height: 150,
+                      flexShrink: 0,
+                      borderRadius: 8,
+                      background: colors.surface,
+                      border: `2px solid ${colors.borderSecondary}40`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: colors.textTertiary,
+                      fontSize: typography.fontSize.sm,
+                    }}
+                  >
+                    No poster
+                  </div>
                 )}
-                <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ minWidth: 140, flex: 1 }}>
                   <div
                     className="spin-winner-badge"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: spacing.xs,
-                      marginBottom: 4,
+                      marginBottom: 6,
                       color: colors.success,
+                      flexShrink: 0,
                     }}
                   >
-                    <CheckIcon style={{ width: 16, height: 16 }} />
-                    <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: typography.fontSize.xs }}>Winner</span>
+                    <CheckIcon style={{ width: 20, height: 20, flexShrink: 0 }} />
+                    <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: typography.fontSize.sm, whiteSpace: 'nowrap' }}>Winner</span>
                   </div>
                   <h2
                     style={{
                       fontFamily: typography.fontFamily.heading.join(','),
-                      fontSize: typography.fontSize.lg,
+                      fontSize: '1.35rem',
                       fontWeight: 700,
                       margin: 0,
+                      marginBottom: 4,
                       color: colors.textPrimary,
+                      lineHeight: 1.25,
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
                     }}
                   >
                     {selectedMovie.title}
                   </h2>
-                  <div style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
+                  <div style={{ fontSize: typography.fontSize.sm, color: colors.textTertiary }}>
                     {selectedMovie.year}
                     {selectedMovie.genre ? ` · ${selectedMovie.genre.split(',')[0]}` : ''}
                   </div>

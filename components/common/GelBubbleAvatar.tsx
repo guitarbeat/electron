@@ -31,19 +31,20 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   disabled = false,
   animationOffset = false,
 }) => {
-  const [catSources, refetchCat] = useRandomCatImage();
+  const { sources: catSources, refetch: refetchCat, isLoading: isCatLoading } = useRandomCatImage();
   const sources =
     catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
 
-  const handleClick = () => {
-    refetchCat();
-    onClick();
+  const onImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!disabled) refetchCat();
   };
 
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}
@@ -155,8 +156,20 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           }}
         />
 
-        {/* Profile Image Container */}
+        {/* Profile Image Container - click image for new cat */}
         <div
+          role="button"
+          tabIndex={0}
+          onClick={onImageClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!disabled) refetchCat();
+            }
+          }}
+          aria-label="Get a new random cat"
+          title="Click for new cat"
           style={{
             width: '72%',
             height: '72%',
@@ -168,7 +181,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               inset 0 0 20px rgba(0, 0, 0, 0.2)
             `,
             position: 'relative',
+            cursor: disabled ? 'wait' : 'pointer',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           }}
+          className="gel-avatar-image-wrap"
         >
           <ImageWithFallback
             sources={sources}
@@ -177,8 +193,36 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              transition: 'opacity 0.25s ease',
+              opacity: isCatLoading ? 0.7 : 1,
             }}
           />
+          {isCatLoading && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.35)',
+                borderRadius: '50%',
+                pointerEvents: 'none',
+              }}
+              aria-hidden
+            >
+              <span
+                style={{
+                  width: 28,
+                  height: 28,
+                  border: '3px solid rgba(255, 105, 180, 0.5)',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'gel-avatar-spin 0.8s linear infinite',
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Lock Badge */}
@@ -229,6 +273,15 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       >
         {user}
       </span>
+      <style>{`
+        @keyframes gel-avatar-spin {
+          to { transform: rotate(360deg); }
+        }
+        .gel-avatar-image-wrap:hover {
+          transform: scale(1.03);
+          box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+      `}</style>
     </button>
   );
 };

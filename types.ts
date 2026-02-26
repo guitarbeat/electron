@@ -8,6 +8,8 @@ export interface Place {
   notes?: string;
   createdAt: string;
   visitedAt?: string; // optional: when you went (ISO string)
+  lat?: number;
+  lng?: number;
 }
 
 export interface Movie {

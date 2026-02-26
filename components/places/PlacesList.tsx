@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import SubNav from '../ui/SubNav';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '../common/icons';
 import { colors, spacing, typography, radius } from '../../design-system/tokens';
 import type { Place } from '../../types';
@@ -36,9 +37,13 @@ const PlacesList: React.FC = () => {
   const [filter, setFilter] = useState<PlaceFilter>('want');
   const [nameInput, setNameInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
+  const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  usePlacesAutocomplete(nameInputRef, setNameInput);
+  usePlacesAutocomplete(nameInputRef, (name, lat, lng) => {
+    setNameInput(name);
+    setPendingCoords(typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null);
+  });
 
   const wantCount = places.filter((p) => !p.visitedAt).length;
   const visitedCount = places.filter((p) => p.visitedAt).length;
@@ -52,14 +57,20 @@ const PlacesList: React.FC = () => {
       const name = nameInput.trim();
       if (!name || isSubmitting) return;
       try {
-        await addPlace(name, notesInput.trim() || undefined);
+        await addPlace(
+          name,
+          notesInput.trim() || undefined,
+          pendingCoords?.lat,
+          pendingCoords?.lng
+        );
         setNameInput('');
         setNotesInput('');
+        setPendingCoords(null);
       } catch (err) {
         console.error(err);
       }
     },
-    [nameInput, notesInput, isSubmitting, addPlace]
+    [nameInput, notesInput, pendingCoords, isSubmitting, addPlace]
   );
 
   const confirmDelete = useCallback(async () => {
