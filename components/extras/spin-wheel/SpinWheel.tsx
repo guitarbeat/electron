@@ -8,7 +8,7 @@ import Button from '../../ui/Button';
 import { RotaryDialCarousel } from '../../watchlist/components/RotaryDialCarousel';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { upsertTodaySpinEntry } from '../../../services/spinHistoryService';
-import { typography, colors, shadows } from '../../../design-system/tokens';
+import { typography, colors, shadows, spacing } from '../../../design-system/tokens';
 import './SpinWheel.css';
 
 const SpinWheel: React.FC<{
@@ -107,27 +107,61 @@ const SpinWheel: React.FC<{
     }
   };
 
+  // Lock body scroll when modal is open to prevent background scroll / layout shift
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.9)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
+      aria-label="Movie spin wheel"
     >
       <div
-        className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Main Dial Component */}
         <div
-          className="w-full flex items-center justify-center transition-opacity duration-500"
           style={{
+            width: '100%',
             height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             opacity: status === 'result' ? 0.3 : 1,
             pointerEvents: status === 'result' ? 'none' : 'auto',
             filter: status === 'result' ? 'blur(4px)' : 'none',
+            transition: 'opacity 0.3s ease, filter 0.3s ease',
           }}
         >
           <RotaryDialCarousel
@@ -135,15 +169,25 @@ const SpinWheel: React.FC<{
             currentUser={currentUser}
             mode={hasSpunToday ? 'browse' : 'spin'}
             onSpinComplete={handleSpinResult}
-            className="w-full h-full"
-            style={{ height: '100%' }}
+            style={{ width: '100%', height: '100%' }}
           />
         </div>
 
         {/* Result Overlay */}
         {status === 'result' && selectedMovie && (
-          <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none z-50">
-            <div className="pointer-events-auto max-w-md w-full">
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: spacing.md,
+              pointerEvents: 'none',
+              zIndex: 10000,
+            }}
+          >
+            <div style={{ pointerEvents: 'auto', maxWidth: '28rem', width: '100%' }}>
               <Card
                 variant="elevated"
                 style={{
@@ -156,62 +200,127 @@ const SpinWheel: React.FC<{
               >
                 {/* Header */}
                 <div
-                  className="p-6 text-center relative overflow-hidden"
                   style={{
+                    padding: spacing['2xl'],
+                    textAlign: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
                     background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`,
                   }}
                 >
-                  <div className="flex items-center justify-center gap-2 mb-4 text-emerald-400">
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: spacing.sm,
+                      marginBottom: spacing.md,
+                      color: colors.success,
+                    }}
+                  >
                     <CheckIcon style={{ width: 24, height: 24 }} />
-                    <span className="font-bold uppercase tracking-wider text-sm">Winner</span>
+                    <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: typography.fontSize.sm }}>Winner</span>
                   </div>
 
                   {selectedMovie.posterUrl && (
-                    <div className="w-40 mx-auto mb-4 rounded-lg shadow-2xl overflow-hidden border-2 border-white/10 transform hover:scale-105 transition-transform">
+                    <div
+                      style={{
+                        width: 160,
+                        margin: '0 auto',
+                        marginBottom: spacing.md,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        border: '2px solid rgba(255,255,255,0.1)',
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+                      }}
+                    >
                       <img
                         src={selectedMovie.posterUrl}
                         alt={selectedMovie.title}
-                        className="w-full h-full object-cover"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     </div>
                   )}
 
                   <h2
-                    className="text-3xl font-bold mb-2 text-white"
-                    style={{ fontFamily: typography.fontFamily.heading.join(',') }}
+                    style={{
+                      fontFamily: typography.fontFamily.heading.join(','),
+                      fontSize: '1.875rem',
+                      fontWeight: 700,
+                      marginBottom: spacing.sm,
+                      color: colors.textPrimary,
+                    }}
                   >
                     {selectedMovie.title}
                   </h2>
 
-                  <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: spacing.sm,
+                      fontSize: typography.fontSize.sm,
+                      color: colors.textTertiary,
+                    }}
+                  >
                     <span>{selectedMovie.year}</span>
                     {selectedMovie.genre && <span>• {selectedMovie.genre.split(',')[0]}</span>}
                   </div>
                 </div>
 
                 {/* Footer Info */}
-                <div className="p-4 bg-slate-900/50 border-t border-white/5 space-y-4">
+                <div
+                  style={{
+                    padding: spacing.md,
+                    background: 'rgba(15, 23, 42, 0.5)',
+                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: spacing.md,
+                  }}
+                >
                   {todaySpinData && (
-                    <div className="flex items-center justify-center gap-3 text-sm">
-                      <div className="flex items-center gap-1.5 text-slate-400">
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: spacing.md,
+                        fontSize: typography.fontSize.sm,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, color: colors.textTertiary }}>
                         <SyncIcon style={{ width: 14, height: 14 }} />
                         <span>Synced</span>
                       </div>
                       <div
-                        className={`px-3 py-1 rounded-full border text-xs font-medium ${
-                          todaySpinData.spunBy === currentUser
-                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                            : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
-                        }`}
+                        style={{
+                          padding: '4px 12px',
+                          borderRadius: 9999,
+                          border: `1px solid ${todaySpinData.spunBy === currentUser ? 'rgba(52, 211, 153, 0.2)' : 'rgba(99, 102, 241, 0.2)'}`,
+                          background: todaySpinData.spunBy === currentUser ? 'rgba(52, 211, 153, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: todaySpinData.spunBy === currentUser ? colors.success : colors.tertiary,
+                        }}
                       >
-                        Spun by{' '}
-                        {todaySpinData.spunBy === currentUser ? 'You' : todaySpinData.spunBy}
+                        Spun by {todaySpinData.spunBy === currentUser ? 'You' : todaySpinData.spunBy}
                       </div>
                     </div>
                   )}
 
                   {saveError && (
-                    <div className="text-center p-2 rounded bg-red-500/10 text-red-400 text-xs">
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: spacing.sm,
+                        borderRadius: 4,
+                        background: 'rgba(248, 113, 113, 0.1)',
+                        color: colors.error,
+                        fontSize: 12,
+                      }}
+                    >
                       {saveError}
                     </div>
                   )}
@@ -230,10 +339,36 @@ const SpinWheel: React.FC<{
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
-            className="absolute top-6 right-6 p-2 rounded-full bg-black/20 hover:bg-white/10 text-white/70 hover:text-white transition-all z-50 backdrop-blur-sm"
+            aria-label="Close spin wheel"
+            style={{
+              position: 'absolute',
+              top: spacing.xl,
+              right: spacing.xl,
+              width: 44,
+              height: 44,
+              padding: spacing.sm,
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.2)',
+              color: 'rgba(255,255,255,0.7)',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+            }}
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width={24} height={24} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
