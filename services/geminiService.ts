@@ -1,7 +1,7 @@
 import type { User } from '../types';
 import { buildAgentContextSnapshot, getAgentCapabilities } from './agentContext';
 import type { AgentToolCall } from './agentTools';
-import { supabase } from '../src/integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 import { extractTextFromResponse, type GeminiResponse } from './geminiUtils';
 
 const env = (import.meta.env || {}) as any;
