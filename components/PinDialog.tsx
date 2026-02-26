@@ -352,6 +352,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         key="del"
                         variant="ghost"
                         onClick={handleBackspace}
+                        aria-label="Backspace"
                         style={{
                           height: '48px',
                           fontSize: '14px',
@@ -396,10 +397,12 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 }}
                 disabled={isLoading}
                 autoComplete="off"
+                aria-label="PIN entry"
               />
 
               {error && (
                 <div
+                  role="alert"
                   style={{
                     marginTop: spacing.md,
                     padding: '4px 8px',
