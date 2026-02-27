@@ -7,7 +7,6 @@ import UserSelection from './components/common/UserSelection';
 import MessageBoard from './components/common/MessageBoard';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
-import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import Dashboard from './components/main/Dashboard';
 import PlacesList from './components/places/PlacesList';
@@ -26,7 +25,6 @@ const App: React.FC = () => {
   const { currentUser } = useUser();
   const [activeTab, setActiveTab] = useState<MainTab>('home');
   const { quizData } = useQuiz(true);
-  const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
@@ -301,7 +299,6 @@ const App: React.FC = () => {
 
       <MessageBoard mode="floating" />
 
-      <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
   );
 };
