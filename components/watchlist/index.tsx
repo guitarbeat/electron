@@ -412,7 +412,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           {toast.onUndo && (
             <button
               type="button"
-              onClick={() => { toast.onUndo?.(); }}
+              onClick={() => {
+                toast.onUndo?.();
+              }}
               style={{
                 background: 'rgba(255,255,255,0.25)',
                 border: '1px solid rgba(255,255,255,0.5)',
