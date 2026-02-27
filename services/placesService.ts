@@ -1,5 +1,6 @@
 import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
 import type { Place } from '../types';
+import { FAKE_PLACES } from './fakeData';
 
 export const getPlaces = async (): Promise<Place[]> => {
   try {
@@ -25,8 +26,8 @@ export const getPlaces = async (): Promise<Place[]> => {
     const places = JSON.parse(file.content);
     return Array.isArray(places) ? places : [];
   } catch (error) {
-    console.error('Error fetching places from Gist:', error);
-    throw error;
+    console.warn('Error fetching places from Gist, returning fake data for demo:', error);
+    return FAKE_PLACES;
   }
 };
 
