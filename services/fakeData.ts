@@ -8,7 +8,8 @@ export const FAKE_MOVIES: Movie[] = [
     watchedBy: ['Aaron', 'Electra'],
     createdAt: '2023-01-01T00:00:00.000Z',
     year: '2010',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
+    posterUrl:
+      'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
     plot: 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.',
     imdbRating: '8.8',
     runtime: '148 min',
@@ -22,7 +23,8 @@ export const FAKE_MOVIES: Movie[] = [
     watchedBy: ['Aaron'],
     createdAt: '2023-02-15T00:00:00.000Z',
     year: '1999',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg',
+    posterUrl:
+      'https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg',
     plot: 'When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence.',
     imdbRating: '8.7',
     runtime: '136 min',
@@ -36,8 +38,9 @@ export const FAKE_MOVIES: Movie[] = [
     watchedBy: [],
     createdAt: '2023-03-10T00:00:00.000Z',
     year: '2014',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
-    plot: 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
+    posterUrl:
+      'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
+    plot: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
     imdbRating: '8.6',
     runtime: '169 min',
     genre: 'Adventure, Drama, Sci-Fi',
@@ -50,7 +53,8 @@ export const FAKE_MOVIES: Movie[] = [
     watchedBy: [],
     createdAt: '2023-04-05T00:00:00.000Z',
     year: '2019',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg',
+    posterUrl:
+      'https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg',
     plot: 'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.',
     imdbRating: '8.6',
     runtime: '132 min',
@@ -64,8 +68,9 @@ export const FAKE_MOVIES: Movie[] = [
     watchedBy: ['Electra'],
     createdAt: '2023-05-20T00:00:00.000Z',
     year: '2001',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BMjlmZmI5MDctNDE2YS00YWE0LWE5ZWItZDBhYWQ0NTcxNWRhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
-    plot: 'During her family\'s move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits, and where humans are changed into beasts.',
+    posterUrl:
+      'https://m.media-amazon.com/images/M/MV5BMjlmZmI5MDctNDE2YS00YWE0LWE5ZWItZDBhYWQ0NTcxNWRhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
+    plot: "During her family's move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits, and where humans are changed into beasts.",
     imdbRating: '8.6',
     runtime: '125 min',
     genre: 'Animation, Adventure, Family',
@@ -78,13 +83,14 @@ export const FAKE_MOVIES: Movie[] = [
     watchedBy: ['Aaron', 'Electra'],
     createdAt: '2023-06-15T00:00:00.000Z',
     year: '2014',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_SX300.jpg',
-    plot: 'A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel\'s glorious years under an exceptional concierge.',
+    posterUrl:
+      'https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_SX300.jpg',
+    plot: "A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.",
     imdbRating: '8.1',
     runtime: '99 min',
     genre: 'Adventure, Comedy, Crime',
     director: 'Wes Anderson',
-  }
+  },
 ];
 
 export const FAKE_PLACES: Place[] = [
@@ -116,5 +122,5 @@ export const FAKE_PLACES: Place[] = [
     addedBy: 'Electra',
     notes: 'Inca trail trek.',
     createdAt: '2023-04-12T00:00:00.000Z',
-  }
+  },
 ];
