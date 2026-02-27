@@ -77,10 +77,13 @@ export const calculateQuizResults = (
   // Calculate percentages
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
 
-  const percentages: Record<QuizCharacter, number> = CHARACTERS.reduce((acc, char) => {
-    acc[char] = Math.round((scores[char] / totalScore) * 100) || 0;
-    return acc;
-  }, {} as Record<QuizCharacter, number>);
+  const percentages: Record<QuizCharacter, number> = CHARACTERS.reduce(
+    (acc, char) => {
+      acc[char] = Math.round((scores[char] / totalScore) * 100) || 0;
+      return acc;
+    },
+    {} as Record<QuizCharacter, number>
+  );
 
   // Determine if result is "Neither"
   // If the top character has less than 35% of the total score, it's a weak match
