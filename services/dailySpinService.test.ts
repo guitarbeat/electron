@@ -8,7 +8,7 @@ import {
   hasSpunToday,
   getTodaySpin,
 } from './dailySpinService.ts';
-import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../config/gistConfig';
+import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../config/gistConfig.ts';
 import type { DailySpin } from '../types.ts';
 
 // A fixed Wednesday for testing
@@ -243,5 +243,61 @@ test('dailySpinService', async (t) => {
     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(null));
     const result = await getTodaySpin();
     assert.equal(result, null);
+  });
+
+  await t.test('updateDailySpin throws error when saveDailySpin fails', async () => {
+    // Explicitly using mockImplementation to handle multiple calls robustly
+    let callCount = 0;
+    fetchMock.mock.mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        // getDailySpin success
+        return mockGistResponse(JSON.stringify(mockSpin));
+      }
+      if (callCount === 2) {
+        // saveDailySpin failure
+        return new Response(JSON.stringify({ message: 'Error' }), { status: 500 });
+      }
+      return new Response(null, { status: 500 });
+    });
+
+    const consoleErrorMock = mock.method(console, 'error', () => {});
+
+    await assert.rejects(
+      async () => updateDailySpin({ movieTitle: 'Updated Title' }),
+      /GitHub API responded with 500/
+    );
+
+    consoleErrorMock.mock.restore();
+  });
+
+  await t.test('updateDailySpin correctly updates the spin and saves it', async () => {
+    // Explicitly using mockImplementation to handle multiple calls robustly
+    let callCount = 0;
+    fetchMock.mock.mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        // getDailySpin success
+        return mockGistResponse(JSON.stringify(mockSpin));
+      }
+      if (callCount === 2) {
+        // saveDailySpin success
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(null, { status: 500 });
+    });
+
+    const updates = { movieTitle: 'New Title', spunBy: 'New Person' };
+    const result = await updateDailySpin(updates);
+
+    // Verify returned object
+    assert.deepEqual(result, { ...mockSpin, ...updates });
+
+    // Verify saveDailySpin call
+    assert.equal(fetchMock.mock.callCount(), 2);
+    const saveCall = fetchMock.mock.calls[1];
+    const body = JSON.parse(saveCall.arguments[1]?.body as string);
+    const content = JSON.parse(body.files[GIST_DAILY_SPIN_FILENAME].content);
+    assert.deepEqual(content, { ...mockSpin, ...updates });
   });
 });
