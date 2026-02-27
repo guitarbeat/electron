@@ -158,7 +158,6 @@ describe('PollingManager', () => {
       const callArgs = consoleError.mock.calls[0].arguments;
       assert.strictEqual(callArgs[0], `Polling failed for ${key}`);
       assert.strictEqual(callArgs[1], error);
-
     } finally {
       // Cleanup
       consoleError.mock.restore();
