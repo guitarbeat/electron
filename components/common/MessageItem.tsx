@@ -2,7 +2,7 @@ import './MessageItem.css';
 import React, { memo, useState, useEffect, useRef } from 'react';
 import { Message, User } from '../../types';
 import { TrashIcon } from './icons';
-import { spacing, typography, colors, radius } from '../../design-system/tokens';
+import { spacing, typography, colors } from '../../design-system/tokens';
 import { getMessageBubbleStyle } from '../../hooks/useUserColors';
 
 // iOS-style reactions
@@ -390,7 +390,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
           <TrashIcon style={{ width: '14px', height: '14px', color: '#fff' }} />
         </button>
       )}
-
     </div>
   );
 };
