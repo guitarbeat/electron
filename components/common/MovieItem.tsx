@@ -326,7 +326,15 @@ const MovieItem: React.FC<MovieItemProps> = ({
               </button>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', width: '100%' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '4px',
+                width: '100%',
+              }}
+            >
               <Button
                 type="button"
                 onClick={handleToggle}

@@ -46,7 +46,7 @@ export function usePlacesAutocomplete(
       if (!inputRef.current || !window.google?.maps?.places) return;
       if (autocompleteRef.current) return;
 
-      const Autocomplete = window.google.maps.places.Autocomplete;
+      const { Autocomplete } = window.google.maps.places;
       const autocomplete = new Autocomplete(inputRef.current, {
         types: ['establishment', 'geocode'],
         fields: ['formatted_address', 'name', 'geometry'],
