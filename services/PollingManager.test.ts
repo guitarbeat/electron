@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
 import { pollingManager } from './PollingManager.ts';
 
@@ -124,5 +124,44 @@ describe('PollingManager', () => {
     assert.strictEqual(fetchCount, 2, 'Should allow a new request once in-flight request settles');
 
     unsub();
+  });
+
+  it('should handle fetch errors gracefully', async () => {
+    const error = new Error('Fetch failed');
+    const fetchFn = async () => {
+      throw error;
+    };
+    const key = 'test-error';
+
+    // Mock console.error to suppress output and verify it's called
+    const consoleError = mock.method(console, 'error', () => {});
+    let unsub;
+
+    try {
+      let receivedError: any;
+      let receivedData: any;
+
+      unsub = pollingManager.subscribe(key, fetchFn, 1000, (data, err) => {
+        receivedData = data;
+        receivedError = err;
+      });
+
+      // Wait for initial fetch
+      await new Promise((r) => setTimeout(r, 20));
+
+      assert.strictEqual(receivedData, undefined);
+      assert.strictEqual(receivedError, error);
+      assert.strictEqual(pollingManager.getError(key), error);
+
+      // Check if console.error was called
+      assert.strictEqual(consoleError.mock.callCount(), 1);
+      const callArgs = consoleError.mock.calls[0].arguments;
+      assert.strictEqual(callArgs[0], `Polling failed for ${key}`);
+      assert.strictEqual(callArgs[1], error);
+    } finally {
+      // Cleanup
+      consoleError.mock.restore();
+      if (unsub) unsub();
+    }
   });
 });
