@@ -13,7 +13,7 @@ const GIST_TOKEN = clean(env.VITE_GIST_TOKEN || ''); // Must be set in .env
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.
-const GIST_ID = clean(env.VITE_GIST_ID || 'ba250f944e3e9e71c0d669060254eab2');
+const GIST_ID = clean(env.VITE_GIST_ID || '');
 
 // The API URL for Gist operations
 const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
