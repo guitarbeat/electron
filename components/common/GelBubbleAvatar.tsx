@@ -10,6 +10,7 @@ interface GelBubbleAvatarProps {
   user: User;
   hasPin: boolean;
   isHovered: boolean;
+  isSmall?: boolean;
   onClick: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -23,6 +24,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   user,
   hasPin,
   isHovered,
+  isSmall = false,
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -61,7 +63,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         border: 'none',
         cursor: disabled ? 'wait' : 'pointer',
         padding: 0,
-        opacity: disabled ? 0.7 : 1,
+        opacity: isSmall ? 0.5 : disabled ? 0.7 : 1,
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isSmall ? 'scale(0.6)' : 'none',
+        filter: isSmall ? 'grayscale(0.4)' : 'none',
       }}
     >
       {/* Gel Bubble Container - Outer Ring */}

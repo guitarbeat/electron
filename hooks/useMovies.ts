@@ -170,8 +170,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
   const deleteMovie = useCallback(
     async (movieId: string) => {
-      if (!window.confirm('Are you sure you want to delete this movie?')) return;
       await performMutation((latestMovies) => latestMovies.filter((movie) => movie.id !== movieId));
+    },
+    [performMutation]
+  );
+
+  const restoreMovie = useCallback(
+    async (movie: Movie) => {
+      await performMutation((latestMovies) => [...latestMovies, movie]);
     },
     [performMutation]
   );
@@ -343,6 +349,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     addMovie,
     toggleWatched,
     deleteMovie,
+    restoreMovie,
     refresh,
     updateMovieMetadata,
     manualMetadataUpdate,
