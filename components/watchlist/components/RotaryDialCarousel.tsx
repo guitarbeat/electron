@@ -289,86 +289,81 @@ export const RotaryDialCarousel: React.FC<RotaryDialCarouselProps> = ({
       </div>
 
       <div className="rdc-controls" style={{ bottom: isMobile ? '20px' : '0px' }}>
-            <button
-              type="button"
-              onClick={() => spin(-1)}
-              className="rdc-btn-spin"
-              aria-label="Previous movie"
-              style={{
-                width: isMobile ? '40px' : '48px',
-                height: isMobile ? '40px' : '48px',
-                backgroundColor: colors.surfaceElevated,
-                borderColor: `${colors.borderSecondary}40`,
-                color: colors.textPrimary,
-              }}
-            >
-              <svg
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                style={{
-                  width: isMobile ? '16px' : '20px',
-                  height: isMobile ? '16px' : '20px',
-                }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => onMovieClick?.(activeMovie)}
-              style={{
-                padding: isMobile ? '10px 20px' : '12px 32px',
-                fontSize: isMobile ? '11px' : '13px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                borderRadius: 9999,
-                background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
-                color: '#fff',
-                boxShadow: shadows.glow,
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Select {activeMovie?.title}
-            </button>
-            <button
-              type="button"
-              onClick={() => spin(1)}
-              className="rdc-btn-spin"
-              aria-label="Next movie"
-              style={{
-                width: isMobile ? '40px' : '48px',
-                height: isMobile ? '40px' : '48px',
-                backgroundColor: colors.surfaceElevated,
-                borderColor: `${colors.borderSecondary}40`,
-                color: colors.textPrimary,
-              }}
-            >
-              <svg
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                style={{
-                  width: isMobile ? '16px' : '20px',
-                  height: isMobile ? '16px' : '20px',
-                }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </div>
+        <button
+          type="button"
+          onClick={() => spin(-1)}
+          className="rdc-btn-spin"
+          aria-label="Previous movie"
+          style={{
+            width: isMobile ? '40px' : '48px',
+            height: isMobile ? '40px' : '48px',
+            backgroundColor: colors.surfaceElevated,
+            borderColor: `${colors.borderSecondary}40`,
+            color: colors.textPrimary,
+          }}
+        >
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{
+              width: isMobile ? '16px' : '20px',
+              height: isMobile ? '16px' : '20px',
+            }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={() => onMovieClick?.(activeMovie)}
+          style={{
+            padding: isMobile ? '10px 20px' : '12px 32px',
+            fontSize: isMobile ? '11px' : '13px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            borderRadius: 9999,
+            background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
+            color: '#fff',
+            boxShadow: shadows.glow,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Select {activeMovie?.title}
+        </button>
+        <button
+          type="button"
+          onClick={() => spin(1)}
+          className="rdc-btn-spin"
+          aria-label="Next movie"
+          style={{
+            width: isMobile ? '40px' : '48px',
+            height: isMobile ? '40px' : '48px',
+            backgroundColor: colors.surfaceElevated,
+            borderColor: `${colors.borderSecondary}40`,
+            color: colors.textPrimary,
+          }}
+        >
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{
+              width: isMobile ? '16px' : '20px',
+              height: isMobile ? '16px' : '20px',
+            }}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
 
       <div
         className="rdc-hint"

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Card from './Card';
 import { CheckIcon } from '../common/icons';
 import { colors, shadows, spacing, typography, radius } from '../../design-system/tokens';
+import './Toast.css';
 
 interface ToastProps {
   message: string;
@@ -78,6 +79,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
       variant="elevated"
       role={type === 'error' ? 'alert' : 'status'}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
+      className={isExiting ? 'toast-slide-out' : 'toast-slide-in'}
       style={{
         position: 'fixed',
         top: spacing.lg,
@@ -89,18 +91,9 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
         backgroundColor: styles.backgroundColor,
         borderColor: styles.borderColor,
         borderWidth: '2px',
-        animation: isExiting
-          ? 'toast-slide-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-          : 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         boxShadow: styles.shadow,
       }}
     >
-      <style>{`
-        @keyframes toast-slide-out {
-          from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-          to { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
-        }
-      `}</style>
       <div
         style={{
           display: 'flex',
