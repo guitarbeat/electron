@@ -76,8 +76,8 @@ describe('calculateQuizResults', () => {
         xAxis: { leftLabel: 'L', rightLabel: 'R' },
         yAxis: { topLabel: 'T', bottomLabel: 'B' },
         quadrantScores: {
-          topLeft: { Electra: 10 },     // x < 0, y > 0
-          topRight: { Aaron: 10 },      // x > 0, y > 0
+          topLeft: { Electra: 10 }, // x < 0, y > 0
+          topRight: { Aaron: 10 }, // x > 0, y > 0
           bottomLeft: { Madeleine: 10 }, // x < 0, y < 0
           bottomRight: { 'Nosferatu/Smeemo': 10 }, // x > 0, y < 0
         },
@@ -112,8 +112,8 @@ describe('calculateQuizResults', () => {
               Electra: 3,
               Aaron: 3,
               Madeleine: 3,
-              'Nosferatu/Smeemo': 3
-            }
+              'Nosferatu/Smeemo': 3,
+            },
           },
         ],
       },
@@ -131,38 +131,36 @@ describe('calculateQuizResults', () => {
   });
 
   test('should handle tie-breaking using sort order', () => {
-     // If scores are equal, sort order determines winner.
-     // Current sort: b - a (descending score). If equal, stable sort or engine dependent?
-     // actually, Object.keys(scores) order matters if sort is unstable for equal values,
-     // but the implementation uses: (Object.keys(scores) as QuizCharacter[]).sort((a, b) => scores[b] - scores[a])
-     // If scores[b] - scores[a] === 0, order is preserved from keys array.
-     // Keys usually follow insertion order or definition order in CHARACTERS array if reduced correctly.
+    // If scores are equal, sort order determines winner.
+    // Current sort: b - a (descending score). If equal, stable sort or engine dependent?
+    // actually, Object.keys(scores) order matters if sort is unstable for equal values,
+    // but the implementation uses: (Object.keys(scores) as QuizCharacter[]).sort((a, b) => scores[b] - scores[a])
+    // If scores[b] - scores[a] === 0, order is preserved from keys array.
+    // Keys usually follow insertion order or definition order in CHARACTERS array if reduced correctly.
 
-     const questions: QuizQuestion[] = [
-       {
-         id: 'q1',
-         type: 'multiple-choice',
-         question: 'Q1',
-         options: [
-           { text: 'Tie', scores: { Electra: 10, Aaron: 10 } },
-         ],
-       },
-     ];
+    const questions: QuizQuestion[] = [
+      {
+        id: 'q1',
+        type: 'multiple-choice',
+        question: 'Q1',
+        options: [{ text: 'Tie', scores: { Electra: 10, Aaron: 10 } }],
+      },
+    ];
 
-     const answers: QuizAnswer[] = [{ questionId: 'q1', answerIndex: 0 }];
+    const answers: QuizAnswer[] = [{ questionId: 'q1', answerIndex: 0 }];
 
-     const result = calculateQuizResults(answers, questions);
+    const result = calculateQuizResults(answers, questions);
 
-     // Based on standard JS sort behavior for 0, it often preserves order.
-     // In `quizScoring.ts`:
-     // const scores = CHARACTERS.reduce(...) -> keys order is CHARACTERS order.
-     // CHARACTERS = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo']
-     // Aaron comes before Electra in keys.
-     // sort((a,b) => 10 - 10) -> 0.
-     // If stable sort (modern JS engines), 'Aaron' should come first.
+    // Based on standard JS sort behavior for 0, it often preserves order.
+    // In `quizScoring.ts`:
+    // const scores = CHARACTERS.reduce(...) -> keys order is CHARACTERS order.
+    // CHARACTERS = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo']
+    // Aaron comes before Electra in keys.
+    // sort((a,b) => 10 - 10) -> 0.
+    // If stable sort (modern JS engines), 'Aaron' should come first.
 
-     assert.equal(result.scores.Aaron, 10);
-     assert.equal(result.scores.Electra, 10);
-     assert.equal(result.character, 'Aaron');
+    assert.equal(result.scores.Aaron, 10);
+    assert.equal(result.scores.Electra, 10);
+    assert.equal(result.character, 'Aaron');
   });
 });
