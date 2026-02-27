@@ -81,6 +81,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
     }
   };
 
+  // Helper to determine border color
+  const getBorderColor = () => {
+    if (isHighlighted) return colors.secondary;
+    if (watchedByBoth) return colors.accent;
+    return colors.border;
+  };
+
   return (
     <>
       <Card
@@ -94,11 +101,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           marginBottom: spacing.sm,
           borderWidth: watchedByBoth ? '2px' : '1px',
-          borderColor: isHighlighted
-            ? colors.secondary
-            : watchedByBoth
-              ? colors.accent
-              : colors.border,
+          borderColor: getBorderColor(),
           position: 'relative',
           overflow: 'hidden',
           animationDelay,
