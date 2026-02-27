@@ -125,4 +125,35 @@ describe('PollingManager', () => {
 
     unsub();
   });
+
+  it('should handle fetch errors and notify listeners', async () => {
+    const originalConsoleError = console.error;
+    console.error = () => {};
+
+    try {
+      const error = new Error('Fetch failed');
+      const fetchFn = async () => {
+        throw error;
+      };
+      const key = 'test-error';
+
+      let receivedData: any;
+      let receivedError: any;
+
+      const unsub = pollingManager.subscribe(key, fetchFn, 1000, (d, e) => {
+        receivedData = d;
+        receivedError = e;
+      });
+
+      await new Promise((r) => setTimeout(r, 20));
+
+      assert.strictEqual(receivedData, undefined);
+      assert.strictEqual(receivedError, error);
+      assert.strictEqual(pollingManager.getError(key), error);
+
+      unsub();
+    } finally {
+      console.error = originalConsoleError;
+    }
+  });
 });
