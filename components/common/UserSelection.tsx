@@ -71,6 +71,7 @@ const UserSelection: React.FC = () => {
             user="Aaron"
             hasPin={userHasPin('Aaron')}
             isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
+            isSmall={currentUser !== null && currentUser !== 'Aaron'}
             onClick={() => handleUserClick('Aaron')}
             onMouseEnter={() => setHoveredAvatar('Aaron')}
             onMouseLeave={() => setHoveredAvatar(null)}
@@ -84,6 +85,7 @@ const UserSelection: React.FC = () => {
             user="Electra"
             hasPin={userHasPin('Electra')}
             isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
+            isSmall={currentUser !== null && currentUser !== 'Electra'}
             onClick={() => handleUserClick('Electra')}
             onMouseEnter={() => setHoveredAvatar('Electra')}
             onMouseLeave={() => setHoveredAvatar(null)}
