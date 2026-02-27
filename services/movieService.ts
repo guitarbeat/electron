@@ -1,5 +1,6 @@
 import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig';
 import type { Movie } from '../types';
+import { FAKE_MOVIES } from './fakeData';
 
 // Cache variables to store the last known state
 let cachedMovies: Movie[] = [];
@@ -89,8 +90,8 @@ export const getMovies = async (): Promise<Movie[]> => {
 
     return movies;
   } catch (error) {
-    console.error('Error fetching movies from Gist:', error);
-    throw error;
+    console.warn('Error fetching movies from Gist, returning fake data for demo:', error);
+    return FAKE_MOVIES;
   }
 };
 
