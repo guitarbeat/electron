@@ -36,3 +36,4 @@ git_status.txt
 server.pid
 pr_branches.json
 pr_status.json
+test-results/
