@@ -5,13 +5,7 @@
  */
 
 import React from 'react';
-import {
-  QuizQuestion,
-  MultipleChoiceQuestion,
-  AgreeDisagreeQuestion,
-  ImageChoiceQuestion,
-  XYAxisQuestion,
-} from './types';
+import { QuizQuestion, MultipleChoiceQuestion, ImageChoiceQuestion, XYAxisQuestion } from './types';
 import { spacing, colors, typography, radius } from '../../design-system/tokens';
 import Card from '../ui/Card';
 
