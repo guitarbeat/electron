@@ -107,6 +107,17 @@ test('dailySpinService', async (t) => {
     consoleErrorMock.mock.restore();
   });
 
+  await t.test('saveDailySpin throws error when fetch fails', async () => {
+    const consoleErrorMock = mock.method(console, 'error', () => {});
+    fetchMock.mock.mockImplementationOnce(async () => {
+      throw new Error('Network error');
+    });
+
+    await assert.rejects(async () => saveDailySpin(mockSpin), { message: 'Network error' });
+    assert.equal(consoleErrorMock.mock.callCount(), 1);
+    consoleErrorMock.mock.restore();
+  });
+
   // --- updateDailySpin ---
   await t.test('updateDailySpin fetches current spin, merges updates, and saves', async () => {
     // Explicitly using mockImplementation to handle multiple calls robustly
