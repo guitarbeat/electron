@@ -97,7 +97,10 @@ export const SpinRoulette: React.FC<SpinRouletteProps> = ({
   if (n === 0) {
     return (
       <div className={`spin-roulette spin-roulette--empty ${className}`} style={style}>
-        <p className="spin-roulette__empty-msg" style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
+        <p
+          className="spin-roulette__empty-msg"
+          style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}
+        >
           Add movies to your queue to spin.
         </p>
       </div>
@@ -111,39 +114,33 @@ export const SpinRoulette: React.FC<SpinRouletteProps> = ({
       data-spinning={isSpinning || undefined}
     >
       <div className="spin-roulette__wrapper">
-        <div
-          className="spin-roulette__indicator"
-          aria-hidden
-        />
+        <div className="spin-roulette__indicator" aria-hidden />
         <div
           className="spin-roulette__wheel"
           style={{
             transform: `rotate(${rotation}deg)`,
-            transition: isSpinning
-              ? `transform ${SPIN_DURATION_MS}ms ${EASE_OUT}`
-              : 'none',
+            transition: isSpinning ? `transform ${SPIN_DURATION_MS}ms ${EASE_OUT}` : 'none',
           }}
         >
           {/* Segment divider lines for clarity */}
-          {n > 1 && movies.map((_, i) => (
-            <div
-              key={`line-${i}`}
-              className="spin-roulette__segment-line"
-              style={{
-                transform: `rotate(${i * anglePerSegment}deg)`,
-              }}
-              aria-hidden
-            />
-          ))}
+          {n > 1 &&
+            movies.map((_, i) => (
+              <div
+                key={`line-${i}`}
+                className="spin-roulette__segment-line"
+                style={{
+                  transform: `rotate(${i * anglePerSegment}deg)`,
+                }}
+                aria-hidden
+              />
+            ))}
           {movies.map((movie, i) => (
             <div
               key={movie.id}
               className="spin-roulette__segment"
               style={{
                 clipPath: wedgeClipPath(i, n, innerRadiusPct, outerRadiusPct),
-                background: i % 2 === 0
-                  ? 'rgba(255, 105, 180, 0.14)'
-                  : 'rgba(135, 206, 250, 0.14)',
+                background: i % 2 === 0 ? 'rgba(255, 105, 180, 0.14)' : 'rgba(135, 206, 250, 0.14)',
               }}
             >
               {/* Poster thumbnail in the wedge */}
