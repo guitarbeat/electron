@@ -178,7 +178,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     handleDragEnd();
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch (error) {
+    } catch (err) {
       // Ignore capture errors from canceled pointer interactions.
     }
   };
@@ -198,6 +198,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   if (!isEmbedded && isMinimized) {
     return (
       <button
+        type="button"
         onClick={handleBubbleClick}
         onPointerDown={handleBubblePointerDown}
         onPointerMove={handleBubblePointerMove}
@@ -305,6 +306,8 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   return (
     <div style={containerStyle} className="message-board-container">
       <div
+        role="button"
+        tabIndex={0}
         style={{
           padding: `${spacing.sm} ${spacing.md}`,
           backgroundColor: colors.surface,
@@ -317,6 +320,12 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
           borderBottom: `1px solid ${colors.accentMuted}`,
         }}
         onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
       >
         <span
           style={{
@@ -330,6 +339,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         </span>
         {!isEmbedded && (
           <button
+            type="button"
             onClick={(event) => {
               event.stopPropagation();
               handleToggle();
@@ -369,6 +379,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
             currentUser={currentUser}
             isSubmitting={isSubmitting}
             onSend={handleSend}
+            // eslint-disable-next-line no-console
             onError={(msg) => console.error(msg)}
           />
         </ChatWindow>

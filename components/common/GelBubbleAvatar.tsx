@@ -41,6 +41,11 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
     if (!disabled) refetchCat();
   };
 
+  const ringPulse1 = isHovered ? '50px' : '35px';
+  const ringPulseColor1 = isHovered ? '0.5' : '0.35';
+  const ringPulse2 = isHovered ? '80px' : '60px';
+  const ringPulseColor2 = isHovered ? '0.4' : '0.25';
+
   return (
     <button
       type="button"
@@ -86,8 +91,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             inset 0 -15px 40px rgba(100, 60, 150, 0.4),
             inset 0 15px 30px rgba(255, 255, 255, 0.2),
             inset 0 0 20px rgba(255, 105, 180, 0.15),
-            0 0 ${isHovered ? '50px' : '35px'} rgba(255, 105, 180, ${isHovered ? '0.5' : '0.35'}),
-            0 0 ${isHovered ? '80px' : '60px'} rgba(147, 112, 219, ${isHovered ? '0.4' : '0.25'})
+            0 0 ${ringPulse1} rgba(255, 105, 180, ${ringPulseColor1}),
+            0 0 ${ringPulse2} rgba(147, 112, 219, ${ringPulseColor2})
           `,
           border: '3px solid rgba(180, 150, 220, 0.4)',
           backdropFilter: 'blur(4px)',
