@@ -17,22 +17,29 @@ interface PlacesMapProps {
  */
 const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
 
-    const placesWithCoords = places.filter((p): p is Place & { lat: number; lng: number } =>
-      typeof p.lat === 'number' && typeof p.lng === 'number'
+    const placesWithCoords = places.filter(
+      (p): p is Place & { lat: number; lng: number } =>
+        typeof p.lat === 'number' && typeof p.lng === 'number'
     );
 
-    const updateMarkersAndBounds = (map: google.maps.Map) => {
-      markersRef.current.forEach((m) => m.setMap(null));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateMarkersAndBounds = (map: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      markersRef.current.forEach((m: any) => m.setMap(null));
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const google = (window as any).google;
       const bounds = new google.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
         const position = { lat: place.lat, lng: place.lng };
@@ -54,9 +61,11 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
     };
 
     const initMap = () => {
-      if (!containerRef.current || !window.google?.maps) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const google = (window as any).google;
+      if (!containerRef.current || !google?.maps) return;
 
-      const map = new window.google.maps.Map(containerRef.current, {
+      const map = new google.maps.Map(containerRef.current, {
         center: DEFAULT_CENTER,
         zoom: DEFAULT_ZOOM,
         styles: [
@@ -74,7 +83,8 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       updateMarkersAndBounds(map);
     };
 
-    if (window.google?.maps?.Map) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).google?.maps?.Map) {
       if (mapRef.current) {
         updateMarkersAndBounds(mapRef.current);
       } else {
