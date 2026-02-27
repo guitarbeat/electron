@@ -70,9 +70,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
 
   const updatePlace = useCallback(
     async (id: string, updates: Partial<Pick<Place, 'name' | 'notes'>>) => {
-      await performMutation((list) =>
-        list.map((p) => (p.id === id ? { ...p, ...updates } : p))
-      );
+      await performMutation((list) => list.map((p) => (p.id === id ? { ...p, ...updates } : p)));
     },
     [performMutation]
   );
@@ -80,9 +78,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
   const markVisited = useCallback(
     async (id: string) => {
       await performMutation((list) =>
-        list.map((p) =>
-          p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p
-        )
+        list.map((p) => (p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p))
       );
     },
     [performMutation]
