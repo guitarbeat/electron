@@ -95,12 +95,6 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
         boxShadow: styles.shadow,
       }}
     >
-      <style>{`
-        @keyframes toast-slide-out {
-          from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-          to { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
-        }
-      `}</style>
       <div
         style={{
           display: 'flex',
