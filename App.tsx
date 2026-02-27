@@ -17,9 +17,7 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'home', label: 'Home', icon: '🏠' },
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
-  { id: 'spin', label: 'Spin', icon: '🎰' },
-  { id: 'games', label: 'Games', icon: '🎮' },
-  { id: 'quiz', label: 'Quiz', icon: '❓' },
+  { id: 'extras', label: 'Extras', icon: '🎰' },
 ];
 
 const App: React.FC = () => {
@@ -36,7 +34,7 @@ const App: React.FC = () => {
   const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
 
   const handleStartQuiz = () => {
-    setActiveTab('quiz');
+    setActiveTab('extras');
     setShowQuizEditor(false);
     setShowQuiz(true);
   };
@@ -49,13 +47,13 @@ const App: React.FC = () => {
   };
 
   const handleRetakeQuiz = () => {
-    setActiveTab('quiz');
+    setActiveTab('extras');
     setShowQuizEditor(false);
     setShowQuiz(true);
   };
 
   const handleOpenQuizEditor = () => {
-    setActiveTab('quiz');
+    setActiveTab('extras');
     setShowQuiz(false);
     setShowQuizEditor(true);
   };
@@ -70,33 +68,7 @@ const App: React.FC = () => {
         );
       case 'queue':
         return <Watchlist />;
-      case 'spin':
-        return (
-          <div className="animate-fade-in">
-            <ExtrasHub
-              currentUser={currentUser}
-              quizCompleted={quizCompleted}
-              onStartQuiz={handleStartQuiz}
-              onRetakeQuiz={handleRetakeQuiz}
-              onOpenQuizEditor={handleOpenQuizEditor}
-              initialView="spin"
-            />
-          </div>
-        );
-      case 'games':
-        return (
-          <div className="animate-fade-in">
-            <ExtrasHub
-              currentUser={currentUser}
-              quizCompleted={quizCompleted}
-              onStartQuiz={handleStartQuiz}
-              onRetakeQuiz={handleRetakeQuiz}
-              onOpenQuizEditor={handleOpenQuizEditor}
-              initialView="games"
-            />
-          </div>
-        );
-      case 'quiz': {
+      case 'extras': {
         let content;
         if (showQuiz && quizData) {
           content = <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />;
@@ -110,7 +82,7 @@ const App: React.FC = () => {
               onStartQuiz={handleStartQuiz}
               onRetakeQuiz={handleRetakeQuiz}
               onOpenQuizEditor={handleOpenQuizEditor}
-              initialView="quiz"
+              initialView="all"
             />
           );
         }

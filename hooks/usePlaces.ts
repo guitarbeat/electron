@@ -68,6 +68,13 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     [performMutation]
   );
 
+  const restorePlace = useCallback(
+    async (place: Place) => {
+      await performMutation((list) => [...list, place]);
+    },
+    [performMutation]
+  );
+
   const updatePlace = useCallback(
     async (id: string, updates: Partial<Pick<Place, 'name' | 'notes'>>) => {
       await performMutation((list) => list.map((p) => (p.id === id ? { ...p, ...updates } : p)));
@@ -101,6 +108,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     isSubmitting,
     addPlace,
     removePlace,
+    restorePlace,
     updatePlace,
     markVisited,
     markUnvisited,

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
 import { usePlaces } from '../../hooks/usePlaces';
 import { usePlacesAutocomplete } from '../../hooks/usePlacesAutocomplete';
@@ -24,7 +24,7 @@ type PlaceFilter = 'want' | 'visited';
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
-  const { places, isLoading, isSubmitting, addPlace, removePlace, markVisited, markUnvisited } =
+  const { places, isLoading, isSubmitting, addPlace, removePlace, restorePlace, markVisited, markUnvisited } =
     usePlaces(currentUser);
 
   const [filter, setFilter] = useState<PlaceFilter>('want');
@@ -32,6 +32,7 @@ const PlacesList: React.FC = () => {
   const [notesInput, setNotesInput] = useState('');
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; onUndo?: () => void } | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   usePlacesAutocomplete(nameInputRef, (name, lat, lng) => {
     setNameInput(name);
@@ -67,13 +68,33 @@ const PlacesList: React.FC = () => {
 
   const confirmDelete = useCallback(async () => {
     if (!placeToDelete) return;
+    const deleted = placeToDelete;
     try {
-      await removePlace(placeToDelete.id);
+      await removePlace(deleted.id);
       setPlaceToDelete(null);
+      setToast({
+        message: `Removed "${deleted.name}"`,
+        type: 'success',
+        onUndo: async () => {
+          try {
+            await restorePlace(deleted);
+            setToast({ message: `Restored "${deleted.name}"`, type: 'success' });
+          } catch {
+            setToast({ message: 'Failed to undo', type: 'error' });
+          }
+        },
+      });
     } catch (err) {
       console.error(err);
     }
-  }, [placeToDelete, removePlace]);
+  }, [placeToDelete, removePlace, restorePlace]);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   if (isLoading && places.length === 0) {
     return (
@@ -265,6 +286,49 @@ const PlacesList: React.FC = () => {
           </li>
         ))}
       </ul>
+
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: spacing.md,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: toast.type === 'error' ? colors.error : colors.success,
+            color: '#fff',
+            padding: `${spacing.sm} ${spacing.md}`,
+            borderRadius: radius.full,
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.sm,
+          }}
+        >
+          {toast.message}
+          {toast.onUndo && (
+            <button
+              type="button"
+              onClick={() => { toast.onUndo?.(); }}
+              style={{
+                background: 'rgba(255,255,255,0.25)',
+                border: '1px solid rgba(255,255,255,0.5)',
+                color: '#fff',
+                padding: `2px ${spacing.sm}`,
+                borderRadius: radius.md,
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: typography.fontSize.xs,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Undo
+            </button>
+          )}
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={!!placeToDelete}
