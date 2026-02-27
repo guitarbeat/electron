@@ -24,15 +24,27 @@ type PlaceFilter = 'want' | 'visited';
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
-  const { places, isLoading, isSubmitting, addPlace, removePlace, restorePlace, markVisited, markUnvisited } =
-    usePlaces(currentUser);
+  const {
+    places,
+    isLoading,
+    isSubmitting,
+    addPlace,
+    removePlace,
+    restorePlace,
+    markVisited,
+    markUnvisited,
+  } = usePlaces(currentUser);
 
   const [filter, setFilter] = useState<PlaceFilter>('want');
   const [nameInput, setNameInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; onUndo?: () => void } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+    onUndo?: () => void;
+  } | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   usePlacesAutocomplete(nameInputRef, (name, lat, lng) => {
     setNameInput(name);
@@ -309,7 +321,9 @@ const PlacesList: React.FC = () => {
           {toast.onUndo && (
             <button
               type="button"
-              onClick={() => { toast.onUndo?.(); }}
+              onClick={() => {
+                toast.onUndo?.();
+              }}
               style={{
                 background: 'rgba(255,255,255,0.25)',
                 border: '1px solid rgba(255,255,255,0.5)',
