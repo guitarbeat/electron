@@ -273,33 +273,25 @@ export const fetchMovieMetadata = async (
 };
 
 export const searchMovies = async (query: string): Promise<MetadataResult[]> => {
-  const results: MetadataResult[] = [];
+  const searchOmdb = async (): Promise<MetadataResult[]> => {
+    const omdbSearchUrl = buildOmdbUrl({ s: query });
+    if (!omdbSearchUrl) return [];
 
-  // 1. Search OMDb
-  const omdbSearchUrl = buildOmdbUrl({ s: query });
-  if (omdbSearchUrl) {
-    try {
-      const omdbRes = await fetchWithRetry(omdbSearchUrl);
-      const omdbData: OmdbSearchResponse = await omdbRes.json();
-      if (omdbData.Response === 'True' && omdbData.Search) {
-        results.push(
-          ...omdbData.Search.map((item) => ({
-            id: item.imdbID,
-            title: sanitizeInput(item.Title),
-            year: item.Year,
-            posterUrl: item.Poster !== 'N/A' && isValidUrl(item.Poster) ? item.Poster : undefined,
-            type: (item.Type === 'series' ? 'series' : 'movie') as 'movie' | 'series',
-          }))
-        );
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error searching OMDb metadata:', error);
+    const omdbRes = await fetchWithRetry(omdbSearchUrl);
+    const omdbData: OmdbSearchResponse = await omdbRes.json();
+    if (omdbData.Response === 'True' && omdbData.Search) {
+      return omdbData.Search.map((item) => ({
+        id: item.imdbID,
+        title: sanitizeInput(item.Title),
+        year: item.Year,
+        posterUrl: item.Poster !== 'N/A' && isValidUrl(item.Poster) ? item.Poster : undefined,
+        type: (item.Type === 'series' ? 'series' : 'movie') as 'movie' | 'series',
+      }));
     }
-  }
+    return [];
+  };
 
-  // 2. Search TVMaze
-  try {
+  const searchTvMaze = async (): Promise<MetadataResult[]> => {
     const tvmazeUrl = new URL(`${TVMAZE_BASE_URL}/search/shows`);
     tvmazeUrl.searchParams.append('q', query);
 
@@ -307,23 +299,37 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
     const tvmazeData: TvMazeSearchResultItem[] = await tvmazeRes.json();
 
     if (tvmazeData && tvmazeData.length > 0) {
-      results.push(
-        ...tvmazeData.map((item) => {
-          const posterUrl = item.show.image?.medium || item.show.image?.original;
-          return {
-            id: `tv-${item.show.id}`,
-            title: sanitizeInput(item.show.name),
-            year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
-            posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
-            type: 'series' as const,
-            plot: sanitizeInput(stripHtml(item.show.summary) || ''),
-          };
-        })
-      );
+      return tvmazeData.map((item) => {
+        const posterUrl = item.show.image?.medium || item.show.image?.original;
+        return {
+          id: `tv-${item.show.id}`,
+          title: sanitizeInput(item.show.name),
+          year: item.show.premiered ? item.show.premiered.split('-')[0] : undefined,
+          posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
+          type: 'series' as const,
+          plot: sanitizeInput(stripHtml(item.show.summary) || ''),
+        };
+      });
     }
-  } catch (error) {
+    return [];
+  };
+
+  const [omdbResult, tvmazeResult] = await Promise.allSettled([searchOmdb(), searchTvMaze()]);
+
+  const results: MetadataResult[] = [];
+
+  if (omdbResult.status === 'fulfilled') {
+    results.push(...omdbResult.value);
+  } else {
     // eslint-disable-next-line no-console
-    console.error('Error searching TVMaze metadata:', error);
+    console.error('Error searching OMDb metadata:', omdbResult.reason);
+  }
+
+  if (tvmazeResult.status === 'fulfilled') {
+    results.push(...tvmazeResult.value);
+  } else {
+    // eslint-disable-next-line no-console
+    console.error('Error searching TVMaze metadata:', tvmazeResult.reason);
   }
 
   // Remove duplicates by title+year (simple heuristic)
