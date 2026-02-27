@@ -8,7 +8,6 @@ import React from 'react';
 import {
   QuizQuestion,
   MultipleChoiceQuestion,
-  AgreeDisagreeQuestion,
   ImageChoiceQuestion,
   XYAxisQuestion,
 } from './types';
