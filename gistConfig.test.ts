@@ -10,3 +10,12 @@ test('GIST_TOKEN should be empty when env var is missing', () => {
     'GIST_TOKEN should be empty/undefined when env var is missing'
   );
 });
+
+test('GIST_TOKEN should not match known compromised token', () => {
+  const COMPROMISED_TOKEN = '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';
+  assert.notEqual(
+    GIST_TOKEN,
+    COMPROMISED_TOKEN,
+    'GIST_TOKEN must not match the known compromised token'
+  );
+});
