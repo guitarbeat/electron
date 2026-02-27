@@ -114,6 +114,9 @@ export const getPins = async (): Promise<UserPins> => {
     return fetchPromise;
   }
 
+  // Capture the time when we started the fetch
+  const fetchStartTime = Date.now();
+
   const promise = (async () => {
     try {
       const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -129,6 +132,11 @@ export const getPins = async (): Promise<UserPins> => {
 
       const gist = await response.json();
       const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
+
+      // Check if cache was updated by a write operation while we were fetching
+      if (lastFetchTime > fetchStartTime && cachedPins) {
+        return cachedPins;
+      }
 
       if (!fileContent) {
         cachedPins = {};
