@@ -501,6 +501,15 @@
         opacity: 0;
       }
 
+      /* Hide scrollbar on nav row while keeping scroll functional */
+      .nav-scroll-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .nav-scroll-hide::-webkit-scrollbar {
+        display: none;
+      }
+
       /* Pixel Star Twinkling */
       @keyframes twinkle {
         0%,
