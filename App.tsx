@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAudio } from './hooks/useAudio';
 import { useUser } from './context/UserContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
@@ -22,6 +23,7 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
+  const { playSwitch } = useAudio();
   const [activeTab, setActiveTab] = useState<MainTab>('home');
   const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
@@ -230,7 +232,10 @@ const App: React.FC = () => {
                   key={tab.id}
                   type="button"
                   className="main-nav-tile"
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    playSwitch();
+                    setActiveTab(tab.id);
+                  }}
                   aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: '1 1 0',

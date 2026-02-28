@@ -146,7 +146,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           nextState.snake[0].x !== previousState.snake[0].x ||
           nextState.snake[0].y !== previousState.snake[0].y
         ) {
-          // Optional move sound
+          playMoveSound();
         }
 
         return nextState;
