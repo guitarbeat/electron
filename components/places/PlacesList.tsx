@@ -303,7 +303,7 @@ const PlacesList: React.FC = () => {
         <div
           style={{
             position: 'fixed',
-            bottom: spacing.md,
+            bottom: 'clamp(4rem, 12vw, 5rem)',
             left: '50%',
             transform: 'translateX(-50%)',
             backgroundColor: toast.type === 'error' ? colors.error : colors.success,

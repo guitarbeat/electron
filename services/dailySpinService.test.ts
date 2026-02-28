@@ -284,7 +284,7 @@ test('dailySpinService', async (t) => {
       return new Response(null, { status: 500 });
     });
 
-    const updates = { movieTitle: 'New Title', spunBy: 'New Person' };
+    const updates = { movieTitle: 'New Title', spunBy: 'Aaron' as const };
     const result = await updateDailySpin(updates);
 
     // Verify returned object
