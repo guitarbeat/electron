@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAudio } from '../../hooks/useAudio';
 import {
   colors,
   radius,
@@ -80,11 +81,19 @@ const Button: React.FC<ButtonProps> = ({
   const isDisabled = disabled || isLoading;
   const isLarge = size === 'lg';
 
+  const { playClick } = useAudio();
+
   return (
     <button
       type={type}
       className={`${className} ripple-effect`}
       disabled={isDisabled}
+      onClick={(e) => {
+        if (!isDisabled) {
+          playClick();
+        }
+        props.onClick?.(e);
+      }}
       style={{
         ...sizeStyles[size],
         ...getVariantStyles(),

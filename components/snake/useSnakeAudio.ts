@@ -18,27 +18,36 @@ export const useSnakeAudio = () => {
 
   const playTone = useCallback(
     (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
-      if (!audioContextRef.current) return;
-
-      // Resume context if suspended (browser autoplay policy)
-      if (audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume();
+      if (!audioContextRef.current) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          audioContextRef.current = new AudioContextClass();
+        } else {
+          return;
+        }
       }
 
-      const osc = audioContextRef.current.createOscillator();
-      const gain = audioContextRef.current.createGain();
+      const ctx = audioContextRef.current;
+
+      // Resume context if suspended (browser autoplay policy)
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
       osc.type = type;
-      osc.frequency.setValueAtTime(frequency, audioContextRef.current.currentTime);
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
 
-      gain.gain.setValueAtTime(volume, audioContextRef.current.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration);
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
 
       osc.connect(gain);
-      gain.connect(audioContextRef.current.destination);
+      gain.connect(ctx.destination);
 
       osc.start();
-      osc.stop(audioContextRef.current.currentTime + duration);
+      osc.stop(ctx.currentTime + duration);
     },
     []
   );
@@ -51,7 +60,14 @@ export const useSnakeAudio = () => {
 
   const playGameOverSound = useCallback(() => {
     // Descending "crash" sound
-    if (!audioContextRef.current) return;
+    if (!audioContextRef.current) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      } else {
+        return;
+      }
+    }
 
     const ctx = audioContextRef.current;
     if (ctx.state === 'suspended') ctx.resume();
