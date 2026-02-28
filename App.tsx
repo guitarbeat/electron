@@ -141,10 +141,10 @@ const App: React.FC = () => {
         id="main-content"
         className="main-container"
         style={{
-          paddingTop: 'clamp(1rem, 3vw, 1.5rem)',
-          paddingBottom: 'clamp(1.25rem, 4vw, 3.5rem)',
-          paddingLeft: 'clamp(0.75rem, 3vw, 1.5rem)',
-          paddingRight: 'clamp(0.75rem, 3vw, 1.5rem)',
+        paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
+          paddingBottom: 'clamp(0.75rem, 3vw, 3.5rem)',
+          paddingLeft: 'clamp(0.5rem, 2vw, 1.5rem)',
+          paddingRight: 'clamp(0.5rem, 2vw, 1.5rem)',
           maxWidth: layout.contentMaxWidth,
           margin: '0 auto',
           outline: 'none',
@@ -157,8 +157,8 @@ const App: React.FC = () => {
           className="animate-fade-in retro-card-shine"
           style={{
             maxWidth: '980px',
-            margin: '0 auto clamp(1rem, 2vw, 1.25rem)',
-            padding: 'clamp(0.5rem, 1.5vw, 1rem)',
+            margin: '0 auto clamp(0.5rem, 1.5vw, 1.25rem)',
+            padding: 'clamp(0.35rem, 1vw, 1rem)',
             borderRadius: spacing.lg,
             border: `1px solid ${colors.accent}30`,
             borderTop: `2px solid ${colors.accent}50`,
@@ -207,18 +207,20 @@ const App: React.FC = () => {
             borderRadius: spacing.md,
             border: `1px solid ${colors.borderSecondary}25`,
             borderBottom: `2px solid ${colors.accent}30`,
-            marginBottom: spacing.md,
+            marginBottom: 'clamp(0.5rem, 1.5vw, 1rem)',
           }}
         >
           <nav
             aria-label="Tab navigation"
+            className="nav-scroll-hide"
             style={{
               display: 'flex',
-              flexWrap: 'wrap',
+              flexWrap: 'nowrap',
               alignItems: 'stretch',
               justifyContent: 'center',
               gap: '2px',
               padding: '4px',
+              overflowX: 'auto',
             }}
           >
             {MAIN_TABS.map((tab) => {
@@ -232,7 +234,7 @@ const App: React.FC = () => {
                   aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: '1 1 0',
-                    minWidth: 'min(110px, 30vw)',
+                    minWidth: '70px',
                     maxWidth: '200px',
                     minHeight: '44px',
                     display: 'flex',
