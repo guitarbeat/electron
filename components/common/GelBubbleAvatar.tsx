@@ -6,11 +6,14 @@ import { useRandomCatImage } from '../../hooks/useRandomCatImage';
 import { LockIcon } from './icons';
 import { typography } from '../../design-system/tokens';
 
+type BubbleSize = 'default' | 'compact';
+
 interface GelBubbleAvatarProps {
   user: User;
   hasPin: boolean;
   isHovered: boolean;
   isSmall?: boolean;
+  size?: BubbleSize;
   onClick: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -20,11 +23,17 @@ interface GelBubbleAvatarProps {
   animationOffset?: boolean;
 }
 
+const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
+  default: { bubble: 'clamp(140px, 35vw, 200px)', name: 'clamp(1rem, 4vw, 1.25rem)' },
+  compact: { bubble: 'clamp(90px, 22vw, 140px)', name: 'clamp(0.8rem, 3vw, 1rem)' },
+};
+
 const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   user,
   hasPin,
   isHovered,
   isSmall = false,
+  size = 'default',
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -36,6 +45,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   const { sources: catSources, refetch: refetchCat, isLoading: isCatLoading } = useRandomCatImage();
   const sources =
     catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
+  const sizeTokens = SIZES[size];
 
   const onImageClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -73,8 +83,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       <div
         style={{
           position: 'relative',
-          width: 'clamp(140px, 35vw, 200px)',
-          height: 'clamp(140px, 35vw, 200px)',
+          width: sizeTokens.bubble,
+          height: sizeTokens.bubble,
           borderRadius: '50%',
           background: `
             radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, transparent 40%),
@@ -262,7 +272,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       <span
         style={{
           fontFamily: typography.fontFamily.heading.join(', '),
-          fontSize: 'clamp(1rem, 4vw, 1.25rem)',
+          fontSize: sizeTokens.name,
           fontWeight: 600,
           color: '#fff',
           textTransform: 'uppercase',
