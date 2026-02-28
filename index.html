@@ -14,16 +14,16 @@
       }
 
       body {
-        background-color: #0a0b0e;
+        background-color: #101325;
         background-image:
-          radial-gradient(circle at 20% 30%, rgba(255, 105, 180, 0.06) 0%, transparent 40%),
-          radial-gradient(circle at 80% 70%, rgba(135, 206, 250, 0.06) 0%, transparent 40%),
+          radial-gradient(circle at 20% 30%, rgba(255, 127, 198, 0.11) 0%, transparent 45%),
+          radial-gradient(circle at 80% 70%, rgba(149, 220, 255, 0.11) 0%, transparent 45%),
           /* Retro pixel star grid */
-          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect x='39' y='39' width='2' height='2' fill='%23ff69b4' opacity='0.08'/%3E%3Crect x='19' y='59' width='1' height='1' fill='%2387cefa' opacity='0.1'/%3E%3Crect x='59' y='19' width='1' height='1' fill='%239370db' opacity='0.08'/%3E%3C/svg%3E"),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect x='39' y='39' width='2' height='2' fill='%23ff7fc6' opacity='0.12'/%3E%3Crect x='19' y='59' width='1' height='1' fill='%2395dcff' opacity='0.14'/%3E%3Crect x='59' y='19' width='1' height='1' fill='%23a78af2' opacity='0.12'/%3E%3C/svg%3E"),
           /* Retro diamond / argyle pattern */
-          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 5 L55 30 L30 55 L5 30 Z' fill='none' stroke='%23ff69b4' stroke-width='0.5' opacity='0.04'/%3E%3Cpath d='M30 15 L45 30 L30 45 L15 30 Z' fill='none' stroke='%2387cefa' stroke-width='0.3' opacity='0.03'/%3E%3C/svg%3E"),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 5 L55 30 L30 55 L5 30 Z' fill='none' stroke='%23ff7fc6' stroke-width='0.5' opacity='0.06'/%3E%3Cpath d='M30 15 L45 30 L30 45 L15 30 Z' fill='none' stroke='%2395dcff' stroke-width='0.3' opacity='0.05'/%3E%3C/svg%3E"),
           /* Tiny scattered crosses — old web dingbat feel */
-          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M59 25v10M54 30h10' stroke='%23ff69b4' stroke-width='0.7' opacity='0.05'/%3E%3Cpath d='M19 85v6M16 88h6' stroke='%2387cefa' stroke-width='0.5' opacity='0.06'/%3E%3Cpath d='M99 65v6M96 68h6' stroke='%239370db' stroke-width='0.5' opacity='0.05'/%3E%3Ccircle cx='80' cy='15' r='1' fill='%23ff69b4' opacity='0.04'/%3E%3Ccircle cx='40' cy='105' r='0.8' fill='%2387cefa' opacity='0.04'/%3E%3C/svg%3E");
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M59 25v10M54 30h10' stroke='%23ff7fc6' stroke-width='0.7' opacity='0.08'/%3E%3Cpath d='M19 85v6M16 88h6' stroke='%2395dcff' stroke-width='0.5' opacity='0.09'/%3E%3Cpath d='M99 65v6M96 68h6' stroke='%23a78af2' stroke-width='0.5' opacity='0.08'/%3E%3Ccircle cx='80' cy='15' r='1' fill='%23ff7fc6' opacity='0.07'/%3E%3Ccircle cx='40' cy='105' r='0.8' fill='%2395dcff' opacity='0.07'/%3E%3C/svg%3E");
         background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
         background-size:
           100% 100%,
@@ -32,7 +32,7 @@
           60px 60px,
           120px 120px;
         background-attachment: fixed;
-        color: #f0f0f5;
+        color: #f7f7ff;
         margin: 0;
         font-family: 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
         font-size: calc(0.95rem + 0.5vw);
@@ -45,21 +45,21 @@
 
       /* Enhanced focus-visible styles */
       :where(button, input, textarea, a, [role='button']):focus-visible {
-        outline: 2px solid #ff69b4;
+        outline: 2px solid #ff7fc6;
         outline-offset: 2px;
-        box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.25);
+        box-shadow: 0 0 0 4px rgba(255, 127, 198, 0.3);
       }
 
       /* Sparkle border animation for focused inputs */
       @keyframes sparkle-border {
         0%,
         100% {
-          border-color: #ff69b4;
-          box-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
+          border-color: #ff7fc6;
+          box-shadow: 0 0 10px rgba(255, 127, 198, 0.45);
         }
         50% {
-          border-color: #87cefa;
-          box-shadow: 0 0 12px rgba(135, 206, 250, 0.6);
+          border-color: #95dcff;
+          box-shadow: 0 0 14px rgba(149, 220, 255, 0.65);
         }
       }
 
@@ -74,19 +74,19 @@
       }
 
       ::-webkit-scrollbar-track {
-        background: #0d1225;
-        border-left: 2px solid #1a2a50;
-        border-right: 2px solid #1a2a50;
+        background: #141a33;
+        border-left: 2px solid #2d4372;
+        border-right: 2px solid #2d4372;
       }
 
       ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #ff69b4 0%, #9370db 50%, #87cefa 100%);
-        border: 2px solid #0d1225;
+        background: linear-gradient(180deg, #ff7fc6 0%, #a78af2 50%, #95dcff 100%);
+        border: 2px solid #141a33;
         border-radius: 7px;
       }
 
       ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #ff8bb3 0%, #ab87e8 50%, #a0d8ff 100%);
+        background: linear-gradient(180deg, #ff9bd3 0%, #c0a8ff 50%, #b3e8ff 100%);
       }
 
       /* Global font styles */
@@ -119,8 +119,8 @@
           0deg,
           transparent,
           transparent 2px,
-          rgba(0, 0, 0, 0.03) 2px,
-          rgba(0, 0, 0, 0.03) 4px
+          rgba(0, 0, 0, 0.018) 2px,
+          rgba(0, 0, 0, 0.018) 4px
         );
         mix-blend-mode: multiply;
       }
@@ -132,21 +132,21 @@
         background: linear-gradient(
           90deg,
           transparent 0%,
-          #ff69b4 20%,
-          #87cefa 50%,
-          #9370db 80%,
+          #ff7fc6 20%,
+          #95dcff 50%,
+          #a78af2 80%,
           transparent 100%
         );
-        opacity: 0.25;
+        opacity: 0.4;
         margin: 0.75rem 0;
       }
 
       /* Retro glow-text utility */
       .retro-glow {
         text-shadow:
-          0 0 6px rgba(255, 105, 180, 0.6),
-          0 0 20px rgba(255, 105, 180, 0.3),
-          0 0 40px rgba(135, 206, 250, 0.15);
+          0 0 8px rgba(255, 127, 198, 0.7),
+          0 0 24px rgba(255, 127, 198, 0.35),
+          0 0 44px rgba(149, 220, 255, 0.2);
       }
 
       /* Retro card hover shine */
@@ -919,7 +919,7 @@
       }
 
       .gradient-border-animated {
-        background: linear-gradient(90deg, #ff69b4, #87cefa, #9370db, #ff69b4);
+        background: linear-gradient(90deg, #ff7fc6, #95dcff, #a78af2, #ff7fc6);
         background-size: 200% 100%;
         animation: gradient-border 3s ease infinite;
       }
