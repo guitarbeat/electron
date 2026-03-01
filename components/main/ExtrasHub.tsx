@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { User } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import SnakeGame from '../snake/SnakeGame';
 import Matchmaker from '../matchmaker/Matchmaker';
 import SpinWheel from '../extras/spin-wheel/SpinWheel';
 import { useMovies } from '../../hooks/useMovies';
@@ -118,13 +117,6 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
           <Card style={sectionStyle}>
             <h2 style={{ ...sectionTitleStyle, marginBottom: spacing.md }}>Matchmaker</h2>
             <Matchmaker currentUser={currentUser} />
-          </Card>
-          <Card style={{ ...sectionStyle, overflow: 'visible', overflowY: 'visible' }}>
-            <h2 style={{ ...sectionTitleStyle, marginBottom: spacing.sm }}>Snake</h2>
-            <p style={{ ...sectionSubtitleStyle, marginBottom: spacing.md }}>
-              Quick break between picks.
-            </p>
-            <SnakeGame mode="embedded" />
           </Card>
         </div>
       )}
