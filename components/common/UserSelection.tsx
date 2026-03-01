@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUser } from '../../context/UserContext';
-import type { User } from '../../types';
+import { User } from '../../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { usePins } from '../../hooks/usePins';
 import { spacing } from '../../design-system/tokens';
