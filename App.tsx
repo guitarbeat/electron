@@ -6,6 +6,7 @@ import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/watchlist';
 import UserSelection from './components/common/UserSelection';
 import MessageBoard from './components/common/MessageBoard';
+import SnakeGame from './components/snake/SnakeGame';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
@@ -279,6 +280,7 @@ const App: React.FC = () => {
       </main>
 
       <MessageBoard mode="floating" />
+      <SnakeGame mode="floating" />
 
       <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
