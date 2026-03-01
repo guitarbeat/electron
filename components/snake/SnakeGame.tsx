@@ -50,9 +50,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const isEmbedded = mode === 'embedded';
-  const [gameState, setGameState] = useState<SnakeGameState>(() =>
-    createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT })
-  );
+  const [gameState, setGameState] = useState<SnakeGameState>(() => {
+    const state = createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT });
+    return mode === 'embedded' ? { ...state, status: 'paused' as const } : state;
+  });
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
