@@ -95,7 +95,10 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
   };
 
-  // Load today's spin when opened
+  // Keep a ref to unwatchedMovies so the callback doesn't depend on it
+  const unwatchedMoviesRef = useRef(unwatchedMovies);
+  unwatchedMoviesRef.current = unwatchedMovies;
+
   const loadTodaySpin = useCallback(async () => {
     setStatus('loading');
     setSaveError(null);
@@ -105,7 +108,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
         setTodaySpinData(todaySpin);
         setHasSpunToday(true);
         setStatus('result');
-        const movie = unwatchedMovies.find((m) => m.id === todaySpin.movieId);
+        const movie = unwatchedMoviesRef.current.find((m) => m.id === todaySpin.movieId);
         if (movie) {
           setSelectedMovie(movie);
         } else {
@@ -127,16 +130,20 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
       setSaveError("Could not load today's spin.");
       setStatus('idle');
     }
-  }, [unwatchedMovies]);
+  }, []);
 
+  // Only load when panel is opened (not while minimized)
+  const [hasOpened, setHasOpened] = useState(false);
   useEffect(() => {
-    if (!isMinimized) {
+    if (!isMinimized && !hasOpened) {
+      setHasOpened(true);
       loadTodaySpin();
     }
-  }, [isMinimized, loadTodaySpin]);
+  }, [isMinimized, hasOpened, loadTodaySpin]);
 
   useEffect(() => {
-    if (isMinimized || status === 'loading') return;
+    if (isMinimized || status === 'loading' || status === 'idle') return;
+    if (status !== 'result') return;
     let isMounted = true;
     setHistoryLoading(true);
     getSpinHistory()
