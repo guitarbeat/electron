@@ -41,5 +41,6 @@ pnpm run dev   # Starts on port 5000
 ## Deployment
 
 Configured as a static site:
+
 - Build: `pnpm run build`
 - Public dir: `dist`
