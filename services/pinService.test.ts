@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { mock, test, after, beforeEach } from 'node:test';
 import {
-  legacyHashPin,
   secureHashPin,
   getPins,
   savePins,
@@ -35,15 +34,6 @@ test('pinService', async (t) => {
     });
   });
 
-  await t.test('legacyHashPin returns consistent hash for the same input', () => {
-    const pin = '1234';
-    const hash1 = legacyHashPin(pin);
-    const hash2 = legacyHashPin(pin);
-    assert.equal(hash1, hash2);
-    assert.equal(typeof hash1, 'string');
-    assert.notEqual(hash1, pin);
-  });
-
   await t.test('secureHashPin returns valid PBKDF2 hash', async () => {
     const pin = '1234';
     const hash = await secureHashPin(pin);
@@ -53,7 +43,7 @@ test('pinService', async (t) => {
   });
 
   await t.test('getPins fetches pins from Gist and caches the result', async () => {
-    const mockPins = { Aaron: legacyHashPin('1111') };
+    const mockPins = { Aaron: await secureHashPin('1111') };
     fetchMock.mock.mockImplementation(async () => {
       return new Response(
         JSON.stringify({
@@ -117,7 +107,7 @@ test('pinService', async (t) => {
   });
 
   await t.test('savePins patches Gist and updates cache', async () => {
-    const newPins = { Aaron: legacyHashPin('2222'), Electra: legacyHashPin('3333') };
+    const newPins = { Aaron: await secureHashPin('2222'), Electra: await secureHashPin('3333') };
 
     fetchMock.mock.mockImplementation(async (url, options) => {
       if (options?.method === 'PATCH') {
@@ -212,35 +202,6 @@ test('pinService', async (t) => {
     assert.strictEqual(verified, true);
   });
 
-  await t.test('verifyPin returns true for correct legacy pin and upgrades it', async () => {
-    const pin = '5555';
-    const legacyHash = legacyHashPin(pin);
-
-    t.mock.timers.tick(CACHE_TTL + 1000);
-
-    // Setup fetch to return legacy hash first, then handle the upgrade PATCH
-    let patchCalled = false;
-    fetchMock.mock.mockImplementation(async (url, options) => {
-      if (options?.method === 'PATCH') {
-        patchCalled = true;
-        const body = JSON.parse(options.body as string);
-        const pins = JSON.parse(body.files['pins.json'].content);
-        assert.ok(pins.Aaron.startsWith('pbkdf2:'));
-        return new Response(JSON.stringify({}), { status: 200 });
-      }
-      return new Response(
-        JSON.stringify({
-          files: { 'pins.json': { content: JSON.stringify({ Aaron: legacyHash }) } },
-        }),
-        { status: 200 }
-      );
-    });
-
-    const verified = await verifyPin('Aaron', pin);
-    assert.strictEqual(verified, true);
-    assert.strictEqual(patchCalled, true, 'Should have called PATCH to upgrade hash');
-  });
-
   await t.test('verifyPin returns true for correct secure pin', async () => {
     const pin = '5555';
     const secureHash = await secureHashPin(pin);
@@ -257,21 +218,6 @@ test('pinService', async (t) => {
 
     const verified = await verifyPin('Aaron', pin);
     assert.strictEqual(verified, true);
-  });
-
-  await t.test('verifyPin returns false for incorrect pin (legacy)', async () => {
-    t.mock.timers.tick(CACHE_TTL + 1000);
-    fetchMock.mock.mockImplementation(async () => {
-      return new Response(
-        JSON.stringify({
-          files: { 'pins.json': { content: JSON.stringify({ Aaron: legacyHashPin('1234') }) } },
-        }),
-        { status: 200 }
-      );
-    });
-
-    const verified = await verifyPin('Aaron', 'wrong');
-    assert.strictEqual(verified, false);
   });
 
   await t.test('verifyPin returns false for incorrect pin (secure)', async () => {
@@ -303,28 +249,5 @@ test('pinService', async (t) => {
 
     assert.strictEqual(await hasPin('Aaron'), true);
     assert.strictEqual(await hasPin('Electra'), false);
-  });
-
-  await t.test('verifyPin returns true even if hash upgrade fails', async () => {
-    const pin = '5555';
-    const legacyHash = legacyHashPin(pin);
-
-    t.mock.timers.tick(CACHE_TTL + 1000);
-
-    // Setup fetch to return legacy hash first, then FAIL the upgrade PATCH
-    fetchMock.mock.mockImplementation(async (url, options) => {
-      if (options?.method === 'PATCH') {
-        return new Response(null, { status: 500 });
-      }
-      return new Response(
-        JSON.stringify({
-          files: { 'pins.json': { content: JSON.stringify({ Aaron: legacyHash }) } },
-        }),
-        { status: 200 }
-      );
-    });
-
-    const verified = await verifyPin('Aaron', pin);
-    assert.strictEqual(verified, true);
   });
 });
