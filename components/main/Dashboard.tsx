@@ -14,6 +14,7 @@ interface MiniPreviewProps {
   onNavigate: () => void;
   isLoading: boolean;
   accentColor: string;
+  defaultExpanded?: boolean;
 }
 
 const MiniPreview: React.FC<MiniPreviewProps> = ({ 
@@ -22,9 +23,10 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
   items, 
   onNavigate, 
   isLoading, 
-  accentColor 
+  accentColor,
+  defaultExpanded = false
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   return (
     <div
@@ -162,10 +164,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           color: colors.textPrimary,
           fontFamily: typography.fontFamily.heading.join(', ')
         }}>
-          Quick Preview
+          Quick Access
         </h2>
         <p style={{ margin: 0, fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
-          Tap to expand details or navigate to sections
+          Expand for a quick look or click to open full view
         </p>
       </header>
 
@@ -175,6 +177,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         isLoading={moviesLoading}
         accentColor={colors.accent}
         onNavigate={() => onNavigate('queue')}
+        defaultExpanded={true}
         items={unwatchedMovies.map(movie => (
           <div key={movie.id} style={itemStyle}>
              {movie.posterUrl && (
@@ -193,6 +196,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         isLoading={placesLoading}
         accentColor={colors.secondary}
         onNavigate={() => onNavigate('places')}
+        defaultExpanded={true}
         items={unvisitedPlaces.map(place => (
           <div key={place.id} style={{ ...itemStyle, borderLeft: `2px solid ${colors.secondary}40` }}>
             <span style={{ flex: 1, fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -201,19 +205,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
         ))}
       />
-
-      <div style={{ 
-        marginTop: spacing.sm, 
-        padding: spacing.md, 
-        textAlign: 'center',
-        background: 'rgba(255,255,255,0.02)',
-        borderRadius: radius.md,
-        border: `1px dashed ${colors.borderSecondary}20`
-      }}>
-        <p style={{ margin: 0, fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
-          More shortcuts coming soon...
-        </p>
-      </div>
     </div>
   );
 };
