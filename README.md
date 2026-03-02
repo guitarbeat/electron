@@ -27,21 +27,25 @@ View your app in AI Studio: https://ai.studio/apps/drive/1kqFxiDluP0wGmKF3T41vjN
 **Prerequisites:** Node.js (v18+ recommended)
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/guitarbeat/electron.git
    cd electron
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Configure Environment Variables:**
    Copy `.env.example` to `.env.local` and fill in the required values:
+
    ```bash
    cp .env.example .env.local
    ```
+
    - `VITE_GIST_ID`: Your GitHub Gist ID.
    - `VITE_GIST_TOKEN`: Your GitHub Personal Access Token with `gist` scope.
    - `VITE_OMDB_API_KEY`: (Optional) For movie metadata.

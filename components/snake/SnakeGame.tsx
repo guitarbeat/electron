@@ -87,7 +87,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const clampBubble = (x: number, y: number) => {
     if (typeof window === 'undefined') return { x, y };
     const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-    const maxY = Math.max(BUBBLE_EDGE_MARGIN, window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
+    const maxY = Math.max(
+      BUBBLE_EDGE_MARGIN,
+      window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
+    );
     return {
       x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
       y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
@@ -112,7 +115,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     if (!ds || ds.pointerId !== event.pointerId) return;
     const deltaX = event.clientX - ds.startX;
     const deltaY = event.clientY - ds.startY;
-    if (!didDragRef.current && (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)) {
+    if (
+      !didDragRef.current &&
+      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+    ) {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
@@ -128,7 +134,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     setIsDraggingBubble(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
   };
 
   useEffect(() => {
@@ -220,7 +230,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     }, currentTickInterval);
 
     return () => window.clearInterval(intervalId);
-  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound]);
+  }, [
+    gameState.status,
+    isGameVisible,
+    gameState.score,
+    playEatSound,
+    playGameOverSound,
+    playMoveSound,
+  ]);
 
   useEffect(() => {
     if (!isGameVisible) return undefined;
@@ -365,7 +382,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           borderRadius: isFullscreen ? 0 : '24px',
           background: 'rgba(15, 23, 42, 0.95)',
           backdropFilter: 'blur(16px)',
-          boxShadow: isFullscreen ? 'none' : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
+          boxShadow: isFullscreen
+            ? 'none'
+            : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
           maxHeight: isFullscreen ? '100%' : 'min(520px, 75vh)',
           overflowY: 'auto',
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
