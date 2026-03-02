@@ -87,7 +87,10 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     const ds = dragStateRef.current;
     if (!ds || ds.pointerId !== event.pointerId) return;
     if (!didDragRef.current) {
-      setIsMinimized(false);
+      // Only open if spin is available
+      if (canSpin) {
+        setIsMinimized(false);
+      }
     }
     setIsDragging(false);
     dragStateRef.current = null;
@@ -204,8 +207,9 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
           height: `${BUBBLE_SIZE}px`,
           borderRadius: radius.full,
           border: `3px solid ${colors.surfaceElevated}`,
-          background:
-            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(255, 105, 180, 0.95) 0%, rgba(180, 60, 130, 0.95) 100%)',
+          background: canSpin
+            ? 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(255, 105, 180, 0.95) 0%, rgba(180, 60, 130, 0.95) 100%)'
+            : 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(100, 100, 120, 0.7) 0%, rgba(60, 60, 80, 0.7) 100%)',
           color: '#fff',
           fontSize: '1.4rem',
           display: 'flex',
