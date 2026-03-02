@@ -217,6 +217,12 @@ export const ChevronDownIcon: React.FC<BaseIconProps> = (props) => (
   </BaseIcon>
 );
 
+export const ChevronUpIcon: React.FC<BaseIconProps> = (props) => (
+  <BaseIcon size="1.5rem" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+  </BaseIcon>
+);
+
 export const ArrowLeftIcon: React.FC<BaseIconProps> = (props) => (
   <BaseIcon size="1.5rem" {...props}>
     <path
