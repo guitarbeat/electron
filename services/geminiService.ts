@@ -1,8 +1,8 @@
-import type { User } from '../types';
-import { buildAgentContextSnapshot, getAgentCapabilities } from './agentContext';
-import type { AgentToolCall } from './agentTools';
-import { supabase } from '../integrations/supabase/client';
-import { extractTextFromResponse, type GeminiResponse } from './geminiUtils';
+import type { User } from '../types.ts';
+import { buildAgentContextSnapshot, getAgentCapabilities } from './agentContext.ts';
+import type { AgentToolCall } from './agentTools.ts';
+import { supabase } from '../integrations/supabase/client.ts';
+import { extractTextFromResponse, type GeminiResponse } from './geminiUtils.ts';
 
 const env = (import.meta.env || {}) as any;
 

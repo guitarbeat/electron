@@ -6,14 +6,17 @@
 // 5. Check the "gist" scope.
 // 6. Click "Generate token" and paste the token string below.
 // 7. Add it to your .env file as VITE_GIST_TOKEN
-const env = (import.meta.env || {}) as any;
+// Ensure tests have mock tokens
+const isTest = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.argv.some(a => a.includes('--test')));
+
+const env = (import.meta.env || (typeof process !== 'undefined' ? process.env : {})) as any;
 // Trim and strip optional surrounding quotes (some .env parsers include them)
 const clean = (s: string) => (s || '').trim().replace(/^["']|["']$/g, '');
-const GIST_TOKEN = clean(env.VITE_GIST_TOKEN || ''); // Must be set in .env
+const GIST_TOKEN = clean(env.VITE_GIST_TOKEN || (isTest ? 'test_token' : '')); // Must be set in .env
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.
-const GIST_ID = clean(env.VITE_GIST_ID || '');
+const GIST_ID = clean(env.VITE_GIST_ID || (isTest ? 'test_id' : ''));
 
 // The API URL for Gist operations
 const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
