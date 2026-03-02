@@ -1,9 +1,8 @@
 import React from 'react';
-import { MainTab, User, Movie, Place } from '../../types';
+import { MainTab, Movie, Place } from '../../types';
 import { useMovies } from '../../hooks/useMovies';
 import { usePlaces } from '../../hooks/usePlaces';
 import { useUser } from '../../context/UserContext';
-import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Skeleton from '../ui/Skeleton';
 import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
@@ -98,13 +97,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
         <hr className="retro-divider" />
 
-        {moviesLoading ? (
+        {moviesLoading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} style={{ height: '44px', borderRadius: radius.md }} />
             ))}
           </div>
-        ) : unwatchedMovies.length === 0 ? (
+        )}
+
+        {!moviesLoading && unwatchedMovies.length === 0 && (
           <p
             style={{
               margin: 0,
@@ -116,7 +117,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           >
             ✧ Your queue is empty — add movies to get started! ✧
           </p>
-        ) : (
+        )}
+
+        {!moviesLoading && unwatchedMovies.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
             {unwatchedMovies.slice(0, MAX_PREVIEW).map((movie: Movie) => (
               <div key={movie.id} style={itemStyle}>
@@ -210,13 +213,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
         <hr className="retro-divider" />
 
-        {placesLoading ? (
+        {placesLoading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} style={{ height: '44px', borderRadius: radius.md }} />
             ))}
           </div>
-        ) : unvisitedPlaces.length === 0 ? (
+        )}
+
+        {!placesLoading && unvisitedPlaces.length === 0 && (
           <p
             style={{
               margin: 0,
@@ -228,7 +233,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           >
             ✧ No places yet — add spots you want to visit! ✧
           </p>
-        ) : (
+        )}
+
+        {!placesLoading && unvisitedPlaces.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
             {unvisitedPlaces.slice(0, MAX_PREVIEW).map((place: Place) => (
               <div

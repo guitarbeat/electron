@@ -1,5 +1,5 @@
-import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
-import type { Place } from '../types';
+import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig.ts';
+import type { Place } from '../types.ts';
 
 export const getPlaces = async (): Promise<Place[]> => {
   try {

@@ -1,5 +1,5 @@
-import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig';
-import type { Movie } from '../types';
+import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig.ts';
+import type { Movie } from '../types.ts';
 
 // Cache variables to store the last known state
 let cachedMovies: Movie[] = [];

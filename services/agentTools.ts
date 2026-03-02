@@ -3,25 +3,25 @@ import {
   MAX_AUTHOR_LENGTH,
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
-} from '../config/security';
-import type { DailySpin, Movie, User } from '../types';
-import { deleteDailySpin, getTodaySpin, saveDailySpin } from './dailySpinService';
+} from '../config/security.ts';
+import type { DailySpin, Movie, User } from '../types.ts';
+import { deleteDailySpin, getTodaySpin, saveDailySpin } from './dailySpinService.ts';
 import {
   addMemory,
   deleteMemory,
   getMemories,
   toggleMemoryPin,
   updateMemory,
-} from './memoryService';
-import { getMessages, saveMessages } from './messageService';
-import { getMovies, saveMovies } from './movieService';
-import { getSuggestions, saveSuggestions } from './suggestionService';
+} from './memoryService.ts';
+import { getMessages, saveMessages } from './messageService.ts';
+import { getMovies, saveMovies } from './movieService.ts';
+import { getSuggestions, saveSuggestions } from './suggestionService.ts';
 import {
   deleteSpinEntry,
   getSpinHistory,
   updateSpinEntry,
   upsertTodaySpinEntry,
-} from './spinHistoryService';
+} from './spinHistoryService.ts';
 
 export type AgentToolName =
   | 'movies.list'

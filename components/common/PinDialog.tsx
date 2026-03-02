@@ -49,7 +49,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setConfirmPin('');
       setError('');
       setIsShaking(false);
-      setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
+      let nextStep: 'current' | 'new' | 'confirm' = 'current';
+      if (mode === 'enter') {
+        nextStep = 'current';
+      } else if (mode === 'set') {
+        nextStep = 'new';
+      }
+      setStep(nextStep);
       document.body.classList.add('modal-open');
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
@@ -62,6 +68,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       const timer = setTimeout(() => setIsShaking(false), 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isShaking]);
 
   useEffect(() => {
@@ -302,6 +309,15 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 {Array.from({ length: PIN_LENGTH }).map((_, i) => {
                   const val = getCurrentValue()[i];
                   const isActive = getCurrentValue().length === i;
+                  let borderColor = 'rgba(255, 255, 255, 0.1)';
+                  if (error) {
+                    borderColor = colors.error;
+                  } else if (isActive) {
+                    borderColor = colors.accent;
+                  } else if (val) {
+                    borderColor = `${colors.accent}40`;
+                  }
+
                   return (
                     <div
                       key={i}
@@ -309,15 +325,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         width: '44px', // Smaller dots
                         height: '52px',
                         backgroundColor: val ? `${colors.accent}25` : 'rgba(0, 0, 0, 0.2)',
-                        border: `1.5px solid ${
-                          error
-                            ? colors.error
-                            : isActive
-                              ? colors.accent
-                              : val
-                                ? `${colors.accent}40`
-                                : 'rgba(255, 255, 255, 0.1)'
-                        }`,
+                        border: `1.5px solid ${borderColor}`,
                         borderRadius: radius.md,
                         display: 'flex',
                         alignItems: 'center',

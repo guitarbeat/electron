@@ -32,7 +32,7 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoReturn<T> {
       return;
     }
 
-    setStateInternal((currentState) => {
+    setStateInternal((_currentState) => {
       setPast((prevPast) => {
         const newPast = [...prevPast, currentState];
         // Limit history size
@@ -54,7 +54,7 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoReturn<T> {
       const previousState = newPast.pop()!;
 
       setFuture((prevFuture) => {
-        setStateInternal((currentState) => {
+        setStateInternal((_currentState) => {
           isUndoRedoRef.current = true;
           return previousState;
         });
@@ -72,7 +72,7 @@ export function useUndoRedo<T>(initialState: T): UseUndoRedoReturn<T> {
       const [nextState, ...newFuture] = prevFuture;
 
       setPast((prevPast) => {
-        setStateInternal((currentState) => {
+        setStateInternal((_currentState) => {
           isUndoRedoRef.current = true;
           return nextState;
         });

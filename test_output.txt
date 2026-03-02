@@ -1,0 +1,696 @@
+
+> collaborative-movie-watchlist@0.0.0 test:all /app
+> node --experimental-strip-types --test **/*.test.ts
+
+TAP version 13
+# Subtest: sanitizeInput returns empty string for null/undefined/empty input
+ok 1 - sanitizeInput returns empty string for null/undefined/empty input
+  ---
+  duration_ms: 1.54222
+  type: 'test'
+  ...
+# Subtest: sanitizeInput trims leading and trailing whitespace
+ok 2 - sanitizeInput trims leading and trailing whitespace
+  ---
+  duration_ms: 0.348109
+  type: 'test'
+  ...
+# Subtest: sanitizeInput preserves normal characters
+ok 3 - sanitizeInput preserves normal characters
+  ---
+  duration_ms: 0.196244
+  type: 'test'
+  ...
+# Subtest: sanitizeInput removes control characters
+ok 4 - sanitizeInput removes control characters
+  ---
+  duration_ms: 0.222593
+  type: 'test'
+  ...
+# Subtest: sanitizeInput preserves allowed whitespace characters
+ok 5 - sanitizeInput preserves allowed whitespace characters
+  ---
+  duration_ms: 0.188775
+  type: 'test'
+  ...
+# Subtest: sanitizeInput handles complex mixed input
+ok 6 - sanitizeInput handles complex mixed input
+  ---
+  duration_ms: 0.200776
+  type: 'test'
+  ...
+# Subtest: isValidUrl returns true for valid http/https URLs
+ok 7 - isValidUrl returns true for valid http/https URLs
+  ---
+  duration_ms: 0.391346
+  type: 'test'
+  ...
+# Subtest: isValidUrl returns false for javascript: URLs
+ok 8 - isValidUrl returns false for javascript: URLs
+  ---
+  duration_ms: 0.176647
+  type: 'test'
+  ...
+# Subtest: isValidUrl returns false for data: URLs
+ok 9 - isValidUrl returns false for data: URLs
+  ---
+  duration_ms: 0.42326
+  type: 'test'
+  ...
+# Subtest: isValidUrl returns false for file: URLs
+ok 10 - isValidUrl returns false for file: URLs
+  ---
+  duration_ms: 0.596034
+  type: 'test'
+  ...
+# Subtest: isValidUrl returns false for invalid URLs
+ok 11 - isValidUrl returns false for invalid URLs
+  ---
+  duration_ms: 0.37605
+  type: 'test'
+  ...
+# Subtest: getUserColor returns correct style for Aaron
+ok 12 - getUserColor returns correct style for Aaron
+  ---
+  duration_ms: 1.314746
+  type: 'test'
+  ...
+# Subtest: getUserColor returns correct style for Electra
+ok 13 - getUserColor returns correct style for Electra
+  ---
+  duration_ms: 0.214565
+  type: 'test'
+  ...
+# Subtest: getUserColor returns null for null user
+ok 14 - getUserColor returns null for null user
+  ---
+  duration_ms: 0.16895
+  type: 'test'
+  ...
+# Subtest: getUserColor returns null for undefined user
+ok 15 - getUserColor returns null for undefined user
+  ---
+  duration_ms: 0.207316
+  type: 'test'
+  ...
+# Subtest: getUserColor returns null for invalid user
+ok 16 - getUserColor returns null for invalid user
+  ---
+  duration_ms: 0.315111
+  type: 'test'
+  ...
+# Subtest: PollingManager
+    # Subtest: should deduplicate fetches for same key
+    ok 1 - should deduplicate fetches for same key
+      ---
+      duration_ms: 263.036073
+      type: 'test'
+      ...
+    # Subtest: should broadcast data to all listeners
+    ok 2 - should broadcast data to all listeners
+      ---
+      duration_ms: 21.888409
+      type: 'test'
+      ...
+    # Subtest: should return cached data immediately to new subscribers
+    ok 3 - should return cached data immediately to new subscribers
+      ---
+      duration_ms: 20.943278
+      type: 'test'
+      ...
+    # Subtest: should refresh immediately
+    ok 4 - should refresh immediately
+      ---
+      duration_ms: 20.492337
+      type: 'test'
+      ...
+    # Subtest: should not overlap refreshes while a request is already in flight
+    ok 5 - should not overlap refreshes while a request is already in flight
+      ---
+      duration_ms: 21.357742
+      type: 'test'
+      ...
+    # Subtest: should handle fetch errors gracefully
+    ok 6 - should handle fetch errors gracefully
+      ---
+      duration_ms: 22.32264
+      type: 'test'
+      ...
+    1..6
+ok 17 - PollingManager
+  ---
+  duration_ms: 372.399961
+  type: 'suite'
+  ...
+# (node:31211) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: dailySpinService
+    # Subtest: getDailySpin returns parsed data when file exists
+    ok 1 - getDailySpin returns parsed data when file exists
+      ---
+      duration_ms: 35.880546
+      type: 'test'
+      ...
+    # Subtest: getDailySpin returns null when file is missing
+    ok 2 - getDailySpin returns null when file is missing
+      ---
+      duration_ms: 1.035082
+      type: 'test'
+      ...
+    # Subtest: getDailySpin returns null and logs error when fetch fails
+    ok 3 - getDailySpin returns null and logs error when fetch fails
+      ---
+      duration_ms: 0.683587
+      type: 'test'
+      ...
+    # Subtest: saveDailySpin sends PATCH request with correct body
+    ok 4 - saveDailySpin sends PATCH request with correct body
+      ---
+      duration_ms: 0.88925
+      type: 'test'
+      ...
+    # Subtest: saveDailySpin throws error on non-ok response
+    ok 5 - saveDailySpin throws error on non-ok response
+      ---
+      duration_ms: 1.740628
+      type: 'test'
+      ...
+    # Subtest: saveDailySpin throws error when fetch fails
+    ok 6 - saveDailySpin throws error when fetch fails
+      ---
+      duration_ms: 0.792838
+      type: 'test'
+      ...
+    # Subtest: updateDailySpin fetches current spin, merges updates, and saves
+    ok 7 - updateDailySpin fetches current spin, merges updates, and saves
+      ---
+      duration_ms: 1.01285
+      type: 'test'
+      ...
+    # Subtest: updateDailySpin throws if no current spin exists
+    ok 8 - updateDailySpin throws if no current spin exists
+      ---
+      duration_ms: 1.001394
+      type: 'test'
+      ...
+    # Subtest: deleteDailySpin sends correct PATCH request on success
+    ok 9 - deleteDailySpin sends correct PATCH request on success
+      ---
+      duration_ms: 1.021012
+      type: 'test'
+      ...
+    # Subtest: deleteDailySpin throws and logs error when API response is not ok
+    ok 10 - deleteDailySpin throws and logs error when API response is not ok
+      ---
+      duration_ms: 1.227778
+      type: 'test'
+      ...
+    # Subtest: deleteDailySpin throws and logs error when fetch fails
+    ok 11 - deleteDailySpin throws and logs error when fetch fails
+      ---
+      duration_ms: 0.526828
+      type: 'test'
+      ...
+    # Subtest: hasSpunToday returns true when spin date matches today
+    ok 12 - hasSpunToday returns true when spin date matches today
+      ---
+      duration_ms: 1.136629
+      type: 'test'
+      ...
+    # Subtest: hasSpunToday returns false when spin date is different
+    ok 13 - hasSpunToday returns false when spin date is different
+      ---
+      duration_ms: 0.679774
+      type: 'test'
+      ...
+    # Subtest: getTodaySpin returns spin if date matches today
+    ok 14 - getTodaySpin returns spin if date matches today
+      ---
+      duration_ms: 1.034633
+      type: 'test'
+      ...
+    # Subtest: getTodaySpin returns null if date does not match today
+    ok 15 - getTodaySpin returns null if date does not match today
+      ---
+      duration_ms: 0.969744
+      type: 'test'
+      ...
+    # Subtest: getTodaySpin returns null if no spin exists
+    ok 16 - getTodaySpin returns null if no spin exists
+      ---
+      duration_ms: 0.589797
+      type: 'test'
+      ...
+    # Subtest: updateDailySpin throws error when saveDailySpin fails
+    ok 17 - updateDailySpin throws error when saveDailySpin fails
+      ---
+      duration_ms: 1.163848
+      type: 'test'
+      ...
+    # Subtest: updateDailySpin correctly updates the spin and saves it
+    ok 18 - updateDailySpin correctly updates the spin and saves it
+      ---
+      duration_ms: 1.017292
+      type: 'test'
+      ...
+    1..18
+ok 18 - dailySpinService
+  ---
+  duration_ms: 58.028762
+  type: 'test'
+  ...
+# Subtest: extractTextFromResponse extracts text from valid response
+ok 19 - extractTextFromResponse extracts text from valid response
+  ---
+  duration_ms: 1.33643
+  type: 'test'
+  ...
+# Subtest: extractTextFromResponse returns empty string for empty parts
+ok 20 - extractTextFromResponse returns empty string for empty parts
+  ---
+  duration_ms: 0.211262
+  type: 'test'
+  ...
+# Subtest: extractTextFromResponse handles missing candidates
+ok 21 - extractTextFromResponse handles missing candidates
+  ---
+  duration_ms: 0.282683
+  type: 'test'
+  ...
+# Subtest: extractTextFromResponse handles null/undefined parts
+ok 22 - extractTextFromResponse handles null/undefined parts
+  ---
+  duration_ms: 0.210297
+  type: 'test'
+  ...
+# Subtest: extractTextFromResponse filters out empty/undefined text
+ok 23 - extractTextFromResponse filters out empty/undefined text
+  ---
+  duration_ms: 0.227859
+  type: 'test'
+  ...
+# Error parsing matchmaker JSON: SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)
+#     at JSON.parse (<anonymous>)
+#     at getMatchmakerGame (file:///app/services/matchmakerService.ts:30:19)
+#     at async TestContext.<anonymous> (file:///app/services/matchmakerService.test.ts:95:18)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async TestContext.<anonymous> (file:///app/services/matchmakerService.test.ts:81:3)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+# Error fetching matchmaker game from Gist: Error: GitHub API responded with 500
+#     at getMatchmakerGame (file:///app/services/matchmakerService.ts:19:13)
+#     at async TestContext.<anonymous> (file:///app/services/matchmakerService.test.ts:104:18)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async TestContext.<anonymous> (file:///app/services/matchmakerService.test.ts:99:3)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+# GitHub API error details: { message: 'Error' }
+# Error saving matchmaker game to Gist: Error: GitHub API responded with 500
+#     at saveMatchmakerGame (file:///app/services/matchmakerService.ts:65:13)
+#     at async file:///app/services/matchmakerService.test.ts:142:7
+#     at async waitForActual (node:assert:644:5)
+#     at async Function.rejects (node:assert:767:25)
+#     at async TestContext.<anonymous> (file:///app/services/matchmakerService.test.ts:141:5)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async TestContext.<anonymous> (file:///app/services/matchmakerService.test.ts:136:3)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+# Subtest: matchmakerService
+    # Subtest: getMatchmakerGame returns game when file exists and is valid
+    ok 1 - getMatchmakerGame returns game when file exists and is valid
+      ---
+      duration_ms: 35.983544
+      type: 'test'
+      ...
+    # Subtest: getMatchmakerGame returns null when file content is empty
+    ok 2 - getMatchmakerGame returns null when file content is empty
+      ---
+      duration_ms: 1.009501
+      type: 'test'
+      ...
+    # Subtest: getMatchmakerGame returns null when file is missing
+    ok 3 - getMatchmakerGame returns null when file is missing
+      ---
+      duration_ms: 0.791908
+      type: 'test'
+      ...
+    # Subtest: getMatchmakerGame returns null on JSON parse error
+    ok 4 - getMatchmakerGame returns null on JSON parse error
+      ---
+      duration_ms: 2.12574
+      type: 'test'
+      ...
+    # Subtest: getMatchmakerGame returns null on fetch error
+    ok 5 - getMatchmakerGame returns null on fetch error
+      ---
+      duration_ms: 1.170062
+      type: 'test'
+      ...
+    # Subtest: saveMatchmakerGame sends correct data
+    ok 6 - saveMatchmakerGame sends correct data
+      ---
+      duration_ms: 0.811034
+      type: 'test'
+      ...
+    # Subtest: saveMatchmakerGame clears game when passed null
+    ok 7 - saveMatchmakerGame clears game when passed null
+      ---
+      duration_ms: 0.418178
+      type: 'test'
+      ...
+    # Subtest: saveMatchmakerGame throws on fetch error
+    ok 8 - saveMatchmakerGame throws on fetch error
+      ---
+      duration_ms: 1.795573
+      type: 'test'
+      ...
+    1..8
+ok 24 - matchmakerService
+  ---
+  duration_ms: 48.086677
+  type: 'test'
+  ...
+# Subtest: fetchMovieMetadata rejects malicious posterUrl and sanitizes plot
+ok 25 - fetchMovieMetadata rejects malicious posterUrl and sanitizes plot
+  ---
+  duration_ms: 2.456725
+  type: 'test'
+  ...
+# Subtest: fetchMovieMetadata accepts valid posterUrl
+ok 26 - fetchMovieMetadata accepts valid posterUrl
+  ---
+  duration_ms: 0.561078
+  type: 'test'
+  ...
+# Subtest: getMovies returns movies when Gist fetch is successful
+ok 27 - getMovies returns movies when Gist fetch is successful
+  ---
+  duration_ms: 34.00515
+  type: 'test'
+  ...
+# Subtest: getMovies returns empty array if file is missing in Gist
+not ok 28 - getMovies returns empty array if file is missing in Gist
+  ---
+  duration_ms: 0.475006
+  type: 'test'
+  location: '/app/services/movieService.test.ts:44:1'
+  failureType: 'testCodeFailure'
+  error: 'Gist is missing "movielist.json". Your Gist must contain a file named "movielist.json" with a JSON array of movie objects. Create that file in the Gist (e.g. paste [] and save) then refresh.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    getMovies (file:///app/services/movieService.ts:67:13)
+    async TestContext.<anonymous> (file:///app/services/movieService.test.ts:56:20)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: getMovies returns empty array if file content is empty
+ok 29 - getMovies returns empty array if file content is empty
+  ---
+  duration_ms: 0.647719
+  type: 'test'
+  ...
+# Subtest: getMovies throws error on network failure
+ok 30 - getMovies throws error on network failure
+  ---
+  duration_ms: 0.970066
+  type: 'test'
+  ...
+# Subtest: saveMovies calls fetch with correct parameters
+ok 31 - saveMovies calls fetch with correct parameters
+  ---
+  duration_ms: 0.73756
+  type: 'test'
+  ...
+# Subtest: saveMovies throws error on network failure
+ok 32 - saveMovies throws error on network failure
+  ---
+  duration_ms: 0.630813
+  type: 'test'
+  ...
+# Subtest: getMovies polling optimization
+ok 33 - getMovies polling optimization
+  ---
+  duration_ms: 1.36907
+  type: 'test'
+  ...
+# (node:31240) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: pinService
+    # Subtest: legacyHashPin returns consistent hash for the same input
+    ok 1 - legacyHashPin returns consistent hash for the same input
+      ---
+      duration_ms: 1.450366
+      type: 'test'
+      ...
+# Error fetching PINs: Error: Failed to fetch gist: 500
+#     at file:///app/services/pinService.ts:130:15
+    # Subtest: secureHashPin returns valid PBKDF2 hash
+    ok 2 - secureHashPin returns valid PBKDF2 hash
+      ---
+      duration_ms: 68.043135
+      type: 'test'
+      ...
+    # Subtest: getPins fetches pins from Gist and caches the result
+    ok 3 - getPins fetches pins from Gist and caches the result
+      ---
+      duration_ms: 32.296756
+      type: 'test'
+      ...
+    # Subtest: getPins returns empty object if file is missing
+    ok 4 - getPins returns empty object if file is missing
+      ---
+      duration_ms: 1.030061
+      type: 'test'
+      ...
+    # Subtest: getPins returns empty object on fetch error
+    ok 5 - getPins returns empty object on fetch error
+      ---
+      duration_ms: 1.408452
+      type: 'test'
+      ...
+    # Subtest: savePins patches Gist and updates cache
+    ok 6 - savePins patches Gist and updates cache
+      ---
+      duration_ms: 0.81724
+      type: 'test'
+      ...
+    # Subtest: savePins returns false on error
+    ok 7 - savePins returns false on error
+      ---
+      duration_ms: 0.541862
+      type: 'test'
+      ...
+    # Subtest: setPin updates user pin with secure hash
+    ok 8 - setPin updates user pin with secure hash
+      ---
+      duration_ms: 62.151769
+      type: 'test'
+      ...
+    # Subtest: removePin deletes user pin
+    ok 9 - removePin deletes user pin
+      ---
+      duration_ms: 1.965037
+      type: 'test'
+      ...
+    # Subtest: verifyPin returns true if no pin is set
+    ok 10 - verifyPin returns true if no pin is set
+      ---
+      duration_ms: 1.20993
+      type: 'test'
+      ...
+    # Subtest: verifyPin returns true for correct legacy pin and upgrades it
+    ok 11 - verifyPin returns true for correct legacy pin and upgrades it
+      ---
+      duration_ms: 61.143538
+      type: 'test'
+      ...
+    # Subtest: verifyPin returns true for correct secure pin
+    ok 12 - verifyPin returns true for correct secure pin
+      ---
+      duration_ms: 121.963039
+      type: 'test'
+      ...
+    # Subtest: verifyPin returns false for incorrect pin (legacy)
+    ok 13 - verifyPin returns false for incorrect pin (legacy)
+      ---
+      duration_ms: 1.339247
+      type: 'test'
+      ...
+    # Subtest: verifyPin returns false for incorrect pin (secure)
+    ok 14 - verifyPin returns false for incorrect pin (secure)
+      ---
+      duration_ms: 122.580746
+      type: 'test'
+      ...
+    # Subtest: hasPin correctly reports pin existence
+    ok 15 - hasPin correctly reports pin existence
+      ---
+      duration_ms: 0.995359
+      type: 'test'
+      ...
+    # Subtest: verifyPin returns true even if hash upgrade fails
+    ok 16 - verifyPin returns true even if hash upgrade fails
+      ---
+      duration_ms: 60.270047
+      type: 'test'
+      ...
+    1..16
+ok 34 - pinService
+  ---
+  duration_ms: 546.128459
+  type: 'test'
+  ...
+# Error fetching spin history from Gist: Error: GitHub API responded with 500
+#     at getSpinHistory (file:///app/services/spinHistoryService.ts:15:13)
+#     at async waitForActual (node:assert:644:5)
+#     at async Function.rejects (node:assert:767:25)
+#     at async TestContext.<anonymous> (file:///app/services/spinHistoryService.test.ts:101:7)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+# GitHub API error details: { message: 'Error' }
+# Error saving spin history to Gist: Error: GitHub API responded with 500
+#     at saveSpinHistory (file:///app/services/spinHistoryService.ts:53:13)
+#     at async waitForActual (node:assert:644:5)
+#     at async Function.rejects (node:assert:767:25)
+#     at async TestContext.<anonymous> (file:///app/services/spinHistoryService.test.ts:139:7)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+# (node:31252) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: spinHistoryService
+    # Subtest: getSpinHistory
+        # Subtest: returns parsed history on success
+        ok 1 - returns parsed history on success
+          ---
+          duration_ms: 34.75453
+          type: 'test'
+          ...
+        # Subtest: returns empty array when file is missing
+        ok 2 - returns empty array when file is missing
+          ---
+          duration_ms: 0.981967
+          type: 'test'
+          ...
+        # Subtest: returns empty array when file content is empty
+        ok 3 - returns empty array when file content is empty
+          ---
+          duration_ms: 0.811673
+          type: 'test'
+          ...
+        # Subtest: throws error on fetch failure
+        ok 4 - throws error on fetch failure
+          ---
+          duration_ms: 2.31617
+          type: 'test'
+          ...
+        1..4
+    ok 1 - getSpinHistory
+      ---
+      duration_ms: 40.434236
+      type: 'suite'
+      ...
+    # Subtest: saveSpinHistory
+        # Subtest: saves history successfully
+        ok 1 - saves history successfully
+          ---
+          duration_ms: 1.070773
+          type: 'test'
+          ...
+        # Subtest: throws error on save failure
+        ok 2 - throws error on save failure
+          ---
+          duration_ms: 1.187126
+          type: 'test'
+          ...
+        1..2
+    ok 2 - saveSpinHistory
+      ---
+      duration_ms: 2.764323
+      type: 'suite'
+      ...
+    # Subtest: addSpinEntry
+        # Subtest: adds new entry to history
+        ok 1 - adds new entry to history
+          ---
+          duration_ms: 2.291185
+          type: 'test'
+          ...
+        1..1
+    ok 3 - addSpinEntry
+      ---
+      duration_ms: 2.528402
+      type: 'suite'
+      ...
+    # Subtest: updateSpinEntry
+        # Subtest: updates existing entry
+        ok 1 - updates existing entry
+          ---
+          duration_ms: 1.781488
+          type: 'test'
+          ...
+        # Subtest: throws error if entry not found
+        ok 2 - throws error if entry not found
+          ---
+          duration_ms: 1.021477
+          type: 'test'
+          ...
+        1..2
+    ok 4 - updateSpinEntry
+      ---
+      duration_ms: 3.006859
+      type: 'suite'
+      ...
+    # Subtest: deleteSpinEntry
+        # Subtest: deletes existing entry
+        ok 1 - deletes existing entry
+          ---
+          duration_ms: 1.024013
+          type: 'test'
+          ...
+        # Subtest: throws error if entry not found
+        ok 2 - throws error if entry not found
+          ---
+          duration_ms: 0.989431
+          type: 'test'
+          ...
+        1..2
+    ok 5 - deleteSpinEntry
+      ---
+      duration_ms: 2.223816
+      type: 'suite'
+      ...
+    # Subtest: upsertTodaySpinEntry
+        # Subtest: adds new entry if none exists for today
+        ok 1 - adds new entry if none exists for today
+          ---
+          duration_ms: 1.513297
+          type: 'test'
+          ...
+        # Subtest: updates existing entry if exists for today
+        ok 2 - updates existing entry if exists for today
+          ---
+          duration_ms: 1.180198
+          type: 'test'
+          ...
+        1..2
+    ok 6 - upsertTodaySpinEntry
+      ---
+      duration_ms: 2.859146
+      type: 'suite'
+      ...
+    1..6
+ok 35 - spinHistoryService
+  ---
+  duration_ms: 55.50769
+  type: 'suite'
+  ...
+1..35
+# tests 94
+# suites 8
+# pass 93
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1258.781811
+ ELIFECYCLE  Command failed with exit code 1.

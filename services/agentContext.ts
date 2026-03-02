@@ -6,13 +6,13 @@ import type {
   SharedMemory,
   SpinEntry,
   User,
-} from '../types';
-import { getTodaySpin } from './dailySpinService';
-import { getMemories } from './memoryService';
-import { getMessages } from './messageService';
-import { getMovies } from './movieService';
-import { getSuggestions } from './suggestionService';
-import { getSpinHistory } from './spinHistoryService';
+} from '../types.ts';
+import { getTodaySpin } from './dailySpinService.ts';
+import { getMemories } from './memoryService.ts';
+import { getMessages } from './messageService.ts';
+import { getMovies } from './movieService.ts';
+import { getSuggestions } from './suggestionService.ts';
+import { getSpinHistory } from './spinHistoryService.ts';
 
 export interface AgentCapabilities {
   name: string;

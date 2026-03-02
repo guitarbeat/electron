@@ -1,5 +1,5 @@
-import { GIST_MESSAGES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
-import { Message } from '../types';
+import { GIST_MESSAGES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig.ts';
+import { Message } from '../types.ts';
 
 export const getMessages = async (): Promise<Message[]> => {
   try {

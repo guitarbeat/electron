@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
-import { getMovies, saveMovies } from './movieService';
-import { GIST_FILENAME, GIST_API_URL } from '../config/gistConfig';
-import type { Movie } from '../types';
+
+import { getMovies, saveMovies } from './movieService.ts';
+import { GIST_FILENAME, GIST_API_URL } from '../config/gistConfig.ts';
+import type { Movie } from '../types.ts';
 
 const mockMovies: Movie[] = [
   {
@@ -52,8 +53,7 @@ test('getMovies returns empty array if file is missing in Gist', async () => {
 
   try {
     const mockConsoleError = mock.method(console, 'error', () => {});
-    const movies = await getMovies();
-    assert.deepEqual(movies, []);
+    await assert.rejects(getMovies(), /Gist is missing "movielist.json"/);
     mockConsoleError.mock.restore();
   } finally {
     mockFetch.mock.restore();
