@@ -140,7 +140,7 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
         }} />
 
         {isLoading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: spacing.sm }}>
             {[1, 2].map((i) => (
               <Skeleton key={i} style={{ height: '40px', borderRadius: radius.md }} />
             ))}
@@ -157,7 +157,7 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
             Nothing here yet!
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: spacing.sm }}>
             {items}
           </div>
         )}
@@ -181,13 +181,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const unvisitedPlaces = places.filter((p: Place) => !p.visitedAt).slice(0, 3);
 
   const itemStyle: React.CSSProperties = {
-    padding: `${spacing.xs} ${spacing.sm}`,
+    padding: spacing.sm,
     borderRadius: radius.md,
     background: 'rgba(255,255,255,0.03)',
-    border: `1px solid ${colors.borderSecondary}10`,
+    border: `1px solid ${colors.borderSecondary}15`,
     display: 'flex',
-    alignItems: 'center',
-    gap: spacing.sm,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
   };
 
   return (
@@ -215,11 +218,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         defaultExpanded={moviesExpanded}
         onToggle={setMoviesExpanded}
         items={unwatchedMovies.map(movie => (
-          <div key={movie.id} style={itemStyle}>
+          <div
+            key={movie.id}
+            style={itemStyle}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+              (e.currentTarget as HTMLElement).style.borderColor = `${colors.accent}30`;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+              (e.currentTarget as HTMLElement).style.borderColor = `${colors.borderSecondary}15`;
+            }}
+          >
             {movie.posterUrl && (
-              <img src={movie.posterUrl} alt="" style={{ width: 24, height: 36, objectFit: 'cover', borderRadius: 4 }} />
+              <img src={movie.posterUrl} alt="" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 4 }} />
             )}
-            <span style={{ flex: 1, fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
               {movie.title}
             </span>
           </div>
@@ -235,8 +249,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         defaultExpanded={placesExpanded}
         onToggle={setPlacesExpanded}
         items={unvisitedPlaces.map(place => (
-          <div key={place.id} style={{ ...itemStyle, borderLeft: `2px solid ${colors.secondary}40` }}>
-            <span style={{ flex: 1, fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div
+            key={place.id}
+            style={{ ...itemStyle, borderLeft: `3px solid ${colors.secondary}50` }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+              (e.currentTarget as HTMLElement).style.borderColor = `${colors.secondary}40`;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+              (e.currentTarget as HTMLElement).style.borderColor = `${colors.borderSecondary}15`;
+            }}
+          >
+            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
               {place.name}
             </span>
           </div>
