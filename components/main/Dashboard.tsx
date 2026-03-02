@@ -15,18 +15,26 @@ interface MiniPreviewProps {
   isLoading: boolean;
   accentColor: string;
   defaultExpanded?: boolean;
+  onToggle?: (expanded: boolean) => void;
 }
 
-const MiniPreview: React.FC<MiniPreviewProps> = ({ 
-  title, 
-  icon, 
-  items, 
-  onNavigate, 
-  isLoading, 
+const MiniPreview: React.FC<MiniPreviewProps> = ({
+  title,
+  icon,
+  items,
+  onNavigate,
+  isLoading,
   accentColor,
-  defaultExpanded = false
+  defaultExpanded = false,
+  onToggle
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const handleToggle = () => {
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    onToggle?.(newState);
+  };
 
   return (
     <div
@@ -41,7 +49,7 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
       }}
     >
       <div
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggle}
         style={{
           padding: spacing.md,
           display: 'flex',
@@ -49,19 +57,37 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
           alignItems: 'center',
           cursor: 'pointer',
           userSelect: 'none',
+          transition: 'background 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.background = 'transparent';
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
           <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-          <h3 style={{ 
-            margin: 0, 
-            fontSize: typography.fontSize.base, 
-            color: colors.textPrimary,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            letterSpacing: '0.03em'
-          }}>
-            {title}
-          </h3>
+          <div>
+            <h3 style={{
+              margin: 0,
+              fontSize: typography.fontSize.base,
+              color: colors.textPrimary,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              letterSpacing: '0.03em'
+            }}>
+              {title}
+            </h3>
+            {!isExpanded && items.length > 0 && (
+              <p style={{
+                margin: '2px 0 0 0',
+                fontSize: typography.fontSize.xs,
+                color: colors.textTertiary,
+              }}>
+                {items.length} item{items.length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
           <button
@@ -78,6 +104,13 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
               cursor: 'pointer',
               opacity: 0.8,
               padding: spacing.xs,
+              transition: 'opacity 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = '0.8';
             }}
           >
             Open Full →
@@ -99,13 +132,13 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
           padding: isExpanded ? `0 ${spacing.md} ${spacing.md}` : `0 ${spacing.md}`,
         }}
       >
-        <hr style={{ 
-          border: 'none', 
-          height: '1px', 
+        <hr style={{
+          border: 'none',
+          height: '1px',
           background: `linear-gradient(to right, ${accentColor}40, transparent)`,
           margin: `0 0 ${spacing.md} 0`
         }} />
-        
+
         {isLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
             {[1, 2].map((i) => (
@@ -113,9 +146,9 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p style={{ 
-            margin: 0, 
-            fontSize: typography.fontSize.xs, 
+          <p style={{
+            margin: 0,
+            fontSize: typography.fontSize.xs,
             color: colors.textTertiary,
             textAlign: 'center',
             padding: spacing.md,
@@ -141,6 +174,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { currentUser } = useUser();
   const { movies, isLoading: moviesLoading } = useMovies(currentUser, false);
   const { places, isLoading: placesLoading } = usePlaces(currentUser, false);
+  const [moviesExpanded, setMoviesExpanded] = useState(true);
+  const [placesExpanded, setPlacesExpanded] = useState(true);
 
   const unwatchedMovies = movies.filter((m: Movie) => m.watchedBy.length < 2).slice(0, 3);
   const unvisitedPlaces = places.filter((p: Place) => !p.visitedAt).slice(0, 3);
@@ -158,16 +193,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
       <header style={{ textAlign: 'center', marginBottom: spacing.xs }}>
-        <h2 style={{ 
-          margin: 0, 
-          fontSize: typography.fontSize.xl, 
+        <h2 style={{
+          margin: 0,
+          fontSize: typography.fontSize.xl,
           color: colors.textPrimary,
           fontFamily: typography.fontFamily.heading.join(', ')
         }}>
           Quick Access
         </h2>
         <p style={{ margin: 0, fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
-          Expand for a quick look or click to open full view
+          Click sections to expand or collapse
         </p>
       </header>
 
@@ -177,10 +212,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         isLoading={moviesLoading}
         accentColor={colors.accent}
         onNavigate={() => onNavigate('queue')}
-        defaultExpanded={true}
+        defaultExpanded={moviesExpanded}
+        onToggle={setMoviesExpanded}
         items={unwatchedMovies.map(movie => (
           <div key={movie.id} style={itemStyle}>
-             {movie.posterUrl && (
+            {movie.posterUrl && (
               <img src={movie.posterUrl} alt="" style={{ width: 24, height: 36, objectFit: 'cover', borderRadius: 4 }} />
             )}
             <span style={{ flex: 1, fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -196,7 +232,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         isLoading={placesLoading}
         accentColor={colors.secondary}
         onNavigate={() => onNavigate('places')}
-        defaultExpanded={true}
+        defaultExpanded={placesExpanded}
+        onToggle={setPlacesExpanded}
         items={unvisitedPlaces.map(place => (
           <div key={place.id} style={{ ...itemStyle, borderLeft: `2px solid ${colors.secondary}40` }}>
             <span style={{ flex: 1, fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
