@@ -1,3 +1,4 @@
+import './Matchmaker.css';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { User, Movie } from '../../types';
 import { useMatchmaker } from '../../hooks/useMatchmaker';
@@ -635,31 +636,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes confettiFall {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
-        }
-        @keyframes popInMatch {
-          0% { transform: scale(0.5); opacity: 0; }
-          60% { transform: scale(1.05); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-      `}</style>
     </div>
   );
 };
