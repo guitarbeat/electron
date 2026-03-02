@@ -268,6 +268,57 @@ test('dailySpinService', async (t) => {
     consoleErrorMock.mock.restore();
   });
 
+  await t.test('updateDailySpin correctly handles an empty updates object', async () => {
+    let callCount = 0;
+    fetchMock.mock.mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return mockGistResponse(JSON.stringify(mockSpin));
+      }
+      if (callCount === 2) {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(null, { status: 500 });
+    });
+
+    const updates = {};
+    const result = await updateDailySpin(updates);
+
+    assert.deepEqual(result, mockSpin);
+
+    assert.equal(fetchMock.mock.callCount(), 2);
+    const saveCall = fetchMock.mock.calls[1];
+    const body = JSON.parse(saveCall.arguments[1]?.body);
+    const savedContent = JSON.parse(body.files[GIST_DAILY_SPIN_FILENAME].content);
+    assert.deepEqual(savedContent, mockSpin);
+  });
+
+  await t.test('updateDailySpin processes idempotent updates correctly', async () => {
+    let callCount = 0;
+    fetchMock.mock.mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return mockGistResponse(JSON.stringify(mockSpin));
+      }
+      if (callCount === 2) {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(null, { status: 500 });
+    });
+
+    // An update that provides the exact same property values
+    const updates = { movieTitle: mockSpin.movieTitle, spunBy: mockSpin.spunBy };
+    const result = await updateDailySpin(updates);
+
+    assert.deepEqual(result, mockSpin);
+
+    assert.equal(fetchMock.mock.callCount(), 2);
+    const saveCall = fetchMock.mock.calls[1];
+    const body = JSON.parse(saveCall.arguments[1]?.body);
+    const savedContent = JSON.parse(body.files[GIST_DAILY_SPIN_FILENAME].content);
+    assert.deepEqual(savedContent, mockSpin);
+  });
+
   await t.test('updateDailySpin correctly updates the spin and saves it', async () => {
     // Explicitly using mockImplementation to handle multiple calls robustly
     let callCount = 0;
