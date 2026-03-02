@@ -23,7 +23,9 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   const canSpin = Boolean(currentUser) && unwatchedMovies.length >= 2;
 
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
-  const [status, setStatus] = useState<'loading' | 'idle' | 'spinning' | 'saving' | 'result'>('idle');
+  const [status, setStatus] = useState<'loading' | 'idle' | 'spinning' | 'saving' | 'result'>(
+    'idle'
+  );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
@@ -51,7 +53,10 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   const clampBubble = (x: number, y: number) => {
     if (typeof window === 'undefined') return { x, y };
     const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-    const maxY = Math.max(BUBBLE_EDGE_MARGIN, window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
+    const maxY = Math.max(
+      BUBBLE_EDGE_MARGIN,
+      window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
+    );
     return {
       x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
       y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
@@ -76,7 +81,10 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     if (!ds || ds.pointerId !== event.pointerId) return;
     const deltaX = event.clientX - ds.startX;
     const deltaY = event.clientY - ds.startY;
-    if (!didDragRef.current && (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)) {
+    if (
+      !didDragRef.current &&
+      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+    ) {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
@@ -95,7 +103,9 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     setIsDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {}
   };
 
   // Keep a ref to unwatchedMovies so the callback doesn't depend on it
@@ -150,10 +160,18 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     let isMounted = true;
     setHistoryLoading(true);
     getSpinHistory()
-      .then((history) => { if (isMounted) setSpinHistory(history.slice(0, 7)); })
-      .catch(() => { if (isMounted) setSpinHistory([]); })
-      .finally(() => { if (isMounted) setHistoryLoading(false); });
-    return () => { isMounted = false; };
+      .then((history) => {
+        if (isMounted) setSpinHistory(history.slice(0, 7));
+      })
+      .catch(() => {
+        if (isMounted) setSpinHistory([]);
+      })
+      .finally(() => {
+        if (isMounted) setHistoryLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, [isMinimized, status]);
 
   const handleSpinResult = async (movie: Movie) => {
@@ -174,7 +192,14 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
       try {
         await upsertTodaySpinEntry(today, currentUser, movie.id, movie.title);
         setSpinHistory((prev) => [
-          { id: '', date: today, movieId: movie.id, movieTitle: movie.title, spunBy: currentUser, createdAt: dailySpin.createdAt },
+          {
+            id: '',
+            date: today,
+            movieId: movie.id,
+            movieTitle: movie.title,
+            spunBy: currentUser,
+            createdAt: dailySpin.createdAt,
+          },
           ...prev.slice(0, 6),
         ]);
       } catch (histErr) {
@@ -280,14 +305,32 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm }}>
-          <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>Spin</h2>
-          <Button size="sm" variant="ghost" onClick={() => setIsMinimized(true)}>Hide</Button>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.sm,
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
+            Spin
+          </h2>
+          <Button size="sm" variant="ghost" onClick={() => setIsMinimized(true)}>
+            Hide
+          </Button>
         </div>
 
         {/* Loading overlay */}
         {status === 'loading' && (
-          <div style={{ padding: spacing.xl, textAlign: 'center', color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
+          <div
+            style={{
+              padding: spacing.xl,
+              textAlign: 'center',
+              color: colors.textSecondary,
+              fontSize: typography.fontSize.sm,
+            }}
+          >
             Loading…
           </div>
         )}
@@ -295,7 +338,17 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
         {/* Wheel */}
         {status !== 'loading' && (
           <div style={{ flex: '1 1 auto', minHeight: 0, overflow: 'auto' }}>
-            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: status === 'result' ? 0.75 : 1, pointerEvents: status === 'result' ? 'none' : 'auto', transition: 'opacity 0.3s ease' }}>
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: status === 'result' ? 0.75 : 1,
+                pointerEvents: status === 'result' ? 'none' : 'auto',
+                transition: 'opacity 0.3s ease',
+              }}
+            >
               <SpinRoulette
                 movies={unwatchedMovies}
                 disabled={hasSpunToday || !canSpin}
@@ -306,55 +359,176 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
 
             {/* Result */}
             {status === 'result' && selectedMovie && (
-              <div style={{ padding: spacing.sm, borderTop: `1px solid ${colors.accent}40`, marginTop: spacing.sm }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: colors.accent, marginBottom: spacing.xs, textAlign: 'center' }}>
+              <div
+                style={{
+                  padding: spacing.sm,
+                  borderTop: `1px solid ${colors.accent}40`,
+                  marginTop: spacing.sm,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    color: colors.accent,
+                    marginBottom: spacing.xs,
+                    textAlign: 'center',
+                  }}
+                >
                   Today&apos;s pick
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, padding: spacing.sm, borderRadius: 12, background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`, border: `1px solid ${colors.accent}40` }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.md,
+                    padding: spacing.sm,
+                    borderRadius: 12,
+                    background: `linear-gradient(135deg, ${colors.surfaceElevated}, ${colors.surface})`,
+                    border: `1px solid ${colors.accent}40`,
+                  }}
+                >
                   {selectedMovie.posterUrl ? (
-                    <div style={{ width: 60, height: 90, flexShrink: 0, borderRadius: 6, overflow: 'hidden', border: `1px solid ${colors.accent}40` }}>
-                      <img src={selectedMovie.posterUrl} alt={selectedMovie.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div
+                      style={{
+                        width: 60,
+                        height: 90,
+                        flexShrink: 0,
+                        borderRadius: 6,
+                        overflow: 'hidden',
+                        border: `1px solid ${colors.accent}40`,
+                      }}
+                    >
+                      <img
+                        src={selectedMovie.posterUrl}
+                        alt={selectedMovie.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
                     </div>
                   ) : null}
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, marginBottom: 2, color: colors.success }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: spacing.xs,
+                        marginBottom: 2,
+                        color: colors.success,
+                      }}
+                    >
                       <CheckIcon style={{ width: 14, height: 14 }} />
-                      <span style={{ fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Winner</span>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 11,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}
+                      >
+                        Winner
+                      </span>
                     </div>
-                    <h3 style={{ margin: 0, fontSize: typography.fontSize.base, fontFamily: typography.fontFamily.heading.join(','), color: colors.textPrimary, lineHeight: 1.25, wordBreak: 'break-word' }}>
+                    <h3
+                      style={{
+                        margin: 0,
+                        fontSize: typography.fontSize.base,
+                        fontFamily: typography.fontFamily.heading.join(','),
+                        color: colors.textPrimary,
+                        lineHeight: 1.25,
+                        wordBreak: 'break-word',
+                      }}
+                    >
                       {selectedMovie.title}
                     </h3>
                     <div style={{ fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
-                      {selectedMovie.year}{selectedMovie.genre ? ` · ${selectedMovie.genre.split(',')[0]}` : ''}
+                      {selectedMovie.year}
+                      {selectedMovie.genre ? ` · ${selectedMovie.genre.split(',')[0]}` : ''}
                     </div>
                   </div>
                 </div>
 
                 {todaySpinData && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.sm, fontSize: 11, color: colors.textTertiary }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: spacing.sm,
+                      marginTop: spacing.sm,
+                      fontSize: 11,
+                      color: colors.textTertiary,
+                    }}
+                  >
                     <SyncIcon style={{ width: 12, height: 12 }} />
                     <span>Synced</span>
-                    <span style={{ padding: '2px 8px', borderRadius: 9999, border: `1px solid ${todaySpinData.spunBy === currentUser ? 'rgba(52,211,153,0.2)' : 'rgba(99,102,241,0.2)'}`, background: todaySpinData.spunBy === currentUser ? 'rgba(52,211,153,0.1)' : 'rgba(99,102,241,0.1)', fontSize: 11, color: todaySpinData.spunBy === currentUser ? colors.success : colors.tertiary }}>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: 9999,
+                        border: `1px solid ${todaySpinData.spunBy === currentUser ? 'rgba(52,211,153,0.2)' : 'rgba(99,102,241,0.2)'}`,
+                        background:
+                          todaySpinData.spunBy === currentUser
+                            ? 'rgba(52,211,153,0.1)'
+                            : 'rgba(99,102,241,0.1)',
+                        fontSize: 11,
+                        color:
+                          todaySpinData.spunBy === currentUser ? colors.success : colors.tertiary,
+                      }}
+                    >
                       Spun by {todaySpinData.spunBy === currentUser ? 'You' : todaySpinData.spunBy}
                     </span>
                   </div>
                 )}
 
                 {saveError && (
-                  <div style={{ textAlign: 'center', padding: spacing.xs, borderRadius: 4, background: 'rgba(248,113,113,0.1)', color: colors.error, fontSize: 11, marginTop: spacing.sm }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: spacing.xs,
+                      borderRadius: 4,
+                      background: 'rgba(248,113,113,0.1)',
+                      color: colors.error,
+                      fontSize: 11,
+                      marginTop: spacing.sm,
+                    }}
+                  >
                     {saveError}
                   </div>
                 )}
 
                 {spinHistory.length > 0 && !historyLoading && (
                   <div style={{ marginTop: spacing.sm }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: colors.textTertiary, marginBottom: 4 }}>Recent spins</div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                        color: colors.textTertiary,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Recent spins
+                    </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {spinHistory.map((entry) => {
                         const d = entry.date;
-                        const label = d === new Date().toISOString().split('T')[0] ? 'Today' : d.slice(5) || d;
+                        const label =
+                          d === new Date().toISOString().split('T')[0] ? 'Today' : d.slice(5) || d;
                         return (
-                          <span key={entry.id || entry.date + entry.movieId} style={{ padding: '3px 6px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 10, color: colors.textSecondary }}>
+                          <span
+                            key={entry.id || entry.date + entry.movieId}
+                            style={{
+                              padding: '3px 6px',
+                              borderRadius: 6,
+                              background: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              fontSize: 10,
+                              color: colors.textSecondary,
+                            }}
+                          >
                             {label}: {entry.movieTitle} ({entry.spunBy})
                           </span>
                         );
@@ -366,8 +540,16 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
             )}
 
             {!canSpin && status !== 'result' && (
-              <p style={{ textAlign: 'center', color: colors.textTertiary, fontSize: typography.fontSize.xs, margin: `${spacing.sm} 0 0` }}>
-                Add {Math.max(0, 2 - unwatchedMovies.length)} more unwatched movie{unwatchedMovies.length === 1 ? '' : 's'} to spin.
+              <p
+                style={{
+                  textAlign: 'center',
+                  color: colors.textTertiary,
+                  fontSize: typography.fontSize.xs,
+                  margin: `${spacing.sm} 0 0`,
+                }}
+              >
+                Add {Math.max(0, 2 - unwatchedMovies.length)} more unwatched movie
+                {unwatchedMovies.length === 1 ? '' : 's'} to spin.
               </p>
             )}
           </div>

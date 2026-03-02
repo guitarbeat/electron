@@ -145,7 +145,7 @@ const App: React.FC = () => {
         id="main-content"
         className="main-container"
         style={{
-        paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
+          paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
           paddingBottom: 'clamp(0.75rem, 3vw, 3.5rem)',
           paddingLeft: 'clamp(0.5rem, 2vw, 1.5rem)',
           paddingRight: 'clamp(0.5rem, 2vw, 1.5rem)',
