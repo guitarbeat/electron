@@ -128,7 +128,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     setIsDraggingBubble(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch {}
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (e) { /* ignore */ }
   };
 
   useEffect(() => {
@@ -220,7 +220,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     }, currentTickInterval);
 
     return () => window.clearInterval(intervalId);
-  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound]);
+  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound, playMoveSound]);
 
   useEffect(() => {
     if (!isGameVisible) return undefined;
@@ -242,7 +242,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDirection, isGameVisible, restartGame, togglePause]);
+  }, [handleDirection, isGameVisible, playMoveSound, restartGame, togglePause]);
 
   useEffect(() => {
     if (gameState.status !== 'game-over') {
