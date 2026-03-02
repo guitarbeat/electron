@@ -17,7 +17,6 @@ import PlacesList from './components/places/PlacesList';
 import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
-  { id: 'home', label: 'Home', icon: '🏠' },
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
   { id: 'extras', label: 'Extras', icon: '🎰' },
@@ -26,9 +25,10 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
-  const [activeTab, setActiveTab] = useState<MainTab>('home');
+  const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const [isHomeCollapsed, setIsHomeCollapsed] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
@@ -47,7 +47,8 @@ const App: React.FC = () => {
     setShowQuiz(false);
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
-    setActiveTab('home');
+    setActiveTab('queue');
+    setIsHomeCollapsed(true);
   };
 
   const handleRetakeQuiz = () => {
@@ -71,7 +72,12 @@ const App: React.FC = () => {
           </div>
         );
       case 'queue':
-        return <Watchlist />;
+        return (
+          <div className="animate-fade-in">
+            {!isHomeCollapsed && <Dashboard onNavigate={setActiveTab} />}
+            {isHomeCollapsed && <Watchlist />}
+          </div>
+        );
       case 'extras': {
         let content;
         if (showQuiz && quizData) {
@@ -95,7 +101,8 @@ const App: React.FC = () => {
       case 'places':
         return (
           <div className="animate-fade-in">
-            <PlacesList />
+            {!isHomeCollapsed && <Dashboard onNavigate={setActiveTab} />}
+            {isHomeCollapsed && <PlacesList />}
           </div>
         );
       case 'messages':
@@ -237,6 +244,7 @@ const App: React.FC = () => {
                   onClick={() => {
                     playSwitch();
                     setActiveTab(tab.id);
+                    setIsHomeCollapsed(true);
                   }}
                   aria-current={isActive ? 'page' : undefined}
                   style={{
@@ -277,7 +285,18 @@ const App: React.FC = () => {
           </nav>
         </div>
 
-        {renderContent()}
+        {activeTab !== 'extras' && activeTab !== 'messages' && !isHomeCollapsed && (
+          <div style={{ marginBottom: spacing.md }}>
+            <Dashboard 
+              onNavigate={(tab) => {
+                setActiveTab(tab);
+                setIsHomeCollapsed(true);
+              }} 
+            />
+          </div>
+        )}
+
+        {isHomeCollapsed && renderContent()}
       </main>
 
       <MessageBoard mode="floating" />
