@@ -297,4 +297,18 @@ test('dailySpinService', async (t) => {
     const content = JSON.parse(body.files[GIST_DAILY_SPIN_FILENAME].content);
     assert.deepEqual(content, { ...mockSpin, ...updates });
   });
+
+  await t.test('updateDailySpin throws if getDailySpin throws a network error', async () => {
+    const consoleErrorMock = mock.method(console, 'error', () => {});
+    fetchMock.mock.mockImplementationOnce(async () => {
+      throw new Error('Network error');
+    });
+
+    await assert.rejects(
+      async () => updateDailySpin({ movieTitle: 'New' }),
+      /No daily spin exists to update/
+    );
+
+    consoleErrorMock.mock.restore();
+  });
 });
