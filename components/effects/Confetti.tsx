@@ -92,40 +92,38 @@ const Confetti: React.FC<ConfettiProps> = ({
   if (prefersReducedMotion || !isVisible || particles.length === 0) return null;
 
   return (
-    <>
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 9999,
-          overflow: 'hidden',
-        }}
-      >
-        {particles.map((particle) => (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: 9999,
+        overflow: 'hidden',
+      }}
+    >
+      {particles.map((particle) => (
+        <div
+          key={particle.id}
+          className="confetti-particle"
+          style={{
+            left: `${particle.x}%`,
+            animationDelay: `${particle.delay}s`,
+          }}
+        >
           <div
-            key={particle.id}
-            className="confetti-particle"
+            className="confetti-inner"
             style={{
-              left: `${particle.x}%`,
+              backgroundColor: particle.color,
+              borderRadius: particle.isRounded ? '50%' : '2px',
+              transform: `scale(${particle.scale}) rotate(${particle.rotation}deg)`,
               animationDelay: `${particle.delay}s`,
+              boxShadow: `0 0 6px ${particle.color}`,
             }}
-          >
-            <div
-              className="confetti-inner"
-              style={{
-                backgroundColor: particle.color,
-                borderRadius: particle.isRounded ? '50%' : '2px',
-                transform: `scale(${particle.scale}) rotate(${particle.rotation}deg)`,
-                animationDelay: `${particle.delay}s`,
-                boxShadow: `0 0 6px ${particle.color}`,
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    </>
+          />
+        </div>
+      ))}
+    </div>
   );
 };
 
