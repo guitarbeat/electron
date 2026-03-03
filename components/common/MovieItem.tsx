@@ -85,7 +85,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
     <>
       <Card
         variant={watchedByBoth ? 'elevated' : 'default'}
-        className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up`}
+        className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up y2k-holo-hover y2k-sparkle`}
         onClick={handleCardClick}
         data-movie-id={movie.id}
         style={{
