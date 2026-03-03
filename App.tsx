@@ -11,7 +11,6 @@ import SpinWheel from './components/extras/spin-wheel/SpinWheel';
 import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
-import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import Dashboard from './components/main/Dashboard';
 import PlacesList from './components/places/PlacesList';
@@ -28,7 +27,6 @@ const App: React.FC = () => {
   const { playSwitch } = useAudio();
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const { quizData } = useQuiz(true);
-  const [showProfileSheet, setShowProfileSheet] = useState(false);
   const [expandedTabs, setExpandedTabs] = useState<Set<MainTab>>(new Set());
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -439,7 +437,6 @@ const App: React.FC = () => {
       <SnakeGame mode="floating" />
       <MatchmakerBubble currentUser={currentUser} />
 
-      <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
   );
 };
