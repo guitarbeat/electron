@@ -29,7 +29,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
-  const [isHomeCollapsed, setIsHomeCollapsed] = useState(false);
+  const [expandedTabs, setExpandedTabs] = useState<Set<MainTab>>(new Set());
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
@@ -49,7 +49,7 @@ const App: React.FC = () => {
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
     setActiveTab('queue');
-    setIsHomeCollapsed(true);
+    setExpandedTabs(new Set());
   };
 
   const handleRetakeQuiz = () => {
@@ -64,19 +64,29 @@ const App: React.FC = () => {
     setShowQuizEditor(true);
   };
 
+  const isTabExpanded = (tab: MainTab) => expandedTabs.has(tab);
+
+  const toggleTab = (tab: MainTab) => {
+    playSwitch();
+    const newExpanded = new Set(expandedTabs);
+    if (newExpanded.has(tab)) {
+      newExpanded.delete(tab);
+    } else {
+      newExpanded.add(tab);
+    }
+    setExpandedTabs(newExpanded);
+    setActiveTab(tab);
+  };
+
   const renderContent = () => {
+    const expanded = isTabExpanded(activeTab);
+
     switch (activeTab) {
-      case 'home':
-        return (
-          <div className="animate-fade-in">
-            <Dashboard onNavigate={setActiveTab} />
-          </div>
-        );
       case 'queue':
         return (
           <div className="animate-fade-in">
-            {!isHomeCollapsed && <Dashboard onNavigate={setActiveTab} />}
-            {isHomeCollapsed && <Watchlist />}
+            {!expanded && <Dashboard onNavigate={(tab) => { setActiveTab(tab); setExpandedTabs(new Set([tab])); }} />}
+            {expanded && <Watchlist />}
           </div>
         );
       case 'extras': {
@@ -102,8 +112,8 @@ const App: React.FC = () => {
       case 'places':
         return (
           <div className="animate-fade-in">
-            {!isHomeCollapsed && <Dashboard onNavigate={setActiveTab} />}
-            {isHomeCollapsed && <PlacesList />}
+            {!expanded && <Dashboard onNavigate={(tab) => { setActiveTab(tab); setExpandedTabs(new Set([tab])); }} />}
+            {expanded && <PlacesList />}
           </div>
         );
       case 'messages':
@@ -320,22 +330,16 @@ const App: React.FC = () => {
             }}
           >
             {MAIN_TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
+              const isSelected = activeTab === tab.id;
+              const isOn = isTabExpanded(tab.id);
               return (
                 <button
                   key={tab.id}
                   type="button"
-                  className={`main-nav-tile ${isActive ? 'active-bubble' : ''}`}
-                  onClick={() => {
-                    playSwitch();
-                    if (isActive && isHomeCollapsed) {
-                      setIsHomeCollapsed(false);
-                    } else {
-                      setActiveTab(tab.id);
-                      setIsHomeCollapsed(true);
-                    }
-                  }}
-                  aria-current={isActive ? 'page' : undefined}
+                  className={`main-nav-tile ${isOn ? 'active-bubble' : ''}`}
+                  onClick={() => toggleTab(tab.id)}
+                  aria-current={isSelected ? 'page' : undefined}
+                  title={isOn ? 'Turn off' : 'Turn on'}
                   style={{
                     flex: '1 1 0',
                     minWidth: '80px',
@@ -346,25 +350,32 @@ const App: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '2px',
-                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.06)',
-                    border: isActive ? `2px solid ${colors.accent}` : '1px solid rgba(255,255,255,0.1)',
+                    background: isOn
+                      ? colors.gradientPink
+                      : isSelected
+                        ? 'rgba(255,255,255,0.1)'
+                        : 'rgba(255,255,255,0.06)',
+                    border: isOn
+                      ? `2px solid ${colors.accent}`
+                      : `1px solid rgba(255,255,255,0.1)`,
                     borderRadius: radius.full,
                     padding: '8px 12px',
-                    color: isActive ? '#1a1a2e' : colors.textSecondary,
+                    color: isOn ? '#1a1a2e' : colors.textSecondary,
                     fontFamily: typography.fontFamily.heading.join(', '),
                     fontSize: '0.85rem',
                     fontWeight: 800,
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                     cursor: 'pointer',
-                    boxShadow: isActive ? `0 0 15px ${colors.accent}60` : 'none',
+                    boxShadow: isOn ? `0 0 15px ${colors.accent}60, inset 0 0 8px rgba(0,0,0,0.3)` : 'none',
+                    transition: 'all 0.3s ease',
                   }}
                 >
                   <span style={{ fontSize: '1.4em', lineHeight: 1 }} aria-hidden>
                     {tab.icon}
                   </span>
-                  <span style={{ lineHeight: 1, textAlign: 'center', whiteSpace: 'nowrap' }}>
-                    {tab.label}
+                  <span style={{ lineHeight: 1, textAlign: 'center', whiteSpace: 'nowrap', fontSize: '0.7rem' }}>
+                    {isOn ? 'ON' : 'OFF'}
                   </span>
                 </button>
               );
@@ -372,18 +383,7 @@ const App: React.FC = () => {
           </nav>
         </div>
 
-        {activeTab !== 'extras' && activeTab !== 'messages' && !isHomeCollapsed && (
-          <div style={{ marginBottom: spacing.md }}>
-            <Dashboard 
-              onNavigate={(tab) => {
-                setActiveTab(tab);
-                setIsHomeCollapsed(true);
-              }} 
-            />
-          </div>
-        )}
-
-        {isHomeCollapsed && renderContent()}
+        {renderContent()}
       </main>
 
       <MessageBoard mode="floating" />
