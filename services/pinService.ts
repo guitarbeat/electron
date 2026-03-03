@@ -93,23 +93,21 @@ export const getPins = async (): Promise<UserPins> => {
     return fetchPromise;
   }
 
-  // Capture the time when we started the fetch
   const fetchStartTime = Date.now();
 
-  const promise = (async () => {
-    try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        headers: {
-          Authorization: `token ${GIST_TOKEN}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-      });
-
+  fetchPromise = fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    headers: {
+      Authorization: `token ${GIST_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+  })
+    .then(async (response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch gist: ${response.status}`);
       }
-
-      const gist = await response.json();
+      return response.json();
+    })
+    .then((gist) => {
       const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
 
       // Check if cache was updated by a write operation while we were fetching
@@ -126,21 +124,22 @@ export const getPins = async (): Promise<UserPins> => {
       cachedPins = JSON.parse(fileContent);
       lastFetchTime = Date.now();
       return cachedPins as UserPins;
-    } catch (error) {
+    })
+    .catch((error) => {
       console.error('Error fetching PINs:', error);
       return {};
+    });
+
+  const finalPromise = fetchPromise;
+
+  fetchPromise.finally(() => {
+    if (fetchPromise === finalPromise) {
+      fetchPromise = null;
     }
-  })();
-
-  fetchPromise = promise;
-
-  promise.finally(() => {
-    fetchPromise = null;
   });
 
-  return promise;
+  return fetchPromise;
 };
-
 /**
  * Saves PINs to the Gist.
  */
