@@ -1,8 +1,16 @@
-import { GIST_MESSAGES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
+import { GIST_MESSAGES_FILENAME, GIST_TOKEN, GIST_API_URL, GIST_ID } from '../config/gistConfig';
 import { Message } from '../types';
+
+const mockMessages: Message[] = [];
 
 export const getMessages = async (): Promise<Message[]> => {
   try {
+    // If credentials are missing, use mock data instead of erroring
+    if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
+      console.warn('GitHub credentials not configured. Using mock messages. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.');
+      return mockMessages;
+    }
+
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,
@@ -30,7 +38,9 @@ export const getMessages = async (): Promise<Message[]> => {
     return JSON.parse(file.content);
   } catch (error) {
     console.error('Error fetching messages from Gist:', error);
-    throw error;
+    // Return mock data as fallback when API fails
+    console.warn('Falling back to mock messages');
+    return mockMessages;
   }
 };
 
