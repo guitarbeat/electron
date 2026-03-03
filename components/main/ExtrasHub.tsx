@@ -2,7 +2,6 @@ import React from 'react';
 import { User } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import Matchmaker from '../matchmaker/Matchmaker';
 import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
 
 /** Shared card style for all extras sections */
@@ -58,14 +57,6 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
         gap: spacing.lg,
       }}
     >
-      {showGames && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-          <Card style={sectionStyle}>
-            <h2 style={{ ...sectionTitleStyle, marginBottom: spacing.md }}>Matchmaker</h2>
-            <Matchmaker currentUser={currentUser} />
-          </Card>
-        </div>
-      )}
 
       {showQuiz && (
         <Card style={sectionStyle}>
