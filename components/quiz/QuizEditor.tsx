@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuiz } from '../../hooks/useQuiz';
 import { useUndoRedo } from '../../hooks/useUndoRedo';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useToast } from '../../context/ToastContext';
 import { QuizData } from '../../services/quizService';
 import { QuizQuestion } from './types';
 import QuestionsTab from './editor/QuestionsTab';
@@ -24,6 +25,7 @@ interface QuizEditorProps {
 
 const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   const { quizData, isLoading, isSaving, saveAllData, refresh } = useQuiz();
+  const { showToast } = useToast();
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   // Use undo/redo for local state
@@ -88,13 +90,13 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         const imported = JSON.parse(event.target?.result as string) as QuizData;
         // Basic validation
         if (!imported.questions || !Array.isArray(imported.questions)) {
-          alert('Invalid quiz data format');
+          showToast({ message: 'Invalid quiz data format.', type: 'error' });
           return;
         }
         setLocalData(imported);
         setHasChanges(true);
       } catch {
-        alert('Failed to parse JSON file');
+        showToast({ message: 'Failed to parse JSON file.', type: 'error' });
       }
     };
     reader.readAsText(file);
