@@ -32,9 +32,7 @@ export function useRandomCatImage(): UseRandomCatImageResult {
         if (!res.ok) throw new Error('Cat API error');
         const data = await res.json();
         if (!Array.isArray(data) || data.length === 0) throw new Error('No images');
-        const urls = data
-          .map((item: { url?: string }) => item.url)
-          .filter((u): u is string => Boolean(u));
+        const urls = data.map((item: { url?: string }) => item.url).filter(Boolean);
         if (urls.length > 0 && !cancelled) setSources(urls);
         else if (!cancelled) setSources([CATAAS_RANDOM]);
       } catch {

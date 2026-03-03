@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
+import {
+  QuizQuestion,
+  QuizAnswer,
+  CharacterScores,
+  QuizResult,
+  QuizCharacter,
+  XYAxisQuestion as XYAxisQuestionType,
+} from './types';
 import { QuizData } from '../../services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
@@ -9,7 +16,6 @@ import ResultsScreen from './ResultsScreen';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { spacing, colors, typography, shadows } from '../../design-system/tokens';
-import { calculateQuizResults } from './quizScoring';
 
 interface QuizFlowProps {
   onComplete: () => void;
@@ -71,10 +77,8 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      // Calculate results using the utility function
-      const result = calculateQuizResults(answers, questions);
-      setQuizResult(result);
-      setShowResults(true);
+      // Calculate results
+      calculateResults();
     }
   };
 
@@ -82,6 +86,95 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
     }
+  };
+
+  const calculateResults = () => {
+    const scores: CharacterScores = {
+      Electra: 0,
+      Aaron: 0,
+      Madeleine: 0,
+      'Nosferatu/Smeemo': 0,
+    };
+
+    // Calculate scores from answers
+    answers.forEach((answer) => {
+      const question = questions.find((q) => q.id === answer.questionId);
+      if (!question) return;
+
+      if (question.type === 'multiple-choice' && answer.answerIndex !== undefined) {
+        const option = question.options[answer.answerIndex];
+        Object.entries(option.scores).forEach(([char, score]) => {
+          scores[char as QuizCharacter] += score as number;
+        });
+      } else if (question.type === 'agree-disagree' && answer.scaleValue) {
+        const scaleScores = question.scores[answer.scaleValue];
+        Object.entries(scaleScores).forEach(([char, score]) => {
+          scores[char as QuizCharacter] += score as number;
+        });
+      } else if (question.type === 'image-choice' && answer.answerIndex !== undefined) {
+        const option = question.options[answer.answerIndex];
+        Object.entries(option.scores).forEach(([char, score]) => {
+          scores[char as QuizCharacter] += score as number;
+        });
+      } else if (question.type === 'xy-axis' && answer.xyPosition) {
+        // Calculate quadrant weights based on position
+        const { x, y } = answer.xyPosition;
+        const { quadrantScores } = question;
+
+        // Weight calculation: how much each quadrant contributes
+        // topLeft: x < 0, y > 0
+        // topRight: x > 0, y > 0
+        // bottomLeft: x < 0, y < 0
+        // bottomRight: x > 0, y < 0
+        const tlWeight = Math.max(0, -x) * Math.max(0, y);
+        const trWeight = Math.max(0, x) * Math.max(0, y);
+        const blWeight = Math.max(0, -x) * Math.max(0, -y);
+        const brWeight = Math.max(0, x) * Math.max(0, -y);
+
+        const totalWeight = tlWeight + trWeight + blWeight + brWeight || 1;
+
+        // Apply weighted scores from each quadrant
+        const applyQuadrant = (qScores: Partial<Record<QuizCharacter, number>>, weight: number) => {
+          Object.entries(qScores).forEach(([char, score]) => {
+            scores[char as QuizCharacter] += ((score as number) * weight) / totalWeight;
+          });
+        };
+
+        applyQuadrant(quadrantScores.topLeft, tlWeight);
+        applyQuadrant(quadrantScores.topRight, trWeight);
+        applyQuadrant(quadrantScores.bottomLeft, blWeight);
+        applyQuadrant(quadrantScores.bottomRight, brWeight);
+      }
+    });
+
+    // Find highest scoring character
+    const sortedCharacters = (Object.keys(scores) as QuizCharacter[]).sort(
+      (a, b) => scores[b] - scores[a]
+    );
+    const topCharacter = sortedCharacters[0];
+
+    // Calculate percentages
+    const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+    const percentages: Record<QuizCharacter, number> = {
+      Electra: Math.round((scores.Electra / totalScore) * 100) || 0,
+      Aaron: Math.round((scores.Aaron / totalScore) * 100) || 0,
+      Madeleine: Math.round((scores.Madeleine / totalScore) * 100) || 0,
+      'Nosferatu/Smeemo': Math.round((scores['Nosferatu/Smeemo'] / totalScore) * 100) || 0,
+    };
+
+    // Determine if result is "Neither"
+    // If the top character has less than 35% of the total score, it's a weak match
+    const topScore = scores[topCharacter];
+    const isNeither = totalScore > 0 && topScore / totalScore < 0.35;
+
+    const result: QuizResult = {
+      character: isNeither ? 'Neither' : topCharacter,
+      scores,
+      percentages,
+    };
+
+    setQuizResult(result);
+    setShowResults(true);
   };
 
   const handleRetake = () => {

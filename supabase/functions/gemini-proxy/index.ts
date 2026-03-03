@@ -98,11 +98,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const geminiResponse = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents, generationConfig }),
     });
 

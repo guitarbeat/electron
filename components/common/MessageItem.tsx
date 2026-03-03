@@ -3,7 +3,6 @@ import { Message, User } from '../../types';
 import { TrashIcon } from './icons';
 import { spacing, typography, colors } from '../../design-system/tokens';
 import { getMessageBubbleStyle } from '../../hooks/useUserColors';
-import './MessageItem.css';
 
 // iOS-style reactions
 const REACTIONS = ['❤️', '👍', '👎', '😂', '‼️', '❓'];
@@ -14,7 +13,7 @@ const formatTime = (date: string): string => {
     const dateObj = new Date(date);
     const now = new Date();
 
-    if (isNaN(dateObj.getTime()) || isNaN(now.getTime())) {
+    if (Number.isNaN(dateObj.getTime()) || Number.isNaN(now.getTime())) {
       return '';
     }
 
@@ -69,7 +68,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
   // Get user's current reaction from persisted data
   const getUserReaction = (): string | null => {
     if (!msg.reactions) return null;
-    for (const [emoji, users] of Object.entries(msg.reactions) as [string, string[]][]) {
+    const entries = Object.entries(msg.reactions) as [string, string[]][];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [emoji, users] of entries) {
       if (users.includes(currentUsername)) return emoji;
     }
     return null;
@@ -190,12 +191,19 @@ const MessageItem: React.FC<MessageItemProps> = ({
       <div
         className={`imessage-bubble ${isCurrentUser ? 'from-me' : 'from-them'}`}
         aria-label={`Message from ${authorName}`}
+        role="button"
+        tabIndex={0}
         onDoubleClick={handleDoubleClick}
         onMouseDown={handleLongPressStart}
         onMouseUp={handleLongPressEnd}
         onMouseLeave={handleLongPressEnd}
         onTouchStart={handleLongPressStart}
         onTouchEnd={handleLongPressEnd}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleDoubleClick();
+          }
+        }}
         style={{
           position: 'relative',
           borderRadius: '18px',
@@ -271,6 +279,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
               <div
                 key={emoji}
                 className="reaction-badge"
+                role="button"
+                tabIndex={0}
                 style={{
                   background: hasUserReacted ? '#e8f4fd' : '#ffffff',
                   borderRadius: '12px',
@@ -286,6 +296,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   onReaction(msg.id, emoji, currentUsername);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    onReaction(msg.id, emoji, currentUsername);
+                  }
                 }}
               >
                 <span>{emoji}</span>
@@ -321,6 +337,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           >
             {REACTIONS.map((reaction) => (
               <button
+                type="button"
                 key={reaction}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -357,6 +374,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
       {/* Delete button - only visible in edit mode */}
       {isEditMode && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(msg.id);
@@ -391,7 +409,78 @@ const MessageItem: React.FC<MessageItemProps> = ({
         </button>
       )}
 
-      {/* iOS iMessage bubble styles removed - moved to MessageItem.css */}
+      {/* iOS iMessage bubble styles */}
+      <style>{`
+        .imessage-bubble {
+          /* Base styles handled by inline styles for per-user colors */
+        }
+
+        .imessage-bubble:active {
+          transform: scale(0.98);
+        }
+
+        /* Reaction menu pop animation */
+        @keyframes reactionMenuPop {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+          }
+        }
+
+        /* Reaction badge bounce on appear */
+        .reaction-badge {
+          animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes badgePop {
+          0% {
+            opacity: 0;
+            transform: scale(0);
+          }
+          50% {
+            transform: scale(1.2);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        /* Message slide-in animation */
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .imessage-bubble.from-me {
+          animation: slideInRight 0.2s ease-out;
+        }
+
+        .imessage-bubble.from-them {
+          animation: slideInLeft 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

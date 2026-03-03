@@ -24,7 +24,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info';
-    onUndo?: () => void;
   } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
@@ -90,7 +89,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     addMovie,
     toggleWatched,
     deleteMovie,
-    restoreMovie,
     manualMetadataUpdate,
   } = useMovies(currentUser, isPaused);
 
@@ -238,7 +236,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     addMovie,
     toggleWatched,
     deleteMovie,
-    restoreMovie,
     refreshMovies,
     manualMetadataUpdate,
     pendingSuggestions,

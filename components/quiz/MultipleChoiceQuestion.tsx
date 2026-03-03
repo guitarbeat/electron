@@ -1,5 +1,6 @@
 import React from 'react';
 import { MultipleChoiceQuestion as MultipleChoiceQuestionType } from './types';
+import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { spacing, typography, colors } from '../../design-system/tokens';
 

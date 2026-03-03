@@ -39,7 +39,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       if (placesWithCoords.length === 0) return;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { google } = window as any;
+      const google = (window as any).google;
       const bounds = new google.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
         const position = { lat: place.lat, lng: place.lng };
@@ -62,7 +62,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
 
     const initMap = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { google } = window as any;
+      const google = (window as any).google;
       if (!containerRef.current || !google?.maps) return;
 
       const map = new google.maps.Map(containerRef.current, {

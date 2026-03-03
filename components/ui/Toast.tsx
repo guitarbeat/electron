@@ -31,6 +31,39 @@ const TOAST_STYLES = {
   },
 } as const;
 
+const TOAST_CONTENT_STYLE: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: spacing.md,
+  color: colors.textPrimary,
+  justifyContent: 'center',
+};
+
+const TOAST_MESSAGE_STYLE: React.CSSProperties = {
+  fontSize: typography.fontSize.base,
+  textAlign: 'center',
+  fontWeight: typography.fontWeight.medium,
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+  hyphens: 'auto',
+  maxWidth: '100%',
+  flex: '1 1 auto',
+  minWidth: 0,
+};
+
+const TOAST_DISMISS_BUTTON_STYLE: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  color: colors.textSecondary,
+  cursor: 'pointer',
+  padding: spacing.xs,
+  fontSize: '18px',
+  lineHeight: 1,
+  opacity: 0.7,
+  transition: 'opacity 0.2s',
+  borderRadius: radius.sm,
+};
+
 const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000 }) => {
   const [isExiting, setIsExiting] = useState(false);
 
@@ -52,6 +85,26 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
   };
 
   const styles = TOAST_STYLES[type] || TOAST_STYLES.info;
+
+  const cardStyle = useMemo(
+    () => ({
+      position: 'fixed' as const,
+      top: spacing.lg,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 1000,
+      maxWidth: '90%',
+      padding: spacing.lg,
+      backgroundColor: styles.backgroundColor,
+      borderColor: styles.borderColor,
+      borderWidth: '2px',
+      animation: isExiting
+        ? 'toast-slide-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+        : 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      boxShadow: styles.shadow,
+    }),
+    [styles, isExiting]
+  );
 
   const icon = useMemo(() => {
     switch (type) {
@@ -78,65 +131,17 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
       variant="elevated"
       role={type === 'error' ? 'alert' : 'status'}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
-      style={{
-        position: 'fixed',
-        top: spacing.lg,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        maxWidth: '90%',
-        padding: spacing.lg,
-        backgroundColor: styles.backgroundColor,
-        borderColor: styles.borderColor,
-        borderWidth: '2px',
-        animation: isExiting
-          ? 'toast-slide-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-          : 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        boxShadow: styles.shadow,
-      }}
+      style={cardStyle}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: spacing.md,
-          color: colors.textPrimary,
-          justifyContent: 'center',
-        }}
-      >
+      <div style={TOAST_CONTENT_STYLE}>
         {icon}
-        <span
-          style={{
-            fontSize: typography.fontSize.base,
-            textAlign: 'center',
-            fontWeight: typography.fontWeight.medium,
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            hyphens: 'auto',
-            maxWidth: '100%',
-            flex: '1 1 auto',
-            minWidth: 0,
-          }}
-        >
-          {message}
-        </span>
+        <span style={TOAST_MESSAGE_STYLE}>{message}</span>
         {onDismiss && (
           <button
             type="button"
             onClick={handleDismiss}
             aria-label="Dismiss notification"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: colors.textSecondary,
-              cursor: 'pointer',
-              padding: spacing.xs,
-              fontSize: '18px',
-              lineHeight: 1,
-              opacity: 0.7,
-              transition: 'opacity 0.2s',
-              borderRadius: radius.sm,
-            }}
+            style={TOAST_DISMISS_BUTTON_STYLE}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '1';
             }}

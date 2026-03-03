@@ -1,246 +1,302 @@
-import React, { useState } from 'react';
-import { MainTab, Movie, Place } from '../../types';
+import React from 'react';
+import { MainTab, User, Movie, Place } from '../../types';
 import { useMovies } from '../../hooks/useMovies';
 import { usePlaces } from '../../hooks/usePlaces';
 import { useUser } from '../../context/UserContext';
+import Card from '../ui/Card';
+import Button from '../ui/Button';
 import Skeleton from '../ui/Skeleton';
 import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
-import './Dashboard.css';
-import { ChevronDownIcon, ChevronUpIcon } from '../common/icons';
-
-/* ── Reusable accordion card ── */
-
-interface MiniPreviewProps {
-  title: string;
-  icon: string;
-  items: React.ReactNode[];
-  onNavigate: () => void;
-  isLoading: boolean;
-  accentColor: string;
-  defaultExpanded?: boolean;
-  onToggle?: (expanded: boolean) => void;
-}
-
-const MiniPreview: React.FC<MiniPreviewProps> = ({
-  title,
-  icon,
-  items,
-  onNavigate,
-  isLoading,
-  accentColor,
-  defaultExpanded = false,
-  onToggle,
-}) => {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-
-  const handleToggle = () => {
-    const next = !isExpanded;
-    setIsExpanded(next);
-    onToggle?.(next);
-  };
-
-  return (
-    <div className="y2k-card retro-card-shine">
-      {/* Header (click to expand/collapse) */}
-      <div className="y2k-card-header" onClick={handleToggle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-          <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-          <div>
-            <h3
-              className="y2k-header"
-              style={{
-                margin: 0,
-                fontSize: typography.fontSize.base,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                letterSpacing: '0.03em',
-              }}
-            >
-              ✦ {title} ✦
-            </h3>
-            {!isExpanded && items.length > 0 && (
-              <p
-                style={{
-                  margin: '2px 0 0 0',
-                  fontSize: typography.fontSize.xs,
-                  color: colors.textTertiary,
-                }}
-              >
-                {items.length} item{items.length !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate();
-            }}
-            className="y2k-link"
-          >
-            Open Full →
-          </button>
-          {isExpanded ? (
-            <ChevronUpIcon style={{ width: 16, height: 16, color: colors.textTertiary }} />
-          ) : (
-            <ChevronDownIcon style={{ width: 16, height: 16, color: colors.textTertiary }} />
-          )}
-        </div>
-      </div>
-
-      {/* Collapsible body */}
-      <div
-        className="y2k-card-body"
-        style={{
-          maxHeight: isExpanded ? '500px' : '0px',
-          opacity: isExpanded ? 1 : 0,
-          padding: isExpanded ? `0 ${spacing.md} ${spacing.md}` : `0 ${spacing.md}`,
-        }}
-      >
-        <hr className="retro-divider" style={{ margin: `0 0 ${spacing.sm} 0` }} />
-
-        {isLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: spacing.sm }}>
-            {[1, 2].map((i) => (
-              <Skeleton key={i} style={{ height: '40px', borderRadius: radius.md }} />
-            ))}
-          </div>
-        ) : items.length === 0 ? (
-          <p
-            style={{
-              margin: 0,
-              fontSize: typography.fontSize.xs,
-              color: colors.textTertiary,
-              textAlign: 'center',
-              padding: spacing.md,
-              fontStyle: 'italic',
-            }}
-          >
-            ✧ Nothing here yet! ✧
-          </p>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: spacing.sm }}>
-            {items}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/* ── Dashboard ── */
 
 interface DashboardProps {
   onNavigate: (tab: MainTab) => void;
 }
 
-const itemBase: React.CSSProperties = {
-  padding: spacing.sm,
+const sectionCardStyle: React.CSSProperties = {
+  padding: spacing.lg,
+  borderRadius: radius.lg,
+  border: `1px solid ${colors.accent}20`,
+  borderTop: `2px solid ${colors.accent}35`,
+  background:
+    'radial-gradient(ellipse at 10% -10%, rgba(255, 105, 180, 0.06) 0%, transparent 40%), linear-gradient(165deg, rgba(23, 33, 58, 0.8) 0%, rgba(12, 18, 35, 0.85) 100%)',
+  boxShadow: `${shadows.card}, inset 0 1px 0 rgba(255,255,255,0.05)`,
+  position: 'relative' as const,
+  overflow: 'hidden',
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  margin: 0,
+  color: colors.textPrimary,
+  fontFamily: typography.fontFamily.heading.join(', '),
+  fontSize: typography.fontSize.lg,
+  letterSpacing: '0.03em',
+};
+
+const itemStyle: React.CSSProperties = {
+  padding: `${spacing.sm} ${spacing.md}`,
   borderRadius: radius.md,
   background: 'rgba(255,255,255,0.03)',
   border: `1px solid ${colors.borderSecondary}15`,
+  borderLeft: `3px solid ${colors.accent}30`,
+  color: colors.textSecondary,
+  fontSize: typography.fontSize.sm,
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: spacing.xs,
-  transition: 'all 0.2s ease',
-  cursor: 'pointer',
+  alignItems: 'center',
+  gap: spacing.sm,
+  transition: 'background 0.2s ease, border-color 0.2s ease',
 };
+
+const MAX_PREVIEW = 5;
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { currentUser } = useUser();
   const { movies, isLoading: moviesLoading } = useMovies(currentUser, false);
   const { places, isLoading: placesLoading } = usePlaces(currentUser, false);
-  const [moviesExpanded, setMoviesExpanded] = useState(true);
-  const [placesExpanded, setPlacesExpanded] = useState(true);
 
-  const unwatchedMovies = movies.filter((m: Movie) => m.watchedBy.length < 2).slice(0, 3);
-  const unvisitedPlaces = places.filter((p: Place) => !p.visitedAt).slice(0, 3);
+  const unwatchedMovies = movies.filter((m: Movie) => m.watchedBy.length < 2);
+  const unvisitedPlaces = places.filter((p: Place) => !p.visitedAt);
+
+  const sectionLabel: React.CSSProperties = {
+    margin: 0,
+    fontSize: typography.fontSize.xs,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
+    opacity: 0.6,
+    marginBottom: spacing.xs,
+  };
 
   return (
     <div
       className="animate-fade-in"
-      style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}
+      style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}
     >
-      <header style={{ textAlign: 'center', marginBottom: spacing.xs }}>
-        <h2
-          className="y2k-header"
+      {/* Movies Section */}
+      <div style={sectionCardStyle} className="retro-card-shine">
+        <p style={sectionLabel}>✦ Up Next</p>
+        <div
           style={{
-            margin: 0,
-            fontSize: typography.fontSize.xl,
-            fontFamily: typography.fontFamily.heading.join(', '),
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.md,
           }}
         >
-          ★ Quick Access ★
-        </h2>
-        <p style={{ margin: 0, fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
-          Click sections to expand or collapse
-        </p>
-      </header>
-
-      <MiniPreview
-        title="Movies to Watch"
-        icon="🎬"
-        isLoading={moviesLoading}
-        accentColor={colors.accent}
-        onNavigate={() => onNavigate('queue')}
-        defaultExpanded={moviesExpanded}
-        onToggle={setMoviesExpanded}
-        items={unwatchedMovies.map((movie) => (
-          <div key={movie.id} style={itemBase} className="y2k-item">
-            {movie.posterUrl && (
-              <img
-                src={movie.posterUrl}
-                alt=""
-                style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 4 }}
-              />
-            )}
-            <span
-              style={{
-                fontSize: typography.fontSize.sm,
-                color: colors.textSecondary,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                width: '100%',
-              }}
-            >
-              {movie.title}
-            </span>
-          </div>
-        ))}
-      />
-
-      <MiniPreview
-        title="Places to Visit"
-        icon="📍"
-        isLoading={placesLoading}
-        accentColor={colors.secondary}
-        onNavigate={() => onNavigate('places')}
-        defaultExpanded={placesExpanded}
-        onToggle={setPlacesExpanded}
-        items={unvisitedPlaces.map((place) => (
-          <div
-            key={place.id}
-            style={{ ...itemBase, borderLeft: `3px solid ${colors.secondary}50` }}
-            className="y2k-item"
+          <h2 style={sectionTitleStyle}>
+            <span style={{ marginRight: spacing.sm }}>🎬</span>
+            What to watch
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate('queue')}
+            style={{ color: colors.accent, opacity: 0.8 }}
           >
-            <span
-              style={{
-                fontSize: typography.fontSize.sm,
-                color: colors.textSecondary,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                width: '100%',
-              }}
-            >
-              {place.name}
-            </span>
+            See all →
+          </Button>
+        </div>
+
+        <hr className="retro-divider" />
+
+        {moviesLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} style={{ height: '44px', borderRadius: radius.md }} />
+            ))}
           </div>
-        ))}
-      />
+        ) : unwatchedMovies.length === 0 ? (
+          <p
+            style={{
+              margin: 0,
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.sm,
+              textAlign: 'center',
+              padding: spacing.lg,
+            }}
+          >
+            ✧ Your queue is empty — add movies to get started! ✧
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+            {unwatchedMovies.slice(0, MAX_PREVIEW).map((movie: Movie) => (
+              <div key={movie.id} style={itemStyle}>
+                {movie.posterUrl && (
+                  <img
+                    src={movie.posterUrl}
+                    alt=""
+                    style={{
+                      width: 28,
+                      height: 40,
+                      objectFit: 'cover',
+                      borderRadius: 4,
+                      flexShrink: 0,
+                      border: `1px solid ${colors.accent}20`,
+                    }}
+                  />
+                )}
+                <span
+                  style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {movie.title}
+                </span>
+                {movie.year && (
+                  <span
+                    style={{
+                      color: colors.textTertiary,
+                      fontSize: typography.fontSize.xs,
+                      flexShrink: 0,
+                      opacity: 0.7,
+                    }}
+                  >
+                    {movie.year}
+                  </span>
+                )}
+              </div>
+            ))}
+            {unwatchedMovies.length > MAX_PREVIEW && (
+              <p
+                style={{
+                  margin: 0,
+                  color: colors.accent,
+                  fontSize: typography.fontSize.xs,
+                  textAlign: 'center',
+                  opacity: 0.5,
+                }}
+              >
+                +{unwatchedMovies.length - MAX_PREVIEW} more
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Places Section */}
+      <div
+        style={{
+          ...sectionCardStyle,
+          borderTop: `2px solid ${colors.secondary}35`,
+          background:
+            'radial-gradient(ellipse at 90% -10%, rgba(135, 206, 250, 0.06) 0%, transparent 40%), linear-gradient(165deg, rgba(23, 33, 58, 0.8) 0%, rgba(12, 18, 35, 0.85) 100%)',
+        }}
+        className="retro-card-shine"
+      >
+        <p style={{ ...sectionLabel, color: colors.secondary }}>✦ Explore</p>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: spacing.md,
+          }}
+        >
+          <h2 style={sectionTitleStyle}>
+            <span style={{ marginRight: spacing.sm }}>📍</span>
+            Where to go
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate('places')}
+            style={{ color: colors.secondary, opacity: 0.8 }}
+          >
+            See all →
+          </Button>
+        </div>
+
+        <hr className="retro-divider" />
+
+        {placesLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} style={{ height: '44px', borderRadius: radius.md }} />
+            ))}
+          </div>
+        ) : unvisitedPlaces.length === 0 ? (
+          <p
+            style={{
+              margin: 0,
+              color: colors.textTertiary,
+              fontSize: typography.fontSize.sm,
+              textAlign: 'center',
+              padding: spacing.lg,
+            }}
+          >
+            ✧ No places yet — add spots you want to visit! ✧
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+            {unvisitedPlaces.slice(0, MAX_PREVIEW).map((place: Place) => (
+              <div
+                key={place.id}
+                style={{
+                  ...itemStyle,
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: spacing.xs,
+                }}
+              >
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, minWidth: 0 }}
+                >
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {place.name}
+                  </span>
+                  {place.addedBy && (
+                    <span
+                      style={{
+                        color: colors.textTertiary,
+                        fontSize: typography.fontSize.xs,
+                        flexShrink: 0,
+                      }}
+                    >
+                      by {place.addedBy}
+                    </span>
+                  )}
+                </div>
+                {place.notes && (
+                  <span
+                    style={{
+                      color: colors.textTertiary,
+                      fontSize: typography.fontSize.xs,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'block',
+                    }}
+                  >
+                    {place.notes}
+                  </span>
+                )}
+              </div>
+            ))}
+            {unvisitedPlaces.length > MAX_PREVIEW && (
+              <p
+                style={{
+                  margin: 0,
+                  color: colors.secondary,
+                  fontSize: typography.fontSize.xs,
+                  textAlign: 'center',
+                  opacity: 0.5,
+                }}
+              >
+                +{unvisitedPlaces.length - MAX_PREVIEW} more
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

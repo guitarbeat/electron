@@ -5,74 +5,18 @@ import type { Movie } from '../types';
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
 
-// Mock data fallback for development/testing
-const mockMovies: Movie[] = [
-  {
-    id: '1',
-    title: 'The Shawshank Redemption',
-    year: 1994,
-    posterUrl: 'https://via.placeholder.com/200x300?text=Shawshank',
-    genre: 'Drama',
-    category: 'Drama',
-    runtime: '142',
-    watchedBy: [],
-    votes: [],
-  },
-  {
-    id: '2',
-    title: 'The Godfather',
-    year: 1972,
-    posterUrl: 'https://via.placeholder.com/200x300?text=Godfather',
-    genre: 'Crime, Drama',
-    category: 'Drama',
-    runtime: '175',
-    watchedBy: [],
-    votes: [],
-  },
-  {
-    id: '3',
-    title: 'Inception',
-    year: 2010,
-    posterUrl: 'https://via.placeholder.com/200x300?text=Inception',
-    genre: 'Sci-Fi, Action',
-    category: 'Sci-Fi',
-    runtime: '148',
-    watchedBy: [],
-    votes: [],
-  },
-  {
-    id: '4',
-    title: 'Pulp Fiction',
-    year: 1994,
-    posterUrl: 'https://via.placeholder.com/200x300?text=PulpFiction',
-    genre: 'Crime, Drama',
-    category: 'Drama',
-    runtime: '154',
-    watchedBy: [],
-    votes: [],
-  },
-  {
-    id: '5',
-    title: 'The Dark Knight',
-    year: 2008,
-    posterUrl: 'https://via.placeholder.com/200x300?text=DarkKnight',
-    genre: 'Action, Crime, Drama',
-    category: 'Action',
-    runtime: '152',
-    watchedBy: [],
-    votes: [],
-  },
-];
-
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
   try {
-    // If credentials are missing, use mock data instead of erroring
-    if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
-      console.warn(
-        'GitHub credentials not configured. Using mock movie data. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.'
+    if (!GIST_TOKEN?.trim()) {
+      throw new Error(
+        'VITE_GIST_TOKEN is missing or empty. Add it to your .env (GitHub token with "gist" scope), then restart the dev server.'
       );
-      return mockMovies;
+    }
+    if (!GIST_ID?.trim()) {
+      throw new Error(
+        'VITE_GIST_ID is missing or empty. Add your Gist ID to .env (from the Gist URL), then restart the dev server.'
+      );
     }
 
     const headers: Record<string, string> = {
@@ -96,12 +40,7 @@ export const getMovies = async (): Promise<Movie[]> => {
     }
 
     if (!response.ok) {
-      const { status } = response;
-      // Return mock data for 401/403 auth errors instead of throwing
-      if (status === 401 || status === 403) {
-        console.warn(`GitHub API returned ${status}. Falling back to mock movies.`);
-        return mockMovies;
-      }
+      const status = response.status;
       let msg = `GitHub API responded with ${status}.`;
       try {
         const errBody = await response.clone().json();
@@ -109,9 +48,12 @@ export const getMovies = async (): Promise<Movie[]> => {
       } catch {
         /* ignore parse error */
       }
-      if (status === 404) {
+      if (status === 401 || status === 404) {
         msg +=
-          ' Check that VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
+          ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
+      } else if (status === 403) {
+        msg +=
+          ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
       }
       throw new Error(msg);
     }
@@ -152,9 +94,7 @@ export const getMovies = async (): Promise<Movie[]> => {
     return movies;
   } catch (error) {
     console.error('Error fetching movies from Gist:', error);
-    // Return mock data as fallback when API fails
-    console.warn('Falling back to mock movie data');
-    return mockMovies;
+    throw error;
   }
 };
 

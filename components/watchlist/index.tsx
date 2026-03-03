@@ -67,7 +67,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addMovie,
     toggleWatched,
     deleteMovie,
-    restoreMovie,
     manualMetadataUpdate,
     addSuggestion,
     acceptSuggestion,
@@ -155,26 +154,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const confirmDelete = useCallback(async () => {
     if (!movieToDelete) return;
-    const deletedMovie = movieToDelete;
     try {
-      await deleteMovie(deletedMovie.id);
+      await deleteMovie(movieToDelete.id);
+      setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'success' });
       setMovieToDelete(null);
-      setToast({
-        message: `Deleted "${deletedMovie.title}"`,
-        type: 'success',
-        onUndo: async () => {
-          try {
-            await restoreMovie(deletedMovie);
-            setToast({ message: `Restored "${deletedMovie.title}"`, type: 'success' });
-          } catch {
-            setToast({ message: 'Failed to undo delete', type: 'error' });
-          }
-        },
-      });
     } catch (err: any) {
       setToast({ message: `Failed to delete: ${err.message}`, type: 'error' });
     }
-  }, [movieToDelete, deleteMovie, restoreMovie, setToast, setMovieToDelete]);
+  }, [movieToDelete, deleteMovie, setToast, setMovieToDelete]);
 
   const handleFixMatch = useCallback(
     (movie: Movie) => {
@@ -371,7 +358,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       {moviesError && (
         <div
           style={{
-            background: `${colors.error}20`,
+            background: colors.error + '20',
             border: `1px solid ${colors.error}`,
             borderRadius: radius.md,
             padding: spacing.md,
@@ -394,7 +381,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         <div
           style={{
             position: 'fixed',
-            bottom: 'clamp(4rem, 12vw, 5rem)',
+            bottom: spacing.xl,
             left: '50%',
             transform: 'translateX(-50%)',
             backgroundColor: toastBgColor,
@@ -409,29 +396,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           }}
         >
           {toast.message}
-          {toast.onUndo && (
-            <button
-              type="button"
-              onClick={() => {
-                toast.onUndo?.();
-              }}
-              style={{
-                background: 'rgba(255,255,255,0.25)',
-                border: '1px solid rgba(255,255,255,0.5)',
-                color: '#fff',
-                padding: `2px ${spacing.sm}`,
-                borderRadius: radius.md,
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: typography.fontSize.xs,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Undo
-            </button>
-          )}
         </div>
       )}
 
