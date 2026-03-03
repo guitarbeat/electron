@@ -230,7 +230,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     }, currentTickInterval);
 
     return () => window.clearInterval(intervalId);
-  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound, playMoveSound]);
+  }, [
+    gameState.status,
+    isGameVisible,
+    gameState.score,
+    playEatSound,
+    playGameOverSound,
+    playMoveSound,
+  ]);
 
   useEffect(() => {
     if (!isGameVisible) return undefined;
