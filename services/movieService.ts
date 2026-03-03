@@ -95,6 +95,11 @@ export const getMovies = async (): Promise<Movie[]> => {
 
     if (!response.ok) {
       const status = response.status;
+      // Return mock data for 401/403 auth errors instead of throwing
+      if (status === 401 || status === 403) {
+        console.warn(`GitHub API returned ${status}. Falling back to mock movies.`);
+        return mockMovies;
+      }
       let msg = `GitHub API responded with ${status}.`;
       try {
         const errBody = await response.clone().json();
@@ -102,12 +107,9 @@ export const getMovies = async (): Promise<Movie[]> => {
       } catch {
         /* ignore parse error */
       }
-      if (status === 401 || status === 404) {
+      if (status === 404) {
         msg +=
-          ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
-      } else if (status === 403) {
-        msg +=
-          ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
+          ' Check that VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
       }
       throw new Error(msg);
     }
