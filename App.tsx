@@ -11,10 +11,10 @@ import SpinWheel from './components/extras/spin-wheel/SpinWheel';
 import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizBubble from './components/quiz/QuizBubble';
 import QuizEditor from './components/quiz/QuizEditor';
-import ExtrasHub from './components/main/ExtrasHub';
 import PlacesList from './components/places/PlacesList';
 import TabBar from './components/ui/TabBar';
 import BottomSheet from './components/ui/BottomSheet';
+import MinigameModal from './components/ui/MinigameModal';
 import UserSelection from './components/common/UserSelection';
 import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
 import './App.css';
@@ -22,7 +22,6 @@ import './App.css';
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
-  { id: 'extras', label: 'Extras', icon: '🎰' },
 ];
 const PROFILE_PROMPT_SEEN_KEY = 'profilePromptSeen';
 
@@ -61,7 +60,6 @@ const App: React.FC = () => {
   };
 
   const handleOpenQuizEditor = () => {
-    setActiveTab('extras');
     setShowQuizEditor(true);
   };
 
@@ -76,13 +74,6 @@ const App: React.FC = () => {
         return <Watchlist />;
       case 'places':
         return <PlacesList />;
-      case 'extras': {
-        if (showQuizEditor) {
-          return <QuizEditor onClose={() => setShowQuizEditor(false)} />;
-        }
-
-        return <ExtrasHub />;
-      }
       default:
         return <Watchlist />;
     }
@@ -260,6 +251,19 @@ const App: React.FC = () => {
         </p>
         <UserSelection onUserSelected={() => setShowProfileSheet(false)} />
       </BottomSheet>
+
+      <MinigameModal
+        isOpen={showQuizEditor}
+        onClose={() => setShowQuizEditor(false)}
+        title="Quiz Editor"
+        ariaLabel="Quiz editor"
+        maxWidth={1200}
+        maxHeight={900}
+      >
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <QuizEditor onClose={() => setShowQuizEditor(false)} />
+        </div>
+      </MinigameModal>
 
       <MessageBoard mode="floating" />
       <SpinWheel mode="floating" />
