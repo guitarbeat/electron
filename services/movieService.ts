@@ -16,7 +16,8 @@ const mockMovies: Movie[] = [
     category: 'Drama',
     runtime: '142',
     watchedBy: [],
-    addedBy: 'Aaron', createdAt: new Date().toISOString(),
+    addedBy: 'Aaron',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '2',
@@ -27,7 +28,8 @@ const mockMovies: Movie[] = [
     category: 'Drama',
     runtime: '175',
     watchedBy: [],
-    addedBy: 'Aaron', createdAt: new Date().toISOString(),
+    addedBy: 'Aaron',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '3',
@@ -38,7 +40,8 @@ const mockMovies: Movie[] = [
     category: 'Sci-Fi',
     runtime: '148',
     watchedBy: [],
-    addedBy: 'Aaron', createdAt: new Date().toISOString(),
+    addedBy: 'Aaron',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '4',
@@ -49,7 +52,8 @@ const mockMovies: Movie[] = [
     category: 'Drama',
     runtime: '154',
     watchedBy: [],
-    addedBy: 'Aaron', createdAt: new Date().toISOString(),
+    addedBy: 'Aaron',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '5',
@@ -60,7 +64,8 @@ const mockMovies: Movie[] = [
     category: 'Action',
     runtime: '152',
     watchedBy: [],
-    addedBy: 'Aaron', createdAt: new Date().toISOString(),
+    addedBy: 'Aaron',
+    createdAt: new Date().toISOString(),
   },
 ];
 
