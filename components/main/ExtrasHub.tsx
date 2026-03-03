@@ -1,7 +1,5 @@
 import React from 'react';
-import { User } from '../../types';
 import Card from '../ui/Card';
-import Button from '../ui/Button';
 import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
 
 /** Shared card style for all extras sections */
@@ -27,26 +25,7 @@ const sectionSubtitleStyle: React.CSSProperties = {
   fontSize: typography.fontSize.sm,
 };
 
-interface ExtrasHubProps {
-  currentUser: User | null;
-  quizCompleted: boolean;
-  onStartQuiz: () => void;
-  onRetakeQuiz: () => void;
-  onOpenQuizEditor: () => void;
-  initialView?: 'games' | 'quiz' | 'all';
-}
-
-const ExtrasHub: React.FC<ExtrasHubProps> = ({
-  currentUser,
-  quizCompleted,
-  onStartQuiz,
-  onRetakeQuiz,
-  onOpenQuizEditor,
-  initialView = 'all',
-}) => {
-  const showGames = initialView === 'all' || initialView === 'games';
-  const showQuiz = initialView === 'all' || initialView === 'quiz';
-
+const ExtrasHub: React.FC = () => {
   return (
     <div
       style={{
@@ -57,34 +36,10 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
         gap: spacing.lg,
       }}
     >
-      {showQuiz && (
-        <Card style={sectionStyle}>
-          <h2 style={{ ...sectionTitleStyle, marginBottom: spacing.xs }}>Quiz</h2>
-          <p style={{ ...sectionSubtitleStyle, marginBottom: spacing.md }}>
-            {quizCompleted
-              ? 'Retake any time to refresh your match.'
-              : 'Take when you want—queue is ready now.'}
-          </p>
-          <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-            <Button
-              variant={quizCompleted ? 'ghost' : 'secondary'}
-              size="sm"
-              onClick={quizCompleted ? onRetakeQuiz : onStartQuiz}
-            >
-              {quizCompleted ? 'Retake' : 'Start Quiz'}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onOpenQuizEditor}
-              disabled={!currentUser}
-              style={{ border: `1px solid ${colors.borderSecondary}35` }}
-            >
-              {currentUser ? 'Edit Quiz' : 'Pick user to edit'}
-            </Button>
-          </div>
-        </Card>
-      )}
+      <Card style={sectionStyle}>
+        <h2 style={{ ...sectionTitleStyle, marginBottom: spacing.xs }}>Extras</h2>
+        <p style={sectionSubtitleStyle}>Use the floating bubbles for games and quiz.</p>
+      </Card>
     </div>
   );
 };
