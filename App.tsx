@@ -198,13 +198,31 @@ const App: React.FC = () => {
 
         {/* Main navigation - vertical tiles, icon on top / label below, liquid wrap */}
         <style>{`
+          @keyframes bubble-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+          }
+          .main-nav-tile {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+          }
+          .main-nav-tile:hover {
+            transform: translateY(-5px) scale(1.05);
+          }
+          .main-nav-tile:active {
+            transform: scale(0.9);
+          }
+          .main-nav-tile.active-bubble {
+            animation: bubble-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          }
           .main-nav-tile:focus-visible {
             outline: 2px solid ${colors.accent};
             outline-offset: 2px;
           }
           .main-nav-tile:not([aria-current="page"]):hover {
-            background: rgba(255,255,255,0.08) !important;
-            box-shadow: 0 0 12px rgba(255,105,180,0.2);
+            background: rgba(255,255,255,0.12) !important;
+            box-shadow: 0 8px 16px rgba(255,105,180,0.3);
           }
         `}</style>
         <div
@@ -213,12 +231,13 @@ const App: React.FC = () => {
           style={{
             width: '100%',
             minWidth: 0,
-            background: 'rgba(23, 33, 58, 0.5)',
-            backdropFilter: 'blur(12px)',
-            borderRadius: spacing.md,
-            border: `1px solid ${colors.borderSecondary}25`,
-            borderBottom: `2px solid ${colors.accent}30`,
-            marginBottom: 'clamp(0.5rem, 1.5vw, 1rem)',
+            background: 'rgba(23, 33, 58, 0.3)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: radius.full,
+            border: `1px solid ${colors.borderSecondary}20`,
+            padding: '6px',
+            marginBottom: 'clamp(1rem, 2vw, 1.5rem)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05)',
           }}
         >
           <nav
@@ -227,10 +246,9 @@ const App: React.FC = () => {
             style={{
               display: 'flex',
               flexWrap: 'nowrap',
-              alignItems: 'stretch',
+              alignItems: 'center',
               justifyContent: 'center',
-              gap: '2px',
-              padding: '4px',
+              gap: '8px',
               overflowX: 'auto',
             }}
           >
@@ -240,7 +258,7 @@ const App: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  className="main-nav-tile"
+                  className={`main-nav-tile ${isActive ? 'active-bubble' : ''}`}
                   onClick={() => {
                     playSwitch();
                     setActiveTab(tab.id);
@@ -249,34 +267,32 @@ const App: React.FC = () => {
                   aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: '1 1 0',
-                    minWidth: '70px',
-                    maxWidth: '200px',
-                    minHeight: '44px',
+                    minWidth: '80px',
+                    maxWidth: '160px',
+                    minHeight: '50px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.2rem',
-                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.04)',
-                    border: isActive ? `2px solid ${colors.accent}` : '1px solid transparent',
-                    borderRadius: `calc(${spacing.md} - 4px)`,
-                    padding: '0.5em 0.75em',
+                    gap: '2px',
+                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.06)',
+                    border: isActive ? `2px solid ${colors.accent}` : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: radius.full,
+                    padding: '8px 12px',
                     color: isActive ? '#1a1a2e' : colors.textSecondary,
                     fontFamily: typography.fontFamily.heading.join(', '),
-                    fontSize: 'clamp(0.7rem, 1.2vw + 0.5rem, 0.95rem)',
-                    fontWeight: isActive ? 700 : 500,
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
                     textTransform: 'uppercase',
-                    letterSpacing: typography.letterSpacing.normal,
+                    letterSpacing: '0.05em',
                     cursor: 'pointer',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    textShadow: isActive ? shadows.textGlow : 'none',
-                    boxShadow: isActive ? shadows.glow : 'none',
+                    boxShadow: isActive ? `0 0 15px ${colors.accent}60` : 'none',
                   }}
                 >
-                  <span style={{ fontSize: '1.25em', lineHeight: 1, flexShrink: 0 }} aria-hidden>
+                  <span style={{ fontSize: '1.4em', lineHeight: 1 }} aria-hidden>
                     {tab.icon}
                   </span>
-                  <span style={{ lineHeight: 1.1, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <span style={{ lineHeight: 1, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {tab.label}
                   </span>
                 </button>
