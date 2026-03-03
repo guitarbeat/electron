@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   QuizQuestion,
   MultipleChoiceQuestion,
@@ -11,6 +11,7 @@ import { questionTemplates, TemplateType } from '../QuestionTemplates';
 import QuestionPreview from '../QuestionPreview';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
+import ConfirmDialog from '../../ui/ConfirmDialog';
 import { spacing, colors, typography, radius } from '../../../design-system/tokens';
 
 // Questions Tab Component
@@ -47,6 +48,8 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   setDragOverIndex,
   isMobile,
 }) => {
+  const [questionToDeleteId, setQuestionToDeleteId] = useState<string | null>(null);
+
   const addNewQuestion = (templateId: TemplateType = 'blank') => {
     const template = questionTemplates.find((t) => t.id === templateId);
     if (!template) return;
@@ -58,9 +61,15 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   };
 
   const deleteQuestion = (id: string) => {
-    if (!window.confirm('Delete this question?')) return;
+    setQuestionToDeleteId(id);
+  };
+
+  const confirmDeleteQuestion = () => {
+    if (!questionToDeleteId) return;
+    const id = questionToDeleteId;
     onUpdateQuestions(questions.filter((q) => q.id !== id));
     if (editingQuestion?.id === id) setEditingQuestion(null);
+    setQuestionToDeleteId(null);
   };
 
   const duplicateQuestion = (q: QuizQuestion) => {
@@ -151,6 +160,10 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       </div>
     );
   }
+
+  const questionToDelete = questionToDeleteId
+    ? questions.find((question) => question.id === questionToDeleteId)
+    : null;
 
   return (
     <div>
@@ -504,6 +517,15 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
           );
         })}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!questionToDeleteId}
+        title="Delete Question"
+        message={`Delete \"${questionToDelete?.question || 'this question'}\"?`}
+        confirmText="Delete"
+        onConfirm={confirmDeleteQuestion}
+        onCancel={() => setQuestionToDeleteId(null)}
+      />
     </div>
   );
 };

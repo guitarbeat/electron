@@ -4,6 +4,7 @@ import ScoreSlider from '../ScoreSlider';
 import Input from '../../ui/Input';
 import Button from '../../ui/Button';
 import { spacing, colors, typography, radius } from '../../../design-system/tokens';
+import { useToast } from '../../../context/ToastContext';
 
 interface ImageChoiceEditorProps {
   question: ImageChoiceQuestion;
@@ -12,6 +13,7 @@ interface ImageChoiceEditorProps {
 
 const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChange }) => {
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { showToast } = useToast();
 
   const updateOption = (index: number, field: 'imageUrl' | 'alt', value: string) => {
     const newOptions = [...question.options];
@@ -21,12 +23,15 @@ const ImageChoiceEditor: React.FC<ImageChoiceEditorProps> = ({ question, onChang
 
   const handleImageUpload = async (index: number, file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      showToast({ message: 'Please select an image file.', type: 'error' });
       return;
     }
 
     if (file.size > 500 * 1024) {
-      alert('Image too large. Please use an image under 500KB for Gist storage.');
+      showToast({
+        message: 'Image too large. Please use an image under 500KB for Gist storage.',
+        type: 'error',
+      });
       return;
     }
 
