@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '../../context/UserContext';
+import { useToast } from '../../context/ToastContext';
 import { useChatLogic } from '../../hooks/useChatLogic';
 import ChatWindow from '../message-board/ChatWindow';
 import MessageList from '../message-board/MessageList';
 import MessageInput from '../message-board/MessageInput';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { spacing, colors, shadows, motion, typography } from '../../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
@@ -51,18 +53,13 @@ const getDefaultBubblePosition = (isMobile: boolean): BubblePosition => {
 
 const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   const { currentUser } = useUser();
-  const {
-    messages,
-    isLoading,
-    error,
-    isSubmitting,
-    handleSend,
-    handleDelete,
-    handleReaction,
-  } = useChatLogic();
+  const { showToast } = useToast();
+  const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, handleReaction } =
+    useChatLogic();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
+  const [messageToDeleteId, setMessageToDeleteId] = useState<string | null>(null);
   const [lastViewedCount, setLastViewedCount] = useState(0);
   const isEmbedded = mode === 'embedded';
   const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => {
@@ -191,7 +188,21 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     handleToggle();
   };
 
+  const requestDeleteMessage = async (id: string) => {
+    setMessageToDeleteId(id);
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (!messageToDeleteId) return;
+    await handleDelete(messageToDeleteId);
+    setMessageToDeleteId(null);
+  };
+
   const unreadCount = Math.max(0, (messages?.length || 0) - lastViewedCount);
+  const messageToDelete =
+    messageToDeleteId && messages
+      ? messages.find((message) => message.id === messageToDeleteId)
+      : null;
 
   if (!isEmbedded && isMinimized) {
     return (
@@ -305,61 +316,71 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
 
   return (
     <div style={containerStyle} className="message-board-container">
-      <div
-        style={{
-          padding: `${spacing.sm} ${spacing.md}`,
-          backgroundColor: 'transparent',
-          color: colors.textPrimary,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontWeight: 'bold',
-          cursor: isEmbedded ? 'default' : 'pointer',
-          borderBottom: `1px solid ${colors.borderSecondary}20`,
-        }}
-        onClick={!isEmbedded ? handleToggle : undefined}
-        onKeyDown={(event) => {
-          if (isEmbedded) return;
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            handleToggle();
-          }
-        }}
-        role={!isEmbedded ? 'button' : undefined}
-        tabIndex={!isEmbedded ? 0 : undefined}
-      >
-        <span
+      {isEmbedded ? (
+        <div
           style={{
-            fontFamily: typography.fontFamily.heading.join(', '),
-            textTransform: 'uppercase',
-            letterSpacing: typography.letterSpacing.wide,
-            textShadow: shadows.textGlow,
+            padding: `${spacing.sm} ${spacing.md}`,
+            backgroundColor: 'transparent',
+            color: colors.textPrimary,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontWeight: 'bold',
+            borderBottom: `1px solid ${colors.borderSecondary}20`,
           }}
         >
-          Messages
-        </span>
-        {!isEmbedded && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleToggle();
-            }}
+          <span
             style={{
-              background: 'none',
-              border: 'none',
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: typography.letterSpacing.wide,
+              textShadow: shadows.textGlow,
+            }}
+          >
+            Messages
+          </span>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={handleToggle}
+          style={{
+            width: '100%',
+            padding: `${spacing.sm} ${spacing.md}`,
+            backgroundColor: 'transparent',
+            color: colors.textPrimary,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            border: 'none',
+            borderBottom: `1px solid ${colors.borderSecondary}20`,
+          }}
+          aria-label="Minimize messages panel"
+        >
+          <span
+            style={{
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: typography.letterSpacing.wide,
+              textShadow: shadows.textGlow,
+            }}
+          >
+            Messages
+          </span>
+          <span
+            style={{
               fontSize: '20px',
-              cursor: 'pointer',
-              padding: '4px',
               lineHeight: 1,
               color: colors.textPrimary,
             }}
-            aria-label="Minimize"
+            aria-hidden
           >
             −
-          </button>
-        )}
-      </div>
+          </span>
+        </button>
+      )}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <ChatWindow isEditMode={isEditMode} onToggleEditMode={() => setIsEditMode(!isEditMode)}>
@@ -368,7 +389,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
             isLoading={isLoading}
             error={error}
             currentUser={currentUser}
-            onDelete={handleDelete}
+            onDelete={requestDeleteMessage}
             onReaction={handleReaction}
             isSubmitting={isSubmitting}
             isEditMode={isEditMode}
@@ -378,10 +399,22 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
             currentUser={currentUser}
             isSubmitting={isSubmitting}
             onSend={handleSend}
-            onError={(msg) => console.error(msg)}
+            onError={(message) => showToast({ message, type: 'error' })}
           />
         </ChatWindow>
       </div>
+      <ConfirmDialog
+        isOpen={!!messageToDeleteId}
+        title="Delete Message"
+        message={
+          messageToDelete
+            ? `Delete this message from ${messageToDelete.author || 'Anonymous'}?`
+            : 'Delete this message?'
+        }
+        confirmText="Delete"
+        onConfirm={confirmDeleteMessage}
+        onCancel={() => setMessageToDeleteId(null)}
+      />
     </div>
   );
 };
