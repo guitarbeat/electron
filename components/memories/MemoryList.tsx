@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SharedMemory, User } from '../../types';
 import Button from '../ui/Button';
 import Textarea from '../ui/Textarea';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { colors, radius, spacing, typography } from '../../design-system/tokens';
 import MemoryNoteText from './MemoryNoteText';
 import {
@@ -59,8 +60,21 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
   const [draftNote, setDraftNote] = useState('');
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
+  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
 
   const canManageMemories = Boolean(currentUser);
+
+  const confirmDeleteMemory = async () => {
+    if (!memoryToDelete) return;
+
+    setIsBusyMemoryId(memoryToDelete.id);
+    try {
+      await onDeleteMemory(memoryToDelete);
+      setMemoryToDelete(null);
+    } finally {
+      setIsBusyMemoryId(null);
+    }
+  };
 
   return (
     <div
@@ -400,15 +414,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={!canManageMemories || isBusy}
-                    onClick={async () => {
-                      if (!window.confirm('Delete this memory?')) return;
-                      setIsBusyMemoryId(memory.id);
-                      try {
-                        await onDeleteMemory(memory);
-                      } finally {
-                        setIsBusyMemoryId(null);
-                      }
-                    }}
+                    onClick={() => setMemoryToDelete(memory)}
                     style={{ border: '1px solid rgba(153, 66, 58, 0.45)', color: '#7a261f' }}
                   >
                     Delete
@@ -453,6 +459,15 @@ const MemoryList: React.FC<MemoryListProps> = ({
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!memoryToDelete}
+        title="Delete Memory"
+        message={`Delete this memory from ${memoryToDelete?.author || 'Unknown'}?`}
+        confirmText="Delete"
+        onConfirm={confirmDeleteMemory}
+        onCancel={() => setMemoryToDelete(null)}
+      />
     </div>
   );
 };
