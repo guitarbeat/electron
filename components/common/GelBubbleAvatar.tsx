@@ -1,3 +1,4 @@
+import './GelBubbleAvatar.css';
 import React from 'react';
 import { User } from '../../types';
 import ImageWithFallback from './ImageWithFallback';
@@ -288,15 +289,6 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       >
         {user}
       </span>
-      <style>{`
-        @keyframes gel-avatar-spin {
-          to { transform: rotate(360deg); }
-        }
-        .gel-avatar-image-wrap:hover {
-          transform: scale(1.03);
-          box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
-        }
-      `}</style>
     </button>
   );
 };
