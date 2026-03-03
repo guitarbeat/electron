@@ -5,26 +5,26 @@ const mockPlaces: Place[] = [
   {
     id: '1',
     name: 'Eiffel Tower',
-    country: 'France',
     notes: 'Must visit before 30',
     addedBy: 'Aaron',
     visitedAt: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
   },
   {
     id: '2',
     name: 'Great Wall of China',
-    country: 'China',
     notes: 'Amazing views',
     addedBy: 'Electra',
     visitedAt: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
   },
   {
     id: '3',
     name: 'Statue of Liberty',
-    country: 'USA',
     notes: 'New York trip',
     addedBy: 'Aaron',
     visitedAt: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
   },
 ];
 
