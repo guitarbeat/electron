@@ -328,8 +328,12 @@ const App: React.FC = () => {
                   className={`main-nav-tile ${isActive ? 'active-bubble' : ''}`}
                   onClick={() => {
                     playSwitch();
-                    setActiveTab(tab.id);
-                    setIsHomeCollapsed(true);
+                    if (isActive && isHomeCollapsed) {
+                      setIsHomeCollapsed(false);
+                    } else {
+                      setActiveTab(tab.id);
+                      setIsHomeCollapsed(true);
+                    }
                   }}
                   aria-current={isActive ? 'page' : undefined}
                   style={{
