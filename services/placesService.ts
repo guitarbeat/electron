@@ -45,6 +45,11 @@ export const getPlaces = async (): Promise<Place[]> => {
     });
 
     if (!response.ok) {
+      // Return mock data for 401 and other auth errors instead of throwing
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`GitHub API returned ${response.status}. Falling back to mock places.`);
+        return mockPlaces;
+      }
       throw new Error(`GitHub API responded with ${response.status}`);
     }
 

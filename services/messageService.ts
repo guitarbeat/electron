@@ -20,6 +20,11 @@ export const getMessages = async (): Promise<Message[]> => {
     });
 
     if (!response.ok) {
+      // Return mock data for 401 and other auth errors instead of throwing
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`GitHub API returned ${response.status}. Falling back to mock messages.`);
+        return mockMessages;
+      }
       throw new Error(`GitHub API responded with ${response.status}`);
     }
 
