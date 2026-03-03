@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Spinner } from '../common/icons';
-import { spacing, typography, colors}  from '../../design-system/tokens';
+import { spacing, typography, colors } from '../../design-system/tokens';
 import { User } from '../../types';
 import { MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../../config/security';
 
