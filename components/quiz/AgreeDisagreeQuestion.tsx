@@ -45,7 +45,7 @@ const AgreeDisagreeQuestion: React.FC<AgreeDisagreeQuestionProps> = ({
   const [sliderValue, setSliderValue] = React.useState(getNumericValue(selectedValue));
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
+    const val = parseInt(e.target.value);
     setSliderValue(val);
     onSelect(getSymbolicValue(val));
   };

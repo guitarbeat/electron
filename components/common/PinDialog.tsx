@@ -1,17 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { User } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import {
-  colors,
-  spacing,
-  typography,
-  zIndex,
-  radius,
-  motion,
-  shadows,
-} from '../../design-system/tokens';
+import { colors, spacing, typography, zIndex, radius, shadows } from '../../design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -62,6 +54,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       const timer = setTimeout(() => setIsShaking(false), 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isShaking]);
 
   useEffect(() => {
@@ -74,7 +67,20 @@ const PinDialog: React.FC<PinDialogProps> = ({
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
+    return undefined;
   }, [isOpen, onCancel]);
+
+  const getCurrentValue = useCallback(() => {
+    if (step === 'current') return pin;
+    if (step === 'new') return newPin;
+    return confirmPin;
+  }, [step, pin, newPin, confirmPin]);
+
+  const getCurrentSetter = useCallback(() => {
+    if (step === 'current') return setPin;
+    if (step === 'new') return setNewPin;
+    return setConfirmPin;
+  }, [step]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,16 +198,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
     return 'Secure your account';
   };
 
-  const getCurrentValue = () => {
-    if (step === 'current') return pin;
-    if (step === 'new') return newPin;
-    return confirmPin;
-  };
-
-  const getCurrentSetter = () => {
-    if (step === 'current') return setPin;
-    if (step === 'new') return setNewPin;
-    return setConfirmPin;
+  const getDotBorderColor = (val: string | undefined, isActive: boolean) => {
+    if (error) return colors.error;
+    if (isActive) return colors.accent;
+    if (val) return `${colors.accent}40`;
+    return 'rgba(255, 255, 255, 0.1)';
   };
 
   if (!isOpen) return null;
@@ -245,6 +246,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{ animation: 'pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        onKeyDown={() => {}}
+        role="button"
+        tabIndex={0}
       >
         <Card
           variant="elevated"
@@ -309,15 +313,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         width: '44px', // Smaller dots
                         height: '52px',
                         backgroundColor: val ? `${colors.accent}25` : 'rgba(0, 0, 0, 0.2)',
-                        border: `1.5px solid ${
-                          error
-                            ? colors.error
-                            : isActive
-                              ? colors.accent
-                              : val
-                                ? `${colors.accent}40`
-                                : 'rgba(255, 255, 255, 0.1)'
-                        }`,
+                        border: `1.5px solid ${getDotBorderColor(val, isActive)}`,
                         borderRadius: radius.md,
                         display: 'flex',
                         alignItems: 'center',

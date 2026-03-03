@@ -1,4 +1,4 @@
-import { GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
+import { GIST_TOKEN, GIST_ID } from '../config/gistConfig';
 import type { User } from '../types.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
@@ -12,6 +12,27 @@ export interface UserPins {
 let cachedPins: UserPins | null = null;
 let lastFetchTime = 0;
 let fetchPromise: Promise<UserPins> | null = null;
+
+/**
+ * Simple hash function for PIN codes.
+ * Note: This is basic obfuscation for a private app between trusted users.
+ * @deprecated Use secureHashPin instead. Kept for backward compatibility.
+ */
+export const legacyHashPin = (pin: string): string => {
+  let hash = 0;
+  for (let i = 0; i < pin.length; i++) {
+    const char = pin.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash &= hash; // Convert to 32-bit integer
+  }
+  return hash.toString(36);
+};
+
+/**
+ * Alias for legacyHashPin to maintain compatibility with tests.
+ * @deprecated
+ */
+export const hashPin = legacyHashPin;
 
 /**
  * Generates a secure PBKDF2 hash for a PIN.
@@ -93,9 +114,6 @@ export const getPins = async (): Promise<UserPins> => {
     return fetchPromise;
   }
 
-  // Capture the time when we started the fetch
-  const fetchStartTime = Date.now();
-
   const promise = (async () => {
     try {
       const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -111,11 +129,6 @@ export const getPins = async (): Promise<UserPins> => {
 
       const gist = await response.json();
       const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
-
-      // Check if cache was updated by a write operation while we were fetching
-      if (lastFetchTime > fetchStartTime && cachedPins) {
-        return cachedPins;
-      }
 
       if (!fileContent) {
         cachedPins = {};
@@ -209,8 +222,18 @@ export const verifyPin = async (user: User, pin: string): Promise<boolean> => {
     return verifySecurePin(pin, storedHash);
   }
 
-  // Legacy format is no longer supported for security reasons.
-  // Users with legacy hashes must have their PINs reset.
+  // Check legacy format
+  if (storedHash === legacyHashPin(pin)) {
+    // Automatically upgrade to secure hash
+    try {
+      await setPin(user, pin);
+    } catch (error) {
+      console.error('Failed to upgrade legacy PIN hash:', error);
+      // Continue to allow login even if upgrade fails
+    }
+    return true;
+  }
+
   return false;
 };
 

@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MagicWandIcon, XIcon, Spinner } from './icons';
-import {
-  colors,
-  radius,
-  spacing,
-  typography,
-  zIndex,
-  shadows,
-  motion,
-} from '../../design-system/tokens';
+import { colors, radius, spacing, typography, zIndex } from '../../design-system/tokens';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -57,6 +49,7 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
         window.removeEventListener('keydown', handleKeyDown);
       };
     }
+    return undefined;
   }, [isOpen, onClose]);
 
   if (!isOpen || !movie) return null;

@@ -1,35 +1,32 @@
 import React, { useState } from 'react';
-import { useAudio } from './hooks/useAudio';
 import { useUser } from './context/UserContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/watchlist';
 import UserSelection from './components/common/UserSelection';
 import MessageBoard from './components/common/MessageBoard';
-import SnakeGame from './components/snake/SnakeGame';
-import SpinWheel from './components/extras/spin-wheel/SpinWheel';
-import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import Dashboard from './components/main/Dashboard';
 import PlacesList from './components/places/PlacesList';
-import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
+import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
+  { id: 'home', label: 'Home', icon: '🏠' },
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
-  { id: 'extras', label: 'Extras', icon: '🎰' },
+  { id: 'spin', label: 'Spin', icon: '🎰' },
+  { id: 'games', label: 'Games', icon: '🎮' },
+  { id: 'quiz', label: 'Quiz', icon: '❓' },
 ];
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { playSwitch } = useAudio();
-  const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const [activeTab, setActiveTab] = useState<MainTab>('home');
   const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
-  const [expandedTabs, setExpandedTabs] = useState<Set<MainTab>>(new Set());
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
@@ -39,7 +36,7 @@ const App: React.FC = () => {
   const [isSkipLinkFocused, setIsSkipLinkFocused] = useState(false);
 
   const handleStartQuiz = () => {
-    setActiveTab('extras');
+    setActiveTab('quiz');
     setShowQuizEditor(false);
     setShowQuiz(true);
   };
@@ -48,55 +45,58 @@ const App: React.FC = () => {
     setShowQuiz(false);
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
-    setActiveTab('queue');
-    setExpandedTabs(new Set());
+    setActiveTab('home');
   };
 
   const handleRetakeQuiz = () => {
-    setActiveTab('extras');
+    setActiveTab('quiz');
     setShowQuizEditor(false);
     setShowQuiz(true);
   };
 
   const handleOpenQuizEditor = () => {
-    setActiveTab('extras');
+    setActiveTab('quiz');
     setShowQuiz(false);
     setShowQuizEditor(true);
   };
 
-  const isTabExpanded = (tab: MainTab) => expandedTabs.has(tab);
-
-  const toggleTab = (tab: MainTab) => {
-    playSwitch();
-    const newExpanded = new Set(expandedTabs);
-    if (newExpanded.has(tab)) {
-      newExpanded.delete(tab);
-    } else {
-      newExpanded.add(tab);
-    }
-    setExpandedTabs(newExpanded);
-    setActiveTab(tab);
-  };
-
   const renderContent = () => {
-    const expanded = isTabExpanded(activeTab);
-
     switch (activeTab) {
-      case 'queue':
+      case 'home':
         return (
           <div className="animate-fade-in">
-            {!expanded && (
-              <Dashboard
-                onNavigate={(tab) => {
-                  setActiveTab(tab);
-                  setExpandedTabs(new Set([tab]));
-                }}
-              />
-            )}
-            {expanded && <Watchlist />}
+            <Dashboard onNavigate={setActiveTab} />
           </div>
         );
-      case 'extras': {
+      case 'queue':
+        return <Watchlist />;
+      case 'spin':
+        return (
+          <div className="animate-fade-in">
+            <ExtrasHub
+              currentUser={currentUser}
+              quizCompleted={quizCompleted}
+              onStartQuiz={handleStartQuiz}
+              onRetakeQuiz={handleRetakeQuiz}
+              onOpenQuizEditor={handleOpenQuizEditor}
+              initialView="spin"
+            />
+          </div>
+        );
+      case 'games':
+        return (
+          <div className="animate-fade-in">
+            <ExtrasHub
+              currentUser={currentUser}
+              quizCompleted={quizCompleted}
+              onStartQuiz={handleStartQuiz}
+              onRetakeQuiz={handleRetakeQuiz}
+              onOpenQuizEditor={handleOpenQuizEditor}
+              initialView="games"
+            />
+          </div>
+        );
+      case 'quiz': {
         let content;
         if (showQuiz && quizData) {
           content = <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />;
@@ -110,7 +110,7 @@ const App: React.FC = () => {
               onStartQuiz={handleStartQuiz}
               onRetakeQuiz={handleRetakeQuiz}
               onOpenQuizEditor={handleOpenQuizEditor}
-              initialView="all"
+              initialView="quiz"
             />
           );
         }
@@ -119,15 +119,7 @@ const App: React.FC = () => {
       case 'places':
         return (
           <div className="animate-fade-in">
-            {!expanded && (
-              <Dashboard
-                onNavigate={(tab) => {
-                  setActiveTab(tab);
-                  setExpandedTabs(new Set([tab]));
-                }}
-              />
-            )}
-            {expanded && <PlacesList />}
+            <PlacesList />
           </div>
         );
       case 'messages':
@@ -144,86 +136,8 @@ const App: React.FC = () => {
         color: colors.textPrimary,
         minHeight: '100vh',
         fontFamily: typography.fontFamily.body.join(', '),
-        background: `fixed linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)`,
-        position: 'relative',
-        overflowX: 'hidden',
       }}
     >
-      {/* Avatar-inspired glowing orbs background */}
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: 'none',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          className="bg-orb"
-          style={{
-            position: 'absolute',
-            top: '-10%',
-            left: '-10%',
-            width: '60vw',
-            height: '60vw',
-            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
-            filter: 'blur(80px)',
-            animation: 'float 20s infinite alternate ease-in-out',
-          }}
-        />
-        <div
-          className="bg-orb"
-          style={{
-            position: 'absolute',
-            bottom: '-10%',
-            right: '-10%',
-            width: '50vw',
-            height: '50vw',
-            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)',
-            filter: 'blur(80px)',
-            animation: 'float 25s infinite alternate-reverse ease-in-out',
-          }}
-        />
-        <div
-          className="bg-orb"
-          style={{
-            position: 'absolute',
-            top: '30%',
-            right: '10%',
-            width: '30vw',
-            height: '30vw',
-            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)',
-            filter: 'blur(60px)',
-            animation: 'float 18s infinite alternate ease-in-out',
-          }}
-        />
-
-        {/* Bioluminescent "Particles" */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0)`,
-            backgroundSize: '40px 40px',
-            opacity: 0.5,
-          }}
-        />
-      </div>
-
-      <style>{`
-        @keyframes float {
-          0% { transform: translate(0, 0) scale(1); }
-          100% { transform: translate(5%, 10%) scale(1.1); }
-        }
-          .bg-orb {
-            mix-blend-mode: screen;
-          }
-          .bioluminescent-grid {
-            mask-image: radial-gradient(circle at center, black, transparent 80%);
-          }
-        `}</style>
-
       {/* Skip to content link for accessibility */}
       <a
         href="#main-content"
@@ -255,10 +169,10 @@ const App: React.FC = () => {
         id="main-content"
         className="main-container"
         style={{
-          paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
-          paddingBottom: 'clamp(0.75rem, 3vw, 3.5rem)',
-          paddingLeft: 'clamp(0.5rem, 2vw, 1.5rem)',
-          paddingRight: 'clamp(0.5rem, 2vw, 1.5rem)',
+          paddingTop: 'clamp(1rem, 3vw, 1.5rem)',
+          paddingBottom: 'clamp(1.25rem, 4vw, 3.5rem)',
+          paddingLeft: 'clamp(0.75rem, 3vw, 1.5rem)',
+          paddingRight: 'clamp(0.75rem, 3vw, 1.5rem)',
           maxWidth: layout.contentMaxWidth,
           margin: '0 auto',
           outline: 'none',
@@ -271,15 +185,14 @@ const App: React.FC = () => {
           className="animate-fade-in retro-card-shine"
           style={{
             maxWidth: '980px',
-            margin: '0 auto clamp(0.5rem, 1.5vw, 1.25rem)',
-            padding: 'clamp(0.35rem, 1vw, 1rem)',
+            margin: '0 auto clamp(1rem, 2vw, 1.25rem)',
+            padding: 'clamp(0.5rem, 1.5vw, 1rem)',
             borderRadius: spacing.lg,
-            border: `1px solid rgba(255, 255, 255, 0.1)`,
-            borderTop: `2px solid rgba(255, 255, 255, 0.2)`,
+            border: `1px solid ${colors.accent}30`,
+            borderTop: `2px solid ${colors.accent}50`,
             background:
-              'linear-gradient(165deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: `0 14px 28px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
+              'radial-gradient(ellipse at 20% -20%, rgba(255, 105, 180, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 120%, rgba(135, 206, 250, 0.08) 0%, transparent 50%), linear-gradient(165deg, rgba(23, 33, 58, 0.85) 0%, rgba(10, 16, 32, 0.92) 100%)',
+            boxShadow: `0 14px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 30px rgba(255, 105, 180, 0.06)`,
           }}
         >
           <p
@@ -300,144 +213,93 @@ const App: React.FC = () => {
           <hr className="retro-divider" />
         </section>
 
-        {/* Y2K Bubble Navigation */}
+        {/* Main navigation - vertical tiles, icon on top / label below, liquid wrap */}
         <style>{`
-          @keyframes bubble-pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+          .main-nav-tile:focus-visible {
+            outline: 2px solid ${colors.accent};
+            outline-offset: 2px;
           }
-          @keyframes bubble-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-          }
-          .bubble-nav {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: clamp(1rem, 3vw, 2.5rem);
-            padding: clamp(1.5rem, 4vw, 2.5rem);
-            margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
-            flex-wrap: wrap;
-          }
-          .nav-bubble {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: none;
-            background: none;
-            padding: 0;
-            font-family: ${typography.fontFamily.heading.join(', ')};
-          }
-          .nav-bubble:focus-visible {
-            outline: 3px solid ${colors.accent};
-            outline-offset: 4px;
-          }
-          .nav-bubble-inner {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-          }
-          .nav-bubble:hover .nav-bubble-inner {
-            transform: scale(1.1);
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
-          }
-          .nav-bubble:active .nav-bubble-inner {
-            transform: scale(0.95);
-          }
-          .nav-bubble.on .nav-bubble-inner {
-            animation: bubble-float 3s ease-in-out infinite;
-          }
-          .nav-bubble.on .nav-bubble-inner::before {
-            animation: bubble-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-          }
-          .nav-bubble-icon {
-            font-size: 2.2rem;
-            line-height: 1;
-            z-index: 2;
-          }
-          .nav-bubble-label {
-            font-size: 0.75rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            z-index: 2;
-            text-align: center;
-            max-width: 100%;
-          }
-          .nav-bubble-status {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            z-index: 2;
+          .main-nav-tile:not([aria-current="page"]):hover {
+            background: rgba(255,255,255,0.08) !important;
+            box-shadow: 0 0 12px rgba(255,105,180,0.2);
           }
         `}</style>
-        <nav role="region" aria-label="Main navigation" className="bubble-nav">
-          {MAIN_TABS.map((tab) => {
-            const isOn = isTabExpanded(tab.id);
-            const bubbleColors = {
-              queue: {
-                on: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)',
-                off: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-              },
-              places: {
-                on: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-                off: 'linear-gradient(135deg, #065f46 0%, #10b981 100%)',
-              },
-              extras: {
-                on: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
-                off: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)',
-              },
-            };
-            const colorsMap = bubbleColors[tab.id as keyof typeof bubbleColors];
-
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className={`nav-bubble ${isOn ? 'on' : 'off'}`}
-                onClick={() => toggleTab(tab.id)}
-                title={isOn ? 'Turn off' : 'Turn on'}
-              >
-                <div
-                  className="nav-bubble-inner"
+        <div
+          role="region"
+          aria-label="Main navigation"
+          style={{
+            width: '100%',
+            minWidth: 0,
+            background: 'rgba(23, 33, 58, 0.5)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: spacing.md,
+            border: `1px solid ${colors.borderSecondary}25`,
+            borderBottom: `2px solid ${colors.accent}30`,
+            marginBottom: spacing.md,
+          }}
+        >
+          <nav
+            aria-label="Tab navigation"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'stretch',
+              justifyContent: 'center',
+              gap: '2px',
+              padding: '4px',
+            }}
+          >
+            {MAIN_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className="main-nav-tile"
+                  onClick={() => setActiveTab(tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
                   style={{
-                    background: isOn ? colorsMap.on : colorsMap.off,
+                    flex: '1 1 0',
+                    minWidth: 'min(110px, 30vw)',
+                    maxWidth: '200px',
+                    minHeight: '44px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.2rem',
+                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.04)',
+                    border: isActive ? `2px solid ${colors.accent}` : '1px solid transparent',
+                    borderRadius: `calc(${spacing.md} - 4px)`,
+                    padding: '0.5em 0.75em',
+                    color: isActive ? '#1a1a2e' : colors.textSecondary,
+                    fontFamily: typography.fontFamily.heading.join(', '),
+                    fontSize: 'clamp(0.7rem, 1.2vw + 0.5rem, 0.95rem)',
+                    fontWeight: isActive ? 700 : 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: typography.letterSpacing.normal,
+                    cursor: 'pointer',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    textShadow: isActive ? shadows.textGlow : 'none',
+                    boxShadow: isActive ? shadows.glow : 'none',
                   }}
                 >
-                  <span className="nav-bubble-icon" aria-hidden>
+                  <span style={{ fontSize: '1.25em', lineHeight: 1, flexShrink: 0 }} aria-hidden>
                     {tab.icon}
                   </span>
-                  <span className="nav-bubble-label">{tab.label}</span>
-                  <span className="nav-bubble-status">{isOn ? 'ON' : 'OFF'}</span>
-                </div>
-              </button>
-            );
-          })}
-        </nav>
+                  <span style={{ lineHeight: 1.1, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {renderContent()}
       </main>
 
       <MessageBoard mode="floating" />
-      <SpinWheel mode="floating" />
-      <SnakeGame mode="floating" />
-      <MatchmakerBubble currentUser={currentUser} />
 
       <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>

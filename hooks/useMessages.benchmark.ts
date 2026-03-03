@@ -38,7 +38,7 @@ async function runBenchmark() {
     return [];
   };
 
-  const key = `benchmark-messages-${Date.now()}`;
+  const key = 'benchmark-messages-' + Date.now();
 
   // 3. Run simulation
   console.log('Starting 20s simulation...');

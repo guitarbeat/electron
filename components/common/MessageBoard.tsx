@@ -178,7 +178,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     handleDragEnd();
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch (error) {
+    } catch (err) {
       // Ignore capture errors from canceled pointer interactions.
     }
   };
@@ -198,6 +198,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   if (!isEmbedded && isMinimized) {
     return (
       <button
+        type="button"
         onClick={handleBubbleClick}
         onPointerDown={handleBubblePointerDown}
         onPointerMove={handleBubblePointerMove}
@@ -268,25 +269,23 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         maxHeight: isMobile ? 'min(78vh, 720px)' : 'min(780px, 80vh)',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        backdropFilter: 'blur(16px)',
-        borderRadius: '24px',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-        border: `1px solid ${colors.borderSecondary}30`,
+        backgroundColor: colors.surfaceElevated,
+        borderRadius: radius.lg,
+        boxShadow: shadows.cardElevated,
+        border: `1px solid ${colors.accentMuted}`,
         overflow: 'hidden',
       }
     : {
         position: 'fixed',
-        width: isMobile ? 'calc(100vw - 32px)' : '400px',
+        width: isMobile ? 'calc(100vw - 32px)' : 'min(420px, 90vw)',
         maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
         display: 'flex',
         flexDirection: 'column',
         zIndex: FLOATING_Z_INDEX,
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        backdropFilter: 'blur(16px)',
-        borderRadius: '24px',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-        border: `1px solid ${colors.borderSecondary}30`,
+        backgroundColor: colors.surfaceElevated,
+        borderRadius: radius.lg,
+        boxShadow: shadows.cardElevated,
+        border: `1px solid ${colors.accentMuted}`,
         overflow: 'hidden',
         animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         transformOrigin: `${isBottomHalf ? 'bottom' : 'top'} ${isRightHalf ? 'right' : 'left'}`,
@@ -307,18 +306,26 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   return (
     <div style={containerStyle} className="message-board-container">
       <div
+        role="button"
+        tabIndex={0}
         style={{
           padding: `${spacing.sm} ${spacing.md}`,
-          backgroundColor: 'transparent',
+          backgroundColor: colors.surface,
           color: colors.textPrimary,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontWeight: 'bold',
           cursor: isEmbedded ? 'default' : 'pointer',
-          borderBottom: `1px solid ${colors.borderSecondary}20`,
+          borderBottom: `1px solid ${colors.accentMuted}`,
         }}
         onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
       >
         <span
           style={{
@@ -332,6 +339,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         </span>
         {!isEmbedded && (
           <button
+            type="button"
             onClick={(event) => {
               event.stopPropagation();
               handleToggle();
@@ -371,6 +379,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
             currentUser={currentUser}
             isSubmitting={isSubmitting}
             onSend={handleSend}
+            // eslint-disable-next-line no-console
             onError={(msg) => console.error(msg)}
           />
         </ChatWindow>

@@ -21,7 +21,7 @@ const USER_COLOR_MAP: Record<User, UserStyle> = {
     primary: colors.secondary, // Light Sky Blue
     light: colors.secondaryHover,
     gradient: colors.gradientBlue,
-    glowColor: 'rgba(149, 220, 255, 0.55)',
+    glowColor: 'rgba(135, 206, 250, 0.5)',
     borderColor: colors.borderSecondary,
     accentColor: colors.secondary,
   },
@@ -29,7 +29,7 @@ const USER_COLOR_MAP: Record<User, UserStyle> = {
     primary: colors.accent, // Hot Pink
     light: colors.accentHover,
     gradient: colors.gradientPink,
-    glowColor: 'rgba(255, 127, 198, 0.55)',
+    glowColor: 'rgba(255, 105, 180, 0.5)',
     borderColor: colors.border,
     accentColor: colors.accent,
   },
@@ -38,18 +38,18 @@ const USER_COLOR_MAP: Record<User, UserStyle> = {
 const MESSAGE_BUBBLE_STYLES: MessageBubbleStyle[] = [
   {
     gradient: colors.gradientBlue,
-    tailLeft: colors.secondary,
-    tailRight: colors.secondaryHover,
+    tailLeft: '#87cefa',
+    tailRight: '#a0d8ff',
   },
   {
     gradient: colors.gradientPink,
-    tailLeft: colors.accent,
-    tailRight: colors.accentHover,
+    tailLeft: '#ff69b4',
+    tailRight: '#ff8bb3',
   },
   {
     gradient: colors.gradientPurple,
-    tailLeft: colors.tertiary,
-    tailRight: colors.tertiaryHover,
+    tailLeft: '#9370db',
+    tailRight: '#ab87e8',
   },
 ];
 

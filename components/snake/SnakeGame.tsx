@@ -1,4 +1,3 @@
-import './SnakeGame.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -23,13 +22,9 @@ const BOARD_HEIGHT = 16;
 
 const INITIAL_TICK_INTERVAL_MS = 140;
 const MIN_TICK_INTERVAL_MS = 50;
-const SPEED_DECREMENT_PER_FOOD = 2;
+const SPEED_DECREMENT_PER_FOOD = 2; // Speed up by 2ms per food eaten
 const CELL_SIZE = 20;
 const CELL_GAP = 2;
-
-const BUBBLE_SIZE = 60;
-const BUBBLE_EDGE_MARGIN = 16;
-const DRAG_THRESHOLD = 4;
 
 const KEY_TO_DIRECTION: Record<string, Direction> = {
   ArrowUp: 'up',
@@ -54,28 +49,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const isEmbedded = mode === 'embedded';
-  const [gameState, setGameState] = useState<SnakeGameState>(() => {
-    const state = createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT });
-    return mode === 'embedded' ? { ...state, status: 'paused' as const } : state;
-  });
+  const [gameState, setGameState] = useState<SnakeGameState>(() =>
+    createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT })
+  );
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
   const [shake, setShake] = useState(0);
-  const [bubblePosition, setBubblePosition] = useState(() => {
-    if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
-    const defaultX = BUBBLE_EDGE_MARGIN + 4;
-    const defaultY = window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 70;
-    return { x: defaultX, y: defaultY };
-  });
-  const [isDraggingBubble, setIsDraggingBubble] = useState(false);
-  const dragStateRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    origin: { x: number; y: number };
-  } | null>(null);
-  const didDragRef = useRef(false);
 
   const { leaderboard, recordScore, clearLeaderboard, bestScore } =
     useSnakeLeaderboard(currentUser);
@@ -83,63 +63,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
   const isGameVisible = isEmbedded || !isMinimized;
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  const clampBubble = (x: number, y: number) => {
-    if (typeof window === 'undefined') return { x, y };
-    const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-    const maxY = Math.max(
-      BUBBLE_EDGE_MARGIN,
-      window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
-    );
-    return {
-      x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
-      y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
-    };
-  };
-
-  const handleBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    dragStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      origin: bubblePosition,
-    };
-    didDragRef.current = false;
-    setIsDraggingBubble(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleBubblePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const ds = dragStateRef.current;
-    if (!ds || ds.pointerId !== event.pointerId) return;
-    const deltaX = event.clientX - ds.startX;
-    const deltaY = event.clientY - ds.startY;
-    if (
-      !didDragRef.current &&
-      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
-    ) {
-      didDragRef.current = true;
-    }
-    if (!didDragRef.current) return;
-    setBubblePosition(clampBubble(ds.origin.x + deltaX, ds.origin.y + deltaY));
-  };
-
-  const handleBubblePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const ds = dragStateRef.current;
-    if (!ds || ds.pointerId !== event.pointerId) return;
-    if (!didDragRef.current) {
-      handleMaximize();
-    }
-    setIsDraggingBubble(false);
-    dragStateRef.current = null;
-    didDragRef.current = false;
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Ignore release capture errors
-    }
-  };
 
   useEffect(() => {
     if (isEmbedded) {
@@ -222,7 +145,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           nextState.snake[0].x !== previousState.snake[0].x ||
           nextState.snake[0].y !== previousState.snake[0].y
         ) {
-          playMoveSound();
+          // Optional move sound
         }
 
         return nextState;
@@ -230,7 +153,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     }, currentTickInterval);
 
     return () => window.clearInterval(intervalId);
-  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound, playMoveSound]);
+  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound]);
 
   useEffect(() => {
     if (!isGameVisible) return undefined;
@@ -279,16 +202,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     return (
       <button
         type="button"
-        onPointerDown={handleBubblePointerDown}
-        onPointerMove={handleBubblePointerMove}
-        onPointerUp={handleBubblePointerUp}
-        onPointerCancel={handleBubblePointerUp}
+        onClick={handleMaximize}
         style={{
           position: 'fixed',
-          left: bubblePosition.x,
-          top: bubblePosition.y,
-          width: `${BUBBLE_SIZE}px`,
-          height: `${BUBBLE_SIZE}px`,
+          bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
+          right: isMobile ? 'auto' : spacing.lg,
+          left: isMobile ? spacing.md : 'auto',
+          width: '60px',
+          height: '60px',
           borderRadius: radius.full,
           border: `3px solid ${colors.surfaceElevated}`,
           background:
@@ -298,12 +219,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: isDraggingBubble ? 'grabbing' : 'grab',
+          cursor: 'pointer',
           boxShadow: shadows.glow,
           padding: 0,
           zIndex: 1000,
-          touchAction: 'none',
-          userSelect: 'none',
         }}
         aria-label="Open Snake Game"
       >
@@ -361,30 +280,49 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
             : {
                 position: 'fixed',
                 bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-                right: spacing.lg,
-                width: isMobile ? 'calc(100vw - 32px)' : '380px',
-                maxWidth: '100%',
+                right: isMobile ? spacing.md : spacing.lg,
+                left: isMobile ? spacing.md : 'auto',
+                width: isMobile ? 'auto' : 'min(440px, 90vw)',
                 zIndex: 1000,
               }
       }
     >
+      <style>
+        {`
+            @keyframes snake-shake {
+              0% { transform: translate(1px, 1px) rotate(0deg); }
+              10% { transform: translate(-1px, -2px) rotate(-1deg); }
+              20% { transform: translate(-3px, 0px) rotate(1deg); }
+              30% { transform: translate(3px, 2px) rotate(0deg); }
+              40% { transform: translate(1px, -1px) rotate(1deg); }
+              50% { transform: translate(-1px, 2px) rotate(-1deg); }
+              60% { transform: translate(-3px, 1px) rotate(0deg); }
+              70% { transform: translate(3px, 1px) rotate(-1deg); }
+              80% { transform: translate(-1px, -1px) rotate(1deg); }
+              90% { transform: translate(1px, 2px) rotate(0deg); }
+              100% { transform: translate(1px, -2px) rotate(-1deg); }
+            }
+            .snake-fullscreen-btn {
+              transition: all 0.2s ease;
+            }
+            .snake-fullscreen-btn:active {
+              transform: scale(0.92);
+            }
+          `}
+      </style>
       <Card
         style={{
-          padding: isMobile && !isFullscreen ? spacing.md : spacing.lg,
-          border: isFullscreen ? 'none' : `1px solid ${colors.borderSecondary}30`,
-          borderRadius: isFullscreen ? 0 : '24px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: isFullscreen
-            ? 'none'
-            : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-          maxHeight: isFullscreen ? '100%' : 'min(520px, 75vh)',
+          padding: spacing.lg,
+          border: isFullscreen ? 'none' : `2px solid ${colors.border}`,
+          borderRadius: isFullscreen ? 0 : radius.card,
+          background: colors.surface,
+          boxShadow: isFullscreen ? 'none' : shadows.cardElevated,
+          maxHeight: isFullscreen ? '100%' : isMobile ? 'min(78vh, 680px)' : 'min(700px, 80vh)',
           overflowY: 'auto',
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
           height: isFullscreen ? '100%' : 'auto',
           display: 'flex',
           flexDirection: 'column',
-          margin: isMobile && !isFullscreen ? '0 8px' : 0,
         }}
         onAnimationEnd={() => setShake(0)}
       >
@@ -442,8 +380,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
         <SnakeBoard
           gameState={gameState}
-          cellSize={isMobile && !isFullscreen ? 16 : CELL_SIZE}
-          cellGap={isMobile && !isFullscreen ? 1 : CELL_GAP}
+          cellSize={CELL_SIZE}
+          cellGap={CELL_GAP}
           isFullscreen={isFullscreen}
           isMobile={isMobile}
           onTouchStart={handleTouchStart}
@@ -458,22 +396,18 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
           onDirection={handleDirection}
         />
 
-        {(isFullscreen || isEmbedded) && (
-          <SnakeLeaderboard entries={leaderboard} onClear={clearLeaderboard} />
-        )}
+        <SnakeLeaderboard entries={leaderboard} onClear={clearLeaderboard} />
 
-        {!isMobile && (
-          <p
-            style={{
-              marginBottom: 0,
-              textAlign: 'center',
-              color: colors.textTertiary,
-              fontSize: typography.fontSize.xs,
-            }}
-          >
-            Arrow keys / WASD to move · Space to pause · R to restart
-          </p>
-        )}
+        <p
+          style={{
+            marginBottom: 0,
+            textAlign: 'center',
+            color: colors.textTertiary,
+            fontSize: typography.fontSize.xs,
+          }}
+        >
+          Move with arrow keys or WASD. Press Space to pause and R to restart.
+        </p>
       </Card>
     </div>
   );

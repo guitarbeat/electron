@@ -18,29 +18,29 @@ export const spacing = {
 // * Color palette (Retro theme)
 export const colors = {
   // Base
-  background: '#020617',
-  surface: 'rgba(15, 23, 42, 0.65)',
-  surfaceElevated: 'rgba(30, 41, 59, 0.8)',
+  background: '#0a0b0e',
+  surface: 'rgba(23, 33, 58, 0.7)',
+  surfaceElevated: 'rgba(30, 42, 75, 0.85)',
 
   // Text (improved contrast for readability)
   textPrimary: '#ffffff',
-  textSecondary: '#f7f7ff', // Brighter for better contrast
-  textTertiary: '#d8daef', // Increased brightness for legibility
+  textSecondary: '#f0f0f5', // Brighter for better contrast
+  textTertiary: '#c8c8d8', // Increased brightness for legibility
 
   // Accent (Hot Pink)
-  accent: '#ff7fc6',
-  accentHover: '#ff9bd3',
-  accentMuted: '#ff7fc640',
-  accentLight: '#ffc2e6',
+  accent: '#ff69b4',
+  accentHover: '#ff8bb3',
+  accentMuted: '#ff69b440',
+  accentLight: '#fca5d3',
 
   // Secondary accent (Light Sky Blue)
-  secondary: '#95dcff',
-  secondaryHover: '#b3e8ff',
-  secondaryMuted: '#95dcff40',
+  secondary: '#87cefa',
+  secondaryHover: '#a0d8ff',
+  secondaryMuted: '#87cefa40',
 
   // Tertiary (Medium Purple)
-  tertiary: '#a78af2',
-  tertiaryHover: '#c0a8ff',
+  tertiary: '#9370db',
+  tertiaryHover: '#ab87e8',
 
   // Status
   success: '#4ade80',
@@ -48,22 +48,22 @@ export const colors = {
   error: '#f87171',
 
   // Border
-  border: 'rgba(99, 102, 241, 0.4)',
-  borderSecondary: 'rgba(236, 72, 153, 0.3)',
-  borderTertiary: 'rgba(56, 189, 248, 0.3)',
-  borderInset: '#365a90',
+  border: '#ff69b4',
+  borderSecondary: '#87cefa',
+  borderTertiary: '#9370db',
+  borderInset: '#1f4068',
 
   // Overlay
-  overlay: 'rgba(34, 39, 70, 0.78)',
+  overlay: 'rgba(26, 26, 46, 0.8)',
 
   // Special retro colors
-  yellow: '#fff06a',
-  khaki: '#f7efaa',
+  yellow: '#ffeb3b',
+  khaki: '#f0e68c',
   // Gradients
-  gradientPink: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 100%)',
-  gradientBlue: 'linear-gradient(135deg, #95dcff 0%, #b3e8ff 100%)',
-  gradientPurple: 'linear-gradient(135deg, #a78af2 0%, #c0a8ff 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%)',
+  gradientPink: 'linear-gradient(135deg, #ff69b4 0%, #ff8bb3 100%)',
+  gradientBlue: 'linear-gradient(135deg, #87cefa 0%, #a0d8ff 100%)',
+  gradientPurple: 'linear-gradient(135deg, #9370db 0%, #ab87e8 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(27, 40, 69, 0.95) 0%, rgba(27, 40, 69, 0.85) 100%)',
 } as const;
 
 // * Typography scale (Legible and tight)
@@ -144,7 +144,7 @@ export const shadows = {
   // Card shadows (enhanced depth)
   card: '5px 5px 0px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2)',
   cardHover:
-    '8px 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(255, 127, 198, 0.65), inset 0 1px 0 rgba(255,255,255,0.1)',
+    '8px 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(255, 105, 180, 0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
   cardElevated: '6px 6px 0px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.3)',
   // Button shadows (3D effect - enhanced)
   button: '0 4px 0 rgba(0,0,0,0.5), 0 5px 0 rgba(255,255,255,0.3) inset, 0 2px 4px rgba(0,0,0,0.3)',
@@ -154,22 +154,22 @@ export const shadows = {
   buttonLarge:
     '0 6px 0 rgba(0,0,0,0.6), 0 8px 0 rgba(255,255,255,0.3) inset, 0 0 25px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4)',
   // Glow effects (enhanced)
-  glow: '0 0 20px rgba(255, 127, 198, 0.6), 0 0 40px rgba(255, 127, 198, 0.25)',
-  glowStrong: '0 0 30px rgba(255, 127, 198, 0.85), 0 0 60px rgba(255, 127, 198, 0.45)',
-  glowBlue: '0 0 25px rgba(149, 220, 255, 0.85), 0 0 50px rgba(149, 220, 255, 0.35)',
-  glowYellow: '0 0 20px rgba(255, 240, 106, 0.65), 0 0 40px rgba(255, 240, 106, 0.35)',
+  glow: '0 0 20px rgba(255, 105, 180, 0.5), 0 0 40px rgba(255, 105, 180, 0.2)',
+  glowStrong: '0 0 30px rgba(255, 105, 180, 0.8), 0 0 60px rgba(255, 105, 180, 0.4)',
+  glowBlue: '0 0 25px rgba(135, 206, 250, 0.8), 0 0 50px rgba(135, 206, 250, 0.3)',
+  glowYellow: '0 0 20px rgba(255, 235, 59, 0.6), 0 0 40px rgba(255, 235, 59, 0.3)',
   // Text shadows - Multi-layered for depth
   textGlow:
-    '0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 4px rgba(0, 0, 0, 0.55), 0 0 12px rgba(255, 127, 198, 0.55), 0 0 24px rgba(255, 127, 198, 0.35)',
+    '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 105, 180, 0.5), 0 0 24px rgba(255, 105, 180, 0.3)',
   textGlowBlue:
-    '0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 4px rgba(0, 0, 0, 0.55), 0 0 12px rgba(149, 220, 255, 0.55), 0 0 24px rgba(149, 220, 255, 0.35)',
+    '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(135, 206, 250, 0.5), 0 0 24px rgba(135, 206, 250, 0.3)',
   textGlowYellow:
-    '0 1px 0 rgba(255, 255, 255, 0.32), 0 2px 4px rgba(0, 0, 0, 0.55), 0 0 12px rgba(255, 240, 106, 0.55), 0 0 24px rgba(255, 240, 106, 0.35)',
+    '0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 235, 59, 0.5), 0 0 24px rgba(255, 235, 59, 0.3)',
 
   // Text gradients
-  textGradientPink: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 50%, #fff 100%)',
-  textGradientBlue: 'linear-gradient(135deg, #95dcff 0%, #b3e8ff 50%, #fff 100%)',
-  textGradientYellow: 'linear-gradient(135deg, #fff06a 0%, #fff8bf 50%, #fff 100%)',
+  textGradientPink: 'linear-gradient(135deg, #ff69b4 0%, #ff8bb3 50%, #fff 100%)',
+  textGradientBlue: 'linear-gradient(135deg, #87cefa 0%, #a0d8ff 50%, #fff 100%)',
+  textGradientYellow: 'linear-gradient(135deg, #ffeb3b 0%, #fff9c4 50%, #fff 100%)',
 
   // Text outline effects
   textOutline: '0 0 1px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.6), 0 0 4px rgba(0, 0, 0, 0.4)',

@@ -6,14 +6,10 @@ import { useRandomCatImage } from '../../hooks/useRandomCatImage';
 import { LockIcon } from './icons';
 import { typography } from '../../design-system/tokens';
 
-type BubbleSize = 'default' | 'compact';
-
 interface GelBubbleAvatarProps {
   user: User;
   hasPin: boolean;
   isHovered: boolean;
-  isSmall?: boolean;
-  size?: BubbleSize;
   onClick: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -23,17 +19,10 @@ interface GelBubbleAvatarProps {
   animationOffset?: boolean;
 }
 
-const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
-  default: { bubble: 'clamp(140px, 35vw, 200px)', name: 'clamp(1rem, 4vw, 1.25rem)' },
-  compact: { bubble: 'clamp(90px, 22vw, 140px)', name: 'clamp(0.8rem, 3vw, 1rem)' },
-};
-
 const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   user,
   hasPin,
   isHovered,
-  isSmall = false,
-  size = 'default',
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -45,13 +34,17 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   const { sources: catSources, refetch: refetchCat, isLoading: isCatLoading } = useRandomCatImage();
   const sources =
     catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
-  const sizeTokens = SIZES[size];
 
   const onImageClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!disabled) refetchCat();
   };
+
+  const ringPulse1 = isHovered ? '50px' : '35px';
+  const ringPulseColor1 = isHovered ? '0.5' : '0.35';
+  const ringPulse2 = isHovered ? '80px' : '60px';
+  const ringPulseColor2 = isHovered ? '0.4' : '0.25';
 
   return (
     <button
@@ -73,18 +66,15 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         border: 'none',
         cursor: disabled ? 'wait' : 'pointer',
         padding: 0,
-        opacity: isSmall ? 0.5 : disabled ? 0.7 : 1,
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isSmall ? 'scale(0.6)' : 'none',
-        filter: isSmall ? 'grayscale(0.4)' : 'none',
+        opacity: disabled ? 0.7 : 1,
       }}
     >
       {/* Gel Bubble Container - Outer Ring */}
       <div
         style={{
           position: 'relative',
-          width: sizeTokens.bubble,
-          height: sizeTokens.bubble,
+          width: 'clamp(140px, 35vw, 200px)',
+          height: 'clamp(140px, 35vw, 200px)',
           borderRadius: '50%',
           background: `
             radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, transparent 40%),
@@ -101,8 +91,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             inset 0 -15px 40px rgba(100, 60, 150, 0.4),
             inset 0 15px 30px rgba(255, 255, 255, 0.2),
             inset 0 0 20px rgba(255, 105, 180, 0.15),
-            0 0 ${isHovered ? '50px' : '35px'} rgba(255, 105, 180, ${isHovered ? '0.5' : '0.35'}),
-            0 0 ${isHovered ? '80px' : '60px'} rgba(147, 112, 219, ${isHovered ? '0.4' : '0.25'})
+            0 0 ${ringPulse1} rgba(255, 105, 180, ${ringPulseColor1}),
+            0 0 ${ringPulse2} rgba(147, 112, 219, ${ringPulseColor2})
           `,
           border: '3px solid rgba(180, 150, 220, 0.4)',
           backdropFilter: 'blur(4px)',
@@ -272,7 +262,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       <span
         style={{
           fontFamily: typography.fontFamily.heading.join(', '),
-          fontSize: sizeTokens.name,
+          fontSize: 'clamp(1rem, 4vw, 1.25rem)',
           fontWeight: 600,
           color: '#fff',
           textTransform: 'uppercase',

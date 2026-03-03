@@ -81,11 +81,18 @@ const MovieItem: React.FC<MovieItemProps> = ({
     }
   };
 
+  // Helper to determine border color
+  const getBorderColor = () => {
+    if (isHighlighted) return colors.secondary;
+    if (watchedByBoth) return colors.accent;
+    return colors.border;
+  };
+
   return (
     <>
       <Card
         variant={watchedByBoth ? 'elevated' : 'default'}
-        className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up y2k-holo-hover y2k-sparkle`}
+        className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up`}
         onClick={handleCardClick}
         data-movie-id={movie.id}
         style={{
@@ -94,11 +101,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           marginBottom: spacing.sm,
           borderWidth: watchedByBoth ? '2px' : '1px',
-          borderColor: isHighlighted
-            ? colors.secondary
-            : watchedByBoth
-              ? colors.accent
-              : colors.border,
+          borderColor: getBorderColor(),
           position: 'relative',
           overflow: 'hidden',
           animationDelay,
