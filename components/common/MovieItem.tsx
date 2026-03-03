@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { Movie, User, SharedMemory } from '../../types';
 import { TrashIcon, EyeIcon, EyeOffIcon, MagicWandIcon, FilmIcon } from './icons';
 import Card from '../ui/Card';
@@ -10,6 +10,7 @@ import { spacing, typography, colors, radius, shadows } from '../../design-syste
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import MemoryList from '../memories/MemoryList';
 import MemoryComposer from '../memories/MemoryComposer';
+import './MovieItem.css';
 
 interface MovieItemProps {
   movie: Movie;
@@ -46,11 +47,18 @@ const MovieItem: React.FC<MovieItemProps> = ({
   const [showMemories, setShowMemories] = useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const isGuest = !currentUser;
 
   const hasSharedMemories = memories.length > 0;
+  const metadataItems = useMemo(() => {
+    const pieces = [
+      movie.year,
+      movie.runtime,
+      movie.imdbRating ? `${movie.imdbRating} IMDb` : null,
+    ];
+    return pieces.filter(Boolean) as string[];
+  }, [movie.year, movie.runtime, movie.imdbRating]);
 
   const handleCardClick = () => {
     if (isMobile) {
@@ -63,13 +71,13 @@ const MovieItem: React.FC<MovieItemProps> = ({
     setIsBottomSheetOpen(false);
   };
 
-  const handleToggleMemories = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setShowMemories(!showMemories);
+  const handleToggleMemories = (event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    setShowMemories((current) => !current);
   };
 
-  const handleToggle = async (e?: React.MouseEvent) => {
-    e?.stopPropagation();
+  const handleToggle = async (event?: React.MouseEvent) => {
+    event?.stopPropagation();
     if (isGuest) return;
 
     setIsUpdating(true);
@@ -85,255 +93,77 @@ const MovieItem: React.FC<MovieItemProps> = ({
     <>
       <Card
         variant={watchedByBoth ? 'elevated' : 'default'}
-        className={`${watchedByBoth ? 'animate-pink-glow' : 'movie-card'} slide-up y2k-holo-hover y2k-sparkle`}
-        onClick={handleCardClick}
+        className={`movie-item-card slide-up ${
+          watchedByBoth ? 'movie-item-card--watched' : ''
+        } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
+        onClick={isMobile ? handleCardClick : undefined}
         data-movie-id={movie.id}
         style={{
           padding: 0,
-          opacity: 1,
-          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           marginBottom: spacing.sm,
-          borderWidth: watchedByBoth ? '2px' : '1px',
-          borderColor: isHighlighted
-            ? colors.secondary
-            : watchedByBoth
-              ? colors.accent
-              : colors.border,
-          position: 'relative',
-          overflow: 'hidden',
           animationDelay,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: isHighlighted
-            ? '0 0 0 2px rgba(135, 206, 250, 0.55), 0 0 24px rgba(135, 206, 250, 0.45)'
-            : shadows.card,
-          backgroundColor: colors.surfaceElevated,
+          borderColor: watchedByBoth ? colors.accent : colors.border,
           cursor: isMobile ? 'pointer' : 'default',
-          transform: 'translateZ(0)',
-          flexWrap: 'wrap',
-        }}
-        onMouseEnter={(e) => {
-          if (!isMobile) {
-            setIsHovered(true);
-            e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-            e.currentTarget.style.boxShadow = shadows.glow;
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isMobile) {
-            setIsHovered(false);
-            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-            e.currentTarget.style.boxShadow = shadows.card;
-          }
         }}
       >
-        {/* Poster Image or Text Fallback */}
-        <div
-          style={{
-            width: '100%',
-            aspectRatio: '2/3',
-            flexShrink: 0,
-            position: 'relative',
-            overflow: 'hidden',
-            backgroundColor: '#000',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: !movie.posterUrl
-              ? `linear-gradient(135deg, ${colors.secondary} 0%, ${colors.accent} 100%)`
-              : colors.background,
-          }}
-        >
+        <div className="movie-item-poster-wrap">
           {movie.posterUrl ? (
             <img
               src={movie.posterUrl}
               alt={`${movie.title} poster`}
               loading="lazy"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'transform 0.5s ease',
-              }}
+              className="movie-item-poster"
             />
           ) : (
-            <div
-              style={{
-                padding: isMobile ? spacing.sm : spacing.md,
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                minWidth: 0,
-                textAlign: 'center',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1,
-              }}
-            >
+            <div className="movie-item-poster-fallback">
               <FilmIcon
                 style={{
-                  width: '32px',
-                  height: '32px',
-                  color: 'rgba(255,255,255,0.2)',
+                  width: '34px',
+                  height: '34px',
+                  color: 'rgba(255,255,255,0.3)',
                   marginBottom: spacing.sm,
                 }}
               />
-              <h3
-                style={{
-                  fontSize: isMobile ? typography.fontSize.base : typography.fontSize.lg,
-                  margin: 0,
-                  color: colors.textPrimary,
-                  fontWeight: typography.fontWeight.bold,
-                  lineHeight: 1.2,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                }}
-              >
-                {movie.title}
-              </h3>
+              <h3 className="movie-item-title movie-item-title--fallback">{movie.title}</h3>
             </div>
           )}
 
-          {/* Watcher Badges - Floating on Top-Left */}
-          <div
-            style={{
-              position: 'absolute',
-              top: spacing.sm,
-              left: spacing.sm,
-              display: 'flex',
-              gap: '4px',
-              zIndex: 10,
-            }}
-          >
+          <div className="movie-item-watchers">
             {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
             {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
           </div>
 
-          {/* Grid Overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: movie.posterUrl
-                ? 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.45) 42%, transparent 100%)'
-                : 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              padding: spacing.sm,
-              opacity: 1,
-              zIndex: 2,
-              gap: '6px',
-            }}
-          >
+          <div className="movie-item-overlay">
             <div>
-              {movie.posterUrl && (
-                <h3
-                  style={{
-                    fontSize: typography.fontSize.sm,
-                    fontWeight: typography.fontWeight.bold,
-                    color: colors.textPrimary,
-                    margin: 0,
-                    marginBottom: '4px',
-                    lineHeight: 1.2,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                  }}
-                >
-                  {movie.title}
-                </h3>
-              )}
+              {movie.posterUrl && <h3 className="movie-item-title">{movie.title}</h3>}
 
-              {(movie.year || movie.category) && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    flexWrap: 'wrap',
-                    color: 'rgba(255,255,255,0.85)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.02em',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                  }}
-                >
-                  {movie.year && <span>{movie.year}</span>}
-                  {movie.year && movie.category && <span style={{ opacity: 0.7 }}>•</span>}
-                  {movie.category && (
-                    <span
-                      style={{
-                        color: colors.accentLight,
-                        backgroundColor: 'rgba(0,0,0,0.35)',
-                        padding: '2px 8px',
-                        borderRadius: radius.full,
-                        border: '1px solid rgba(255,255,255,0.18)',
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {movie.category}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {movie.plot && !isMobile && (
-                <p
-                  style={{
-                    margin: '8px 0 0',
-                    color: 'rgba(255,255,255,0.85)',
-                    fontSize: '12px',
-                    lineHeight: 1.35,
-                    display: isHovered ? '-webkit-box' : 'none',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                  }}
-                >
-                  {movie.plot}
-                </p>
-              )}
+              <div className="movie-item-meta-row">
+                {metadataItems.map((item, index) => (
+                  <React.Fragment key={`${movie.id}-meta-${item}`}>
+                    {index > 0 && <span className="movie-item-meta-sep">•</span>}
+                    <span className="movie-item-meta">{item}</span>
+                  </React.Fragment>
+                ))}
+                {movie.category && (
+                  <span className="movie-item-category" aria-label={`Category: ${movie.category}`}>
+                    {movie.category}
+                  </span>
+                )}
+              </div>
             </div>
 
             {hasSharedMemories && (
               <button
                 type="button"
-                onClick={(e) => {
-                  handleToggleMemories(e);
-                }}
-                style={{
-                  alignSelf: 'flex-start',
-                  padding: '2px 8px',
-                  borderRadius: radius.full,
-                  border: '1px solid rgba(255, 248, 210, 0.55)',
-                  backgroundColor: 'rgba(58, 41, 17, 0.55)',
-                  color: '#fff4d6',
-                  fontSize: '0.65rem',
-                  fontFamily: typography.fontFamily.heading.join(', '),
-                  letterSpacing: typography.letterSpacing.normal,
-                  cursor: 'pointer',
-                  borderStyle: 'solid',
-                }}
+                onClick={handleToggleMemories}
+                className="movie-item-memory-toggle"
                 aria-label={`View memories for "${movie.title}"`}
               >
                 {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
               </button>
             )}
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '4px',
-                width: '100%',
-              }}
-            >
+            <div className="movie-item-actions">
               <Button
                 type="button"
                 onClick={handleToggle}
@@ -347,18 +177,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     ? `Mark "${movie.title}" as unwatched`
                     : `Mark "${movie.title}" as watched`
                 }
+                className="movie-item-primary-action"
                 style={{
-                  padding: `${spacing.xs} ${spacing.md}`,
-                  minHeight: '44px',
-                  fontSize: '12px',
-                  backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.6)',
-                  borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  flex: 1,
+                  backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.62)',
+                  borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.28)',
                   opacity: isGuest ? 0.5 : 1,
-                  cursor: isGuest ? 'not-allowed' : 'pointer',
                 }}
               >
                 {watchedByCurrentUser ? (
@@ -370,11 +193,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
               </Button>
 
               {!isMobile && (
-                <>
+                <div className="movie-item-secondary-actions">
                   <IconButton
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={(event) => {
+                      event.stopPropagation();
                       onFixMatch?.(movie);
                     }}
                     variant="ghost"
@@ -386,10 +209,10 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       padding: 0,
                       width: '44px',
                       height: '44px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      backgroundColor: 'rgba(0,0,0,0.62)',
                       borderRadius: radius.md,
                       color: colors.accent,
-                      border: `1px solid ${colors.accent}40`,
+                      border: `1px solid ${colors.accent}45`,
                       opacity: isGuest ? 0.5 : 1,
                       cursor: isGuest ? 'not-allowed' : 'pointer',
                     }}
@@ -399,8 +222,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
 
                   <IconButton
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={(event) => {
+                      event.stopPropagation();
                       onDelete(movie);
                     }}
                     variant="ghost"
@@ -412,37 +235,31 @@ const MovieItem: React.FC<MovieItemProps> = ({
                       padding: 0,
                       width: '44px',
                       height: '44px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      backgroundColor: 'rgba(0,0,0,0.62)',
                       borderRadius: radius.md,
                       color: colors.error,
-                      border: `1px solid ${colors.error}40`,
+                      border: `1px solid ${colors.error}45`,
                       opacity: isGuest ? 0.5 : 1,
                       cursor: isGuest ? 'not-allowed' : 'pointer',
                     }}
                   >
                     <TrashIcon style={{ width: '14px', height: '14px' }} />
                   </IconButton>
-                </>
+                </div>
               )}
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Expanded Memory Section */}
       {showMemories && (
         <div
-          className="slide-down"
+          className="slide-down movie-item-memory-panel"
           style={{
-            width: '100%',
             marginTop: `-${spacing.sm}`,
             marginBottom: spacing.md,
             padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
-            background: 'rgba(20, 20, 25, 0.4)',
-            border: `1px solid ${colors.borderSecondary}30`,
-            borderTop: 'none',
             borderRadius: `0 0 ${radius.md} ${radius.md}`,
-            borderLeft: `3px solid ${colors.accent}40`,
           }}
         >
           {currentUser && onAddMemory && (
@@ -452,11 +269,11 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 selectedMovieId={movie.id}
                 onSelectedMovieIdChange={() => {}}
                 currentUser={currentUser}
-                onSubmit={async (e) => {
-                  e.preventDefault();
+                onSubmit={async (event) => {
+                  event.preventDefault();
                   setIsSubmittingMemory(true);
                   try {
-                    const form = e.currentTarget as HTMLFormElement;
+                    const form = event.currentTarget as HTMLFormElement;
                     const note = (form.elements.namedItem('note') as HTMLTextAreaElement).value;
                     await onAddMemory(note);
                     form.reset();
@@ -523,7 +340,6 @@ const MovieItem: React.FC<MovieItemProps> = ({
         </div>
       )}
 
-      {/* Mobile Bottom Sheet for Actions */}
       <BottomSheet
         isOpen={isBottomSheetOpen}
         onClose={() => setIsBottomSheetOpen(false)}
@@ -552,7 +368,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
               />
             )}
             <div style={{ flex: 1 }}>
-              {(movie.year || movie.category) && (
+              {(movie.year || movie.runtime || movie.imdbRating || movie.category) && (
                 <div
                   style={{
                     display: 'flex',
@@ -565,6 +381,16 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   {movie.year && (
                     <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
                       {movie.year}
+                    </span>
+                  )}
+                  {movie.runtime && (
+                    <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
+                      {movie.runtime}
+                    </span>
+                  )}
+                  {movie.imdbRating && (
+                    <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
+                      {movie.imdbRating} IMDb
                     </span>
                   )}
                   {movie.category && (
