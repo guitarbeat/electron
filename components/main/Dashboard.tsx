@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MainTab, User, Movie, Place } from '../../types';
 import { useMovies } from '../../hooks/useMovies';
 import { usePlaces } from '../../hooks/usePlaces';
@@ -7,6 +7,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Skeleton from '../ui/Skeleton';
 import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
+import './Dashboard.css';
 
 interface DashboardProps {
   onNavigate: (tab: MainTab) => void;
@@ -53,8 +54,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { movies, isLoading: moviesLoading } = useMovies(currentUser, false);
   const { places, isLoading: placesLoading } = usePlaces(currentUser, false);
 
+  const [expandedSections, setExpandedSections] = useState({ movies: false, places: false });
+
   const unwatchedMovies = movies.filter((m: Movie) => m.watchedBy.length < 2);
   const unvisitedPlaces = places.filter((p: Place) => !p.visitedAt);
+
+  const toggleSection = (section: 'movies' | 'places') => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   const sectionLabel: React.CSSProperties = {
     margin: 0,
@@ -66,34 +76,43 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     marginBottom: spacing.xs,
   };
 
+  const moviesToDisplay = expandedSections.movies ? unwatchedMovies : unwatchedMovies.slice(0, MAX_PREVIEW);
+  const placesToDisplay = expandedSections.places ? unvisitedPlaces : unvisitedPlaces.slice(0, MAX_PREVIEW);
+
   return (
     <div
-      className="animate-fade-in"
+      className="dashboard-container"
       style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}
     >
       {/* Movies Section */}
       <div style={sectionCardStyle} className="retro-card-shine">
         <p style={sectionLabel}>✦ Up Next</p>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.md,
-          }}
-        >
+        <div className="section-header">
           <h2 style={sectionTitleStyle}>
             <span style={{ marginRight: spacing.sm }}>🎬</span>
             What to watch
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate('queue')}
-            style={{ color: colors.accent, opacity: 0.8 }}
-          >
-            See all →
-          </Button>
+          <div className="section-controls">
+            {unwatchedMovies.length > MAX_PREVIEW && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleSection('movies')}
+                className="expand-button"
+                style={{ color: colors.accent, opacity: 0.8 }}
+              >
+                {expandedSections.movies ? '▼ Collapse' : '▶ Expand'}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onNavigate('queue')}
+              style={{ color: colors.accent, opacity: 0.8 }}
+            >
+              See all →
+            </Button>
+          </div>
         </div>
 
         <hr className="retro-divider" />
@@ -117,8 +136,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             ✧ Your queue is empty — add movies to get started! ✧
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-            {unwatchedMovies.slice(0, MAX_PREVIEW).map((movie: Movie) => (
+          <div
+            className={`expandable-section ${expandedSections.movies ? 'expanded' : 'collapsed'}`}
+            style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}
+          >
+            {moviesToDisplay.map((movie: Movie) => (
               <div key={movie.id} style={itemStyle}>
                 {movie.posterUrl && (
                   <img
@@ -158,19 +180,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 )}
               </div>
             ))}
-            {unwatchedMovies.length > MAX_PREVIEW && (
-              <p
-                style={{
-                  margin: 0,
-                  color: colors.accent,
-                  fontSize: typography.fontSize.xs,
-                  textAlign: 'center',
-                  opacity: 0.5,
-                }}
-              >
-                +{unwatchedMovies.length - MAX_PREVIEW} more
-              </p>
-            )}
           </div>
         )}
       </div>
@@ -186,26 +195,32 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         className="retro-card-shine"
       >
         <p style={{ ...sectionLabel, color: colors.secondary }}>✦ Explore</p>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.md,
-          }}
-        >
+        <div className="section-header">
           <h2 style={sectionTitleStyle}>
             <span style={{ marginRight: spacing.sm }}>📍</span>
             Where to go
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate('places')}
-            style={{ color: colors.secondary, opacity: 0.8 }}
-          >
-            See all →
-          </Button>
+          <div className="section-controls">
+            {unvisitedPlaces.length > MAX_PREVIEW && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleSection('places')}
+                className="expand-button"
+                style={{ color: colors.secondary, opacity: 0.8 }}
+              >
+                {expandedSections.places ? '▼ Collapse' : '▶ Expand'}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onNavigate('places')}
+              style={{ color: colors.secondary, opacity: 0.8 }}
+            >
+              See all →
+            </Button>
+          </div>
         </div>
 
         <hr className="retro-divider" />
@@ -229,8 +244,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             ✧ No places yet — add spots you want to visit! ✧
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-            {unvisitedPlaces.slice(0, MAX_PREVIEW).map((place: Place) => (
+          <div
+            className={`expandable-section ${expandedSections.places ? 'expanded' : 'collapsed'}`}
+            style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}
+          >
+            {placesToDisplay.map((place: Place) => (
               <div
                 key={place.id}
                 style={{
@@ -281,19 +299,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 )}
               </div>
             ))}
-            {unvisitedPlaces.length > MAX_PREVIEW && (
-              <p
-                style={{
-                  margin: 0,
-                  color: colors.secondary,
-                  fontSize: typography.fontSize.xs,
-                  textAlign: 'center',
-                  opacity: 0.5,
-                }}
-              >
-                +{unvisitedPlaces.length - MAX_PREVIEW} more
-              </p>
-            )}
           </div>
         )}
       </div>
