@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useMediaQuery, breakpoints } from '../../../hooks/useMediaQuery';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/memoryUtils';
 import { SortMode, ContentTab } from '../types';
@@ -6,6 +6,7 @@ import { Movie, User } from '../../../types';
 import { useMovies } from '../../../hooks/useMovies';
 import { useSuggestions } from '../../../hooks/useSuggestions';
 import { useMemories } from '../../../hooks/useMemories';
+import { useToast } from '../../../context/ToastContext';
 
 const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 
@@ -14,18 +15,20 @@ interface UseWatchlistProps {
   isPaused: boolean;
 }
 
+interface WatchlistToast {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  onUndo?: () => void;
+}
+
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const isMobile = useMediaQuery(breakpoints.sm);
+  const { showToast } = useToast();
 
   // State (from useWatchlistState)
   const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: 'success' | 'error' | 'info';
-    onUndo?: () => void;
-  } | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
   const [contentTab, setContentTab] = useState<ContentTab>('all');
@@ -73,12 +76,18 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     }
   }, [activeMemoryFilter]);
 
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
+  const setToast = useCallback(
+    (toast: WatchlistToast | null) => {
+      if (!toast) return;
+      showToast({
+        message: toast.message,
+        type: toast.type,
+        onUndo: toast.onUndo,
+        duration: toast.onUndo ? 6000 : 3500,
+      });
+    },
+    [showToast]
+  );
 
   // Data (from useWatchlistData)
   const {
@@ -128,12 +137,12 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     [movies, memories]
   );
 
-  const memoryErrorMessage =
-    memoriesError instanceof Error
-      ? memoriesError.message
-      : memoriesError
-        ? String(memoriesError)
-        : null;
+  let memoryErrorMessage: string | null = null;
+  if (memoriesError instanceof Error) {
+    memoryErrorMessage = memoriesError.message;
+  } else if (memoriesError) {
+    memoryErrorMessage = String(memoriesError);
+  }
 
   const sortedMovies = useMemo(() => {
     if (!movies) return [];
@@ -201,7 +210,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     setIsAdding,
     movieToDelete,
     setMovieToDelete,
-    toast,
     setToast,
     successMovieId,
     setSuccessMovieId,

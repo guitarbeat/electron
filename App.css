@@ -1,0 +1,80 @@
+.app-shell {
+  position: relative;
+}
+
+.skip-link {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+  border: 2px solid var(--color-accent);
+  border-top: none;
+  color: var(--color-text-primary);
+  background: var(--color-surface-2);
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus-visible {
+  top: 0;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  backdrop-filter: blur(10px);
+}
+
+.app-header-inner {
+  height: 100%;
+  margin: 0 auto;
+  padding: 0.25rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-top-tabs {
+  position: sticky;
+  top: var(--app-top-tabs-offset, 56px);
+  z-index: 110;
+  backdrop-filter: blur(8px);
+  background: rgba(10, 15, 30, 0.8);
+}
+
+.profile-chip,
+.profile-select-cta {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.25rem;
+  padding: 0 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease;
+}
+
+.profile-chip:hover,
+.profile-select-cta:hover {
+  transform: translateY(-1px);
+}
+
+.profile-chip:active,
+.profile-select-cta:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .app-header-inner {
+    padding: 0.25rem 0.75rem;
+  }
+}

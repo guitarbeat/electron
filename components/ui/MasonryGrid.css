@@ -1,0 +1,24 @@
+.masonry-grid {
+  width: 100%;
+  column-gap: var(--masonry-gap, 0.5rem);
+  column-count: var(--masonry-cols-desktop, 4);
+}
+
+@media (max-width: 1024px) {
+  .masonry-grid {
+    column-count: var(--masonry-cols-tablet, 3);
+  }
+}
+
+@media (max-width: 640px) {
+  .masonry-grid {
+    column-count: var(--masonry-cols-mobile, 2);
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: var(--masonry-gap, 0.5rem);
+  display: inline-block;
+  width: 100%;
+}

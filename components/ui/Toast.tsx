@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Card from './Card';
 import { CheckIcon } from '../common/icons';
 import { colors, shadows, spacing, typography, radius } from '../../design-system/tokens';
 
-interface ToastProps {
+export interface ToastProps {
   message: string;
   type: 'success' | 'error' | 'info';
   onDismiss?: () => void;
   duration?: number;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
 const TOAST_STYLES = {
@@ -31,12 +33,19 @@ const TOAST_STYLES = {
   },
 } as const;
 
-const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000 }) => {
+const Toast: React.FC<ToastProps> = ({
+  message,
+  type,
+  onDismiss,
+  duration = 3500,
+  actionLabel,
+  onAction,
+}) => {
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     if (duration > 0) {
-      const exitTimer = setTimeout(() => setIsExiting(true), duration - 300);
+      const exitTimer = setTimeout(() => setIsExiting(true), Math.max(0, duration - 250));
       const dismissTimer = setTimeout(() => onDismiss?.(), duration);
       return () => {
         clearTimeout(exitTimer);
@@ -48,7 +57,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
 
   const handleDismiss = () => {
     setIsExiting(true);
-    setTimeout(() => onDismiss?.(), 300);
+    setTimeout(() => onDismiss?.(), 250);
   };
 
   const styles = TOAST_STYLES[type] || TOAST_STYLES.info;
@@ -66,12 +75,12 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
           />
         );
       case 'error':
-        return <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>;
+        return <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>;
       case 'info':
       default:
-        return <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>;
+        return <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>ℹ️</span>;
     }
-  }, [type, styles.iconColor]);
+  }, [styles.iconColor, type]);
 
   return (
     <Card
@@ -79,20 +88,15 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
       role={type === 'error' ? 'alert' : 'status'}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
       style={{
-        position: 'fixed',
-        top: spacing.lg,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        maxWidth: '90%',
-        padding: spacing.lg,
+        width: 'min(680px, calc(100vw - 1.5rem))',
+        padding: spacing.md,
         backgroundColor: styles.backgroundColor,
         borderColor: styles.borderColor,
         borderWidth: '2px',
-        animation: isExiting
-          ? 'toast-slide-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-          : 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         boxShadow: styles.shadow,
+        animation: isExiting
+          ? 'toast-slide-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+          : 'toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       }}
     >
       <div
@@ -101,25 +105,48 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
           alignItems: 'center',
           gap: spacing.md,
           color: colors.textPrimary,
-          justifyContent: 'center',
         }}
       >
         {icon}
+
         <span
           style={{
-            fontSize: typography.fontSize.base,
-            textAlign: 'center',
+            fontSize: typography.fontSize.sm,
             fontWeight: typography.fontWeight.medium,
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
-            hyphens: 'auto',
-            maxWidth: '100%',
             flex: '1 1 auto',
             minWidth: 0,
           }}
         >
           {message}
         </span>
+
+        {actionLabel && onAction && (
+          <button
+            type="button"
+            onClick={() => {
+              onAction();
+              handleDismiss();
+            }}
+            style={{
+              border: `1px solid ${styles.borderColor}`,
+              background: 'rgba(255,255,255,0.08)',
+              color: colors.textPrimary,
+              borderRadius: radius.sm,
+              padding: `0 ${spacing.sm}`,
+              minHeight: '30px',
+              cursor: 'pointer',
+              fontSize: typography.fontSize.xs,
+              fontWeight: typography.fontWeight.semibold,
+              letterSpacing: '0.02em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {actionLabel}
+          </button>
+        )}
+
         {onDismiss && (
           <button
             type="button"
@@ -131,17 +158,9 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
               color: colors.textSecondary,
               cursor: 'pointer',
               padding: spacing.xs,
-              fontSize: '18px',
+              fontSize: '1.05rem',
               lineHeight: 1,
-              opacity: 0.7,
-              transition: 'opacity 0.2s',
               borderRadius: radius.sm,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = '1';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '0.7';
             }}
           >
             ✕

@@ -39,8 +39,24 @@ const Confetti: React.FC<ConfettiProps> = ({
 }) => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReducedMotion(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setIsVisible(false);
+      setParticles([]);
+      return undefined;
+    }
+
     if (isActive) {
       // Generate particles
       const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
@@ -70,9 +86,10 @@ const Confetti: React.FC<ConfettiProps> = ({
         clearTimeout(timer);
       };
     }
-  }, [isActive, duration, particleCount, onComplete]);
+    return undefined;
+  }, [isActive, duration, particleCount, onComplete, prefersReducedMotion]);
 
-  if (!isVisible || particles.length === 0) return null;
+  if (prefersReducedMotion || !isVisible || particles.length === 0) return null;
 
   return (
     <>

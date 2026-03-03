@@ -1,62 +1,45 @@
 import React from 'react';
-import { colors, radius, shadows, borders } from '../../design-system/tokens';
+import './Card.css';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   className?: string;
-  variant?: 'default' | 'elevated' | 'outlined';
+  variant?: 'default' | 'elevated' | 'outlined' | 'interactive';
   onClick?: (e?: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-/**
- * Card component with retro 3D outset styling.
- */
 const Card: React.FC<CardProps> = ({
   children,
   className = '',
   variant = 'default',
   onClick,
   style,
-  onMouseEnter,
-  onMouseLeave,
+  role,
+  tabIndex,
+  onKeyDown,
   ...props
 }) => {
-  const baseStyles: React.CSSProperties = {
-    background: 'transparent',
-    borderRadius: radius.card,
-    border: 'none',
-    boxShadow: 'none',
-    position: 'relative',
-    overflow: 'hidden',
-    overflowY: 'auto',
-    transition: 'none',
-    wordWrap: 'break-word',
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-    minHeight: 'auto',
-    backdropFilter: 'none',
-    ...style,
-  };
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (onMouseEnter) {
-      onMouseEnter(e);
-    }
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (onMouseLeave) {
-      onMouseLeave(e);
-    }
-  };
+  const isInteractive = typeof onClick === 'function';
 
   return (
     <div
-      className={className}
-      style={baseStyles}
+      className={`ui-card ui-card--${isInteractive && variant === 'default' ? 'interactive' : variant} ${className}`.trim()}
+      role={isInteractive ? role || 'button' : role}
+      tabIndex={isInteractive ? tabIndex ?? 0 : tabIndex}
+      style={{
+        overflowWrap: 'break-word',
+        wordBreak: 'break-word',
+        ...style,
+      }}
       onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onKeyDown={(event) => {
+        onKeyDown?.(event);
+        if (!isInteractive || event.defaultPrevented) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick?.(event as unknown as React.MouseEvent<HTMLDivElement>);
+        }
+      }}
       {...props}
     >
       {children}

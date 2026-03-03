@@ -4,8 +4,7 @@ import { useChatLogic } from '../../hooks/useChatLogic';
 import ChatWindow from '../message-board/ChatWindow';
 import MessageList from '../message-board/MessageList';
 import MessageInput from '../message-board/MessageInput';
-import Toast from '../ui/Toast';
-import { spacing, colors, shadows, radius, motion, typography } from '../../design-system/tokens';
+import { spacing, colors, shadows, motion, typography } from '../../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 
@@ -60,7 +59,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     handleSend,
     handleDelete,
     handleReaction,
-    toast,
   } = useChatLogic();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -178,7 +176,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     handleDragEnd();
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch (error) {
+    } catch {
       // Ignore capture errors from canceled pointer interactions.
     }
   };
@@ -198,6 +196,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   if (!isEmbedded && isMinimized) {
     return (
       <button
+        type="button"
         onClick={handleBubbleClick}
         onPointerDown={handleBubblePointerDown}
         onPointerMove={handleBubblePointerMove}
@@ -318,7 +317,16 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
           cursor: isEmbedded ? 'default' : 'pointer',
           borderBottom: `1px solid ${colors.borderSecondary}20`,
         }}
-        onClick={handleToggle}
+        onClick={!isEmbedded ? handleToggle : undefined}
+        onKeyDown={(event) => {
+          if (isEmbedded) return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleToggle();
+          }
+        }}
+        role={!isEmbedded ? 'button' : undefined}
+        tabIndex={!isEmbedded ? 0 : undefined}
       >
         <span
           style={{
@@ -332,6 +340,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         </span>
         {!isEmbedded && (
           <button
+            type="button"
             onClick={(event) => {
               event.stopPropagation();
               handleToggle();
@@ -353,8 +362,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {toast && <Toast message={toast.message} type={toast.type} />}
-
         <ChatWindow isEditMode={isEditMode} onToggleEditMode={() => setIsEditMode(!isEditMode)}>
           <MessageList
             messages={messages ?? null}
