@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './hooks/useAudio';
 import { useUser } from './context/UserContext';
 import { MainTab } from './types';
@@ -14,6 +14,8 @@ import QuizEditor from './components/quiz/QuizEditor';
 import ExtrasHub from './components/main/ExtrasHub';
 import PlacesList from './components/places/PlacesList';
 import TabBar from './components/ui/TabBar';
+import BottomSheet from './components/ui/BottomSheet';
+import UserSelection from './components/common/UserSelection';
 import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
 import './App.css';
 
@@ -22,6 +24,7 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'places', label: 'Places', icon: '📍' },
   { id: 'extras', label: 'Extras', icon: '🎰' },
 ];
+const PROFILE_PROMPT_SEEN_KEY = 'profilePromptSeen';
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -36,6 +39,15 @@ const App: React.FC = () => {
   });
   const [showQuiz, setShowQuiz] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasSeenPrompt = sessionStorage.getItem(PROFILE_PROMPT_SEEN_KEY) === 'true';
+    if (!currentUser && !hasSeenPrompt) {
+      setShowProfileSheet(true);
+      sessionStorage.setItem(PROFILE_PROMPT_SEEN_KEY, 'true');
+    }
+  }, [currentUser]);
 
   const handleTabChange = (tab: MainTab) => {
     if (tab !== activeTab) {
@@ -155,8 +167,8 @@ const App: React.FC = () => {
             type="button"
             className="profile-chip"
             onClick={() => setShowProfileSheet(true)}
-            aria-label="Open profile options"
-            title="Open profile options"
+            aria-label="Open profile selector"
+            title="Open profile selector"
             style={{
               borderRadius: radius.full,
               border: `1px solid ${colors.border}`,
@@ -258,6 +270,25 @@ const App: React.FC = () => {
       {isMobile && (
         <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} mobileFixed />
       )}
+
+      <BottomSheet
+        isOpen={showProfileSheet}
+        onClose={() => setShowProfileSheet(false)}
+        title="Who is watching?"
+      >
+        <p
+          style={{
+            margin: 0,
+            marginBottom: spacing.md,
+            textAlign: 'center',
+            color: colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+          }}
+        >
+          Pick a profile for personalized updates and saved actions.
+        </p>
+        <UserSelection onUserSelected={() => setShowProfileSheet(false)} />
+      </BottomSheet>
 
       <MessageBoard mode="floating" />
       <SpinWheel mode="floating" />
