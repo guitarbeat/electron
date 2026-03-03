@@ -521,7 +521,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <ConfirmDialog
         isOpen={!!questionToDeleteId}
         title="Delete Question"
-        message={`Delete \"${questionToDelete?.question || 'this question'}\"?`}
+        message={`Delete "${questionToDelete?.question || 'this question'}"?`}
         confirmText="Delete"
         onConfirm={confirmDeleteQuestion}
         onCancel={() => setQuestionToDeleteId(null)}

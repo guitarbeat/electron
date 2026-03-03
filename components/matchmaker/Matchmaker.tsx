@@ -3,8 +3,10 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { User, Movie } from '../../types';
 import { useMatchmaker } from '../../hooks/useMatchmaker';
 import { useMovies } from '../../hooks/useMovies';
+import { useToast } from '../../context/ToastContext';
 import SwipeCard from './SwipeCard';
 import Button from '../ui/Button';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import {
   colors,
   spacing,
@@ -19,6 +21,7 @@ interface MatchmakerProps {
 }
 
 const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
+  const { showToast } = useToast();
   const { movies, isLoading: isMoviesLoading } = useMovies(currentUser);
   const {
     game,
@@ -32,6 +35,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
   const [isPickingRandom, setIsPickingRandom] = useState(false);
   const [randomWinner, setRandomWinner] = useState<Movie | null>(null);
+  const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
 
   const unwatchedMovies = useMemo(
     () => (movies ? movies.filter((m) => m.watchedBy.length < 2) : []),
@@ -131,7 +135,11 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     }
 
     if (poolSource.length < 3) {
-      alert(`Not enough ${selectedVibe || ''} movies in your queue! (Need at least 3)`);
+      const vibeLabel = selectedVibe ? `${selectedVibe} ` : '';
+      showToast({
+        message: `Not enough ${vibeLabel}movies in your queue. Add at least 3 to start.`,
+        type: 'info',
+      });
       return;
     }
 
@@ -393,15 +401,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
           {swipedIds.length} / {game.moviePool.length} swiped
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            if (window.confirm('Are you sure you want to end this session?')) {
-              endCurrentGame();
-            }
-          }}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setShowEndSessionConfirm(true)}>
           Reset
         </Button>
       </div>
@@ -636,6 +636,18 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={showEndSessionConfirm}
+        title="End Session"
+        message="Are you sure you want to end this matchmaker session?"
+        confirmText="End Session"
+        onConfirm={() => {
+          endCurrentGame();
+          setShowEndSessionConfirm(false);
+        }}
+        onCancel={() => setShowEndSessionConfirm(false)}
+      />
     </div>
   );
 };
