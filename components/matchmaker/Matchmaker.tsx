@@ -123,7 +123,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     let poolSource = [...unwatchedMovies];
     if (selectedVibe === 'Short & Sweet') {
       poolSource = poolSource.filter((m) => {
-        const mins = parseInt(m.runtime || '120');
+        const mins = parseInt(m.runtime || '120', 10);
         return mins > 0 && mins < 100;
       });
     } else if (selectedVibe) {

@@ -196,6 +196,21 @@ test('dailySpinService', async (t) => {
     consoleErrorMock.mock.restore();
   });
 
+  await t.test(
+    'deleteDailySpin throws and logs error when response is not ok and json parsing fails',
+    async () => {
+      const consoleErrorMock = mock.method(console, 'error', () => {});
+      fetchMock.mock.mockImplementationOnce(async () => {
+        return new Response('Invalid JSON string', { status: 500 });
+      });
+
+      await assert.rejects(async () => deleteDailySpin(), { name: 'SyntaxError' });
+
+      assert.equal(consoleErrorMock.mock.callCount(), 1);
+      consoleErrorMock.mock.restore();
+    }
+  );
+
   await t.test('deleteDailySpin throws and logs error when fetch fails', async () => {
     const consoleErrorMock = mock.method(console, 'error', () => {});
     fetchMock.mock.mockImplementationOnce(async () => {

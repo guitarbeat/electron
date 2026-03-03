@@ -54,6 +54,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
     if (!disabled) refetchCat();
   };
 
+  let opacityValue = 1;
+  if (isSmall) opacityValue = 0.5;
+  else if (disabled) opacityValue = 0.7;
+
   return (
     <button
       type="button"
@@ -74,7 +78,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         border: 'none',
         cursor: disabled ? 'wait' : 'pointer',
         padding: 0,
-        opacity: isSmall ? 0.5 : disabled ? 0.7 : 1,
+        opacity: opacityValue,
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         transform: isSmall ? 'scale(0.6)' : 'none',
         filter: isSmall ? 'grayscale(0.4)' : 'none',
