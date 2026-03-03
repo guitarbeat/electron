@@ -97,6 +97,40 @@ test('dailySpinService', async (t) => {
     assert.deepEqual(content, mockSpin);
   });
 
+  await t.test(
+    'saveDailySpin throws error and handles non-JSON error body on non-ok response',
+    async () => {
+      const consoleErrorMock = mock.method(console, 'error', () => {});
+      fetchMock.mock.mockImplementationOnce(
+        async () =>
+          new Response('Internal Server Error', {
+            status: 500,
+            statusText: 'Internal Server Error',
+          })
+      );
+
+      await assert.rejects(async () => saveDailySpin(mockSpin), /Unexpected token/);
+      consoleErrorMock.mock.restore();
+    }
+  );
+
+  await t.test(
+    'saveDailySpin throws error and handles non-JSON error body on non-ok response',
+    async () => {
+      const consoleErrorMock = mock.method(console, 'error', () => {});
+      fetchMock.mock.mockImplementationOnce(
+        async () =>
+          new Response('Internal Server Error', {
+            status: 500,
+            statusText: 'Internal Server Error',
+          })
+      );
+
+      await assert.rejects(async () => saveDailySpin(mockSpin), /Unexpected token/);
+      consoleErrorMock.mock.restore();
+    }
+  );
+
   await t.test('saveDailySpin throws error on non-ok response', async () => {
     const consoleErrorMock = mock.method(console, 'error', () => {});
     fetchMock.mock.mockImplementationOnce(
