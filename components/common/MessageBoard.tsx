@@ -5,7 +5,7 @@ import ChatWindow from '../message-board/ChatWindow';
 import MessageList from '../message-board/MessageList';
 import MessageInput from '../message-board/MessageInput';
 import Toast from '../ui/Toast';
-import { spacing, colors, shadows, radius, motion, typography } from '../../design-system/tokens';
+import { spacing, colors, shadows, motion, typography } from '../../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 
@@ -371,7 +371,9 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
             currentUser={currentUser}
             isSubmitting={isSubmitting}
             onSend={handleSend}
-            onError={(msg) => console.error(msg)}
+            onError={(_msg) => {
+              /* handle error */
+            }}
           />
         </ChatWindow>
       </div>

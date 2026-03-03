@@ -69,12 +69,13 @@ const Confetti: React.FC<ConfettiProps> = ({
         clearTimeout(timer);
       };
     }
+    return undefined;
   }, [isActive, duration, particleCount, onComplete]);
 
   if (!isVisible || particles.length === 0) return null;
 
   return (
-    <>
+    <div className="confetti-container">
       <style>{`
         @keyframes confetti-fall {
           0% {
@@ -141,7 +142,7 @@ const Confetti: React.FC<ConfettiProps> = ({
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
