@@ -8,6 +8,7 @@ import UserSelection from './components/common/UserSelection';
 import MessageBoard from './components/common/MessageBoard';
 import SnakeGame from './components/snake/SnakeGame';
 import SpinWheel from './components/extras/spin-wheel/SpinWheel';
+import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizFlow from './components/quiz/QuizFlow';
 import QuizEditor from './components/quiz/QuizEditor';
 import ProfileSheet from './components/main/ProfileSheet';
@@ -384,6 +385,7 @@ const App: React.FC = () => {
       <MessageBoard mode="floating" />
       <SpinWheel mode="floating" />
       <SnakeGame mode="floating" />
+      <MatchmakerBubble currentUser={currentUser} />
 
       <ProfileSheet isOpen={showProfileSheet} onClose={() => setShowProfileSheet(false)} />
     </div>
