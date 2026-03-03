@@ -57,7 +57,6 @@ const ExtrasHub: React.FC<ExtrasHubProps> = ({
         gap: spacing.lg,
       }}
     >
-
       {showQuiz && (
         <Card style={sectionStyle}>
           <h2 style={{ ...sectionTitleStyle, marginBottom: spacing.xs }}>Quiz</h2>

@@ -32,7 +32,9 @@ export const getPlaces = async (): Promise<Place[]> => {
   try {
     // If credentials are missing, use mock data instead of erroring
     if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
-      console.warn('GitHub credentials not configured. Using mock places. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.');
+      console.warn(
+        'GitHub credentials not configured. Using mock places. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.'
+      );
       return mockPlaces;
     }
 

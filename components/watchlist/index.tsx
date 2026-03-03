@@ -371,7 +371,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       {moviesError && (
         <div
           style={{
-            background: colors.error + '20',
+            background: `${colors.error}20`,
             border: `1px solid ${colors.error}`,
             borderRadius: radius.md,
             padding: spacing.md,
