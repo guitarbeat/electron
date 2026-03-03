@@ -136,7 +136,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     didDragRef.current = false;
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   };
 
   useEffect(() => {
@@ -228,7 +230,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     }, currentTickInterval);
 
     return () => window.clearInterval(intervalId);
-  }, [gameState.status, isGameVisible, gameState.score, playEatSound, playGameOverSound]);
+  }, [
+    gameState.status,
+    isGameVisible,
+    gameState.score,
+    playEatSound,
+    playGameOverSound,
+    playMoveSound,
+  ]);
 
   useEffect(() => {
     if (!isGameVisible) return undefined;

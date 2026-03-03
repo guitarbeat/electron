@@ -15,7 +15,7 @@ import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import Dashboard from './components/main/Dashboard';
 import PlacesList from './components/places/PlacesList';
-import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
+import { spacing, colors, typography, layout } from './design-system/tokens';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
@@ -85,7 +85,14 @@ const App: React.FC = () => {
       case 'queue':
         return (
           <div className="animate-fade-in">
-            {!expanded && <Dashboard onNavigate={(tab) => { setActiveTab(tab); setExpandedTabs(new Set([tab])); }} />}
+            {!expanded && (
+              <Dashboard
+                onNavigate={(tab) => {
+                  setActiveTab(tab);
+                  setExpandedTabs(new Set([tab]));
+                }}
+              />
+            )}
             {expanded && <Watchlist />}
           </div>
         );
@@ -112,7 +119,14 @@ const App: React.FC = () => {
       case 'places':
         return (
           <div className="animate-fade-in">
-            {!expanded && <Dashboard onNavigate={(tab) => { setActiveTab(tab); setExpandedTabs(new Set([tab])); }} />}
+            {!expanded && (
+              <Dashboard
+                onNavigate={(tab) => {
+                  setActiveTab(tab);
+                  setExpandedTabs(new Set([tab]));
+                }}
+              />
+            )}
             {expanded && <PlacesList />}
           </div>
         );
@@ -136,52 +150,65 @@ const App: React.FC = () => {
       }}
     >
       {/* Avatar-inspired glowing orbs background */}
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-      }}>
-        <div className="bg-orb" style={{
-          position: 'absolute',
-          top: '-10%',
-          left: '-10%',
-          width: '60vw',
-          height: '60vw',
-          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-          animation: 'float 20s infinite alternate ease-in-out',
-        }} />
-        <div className="bg-orb" style={{
-          position: 'absolute',
-          bottom: '-10%',
-          right: '-10%',
-          width: '50vw',
-          height: '50vw',
-          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-          animation: 'float 25s infinite alternate-reverse ease-in-out',
-        }} />
-        <div className="bg-orb" style={{
-          position: 'absolute',
-          top: '30%',
-          right: '10%',
-          width: '30vw',
-          height: '30vw',
-          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          animation: 'float 18s infinite alternate ease-in-out',
-        }} />
-        
-        {/* Bioluminescent "Particles" */}
-        <div style={{
-          position: 'absolute',
+      <div
+        style={{
+          position: 'fixed',
           inset: 0,
-          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0)`,
-          backgroundSize: '40px 40px',
-          opacity: 0.5,
-        }} />
+          zIndex: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="bg-orb"
+          style={{
+            position: 'absolute',
+            top: '-10%',
+            left: '-10%',
+            width: '60vw',
+            height: '60vw',
+            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            animation: 'float 20s infinite alternate ease-in-out',
+          }}
+        />
+        <div
+          className="bg-orb"
+          style={{
+            position: 'absolute',
+            bottom: '-10%',
+            right: '-10%',
+            width: '50vw',
+            height: '50vw',
+            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            animation: 'float 25s infinite alternate-reverse ease-in-out',
+          }}
+        />
+        <div
+          className="bg-orb"
+          style={{
+            position: 'absolute',
+            top: '30%',
+            right: '10%',
+            width: '30vw',
+            height: '30vw',
+            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+            animation: 'float 18s infinite alternate ease-in-out',
+          }}
+        />
+
+        {/* Bioluminescent "Particles" */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0)`,
+            backgroundSize: '40px 40px',
+            opacity: 0.5,
+          }}
+        />
       </div>
 
       <style>{`
@@ -360,19 +387,24 @@ const App: React.FC = () => {
             z-index: 2;
           }
         `}</style>
-        <nav
-          role="region"
-          aria-label="Main navigation"
-          className="bubble-nav"
-        >
+        <nav role="region" aria-label="Main navigation" className="bubble-nav">
           {MAIN_TABS.map((tab) => {
             const isOn = isTabExpanded(tab.id);
             const bubbleColors = {
-              queue: { on: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)', off: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)' },
-              places: { on: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', off: 'linear-gradient(135deg, #065f46 0%, #10b981 100%)' },
-              extras: { on: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)', off: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)' },
+              queue: {
+                on: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)',
+                off: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+              },
+              places: {
+                on: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                off: 'linear-gradient(135deg, #065f46 0%, #10b981 100%)',
+              },
+              extras: {
+                on: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
+                off: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)',
+              },
             };
-            const colors_map = bubbleColors[tab.id as keyof typeof bubbleColors];
+            const colorsMap = bubbleColors[tab.id as keyof typeof bubbleColors];
 
             return (
               <button
@@ -385,7 +417,7 @@ const App: React.FC = () => {
                 <div
                   className="nav-bubble-inner"
                   style={{
-                    background: isOn ? colors_map.on : colors_map.off,
+                    background: isOn ? colorsMap.on : colorsMap.off,
                   }}
                 >
                   <span className="nav-bubble-icon" aria-hidden>
