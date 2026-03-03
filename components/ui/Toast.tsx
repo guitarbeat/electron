@@ -31,7 +31,6 @@ const TOAST_STYLES = {
   },
 } as const;
 
-
 const successIconStyle: React.CSSProperties = {
   flexShrink: 0,
   filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
@@ -111,9 +110,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
   const icon = useMemo(() => {
     switch (type) {
       case 'success':
-        return (
-          <CheckIcon style={{ ...successIconStyle, color: styles.iconColor }} />
-        );
+        return <CheckIcon style={{ ...successIconStyle, color: styles.iconColor }} />;
       case 'error':
         return <span style={emojiIconStyle}>⚠️</span>;
       case 'info':
@@ -139,9 +136,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
     >
       <div style={containerStyle}>
         {icon}
-        <span style={messageStyle}>
-          {message}
-        </span>
+        <span style={messageStyle}>{message}</span>
         {onDismiss && (
           <button
             type="button"
