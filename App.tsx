@@ -9,7 +9,7 @@ import MessageBoard from './components/common/MessageBoard';
 import SnakeGame from './components/snake/SnakeGame';
 import SpinWheel from './components/extras/spin-wheel/SpinWheel';
 import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
-import QuizFlow from './components/quiz/QuizFlow';
+import QuizBubble from './components/quiz/QuizBubble';
 import QuizEditor from './components/quiz/QuizEditor';
 import ExtrasHub from './components/main/ExtrasHub';
 import PlacesList from './components/places/PlacesList';
@@ -37,7 +37,6 @@ const App: React.FC = () => {
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
-  const [showQuiz, setShowQuiz] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
 
   useEffect(() => {
@@ -56,28 +55,13 @@ const App: React.FC = () => {
     setActiveTab(tab);
   };
 
-  const handleStartQuiz = () => {
-    setActiveTab('extras');
-    setShowQuizEditor(false);
-    setShowQuiz(true);
-  };
-
   const handleQuizComplete = () => {
-    setShowQuiz(false);
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
-    setActiveTab('queue');
-  };
-
-  const handleRetakeQuiz = () => {
-    setActiveTab('extras');
-    setShowQuizEditor(false);
-    setShowQuiz(true);
   };
 
   const handleOpenQuizEditor = () => {
     setActiveTab('extras');
-    setShowQuiz(false);
     setShowQuizEditor(true);
   };
 
@@ -93,24 +77,11 @@ const App: React.FC = () => {
       case 'places':
         return <PlacesList />;
       case 'extras': {
-        if (showQuiz && quizData) {
-          return <QuizFlow quizData={quizData} onComplete={handleQuizComplete} />;
-        }
-
         if (showQuizEditor) {
           return <QuizEditor onClose={() => setShowQuizEditor(false)} />;
         }
 
-        return (
-          <ExtrasHub
-            currentUser={currentUser}
-            quizCompleted={quizCompleted}
-            onStartQuiz={handleStartQuiz}
-            onRetakeQuiz={handleRetakeQuiz}
-            onOpenQuizEditor={handleOpenQuizEditor}
-            initialView="all"
-          />
-        );
+        return <ExtrasHub />;
       }
       default:
         return <Watchlist />;
@@ -293,6 +264,13 @@ const App: React.FC = () => {
       <MessageBoard mode="floating" />
       <SpinWheel mode="floating" />
       <SnakeGame mode="floating" />
+      <QuizBubble
+        quizData={quizData}
+        quizCompleted={quizCompleted}
+        currentUser={currentUser}
+        onQuizComplete={handleQuizComplete}
+        onOpenQuizEditor={handleOpenQuizEditor}
+      />
       <MatchmakerBubble currentUser={currentUser} />
     </div>
   );
