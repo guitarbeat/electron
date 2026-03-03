@@ -1,8 +1,41 @@
-import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
+import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL, GIST_ID } from '../config/gistConfig';
 import type { Place } from '../types';
+
+const mockPlaces: Place[] = [
+  {
+    id: '1',
+    name: 'Eiffel Tower',
+    country: 'France',
+    notes: 'Must visit before 30',
+    addedBy: 'Aaron',
+    visitedAt: null,
+  },
+  {
+    id: '2',
+    name: 'Great Wall of China',
+    country: 'China',
+    notes: 'Amazing views',
+    addedBy: 'Electra',
+    visitedAt: null,
+  },
+  {
+    id: '3',
+    name: 'Statue of Liberty',
+    country: 'USA',
+    notes: 'New York trip',
+    addedBy: 'Aaron',
+    visitedAt: null,
+  },
+];
 
 export const getPlaces = async (): Promise<Place[]> => {
   try {
+    // If credentials are missing, use mock data instead of erroring
+    if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
+      console.warn('GitHub credentials not configured. Using mock places. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.');
+      return mockPlaces;
+    }
+
     const response = await fetch(GIST_API_URL, {
       headers: {
         Authorization: `token ${GIST_TOKEN}`,
@@ -26,7 +59,9 @@ export const getPlaces = async (): Promise<Place[]> => {
     return Array.isArray(places) ? places : [];
   } catch (error) {
     console.error('Error fetching places from Gist:', error);
-    throw error;
+    // Return mock data as fallback when API fails
+    console.warn('Falling back to mock places');
+    return mockPlaces;
   }
 };
 
