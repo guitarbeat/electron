@@ -119,8 +119,73 @@ const App: React.FC = () => {
         color: colors.textPrimary,
         minHeight: '100vh',
         fontFamily: typography.fontFamily.body.join(', '),
+        background: `fixed linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)`,
+        position: 'relative',
+        overflowX: 'hidden',
       }}
     >
+      {/* Avatar-inspired glowing orbs background */}
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}>
+        <div className="bg-orb" style={{
+          position: 'absolute',
+          top: '-10%',
+          left: '-10%',
+          width: '60vw',
+          height: '60vw',
+          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          animation: 'float 20s infinite alternate ease-in-out',
+        }} />
+        <div className="bg-orb" style={{
+          position: 'absolute',
+          bottom: '-10%',
+          right: '-10%',
+          width: '50vw',
+          height: '50vw',
+          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          animation: 'float 25s infinite alternate-reverse ease-in-out',
+        }} />
+        <div className="bg-orb" style={{
+          position: 'absolute',
+          top: '30%',
+          right: '10%',
+          width: '30vw',
+          height: '30vw',
+          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          animation: 'float 18s infinite alternate ease-in-out',
+        }} />
+        
+        {/* Bioluminescent "Particles" */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0)`,
+          backgroundSize: '40px 40px',
+          opacity: 0.5,
+        }} />
+      </div>
+
+      <style>{`
+        @keyframes float {
+          0% { transform: translate(0, 0) scale(1); }
+          100% { transform: translate(5%, 10%) scale(1.1); }
+        }
+          .bg-orb {
+            mix-blend-mode: screen;
+          }
+          .bioluminescent-grid {
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+          }
+        `}</style>
+
       {/* Skip to content link for accessibility */}
       <a
         href="#main-content"
@@ -171,11 +236,12 @@ const App: React.FC = () => {
             margin: '0 auto clamp(0.5rem, 1.5vw, 1.25rem)',
             padding: 'clamp(0.35rem, 1vw, 1rem)',
             borderRadius: spacing.lg,
-            border: `1px solid ${colors.accent}30`,
-            borderTop: `2px solid ${colors.accent}50`,
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
+            borderTop: `2px solid rgba(255, 255, 255, 0.2)`,
             background:
-              'radial-gradient(ellipse at 20% -20%, rgba(255, 105, 180, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 120%, rgba(135, 206, 250, 0.08) 0%, transparent 50%), linear-gradient(165deg, rgba(23, 33, 58, 0.85) 0%, rgba(10, 16, 32, 0.92) 100%)',
-            boxShadow: `0 14px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 30px rgba(255, 105, 180, 0.06)`,
+              'linear-gradient(165deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: `0 14px 28px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
           }}
         >
           <p

@@ -55,13 +55,12 @@ The traditional static "Home" tab has been replaced with a dynamic, interactive 
 
 ## 2. Visual Elements & Styling
 - **Glassmorphism**: Cards use semi-transparent backgrounds with backdrop blur to maintain the project's retro-futuristic aesthetic.
-- **Accent Borders**: 2px top borders using section-specific colors provide strong visual hierarchy.
-- **Iconography**: Integrated `ChevronDown` and `ChevronUp` icons clearly signal expandability.
-- **Typography**: Bold headers for sections with sub-text descriptions for guidance.
+- **Avatar-Inspired Background**: Replaced the static dark background with a deep space gradient featuring floating bioluminescent orbs and a subtle star-grid particle system.
+- **Bioluminescent Accents**: Integrated "screen" blend modes and blur filters to create a natural, glowing atmosphere.
 
 ## 3. Interaction Behavior
 - **Tap-to-Expand**: Clicking anywhere on the section header toggles the expanded state using a smooth CSS transition on `max-height` and `opacity`.
-- **Accordian Logic**: Users can peek at 2-3 items quickly and collapse when done to keep the interface clean.
+- **Bubble Navigation**: The navigation bar now features rounded, tactile "bubble" buttons with interactive pop animations and lifted hover states.
 - **Direct Navigation**: An "Open Full →" button provides a high-contrast shortcut to the dedicated full-page view of that section.
 
 ## 4. Content Strategy
