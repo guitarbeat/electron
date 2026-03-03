@@ -436,7 +436,6 @@ const App: React.FC = () => {
       <SpinWheel mode="floating" />
       <SnakeGame mode="floating" />
       <MatchmakerBubble currentUser={currentUser} />
-
     </div>
   );
 };
