@@ -105,7 +105,9 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     didDragRef.current = false;
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   };
 
   // Keep a ref to unwatchedMovies so the callback doesn't depend on it
