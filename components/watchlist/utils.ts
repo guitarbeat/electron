@@ -14,5 +14,11 @@ export const getEmptyStateMessage = (searchQuery: string, contentTab: ContentTab
   if (contentTab === 'suggestions') {
     return 'No pending suggestions right now.';
   }
-  return 'No movies in this section yet.';
+  if (contentTab === 'to-watch') {
+    return "All caught up! You've watched everything in your queue.";
+  }
+  if (contentTab === 'watched') {
+    return 'No watched movies yet. Mark one as watched to start your history.';
+  }
+  return 'No movies yet — add your first one above!';
 };

@@ -20,9 +20,18 @@ describe('getEmptyStateMessage', () => {
     );
   });
 
-  it('should return "No movies in this section yet." for other tabs when no searchQuery', () => {
-    assert.strictEqual(getEmptyStateMessage('', 'all'), 'No movies in this section yet.');
-    assert.strictEqual(getEmptyStateMessage('', 'to-watch'), 'No movies in this section yet.');
-    assert.strictEqual(getEmptyStateMessage('', 'watched'), 'No movies in this section yet.');
+  it('should return tab-specific empty states when no searchQuery', () => {
+    assert.strictEqual(
+      getEmptyStateMessage('', 'all'),
+      'No movies yet — add your first one above!'
+    );
+    assert.strictEqual(
+      getEmptyStateMessage('', 'to-watch'),
+      "All caught up! You've watched everything in your queue."
+    );
+    assert.strictEqual(
+      getEmptyStateMessage('', 'watched'),
+      'No watched movies yet. Mark one as watched to start your history.'
+    );
   });
 });

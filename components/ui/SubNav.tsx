@@ -41,8 +41,7 @@ const SubNav: React.FC<SubNavProps> = ({
   scrollClassName,
 }) => {
   return (
-    <div
-      role="region"
+    <nav
       aria-label={ariaLabel}
       style={{
         display: 'flex',
@@ -193,7 +192,7 @@ const SubNav: React.FC<SubNavProps> = ({
           })}
         </div>
       )}
-    </div>
+    </nav>
   );
 };
 

@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { PlusIcon, Spinner, FilmIcon } from '../common/icons';
 import MasonryGrid from '../ui/MasonryGrid';
+import { MovieCardSkeleton, SuggestionSkeleton } from '../ui/Skeleton';
 import SubNav from '../ui/SubNav';
 import MovieItem from '../common/MovieItem';
 import { SuggestionItemCard } from '../common/DashboardCards';
@@ -28,6 +29,17 @@ const SORT_OPTIONS: { id: SortMode; label: string }[] = [
   { id: 'recent', label: 'Recent' },
   { id: 'title', label: 'A–Z' },
   { id: 'year', label: 'Year' },
+];
+const MOBILE_SKELETON_KEYS = ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'];
+const DESKTOP_SKELETON_KEYS = [
+  'desktop-1',
+  'desktop-2',
+  'desktop-3',
+  'desktop-4',
+  'desktop-5',
+  'desktop-6',
+  'desktop-7',
+  'desktop-8',
 ];
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
@@ -59,6 +71,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     // Data returns
     movies,
+    isLoading,
     moviesError,
     refreshMovies,
     addMovie,
@@ -392,7 +405,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           marginBottom: spacing.lg,
           marginTop: spacing.md,
           position: 'sticky',
-          top: isMobile ? spacing.sm : `calc(${layout.topBarHeight} + ${spacing.sm})`,
+          top: isMobile
+            ? spacing.sm
+            : `calc(${layout.topBarHeight} + ${layout.desktopNavHeight} + ${spacing.sm})`,
           zIndex: 25,
           padding: isMobile ? spacing.sm : spacing.md,
           background: 'rgba(23, 33, 58, 0.55)',
@@ -515,21 +530,38 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         }}
       >
         <MasonryGrid>
-          {filteredSuggestions.map((suggestion) => (
-            <SuggestionItemCard
-              key={suggestion.id}
-              suggestion={suggestion}
-              onAccept={handleAcceptSuggestion}
-              onReject={handleRejectSuggestion}
-              isProcessing={processingSuggestionId === suggestion.id}
-            />
-          ))}
+          {isLoading && (!movies || movies.length === 0) ? (
+            <>
+              {contentTab === 'suggestions' && (
+                <>
+                  <SuggestionSkeleton />
+                  <SuggestionSkeleton />
+                </>
+              )}
+              {(isMobile ? MOBILE_SKELETON_KEYS : DESKTOP_SKELETON_KEYS).map((key) => (
+                <MovieCardSkeleton key={key} />
+              ))}
+            </>
+          ) : (
+            <>
+              {filteredSuggestions.map((suggestion) => (
+                <SuggestionItemCard
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  onAccept={handleAcceptSuggestion}
+                  onReject={handleRejectSuggestion}
+                  isProcessing={processingSuggestionId === suggestion.id}
+                />
+              ))}
 
-          {filteredMovies.map((movie, index) => renderMovieItem(movie, index))}
+              {filteredMovies.map((movie, index) => renderMovieItem(movie, index))}
+            </>
+          )}
         </MasonryGrid>
 
         {filteredMovies.length === 0 &&
           filteredSuggestions.length === 0 &&
+          !isLoading &&
           !isSuggestionsLoading && (
             <div
               style={{
@@ -550,6 +582,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               >
                 {getEmptyStateMessage(searchQuery, contentTab)}
               </p>
+              {!searchQuery && contentTab === 'all' && (
+                <p style={{ marginTop: spacing.sm, fontSize: typography.fontSize.sm }}>
+                  Try searching for a title in the bar above.
+                </p>
+              )}
             </div>
           )}
       </div>
