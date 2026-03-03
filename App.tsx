@@ -273,115 +273,131 @@ const App: React.FC = () => {
           <hr className="retro-divider" />
         </section>
 
-        {/* Main navigation - vertical tiles, icon on top / label below, liquid wrap */}
+        {/* Y2K Bubble Navigation */}
         <style>{`
           @keyframes bubble-pop {
             0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+            50% { transform: scale(1.2); }
             100% { transform: scale(1); }
           }
-          .main-nav-tile {
+          @keyframes bubble-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+          }
+          .bubble-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(1rem, 3vw, 2.5rem);
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+            flex-wrap: wrap;
+          }
+          .nav-bubble {
             position: relative;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: ${typography.fontFamily.heading.join(', ')};
           }
-          .main-nav-tile:hover {
-            transform: translateY(-5px) scale(1.05);
+          .nav-bubble:focus-visible {
+            outline: 3px solid ${colors.accent};
+            outline-offset: 4px;
           }
-          .main-nav-tile:active {
-            transform: scale(0.9);
+          .nav-bubble-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
           }
-          .main-nav-tile.active-bubble {
-            animation: bubble-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          .nav-bubble:hover .nav-bubble-inner {
+            transform: scale(1.1);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
           }
-          .main-nav-tile:focus-visible {
-            outline: 2px solid ${colors.accent};
-            outline-offset: 2px;
+          .nav-bubble:active .nav-bubble-inner {
+            transform: scale(0.95);
           }
-          .main-nav-tile:not([aria-current="page"]):hover {
-            background: rgba(255,255,255,0.12) !important;
-            box-shadow: 0 8px 16px rgba(255,105,180,0.3);
+          .nav-bubble.on .nav-bubble-inner {
+            animation: bubble-float 3s ease-in-out infinite;
+          }
+          .nav-bubble.on .nav-bubble-inner::before {
+            animation: bubble-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
+          .nav-bubble-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+            z-index: 2;
+          }
+          .nav-bubble-label {
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            z-index: 2;
+            text-align: center;
+            max-width: 100%;
+          }
+          .nav-bubble-status {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            z-index: 2;
           }
         `}</style>
-        <div
+        <nav
           role="region"
           aria-label="Main navigation"
-          style={{
-            width: '100%',
-            minWidth: 0,
-            background: 'rgba(23, 33, 58, 0.3)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: radius.full,
-            border: `1px solid ${colors.borderSecondary}20`,
-            padding: '6px',
-            marginBottom: 'clamp(1rem, 2vw, 1.5rem)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05)',
-          }}
+          className="bubble-nav"
         >
-          <nav
-            aria-label="Tab navigation"
-            className="nav-scroll-hide"
-            style={{
-              display: 'flex',
-              flexWrap: 'nowrap',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              overflowX: 'auto',
-            }}
-          >
-            {MAIN_TABS.map((tab) => {
-              const isSelected = activeTab === tab.id;
-              const isOn = isTabExpanded(tab.id);
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`main-nav-tile ${isOn ? 'active-bubble' : ''}`}
-                  onClick={() => toggleTab(tab.id)}
-                  aria-current={isSelected ? 'page' : undefined}
-                  title={isOn ? 'Turn off' : 'Turn on'}
+          {MAIN_TABS.map((tab) => {
+            const isOn = isTabExpanded(tab.id);
+            const bubbleColors = {
+              queue: { on: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)', off: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)' },
+              places: { on: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', off: 'linear-gradient(135deg, #065f46 0%, #10b981 100%)' },
+              extras: { on: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)', off: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)' },
+            };
+            const colors_map = bubbleColors[tab.id as keyof typeof bubbleColors];
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={`nav-bubble ${isOn ? 'on' : 'off'}`}
+                onClick={() => toggleTab(tab.id)}
+                title={isOn ? 'Turn off' : 'Turn on'}
+              >
+                <div
+                  className="nav-bubble-inner"
                   style={{
-                    flex: '1 1 0',
-                    minWidth: '80px',
-                    maxWidth: '160px',
-                    minHeight: '50px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '2px',
-                    background: isOn
-                      ? colors.gradientPink
-                      : isSelected
-                        ? 'rgba(255,255,255,0.1)'
-                        : 'rgba(255,255,255,0.06)',
-                    border: isOn
-                      ? `2px solid ${colors.accent}`
-                      : `1px solid rgba(255,255,255,0.1)`,
-                    borderRadius: radius.full,
-                    padding: '8px 12px',
-                    color: isOn ? '#1a1a2e' : colors.textSecondary,
-                    fontFamily: typography.fontFamily.heading.join(', '),
-                    fontSize: '0.85rem',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    boxShadow: isOn ? `0 0 15px ${colors.accent}60, inset 0 0 8px rgba(0,0,0,0.3)` : 'none',
-                    transition: 'all 0.3s ease',
+                    background: isOn ? colors_map.on : colors_map.off,
                   }}
                 >
-                  <span style={{ fontSize: '1.4em', lineHeight: 1 }} aria-hidden>
+                  <span className="nav-bubble-icon" aria-hidden>
                     {tab.icon}
                   </span>
-                  <span style={{ lineHeight: 1, textAlign: 'center', whiteSpace: 'nowrap', fontSize: '0.7rem' }}>
-                    {isOn ? 'ON' : 'OFF'}
-                  </span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+                  <span className="nav-bubble-label">{tab.label}</span>
+                  <span className="nav-bubble-status">{isOn ? 'ON' : 'OFF'}</span>
+                </div>
+              </button>
+            );
+          })}
+        </nav>
 
         {renderContent()}
       </main>
