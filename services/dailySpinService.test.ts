@@ -157,7 +157,6 @@ test('dailySpinService', async (t) => {
     );
   });
 
-
   await t.test('updateDailySpin does not save when no changes are made', async () => {
     // Mock getDailySpin success response
     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(JSON.stringify(mockSpin)));
