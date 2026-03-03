@@ -823,6 +823,159 @@
         animation: glow-ring-expand 2s ease-out 0.5s infinite;
       }
 
+      /* ── Y2K Sparkle Stars ── */
+      @keyframes y2k-sparkle-rotate {
+        0%   { transform: rotate(0deg) scale(1); opacity: 0.7; }
+        25%  { transform: rotate(90deg) scale(1.3); opacity: 1; }
+        50%  { transform: rotate(180deg) scale(1); opacity: 0.7; }
+        75%  { transform: rotate(270deg) scale(1.2); opacity: 0.9; }
+        100% { transform: rotate(360deg) scale(1); opacity: 0.7; }
+      }
+
+      @keyframes y2k-sparkle-drift {
+        0%, 100% { transform: translate(0, 0); }
+        25%  { transform: translate(5px, -8px); }
+        50%  { transform: translate(-3px, -12px); }
+        75%  { transform: translate(7px, -5px); }
+      }
+
+      .y2k-sparkle {
+        position: absolute;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .y2k-sparkle::before,
+      .y2k-sparkle::after {
+        content: '✦';
+        position: absolute;
+        font-size: 10px;
+        animation: y2k-sparkle-rotate 4s ease-in-out infinite;
+        color: #ff7fc6;
+        text-shadow: 0 0 6px rgba(255,127,198,0.6);
+      }
+
+      .y2k-sparkle::before {
+        top: 8px;
+        right: 12px;
+        animation-delay: 0s;
+        color: #95dcff;
+        text-shadow: 0 0 6px rgba(149,220,255,0.6);
+      }
+
+      .y2k-sparkle::after {
+        bottom: 10px;
+        left: 14px;
+        animation-delay: 1.5s;
+        font-size: 8px;
+      }
+
+      /* ── Holographic hover effect ── */
+      @keyframes holo-shift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      .y2k-holo-hover {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .y2k-holo-hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255,127,198,0) 0%,
+          rgba(255,127,198,0.08) 20%,
+          rgba(149,220,255,0.1) 40%,
+          rgba(167,138,242,0.08) 60%,
+          rgba(255,127,198,0) 80%
+        );
+        background-size: 200% 200%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .y2k-holo-hover:hover::after {
+        opacity: 1;
+        animation: holo-shift 3s ease-in-out infinite;
+      }
+
+      /* ── Animated retro-divider shimmer ── */
+      .retro-divider {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .retro-divider::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255,255,255,0.4) 50%,
+          transparent 100%
+        );
+        width: 40%;
+        animation: shimmer-slide 3s ease-in-out infinite;
+      }
+
+      @keyframes shimmer-slide {
+        0%   { transform: translateX(-200%); }
+        100% { transform: translateX(500%); }
+      }
+
+      /* ── Y2K star field background for sections ── */
+      .y2k-starfield {
+        position: relative;
+      }
+
+      .y2k-starfield::before {
+        content: '✧ ★ ✦';
+        position: absolute;
+        top: -4px;
+        right: 8px;
+        font-size: 8px;
+        letter-spacing: 6px;
+        color: rgba(255,127,198,0.3);
+        animation: y2k-sparkle-rotate 6s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      /* ── Movie card holographic border on hover ── */
+      .movie-card {
+        position: relative;
+      }
+
+      .movie-card::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, #ff7fc6, #95dcff, #a78af2, #ff7fc6);
+        background-size: 300% 300%;
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .movie-card:hover::before {
+        opacity: 1;
+        animation: holo-shift 2s ease-in-out infinite;
+      }
+
       /* Reduced motion support */
       @media (prefers-reduced-motion: reduce) {
         html {
@@ -844,8 +997,19 @@
         .shooting-star,
         .heart-beat,
         .glow-ring,
-        .glow-ring-delayed {
+        .glow-ring-delayed,
+        .y2k-sparkle::before,
+        .y2k-sparkle::after,
+        .y2k-starfield::before,
+        .y2k-card {
           animation: none !important;
+        }
+
+        .y2k-holo-hover::after,
+        .movie-card::before,
+        .retro-divider::after {
+          animation: none !important;
+          opacity: 0 !important;
         }
 
         .title-entrance {
