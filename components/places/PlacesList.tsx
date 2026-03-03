@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import SubNav from '../ui/SubNav';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import Skeleton from '../ui/Skeleton';
 import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '../common/icons';
 import { colors, spacing, typography, radius } from '../../design-system/tokens';
@@ -101,8 +102,59 @@ const PlacesList: React.FC = () => {
 
   if (isLoading && places.length === 0) {
     return (
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: spacing.md }}>
-        <p style={{ color: colors.textSecondary }}>Loading places…</p>
+      <div
+        style={{
+          maxWidth: 960,
+          margin: '0 auto',
+          padding: spacing.md,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.md,
+        }}
+      >
+        <Skeleton variant="text" width="220px" height="1.5rem" />
+        <Skeleton variant="text" width="min(100%, 460px)" height="1rem" />
+        <Card
+          style={{
+            padding: spacing.md,
+            borderRadius: radius.lg,
+            border: `1px solid ${colors.borderSecondary}35`,
+          }}
+        >
+          <Skeleton variant="rectangular" width="100%" height="220px" />
+        </Card>
+        <Card
+          style={{
+            padding: spacing.md,
+            borderRadius: radius.lg,
+            border: `1px solid ${colors.borderSecondary}35`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.sm,
+          }}
+        >
+          <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
+          <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
+          <Skeleton variant="rectangular" width="140px" height="36px" />
+        </Card>
+        {[0, 1, 2].map((index) => (
+          <Card
+            key={`places-skeleton-${index}`}
+            style={{
+              padding: spacing.md,
+              borderRadius: radius.lg,
+              border: `1px solid ${colors.borderSecondary}35`,
+            }}
+          >
+            <Skeleton
+              variant="text"
+              width="50%"
+              height="1rem"
+              style={{ marginBottom: spacing.xs }}
+            />
+            <Skeleton variant="text" width="80%" height="0.9rem" />
+          </Card>
+        ))}
       </div>
     );
   }
