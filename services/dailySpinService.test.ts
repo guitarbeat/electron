@@ -157,6 +157,26 @@ test('dailySpinService', async (t) => {
     );
   });
 
+
+  await t.test('updateDailySpin does not save when no changes are made', async () => {
+    // Mock getDailySpin success response
+    fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(JSON.stringify(mockSpin)));
+
+    // Test with empty updates object
+    const result1 = await updateDailySpin({});
+    assert.deepEqual(result1, mockSpin);
+
+    // Mock getDailySpin success response again for the next call
+    fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(JSON.stringify(mockSpin)));
+
+    // Test with identical properties
+    const result2 = await updateDailySpin({ movieTitle: mockSpin.movieTitle });
+    assert.deepEqual(result2, mockSpin);
+
+    // fetch should only have been called for getDailySpin (twice), not saveDailySpin
+    assert.equal(fetchMock.mock.callCount(), 2);
+  });
+
   // --- deleteDailySpin ---
   await t.test('deleteDailySpin sends correct PATCH request on success', async () => {
     fetchMock.mock.mockImplementationOnce(async () => {

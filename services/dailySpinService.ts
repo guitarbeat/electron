@@ -80,6 +80,14 @@ export const updateDailySpin = async (
     throw new Error('No daily spin exists to update');
   }
 
+  const hasChanges = Object.entries(updates).some(
+    ([key, value]) => current[key as keyof DailySpin] !== value
+  );
+
+  if (!hasChanges) {
+    return current;
+  }
+
   const next: DailySpin = {
     ...current,
     ...updates,
