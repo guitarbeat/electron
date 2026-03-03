@@ -22,8 +22,14 @@ interface MiniPreviewProps {
 }
 
 const MiniPreview: React.FC<MiniPreviewProps> = ({
-  title, icon, items, onNavigate, isLoading, accentColor,
-  defaultExpanded = false, onToggle,
+  title,
+  icon,
+  items,
+  onNavigate,
+  isLoading,
+  accentColor,
+  defaultExpanded = false,
+  onToggle,
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -40,20 +46,25 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
           <span style={{ fontSize: '1.2rem' }}>{icon}</span>
           <div>
-            <h3 className="y2k-header" style={{
-              margin: 0,
-              fontSize: typography.fontSize.base,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              letterSpacing: '0.03em',
-            }}>
+            <h3
+              className="y2k-header"
+              style={{
+                margin: 0,
+                fontSize: typography.fontSize.base,
+                fontFamily: typography.fontFamily.heading.join(', '),
+                letterSpacing: '0.03em',
+              }}
+            >
               ✦ {title} ✦
             </h3>
             {!isExpanded && items.length > 0 && (
-              <p style={{
-                margin: '2px 0 0 0',
-                fontSize: typography.fontSize.xs,
-                color: colors.textTertiary,
-              }}>
+              <p
+                style={{
+                  margin: '2px 0 0 0',
+                  fontSize: typography.fontSize.xs,
+                  color: colors.textTertiary,
+                }}
+              >
                 {items.length} item{items.length !== 1 ? 's' : ''}
               </p>
             )}
@@ -62,15 +73,19 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
           <button
-            onClick={(e) => { e.stopPropagation(); onNavigate(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate();
+            }}
             className="y2k-link"
           >
             Open Full →
           </button>
-          {isExpanded
-            ? <ChevronUpIcon style={{ width: 16, height: 16, color: colors.textTertiary }} />
-            : <ChevronDownIcon style={{ width: 16, height: 16, color: colors.textTertiary }} />
-          }
+          {isExpanded ? (
+            <ChevronUpIcon style={{ width: 16, height: 16, color: colors.textTertiary }} />
+          ) : (
+            <ChevronDownIcon style={{ width: 16, height: 16, color: colors.textTertiary }} />
+          )}
         </div>
       </div>
 
@@ -92,14 +107,16 @@ const MiniPreview: React.FC<MiniPreviewProps> = ({
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p style={{
-            margin: 0,
-            fontSize: typography.fontSize.xs,
-            color: colors.textTertiary,
-            textAlign: 'center',
-            padding: spacing.md,
-            fontStyle: 'italic',
-          }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: typography.fontSize.xs,
+              color: colors.textTertiary,
+              textAlign: 'center',
+              padding: spacing.md,
+              fontStyle: 'italic',
+            }}
+          >
             ✧ Nothing here yet! ✧
           </p>
         ) : (
@@ -142,13 +159,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const unvisitedPlaces = places.filter((p: Place) => !p.visitedAt).slice(0, 3);
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+    <div
+      className="animate-fade-in"
+      style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}
+    >
       <header style={{ textAlign: 'center', marginBottom: spacing.xs }}>
-        <h2 className="y2k-header" style={{
-          margin: 0,
-          fontSize: typography.fontSize.xl,
-          fontFamily: typography.fontFamily.heading.join(', '),
-        }}>
+        <h2
+          className="y2k-header"
+          style={{
+            margin: 0,
+            fontSize: typography.fontSize.xl,
+            fontFamily: typography.fontFamily.heading.join(', '),
+          }}
+        >
           ★ Quick Access ★
         </h2>
         <p style={{ margin: 0, fontSize: typography.fontSize.xs, color: colors.textTertiary }}>
@@ -167,9 +190,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         items={unwatchedMovies.map((movie) => (
           <div key={movie.id} style={itemBase} className="y2k-item">
             {movie.posterUrl && (
-              <img src={movie.posterUrl} alt="" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 4 }} />
+              <img
+                src={movie.posterUrl}
+                alt=""
+                style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 4 }}
+              />
             )}
-            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+            <span
+              style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                width: '100%',
+              }}
+            >
               {movie.title}
             </span>
           </div>
@@ -185,8 +221,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         defaultExpanded={placesExpanded}
         onToggle={setPlacesExpanded}
         items={unvisitedPlaces.map((place) => (
-          <div key={place.id} style={{ ...itemBase, borderLeft: `3px solid ${colors.secondary}50` }} className="y2k-item">
-            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+          <div
+            key={place.id}
+            style={{ ...itemBase, borderLeft: `3px solid ${colors.secondary}50` }}
+            className="y2k-item"
+          >
+            <span
+              style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                width: '100%',
+              }}
+            >
               {place.name}
             </span>
           </div>

@@ -69,7 +69,9 @@ export const getMovies = async (): Promise<Movie[]> => {
   try {
     // If credentials are missing, use mock data instead of erroring
     if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
-      console.warn('GitHub credentials not configured. Using mock movie data. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.');
+      console.warn(
+        'GitHub credentials not configured. Using mock movie data. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.'
+      );
       return mockMovies;
     }
 
@@ -94,7 +96,7 @@ export const getMovies = async (): Promise<Movie[]> => {
     }
 
     if (!response.ok) {
-      const status = response.status;
+      const { status } = response;
       // Return mock data for 401/403 auth errors instead of throwing
       if (status === 401 || status === 403) {
         console.warn(`GitHub API returned ${status}. Falling back to mock movies.`);
