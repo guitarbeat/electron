@@ -31,6 +31,61 @@ const TOAST_STYLES = {
   },
 } as const;
 
+
+const successIconStyle: React.CSSProperties = {
+  flexShrink: 0,
+  filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
+};
+
+const emojiIconStyle: React.CSSProperties = {
+  fontSize: '20px',
+  flexShrink: 0,
+};
+
+const baseCardStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: spacing.lg,
+  left: '50%',
+  transform: 'translateX(-50%)',
+  zIndex: 1000,
+  maxWidth: '90%',
+  padding: spacing.lg,
+  borderWidth: '2px',
+};
+
+const containerStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: spacing.md,
+  color: colors.textPrimary,
+  justifyContent: 'center',
+};
+
+const messageStyle: React.CSSProperties = {
+  fontSize: typography.fontSize.base,
+  textAlign: 'center',
+  fontWeight: typography.fontWeight.medium,
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+  hyphens: 'auto',
+  maxWidth: '100%',
+  flex: '1 1 auto',
+  minWidth: 0,
+};
+
+const dismissButtonStyle: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  color: colors.textSecondary,
+  cursor: 'pointer',
+  padding: spacing.xs,
+  fontSize: '18px',
+  lineHeight: 1,
+  opacity: 0.7,
+  transition: 'opacity 0.2s',
+  borderRadius: radius.sm,
+};
+
 const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000 }) => {
   const [isExiting, setIsExiting] = useState(false);
 
@@ -57,19 +112,13 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
     switch (type) {
       case 'success':
         return (
-          <CheckIcon
-            style={{
-              color: styles.iconColor,
-              flexShrink: 0,
-              filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
-            }}
-          />
+          <CheckIcon style={{ ...successIconStyle, color: styles.iconColor }} />
         );
       case 'error':
-        return <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>;
+        return <span style={emojiIconStyle}>⚠️</span>;
       case 'info':
       default:
-        return <span style={{ fontSize: '20px', flexShrink: 0 }}>ℹ️</span>;
+        return <span style={emojiIconStyle}>ℹ️</span>;
     }
   }, [type, styles.iconColor]);
 
@@ -79,45 +128,18 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
       role={type === 'error' ? 'alert' : 'status'}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
       style={{
-        position: 'fixed',
-        top: spacing.lg,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        maxWidth: '90%',
-        padding: spacing.lg,
+        ...baseCardStyle,
         backgroundColor: styles.backgroundColor,
         borderColor: styles.borderColor,
-        borderWidth: '2px',
         animation: isExiting
           ? 'toast-slide-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
           : 'toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         boxShadow: styles.shadow,
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: spacing.md,
-          color: colors.textPrimary,
-          justifyContent: 'center',
-        }}
-      >
+      <div style={containerStyle}>
         {icon}
-        <span
-          style={{
-            fontSize: typography.fontSize.base,
-            textAlign: 'center',
-            fontWeight: typography.fontWeight.medium,
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            hyphens: 'auto',
-            maxWidth: '100%',
-            flex: '1 1 auto',
-            minWidth: 0,
-          }}
-        >
+        <span style={messageStyle}>
           {message}
         </span>
         {onDismiss && (
@@ -125,18 +147,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss, duration = 3000
             type="button"
             onClick={handleDismiss}
             aria-label="Dismiss notification"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: colors.textSecondary,
-              cursor: 'pointer',
-              padding: spacing.xs,
-              fontSize: '18px',
-              lineHeight: 1,
-              opacity: 0.7,
-              transition: 'opacity 0.2s',
-              borderRadius: radius.sm,
-            }}
+            style={dismissButtonStyle}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '1';
             }}
