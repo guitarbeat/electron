@@ -7,21 +7,24 @@ const mockPlaces: Place[] = [
     name: 'Eiffel Tower',
     notes: 'Must visit before 30',
     addedBy: 'Aaron',
-    visitedAt: undefined, createdAt: new Date().toISOString(),
+    visitedAt: undefined,
+    createdAt: new Date().toISOString(),
   },
   {
     id: '2',
     name: 'Great Wall of China',
     notes: 'Amazing views',
     addedBy: 'Electra',
-    visitedAt: undefined, createdAt: new Date().toISOString(),
+    visitedAt: undefined,
+    createdAt: new Date().toISOString(),
   },
   {
     id: '3',
     name: 'Statue of Liberty',
     notes: 'New York trip',
     addedBy: 'Aaron',
-    visitedAt: undefined, createdAt: new Date().toISOString(),
+    visitedAt: undefined,
+    createdAt: new Date().toISOString(),
   },
 ];
 

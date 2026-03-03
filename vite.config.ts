@@ -6,7 +6,7 @@ export default defineConfig(() => ({
   server: {
     host: '0.0.0.0',
     port: 5000,
-    allowedHosts: ["localhost", "0.0.0.0"],
+    allowedHosts: ['localhost', '0.0.0.0'],
   },
   plugins: [react()],
   resolve: {
