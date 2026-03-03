@@ -1,5 +1,6 @@
-import { GIST_TOKEN, GIST_ID } from '../config/gistConfig';
+import { GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
 import type { User } from '../types.ts';
+import legacyHashes from './legacyHashes.json' with { type: 'json' };
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -19,20 +20,8 @@ let fetchPromise: Promise<UserPins> | null = null;
  * @deprecated Use secureHashPin instead. Kept for backward compatibility.
  */
 export const legacyHashPin = (pin: string): string => {
-  let hash = 0;
-  for (let i = 0; i < pin.length; i++) {
-    const char = pin.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash &= hash; // Convert to 32-bit integer
-  }
-  return hash.toString(36);
+  return (legacyHashes as Record<string, string>)[pin] || '';
 };
-
-/**
- * Alias for legacyHashPin to maintain compatibility with tests.
- * @deprecated
- */
-export const hashPin = legacyHashPin;
 
 /**
  * Generates a secure PBKDF2 hash for a PIN.
