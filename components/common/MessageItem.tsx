@@ -14,7 +14,7 @@ const formatTime = (date: string): string => {
     const dateObj = new Date(date);
     const now = new Date();
 
-    if (isNaN(dateObj.getTime()) || isNaN(now.getTime())) {
+    if (Number.isNaN(dateObj.getTime()) || Number.isNaN(now.getTime())) {
       return '';
     }
 
