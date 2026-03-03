@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Movie } from '../../../types';
+import { Movie, DailySpin, SpinEntry } from '../../../types';
 import { useUser } from '../../../context/UserContext';
 import { useMovies } from '../../../hooks/useMovies';
 import { CheckIcon, SyncIcon } from '../../common/icons';
@@ -9,7 +9,6 @@ import { SpinRoulette } from './SpinRoulette';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
 import { typography, colors, shadows, spacing, radius } from '../../../design-system/tokens';
-import { DailySpin, SpinEntry } from '../../../types';
 import './SpinWheel.css';
 
 const BUBBLE_SIZE = 60;
@@ -105,7 +104,9 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     didDragRef.current = false;
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {}
+    } catch {
+      // Ignore release errors
+    }
   };
 
   // Keep a ref to unwatchedMovies so the callback doesn't depend on it

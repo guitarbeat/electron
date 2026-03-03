@@ -269,5 +269,4 @@ test('pinService', async (t) => {
     assert.strictEqual(await hasPin('Aaron'), true);
     assert.strictEqual(await hasPin('Electra'), false);
   });
-
 });
