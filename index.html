@@ -109,13 +109,6 @@
         display: none !important;
       }
 
-      .gel-bubble,
-      .gel-bubble-offset,
-      .neon-pulse,
-      .animate-pink-glow {
-        animation: none !important;
-      }
-
       /* Retro divider -- modernized gradient line */
       .retro-divider {
         height: 1px;
@@ -1028,6 +1021,13 @@
         .retro-divider::after {
           opacity: 0 !important;
         }
+
+        .gel-bubble,
+        .gel-bubble-offset,
+        .neon-pulse,
+        .animate-pink-glow {
+          animation: none !important;
+        }
       }
 
       /* Slide in from bottom */
@@ -1099,19 +1099,6 @@
         background: linear-gradient(90deg, #ff7fc6, #95dcff, #a78af2, #ff7fc6);
         background-size: 200% 100%;
         animation: gradient-border 3s ease infinite;
-      }
-
-      /* Screen reader only */
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border-width: 0;
       }
 
       /* Mobile Responsive Typography */
