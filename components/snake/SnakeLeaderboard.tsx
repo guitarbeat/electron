@@ -32,8 +32,8 @@ const SnakeLeaderboard: React.FC<SnakeLeaderboardProps> = ({ entries, onClear })
             margin: 0,
             fontSize: typography.fontSize.sm,
             color: colors.textPrimary,
-            fontFamily: "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-            letterSpacing: '0.03em',
+            fontFamily: typography.fontFamily.heading.join(', '),
+            letterSpacing: typography.letterSpacing.normal,
           }}
         >
           Snake Leaderboard

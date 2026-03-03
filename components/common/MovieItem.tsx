@@ -314,9 +314,8 @@ const MovieItem: React.FC<MovieItemProps> = ({
                   backgroundColor: 'rgba(58, 41, 17, 0.55)',
                   color: '#fff4d6',
                   fontSize: '0.65rem',
-                  fontFamily:
-                    "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
-                  letterSpacing: '0.04em',
+                  fontFamily: typography.fontFamily.heading.join(', '),
+                  letterSpacing: typography.letterSpacing.normal,
                   cursor: 'pointer',
                   borderStyle: 'solid',
                 }}
@@ -620,8 +619,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
                     border: `1px solid ${colors.borderSecondary}40`,
                     color: '#ffe9c0',
                     fontSize: typography.fontSize.xs,
-                    fontFamily:
-                      "'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', serif",
+                    fontFamily: typography.fontFamily.heading.join(', '),
                     background: 'transparent',
                     textAlign: 'left',
                     width: '100%',
