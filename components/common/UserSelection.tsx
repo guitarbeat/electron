@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import type { User } from '../../types';
@@ -7,7 +8,11 @@ import { spacing } from '../../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
 
-const UserSelection: React.FC = () => {
+interface UserSelectionProps {
+  onUserSelected?: (user: User | null) => void;
+}
+
+const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin } = usePins();
   const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
@@ -19,6 +24,7 @@ const UserSelection: React.FC = () => {
   const handleUserClick = (user: User) => {
     if (user === currentUser) {
       setCurrentUser(null);
+      onUserSelected?.(null);
       return;
     }
 
@@ -26,6 +32,7 @@ const UserSelection: React.FC = () => {
       setPendingUser(user);
     } else {
       setCurrentUser(user);
+      onUserSelected?.(user);
     }
   };
 
@@ -36,6 +43,7 @@ const UserSelection: React.FC = () => {
       const isValid = await verifyUserPin(pendingUser, pin);
       if (isValid) {
         setCurrentUser(pendingUser);
+        onUserSelected?.(pendingUser);
         setPendingUser(null);
         return true;
       }

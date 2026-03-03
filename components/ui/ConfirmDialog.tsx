@@ -117,7 +117,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         aria-describedby={messageId}
         style={{ width: '100%', maxWidth: '420px' }}
       >
-        <Card variant="elevated" style={{ width: '100%', padding: spacing.xl, position: 'relative' }}>
+        <Card
+          variant="elevated"
+          style={{ width: '100%', padding: spacing.xl, position: 'relative' }}
+        >
           <button
             type="button"
             onClick={onCancel}
