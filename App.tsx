@@ -15,10 +15,9 @@ import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import Dashboard from './components/main/Dashboard';
 import PlacesList from './components/places/PlacesList';
-import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
+import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
-  { id: 'home', label: 'Home', icon: '🏠' },
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
   { id: 'extras', label: 'Extras', icon: '🎰' },
@@ -27,9 +26,10 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
-  const [activeTab, setActiveTab] = useState<MainTab>('home');
+  const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const { quizData } = useQuiz(true);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
+  const [isHomeCollapsed, setIsHomeCollapsed] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
@@ -48,7 +48,8 @@ const App: React.FC = () => {
     setShowQuiz(false);
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
-    setActiveTab('home');
+    setActiveTab('queue');
+    setIsHomeCollapsed(true);
   };
 
   const handleRetakeQuiz = () => {
@@ -72,7 +73,12 @@ const App: React.FC = () => {
           </div>
         );
       case 'queue':
-        return <Watchlist />;
+        return (
+          <div className="animate-fade-in">
+            {!isHomeCollapsed && <Dashboard onNavigate={setActiveTab} />}
+            {isHomeCollapsed && <Watchlist />}
+          </div>
+        );
       case 'extras': {
         let content;
         if (showQuiz && quizData) {
@@ -96,7 +102,8 @@ const App: React.FC = () => {
       case 'places':
         return (
           <div className="animate-fade-in">
-            <PlacesList />
+            {!isHomeCollapsed && <Dashboard onNavigate={setActiveTab} />}
+            {isHomeCollapsed && <PlacesList />}
           </div>
         );
       case 'messages':
@@ -113,8 +120,73 @@ const App: React.FC = () => {
         color: colors.textPrimary,
         minHeight: '100vh',
         fontFamily: typography.fontFamily.body.join(', '),
+        background: `fixed linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)`,
+        position: 'relative',
+        overflowX: 'hidden',
       }}
     >
+      {/* Avatar-inspired glowing orbs background */}
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}>
+        <div className="bg-orb" style={{
+          position: 'absolute',
+          top: '-10%',
+          left: '-10%',
+          width: '60vw',
+          height: '60vw',
+          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          animation: 'float 20s infinite alternate ease-in-out',
+        }} />
+        <div className="bg-orb" style={{
+          position: 'absolute',
+          bottom: '-10%',
+          right: '-10%',
+          width: '50vw',
+          height: '50vw',
+          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+          animation: 'float 25s infinite alternate-reverse ease-in-out',
+        }} />
+        <div className="bg-orb" style={{
+          position: 'absolute',
+          top: '30%',
+          right: '10%',
+          width: '30vw',
+          height: '30vw',
+          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          animation: 'float 18s infinite alternate ease-in-out',
+        }} />
+        
+        {/* Bioluminescent "Particles" */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0)`,
+          backgroundSize: '40px 40px',
+          opacity: 0.5,
+        }} />
+      </div>
+
+      <style>{`
+        @keyframes float {
+          0% { transform: translate(0, 0) scale(1); }
+          100% { transform: translate(5%, 10%) scale(1.1); }
+        }
+          .bg-orb {
+            mix-blend-mode: screen;
+          }
+          .bioluminescent-grid {
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+          }
+        `}</style>
+
       {/* Skip to content link for accessibility */}
       <a
         href="#main-content"
@@ -146,7 +218,7 @@ const App: React.FC = () => {
         id="main-content"
         className="main-container"
         style={{
-        paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
+          paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
           paddingBottom: 'clamp(0.75rem, 3vw, 3.5rem)',
           paddingLeft: 'clamp(0.5rem, 2vw, 1.5rem)',
           paddingRight: 'clamp(0.5rem, 2vw, 1.5rem)',
@@ -165,11 +237,12 @@ const App: React.FC = () => {
             margin: '0 auto clamp(0.5rem, 1.5vw, 1.25rem)',
             padding: 'clamp(0.35rem, 1vw, 1rem)',
             borderRadius: spacing.lg,
-            border: `1px solid ${colors.accent}30`,
-            borderTop: `2px solid ${colors.accent}50`,
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
+            borderTop: `2px solid rgba(255, 255, 255, 0.2)`,
             background:
-              'radial-gradient(ellipse at 20% -20%, rgba(255, 105, 180, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 120%, rgba(135, 206, 250, 0.08) 0%, transparent 50%), linear-gradient(165deg, rgba(23, 33, 58, 0.85) 0%, rgba(10, 16, 32, 0.92) 100%)',
-            boxShadow: `0 14px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 30px rgba(255, 105, 180, 0.06)`,
+              'linear-gradient(165deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: `0 14px 28px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
           }}
         >
           <p
@@ -192,13 +265,31 @@ const App: React.FC = () => {
 
         {/* Main navigation - vertical tiles, icon on top / label below, liquid wrap */}
         <style>{`
+          @keyframes bubble-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+          }
+          .main-nav-tile {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+          }
+          .main-nav-tile:hover {
+            transform: translateY(-5px) scale(1.05);
+          }
+          .main-nav-tile:active {
+            transform: scale(0.9);
+          }
+          .main-nav-tile.active-bubble {
+            animation: bubble-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          }
           .main-nav-tile:focus-visible {
             outline: 2px solid ${colors.accent};
             outline-offset: 2px;
           }
           .main-nav-tile:not([aria-current="page"]):hover {
-            background: rgba(255,255,255,0.08) !important;
-            box-shadow: 0 0 12px rgba(255,105,180,0.2);
+            background: rgba(255,255,255,0.12) !important;
+            box-shadow: 0 8px 16px rgba(255,105,180,0.3);
           }
         `}</style>
         <div
@@ -207,12 +298,13 @@ const App: React.FC = () => {
           style={{
             width: '100%',
             minWidth: 0,
-            background: 'rgba(23, 33, 58, 0.5)',
-            backdropFilter: 'blur(12px)',
-            borderRadius: spacing.md,
-            border: `1px solid ${colors.borderSecondary}25`,
-            borderBottom: `2px solid ${colors.accent}30`,
-            marginBottom: 'clamp(0.5rem, 1.5vw, 1rem)',
+            background: 'rgba(23, 33, 58, 0.3)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: radius.full,
+            border: `1px solid ${colors.borderSecondary}20`,
+            padding: '6px',
+            marginBottom: 'clamp(1rem, 2vw, 1.5rem)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05)',
           }}
         >
           <nav
@@ -221,10 +313,9 @@ const App: React.FC = () => {
             style={{
               display: 'flex',
               flexWrap: 'nowrap',
-              alignItems: 'stretch',
+              alignItems: 'center',
               justifyContent: 'center',
-              gap: '2px',
-              padding: '4px',
+              gap: '8px',
               overflowX: 'auto',
             }}
           >
@@ -234,42 +325,41 @@ const App: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  className="main-nav-tile"
+                  className={`main-nav-tile ${isActive ? 'active-bubble' : ''}`}
                   onClick={() => {
                     playSwitch();
                     setActiveTab(tab.id);
+                    setIsHomeCollapsed(true);
                   }}
                   aria-current={isActive ? 'page' : undefined}
                   style={{
                     flex: '1 1 0',
-                    minWidth: '70px',
-                    maxWidth: '200px',
-                    minHeight: '44px',
+                    minWidth: '80px',
+                    maxWidth: '160px',
+                    minHeight: '50px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.2rem',
-                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.04)',
-                    border: isActive ? `2px solid ${colors.accent}` : '1px solid transparent',
-                    borderRadius: `calc(${spacing.md} - 4px)`,
-                    padding: '0.5em 0.75em',
+                    gap: '2px',
+                    background: isActive ? colors.gradientPink : 'rgba(255,255,255,0.06)',
+                    border: isActive ? `2px solid ${colors.accent}` : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: radius.full,
+                    padding: '8px 12px',
                     color: isActive ? '#1a1a2e' : colors.textSecondary,
                     fontFamily: typography.fontFamily.heading.join(', '),
-                    fontSize: 'clamp(0.7rem, 1.2vw + 0.5rem, 0.95rem)',
-                    fontWeight: isActive ? 700 : 500,
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
                     textTransform: 'uppercase',
-                    letterSpacing: typography.letterSpacing.normal,
+                    letterSpacing: '0.05em',
                     cursor: 'pointer',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    textShadow: isActive ? shadows.textGlow : 'none',
-                    boxShadow: isActive ? shadows.glow : 'none',
+                    boxShadow: isActive ? `0 0 15px ${colors.accent}60` : 'none',
                   }}
                 >
-                  <span style={{ fontSize: '1.25em', lineHeight: 1, flexShrink: 0 }} aria-hidden>
+                  <span style={{ fontSize: '1.4em', lineHeight: 1 }} aria-hidden>
                     {tab.icon}
                   </span>
-                  <span style={{ lineHeight: 1.1, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <span style={{ lineHeight: 1, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {tab.label}
                   </span>
                 </button>
@@ -278,7 +368,18 @@ const App: React.FC = () => {
           </nav>
         </div>
 
-        {renderContent()}
+        {activeTab !== 'extras' && activeTab !== 'messages' && !isHomeCollapsed && (
+          <div style={{ marginBottom: spacing.md }}>
+            <Dashboard 
+              onNavigate={(tab) => {
+                setActiveTab(tab);
+                setIsHomeCollapsed(true);
+              }} 
+            />
+          </div>
+        )}
+
+        {isHomeCollapsed && renderContent()}
       </main>
 
       <MessageBoard mode="floating" />

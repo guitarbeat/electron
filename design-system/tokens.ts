@@ -18,9 +18,9 @@ export const spacing = {
 // * Color palette (Retro theme)
 export const colors = {
   // Base
-  background: '#101325',
-  surface: 'rgba(38, 52, 88, 0.72)',
-  surfaceElevated: 'rgba(52, 72, 118, 0.88)',
+  background: '#020617',
+  surface: 'rgba(15, 23, 42, 0.65)',
+  surfaceElevated: 'rgba(30, 41, 59, 0.8)',
 
   // Text (improved contrast for readability)
   textPrimary: '#ffffff',
@@ -48,9 +48,9 @@ export const colors = {
   error: '#f87171',
 
   // Border
-  border: '#ff7fc6',
-  borderSecondary: '#95dcff',
-  borderTertiary: '#a78af2',
+  border: 'rgba(99, 102, 241, 0.4)',
+  borderSecondary: 'rgba(236, 72, 153, 0.3)',
+  borderTertiary: 'rgba(56, 189, 248, 0.3)',
   borderInset: '#365a90',
 
   // Overlay
