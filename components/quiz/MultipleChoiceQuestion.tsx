@@ -1,7 +1,7 @@
 import React from 'react';
 import { MultipleChoiceQuestion as MultipleChoiceQuestionType } from './types';
 import Button from '../ui/Button';
-import { spacing, typography, colors } from '../../design-system/tokens';
+import { spacing, typography } from '../../design-system/tokens';
 
 interface MultipleChoiceQuestionProps {
   question: MultipleChoiceQuestionType;
@@ -20,7 +20,7 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
         style={{
           fontSize: typography.fontSize['2xl'],
           fontWeight: typography.fontWeight.semibold,
-          color: colors.textPrimary,
+          color: '#ffffff',
           marginBottom: spacing.xl,
           textAlign: 'center',
           lineHeight: typography.lineHeight.normal,
