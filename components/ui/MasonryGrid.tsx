@@ -1,4 +1,5 @@
 import React from 'react';
+import './MasonryGrid.css';
 import { spacing } from '../../design-system/tokens';
 
 interface MasonryGridProps {
@@ -16,44 +17,18 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
   columns = { mobile: 2, tablet: 3, desktop: 4 },
   gap = spacing.sm,
 }) => {
-  const gridStyles = React.useMemo(
-    () => `
-    .masonry-grid {
-      column-count: ${columns.desktop};
-    }
-    @media (max-width: 1024px) {
-      .masonry-grid {
-        column-count: ${columns.tablet};
-      }
-    }
-    @media (max-width: 640px) {
-      .masonry-grid {
-        column-count: ${columns.mobile};
-        column-gap: ${gap};
-      }
-      .masonry-item {
-        margin-bottom: ${gap};
-      }
-    }
-    .masonry-item {
-      break-inside: avoid;
-      margin-bottom: ${gap};
-      display: inline-block;
-      width: 100%;
-    }
-  `,
-    [columns.desktop, columns.tablet, columns.mobile, gap]
-  );
-
   return (
     <div
       className="masonry-grid"
-      style={{
-        columnGap: gap,
-        width: '100%',
-      }}
+      style={
+        {
+          '--masonry-gap': gap,
+          '--masonry-columns-desktop': columns.desktop,
+          '--masonry-columns-tablet': columns.tablet,
+          '--masonry-columns-mobile': columns.mobile,
+        } as React.CSSProperties
+      }
     >
-      <style>{gridStyles}</style>
       {React.Children.map(children, (child) => (
         <div className="masonry-item">{child}</div>
       ))}
