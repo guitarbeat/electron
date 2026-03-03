@@ -70,12 +70,14 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     const dragState = dragStateRef.current;
     if (!dragState || dragState.pointerId !== event.pointerId) return;
-    if (!didDragRef.current) {
-      setIsOpen((previous) => !previous);
-    }
+    const dragged = didDragRef.current;
     setIsDragging(false);
     dragStateRef.current = null;
-    didDragRef.current = false;
+    if (dragged) {
+      window.setTimeout(() => {
+        didDragRef.current = false;
+      }, 0);
+    }
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch {
@@ -83,10 +85,25 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
     }
   };
 
+  const handleBubbleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (didDragRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    setIsOpen((previous) => !previous);
+  };
+
+  const isBottomHalf =
+    bubblePosition.y > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400);
+  const isRightHalf =
+    bubblePosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 400);
+
   return (
     <>
       <button
         type="button"
+        onClick={handleBubbleClick}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -123,13 +140,24 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
         <div
           style={{
             position: 'fixed',
-            bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-            right: spacing.lg,
             width: 'min(500px, calc(100vw - 32px))',
             maxHeight: 'min(640px, 82vh)',
             zIndex: 1001,
             display: 'flex',
             flexDirection: 'column',
+            ...(isBottomHalf
+              ? { bottom: `calc(100vh - ${bubblePosition.y}px - ${BUBBLE_SIZE}px)` }
+              : { top: `${bubblePosition.y}px` }),
+            ...(isRightHalf
+              ? { right: `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)` }
+              : { left: `${bubblePosition.x}px` }),
+            ...(typeof window !== 'undefined' &&
+              window.innerWidth <= 640 && {
+                left: '16px',
+                right: '16px',
+                bottom: isBottomHalf ? '16px' : 'auto',
+                top: !isBottomHalf ? '16px' : 'auto',
+              }),
           }}
         >
           <div
