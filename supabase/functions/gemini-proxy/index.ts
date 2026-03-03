@@ -108,7 +108,8 @@ Deno.serve(async (req) => {
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
-      console.error('Gemini API Error:', geminiResponse.status, errorText);
+      const sanitizedErrorText = errorText.replace(new RegExp(apiKey, 'g'), '[REDACTED]');
+      console.error('Gemini API Error:', geminiResponse.status, sanitizedErrorText);
       return new Response(JSON.stringify({ error: 'Upstream API error' }), {
         status: geminiResponse.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
