@@ -14,7 +14,7 @@ import ProfileSheet from './components/main/ProfileSheet';
 import ExtrasHub from './components/main/ExtrasHub';
 import Dashboard from './components/main/Dashboard';
 import PlacesList from './components/places/PlacesList';
-import { spacing, colors, typography, layout, shadows } from './design-system/tokens';
+import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
