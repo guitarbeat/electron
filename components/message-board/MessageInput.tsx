@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Spinner } from '../common/icons';
-import { spacing, typography, colors, radius } from '../../design-system/tokens';
+import { CameraIcon, SendOutlineIcon, Spinner } from '../common/icons';
+import { spacing, typography, colors } from '../../design-system/tokens';
 import { User } from '../../types';
 import { MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../../config/security';
 
@@ -190,10 +190,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             }}
             aria-label="Camera"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
+            <CameraIcon size={24} />
           </button>
 
           {/* Text input */}
@@ -287,15 +284,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
             {isSubmitting ? (
               <Spinner style={{ width: '18px', height: '18px', color: '#fff' }} />
             ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
-                  stroke={showSendButton ? '#000000' : colors.textSecondary}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <SendOutlineIcon
+                size={20}
+                style={{ color: showSendButton ? '#000000' : colors.textSecondary }}
+              />
             )}
           </button>
         </div>
