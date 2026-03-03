@@ -5,7 +5,7 @@ const mockPlaces: Place[] = [
   {
     id: '1',
     name: 'Eiffel Tower',
-    country: 'France',
+    createdAt: new Date().toISOString(),
     notes: 'Must visit before 30',
     addedBy: 'Aaron',
     visitedAt: null,
@@ -13,7 +13,7 @@ const mockPlaces: Place[] = [
   {
     id: '2',
     name: 'Great Wall of China',
-    country: 'China',
+    createdAt: new Date().toISOString(),
     notes: 'Amazing views',
     addedBy: 'Electra',
     visitedAt: null,
@@ -21,7 +21,7 @@ const mockPlaces: Place[] = [
   {
     id: '3',
     name: 'Statue of Liberty',
-    country: 'USA',
+    createdAt: new Date().toISOString(),
     notes: 'New York trip',
     addedBy: 'Aaron',
     visitedAt: null,
