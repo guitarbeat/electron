@@ -124,6 +124,12 @@ export const motion = {
     slow: '300ms',
     button: '80ms',
   },
+  reducedDuration: {
+    fast: '0.01ms',
+    normal: '0.01ms',
+    slow: '0.01ms',
+    button: '0.01ms',
+  },
   easing: {
     ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
     easeIn: 'cubic-bezier(0.4, 0, 1, 1)',

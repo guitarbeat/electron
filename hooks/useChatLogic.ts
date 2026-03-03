@@ -1,35 +1,23 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useMessages } from './useMessages';
-
-interface ToastState {
-  message: string;
-  type: 'success' | 'error';
-}
+import { useToast } from '../context/ToastContext';
 
 export const useChatLogic = () => {
+  const { showToast } = useToast();
   const { messages, isLoading, error, isSubmitting, addMessage, deleteMessage, toggleReaction } =
     useMessages();
-  const [toast, setToast] = useState<ToastState | null>(null);
-
-  // * Auto-hide toast
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
 
   const handleSend = useCallback(
     async (author: string, content: string) => {
       try {
         await addMessage(author, content);
-        setToast({ message: 'Message posted successfully!', type: 'success' });
+        showToast({ message: 'Message posted successfully!', type: 'success' });
       } catch (err: any) {
         // Rerow so component can handle UI error states if needed (e.g. keep content)
         throw new Error(err.message || 'Failed to post message. Please try again.');
       }
     },
-    [addMessage]
+    [addMessage, showToast]
   );
 
   const handleDelete = useCallback(
@@ -37,12 +25,12 @@ export const useChatLogic = () => {
       if (!window.confirm('Are you sure you want to delete this message?')) return;
       try {
         await deleteMessage(id);
-        setToast({ message: 'Message deleted', type: 'success' });
+        showToast({ message: 'Message deleted', type: 'success' });
       } catch (err: any) {
-        setToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
+        showToast({ message: `Error deleting message: ${err.message}`, type: 'error' });
       }
     },
-    [deleteMessage]
+    [deleteMessage, showToast]
   );
 
   const handleReaction = useCallback(
@@ -50,10 +38,10 @@ export const useChatLogic = () => {
       try {
         await toggleReaction(messageId, emoji, username);
       } catch (err: any) {
-        setToast({ message: 'Failed to add reaction', type: 'error' });
+        showToast({ message: 'Failed to add reaction', type: 'error' });
       }
     },
-    [toggleReaction]
+    [toggleReaction, showToast]
   );
 
   return {
@@ -64,6 +52,5 @@ export const useChatLogic = () => {
     handleSend,
     handleDelete,
     handleReaction,
-    toast,
   };
 };

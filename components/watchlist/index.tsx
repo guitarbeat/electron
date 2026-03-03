@@ -14,7 +14,7 @@ import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps, SortMode, ContentTab } from './types';
 import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
-import { spacing, colors, radius, typography } from '../../design-system/tokens';
+import { spacing, colors, radius, typography, layout } from '../../design-system/tokens';
 import './Watchlist.css';
 
 const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
@@ -42,7 +42,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setIsAdding,
     movieToDelete,
     setMovieToDelete,
-    toast,
     setToast,
     setSuccessMovieId,
     processingSuggestionId,
@@ -55,8 +54,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setMovieToFix,
     showConfetti,
     setShowConfetti,
-    setActiveMemoryFilter,
-    setIsMemoryWallCollapsed,
     previousMoviesRef,
     movieResultsRef,
 
@@ -78,7 +75,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     updateMemory,
     deleteMemoryRecord,
     toggleMemoryPin,
-    movieMemorySummaries,
     filteredMovies,
     filteredSuggestions,
     tabCounts,
@@ -87,6 +83,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [suggestionToReject, setSuggestionToReject] = useState<MovieSuggestion | null>(null);
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -225,26 +222,29 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   );
 
   const handleRejectSuggestion = useCallback(
-    async (suggestionId: string) => {
+    (suggestion: MovieSuggestion) => {
       if (!currentUser) {
         showGuestWarning();
         return;
       }
-      // eslint-disable-next-line no-restricted-globals, no-alert
-      if (!confirm('Reject this suggestion?')) return;
-
-      setProcessingSuggestionId(suggestionId);
-      try {
-        await rejectSuggestion(suggestionId, currentUser);
-        setToast({ message: 'Suggestion removed', type: 'info' });
-      } catch (err: any) {
-        setToast({ message: 'Failed to reject suggestion', type: 'error' });
-      } finally {
-        setProcessingSuggestionId(null);
-      }
+      setSuggestionToReject(suggestion);
     },
-    [currentUser, rejectSuggestion, setToast, setProcessingSuggestionId, showGuestWarning]
+    [currentUser, showGuestWarning]
   );
+
+  const confirmRejectSuggestion = useCallback(async () => {
+    if (!currentUser || !suggestionToReject) return;
+    setProcessingSuggestionId(suggestionToReject.id);
+    try {
+      await rejectSuggestion(suggestionToReject.id, currentUser);
+      setToast({ message: 'Suggestion removed', type: 'info' });
+      setSuggestionToReject(null);
+    } catch (err: any) {
+      setToast({ message: 'Failed to reject suggestion', type: 'error' });
+    } finally {
+      setProcessingSuggestionId(null);
+    }
+  }, [currentUser, rejectSuggestion, setProcessingSuggestionId, setToast, suggestionToReject]);
 
   const handleUpdateMemory = useCallback(
     async (memoryId: string, updates: { note?: string }) => {
@@ -360,10 +360,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     );
   };
 
-  let toastBgColor: string = colors.accent;
-  if (toast?.type === 'error') toastBgColor = colors.error;
-  else if (toast?.type === 'success') toastBgColor = colors.success;
-
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: spacing.md }}>
       {showConfetti && <Confetti isActive={showConfetti} />}
@@ -390,56 +386,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {toast && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 'clamp(4rem, 12vw, 5rem)',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: toastBgColor,
-            color: '#fff',
-            padding: `${spacing.sm} ${spacing.md}`,
-            borderRadius: radius.full,
-            zIndex: 1000,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: spacing.sm,
-          }}
-        >
-          {toast.message}
-          {toast.onUndo && (
-            <button
-              type="button"
-              onClick={() => {
-                toast.onUndo?.();
-              }}
-              style={{
-                background: 'rgba(255,255,255,0.25)',
-                border: '1px solid rgba(255,255,255,0.5)',
-                color: '#fff',
-                padding: `2px ${spacing.sm}`,
-                borderRadius: radius.md,
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: typography.fontSize.xs,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Undo
-            </button>
-          )}
-        </div>
-      )}
-
       {/* --- Sub-nav: tabs + sort (full card so top is never cut off) --- */}
       <div
         style={{
           marginBottom: spacing.lg,
           marginTop: spacing.md,
+          position: 'sticky',
+          top: isMobile ? spacing.sm : `calc(${layout.topBarHeight} + ${spacing.sm})`,
+          zIndex: 25,
           padding: isMobile ? spacing.sm : spacing.md,
           background: 'rgba(23, 33, 58, 0.55)',
           backdropFilter: 'blur(16px)',
@@ -566,7 +520,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               key={suggestion.id}
               suggestion={suggestion}
               onAccept={handleAcceptSuggestion}
-              onReject={(s) => handleRejectSuggestion(s.id)}
+              onReject={handleRejectSuggestion}
               isProcessing={processingSuggestionId === suggestion.id}
             />
           ))}
@@ -606,6 +560,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         message={`Are you sure you want to remove "${movieToDelete?.title}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setMovieToDelete(null)}
+      />
+      <ConfirmDialog
+        isOpen={!!suggestionToReject}
+        title="Reject Suggestion"
+        message={`Are you sure you want to reject "${suggestionToReject?.title}"?`}
+        confirmText="Reject"
+        onConfirm={confirmRejectSuggestion}
+        onCancel={() => setSuggestionToReject(null)}
       />
 
       <FixMatchDialog

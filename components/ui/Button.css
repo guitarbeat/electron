@@ -1,0 +1,98 @@
+.ui-button {
+  position: relative;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.625rem;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 1;
+  top: 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.ui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ui-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.ui-button:not(:disabled):hover:not(.ui-button--ghost) {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+}
+
+.ui-button:not(:disabled):active:not(.ui-button--ghost) {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: var(--btn-shadow-active);
+}
+
+.ui-button--sm {
+  min-height: 2rem;
+  padding: 0.25rem 1rem;
+  font-size: 0.75rem;
+}
+
+.ui-button--md {
+  min-height: 2.25rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8125rem;
+}
+
+.ui-button--lg {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.875rem;
+}
+
+.ui-button--primary {
+  background-image:
+    linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
+  color: #f8fafc;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.ui-button--secondary {
+  background-image:
+    linear-gradient(135deg, #95dcff 0%, #b3e8ff 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
+  color: #f8fafc;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.ui-button--danger {
+  background: #f87171;
+  color: #f8fafc;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --btn-shadow-active: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.ui-button--ghost {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ui-button--ghost:not(:disabled):hover {
+  background: rgba(148, 163, 184, 0.08);
+}
