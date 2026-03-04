@@ -62,7 +62,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onChange, mobileFixed 
         className="app-tabbar__inner"
         role="tablist"
         aria-orientation="horizontal"
-        style={{ gap: spacing.xs }}
+        style={{ gap: spacing.xs, ['--tab-count' as string]: String(tabs.length) }}
       >
         {tabs.map((tab, index) => {
           const isActive = tab.id === activeTab;

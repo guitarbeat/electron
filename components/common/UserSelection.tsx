@@ -57,7 +57,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
     <div className="user-selection-vapor">
       <div className="user-selection-vapor__scanlines" aria-hidden="true" />
       <div className="user-selection-vapor__sun" aria-hidden="true" />
-      <div className="user-selection-vapor__aura user-selection-vapor__aura--left" aria-hidden="true" />
+      <div
+        className="user-selection-vapor__aura user-selection-vapor__aura--left"
+        aria-hidden="true"
+      />
       <div
         className="user-selection-vapor__aura user-selection-vapor__aura--right"
         aria-hidden="true"
@@ -93,7 +96,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
           aria-label={`Select ${activeUser} as profile${userHasPin(activeUser) ? ' (PIN protected)' : ''}`}
         >
           <span className="user-selection-vapor__avatar-wrap">
-            <ImageWithFallback sources={userImageSources[activeUser]} alt={`${activeUser} profile`} />
+            <ImageWithFallback
+              sources={userImageSources[activeUser]}
+              alt={`${activeUser} profile`}
+            />
           </span>
           {userHasPin(activeUser) && <span className="user-selection-vapor__lock-badge">🔒</span>}
           <span className="user-selection-vapor__active-label">{activeUser}</span>
@@ -114,7 +120,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
       </div>
 
       <div className="user-selection-vapor__pager" aria-hidden="true">
-        <span className={`user-selection-vapor__dot ${activeUser === 'Aaron' ? 'is-active' : ''}`} />
+        <span
+          className={`user-selection-vapor__dot ${activeUser === 'Aaron' ? 'is-active' : ''}`}
+        />
         <span
           className={`user-selection-vapor__dot ${activeUser === 'Electra' ? 'is-active' : ''}`}
         />

@@ -1,18 +1,53 @@
 import React from 'react';
 import { colors, typography, layout, shadows, radius, spacing } from '../../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
+import type { User } from '../../types';
+import UserSelection from '../common/UserSelection';
 
 interface AppHeaderProps {
-  onProfileClick: () => void;
-  currentUser: string | null;
+  currentUser: User | null;
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ currentUser }) => {
   const isMobile = useMediaQuery(breakpoints.sm);
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  React.useEffect(() => {
+    if (!isProfileOpen) return undefined;
+
+    const onDocumentPointer = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (panelRef.current?.contains(target) || triggerRef.current?.contains(target)) {
+        return;
+      }
+      setIsProfileOpen(false);
+    };
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', onDocumentPointer);
+    document.addEventListener('touchstart', onDocumentPointer);
+    document.addEventListener('keydown', onEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', onDocumentPointer);
+      document.removeEventListener('touchstart', onDocumentPointer);
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [isProfileOpen]);
+
+  const toggleProfilePanel = () => {
+    setIsProfileOpen((previous) => !previous);
+  };
+
+  const handleUserSelected = () => {
+    setIsProfileOpen(false);
   };
 
   return (
@@ -54,7 +89,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) =>
             style={{
               margin: 0,
               color: colors.textTertiary,
-              fontSize: isMobile ? typography.fontSize.xs : typography.fontSize.xs,
+              fontSize: typography.fontSize.xs,
               marginTop: 2,
             }}
           >
@@ -62,129 +97,65 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) =>
           </p>
         </div>
 
-        {isMobile ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-            <button
-              type="button"
-              className="profile-chip-mobile"
-              onClick={onProfileClick}
-              aria-label="Open profile selector"
-              title="Open profile selector"
-              style={{
-                borderRadius: radius.full,
-                border: `1px solid ${colors.border}`,
-                background: colors.surface2,
-                color: colors.textPrimary,
-                padding: `${spacing.xs} ${spacing.sm}`,
-                fontSize: typography.fontSize.xs,
-                minWidth: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                touchAction: 'manipulation',
-              }}
-            >
-              <span aria-hidden style={{ fontSize: '16px' }}>
-                {currentUser ? '👤' : '👥'}
-              </span>
-              <span style={{ display: isMobile && currentUser ? 'none' : 'inline' }}>
-                {currentUser || 'Guest'}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="mobile-menu-toggle"
-              onClick={toggleMenu}
-              aria-label="Toggle menu"
-              aria-expanded={isMenuOpen}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: colors.textPrimary,
-                padding: spacing.xs,
-                borderRadius: radius.md,
-                touchAction: 'manipulation',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {isMenuOpen ? (
-                <span style={{ fontSize: '24px' }}>✕</span>
-              ) : (
-                <span style={{ fontSize: '24px' }}>☰</span>
-              )}
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="profile-chip"
-            onClick={onProfileClick}
-            aria-label="Open profile selector"
-            title="Open profile selector"
-            style={{
-              borderRadius: radius.full,
-              border: `1px solid ${colors.border}`,
-              background: colors.surface2,
-              color: colors.textPrimary,
-              padding: `${spacing.sm} ${spacing.md}`,
-              fontSize: typography.fontSize.sm,
-              touchAction: 'manipulation',
-            }}
-          >
-            <span aria-hidden style={{ marginRight: spacing.xs }}>
-              {currentUser ? '👤' : '👥'}
-            </span>
-            <span>{currentUser || 'Guest'}</span>
-          </button>
-        )}
+        <button
+          ref={triggerRef}
+          type="button"
+          className={isMobile ? 'profile-chip-mobile' : 'profile-chip'}
+          onClick={toggleProfilePanel}
+          aria-label="Open profile selector"
+          aria-expanded={isProfileOpen}
+          title="Open profile selector"
+          style={{
+            borderRadius: radius.full,
+            border: `1px solid ${colors.border}`,
+            background: colors.surface2,
+            color: colors.textPrimary,
+            padding: isMobile ? `${spacing.xs} ${spacing.sm}` : `${spacing.sm} ${spacing.md}`,
+            fontSize: isMobile ? typography.fontSize.xs : typography.fontSize.sm,
+            minHeight: 44,
+            minWidth: isMobile ? 44 : undefined,
+            touchAction: 'manipulation',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+          }}
+        >
+          <span aria-hidden style={{ fontSize: '16px' }}>
+            {currentUser ? '👤' : '👥'}
+          </span>
+          <span style={{ display: isMobile && currentUser ? 'none' : 'inline' }}>
+            {currentUser || 'Guest'}
+          </span>
+        </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobile && isMenuOpen && (
+      {isProfileOpen && (
         <div
-          className="mobile-menu-overlay"
+          ref={panelRef}
+          className="profile-panel"
           style={{
             position: 'absolute',
             top: '100%',
-            left: 0,
-            right: 0,
-            background: colors.surface1,
-            borderBottom: `1px solid ${colors.borderSubtle}`,
-            boxShadow: shadows.cardElevated,
-            zIndex: 99,
-            transform: isMenuOpen ? 'translateY(0)' : 'translateY(-100%)',
-            transition: 'transform 0.3s ease',
+            left: isMobile ? 0 : 'auto',
+            right: isMobile ? 0 : spacing.lg,
+            width: isMobile ? '100%' : 'min(560px, calc(100vw - 32px))',
+            padding: isMobile ? `${spacing.sm} ${spacing.md}` : '0',
+            zIndex: 101,
           }}
         >
-          <div style={{ padding: `${spacing.md} ${spacing.md}` }}>
-            <button
-              type="button"
-              className="mobile-menu-item"
-              onClick={() => {
-                onProfileClick();
-                setIsMenuOpen(false);
-              }}
-              style={{
-                width: '100%',
-                padding: spacing.md,
-                background: 'transparent',
-                border: 'none',
-                color: colors.textPrimary,
-                textAlign: 'left',
-                fontSize: typography.fontSize.sm,
-                borderRadius: radius.md,
-                touchAction: 'manipulation',
-                display: 'flex',
-                alignItems: 'center',
-                gap: spacing.sm,
-              }}
-            >
-              <span>{currentUser ? '👤' : '👥'}</span>
-              <span>Switch Profile</span>
-            </button>
+          <div
+            style={
+              isMobile
+                ? {
+                    borderBottom: `1px solid ${colors.borderSubtle}`,
+                    boxShadow: shadows.cardElevated,
+                    borderRadius: radius.lg,
+                  }
+                : undefined
+            }
+          >
+            <UserSelection onUserSelected={handleUserSelected} />
           </div>
         </div>
       )}
