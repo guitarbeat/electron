@@ -53,7 +53,12 @@ const getDefaultBubblePosition = (isMobile: boolean): BubblePosition => {
 };
 
 const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
-  const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
+  const {
+    isHidden,
+    setDragging: setDismissDragging,
+    checkDismissZoneHit,
+    dismiss,
+  } = useBubbleDismiss();
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, handleReaction } =
@@ -170,7 +175,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     didDragRef.current = false;
     if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
       dismiss('messages');
-      return;
     }
   };
 
