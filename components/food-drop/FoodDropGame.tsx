@@ -47,9 +47,10 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
     if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+    const defaultY = window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 70;
     return {
       x: BUBBLE_EDGE_MARGIN + 4,
-      y: window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 280,
+      y: defaultY,
     };
   });
   const [isDraggingBubble, setIsDraggingBubble] = useState(false);
@@ -376,6 +377,19 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     }
   };
 
+  const handleCanvasPointerCancel = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    const pointer = pointerDragRef.current;
+    if (!pointer || pointer.pointerId !== event.pointerId) return;
+
+    pointerDragRef.current = null;
+
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Ignore release errors.
+    }
+  };
+
   const containerStyle = useMemo<React.CSSProperties>(() => {
     if (isViewportExpanded) {
       return {
@@ -577,7 +591,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
             onPointerDown={handleCanvasPointerDown}
             onPointerMove={handleCanvasPointerMove}
             onPointerUp={handleCanvasPointerUp}
-            onPointerCancel={handleCanvasPointerUp}
+            onPointerCancel={handleCanvasPointerCancel}
             aria-label="Food Drop game board"
           />
         </div>

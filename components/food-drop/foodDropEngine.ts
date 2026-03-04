@@ -1,4 +1,5 @@
 import { Bodies, Body, Engine, Events, World } from 'matter-js';
+import type { IEventCollision } from 'matter-js';
 import {
   FOOD_DROP_GRAVITY,
   FOOD_DROP_LAUNCHER_START_X,
@@ -71,6 +72,19 @@ export class FoodDropEngine {
 
   private nextLevel: number;
 
+  private readonly queueMergePairs = (event: IEventCollision<Engine>) => {
+    event.pairs.forEach((pair) => {
+      if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
+        return;
+      }
+      const key =
+        pair.bodyA.id < pair.bodyB.id
+          ? `${pair.bodyA.id}-${pair.bodyB.id}`
+          : `${pair.bodyB.id}-${pair.bodyA.id}`;
+      this.pendingMergePairs.set(key, { bodyA: pair.bodyA, bodyB: pair.bodyB });
+    });
+  };
+
   constructor() {
     this.engine = Engine.create({
       gravity: { x: 0, y: FOOD_DROP_GRAVITY },
@@ -86,7 +100,8 @@ export class FoodDropEngine {
   }
 
   destroy() {
-    Events.off(this.engine, 'collisionStart');
+    Events.off(this.engine, 'collisionStart', this.queueMergePairs);
+    Events.off(this.engine, 'collisionActive', this.queueMergePairs);
     World.clear(this.world, false);
     Engine.clear(this.engine);
   }
@@ -104,6 +119,7 @@ export class FoodDropEngine {
     this.pendingMergePairs.clear();
     this.currentLevel = FoodDropEngine.randomSpawnLevel();
     this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.clampLauncherToCurrentLevel();
   }
 
   setStatus(nextStatus: FoodDropStatus) {
@@ -148,6 +164,7 @@ export class FoodDropEngine {
     this.cooldownRemainingMs = FOOD_DROP_SPAWN_COOLDOWN_MS;
     this.currentLevel = this.nextLevel;
     this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.clampLauncherToCurrentLevel();
 
     return true;
   }
@@ -258,18 +275,13 @@ export class FoodDropEngine {
   }
 
   private bindCollisionEvents() {
-    Events.on(this.engine, 'collisionStart', (event) => {
-      event.pairs.forEach((pair) => {
-        if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
-          return;
-        }
-        const key =
-          pair.bodyA.id < pair.bodyB.id
-            ? `${pair.bodyA.id}-${pair.bodyB.id}`
-            : `${pair.bodyB.id}-${pair.bodyA.id}`;
-        this.pendingMergePairs.set(key, { bodyA: pair.bodyA, bodyB: pair.bodyB });
-      });
-    });
+    // Keep merge candidates fresh both when contacts begin and while they remain in contact.
+    Events.on(this.engine, 'collisionStart', this.queueMergePairs);
+    Events.on(this.engine, 'collisionActive', this.queueMergePairs);
+  }
+
+  private clampLauncherToCurrentLevel() {
+    this.setLauncherX(this.launcherX);
   }
 
   private static canBodiesMerge(bodyA: Body, bodyB: Body): boolean {

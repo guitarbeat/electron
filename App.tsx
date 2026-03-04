@@ -19,13 +19,36 @@ import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import DebugMovies from './components/debug/DebugMovies';
 import AppHeader from './components/layout/AppHeader';
-import { spacing, colors, typography, layout } from './design-system/tokens';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
 ];
+
+type WorkspaceTab = 'queue' | 'places';
+
+const TAB_COPY: Record<
+  WorkspaceTab,
+  {
+    title: string;
+    subtitle: string;
+    description: string;
+  }
+> = {
+  queue: {
+    title: 'Movie Planner',
+    subtitle: 'Curate what to watch next',
+    description:
+      'Track picks, manage shared memories, and keep suggestions moving without bouncing between screens.',
+  },
+  places: {
+    title: 'Places Planner',
+    subtitle: 'Capture date ideas and destinations',
+    description:
+      'Review saved spots, prioritize options, and keep the next plan visible in one focused workspace.',
+  },
+};
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
@@ -60,32 +83,13 @@ const AppInner: React.FC = () => {
     setShowQuizEditor(true);
   };
 
-  const panelTitle = useMemo(() => {
-    const tab = MAIN_TABS.find((item) => item.id === activeTab);
-    return tab?.label || 'Movies';
-  }, [activeTab]);
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'queue':
-        return <Watchlist topControlsMountId="watchlist-top-controls-slot" />;
-      case 'places':
-        return <PlacesList />;
-      default:
-        return <Watchlist topControlsMountId="watchlist-top-controls-slot" />;
-    }
-  };
+  const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
+  const panelTitle = activeTabMeta?.label || 'Movies';
+  const panelCopy = TAB_COPY[activeTab as WorkspaceTab];
 
   return (
     <ThemeProvider activeTab={activeTab}>
-      <div
-        className="app-shell bg-main"
-        style={{
-          color: colors.textPrimary,
-          minHeight: '100vh',
-          fontFamily: typography.fontFamily.body.join(', '),
-        }}
-      >
+      <div className="app-shell bg-main">
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
@@ -103,19 +107,19 @@ const AppInner: React.FC = () => {
           className="main-container"
           tabIndex={-1}
           aria-labelledby="active-panel-title"
-          style={{
-            maxWidth: layout.contentMaxWidth,
-            margin: '0 auto',
-            paddingTop: spacing.lg,
-            paddingBottom: spacing.xl,
-            paddingLeft: spacing.md,
-            paddingRight: spacing.md,
-            outline: 'none',
-          }}
         >
-          <h2 id="active-panel-title" className="sr-only">
-            {panelTitle}
-          </h2>
+          <section className="panel-intro animate-fade-in" aria-live="polite">
+            <p className="panel-intro__eyebrow">{activeTabMeta?.icon} Current workspace</p>
+            <div className="panel-intro__title-row">
+              <h2 id="active-panel-title" className="panel-intro__title">
+                {panelCopy.title}
+              </h2>
+              <span className="panel-intro__badge">{currentUser ? `${currentUser} profile` : 'Guest'}</span>
+            </div>
+            <p className="panel-intro__subtitle">{panelCopy.subtitle}</p>
+            <p className="panel-intro__description">{panelCopy.description}</p>
+            <p className="sr-only">{panelTitle}</p>
+          </section>
 
           {MAIN_TABS.map((tab) => {
             const isActivePanel = tab.id === activeTab;
@@ -126,9 +130,15 @@ const AppInner: React.FC = () => {
                 role="tabpanel"
                 aria-labelledby={`tab-${tab.id}`}
                 hidden={!isActivePanel}
-                className={isActivePanel ? 'animate-fade-in' : undefined}
+                className={`tab-panel${isActivePanel ? ' animate-fade-in' : ''}`}
               >
-                {isActivePanel ? renderContent() : null}
+                {isActivePanel ? (
+                  tab.id === 'queue' ? (
+                    <Watchlist topControlsMountId="watchlist-top-controls-slot" />
+                  ) : (
+                    <PlacesList />
+                  )
+                ) : null}
               </section>
             );
           })}

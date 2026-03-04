@@ -4,18 +4,20 @@
 
 .app-tabbar__inner {
   width: 100%;
-  padding: 0.2rem 0;
+  padding: 0.18rem 0;
   display: grid;
   grid-template-columns: repeat(var(--tab-count, 3), minmax(0, 1fr));
 }
 
 .app-tabbar__tab {
   appearance: none;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--color-surface-2) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
+  border-radius: 0.85rem;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 7%, transparent) 0%, transparent 60%),
+    color-mix(in srgb, var(--color-surface-2) 80%, transparent);
   color: var(--color-text-secondary);
-  min-height: 2.9rem;
+  min-height: 2.75rem;
   padding: 0.45rem 0.5rem;
   cursor: pointer;
   display: inline-flex;
@@ -26,17 +28,19 @@
   transition:
     transform 0.15s ease,
     border-color 0.15s ease,
-    background 0.15s ease,
+    background 0.2s ease,
     color 0.15s ease,
+    filter 0.2s ease,
     box-shadow var(--theme-transition-duration) var(--theme-transition-easing);
 }
 
 .app-header-nav-row .app-tabbar__tab {
-  min-height: 2.65rem;
+  min-height: 2.55rem;
 }
 
 .app-tabbar__tab:hover {
   transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 .app-tabbar__tab:active {
@@ -45,8 +49,10 @@
 
 .app-tabbar__tab.is-active {
   color: var(--color-text-primary);
-  border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface-2) 82%);
+  border-color: color-mix(in srgb, var(--color-accent) 65%, transparent);
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--color-accent) 28%, transparent) 0%, transparent 70%),
+    color-mix(in srgb, var(--color-surface-2) 82%, transparent);
   box-shadow: var(--glow-primary);
 }
 
@@ -66,8 +72,9 @@
 
 .app-tabbar__label {
   font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .app-tabbar--mobile {

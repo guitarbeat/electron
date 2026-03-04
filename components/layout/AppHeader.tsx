@@ -1,5 +1,4 @@
 import React from 'react';
-import { colors, typography, layout, shadows, radius, spacing } from '../../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import type { MainTab, User } from '../../types';
 import UserSelection from '../common/UserSelection';
@@ -62,74 +61,22 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   return (
-    <header
-      className="app-header"
-      style={{
-        minHeight: layout.topBarHeight,
-        background: colors.surface1,
-        borderBottom: `1px solid ${colors.borderSubtle}`,
-        boxShadow: shadows.card,
-        position: 'relative',
-        zIndex: 120,
-      }}
-    >
-      <div
-        className="app-header-shell"
-        style={{
-          maxWidth: layout.contentMaxWidth,
-          margin: '0 auto',
-          padding: isMobile ? `${spacing.xs} ${spacing.md} ${spacing.sm}` : `${spacing.xs} ${spacing.lg}`,
-        }}
-      >
+    <header className="app-header">
+      <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
         <div className="app-header-inner">
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: isMobile ? typography.fontSize.sm : typography.fontSize.lg,
-                lineHeight: 1.2,
-                letterSpacing: typography.letterSpacing.normal,
-                fontWeight: 600,
-              }}
-            >
-              Aaron &amp; Electra
-            </h1>
-            <p
-              style={{
-                margin: 0,
-                color: colors.textTertiary,
-                fontSize: typography.fontSize.xs,
-                marginTop: 2,
-              }}
-            >
-              Movies & Places
-            </p>
+          <div className="app-header-brand">
+            <h1 className="app-header-title">Aaron &amp; Electra</h1>
+            <p className="app-header-subtitle">Movies &amp; Places</p>
           </div>
 
           <button
             ref={triggerRef}
             type="button"
-            className={isMobile ? 'profile-chip-mobile' : 'profile-chip'}
+            className={`profile-chip${isMobile ? ' profile-chip-mobile' : ''}`}
             onClick={toggleProfilePanel}
             aria-label="Open profile selector"
             aria-expanded={isProfileOpen}
             title="Open profile selector"
-            style={{
-              borderRadius: radius.full,
-              border: `1px solid ${colors.border}`,
-              background: colors.surface2,
-              color: colors.textPrimary,
-              padding: isMobile ? `${spacing.xs} ${spacing.sm}` : `${spacing.sm} ${spacing.md}`,
-              fontSize: isMobile ? typography.fontSize.xs : typography.fontSize.sm,
-              minHeight: 44,
-              minWidth: isMobile ? 44 : undefined,
-              touchAction: 'manipulation',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-            }}
           >
             <span aria-hidden style={{ fontSize: '16px' }}>
               {currentUser ? '👤' : '👥'}
@@ -156,28 +103,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       {isProfileOpen && (
         <div
           ref={panelRef}
-          className="profile-panel"
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: isMobile ? 0 : 'auto',
-            right: isMobile ? 0 : spacing.lg,
-            width: isMobile ? '100%' : 'min(560px, calc(100vw - 32px))',
-            padding: isMobile ? `${spacing.sm} ${spacing.md}` : '0',
-            zIndex: 101,
-          }}
+          className={`profile-panel${isMobile ? ' is-mobile' : ''}`}
         >
-          <div
-            style={
-              isMobile
-                ? {
-                    borderBottom: `1px solid ${colors.borderSubtle}`,
-                    boxShadow: shadows.cardElevated,
-                    borderRadius: radius.lg,
-                  }
-                : undefined
-            }
-          >
+          <div className={`profile-panel__inner${isMobile ? ' is-mobile' : ''}`}>
             <UserSelection onUserSelected={handleUserSelected} />
           </div>
         </div>
