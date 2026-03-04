@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BubbleId, useBubbleDismiss } from '../../context/BubbleDismissContext';
 import {
-  BUBBLE_DOCK_EDGE,
   BubbleSlot,
   BubbleToolId,
   BubbleViewportBucket,
@@ -99,13 +98,10 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
     visibleIds.forEach((id, index) => {
       const parsed = bucketAssignments[id] ? parseSlotKey(bucketAssignments[id] as string) : null;
       const fallback: BubbleSlot = {
-        edge: BUBBLE_DOCK_EDGE,
-        index,
+        edge: index % 2 === 0 ? 'left' : 'right',
+        index: Math.floor(index / 2),
       };
       let candidate = parsed || fallback;
-      if (candidate.edge !== BUBBLE_DOCK_EDGE) {
-        candidate = { ...candidate, edge: BUBBLE_DOCK_EDGE };
-      }
       if (candidate.index > maxSlotIndex) {
         candidate = { ...candidate, index: maxSlotIndex };
       }

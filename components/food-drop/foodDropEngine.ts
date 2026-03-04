@@ -85,6 +85,8 @@ const FEVER_DURATION_MS = 9000;
 const CONTAINER_BONUS_POINTS = 15;
 const GAME_OVER_GRACE_MS = 1200;
 const SPAWN_LEVEL_WEIGHTS = [34, 28, 20, 12, 6];
+const PHYSICS_SUBSTEP_MS = 1000 / 120;
+const MAX_STEP_MS = 34;
 const FRUIT_COLORS = [
   '#ff6b6b',
   '#ff8fab',
@@ -172,6 +174,9 @@ export class FoodDropEngine {
     this.engine = Engine.create({
       gravity: { x: 0, y: FOOD_DROP_GRAVITY },
       enableSleeping: false,
+      positionIterations: 10,
+      velocityIterations: 8,
+      constraintIterations: 3,
     });
     this.world = this.engine.world;
 
@@ -287,7 +292,14 @@ export class FoodDropEngine {
       }
     }
 
-    Engine.update(this.engine, deltaMs);
+    let remainingMs = Math.min(MAX_STEP_MS, deltaMs);
+    while (remainingMs > 0) {
+      const substepMs = Math.min(PHYSICS_SUBSTEP_MS, remainingMs);
+      Engine.update(this.engine, substepMs);
+      remainingMs -= substepMs;
+      this.stabilizeBodiesWithinContainer();
+    }
+
     this.processPendingMerges();
     this.updateMergeBursts(deltaMs);
     this.updateOverflowState(deltaMs);
@@ -579,15 +591,31 @@ export class FoodDropEngine {
           (scaleA + scaleB) / 2 + (Math.random() - 0.5) * 0.08
         )
       );
-      const mergedBody = FoodDropEngine.createFoodBody(targetLevel, mergedX, mergedY, mergedScale);
+      const mergedRadius = FOOD_LEVELS[targetLevel].radius * mergedScale;
+      const clampedMergedX = Math.min(
+        CONTAINER_INNER_RIGHT_X - mergedRadius - 1,
+        Math.max(CONTAINER_INNER_LEFT_X + mergedRadius + 1, mergedX)
+      );
+      const clampedMergedY = Math.min(mergedY, CONTAINER_FLOOR_TOP_Y - mergedRadius - 1);
+      const mergedBody = FoodDropEngine.createFoodBody(
+        targetLevel,
+        clampedMergedX,
+        clampedMergedY,
+        mergedScale
+      );
       Body.setVelocity(mergedBody, { x: mergedVelocityX, y: mergedVelocityY });
       World.add(this.world, mergedBody);
 
       const points = scoreForMergeTargetLevel(targetLevel);
       mergeCount += 1;
       mergeScore += points;
-      mergedCenters.push({ x: mergedX, y: mergedY });
-      this.createMergeBurst(mergedX, mergedY, points, FOOD_LEVELS[targetLevel].radius * mergedScale);
+      mergedCenters.push({ x: clampedMergedX, y: clampedMergedY });
+      this.createMergeBurst(
+        clampedMergedX,
+        clampedMergedY,
+        points,
+        FOOD_LEVELS[targetLevel].radius * mergedScale
+      );
     });
 
     if (mergeCount > 0) {
@@ -750,11 +778,16 @@ export class FoodDropEngine {
 
   private static createFoodBody(level: number, x: number, y: number, sizeScale = 1): Body {
     const { radius } = FOOD_LEVELS[level];
+    const normalizedLevel = FOOD_LEVELS.length > 1 ? level / (FOOD_LEVELS.length - 1) : 0;
+    const restitution = Math.max(0.1, 0.24 - normalizedLevel * 0.1);
+    const friction = 0.018 + normalizedLevel * 0.022;
+    const frictionAir = 0.005 + normalizedLevel * 0.004;
+    const density = 0.001 + normalizedLevel * 0.0009;
     const body = Bodies.circle(x, y, radius, {
-      restitution: 0.26,
-      friction: 0.018,
-      frictionAir: 0.005,
-      density: 0.001,
+      restitution,
+      friction,
+      frictionAir,
+      density,
       label: `food-${level}`,
       slop: 0.4,
     });
@@ -770,6 +803,23 @@ export class FoodDropEngine {
     };
 
     return body;
+  }
+
+  private stabilizeBodiesWithinContainer() {
+    this.world.bodies.forEach((body) => {
+      if (body.isStatic) return;
+      const level = FoodDropEngine.getBodyLevel(body);
+      if (level === null) return;
+
+      const radius = FoodDropEngine.getBodyRadius(body, level);
+      const maxY = CONTAINER_FLOOR_TOP_Y - radius;
+      if (body.position.y > maxY) {
+        Body.setPosition(body, { x: body.position.x, y: maxY });
+        if (body.velocity.y > 0) {
+          Body.setVelocity(body, { x: body.velocity.x * 0.96, y: 0 });
+        }
+      }
+    });
   }
 
   private getRenderableBodies(): RenderBody[] {
