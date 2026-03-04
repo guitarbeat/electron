@@ -4,7 +4,15 @@ import Card from '../ui/Card';
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import { useUser } from '../../context/UserContext';
-import { colors, radius, shadows, spacing, typography } from '../../design-system/tokens';
+import { colors, radius, spacing, typography } from '../../design-system/tokens';
+import {
+  FLOATING_BUBBLE_SIZE,
+  FLOATING_DRAG_THRESHOLD,
+  clampFloatingBubblePosition,
+  getFloatingBubbleBadgeStyle,
+  getFloatingBubbleButtonStyle,
+  getFloatingContainerStyle,
+} from '../ui/floatingBubbleStyles';
 import {
   FOOD_DROP_WORLD_HEIGHT,
   FOOD_DROP_WORLD_WIDTH,
@@ -18,9 +26,6 @@ interface FoodDropGameProps {
   mode?: 'floating' | 'embedded';
 }
 
-const BUBBLE_SIZE = 60;
-const BUBBLE_EDGE_MARGIN = 16;
-const DRAG_THRESHOLD = 4;
 const KEYBOARD_STEP = 14;
 
 const dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
@@ -46,10 +51,10 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
-    if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
-    const defaultY = window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 70;
+    if (typeof window === 'undefined') return { x: 16, y: 16 };
+    const defaultY = window.innerHeight - FLOATING_BUBBLE_SIZE - 86;
     return {
-      x: BUBBLE_EDGE_MARGIN + 4,
+      x: 20,
       y: defaultY,
     };
   });
@@ -93,19 +98,6 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   const canvasDisplayHeight = Math.round(
     canvasDisplayWidth * (FOOD_DROP_WORLD_HEIGHT / FOOD_DROP_WORLD_WIDTH)
   );
-
-  const clampBubble = (x: number, y: number) => {
-    if (typeof window === 'undefined') return { x, y };
-    const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-    const maxY = Math.max(
-      BUBBLE_EDGE_MARGIN,
-      window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
-    );
-    return {
-      x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
-      y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
-    };
-  };
 
   const syncSnapshot = useCallback(() => {
     if (!engineRef.current) return;
@@ -203,7 +195,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     const deltaY = event.clientY - ds.startY;
     if (
       !didDragRef.current &&
-      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+      (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD)
     ) {
       didDragRef.current = true;
     }
@@ -211,8 +203,8 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
 
     const nextX = ds.origin.x + deltaX;
     const nextY = ds.origin.y + deltaY;
-    setBubblePosition(clampBubble(nextX, nextY));
-    checkDismissZoneHit(nextX, nextY, BUBBLE_SIZE);
+    setBubblePosition(clampFloatingBubblePosition(nextX, nextY));
+    checkDismissZoneHit(nextX, nextY, FLOATING_BUBBLE_SIZE);
   };
 
   const handleBubblePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -225,7 +217,10 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     dragStateRef.current = null;
     didDragRef.current = false;
 
-    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+    if (
+      wasDragged &&
+      checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
+    ) {
       dismiss('foodDrop');
       try {
         event.currentTarget.releasePointerCapture(event.pointerId);
@@ -395,37 +390,12 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   };
 
   const containerStyle = useMemo<React.CSSProperties>(() => {
-    if (isViewportExpanded) {
-      return {
-        position: 'fixed',
-        inset: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 2000,
-        backgroundColor: colors.surface,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: spacing.md,
-      };
-    }
-
-    if (isEmbedded) {
-      return {
-        position: 'relative',
-        width: '100%',
-      };
-    }
-
-    return {
-      position: 'fixed',
-      bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-      right: spacing.lg,
-      width: isMobile ? 'calc(100vw - 32px)' : '420px',
-      maxWidth: '100%',
-      zIndex: 1000,
-    };
+    return getFloatingContainerStyle({
+      isEmbedded,
+      isViewportExpanded,
+      isMobile,
+      desktopWidth: '420px',
+    });
   }, [isEmbedded, isViewportExpanded, isMobile]);
 
   if (isMinimized && !isEmbedded) {
@@ -439,26 +409,14 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
         onPointerUp={handleBubblePointerUp}
         onPointerCancel={handleBubblePointerUp}
         style={{
-          position: 'fixed',
-          left: bubblePosition.x,
-          top: bubblePosition.y,
-          width: `${BUBBLE_SIZE}px`,
-          height: `${BUBBLE_SIZE}px`,
-          borderRadius: radius.full,
-          border: `3px solid ${colors.surfaceElevated}`,
-          background:
-            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(251, 146, 60, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%)',
-          color: '#fff',
-          fontSize: '1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: isDraggingBubble ? 'grabbing' : 'grab',
-          boxShadow: shadows.glow,
-          padding: 0,
-          zIndex: 1000,
-          touchAction: 'none',
-          userSelect: 'none',
+          ...getFloatingBubbleButtonStyle({
+            position: bubblePosition,
+            isDragging: isDraggingBubble,
+            background:
+              'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(251, 146, 60, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%)',
+            color: '#fff',
+            fontSize: '1.5rem',
+          }),
         }}
         aria-label="Open Food Drop"
       >
@@ -466,22 +424,8 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
         {bestScore > 0 && (
           <span
             style={{
-              position: 'absolute',
-              top: '-6px',
-              right: '-6px',
-              minWidth: '24px',
-              height: '24px',
-              borderRadius: radius.full,
-              backgroundColor: colors.surfaceElevated,
-              color: colors.textPrimary,
-              fontSize: '11px',
+              ...getFloatingBubbleBadgeStyle(),
               fontWeight: typography.fontWeight.bold,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: `1px solid ${colors.accent}`,
-              boxShadow: shadows.card,
-              padding: '0 4px',
             }}
             aria-label={`Best score ${bestScore}`}
           >

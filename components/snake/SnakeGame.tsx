@@ -4,9 +4,17 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { useUser } from '../../context/UserContext';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
-import { colors, radius, spacing, typography, shadows } from '../../design-system/tokens';
+import { colors, spacing, typography } from '../../design-system/tokens';
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 import { useSnakeAudio } from './useSnakeAudio';
+import {
+  FLOATING_BUBBLE_SIZE,
+  FLOATING_DRAG_THRESHOLD,
+  clampFloatingBubblePosition,
+  getFloatingBubbleBadgeStyle,
+  getFloatingBubbleButtonStyle,
+  getFloatingContainerStyle,
+} from '../ui/floatingBubbleStyles';
 import {
   createInitialGameState,
   enqueueDirection,
@@ -27,10 +35,6 @@ const MIN_TICK_INTERVAL_MS = 50;
 const SPEED_DECREMENT_PER_FOOD = 2;
 const CELL_SIZE = 20;
 const CELL_GAP = 2;
-
-const BUBBLE_SIZE = 60;
-const BUBBLE_EDGE_MARGIN = 16;
-const DRAG_THRESHOLD = 4;
 
 const KEY_TO_DIRECTION: Record<string, Direction> = {
   ArrowUp: 'up',
@@ -70,9 +74,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
   const [shake, setShake] = useState(0);
   const [bubblePosition, setBubblePosition] = useState(() => {
-    if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
-    const defaultX = BUBBLE_EDGE_MARGIN + 4;
-    const defaultY = window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 70;
+    if (typeof window === 'undefined') return { x: 16, y: 16 };
+    const defaultX = 20;
+    const defaultY = window.innerHeight - FLOATING_BUBBLE_SIZE - 86;
     return { x: defaultX, y: defaultY };
   });
   const [isDraggingBubble, setIsDraggingBubble] = useState(false);
@@ -90,19 +94,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
   const isGameVisible = isEmbedded || !isMinimized;
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  const clampBubble = (x: number, y: number) => {
-    if (typeof window === 'undefined') return { x, y };
-    const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-    const maxY = Math.max(
-      BUBBLE_EDGE_MARGIN,
-      window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
-    );
-    return {
-      x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
-      y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
-    };
-  };
 
   const handleBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -125,15 +116,15 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     const deltaY = event.clientY - ds.startY;
     if (
       !didDragRef.current &&
-      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+      (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD)
     ) {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
     const newX = ds.origin.x + deltaX;
     const newY = ds.origin.y + deltaY;
-    setBubblePosition(clampBubble(newX, newY));
-    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
+    setBubblePosition(clampFloatingBubblePosition(newX, newY));
+    checkDismissZoneHit(newX, newY, FLOATING_BUBBLE_SIZE);
   };
 
   const handleBubblePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -144,7 +135,10 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     setDismissDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+    if (
+      wasDragged &&
+      checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
+    ) {
       dismiss('snake');
       try {
         event.currentTarget.releasePointerCapture(event.pointerId);
@@ -315,26 +309,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         onPointerUp={handleBubblePointerUp}
         onPointerCancel={handleBubblePointerUp}
         style={{
-          position: 'fixed',
-          left: bubblePosition.x,
-          top: bubblePosition.y,
-          width: `${BUBBLE_SIZE}px`,
-          height: `${BUBBLE_SIZE}px`,
-          borderRadius: radius.full,
-          border: `3px solid ${colors.surfaceElevated}`,
-          background:
-            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(130, 197, 107, 0.95) 0%, rgba(58, 132, 77, 0.95) 100%)',
-          color: '#082913',
-          fontSize: '1.4rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: isDraggingBubble ? 'grabbing' : 'grab',
-          boxShadow: shadows.glow,
-          padding: 0,
-          zIndex: 1000,
-          touchAction: 'none',
-          userSelect: 'none',
+          ...getFloatingBubbleButtonStyle({
+            position: bubblePosition,
+            isDragging: isDraggingBubble,
+            background:
+              'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(130, 197, 107, 0.95) 0%, rgba(58, 132, 77, 0.95) 100%)',
+            color: '#082913',
+            fontSize: '1.4rem',
+          }),
         }}
         aria-label="Open Snake Game"
       >
@@ -342,22 +324,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         {bestScore > 0 && (
           <span
             style={{
-              position: 'absolute',
-              top: '-6px',
-              right: '-6px',
-              minWidth: '24px',
-              height: '24px',
-              borderRadius: radius.full,
-              backgroundColor: colors.surfaceElevated,
-              color: colors.textPrimary,
-              fontSize: '11px',
+              ...getFloatingBubbleBadgeStyle(),
               fontWeight: typography.fontWeight.bold,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: `1px solid ${colors.accent}`,
-              boxShadow: shadows.card,
-              padding: '0 4px',
             }}
             aria-label={`Best score ${bestScore}`}
           >
@@ -370,35 +338,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
   return (
     <div
-      style={
-        isViewportExpanded
-          ? {
-              position: 'fixed',
-              inset: 0,
-              width: '100vw',
-              height: '100vh',
-              zIndex: 2000,
-              backgroundColor: colors.surface,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: spacing.md,
-            }
-          : isEmbedded
-            ? {
-                position: 'relative',
-                width: '100%',
-              }
-            : {
-                position: 'fixed',
-                bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-                right: spacing.lg,
-                width: isMobile ? 'calc(100vw - 32px)' : '380px',
-                maxWidth: '100%',
-                zIndex: 1000,
-              }
-      }
+      style={getFloatingContainerStyle({
+        isEmbedded,
+        isViewportExpanded,
+        isMobile,
+        desktopWidth: '380px',
+      })}
     >
       <Card
         style={{

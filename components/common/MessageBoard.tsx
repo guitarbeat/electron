@@ -11,6 +11,13 @@ import { spacing, colors, shadows, motion, typography } from '../../design-syste
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import {
+  FLOATING_BUBBLE_SIZE,
+  FLOATING_BUBBLE_EDGE_MARGIN,
+  FLOATING_DRAG_THRESHOLD,
+  clampFloatingBubblePosition,
+  getFloatingBubbleButtonStyle,
+} from '../ui/floatingBubbleStyles';
 
 interface MessageBoardProps {
   mode?: 'floating' | 'embedded';
@@ -21,36 +28,19 @@ interface BubblePosition {
   y: number;
 }
 
-const BUBBLE_SIZE = 60;
-const BUBBLE_EDGE_MARGIN = 16;
-const DRAG_THRESHOLD = 4;
 const FLOATING_Z_INDEX = 220;
-
-const clampBubblePosition = (x: number, y: number): BubblePosition => {
-  if (typeof window === 'undefined') {
-    return { x, y };
-  }
-
-  const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-  const maxY = Math.max(BUBBLE_EDGE_MARGIN, window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-
-  return {
-    x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
-    y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
-  };
-};
 
 const getDefaultBubblePosition = (isMobile: boolean): BubblePosition => {
   if (typeof window === 'undefined') {
-    return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+    return { x: FLOATING_BUBBLE_EDGE_MARGIN, y: FLOATING_BUBBLE_EDGE_MARGIN };
   }
 
   const defaultX = isMobile
-    ? window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
-    : BUBBLE_EDGE_MARGIN + 4;
-  const defaultY = window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 4;
+    ? window.innerWidth - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN
+    : FLOATING_BUBBLE_EDGE_MARGIN + 4;
+  const defaultY = window.innerHeight - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 4;
 
-  return clampBubblePosition(defaultX, defaultY);
+  return clampFloatingBubblePosition(defaultX, defaultY);
 };
 
 const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
@@ -73,7 +63,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   const isEmbedded = mode === 'embedded';
   const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => {
     if (typeof window === 'undefined') {
-      return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+      return { x: FLOATING_BUBBLE_EDGE_MARGIN, y: FLOATING_BUBBLE_EDGE_MARGIN };
     }
     const isMobileWidth = window.innerWidth < 640;
     return getDefaultBubblePosition(isMobileWidth);
@@ -155,7 +145,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
 
     if (
       !didDragRef.current &&
-      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+      (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD)
     ) {
       didDragRef.current = true;
     }
@@ -166,8 +156,8 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
 
     const nextX = dragState.origin.x + deltaX;
     const nextY = dragState.origin.y + deltaY;
-    setBubblePosition(clampBubblePosition(nextX, nextY));
-    checkDismissZoneHit(nextX, nextY, BUBBLE_SIZE);
+    setBubblePosition(clampFloatingBubblePosition(nextX, nextY));
+    checkDismissZoneHit(nextX, nextY, FLOATING_BUBBLE_SIZE);
   };
 
   const handleDragEnd = () => {
@@ -179,7 +169,10 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     setDismissDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+    if (
+      wasDragged &&
+      checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
+    ) {
       dismiss('messages');
     }
   };
@@ -238,26 +231,19 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
         aria-label="Open messages"
         className="message-launcher-bubble"
         style={{
-          position: 'fixed',
-          top: `${bubblePosition.y}px`,
-          left: `${bubblePosition.x}px`,
-          width: `${BUBBLE_SIZE}px`,
-          height: `${BUBBLE_SIZE}px`,
-          borderRadius: '50%',
-          backgroundColor: themeTokens.accent,
-          border: `3px solid ${colors.surfaceElevated}`,
-          boxShadow: themeTokens.glow,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: isDraggingBubble ? 'grabbing' : 'grab',
-          zIndex: FLOATING_Z_INDEX,
+          ...getFloatingBubbleButtonStyle({
+            position: bubblePosition,
+            isDragging: isDraggingBubble,
+            background: themeTokens.accent,
+            color: '#000',
+            fontSize: '1rem',
+            zIndex: FLOATING_Z_INDEX,
+            boxShadow: themeTokens.glow,
+          }),
           transition: isDraggingBubble
             ? 'none'
             : `top ${motion.duration.fast} ${motion.easing.easeInOut}, left ${motion.duration.fast} ${motion.easing.easeInOut}, transform ${motion.duration.fast} ${motion.easing.easeInOut}`,
           transform: isDraggingBubble ? 'scale(1.04)' : 'scale(1)',
-          padding: 0,
-          touchAction: 'none',
         }}
       >
         <MessageIcon style={{ width: '30px', height: '30px', color: '#000' }} />

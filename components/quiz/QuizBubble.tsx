@@ -1,16 +1,19 @@
 import React, { useRef, useState } from 'react';
 import type { User } from '../../types';
 import type { QuizData } from '../../services/quizService';
-import { colors, radius, shadows, spacing, typography } from '../../design-system/tokens';
+import { colors, spacing, typography } from '../../design-system/tokens';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../ui/Button';
 import MinigameModal from '../ui/MinigameModal';
 import QuizFlow from './QuizFlow';
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
-
-const BUBBLE_SIZE = 60;
-const BUBBLE_EDGE_MARGIN = 16;
-const DRAG_THRESHOLD = 4;
+import {
+  FLOATING_BUBBLE_SIZE,
+  FLOATING_BUBBLE_EDGE_MARGIN,
+  FLOATING_DRAG_THRESHOLD,
+  clampFloatingBubblePosition,
+  getFloatingBubbleButtonStyle,
+} from '../ui/floatingBubbleStyles';
 
 interface QuizBubbleProps {
   mode?: 'floating' | 'embedded';
@@ -20,16 +23,6 @@ interface QuizBubbleProps {
   onQuizComplete: () => void;
   onOpenQuizEditor: () => void;
 }
-
-const clampBubble = (x: number, y: number) => {
-  if (typeof window === 'undefined') return { x, y };
-  const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-  const maxY = Math.max(BUBBLE_EDGE_MARGIN, window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-  return {
-    x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
-    y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
-  };
-};
 
 const QuizBubble: React.FC<QuizBubbleProps> = ({
   mode = 'floating',
@@ -45,10 +38,12 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isTakingQuiz, setIsTakingQuiz] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
-    if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+    if (typeof window === 'undefined') {
+      return { x: FLOATING_BUBBLE_EDGE_MARGIN, y: FLOATING_BUBBLE_EDGE_MARGIN };
+    }
     return {
-      x: BUBBLE_EDGE_MARGIN + 4,
-      y: window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 210,
+      x: FLOATING_BUBBLE_EDGE_MARGIN + 4,
+      y: window.innerHeight - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 210,
     };
   });
   const [isDragging, setIsDragging] = useState(false);
@@ -81,15 +76,15 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
     const deltaY = event.clientY - ds.startY;
     if (
       !didDragRef.current &&
-      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+      (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD)
     ) {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
     const newX = ds.origin.x + deltaX;
     const newY = ds.origin.y + deltaY;
-    setBubblePosition(clampBubble(newX, newY));
-    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
+    setBubblePosition(clampFloatingBubblePosition(newX, newY));
+    checkDismissZoneHit(newX, newY, FLOATING_BUBBLE_SIZE);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -100,7 +95,10 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
     setDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+    if (
+      wasDragged &&
+      checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
+    ) {
       dismiss('quiz');
       return;
     }
@@ -173,25 +171,14 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         style={{
-          position: 'fixed',
-          left: bubblePosition.x,
-          top: bubblePosition.y,
-          width: `${BUBBLE_SIZE}px`,
-          height: `${BUBBLE_SIZE}px`,
-          borderRadius: radius.full,
-          border: `3px solid ${colors.surfaceElevated}`,
-          background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), ${themeTokens.gradientPrimary}`,
-          color: '#fff',
-          fontSize: '1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: isDragging ? 'grabbing' : 'grab',
-          boxShadow: themeTokens.glow,
-          padding: 0,
-          zIndex: 1000,
-          touchAction: 'none',
-          userSelect: 'none',
+          ...getFloatingBubbleButtonStyle({
+            position: bubblePosition,
+            isDragging,
+            background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), ${themeTokens.gradientPrimary}`,
+            color: '#fff',
+            fontSize: '1.5rem',
+            boxShadow: themeTokens.glow,
+          }),
         }}
         aria-label="Open Quiz"
       >
