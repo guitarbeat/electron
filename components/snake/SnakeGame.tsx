@@ -5,6 +5,7 @@ import Card from '../ui/Card';
 import { useUser } from '../../context/UserContext';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import { colors, radius, spacing, typography, shadows } from '../../design-system/tokens';
+import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 import { useSnakeAudio } from './useSnakeAudio';
 import {
   createInitialGameState,
@@ -51,6 +52,7 @@ interface SnakeGameProps {
 }
 
 const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
+  const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const isEmbedded = mode === 'embedded';
@@ -107,6 +109,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     };
     didDragRef.current = false;
     setIsDraggingBubble(true);
+    setDismissDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -122,18 +125,28 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
-    setBubblePosition(clampBubble(ds.origin.x + deltaX, ds.origin.y + deltaY));
+    const newX = ds.origin.x + deltaX;
+    const newY = ds.origin.y + deltaY;
+    setBubblePosition(clampBubble(newX, newY));
+    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
   };
 
   const handleBubblePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     const ds = dragStateRef.current;
     if (!ds || ds.pointerId !== event.pointerId) return;
-    if (!didDragRef.current) {
-      handleMaximize();
-    }
+    const wasDragged = didDragRef.current;
     setIsDraggingBubble(false);
+    setDismissDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
+    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+      dismiss('snake');
+      try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+      return;
+    }
+    if (!wasDragged) {
+      handleMaximize();
+    }
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch {
@@ -283,6 +296,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   if (gameState.status === 'game-over') gameStatusLabel = 'Game Over';
 
   if (isMinimized && !isEmbedded) {
+    if (isHidden('snake')) return null;
     return (
       <button
         type="button"
