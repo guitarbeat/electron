@@ -1,7 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { Place, User } from '../types';
 import { usePolling } from './usePolling';
 import { getPlaces, savePlaces } from '../services/placesService';
+import { validateAndThrow, validatePlace } from '../utils/validation';
+import { sanitizeInput } from '../config/security';
 
 export const usePlaces = (currentUser: User | null, isPaused: boolean = false) => {
   const {
@@ -14,40 +16,14 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     isPaused,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const mutationLockRef = useRef<Promise<void> | null>(null);
-
-  const performMutation = useCallback(
-    async (mutationFn: (latest: Place[]) => Place[]) => {
-      const mutation = (async () => {
-        try {
-          await mutationLockRef.current;
-        } catch {
-          // allow next mutation to proceed
-        }
-        setIsSubmitting(true);
-        try {
-          const latest = await getPlaces();
-          const updated = mutationFn(latest);
-          await savePlaces(updated);
-          refresh();
-        } catch (err) {
-          console.error('Places mutation failed:', err);
-          throw err;
-        } finally {
-          setIsSubmitting(false);
-        }
-      })();
-      mutationLockRef.current = mutation;
-      return mutation;
-    },
-    [refresh]
-  );
-
   const addPlace = useCallback(
     async (name: string, notes?: string, lat?: number, lng?: number) => {
-      const trimmed = name.trim();
+      // Validate input
+      validateAndThrow(validatePlace, { name, notes: notes || '' });
+
+      const trimmed = sanitizeInput(name.trim());
       if (!trimmed) throw new Error('Place name cannot be empty');
+      
       const place: Place = {
         id: crypto.randomUUID(),
         name: trimmed,
@@ -56,48 +32,65 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
         createdAt: new Date().toISOString(),
         ...(typeof lat === 'number' && typeof lng === 'number' && { lat, lng }),
       };
-      await performMutation((list) => [...list, place]);
+
+      const latestPlaces = await getPlaces();
+      await savePlaces([...latestPlaces, place]);
+      refresh();
     },
-    [currentUser, performMutation]
+    [currentUser, refresh]
   );
 
   const removePlace = useCallback(
     async (id: string) => {
-      await performMutation((list) => list.filter((p) => p.id !== id));
+      const latestPlaces = await getPlaces();
+      const updatedPlaces = latestPlaces.filter((p) => p.id !== id);
+      await savePlaces(updatedPlaces);
+      refresh();
     },
-    [performMutation]
+    [refresh]
   );
 
   const restorePlace = useCallback(
     async (place: Place) => {
-      await performMutation((list) => [...list, place]);
+      const latestPlaces = await getPlaces();
+      await savePlaces([...latestPlaces, place]);
+      refresh();
     },
-    [performMutation]
+    [refresh]
   );
 
   const updatePlace = useCallback(
     async (id: string, updates: Partial<Pick<Place, 'name' | 'notes'>>) => {
-      await performMutation((list) => list.map((p) => (p.id === id ? { ...p, ...updates } : p)));
+      const latestPlaces = await getPlaces();
+      const updatedPlaces = latestPlaces.map((p) => (p.id === id ? { ...p, ...updates } : p));
+      await savePlaces(updatedPlaces);
+      refresh();
     },
-    [performMutation]
+    [refresh]
   );
 
   const markVisited = useCallback(
     async (id: string) => {
-      await performMutation((list) =>
-        list.map((p) => (p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p))
+      const latestPlaces = await getPlaces();
+      const updatedPlaces = latestPlaces.map((p) => 
+        (p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p)
       );
+      await savePlaces(updatedPlaces);
+      refresh();
     },
-    [performMutation]
+    [refresh]
   );
 
   const markUnvisited = useCallback(
     async (id: string) => {
-      await performMutation((list) =>
-        list.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p))
+      const latestPlaces = await getPlaces();
+      const updatedPlaces = latestPlaces.map((p) => 
+        (p.id === id ? { ...p, visitedAt: undefined } : p)
       );
+      await savePlaces(updatedPlaces);
+      refresh();
     },
-    [performMutation]
+    [refresh]
   );
 
   return {
@@ -105,7 +98,6 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     isLoading,
     error,
     refresh,
-    isSubmitting,
     addPlace,
     removePlace,
     restorePlace,
