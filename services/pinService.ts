@@ -17,12 +17,10 @@ let fetchPromise: Promise<UserPins> | null = null;
  * Clears the PIN cache - useful for testing or when PINs are changed externally
  */
 export const clearPinCache = (): void => {
-  console.log('🧹 Clearing PIN cache...');
-  console.log('📋 Before clear:', { cachedPins, lastFetchTime });
+  console.log('Clearing PIN cache');
   cachedPins = null;
   lastFetchTime = 0;
   fetchPromise = null;
-  console.log('✅ Cache cleared');
 };
 
 /**
@@ -97,16 +95,12 @@ export const verifySecurePin = async (pin: string, storedHash: string): Promise<
  */
 export const getPins = async (): Promise<UserPins> => {
   const now = Date.now();
-  console.log('🌐 Getting PINs from Gist...');
-  console.log('📊 Cache check:', { cachedPins, now, lastFetchTime, cacheAge: now - lastFetchTime });
 
   if (cachedPins && now - lastFetchTime < CACHE_TTL) {
-    console.log('⚡ Using cached PINs:', cachedPins);
     return cachedPins;
   }
 
   if (fetchPromise) {
-    console.log('⏳ Using existing fetch promise');
     return fetchPromise;
   }
 
@@ -125,18 +119,14 @@ export const getPins = async (): Promise<UserPins> => {
       return response.json();
     })
     .then((gist) => {
-      console.log('📦 Gist response received:', gist);
       const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
-      console.log('📄 PIN file content:', fileContent);
 
       // Check if cache was updated by a write operation while we were fetching
       if (lastFetchTime > fetchStartTime && cachedPins) {
-        console.log('🔄 Cache updated during fetch, using cached');
         return cachedPins;
       }
 
       if (!fileContent) {
-        console.log('📭 No PIN file found, returning empty object');
         cachedPins = {};
         lastFetchTime = Date.now();
         return {};
@@ -144,12 +134,11 @@ export const getPins = async (): Promise<UserPins> => {
 
       try {
         const parsedPins = JSON.parse(fileContent);
-        console.log('✅ Parsed PINs:', parsedPins);
         cachedPins = parsedPins;
         lastFetchTime = Date.now();
         return parsedPins as UserPins;
       } catch (parseError) {
-        console.error('❌ Error parsing PIN file:', parseError);
+        console.error('Error parsing PIN file:', parseError);
         cachedPins = {};
         lastFetchTime = Date.now();
         return {};
@@ -157,7 +146,10 @@ export const getPins = async (): Promise<UserPins> => {
     })
     .catch((error) => {
       console.error('Error fetching PINs:', error);
-      return {};
+      if (cachedPins) {
+        return cachedPins;
+      }
+      throw error;
     });
 
   const currentFetch = fetchPromise;
@@ -226,7 +218,15 @@ export const removePin = async (user: User): Promise<boolean> => {
  * Verifies a PIN for a user.
  */
 export const verifyPin = async (user: User, pin: string): Promise<boolean> => {
-  const pins = await getPins();
+  let pins: UserPins;
+  try {
+    pins = await getPins();
+  } catch (error) {
+    // Fail closed on fetch errors so PIN protection can't be bypassed.
+    console.error('PIN verification failed while loading PINs:', error);
+    return false;
+  }
+
   const storedHash = pins[user];
 
   if (!storedHash) {

@@ -16,6 +16,7 @@ import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
 import { spacing, colors, radius, typography } from '../../design-system/tokens';
 import './Watchlist.css';
+import '../ui/ControlSurface.css';
 import './WatchlistControls.css';
 
 const MOBILE_SKELETON_KEYS = ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'];

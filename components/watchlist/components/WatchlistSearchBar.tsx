@@ -1,6 +1,8 @@
 import React from 'react';
 import Input from '../../ui/Input';
 import Button from '../../ui/Button';
+import { PlusIcon, SearchIcon } from '../../common/icons';
+import { typography } from '../../../design-system/tokens';
 
 interface WatchlistSearchBarProps {
   searchQuery: string;
@@ -25,28 +27,31 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
   onEnterAction,
   onSelectSuggestion,
   suggestions,
-  placeholder = 'Search titles…',
+  placeholder = 'Search titles...',
 }) => {
   const showSuggestions = searchQuery.trim().length > 0 && suggestions.length > 0;
 
   return (
     <div className="watchlist-search">
       <div className="watchlist-search__row">
-        <Input
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder={placeholder}
-          aria-label="Search movies"
-          onKeyDown={(event) => {
-            if (event.key !== 'Enter') return;
-            if (onEnterAction === 'selectTopResult' && topSuggestion) {
-              event.preventDefault();
-              setSearchQuery(topSuggestion);
-              onSelectSuggestion?.(topSuggestion);
-            }
-          }}
-          className="watchlist-search__input"
-        />
+        <div className="ui-control-input-shell watchlist-search__input-wrap">
+          <SearchIcon className="ui-control-input-icon watchlist-search__input-icon" aria-hidden />
+          <Input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder={placeholder}
+            aria-label="Search movies"
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return;
+              if (onEnterAction === 'selectTopResult' && topSuggestion) {
+                event.preventDefault();
+                setSearchQuery(topSuggestion);
+                onSelectSuggestion?.(topSuggestion);
+              }
+            }}
+            className="ui-control-input watchlist-search__input"
+          />
+        </div>
         <Button
           variant="secondary"
           size="sm"
@@ -57,8 +62,12 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
           className="watchlist-search__add"
           aria-label={addLabel}
           title={addLabel}
+          style={{ fontFamily: typography.fontFamily.body.join(', ') }}
         >
-          + Add
+          <span className="watchlist-search__add-content">
+            <PlusIcon size={16} aria-hidden />
+            <span>Add</span>
+          </span>
         </Button>
       </div>
 
@@ -85,3 +94,4 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
 };
 
 export default WatchlistSearchBar;
+

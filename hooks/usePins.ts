@@ -1,14 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import {
-  getPins,
-  setPin,
-  removePin,
-  verifyPin,
-  hasPin,
-  UserPins,
-  clearPinCache,
-} from '../services/pinService';
+import { getPins, setPin, removePin, verifyPin, UserPins, clearPinCache } from '../services/pinService';
 
 export const usePins = () => {
   const [pins, setPinsState] = useState<UserPins>({});
@@ -16,15 +8,12 @@ export const usePins = () => {
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
-    console.log('🔄 Refreshing PINs...');
     clearPinCache(); // Clear cache to force fresh fetch
     try {
       const fetchedPins = await getPins();
-      console.log('📥 Fetched PINs:', fetchedPins);
       setPinsState(fetchedPins);
-      console.log('✅ PIN state updated:', fetchedPins);
     } catch (error) {
-      console.error('❌ Error fetching PINs:', error);
+      console.error('Error fetching PINs:', error);
     } finally {
       setIsLoading(false);
     }
@@ -43,14 +32,7 @@ export const usePins = () => {
     return () => clearInterval(interval);
   }, [refresh]);
 
-  const userHasPin = useCallback(
-    (user: User): boolean => {
-      const hasPin = !!pins[user];
-      console.log(`🔍 Checking PIN for ${user}:`, hasPin, 'Current pins:', pins);
-      return hasPin;
-    },
-    [pins]
-  );
+  const userHasPin = useCallback((user: User): boolean => !!pins[user], [pins]);
 
   const setUserPin = useCallback(
     async (user: User, pin: string): Promise<boolean> => {

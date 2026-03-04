@@ -1,0 +1,199 @@
+.places-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.places-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.places-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.places-title {
+  margin: 0;
+  color: var(--color-text-primary);
+  letter-spacing: 0.03em;
+  font-size: 1.32rem;
+}
+
+.places-subtitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.places-surface {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.places-map-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.places-surface-title {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.places-map-hint {
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: 0.76rem;
+}
+
+.places-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.places-add-input-shell {
+  max-width: 26rem;
+}
+
+.places-add-input {
+  max-width: 26rem;
+}
+
+.places-add-button.ui-button {
+  align-self: flex-start;
+  min-height: 2.5rem;
+  border-radius: 9px;
+  padding: 0 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.places-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.places-empty {
+  color: var(--color-text-tertiary);
+  font-size: 0.9rem;
+  border: 1px dashed color-mix(in srgb, var(--color-border-subtle) 80%, transparent);
+  border-radius: 10px;
+  padding: 0.6rem 0.72rem;
+  background: color-mix(in srgb, var(--color-surface-2) 68%, transparent);
+}
+
+.places-item-card {
+  padding: 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 75%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-surface-2) 94%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.places-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.places-item-title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.places-item-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.places-item-visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 58%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface-2) 82%);
+  color: var(--color-text-primary);
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+.places-item-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.places-action-btn.ui-button {
+  min-height: 2rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+.places-delete-btn.ui-button {
+  min-height: 2rem;
+  min-width: 2rem;
+  border-radius: 8px;
+  color: var(--color-error) !important;
+}
+
+.places-item-notes {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.places-add-button:focus-visible,
+.places-action-btn:focus-visible,
+.places-delete-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 78%, transparent);
+  outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+  .places-page {
+    padding: 0.58rem;
+    gap: 0.75rem;
+  }
+
+  .places-surface {
+    gap: 0.62rem;
+  }
+
+  .places-item-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .places-item-actions {
+    width: 100%;
+  }
+
+  .places-action-btn.ui-button {
+    flex: 1;
+  }
+}

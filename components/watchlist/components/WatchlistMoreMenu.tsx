@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import BottomSheet from '../../ui/BottomSheet';
+import { ChevronDownIcon } from '../../common/icons';
+import { typography } from '../../../design-system/tokens';
 import { SortMode } from '../types';
 
 const SORT_OPTIONS: { id: SortMode; label: string }[] = [
@@ -26,8 +28,10 @@ const WatchlistMoreMenu: React.FC<WatchlistMoreMenuProps> = ({ sortMode, setSort
           onClick={() => setIsOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={isOpen}
+          style={{ fontFamily: typography.fontFamily.body.join(', ') }}
         >
-          Filters
+          <span>Sort</span>
+          <ChevronDownIcon size={14} aria-hidden />
         </button>
         <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} title="Filters">
           <div className="watchlist-more-menu">
@@ -55,7 +59,10 @@ const WatchlistMoreMenu: React.FC<WatchlistMoreMenuProps> = ({ sortMode, setSort
 
   return (
     <details className="watchlist-more">
-      <summary className="watchlist-more-trigger">More</summary>
+      <summary className="watchlist-more-trigger">
+        <span>Sort</span>
+        <ChevronDownIcon size={14} aria-hidden />
+      </summary>
       <div className="watchlist-more-menu" role="menu" aria-label="More options">
         <p className="watchlist-more-menu__label">Sort by</p>
         <div className="watchlist-more-menu__list">
