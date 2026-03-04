@@ -3,12 +3,13 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 const STORAGE_KEY = 'hiddenBubbles';
 const DISMISS_ZONE_RADIUS = 60;
 
-export type BubbleId = 'messages' | 'spin' | 'snake' | 'quiz' | 'matchmaker';
+export type BubbleId = 'messages' | 'spin' | 'snake' | 'quiz' | 'matchmaker' | 'foodDrop';
 
 const BUBBLE_LABELS: Record<BubbleId, { emoji: string; label: string }> = {
   messages: { emoji: '💬', label: 'Messages' },
   spin: { emoji: '🎰', label: 'Spin Wheel' },
   snake: { emoji: '🐍', label: 'Snake' },
+  foodDrop: { emoji: '🍉', label: 'Food Drop' },
   quiz: { emoji: '❓', label: 'Quiz' },
   matchmaker: { emoji: '💕', label: 'Matchmaker' },
 };

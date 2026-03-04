@@ -23,6 +23,7 @@
     "@supabase/supabase-js": "^2.97.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "matter-js": "^0.20.0",
     "pnpm": "^10.30.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
@@ -33,6 +34,7 @@
     ]
   },
   "devDependencies": {
+    "@types/matter-js": "^0.20.2",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",

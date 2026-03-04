@@ -8,6 +8,7 @@ import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 import Watchlist from './components/watchlist';
 import MessageBoard from './components/common/MessageBoard';
 import SnakeGame from './components/snake/SnakeGame';
+import FoodDropGame from './components/food-drop/FoodDropGame';
 import SpinWheel from './components/extras/spin-wheel/SpinWheel';
 import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizBubble from './components/quiz/QuizBubble';
@@ -152,21 +153,7 @@ const AppInner: React.FC = () => {
         <BottomSheet
           isOpen={showProfileSheet}
           onClose={() => setShowProfileSheet(false)}
-          title="Who is watching?"
         >
-          <p
-            style={{
-              margin: 0,
-              marginBottom: spacing.md,
-              textAlign: 'center',
-              color: colors.textSecondary,
-              fontSize: typography.fontSize.sm,
-            }}
-          >
-            {currentUser
-              ? 'Switch profiles any time for personalized updates and saved actions.'
-              : 'You are in guest mode. Pick Aaron or Electra to save personalized updates and actions.'}
-          </p>
           <UserSelection
             onUserSelected={() => setShowProfileSheet(false)}
             activeTab={activeTab}
@@ -190,6 +177,7 @@ const AppInner: React.FC = () => {
         <MessageBoard mode="floating" />
         <SpinWheel mode="floating" />
         <SnakeGame mode="floating" />
+        <FoodDropGame mode="floating" />
         <QuizBubble
           quizData={quizData}
           quizCompleted={quizCompleted}
