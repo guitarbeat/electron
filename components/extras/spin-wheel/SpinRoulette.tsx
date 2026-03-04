@@ -133,20 +133,24 @@ export const SpinRoulette: React.FC<SpinRouletteProps> = ({
         </div>
 
         <div className="spin-roulette__hub">
-          <button
-            type="button"
-            className="spin-roulette__btn"
-            onClick={handleSpin}
-            disabled={disabled || isSpinning || n === 0}
-            aria-label="Spin the wheel"
-            style={{
-              background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
-              color: '#fff',
-              borderColor: 'rgba(255,255,255,0.25)',
-            }}
-          >
-            {isSpinning ? '…' : 'SPIN'}
-          </button>
+          <div className="spin-roulette__glass-wrap">
+            <div className="spin-roulette__glass-shadow" aria-hidden />
+            <button
+              type="button"
+              className="spin-roulette__btn spin-roulette__glass-btn"
+              onClick={handleSpin}
+              disabled={disabled || isSpinning || n === 0}
+              aria-label="Spin the wheel"
+              style={
+                {
+                  '--spin-btn-a': colors.accent,
+                  '--spin-btn-b': colors.secondary,
+                } as React.CSSProperties
+              }
+            >
+              <span>{isSpinning ? '…' : 'SPIN'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
