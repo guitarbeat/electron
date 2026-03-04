@@ -34,9 +34,11 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   className,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
-  const { userHasPin, verifyUserPin, isLoading } = usePins();
+  const { userHasPin, verifyUserPin, setUserPin, removeUserPin, isLoading } = usePins();
   const [hoveredAvatar, setHoveredAvatar] = useState<ProfileValue | null>(null);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
+  const [isSavingPinSettings, setIsSavingPinSettings] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const bubbleSize = variant === 'inline' ? 'tiny' : isMobile ? 'compact' : 'default';
@@ -44,6 +46,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const users: User[] = ['Aaron', 'Electra'];
   const profiles: ProfileValue[] = includeGuest ? ['Guest', ...users] : users;
   const selectedProfile: ProfileValue = currentUser ?? 'Guest';
+  const selectedNamedUser = selectedProfile === 'Guest' ? null : selectedProfile;
+  const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
 
   const selectProfile = (profile: ProfileValue) => {
     if (isDisabled) return;
@@ -77,6 +81,49 @@ const UserSelection: React.FC<UserSelectionProps> = ({
       return false;
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const openPinSettings = () => {
+    if (!selectedNamedUser || isDisabled || isSavingPinSettings) return;
+    setPinSettingsUser(selectedNamedUser);
+  };
+
+  const handlePinSettingsSubmit = async (pin: string, newPin?: string): Promise<boolean> => {
+    if (!pinSettingsUser) return false;
+
+    setIsSavingPinSettings(true);
+    try {
+      if (pinSettingsMode === 'set') {
+        const saved = await setUserPin(pinSettingsUser, pin);
+        if (saved) setPinSettingsUser(null);
+        return saved;
+      }
+
+      if (!newPin) {
+        return verifyUserPin(pinSettingsUser, pin);
+      }
+
+      const stillValid = await verifyUserPin(pinSettingsUser, pin);
+      if (!stillValid) return false;
+
+      const saved = await setUserPin(pinSettingsUser, newPin);
+      if (saved) setPinSettingsUser(null);
+      return saved;
+    } finally {
+      setIsSavingPinSettings(false);
+    }
+  };
+
+  const handleRemovePin = async () => {
+    if (!pinSettingsUser) return;
+
+    setIsSavingPinSettings(true);
+    try {
+      const removed = await removeUserPin(pinSettingsUser);
+      if (removed) setPinSettingsUser(null);
+    } finally {
+      setIsSavingPinSettings(false);
     }
   };
 
@@ -120,7 +167,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   aria-label="Select Guest profile"
                 >
                   <span className="user-selection__guest-emoji" aria-hidden>
-                    👥
+                    {'\u{1F465}'}
                   </span>
                   <span className="user-selection__guest-label">Guest</span>
                 </button>
@@ -149,6 +196,18 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             );
           })}
         </div>
+
+        {selectedNamedUser && (
+          <button
+            type="button"
+            className="user-selection__pin-button"
+            onClick={openPinSettings}
+            disabled={isDisabled || isSavingPinSettings}
+            aria-label={userHasPin(selectedNamedUser) ? 'Change profile PIN' : 'Set profile PIN'}
+          >
+            {userHasPin(selectedNamedUser) ? 'Change PIN' : 'Set PIN'}
+          </button>
+        )}
       </div>
 
       <PinDialog
@@ -159,8 +218,21 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         mode="enter"
         isLoading={isVerifying}
       />
+
+      {pinSettingsUser && (
+        <PinDialog
+          isOpen={!!pinSettingsUser}
+          user={pinSettingsUser}
+          onCancel={() => setPinSettingsUser(null)}
+          onSubmit={handlePinSettingsSubmit}
+          onRemove={pinSettingsMode === 'change' ? handleRemovePin : undefined}
+          mode={pinSettingsMode}
+          isLoading={isSavingPinSettings}
+        />
+      )}
     </div>
   );
 };
 
 export default UserSelection;
+
