@@ -27,7 +27,7 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
-  const { quizData } = useQuiz(true);
+  const { quizData } = useQuiz();
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -69,7 +69,6 @@ const AppInner: React.FC = () => {
           tabs={MAIN_TABS}
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          currentUser={currentUser}
         />
 
         <main

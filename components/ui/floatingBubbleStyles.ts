@@ -6,6 +6,11 @@ export const FLOATING_BUBBLE_EDGE_MARGIN = 16;
 export const FLOATING_DRAG_THRESHOLD = 4;
 export const FLOATING_PANEL_Z_INDEX = 1000;
 export const FLOATING_FULLSCREEN_Z_INDEX = 2000;
+export const FLOATING_BUBBLE_BORDER_WIDTH = 3;
+export const FLOATING_PANEL_RADIUS = 24;
+
+const FLOATING_FULLSCREEN_BACKDROP =
+  'radial-gradient(circle at 14% 0%, rgba(148, 163, 184, 0.15), transparent 46%), rgba(2, 6, 23, 0.94)';
 
 export interface BubblePosition {
   x: number;
@@ -61,7 +66,7 @@ export const getFloatingBubbleButtonStyle = ({
   width: `${FLOATING_BUBBLE_SIZE}px`,
   height: `${FLOATING_BUBBLE_SIZE}px`,
   borderRadius: radius.full,
-  border: `3px solid ${colors.surfaceElevated}`,
+  border: `${FLOATING_BUBBLE_BORDER_WIDTH}px solid ${colors.surfaceElevated}`,
   background,
   color,
   fontSize,
@@ -74,6 +79,7 @@ export const getFloatingBubbleButtonStyle = ({
   zIndex,
   touchAction: 'none',
   userSelect: 'none',
+  transition: 'transform 160ms ease, box-shadow 180ms ease, border-color 180ms ease',
 });
 
 export const getFloatingBubbleBadgeStyle = (): React.CSSProperties => ({
@@ -117,12 +123,12 @@ export const getFloatingContainerStyle = ({
       width: '100vw',
       height: '100vh',
       zIndex: FLOATING_FULLSCREEN_Z_INDEX,
-      backgroundColor: colors.surface,
+      background: FLOATING_FULLSCREEN_BACKDROP,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: spacing.md,
+      padding: `max(${spacing.md}, env(safe-area-inset-top)) max(${spacing.md}, env(safe-area-inset-right)) max(${spacing.md}, env(safe-area-inset-bottom)) max(${spacing.md}, env(safe-area-inset-left))`,
     };
   }
 
@@ -143,3 +149,37 @@ export const getFloatingContainerStyle = ({
   };
 };
 
+interface FloatingPanelCardStyleOptions {
+  isViewportExpanded: boolean;
+  isMobile: boolean;
+  compactPadding?: string;
+  spaciousPadding?: string;
+  maxHeight?: string;
+  background?: string;
+  borderColor?: string;
+  shadow?: string;
+}
+
+export const getFloatingPanelCardStyle = ({
+  isViewportExpanded,
+  isMobile,
+  compactPadding = spacing.md,
+  spaciousPadding = spacing.lg,
+  maxHeight = 'min(520px, 75vh)',
+  background = 'rgba(15, 23, 42, 0.95)',
+  borderColor = `${colors.borderSecondary}30`,
+  shadow = '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
+}: FloatingPanelCardStyleOptions): React.CSSProperties => ({
+  padding: isMobile && !isViewportExpanded ? compactPadding : spaciousPadding,
+  border: isViewportExpanded ? 'none' : `1px solid ${borderColor}`,
+  borderRadius: isViewportExpanded ? 0 : `${FLOATING_PANEL_RADIUS}px`,
+  background,
+  backdropFilter: 'blur(16px)',
+  boxShadow: isViewportExpanded ? 'none' : shadow,
+  maxHeight: isViewportExpanded ? '100%' : maxHeight,
+  overflowY: 'auto',
+  height: isViewportExpanded ? '100%' : 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  margin: isMobile && !isViewportExpanded ? '0 8px' : 0,
+});

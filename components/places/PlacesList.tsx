@@ -9,6 +9,7 @@ import SubNav from '../ui/SubNav';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import Skeleton from '../ui/Skeleton';
 import PlacesMap from './PlacesMap';
+import UserSelection from '../common/UserSelection';
 import { PlusIcon, TrashIcon, CheckIcon } from '../common/icons';
 import { colors, spacing, typography, radius } from '../../design-system/tokens';
 import { useToast } from '../../context/ToastContext';
@@ -154,10 +155,17 @@ const PlacesList: React.FC = () => {
   return (
     <div className="places-page">
       <header className="places-header">
-        <h1 className="places-title">Places we want to go</h1>
-        <p className="places-subtitle">
-          Add places to visit together and track the ones you have already explored.
-        </p>
+        <div className="places-header-row">
+          <div>
+            <h1 className="places-title">Places we want to go</h1>
+            <p className="places-subtitle">
+              Add places to visit together and track the ones you have already explored.
+            </p>
+          </div>
+          <div className="places-header-profile">
+            <UserSelection variant="inline" />
+          </div>
+        </div>
       </header>
 
       <section className="ui-control-surface places-surface" aria-label="Places map and add form">
