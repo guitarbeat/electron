@@ -69,9 +69,10 @@ const MessageItem: React.FC<MessageItemProps> = ({
   // Get user's current reaction from persisted data
   const getUserReaction = (): string | null => {
     if (!msg.reactions) return null;
-    for (const [emoji, users] of Object.entries(msg.reactions) as [string, string[]][]) {
-      if (users.includes(currentUsername)) return emoji;
-    }
+    const match = (Object.entries(msg.reactions) as [string, string[]][]).find(([_, users]) =>
+      users.includes(currentUsername)
+    );
+    if (match) return match[0];
     return null;
   };
 
@@ -188,9 +189,17 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
       {/* iMessage Bubble */}
       <div
+        role="button"
+        tabIndex={0}
         className={`imessage-bubble ${isCurrentUser ? 'from-me' : 'from-them'}`}
         aria-label={`Message from ${authorName}`}
         onDoubleClick={handleDoubleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleDoubleClick();
+          }
+        }}
         onMouseDown={handleLongPressStart}
         onMouseUp={handleLongPressEnd}
         onMouseLeave={handleLongPressEnd}
@@ -269,6 +278,14 @@ const MessageItem: React.FC<MessageItemProps> = ({
           >
             {reactionSummary.map(({ emoji, count, hasUserReacted }) => (
               <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onReaction(msg.id, emoji, currentUsername);
+                  }
+                }}
                 key={emoji}
                 className="reaction-badge"
                 style={{
@@ -321,6 +338,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           >
             {REACTIONS.map((reaction) => (
               <button
+                type="button"
                 key={reaction}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -357,6 +375,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
       {/* Delete button - only visible in edit mode */}
       {isEditMode && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(msg.id);

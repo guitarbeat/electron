@@ -22,10 +22,7 @@ interface QuizBubbleProps {
 const clampBubble = (x: number, y: number) => {
   if (typeof window === 'undefined') return { x, y };
   const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-  const maxY = Math.max(
-    BUBBLE_EDGE_MARGIN,
-    window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
-  );
+  const maxY = Math.max(BUBBLE_EDGE_MARGIN, window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
   return {
     x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
     y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
@@ -169,13 +166,16 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
         <div style={{ padding: spacing.lg, overflow: 'auto', flex: 1 }}>
           {!isTakingQuiz && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-                {quizCompleted
-                  ? 'Retake any time to refresh your match.'
-                  : 'Take when you want.'}
+              <p
+                style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}
+              >
+                {quizCompleted ? 'Retake any time to refresh your match.' : 'Take when you want.'}
               </p>
               <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-                <Button variant={quizCompleted ? 'ghost' : 'secondary'} onClick={() => setIsTakingQuiz(true)}>
+                <Button
+                  variant={quizCompleted ? 'ghost' : 'secondary'}
+                  onClick={() => setIsTakingQuiz(true)}
+                >
                   {quizCompleted ? 'Retake' : 'Start Quiz'}
                 </Button>
                 <Button
@@ -192,15 +192,12 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
             </div>
           )}
 
-          {isTakingQuiz && (
-            <>
-              {quizData ? (
-                <QuizFlow quizData={quizData} onComplete={handleComplete} />
-              ) : (
-                <p style={{ margin: 0, color: colors.textSecondary }}>Loading quiz…</p>
-              )}
-            </>
-          )}
+          {isTakingQuiz &&
+            (quizData ? (
+              <QuizFlow quizData={quizData} onComplete={handleComplete} />
+            ) : (
+              <p style={{ margin: 0, color: colors.textSecondary }}>Loading quiz…</p>
+            ))}
         </div>
       </MinigameModal>
     </>
