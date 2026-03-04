@@ -1,5 +1,6 @@
-import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
+import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN } from '../config/gistConfig.ts';
 import type { MatchmakerGame } from '../types.ts';
+import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 /**
  * Fetches the current matchmaker game state from GitHub Gist.
@@ -7,27 +8,20 @@ import type { MatchmakerGame } from '../types.ts';
  */
 export const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      cache: 'no-cache', // Ensure we always get the latest version
-    });
+    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
 
     if (!response.ok) {
       throw new Error(`GitHub API responded with ${response.status}`);
     }
 
     const gist = await response.json();
-    const file = gist.files[GIST_MATCHMAKER_FILENAME];
-
-    if (!file || !file.content) {
+    const content = getGistFileContent(gist, GIST_MATCHMAKER_FILENAME);
+    if (content === null) {
       return null;
     }
 
     try {
-      return JSON.parse(file.content);
+      return JSON.parse(content);
     } catch (e) {
       console.error('Error parsing matchmaker JSON:', e);
       return null;
@@ -44,20 +38,11 @@ export const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
  */
 export const saveMatchmakerGame = async (game: MatchmakerGame | null): Promise<void> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      body: JSON.stringify({
-        files: {
-          [GIST_MATCHMAKER_FILENAME]: {
-            content: game ? JSON.stringify(game, null, 2) : '',
-          },
-        },
-      }),
-    });
+    const response = await patchGistFile(
+      GIST_MATCHMAKER_FILENAME,
+      game ? JSON.stringify(game, null, 2) : '',
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

@@ -1,29 +1,23 @@
-import { GIST_MEMORIES_FILENAME, GIST_TOKEN, GIST_API_URL } from '../config/gistConfig';
-import { sanitizeInput } from '../config/security';
-import { SharedMemory } from '../types';
+import { GIST_MEMORIES_FILENAME, GIST_TOKEN } from '../config/gistConfig.ts';
+import { sanitizeInput } from '../config/security.ts';
+import type { SharedMemory } from '../types.ts';
+import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      cache: 'no-cache',
-    });
+    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
 
     if (!response.ok) {
       throw new Error(`GitHub API responded with ${response.status}`);
     }
 
     const gist = await response.json();
-    const file = gist.files[GIST_MEMORIES_FILENAME];
-
-    if (!file || !file.content) {
+    const content = getGistFileContent(gist, GIST_MEMORIES_FILENAME);
+    if (content === null) {
       return [];
     }
 
-    return JSON.parse(file.content);
+    return JSON.parse(content);
   } catch (error) {
     console.error('Error fetching memories from Gist:', error);
     throw error;
@@ -32,20 +26,11 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
 
 export const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      body: JSON.stringify({
-        files: {
-          [GIST_MEMORIES_FILENAME]: {
-            content: JSON.stringify(memories, null, 2),
-          },
-        },
-      }),
-    });
+    const response = await patchGistFile(
+      GIST_MEMORIES_FILENAME,
+      JSON.stringify(memories, null, 2),
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

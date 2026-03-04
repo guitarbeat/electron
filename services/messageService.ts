@@ -1,5 +1,5 @@
-import createGistService from './createGistService';
-import { Message } from '../types';
+import createGistService from './createGistService.ts';
+import type { Message } from '../types.ts';
 
 const mockMessages: Message[] = [];
 

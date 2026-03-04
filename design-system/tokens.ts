@@ -6,7 +6,7 @@
  * Now supports theme switching between Movies and Places modes.
  */
 
-import { moviesTheme, placesTheme } from '../context/ThemeContext';
+import { moviesTheme, placesTheme } from '../context/themeTokens.ts';
 
 // * Spacing scale (Tight but balanced)
 export const spacing = {
