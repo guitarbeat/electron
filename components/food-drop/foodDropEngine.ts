@@ -25,6 +25,7 @@ import {
 interface FoodBodyMeta {
   foodLevel: number;
   sizeScale: number;
+  spawnedAtMs?: number;
 }
 
 interface MergePair {
@@ -82,6 +83,8 @@ const STREAK_TIMEOUT_MS = 2600;
 const FEVER_THRESHOLD = 100;
 const FEVER_DURATION_MS = 9000;
 const CONTAINER_BONUS_POINTS = 15;
+const GAME_OVER_GRACE_MS = 1200;
+const SPAWN_LEVEL_WEIGHTS = [34, 28, 20, 12, 6];
 const FRUIT_COLORS = [
   '#ff6b6b',
   '#ff8fab',
@@ -661,6 +664,7 @@ export class FoodDropEngine {
   }
 
   private updateOverflowState(deltaMs: number) {
+    const now = Date.now();
     const dynamicBodies = this.world.bodies.filter(
       (body) => !body.isStatic && FoodDropEngine.getBodyLevel(body) !== null
     );
@@ -672,6 +676,10 @@ export class FoodDropEngine {
 
     // Immediate fail if any fruit escapes the container side walls and drops below the danger zone.
     const hasMissedContainer = dynamicBodies.some((body) => {
+      const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
+      if (spawnedAt !== null && now - spawnedAt < GAME_OVER_GRACE_MS) {
+        return false;
+      }
       const level = FoodDropEngine.getBodyLevel(body) ?? 0;
       const radius = FoodDropEngine.getBodyRadius(body, level);
       const isOutsideContainer =
@@ -688,6 +696,10 @@ export class FoodDropEngine {
     }
 
     const hasOverflow = dynamicBodies.some((body) => {
+      const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
+      if (spawnedAt !== null && now - spawnedAt < GAME_OVER_GRACE_MS) {
+        return false;
+      }
       const bodyLevel = FoodDropEngine.getBodyLevel(body) ?? 0;
       const radius = FoodDropEngine.getBodyRadius(body, bodyLevel);
       return body.position.y - radius < FOOD_DROP_LOSE_LINE_Y;
@@ -727,6 +739,11 @@ export class FoodDropEngine {
     return typeof plugin?.sizeScale === 'number' ? plugin.sizeScale : 1;
   }
 
+  private static getBodySpawnedAt(body: Body): number | null {
+    const plugin = body.plugin as Partial<FoodBodyMeta> | undefined;
+    return typeof plugin?.spawnedAtMs === 'number' ? plugin.spawnedAtMs : null;
+  }
+
   private static getBodyRadius(body: Body, level: number): number {
     return body.circleRadius ?? FOOD_LEVELS[level].radius * FoodDropEngine.getBodyScale(body);
   }
@@ -749,6 +766,7 @@ export class FoodDropEngine {
       ...(body.plugin ?? {}),
       foodLevel: level,
       sizeScale,
+      spawnedAtMs: Date.now(),
     };
 
     return body;
@@ -904,8 +922,17 @@ export class FoodDropEngine {
   }
 
   private static randomSpawnLevel() {
-    const span = FOOD_DROP_SPAWN_MAX_LEVEL - FOOD_DROP_SPAWN_MIN_LEVEL + 1;
-    return FOOD_DROP_SPAWN_MIN_LEVEL + Math.floor(Math.random() * span);
+    const maxIndex = FOOD_DROP_SPAWN_MAX_LEVEL - FOOD_DROP_SPAWN_MIN_LEVEL;
+    const weights = SPAWN_LEVEL_WEIGHTS.slice(0, maxIndex + 1);
+    const total = weights.reduce((sum, value) => sum + value, 0);
+    let random = Math.random() * total;
+    for (let i = 0; i < weights.length; i += 1) {
+      random -= weights[i];
+      if (random <= 0) {
+        return FOOD_DROP_SPAWN_MIN_LEVEL + i;
+      }
+    }
+    return FOOD_DROP_SPAWN_MIN_LEVEL;
   }
 
   private static randomSpawnScale(level: number): number {

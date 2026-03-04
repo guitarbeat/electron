@@ -131,77 +131,6 @@
   outline-offset: 2px;
 }
 
-.user-selection__guest-bubble {
-  appearance: none;
-  width: clamp(90px, 22vw, 140px);
-  height: clamp(90px, 22vw, 140px);
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--color-secondary) 45%, var(--color-border-subtle) 55%);
-  background:
-    radial-gradient(
-      circle at 35% 25%,
-      color-mix(in srgb, white 28%, transparent) 0%,
-      transparent 38%
-    ),
-    linear-gradient(
-      150deg,
-      color-mix(in srgb, var(--color-secondary) 34%, var(--color-surface-2) 66%) 0%,
-      color-mix(in srgb, var(--color-accent) 24%, var(--color-surface-3) 76%) 100%
-    );
-  box-shadow: 0 0 28px color-mix(in srgb, var(--color-secondary) 24%, transparent);
-  color: var(--color-text-primary);
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  transition: transform 0.24s ease, border-color 0.2s ease, box-shadow 0.24s ease;
-}
-
-.user-selection__guest-bubble.is-inline {
-  width: var(--inline-profile-bubble-size);
-  height: var(--inline-profile-bubble-size);
-  gap: 0.14rem;
-  box-shadow: 0 0 20px color-mix(in srgb, var(--color-secondary) 20%, transparent);
-}
-
-.user-selection__guest-bubble.is-hovered,
-.user-selection__guest-bubble:hover {
-  transform: scale(1.05) rotate(-1deg);
-  border-color: color-mix(in srgb, var(--color-accent) 64%, transparent);
-}
-
-.user-selection__guest-bubble.is-active {
-  box-shadow: 0 0 34px color-mix(in srgb, var(--color-accent) 35%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent) 78%, transparent);
-}
-
-.user-selection__guest-bubble:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--color-accent) 74%, transparent);
-  outline-offset: 2px;
-}
-
-.user-selection__guest-emoji {
-  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
-}
-
-.user-selection__guest-bubble.is-inline .user-selection__guest-emoji {
-  font-size: clamp(1.1rem, 1.9vw, 1.5rem);
-}
-
-.user-selection__guest-label {
-  font-size: clamp(0.7rem, 2.3vw, 0.95rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
-.user-selection__guest-bubble.is-inline .user-selection__guest-label {
-  font-size: clamp(0.6rem, 0.65vw, 0.76rem);
-  letter-spacing: 0.06em;
-}
-
 .user-selection__pin-button {
   appearance: none;
   margin-top: 0.22rem;
@@ -230,6 +159,19 @@
   outline-offset: 2px;
 }
 
+.user-selection__logout-button {
+  margin-top: 0.3rem;
+}
+
+.user-selection__logged-out {
+  margin: 0.34rem 0 0;
+  color: color-mix(in srgb, var(--color-text-secondary) 78%, transparent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 640px) {
   :root {
     --inline-profile-bubble-size: clamp(70px, 20vw, 98px);
@@ -248,5 +190,9 @@
 
   .user-selection--inline .user-selection__bubble-row {
     gap: 0.3rem;
+  }
+
+  .user-selection__logged-out {
+    font-size: 0.66rem;
   }
 }
