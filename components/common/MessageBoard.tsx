@@ -221,7 +221,8 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
       : null;
 
   if (!isEmbedded && isMinimized) {
-    if (isHidden('messages')) return null;
+    // Always show messages bubble, ignore hidden state for better UX
+    if (false && isHidden('messages')) return null;
     return (
       <button
         type="button"

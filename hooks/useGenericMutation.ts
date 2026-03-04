@@ -1,7 +1,12 @@
 import { useState, useCallback, useRef } from 'react';
+import { createError } from '../utils/errorHandling';
+
+type AsyncFunction<T> = () => Promise<T>;
+type MutationFunction<T> = (data: T) => T;
+type ArrayItem<T> = T extends Array<infer U> ? U : never;
 
 export interface MutationState<T> {
-  data: T;
+  data: T | null;
   error: Error | null;
   isLoading: boolean;
   isSubmitting: boolean;
@@ -9,20 +14,21 @@ export interface MutationState<T> {
 }
 
 export interface MutationOptions<T> {
-  key: string;
+  key?: string;
   isPaused?: boolean;
   pollingInterval?: number;
   equalityFn?: (prev: T, next: T) => boolean;
 }
 
 export interface MutationConfig<TData, TMutationResult = void> {
-  fetchData: () => Promise<TData>;
+  fetchData: AsyncFunction<TData>;
   saveData: (data: TData) => Promise<void>;
   options?: MutationOptions<TData>;
   onMutationStart?: () => void;
   onMutationEnd?: () => void;
   onError?: (error: Error) => void;
 }
+
 
 export const useGenericMutation = <TData, TMutationResult = void>({
   fetchData,
@@ -46,7 +52,7 @@ export const useGenericMutation = <TData, TMutationResult = void>({
       const result = await fetchData();
       setData(result);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
+      const error = createError(err, 'Failed to fetch data');
       setError(error);
       onError?.(error);
     } finally {
@@ -73,7 +79,7 @@ export const useGenericMutation = <TData, TMutationResult = void>({
           await saveData(updatedData);
           setData(updatedData);
         } catch (err) {
-          const error = err instanceof Error ? err : new Error('Mutation failed');
+          const error = createError(err, 'Mutation failed');
           setError(error);
           onError?.(error);
           throw error;
@@ -91,17 +97,17 @@ export const useGenericMutation = <TData, TMutationResult = void>({
   );
 
   const addItem = useCallback(
-    async (item: TData extends Array<infer U> ? U : never) => {
+    async (item: ArrayItem<TData>) => {
       if (!Array.isArray(data)) {
         throw new Error('addItem can only be used with array data');
       }
-      await performMutation((latestData) => [...latestData, item] as TData);
+      await performMutation((latestData) => [...(latestData as any[]), item] as TData);
     },
     [data, performMutation]
   );
 
   const removeItem = useCallback(
-    async (predicate: (item: TData extends Array<infer U> ? U : never) => boolean) => {
+    async (predicate: (item: ArrayItem<TData>) => boolean) => {
       if (!Array.isArray(data)) {
         throw new Error('removeItem can only be used with array data');
       }
@@ -114,8 +120,8 @@ export const useGenericMutation = <TData, TMutationResult = void>({
 
   const updateItem = useCallback(
     async (
-      predicate: (item: TData extends Array<infer U> ? U : never) => boolean,
-      updates: Partial<TData extends Array<infer U> ? U : never>
+      predicate: (item: ArrayItem<TData>) => boolean,
+      updates: Partial<ArrayItem<TData>>
     ) => {
       if (!Array.isArray(data)) {
         throw new Error('updateItem can only be used with array data');

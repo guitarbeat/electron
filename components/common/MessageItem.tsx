@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useRef } from 'react';
+import React, { memo, useState, useEffect, useRef, useMemo } from 'react';
 import { Message, User } from '../../types';
 import { TrashIcon } from './icons';
 import { spacing, typography, colors } from '../../design-system/tokens';
@@ -6,7 +6,7 @@ import { getMessageBubbleStyle } from '../../hooks/useUserColors';
 import './MessageItem.css';
 
 // iOS-style reactions
-const REACTIONS = ['❤️', '👍', '👎', '😂', '‼️', '❓'];
+const REACTIONS = ['❤️', '👍', '👎', '😂', '‼️', '❓'] as const;
 
 // Format time for display (iOS style)
 const formatTime = (date: string): string => {
@@ -60,35 +60,41 @@ const MessageItem: React.FC<MessageItemProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const authorName = msg.author || 'Anonymous';
-  const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
   const currentUsername = currentUser || 'Anonymous';
+  
+  // Memoize expensive calculations
+  const { isCurrentUser, userStyle, reactionSummary, userReaction } = useMemo(() => {
+    const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
+    const userStyle = getMessageBubbleStyle(authorName);
+    
+    // Get user's current reaction from persisted data
+    const getUserReaction = (): string | null => {
+      if (!msg.reactions) return null;
+      for (const [emoji, users] of Object.entries(msg.reactions) as [string, string[]][]) {
+        if (users.includes(currentUsername)) return emoji;
+      }
+      return null;
+    };
 
-  // Determine styles based on author (from centralized color system)
-  const userStyle = getMessageBubbleStyle(authorName);
-
-  // Get user's current reaction from persisted data
-  const getUserReaction = (): string | null => {
-    if (!msg.reactions) return null;
-    for (const [emoji, users] of Object.entries(msg.reactions) as [string, string[]][]) {
-      if (users.includes(currentUsername)) return emoji;
-    }
-    return null;
-  };
-
-  // Get all reactions with counts
-  const getReactionSummary = (): { emoji: string; count: number; hasUserReacted: boolean }[] => {
-    if (!msg.reactions) return [];
-    return (Object.entries(msg.reactions) as [string, string[]][])
-      .filter(([, users]) => users.length > 0)
-      .map(([emoji, users]) => ({
-        emoji,
-        count: users.length,
-        hasUserReacted: users.includes(currentUsername),
-      }));
-  };
-
-  const reactionSummary = getReactionSummary();
-  const userReaction = getUserReaction();
+    // Get all reactions with counts
+    const getReactionSummary = (): { emoji: string; count: number; hasUserReacted: boolean }[] => {
+      if (!msg.reactions) return [];
+      return (Object.entries(msg.reactions) as [string, string[]][])
+        .filter(([, users]) => users.length > 0)
+        .map(([emoji, users]) => ({
+          emoji,
+          count: users.length,
+          hasUserReacted: users.includes(currentUsername),
+        }));
+    };
+    
+    return {
+      isCurrentUser,
+      userStyle,
+      reactionSummary: getReactionSummary(),
+      userReaction: getUserReaction(),
+    };
+  }, [msg.reactions, currentUser, authorName, currentUsername]);
 
   const handleLongPressStart = () => {
     longPressTimer.current = setTimeout(() => {
