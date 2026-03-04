@@ -18,7 +18,6 @@ import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import AppHeader from './components/layout/AppHeader';
-import UserSelection from './components/common/UserSelection';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -102,7 +101,7 @@ const AppInner: React.FC = () => {
           tabIndex={-1}
           aria-labelledby="active-panel-title"
         >
-          <section className="panel-summary animate-fade-in" aria-live="polite">
+          <section className="panel-summary" aria-live="polite">
             <div className="panel-summary__title-row">
               <h2 id="active-panel-title" className="panel-summary__title">
                 {panelCopy.title}
@@ -114,13 +113,6 @@ const AppInner: React.FC = () => {
             <p className="panel-summary__hint">{panelCopy.helper}</p>
           </section>
 
-          <section
-            className="homepage-user-selection animate-fade-in"
-            aria-label="Profile selector"
-          >
-            <UserSelection />
-          </section>
-
           {MAIN_TABS.map((tab) => {
             const isActivePanel = tab.id === activeTab;
             return (
@@ -130,7 +122,7 @@ const AppInner: React.FC = () => {
                 role="tabpanel"
                 aria-labelledby={`tab-${tab.id}`}
                 hidden={!isActivePanel}
-                className={`tab-panel${isActivePanel ? ' animate-fade-in' : ''}`}
+                className="tab-panel"
               >
                 {isActivePanel ? (
                   tab.id === 'queue' ? (
