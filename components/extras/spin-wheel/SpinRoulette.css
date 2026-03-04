@@ -101,6 +101,7 @@
   --w: clamp(96px, 22%, 126px);
   --ba: calc(1turn / var(--n));
   grid-area: 1 / 1;
+  place-self: center;
   width: var(--w);
   aspect-ratio: 7 / 10;
   border-radius: 0.9rem;

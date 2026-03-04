@@ -288,11 +288,6 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     );
   }
 
-  const isBottomHalf =
-    bubblePosition.y > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400);
-  const isRightHalf =
-    bubblePosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 400);
-
   const containerStyle: React.CSSProperties = isEmbedded
     ? {
         position: 'relative',
@@ -309,31 +304,21 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
       }
     : {
         position: 'fixed',
-        width: isMobile ? 'calc(100vw - 32px)' : '400px',
-        maxHeight: isMobile ? 'min(72vh, 640px)' : 'min(600px, 70vh)',
+        inset: 0,
+        width: '100vw',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         zIndex: FLOATING_Z_INDEX,
         backgroundColor: 'rgba(15, 23, 42, 0.9)',
         backdropFilter: 'blur(16px)',
-        borderRadius: '24px',
+        borderRadius: 0,
         boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-        border: `1px solid ${colors.borderSecondary}30`,
+        border: 'none',
         overflow: 'hidden',
         animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        transformOrigin: `${isBottomHalf ? 'bottom' : 'top'} ${isRightHalf ? 'right' : 'left'}`,
-        ...(isBottomHalf
-          ? { bottom: `calc(100vh - ${bubblePosition.y}px - ${BUBBLE_SIZE}px)` }
-          : { top: `${bubblePosition.y}px` }),
-        ...(isRightHalf
-          ? { right: `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)` }
-          : { left: `${bubblePosition.x}px` }),
-        ...(isMobile && {
-          left: '16px',
-          right: '16px',
-          bottom: isBottomHalf ? '16px' : 'auto',
-          top: !isBottomHalf ? '16px' : 'auto',
-        }),
       };
 
   return (

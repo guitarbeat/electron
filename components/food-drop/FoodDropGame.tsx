@@ -79,6 +79,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   } | null>(null);
 
   const isGameVisible = isEmbedded || !isMinimized;
+  const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
 
   const canvasDisplayWidth = isFullscreen
     ? Math.min(520, typeof window === 'undefined' ? 520 : window.innerWidth - 80)
@@ -376,14 +377,18 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   };
 
   const containerStyle = useMemo<React.CSSProperties>(() => {
-    if (isFullscreen) {
+    if (isViewportExpanded) {
       return {
         position: 'fixed',
         inset: 0,
+        width: '100vw',
+        height: '100vh',
         zIndex: 2000,
         backgroundColor: colors.surface,
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: spacing.md,
       };
     }
@@ -403,7 +408,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
       maxWidth: '100%',
       zIndex: 1000,
     };
-  }, [isEmbedded, isFullscreen, isMobile]);
+  }, [isEmbedded, isViewportExpanded, isMobile]);
 
   if (isMinimized && !isEmbedded) {
     if (isHidden('foodDrop')) return null;
@@ -473,20 +478,20 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     <div style={containerStyle}>
       <Card
         style={{
-          padding: isMobile && !isFullscreen ? spacing.md : spacing.lg,
-          border: isFullscreen ? 'none' : `1px solid ${colors.borderSecondary}30`,
-          borderRadius: isFullscreen ? 0 : '24px',
+          padding: isMobile && !isViewportExpanded ? spacing.md : spacing.lg,
+          border: isViewportExpanded ? 'none' : `1px solid ${colors.borderSecondary}30`,
+          borderRadius: isViewportExpanded ? 0 : '24px',
           background: 'rgba(15, 23, 42, 0.95)',
           backdropFilter: 'blur(16px)',
-          boxShadow: isFullscreen
+          boxShadow: isViewportExpanded
             ? 'none'
             : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-          maxHeight: isFullscreen ? '100%' : 'min(640px, 82vh)',
+          maxHeight: isViewportExpanded ? '100%' : 'min(640px, 82vh)',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          height: isFullscreen ? '100%' : 'auto',
-          margin: isMobile && !isFullscreen ? '0 8px' : 0,
+          height: isViewportExpanded ? '100%' : 'auto',
+          margin: isMobile && !isViewportExpanded ? '0 8px' : 0,
         }}
       >
         <div
@@ -514,6 +519,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
                 padding: '4px 8px',
                 fontSize: 12,
                 border: `1px solid ${colors.borderSecondary}30`,
+                display: isEmbedded ? 'inline-flex' : 'none',
               }}
             >
               {isFullscreen ? 'Exit Full' : 'Fullscreen'}
