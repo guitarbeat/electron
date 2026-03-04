@@ -16,21 +16,12 @@ import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import AppHeader from './components/layout/AppHeader';
-import ToolsDrawer, { ToolId } from './components/tools/ToolsDrawer';
+import BubbleLayer from './components/bubbles/BubbleLayer';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
   { id: 'places', label: 'Places', icon: '📍' },
-];
-
-const TOOL_OPTIONS: { id: ToolId; label: string }[] = [
-  { id: 'messages', label: 'Messages' },
-  { id: 'spin', label: 'Spin' },
-  { id: 'snake', label: 'Snake' },
-  { id: 'food-drop', label: 'Food Drop' },
-  { id: 'quiz', label: 'Quiz' },
-  { id: 'matchmaker', label: 'Matchmaker' },
 ];
 
 const AppInner: React.FC = () => {
@@ -43,8 +34,6 @@ const AppInner: React.FC = () => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
   const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [isToolsOpen, setIsToolsOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState<ToolId>('messages');
 
   useEffect(() => {
     const theme = activeTab === 'places' ? 'places' : 'movies';
@@ -68,34 +57,6 @@ const AppInner: React.FC = () => {
   };
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
-
-  const renderActiveTool = () => {
-    switch (activeTool) {
-      case 'messages':
-        return <MessageBoard mode="embedded" />;
-      case 'spin':
-        return <SpinWheel mode="embedded" />;
-      case 'snake':
-        return <SnakeGame mode="embedded" />;
-      case 'food-drop':
-        return <FoodDropGame mode="embedded" />;
-      case 'quiz':
-        return (
-          <QuizBubble
-            mode="embedded"
-            quizData={quizData}
-            quizCompleted={quizCompleted}
-            currentUser={currentUser}
-            onQuizComplete={handleQuizComplete}
-            onOpenQuizEditor={handleOpenQuizEditor}
-          />
-        );
-      case 'matchmaker':
-        return <MatchmakerBubble mode="embedded" currentUser={currentUser} />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -153,26 +114,13 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <button
-          type="button"
-          className="tools-launcher"
-          onClick={() => setIsToolsOpen(true)}
-          aria-haspopup="dialog"
-          aria-controls="tools-drawer"
-          aria-expanded={isToolsOpen}
-        >
-          Tools
-        </button>
-
-        <ToolsDrawer
-          isOpen={isToolsOpen}
-          onClose={() => setIsToolsOpen(false)}
-          activeTool={activeTool}
-          onSelectTool={setActiveTool}
-          options={TOOL_OPTIONS}
-        >
-          {isToolsOpen ? renderActiveTool() : null}
-        </ToolsDrawer>
+        <BubbleLayer
+          quizData={quizData}
+          quizCompleted={quizCompleted}
+          currentUser={currentUser}
+          onQuizComplete={handleQuizComplete}
+          onOpenQuizEditor={handleOpenQuizEditor}
+        />
       </div>
     </ThemeProvider>
   );
