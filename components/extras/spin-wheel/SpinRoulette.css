@@ -9,6 +9,11 @@
 }
 
 .spin-roulette__wrapper {
+  --spin-accent: #ff69b4;
+  --spin-accent-2: #60a5fa;
+  --spin-shell-1: rgba(15, 23, 42, 0.96);
+  --spin-shell-2: rgba(30, 41, 59, 0.96);
+  --spin-glow: rgba(96, 165, 250, 0.28);
   position: relative;
   width: 100%;
   max-width: min(85vh, 420px);
@@ -25,7 +30,7 @@
   height: 0;
   border-left: 14px solid transparent;
   border-right: 14px solid transparent;
-  border-top: 20px solid var(--spin-indicator, #ff69b4);
+  border-top: 20px solid var(--spin-indicator, var(--spin-accent));
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
   z-index: 10;
   pointer-events: none;
@@ -45,11 +50,12 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1), rgba(15, 23, 42, 0.7) 70%),
-    linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+    linear-gradient(135deg, var(--spin-shell-1), var(--spin-shell-2));
   border: 3px solid rgba(255, 255, 255, 0.15);
   box-shadow:
     inset 0 0 30px rgba(0, 0, 0, 0.45),
-    0 0 22px rgba(0, 0, 0, 0.32);
+    0 0 22px rgba(0, 0, 0, 0.32),
+    0 0 36px var(--spin-glow);
   mask: linear-gradient(90deg, transparent, #000 18% 82%, transparent);
 }
 
@@ -60,6 +66,15 @@
   height: 100%;
   transform: rotateY(var(--rotation, 0deg));
   will-change: transform;
+}
+
+.spin-roulette__scene::before {
+  content: '';
+  position: absolute;
+  inset: 2.5%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
 }
 
 .spin-roulette[data-spinning] .spin-roulette__a3d {
@@ -96,6 +111,14 @@
     0 6px 22px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(0, 0, 0, 0.28);
   transform: rotateY(calc(var(--i) * var(--ba))) translateZ(clamp(120px, 28vw, 170px));
+}
+
+.spin-roulette__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.35), transparent 55%);
+  pointer-events: none;
 }
 
 .spin-roulette__card-poster-wrap {
@@ -157,6 +180,15 @@
   z-index: 12;
 }
 
+.spin-roulette__hub::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+
 .spin-roulette__btn {
   width: 100%;
   height: 100%;
@@ -174,7 +206,9 @@
 
 .spin-roulette__btn:hover:not(:disabled) {
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
+  box-shadow:
+    0 0 20px rgba(255, 105, 180, 0.42),
+    0 0 34px rgba(96, 165, 250, 0.25);
 }
 
 .spin-roulette__btn:active:not(:disabled) {
@@ -189,5 +223,18 @@
 @media (prefers-reduced-motion: reduce) {
   .spin-roulette__a3d {
     transition-duration: 5800ms !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .spin-roulette__card {
+    --w: clamp(86px, 25%, 108px);
+    transform: rotateY(calc(var(--i) * var(--ba))) translateZ(clamp(98px, 30vw, 132px));
+  }
+
+  .spin-roulette__hub {
+    bottom: 10%;
+    min-width: 58px;
+    min-height: 58px;
   }
 }
