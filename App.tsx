@@ -19,6 +19,7 @@ import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import DebugMovies from './components/debug/DebugMovies';
 import AppHeader from './components/layout/AppHeader';
+import UserSelection from './components/common/UserSelection';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -86,6 +87,7 @@ const AppInner: React.FC = () => {
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
   const panelTitle = activeTabMeta?.label || 'Movies';
   const panelCopy = TAB_COPY[activeTab as WorkspaceTab];
+  const modeLabel = activeTab === 'places' ? 'Places mode' : 'Movie mode';
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -114,13 +116,27 @@ const AppInner: React.FC = () => {
               <h2 id="active-panel-title" className="panel-intro__title">
                 {panelCopy.title}
               </h2>
-              <span className="panel-intro__badge">
-                {currentUser ? `${currentUser} profile` : 'Guest'}
-              </span>
+              <div className="panel-intro__badge-group">
+                <span
+                  className={`panel-intro__badge panel-intro__badge--mode ${activeTab === 'places' ? 'is-places' : 'is-movies'}`}
+                >
+                  {activeTabMeta?.icon} {modeLabel}
+                </span>
+                <span className="panel-intro__badge panel-intro__badge--profile">
+                  {currentUser ? `${currentUser} profile` : 'Guest'}
+                </span>
+              </div>
             </div>
             <p className="panel-intro__subtitle">{panelCopy.subtitle}</p>
             <p className="panel-intro__description">{panelCopy.description}</p>
             <p className="sr-only">{panelTitle}</p>
+          </section>
+
+          <section
+            className="homepage-user-selection animate-fade-in"
+            aria-label="Profile selector"
+          >
+            <UserSelection />
           </section>
 
           {MAIN_TABS.map((tab) => {

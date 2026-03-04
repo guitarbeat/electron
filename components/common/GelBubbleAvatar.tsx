@@ -5,7 +5,6 @@ import ImageWithFallback from './ImageWithFallback';
 import { userImageSources } from '../../config/imageConfig';
 import { useRandomCatImage } from '../../hooks/useRandomCatImage';
 import { LockIcon } from './icons';
-import { typography } from '../../design-system/tokens';
 
 type BubbleSize = 'default' | 'compact';
 
@@ -47,6 +46,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   const sources =
     catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
   const sizeTokens = SIZES[size];
+  const accentColor = user === 'Aaron' ? 'var(--color-accent)' : 'var(--color-secondary)';
+  const haloColor = user === 'Aaron' ? 'var(--color-tertiary)' : 'var(--color-accent)';
+  const accentGlowOpacity = isHovered ? '52%' : '36%';
+  const haloGlowOpacity = isHovered ? '45%' : '28%';
 
   const onImageClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -70,6 +73,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       aria-label={`Select ${user} as user${hasPin ? ' (PIN protected)' : ''}`}
       className={`gel-bubble ${animationOffset ? 'gel-bubble-offset' : ''}`}
       style={{
+        ['--gel-accent' as string]: accentColor,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -94,22 +98,20 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           background: `
             radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35) 0%, transparent 40%),
             radial-gradient(circle at 70% 75%, rgba(255,255,255,0.1) 0%, transparent 30%),
-            linear-gradient(135deg, 
-              rgba(147, 112, 219, 0.5) 0%, 
-              rgba(138, 130, 200, 0.4) 25%,
-              rgba(100, 80, 160, 0.35) 50%,
-              rgba(147, 112, 219, 0.45) 75%,
-              rgba(180, 150, 230, 0.5) 100%
+            linear-gradient(135deg,
+              color-mix(in srgb, ${accentColor} 42%, var(--color-surface-2) 58%) 0%,
+              color-mix(in srgb, var(--color-tertiary) 36%, var(--color-surface-3) 64%) 50%,
+              color-mix(in srgb, ${haloColor} 44%, var(--color-surface-2) 56%) 100%
             )
           `,
           boxShadow: `
-            inset 0 -15px 40px rgba(100, 60, 150, 0.4),
+            inset 0 -15px 40px color-mix(in srgb, var(--color-surface-0) 65%, ${haloColor} 35%),
             inset 0 15px 30px rgba(255, 255, 255, 0.2),
-            inset 0 0 20px rgba(255, 105, 180, 0.15),
-            0 0 ${isHovered ? '50px' : '35px'} rgba(255, 105, 180, ${isHovered ? '0.5' : '0.35'}),
-            0 0 ${isHovered ? '80px' : '60px'} rgba(147, 112, 219, ${isHovered ? '0.4' : '0.25'})
+            inset 0 0 20px color-mix(in srgb, ${accentColor} 30%, transparent),
+            0 0 ${isHovered ? '50px' : '35px'} color-mix(in srgb, ${accentColor} ${accentGlowOpacity}, transparent),
+            0 0 ${isHovered ? '80px' : '60px'} color-mix(in srgb, ${haloColor} ${haloGlowOpacity}, transparent)
           `,
-          border: '3px solid rgba(180, 150, 220, 0.4)',
+          border: `3px solid color-mix(in srgb, ${haloColor} 38%, var(--color-border-subtle) 62%)`,
           backdropFilter: 'blur(4px)',
           WebkitBackdropFilter: 'blur(4px)',
           transition: 'all 0.3s ease-out',
@@ -128,7 +130,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
                 position: 'absolute',
                 inset: '-12px',
                 borderRadius: '50%',
-                border: '3px solid rgba(255, 105, 180, 0.5)',
+                border: `3px solid color-mix(in srgb, ${accentColor} 62%, transparent)`,
                 pointerEvents: 'none',
               }}
             />
@@ -138,7 +140,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
                 position: 'absolute',
                 inset: '-12px',
                 borderRadius: '50%',
-                border: '2px solid rgba(135, 206, 250, 0.4)',
+                border: `2px solid color-mix(in srgb, ${haloColor} 55%, transparent)`,
                 pointerEvents: 'none',
                 animationDelay: '0.3s',
               }}
@@ -195,9 +197,9 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             height: '72%',
             borderRadius: '50%',
             overflow: 'hidden',
-            border: '3px solid rgba(255, 105, 180, 0.6)',
+            border: `3px solid color-mix(in srgb, ${accentColor} 58%, white 42%)`,
             boxShadow: `
-              0 0 15px rgba(255, 105, 180, 0.4),
+              0 0 15px color-mix(in srgb, ${accentColor} 44%, transparent),
               inset 0 0 20px rgba(0, 0, 0, 0.2)
             `,
             position: 'relative',
@@ -235,7 +237,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
                 style={{
                   width: 28,
                   height: 28,
-                  border: '3px solid rgba(255, 105, 180, 0.5)',
+                  border: `3px solid color-mix(in srgb, ${accentColor} 52%, transparent)`,
                   borderTopColor: 'transparent',
                   borderRadius: '50%',
                   animation: 'gel-avatar-spin 0.8s linear infinite',
@@ -256,11 +258,15 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               height: '32px',
               borderRadius: '50%',
               background: `
-                radial-gradient(circle at 30% 30%, rgba(100, 70, 150, 0.9) 0%, rgba(45, 27, 78, 0.95) 100%)
+                radial-gradient(
+                  circle at 30% 30%,
+                  color-mix(in srgb, ${haloColor} 45%, var(--color-surface-3) 55%) 0%,
+                  color-mix(in srgb, var(--color-surface-0) 82%, ${accentColor} 18%) 100%
+                )
               `,
-              border: '2px solid rgba(255, 105, 180, 0.7)',
+              border: `2px solid color-mix(in srgb, ${accentColor} 66%, transparent)`,
               boxShadow: `
-                0 0 12px rgba(255, 105, 180, 0.5),
+                0 0 12px color-mix(in srgb, ${accentColor} 50%, transparent),
                 inset 0 2px 4px rgba(255, 255, 255, 0.2)
               `,
               display: 'flex',
@@ -268,7 +274,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               justifyContent: 'center',
             }}
           >
-            <LockIcon style={{ width: '15px', height: '15px', color: '#ff69b4' }} />
+            <LockIcon style={{ width: '15px', height: '15px', color: accentColor }} />
           </div>
         )}
       </div>
@@ -276,17 +282,17 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       {/* Name Label */}
       <span
         style={{
-          fontFamily: typography.fontFamily.heading.join(', '),
+          fontFamily: 'inherit',
           fontSize: sizeTokens.name,
-          fontWeight: 600,
-          color: '#fff',
+          fontWeight: 700,
+          color: 'var(--color-text-primary)',
           textTransform: 'uppercase',
           textShadow: `
-            0 0 10px rgba(255, 105, 180, 0.8),
-            0 0 20px rgba(255, 105, 180, 0.5),
+            0 0 10px color-mix(in srgb, ${accentColor} 62%, transparent),
+            0 0 20px color-mix(in srgb, ${haloColor} 35%, transparent),
             0 2px 4px rgba(0, 0, 0, 0.5)
           `,
-          letterSpacing: typography.letterSpacing.wide,
+          letterSpacing: '0.06em',
           transition: 'all 0.3s ease-out',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',
         }}

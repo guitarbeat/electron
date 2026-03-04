@@ -1,14 +1,13 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
-import type { User } from '../../types';
+import type { MainTab, User } from '../../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { usePins } from '../../hooks/usePins';
-import { spacing } from '../../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
 import ThemeToggle from '../ui/ThemeToggle';
-import { MainTab } from '../../types';
+import './UserSelection.css';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
@@ -22,14 +21,18 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   onTabChange,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
-  const { userHasPin, verifyUserPin, refresh, isLoading } = usePins();
+  const { userHasPin, verifyUserPin, isLoading } = usePins();
   const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
   const bubbleSize = isMobile ? 'compact' : 'default';
+  const isDisabled = isLoading || isVerifying;
+  const users: User[] = ['Aaron', 'Electra'];
 
   const handleUserClick = (user: User) => {
+    if (isDisabled) return;
+
     if (user === currentUser) {
       setCurrentUser(null);
       onUserSelected?.(null);
@@ -62,98 +65,38 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: isMobile ? `${spacing.sm} 0` : `${spacing.lg} 0`,
-        width: '100%',
-        maxWidth: '800px',
-        margin: '0 auto',
-        gap: spacing.xl,
-      }}
-    >
+    <div className={`user-selection${isMobile ? ' is-mobile' : ''}`}>
       {/* Theme Toggle Section (optional label handled by parent sheet title) */}
       {onTabChange && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-          }}
-        >
+        <div className="user-selection__theme-toggle">
           <ThemeToggle activeTab={activeTab} onChange={onTabChange} isMobile={isMobile} />
         </div>
       )}
 
       {/* Profile Selection Section */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: spacing.md,
-          width: '100%',
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            color: '#fff',
-            fontSize: isMobile ? '1rem' : '1.125rem',
-            fontWeight: 600,
-            textAlign: 'center',
-            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-            fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
-          }}
-        >
-          Who's watching?
-        </h3>
+      <div className="user-selection__profiles">
+        <h3 className="user-selection__title">Who&apos;s watching?</h3>
+        <p className="user-selection__subtitle">Choose a profile to personalize your feed.</p>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 'clamp(16px, 4vw, 40px)',
-            width: '100%',
-            flexWrap: 'nowrap',
-            padding: `0 ${spacing.md}`,
-            position: 'relative',
-          }}
-        >
-          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-            <GelBubbleAvatar
-              user="Aaron"
-              hasPin={userHasPin('Aaron')}
-              isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
-              isSmall={currentUser !== null && currentUser !== 'Aaron'}
-              size={bubbleSize}
-              onClick={() => handleUserClick('Aaron')}
-              onMouseEnter={() => setHoveredAvatar('Aaron')}
-              onMouseLeave={() => setHoveredAvatar(null)}
-              onFocus={() => setHoveredAvatar('Aaron')}
-              onBlur={() => setHoveredAvatar(null)}
-            />
-          </div>
-
-          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-            <GelBubbleAvatar
-              user="Electra"
-              hasPin={userHasPin('Electra')}
-              isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
-              isSmall={currentUser !== null && currentUser !== 'Electra'}
-              size={bubbleSize}
-              onClick={() => handleUserClick('Electra')}
-              onMouseEnter={() => setHoveredAvatar('Electra')}
-              onMouseLeave={() => setHoveredAvatar(null)}
-              onFocus={() => setHoveredAvatar('Electra')}
-              onBlur={() => setHoveredAvatar(null)}
-              animationOffset
-            />
-          </div>
+        <div className="user-selection__bubble-row">
+          {users.map((user, index) => (
+            <div key={user} className="user-selection__bubble-slot">
+              <GelBubbleAvatar
+                user={user}
+                hasPin={userHasPin(user)}
+                isHovered={hoveredAvatar === user || currentUser === user}
+                isSmall={currentUser !== null && currentUser !== user}
+                size={bubbleSize}
+                disabled={isDisabled}
+                onClick={() => handleUserClick(user)}
+                onMouseEnter={() => setHoveredAvatar(user)}
+                onMouseLeave={() => setHoveredAvatar(null)}
+                onFocus={() => setHoveredAvatar(user)}
+                onBlur={() => setHoveredAvatar(null)}
+                animationOffset={index === 1}
+              />
+            </div>
+          ))}
         </div>
       </div>
 

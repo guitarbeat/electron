@@ -59,6 +59,8 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     status: 'running',
     nextLevel: 0,
     currentLevel: 0,
+    nextScale: 1,
+    currentScale: 1,
     canDrop: true,
     launcherX: FOOD_DROP_WORLD_WIDTH / 2,
   });
@@ -114,6 +116,8 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
         prev.status === next.status &&
         prev.nextLevel === next.nextLevel &&
         prev.currentLevel === next.currentLevel &&
+        Math.abs(prev.nextScale - next.nextScale) < 0.001 &&
+        Math.abs(prev.currentScale - next.currentScale) < 0.001 &&
         prev.canDrop === next.canDrop &&
         Math.abs(prev.launcherX - next.launcherX) < 0.5
       ) {
@@ -495,11 +499,12 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
           padding: isMobile && !isViewportExpanded ? spacing.md : spacing.lg,
           border: isViewportExpanded ? 'none' : `1px solid ${colors.borderSecondary}30`,
           borderRadius: isViewportExpanded ? 0 : '24px',
-          background: 'rgba(15, 23, 42, 0.95)',
+          background:
+            'radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.18), transparent 42%), radial-gradient(circle at 100% 100%, rgba(251, 146, 60, 0.16), transparent 46%), rgba(15, 23, 42, 0.95)',
           backdropFilter: 'blur(16px)',
           boxShadow: isViewportExpanded
             ? 'none'
-            : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
+            : '0 18px 44px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.12) inset, 0 0 34px rgba(56, 189, 248, 0.12)',
           maxHeight: isViewportExpanded ? '100%' : 'min(640px, 82vh)',
           overflowY: 'auto',
           display: 'flex',
@@ -520,9 +525,15 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
             {!isEmbedded && (
               <h2
-                style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}
+                style={{
+                  margin: 0,
+                  fontSize: typography.fontSize.lg,
+                  color: colors.textPrimary,
+                  textShadow: '0 2px 10px rgba(251, 146, 60, 0.5)',
+                  letterSpacing: '0.02em',
+                }}
               >
-                Food Drop
+                Food Drop Arcade
               </h2>
             )}
             <Button
@@ -552,16 +563,56 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: spacing.md,
-            color: colors.textSecondary,
+            color: colors.textPrimary,
             fontSize: typography.fontSize.sm,
             flexWrap: 'wrap',
             gap: spacing.xs,
           }}
         >
-          <span>Score: {snapshot.score}</span>
-          <span>Best: {bestScore}</span>
-          <span>{statusLabel[snapshot.status]}</span>
-          <span>Next: {FOOD_LEVELS[snapshot.nextLevel]?.emoji ?? '🍒'}</span>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid rgba(248, 250, 252, 0.2)',
+              background: 'rgba(2, 6, 23, 0.42)',
+              fontWeight: typography.fontWeight.semibold,
+            }}
+          >
+            Score: {snapshot.score}
+          </span>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid rgba(248, 250, 252, 0.2)',
+              background: 'rgba(2, 6, 23, 0.42)',
+              fontWeight: typography.fontWeight.semibold,
+            }}
+          >
+            Best: {bestScore}
+          </span>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid rgba(125, 211, 252, 0.35)',
+              background: 'rgba(14, 116, 144, 0.24)',
+              fontWeight: typography.fontWeight.semibold,
+            }}
+          >
+            {statusLabel[snapshot.status]}
+          </span>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid rgba(251, 191, 36, 0.35)',
+              background: 'rgba(120, 53, 15, 0.24)',
+              fontWeight: typography.fontWeight.semibold,
+            }}
+          >
+            Next: {FOOD_LEVELS[snapshot.nextLevel]?.emoji ?? '🍒'}
+          </span>
         </div>
 
         <div
@@ -571,9 +622,12 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
             maxWidth: '100%',
             borderRadius: radius.lg,
             overflow: 'hidden',
-            border: `1px solid ${colors.borderSecondary}40`,
-            boxShadow: shadows.card,
+            border: `1px solid ${colors.borderSecondary}70`,
+            boxShadow: '0 14px 36px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(255,255,255,0.08) inset',
             marginBottom: spacing.md,
+            background:
+              'linear-gradient(140deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%)',
+            padding: 8,
           }}
         >
           <canvas
@@ -587,6 +641,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
               display: 'block',
               touchAction: 'none',
               cursor: snapshot.status === 'running' ? 'crosshair' : 'default',
+              borderRadius: radius.md,
             }}
             onPointerDown={handleCanvasPointerDown}
             onPointerMove={handleCanvasPointerMove}
@@ -633,8 +688,9 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
               marginBottom: 0,
               marginTop: spacing.sm,
               textAlign: 'center',
-              color: colors.textTertiary,
+              color: 'rgba(226, 232, 240, 0.78)',
               fontSize: typography.fontSize.xs,
+              letterSpacing: '0.02em',
             }}
           >
             Arrow/A-D move launcher · Space/Down drop · P pause · R restart
