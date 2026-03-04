@@ -1,64 +1,39 @@
-# Refactor Dashboard.tsx + Y2K Theme Enhancement
 
-## Problem
 
-Dashboard.tsx is broken -- two component definitions (old `Dashboard` and new `MiniPreview`) got merged/interleaved, producing ~25 build errors (unclosed tags, duplicate declarations, mixed code). The file needs a clean rewrite.
+## Plan: Dismiss bubbles via drag-to-X
 
-## Plan
+**What changes:** When any floating bubble starts being dragged, a dismiss zone (X icon) appears at the bottom center of the screen. Dropping the bubble on the X hides it. Hidden bubbles can be restored from a small toggle button.
 
-### 1. Rewrite Dashboard.tsx from scratch
+### Components affected
+All 5 floating bubble components share duplicated drag logic:
+- `MessageBoard.tsx` (💬)
+- `SpinWheel.tsx` (🎰)
+- `SnakeGame.tsx` (🐍)
+- `QuizBubble.tsx` (❓)
+- `MatchmakerBubble.tsx` (💕)
 
-The file currently has two overlapping implementations. I'll consolidate into a clean, working component using the `MiniPreview` accordion pattern (the newer, better approach):
+### Implementation
 
-- **Remove** duplicate imports (e.g., two `MainTab` imports on lines 2-3), orphaned `sectionLabel` style that cuts off mid-object, and all interleaved old code
-- **Keep** the `MiniPreview` collapsible card pattern with chevron toggle, "Open Full" link, and grid-based item layout
-- **Keep** the outer `Dashboard` component that creates movie and place preview cards
-- Structure: `MiniPreview` (reusable accordion card) + `Dashboard` (uses two MiniPreviews for movies and places)
+1. **Create a shared `DragDismissZone` component** — a fixed element at the bottom center that renders an X circle. It accepts `visible: boolean` and `isHovering: boolean` props. Animates in/out with scale+opacity.
 
-### 2. Y2K theme enhancements
+2. **Create a `BubbleDismissContext`** — a React context in App.tsx that:
+   - Tracks which bubbles are hidden (stored in localStorage for persistence)
+   - Tracks whether any bubble is currently being dragged (to show the dismiss zone)
+   - Provides `setDragging(id, isDragging)`, `dismiss(id)`, `restore(id)`, `isHidden(id)` methods
 
-Layer more Y2K aesthetic elements into the Dashboard and global styles:
+3. **Update each bubble component** to:
+   - Check `isHidden` from context; if hidden, render nothing
+   - On drag start → call `setDragging(id, true)` to show the dismiss zone
+   - On drag move → check if bubble overlaps the dismiss zone; if so, set hovering state
+   - On drag end → if overlapping dismiss zone, call `dismiss(id)` instead of opening
 
-**Dashboard cards:**
+4. **Add a "restore bubbles" button** — a small fixed button (bottom-left corner) that only appears when at least one bubble is hidden. Shows a menu/list of hidden bubbles to restore individually.
 
-- Add iridescent/holographic gradient borders (shifting pink-to-blue-to-purple)
-- Use glossy gel-style section headers with inner highlight shine
-- Add subtle star/sparkle decorators (Unicode ✦ ✧ ★) in section headers
-- Use brighter neon accent colors for interactive elements
-
-**Global (index.html styles):**
-
-- Add a `@keyframes iridescent` animation for shimmering rainbow border effects
-- Add a `.y2k-card` utility class with holographic border + inner glow
-- Add a `.y2k-header` class with gradient text + sparkle text-shadow
-- Enhance the existing retro-divider with an animated shimmer
-
-**Dashboard.css:**
-
-- Add hover states with Y2K-style glow pulses
-- Add iridescent border animation to section cards on hover
+5. **Render `DragDismissZone` once in App.tsx**, connected to context.
 
 ### Technical details
+- Dismiss zone hit-test: check if bubble center is within ~60px of the dismiss zone center
+- localStorage key: `hiddenBubbles` storing an array of IDs
+- The dismiss zone appears with a short fade+scale animation when dragging starts
+- When hovering over the zone, it grows slightly and turns red to indicate "drop to dismiss"
 
-**Dashboard.tsx structure (clean rewrite):**
-
-```text
-MiniPreview component
-  - Collapsible accordion with chevron
-  - Click header to expand/collapse
-  - "Open Full" button navigates to tab
-  - Grid layout for items (2 columns)
-  - Accepts: title, icon, items[], onNavigate, isLoading, accentColor
-
-Dashboard component
-  - Fetches movies + places via hooks
-  - Renders two MiniPreview cards
-  - Movies: unwatched, shows poster thumbnails
-  - Places: unvisited, shows name
-```
-
-**Files to modify:**
-
-1. `components/main/Dashboard.tsx` -- full rewrite (fix all build errors + Y2K styling)
-2. `components/main/Dashboard.css` -- add Y2K hover/glow animations
-3. `index.html` -- add Y2K utility classes and iridescent keyframes (in existing `<style>` block)
