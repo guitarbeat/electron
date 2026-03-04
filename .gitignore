@@ -37,3 +37,6 @@ server.pid
 pr_branches.json
 pr_status.json
 test-results/
+
+.vercel
+.env*.local

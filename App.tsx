@@ -6,14 +6,9 @@ import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 import Watchlist from './components/watchlist';
-import MessageBoard from './components/common/MessageBoard';
-import SnakeGame from './components/snake/SnakeGame';
-import SpinWheel from './components/extras/spin-wheel/SpinWheel';
-import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
-import QuizBubble from './components/quiz/QuizBubble';
-import DragDismissZone from './components/common/DragDismissZone';
-import RestoreBubblesButton from './components/common/RestoreBubblesButton';
-import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
+import AppHeader from './components/layout/AppHeader';
+import FloatingBubbles from './components/layout/FloatingBubbles';
+import { BubbleDismissProvider } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import ThemeToggle from './components/ui/ThemeToggle';
@@ -34,8 +29,6 @@ const AppInner: React.FC = () => {
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const { quizData } = useQuiz(true);
-  const { isDragging, isHoveringDismiss } = useBubbleDismiss();
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -51,9 +44,6 @@ const AppInner: React.FC = () => {
         isMobile={isMobile}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        quizData={quizData}
-        isDragging={isDragging}
-        isHoveringDismiss={isHoveringDismiss}
         showProfileSheet={showProfileSheet}
         setShowProfileSheet={setShowProfileSheet}
         quizCompleted={quizCompleted}
@@ -71,9 +61,6 @@ const AppInnerWithTheme: React.FC<any> = ({
   isMobile,
   activeTab,
   setActiveTab,
-  quizData,
-  isDragging,
-  isHoveringDismiss,
   showProfileSheet,
   setShowProfileSheet,
   quizCompleted,
@@ -143,57 +130,7 @@ const AppInnerWithTheme: React.FC<any> = ({
         Skip to content
       </a>
 
-      <header
-        className="app-header"
-        style={{
-          height: layout.topBarHeight,
-          background: colors.surface1,
-          borderBottom: `1px solid ${colors.borderSubtle}`,
-          boxShadow: shadows.card,
-        }}
-      >
-        <div className="app-header-inner" style={{ maxWidth: layout.contentMaxWidth }}>
-          <div style={{ minWidth: 0 }}>
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.lg,
-                lineHeight: 1.2,
-                letterSpacing: typography.letterSpacing.normal,
-              }}
-            >
-              Aaron &amp; Electra
-            </h1>
-            <p
-              style={{
-                margin: 0,
-                color: colors.textTertiary,
-                fontSize: typography.fontSize.xs,
-              }}
-            >
-              Movies & Places
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="profile-chip"
-            onClick={() => setShowProfileSheet(true)}
-            aria-label="Open profile selector"
-            title="Open profile selector"
-            style={{
-              borderRadius: radius.full,
-              border: `1px solid ${colors.border}`,
-              background: colors.surface2,
-              color: colors.textPrimary,
-            }}
-          >
-            <span aria-hidden>{currentUser ? '👤' : '👥'}</span>
-            <span>{currentUser || 'Guest'}</span>
-          </button>
-        </div>
-      </header>
+      <AppHeader onProfileClick={() => setShowProfileSheet(true)} currentUser={currentUser} />
 
       {isMobile && (
         <div className="app-top-tabs">
@@ -322,19 +259,11 @@ const AppInnerWithTheme: React.FC<any> = ({
         </div>
       </MinigameModal>
 
-      <MessageBoard mode="floating" />
-      <SpinWheel mode="floating" />
-      <SnakeGame mode="floating" />
-      <QuizBubble
-        quizData={quizData}
+      <FloatingBubbles
         quizCompleted={quizCompleted}
-        currentUser={currentUser}
         onQuizComplete={handleQuizComplete}
         onOpenQuizEditor={handleOpenQuizEditor}
       />
-      <MatchmakerBubble currentUser={currentUser} />
-      <DragDismissZone visible={isDragging} isHovering={isHoveringDismiss} />
-      <RestoreBubblesButton />
     </div>
   );
 };

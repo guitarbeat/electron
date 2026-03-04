@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { MainTab } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
+import { Film, MapPin, Popcorn, Camera, Map, Navigation, Star } from 'lucide-react';
 import './ThemeToggle.css';
 
 interface ThemeToggleProps {
@@ -42,49 +43,37 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ activeTab, onChange, isMobile
         <div className="theme-toggle__slider">
           {/* Movies Mode Elements */}
           <div className="theme-toggle__movies">
-            <div className="theme-toggle__film-reel">
-              <div className="theme-toggle__film-reel-center"></div>
-              <div className="theme-toggle__film-reel-spokes"></div>
-            </div>
-            <div className="theme-toggle__film-strip">
-              <div className="theme-toggle__film-frame"></div>
-              <div className="theme-toggle__film-frame"></div>
-              <div className="theme-toggle__film-frame"></div>
-            </div>
-            <div className="theme-toggle__popcorn">
-              <div className="theme-toggle__popcorn-kernel"></div>
-              <div className="theme-toggle__popcorn-kernel"></div>
-              <div className="theme-toggle__popcorn-kernel"></div>
+            <div className="theme-toggle__icon-group">
+              <Film className="theme-toggle__main-icon" />
+              <div className="theme-toggle__sub-icons">
+                <Camera className="theme-toggle__sub-icon" />
+                <Popcorn className="theme-toggle__sub-icon" />
+              </div>
             </div>
           </div>
 
           {/* Places Mode Elements */}
           <div className="theme-toggle__places">
-            <div className="theme-toggle__map-pin">
-              <div className="theme-toggle__pin-head"></div>
-              <div className="theme-toggle__pin-point"></div>
-            </div>
-            <div className="theme-toggle__cloud cloud1">
-              <div className="theme-toggle__cloud-part"></div>
-              <div className="theme-toggle__cloud-part"></div>
-            </div>
-            <div className="theme-toggle__cloud cloud2">
-              <div className="theme-toggle__cloud-part"></div>
-              <div className="theme-toggle__cloud-part"></div>
-            </div>
-            <div className="theme-toggle__stars">
-              <div className="theme-toggle__star star1"></div>
-              <div className="theme-toggle__star star2"></div>
-              <div className="theme-toggle__star star3"></div>
-              <div className="theme-toggle__star star4"></div>
-              <div className="theme-toggle__star star5"></div>
+            <div className="theme-toggle__icon-group">
+              <MapPin className="theme-toggle__main-icon" />
+              <div className="theme-toggle__sub-icons">
+                <Map className="theme-toggle__sub-icon" />
+                <Navigation className="theme-toggle__sub-icon" />
+                <Star className="theme-toggle__sub-icon" />
+              </div>
             </div>
           </div>
 
           {/* Labels */}
           <div className="theme-toggle__labels">
-            <div className="theme-toggle__label movies-label">🎬 Movies</div>
-            <div className="theme-toggle__label places-label">📍 Places</div>
+            <div className="theme-toggle__label movies-label">
+              <Film className="theme-toggle__label-icon" />
+              <span>Movies</span>
+            </div>
+            <div className="theme-toggle__label places-label">
+              <MapPin className="theme-toggle__label-icon" />
+              <span>Places</span>
+            </div>
           </div>
         </div>
       </label>

@@ -70,7 +70,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
 }
 
 .theme-toggle__places {
@@ -79,285 +78,81 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Icon Groups */
+.theme-toggle__icon-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 8px;
 }
 
-/* Film Reel */
-.theme-toggle__film-reel {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #333 30%, #666 70%);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  animation: rotate 3s linear infinite;
+.theme-toggle__main-icon {
+  width: 32px;
+  height: 32px;
+  color: white;
+  transition: all 0.3s ease;
 }
 
-.theme-toggle__film-reel-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #222;
-}
-
-.theme-toggle__film-reel-spokes {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-}
-
-.theme-toggle__film-reel-spokes::before,
-.theme-toggle__film-reel-spokes::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 2px;
-  height: 20px;
-  background: #444;
-  transform-origin: center;
-}
-
-.theme-toggle__film-reel-spokes::before {
-  transform: translate(-50%, -50%) rotate(0deg);
-}
-
-.theme-toggle__film-reel-spokes::after {
-  transform: translate(-50%, -50%) rotate(90deg);
-}
-
-/* Film Strip */
-.theme-toggle__film-strip {
+.theme-toggle__sub-icons {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
-.theme-toggle__film-frame {
-  width: 30px;
-  height: 20px;
-  background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 100%);
-  border: 1px solid #ccc;
-  border-radius: 2px;
-  position: relative;
-  overflow: hidden;
+.theme-toggle__sub-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
 }
 
-.theme-toggle__film-frame::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 20%;
-  transform: translateY(-50%);
-  width: 60%;
-  height: 2px;
-  background: #666;
+.theme-toggle__movies:hover .theme-toggle__main-icon,
+.theme-toggle__movies:hover .theme-toggle__sub-icon {
+  color: #ffd700;
+  transform: scale(1.1);
 }
 
-/* Popcorn */
-.theme-toggle__popcorn {
-  position: relative;
-  width: 30px;
-  height: 30px;
+.theme-toggle__places:hover .theme-toggle__main-icon,
+.theme-toggle__places:hover .theme-toggle__sub-icon {
+  color: #87ceeb;
+  transform: scale(1.1);
 }
 
-.theme-toggle__popcorn-kernel {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #fff3e0;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(45deg);
-}
-
-.theme-toggle__popcorn-kernel:nth-child(1) {
-  top: 5px;
-  left: 5px;
-}
-
-.theme-toggle__popcorn-kernel:nth-child(2) {
-  top: 10px;
-  left: 15px;
-}
-
-.theme-toggle__popcorn-kernel:nth-child(3) {
-  top: 15px;
-  left: 8px;
-}
-
-/* Map Pin */
-.theme-toggle__map-pin {
-  position: relative;
-  width: 35px;
-  height: 35px;
-}
-
-.theme-toggle__pin-head {
-  width: 25px;
-  height: 25px;
-  background: var(--color-accent);
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  position: absolute;
-  top: 0;
-  left: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.theme-toggle__pin-point {
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  width: 8px;
-  height: 8px;
-  background: white;
-  border-radius: 50%;
-  transform: rotate(45deg);
-}
-
-/* Clouds */
-.theme-toggle__cloud {
-  background: white;
-  border-radius: 50px;
-  position: absolute;
-  opacity: 0.8;
-}
-
-.theme-toggle__cloud-part {
-  position: absolute;
-  background: white;
-  border-radius: 50%;
-}
-
-.theme-toggle__cloud.cloud1 {
-  width: 25px;
-  height: 8px;
-  top: 15px;
-  left: 20px;
-}
-
-.theme-toggle__cloud.cloud1 .theme-toggle__cloud-part:nth-child(1) {
-  width: 12px;
-  height: 12px;
-  top: -6px;
-  left: 3px;
-}
-
-.theme-toggle__cloud.cloud1 .theme-toggle__cloud-part:nth-child(2) {
-  width: 10px;
-  height: 10px;
-  top: -5px;
-  right: 3px;
-}
-
-.theme-toggle__cloud.cloud2 {
-  width: 20px;
-  height: 6px;
-  top: 35px;
-  left: 35px;
-}
-
-.theme-toggle__cloud.cloud2 .theme-toggle__cloud-part:nth-child(1) {
-  width: 8px;
-  height: 8px;
-  top: -4px;
-  left: 2px;
-}
-
-.theme-toggle__cloud.cloud2 .theme-toggle__cloud-part:nth-child(2) {
-  width: 6px;
-  height: 6px;
-  top: -3px;
-  right: 2px;
-}
-
-/* Stars */
-.theme-toggle__stars {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-.theme-toggle__star {
-  position: absolute;
-  background: white;
-  clip-path: polygon(
-    50% 0%,
-    61% 35%,
-    98% 35%,
-    68% 57%,
-    79% 91%,
-    50% 70%,
-    21% 91%,
-    32% 57%,
-    2% 35%,
-    39% 35%
-  );
-  opacity: 0;
-  transition: all 1s ease;
-}
-
-.theme-toggle__star.star1 {
-  width: 8px;
-  height: 8px;
-  top: 10px;
-  left: 15px;
-}
-
-.theme-toggle__star.star2 {
-  width: 6px;
-  height: 6px;
-  top: 25px;
-  left: 35px;
-}
-
-.theme-toggle__star.star3 {
-  width: 5px;
-  height: 5px;
-  top: 40px;
-  left: 25px;
-}
-
-.theme-toggle__star.star4 {
-  width: 7px;
-  height: 7px;
-  top: 15px;
-  left: 55px;
-}
-
-.theme-toggle__star.star5 {
-  width: 4px;
-  height: 4px;
-  top: 35px;
-  left: 45px;
-}
 
 /* Labels */
 .theme-toggle__labels {
   position: absolute;
-  bottom: -25px;
+  bottom: -30px;
   left: 0;
   right: 0;
   display: flex;
   justify-content: space-between;
   padding: 0 20px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text-secondary);
   pointer-events: none;
 }
 
 .theme-toggle__label {
-  transition: color 1s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle__label-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.theme-toggle__label.movies-label {
+  color: var(--color-accent);
+}
+
+.theme-toggle__label.places-label {
+  color: var(--color-secondary);
 }
 
 /* Checked State (Places Mode) */
@@ -373,55 +168,34 @@
   right: 0;
 }
 
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__cloud {
-  transform: translateX(-20px);
-  opacity: 0.9;
+.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__main-icon {
+  color: #87ceeb;
 }
 
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__star {
-  opacity: 1;
-  animation: twinkle 2s infinite;
+.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__sub-icon {
+  color: rgba(135, 206, 235, 0.8);
 }
 
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__star.star1 {
-  animation-delay: 0s;
+.theme-toggle__label input:not(:checked) + .theme-toggle__slider .theme-toggle__main-icon {
+  color: #ffd700;
 }
 
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__star.star2 {
-  animation-delay: 0.4s;
-}
-
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__star.star3 {
-  animation-delay: 0.8s;
-}
-
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__star.star4 {
-  animation-delay: 1.2s;
-}
-
-.theme-toggle__label input:checked + .theme-toggle__slider .theme-toggle__star.star5 {
-  animation-delay: 1.6s;
+.theme-toggle__label input:not(:checked) + .theme-toggle__slider .theme-toggle__sub-icon {
+  color: rgba(255, 215, 0, 0.8);
 }
 
 /* Animations */
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes twinkle {
+@keyframes pulse {
   0%, 100% {
-    opacity: 1;
     transform: scale(1);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(0.8);
+    transform: scale(1.05);
   }
+}
+
+.theme-toggle__main-icon {
+  animation: pulse 2s infinite;
 }
 
 /* Hover Effects */
@@ -456,34 +230,24 @@
     right: -140px;
   }
 
-  .theme-toggle__film-reel {
-    width: 35px;
-    height: 35px;
+  .theme-toggle__main-icon {
+    width: 28px;
+    height: 28px;
   }
 
-  .theme-toggle__film-frame {
-    width: 25px;
-    height: 18px;
+  .theme-toggle__sub-icon {
+    width: 14px;
+    height: 14px;
   }
 
-  .theme-toggle__popcorn {
-    width: 25px;
-    height: 25px;
-  }
-
-  .theme-toggle__map-pin {
-    width: 30px;
-    height: 30px;
-  }
-
-  .theme-toggle__pin-head {
-    width: 20px;
-    height: 20px;
+  .theme-toggle__label-icon {
+    width: 14px;
+    height: 14px;
   }
 
   .theme-toggle__labels {
-    bottom: -22px;
-    font-size: 11px;
+    bottom: -28px;
+    font-size: 12px;
   }
 }
 
@@ -492,9 +256,8 @@
   .theme-toggle__slider,
   .theme-toggle__movies,
   .theme-toggle__places,
-  .theme-toggle__film-reel,
-  .theme-toggle__cloud,
-  .theme-toggle__star {
+  .theme-toggle__main-icon,
+  .theme-toggle__sub-icon {
     transition: none;
     animation: none;
   }

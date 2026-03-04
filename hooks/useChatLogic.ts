@@ -1,13 +1,7 @@
 import { useCallback } from 'react';
 import { useMessages } from './useMessages';
 import { useToast } from '../context/ToastContext';
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
-};
+import { getErrorMessage } from '../utils/errorHandling';
 
 export const useChatLogic = () => {
   const { showToast } = useToast();
@@ -19,8 +13,8 @@ export const useChatLogic = () => {
       try {
         await addMessage(author, content);
         showToast({ message: 'Message posted successfully!', type: 'success' });
-      } catch (caughtError: unknown) {
-        throw new Error(getErrorMessage(caughtError, 'Failed to post message. Please try again.'));
+      } catch (error) {
+        throw new Error(getErrorMessage(error, 'Failed to post message. Please try again.'));
       }
     },
     [addMessage, showToast]
@@ -31,9 +25,9 @@ export const useChatLogic = () => {
       try {
         await deleteMessage(id);
         showToast({ message: 'Message deleted', type: 'success' });
-      } catch (caughtError: unknown) {
+      } catch (error) {
         showToast({
-          message: `Error deleting message: ${getErrorMessage(caughtError, 'Unknown error')}`,
+          message: `Error deleting message: ${getErrorMessage(error, 'Unknown error')}`,
           type: 'error',
         });
       }
@@ -45,8 +39,11 @@ export const useChatLogic = () => {
     async (messageId: string, emoji: string, username: string) => {
       try {
         await toggleReaction(messageId, emoji, username);
-      } catch {
-        showToast({ message: 'Failed to add reaction', type: 'error' });
+      } catch (error) {
+        showToast({ 
+          message: getErrorMessage(error, 'Failed to add reaction'), 
+          type: 'error' 
+        });
       }
     },
     [toggleReaction, showToast]
