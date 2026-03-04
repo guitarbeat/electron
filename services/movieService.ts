@@ -1,5 +1,5 @@
-import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig';
-import type { Movie } from '../types';
+import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig.ts';
+import type { Movie } from '../types.ts';
 
 // Cache variables to store the last known state
 let cachedMovies: Movie[] = [];
@@ -17,7 +17,7 @@ const mockMovies: Movie[] = [
     category: 'Drama',
     runtime: '142',
     watchedBy: [],
-    createdAt: new Date().toISOString(),
+    createdAt: "2023-01-01T00:00:00.000Z",
   },
   {
     id: '2',
@@ -29,7 +29,7 @@ const mockMovies: Movie[] = [
     category: 'Drama',
     runtime: '175',
     watchedBy: [],
-    createdAt: new Date().toISOString(),
+    createdAt: "2023-01-01T00:00:00.000Z",
   },
   {
     id: '3',
@@ -41,7 +41,7 @@ const mockMovies: Movie[] = [
     category: 'Sci-Fi',
     runtime: '148',
     watchedBy: [],
-    createdAt: new Date().toISOString(),
+    createdAt: "2023-01-01T00:00:00.000Z",
   },
   {
     id: '4',
@@ -53,7 +53,7 @@ const mockMovies: Movie[] = [
     category: 'Drama',
     runtime: '154',
     watchedBy: [],
-    createdAt: new Date().toISOString(),
+    createdAt: "2023-01-01T00:00:00.000Z",
   },
   {
     id: '5',
@@ -65,7 +65,7 @@ const mockMovies: Movie[] = [
     category: 'Action',
     runtime: '152',
     watchedBy: [],
-    createdAt: new Date().toISOString(),
+    createdAt: "2023-01-01T00:00:00.000Z",
   },
 ];
 

@@ -10,11 +10,11 @@ const env = (import.meta.env || {}) as any;
 // Trim and strip optional surrounding quotes (some .env parsers include them)
 const clean = (s: string) => (s || '').trim().replace(/^["']|["']$/g, '');
 // Security: Never hardcode tokens here. They must be injected via environment variables.
-const GIST_TOKEN = clean(env.VITE_GIST_TOKEN || ''); // Must be set in .env
+const GIST_TOKEN = clean(process.env.VITE_GIST_TOKEN || env.VITE_GIST_TOKEN || ''); // Must be set in .env
 
 // The ID of the Gist where the movie list is stored.
 // It's the unique part of the Gist's URL.
-const GIST_ID = clean(env.VITE_GIST_ID || '');
+const GIST_ID = clean(process.env.VITE_GIST_ID || env.VITE_GIST_ID || '');
 
 // The API URL for Gist operations
 const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
