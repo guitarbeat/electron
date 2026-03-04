@@ -15,7 +15,6 @@ export interface BubbleSlotPosition {
 export const BUBBLE_SIZE = 60;
 export const BUBBLE_EDGE_MARGIN = 16;
 export const BUBBLE_SLOT_GAP = 12;
-export const BUBBLE_DOCK_EDGE: BubbleSlot['edge'] = 'right';
 
 const TOP_OFFSET = 110;
 const BOTTOM_OFFSET = 96;
@@ -29,16 +28,13 @@ export const getDockSlots = (width: number, height: number, bucket: BubbleViewpo
     Math.floor((height - TOP_OFFSET - BOTTOM_OFFSET - BUBBLE_SIZE) / (BUBBLE_SIZE + BUBBLE_SLOT_GAP)) +
       1
   );
-  const perEdge = Math.max(1, Math.min(maxByHeight, bucket === 'mobile' ? 4 : 8));
+  const perEdge = Math.max(1, Math.min(maxByHeight, bucket === 'mobile' ? 3 : 6));
 
   const slots: BubbleSlotPosition[] = [];
   for (let index = 0; index < perEdge; index += 1) {
     const y = TOP_OFFSET + index * (BUBBLE_SIZE + BUBBLE_SLOT_GAP);
-    slots.push({
-      slot: { edge: BUBBLE_DOCK_EDGE, index },
-      x: width - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN,
-      y,
-    });
+    slots.push({ slot: { edge: 'left', index }, x: BUBBLE_EDGE_MARGIN, y });
+    slots.push({ slot: { edge: 'right', index }, x: width - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN, y });
   }
 
   return slots;
@@ -89,10 +85,10 @@ export const getAdjacentSlot = (
   maxIndex: number
 ): BubbleSlot => {
   if (direction === 'left') {
-    return { edge: BUBBLE_DOCK_EDGE, index: current.index };
+    return { edge: 'left', index: current.index };
   }
   if (direction === 'right') {
-    return { edge: BUBBLE_DOCK_EDGE, index: current.index };
+    return { edge: 'right', index: current.index };
   }
   if (direction === 'up') {
     return { edge: current.edge, index: Math.max(0, current.index - 1) };
