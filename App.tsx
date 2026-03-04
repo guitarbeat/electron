@@ -157,64 +157,15 @@ const AppInnerWithTheme: React.FC<any> = ({
       )}
 
       {!isMobile && (
-        <div className="app-top-controls" style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: spacing.lg,
-          padding: `${spacing.md} 0`,
-        }}>
-          <ThemeToggle activeTab={activeTab} onChange={handleTabChange} />
-          <div className="profile-bubbles" style={{
+        <div
+          className="app-top-controls"
+          style={{
             display: 'flex',
-            gap: spacing.sm,
-            alignItems: 'center',
-          }}>
-            <button
-              type="button"
-              className={`profile-bubble aaron-bubble ${currentUser === 'Aaron' ? 'active' : ''}`}
-              onClick={() => {
-                // Handle Aaron selection
-                setShowProfileSheet(true);
-              }}
-              style={{
-                borderRadius: radius.full,
-                border: `2px solid ${colors.border}`,
-                background: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 50%, #fff 100%)',
-                color: colors.textPrimary,
-                padding: `${spacing.sm} ${spacing.md}`,
-                fontSize: typography.fontSize.sm,
-                fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(255, 127, 198, 0.3)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-              }}
-            >
-              👤 Aaron
-            </button>
-            <button
-              type="button"
-              className={`profile-bubble electra-bubble ${currentUser === 'Electra' ? 'active' : ''}`}
-              onClick={() => {
-                // Handle Electra selection
-                setShowProfileSheet(true);
-              }}
-              style={{
-                borderRadius: radius.full,
-                border: `2px solid ${colors.border}`,
-                background: 'linear-gradient(135deg, #95dcff 0%, #b3e8ff 50%, #fff 100%)',
-                color: colors.textPrimary,
-                padding: `${spacing.sm} ${spacing.md}`,
-                fontSize: typography.fontSize.sm,
-                fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(149, 220, 255, 0.3)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-              }}
-            >
-              👤 Electra
-            </button>
-          </div>
+            justifyContent: 'center',
+            padding: `${spacing.md} 0`,
+          }}
+        >
+          <UserSelection activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
       )}
 
