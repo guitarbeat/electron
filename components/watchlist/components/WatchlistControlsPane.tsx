@@ -42,8 +42,8 @@ const WatchlistControlsPane: React.FC<WatchlistControlsPaneProps> = ({
   compact = false,
 }) => {
   return (
-    <section className={`watchlist-controls-pane${compact ? ' is-compact' : ''}`}>
-      <div className="watchlist-controls-pane__top">
+    <section className={`ui-control-surface watchlist-controls-pane${compact ? ' is-compact' : ''}`}>
+      <div className="ui-control-surface__top watchlist-controls-pane__top">
         <WatchlistSearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

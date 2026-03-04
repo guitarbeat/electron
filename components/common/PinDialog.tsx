@@ -82,7 +82,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
     setError('');
 
     if (mode === 'enter') {
-      if (pin.length !== 4) {
+      if (pin.length !== PIN_LENGTH) {
         setError('PIN must be 4 digits');
         setIsShaking(true);
         return;
@@ -95,7 +95,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
     } else if (mode === 'set') {
       if (step === 'new') {
-        if (newPin.length !== 4) {
+        if (newPin.length !== PIN_LENGTH) {
           setError('PIN must be 4 digits');
           setIsShaking(true);
           return;
@@ -113,7 +113,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
     } else if (mode === 'change') {
       if (step === 'current') {
-        if (pin.length !== 4) {
+        if (pin.length !== PIN_LENGTH) {
           setError('PIN must be 4 digits');
           setIsShaking(true);
           return;
@@ -128,7 +128,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
         setStep('new');
         setError('');
       } else if (step === 'new') {
-        if (newPin.length !== 4) {
+        if (newPin.length !== PIN_LENGTH) {
           setError('PIN must be 4 digits');
           setIsShaking(true);
           return;
@@ -150,7 +150,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const handleNumberClick = (num: number) => {
     const setter = getCurrentSetter();
     const value = getCurrentValue();
-    if (value.length < 4) {
+    if (value.length < PIN_LENGTH) {
       setter(value + num.toString());
       setError('');
     }
@@ -166,7 +166,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   };
 
   const handlePinInput = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 4);
+    const cleaned = value.replace(/\D/g, '').slice(0, PIN_LENGTH);
     setter(cleaned);
     setError('');
   };
@@ -316,7 +316,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         transition: 'all 0.2s ease',
                       }}
                     >
-                      {val ? '•' : ''}
+                      {val ? '*' : ''}
                     </div>
                   );
                 })}
@@ -338,6 +338,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                       <Button
                         key="del"
                         variant="ghost"
+                        type="button"
                         onClick={handleBackspace}
                         aria-label="Backspace"
                         style={{
@@ -346,7 +347,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                           color: colors.textSecondary,
                         }}
                       >
-                        ⌫
+                        DEL
                       </Button>
                     );
                   }
@@ -354,6 +355,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     <Button
                       key={num}
                       variant="ghost"
+                      type="button"
                       onClick={() => handleNumberClick(num as number)}
                       style={{
                         height: '48px',
@@ -462,3 +464,4 @@ const PinDialog: React.FC<PinDialogProps> = ({
 };
 
 export default PinDialog;
+

@@ -13,14 +13,8 @@ import { PlusIcon, TrashIcon, CheckIcon } from '../common/icons';
 import { colors, spacing, typography, radius } from '../../design-system/tokens';
 import { useToast } from '../../context/ToastContext';
 import type { Place } from '../../types';
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: 0,
-  color: colors.textPrimary,
-  fontFamily: typography.fontFamily.heading.join(', '),
-  fontSize: typography.fontSize.lg,
-  letterSpacing: '0.03em',
-};
+import '../ui/ControlSurface.css';
+import './PlacesList.css';
 
 type PlaceFilter = 'want' | 'visited';
 
@@ -44,6 +38,7 @@ const PlacesList: React.FC = () => {
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
   usePlacesAutocomplete(nameInputRef, (name, lat, lng) => {
     setNameInput(name);
     setPendingCoords(typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null);
@@ -53,12 +48,15 @@ const PlacesList: React.FC = () => {
   const visitedCount = places.filter((p) => p.visitedAt).length;
   const filtered =
     filter === 'want' ? places.filter((p) => !p.visitedAt) : places.filter((p) => p.visitedAt);
+  const hasMappedPlaces =
+    places.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number').length > 0;
 
   const handleAdd = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       const name = nameInput.trim();
       if (!name || isSubmitting) return;
+
       try {
         await addPlace(
           name,
@@ -78,6 +76,7 @@ const PlacesList: React.FC = () => {
 
   const confirmDelete = useCallback(async () => {
     if (!placeToDelete) return;
+
     const deleted = placeToDelete;
     try {
       await removePlace(deleted.id);
@@ -102,205 +101,147 @@ const PlacesList: React.FC = () => {
 
   if (isLoading && places.length === 0) {
     return (
-      <div
-        style={{
-          maxWidth: 960,
-          margin: '0 auto',
-          padding: spacing.md,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
-        }}
-      >
-        <Skeleton variant="text" width="220px" height="1.5rem" />
-        <Skeleton variant="text" width="min(100%, 460px)" height="1rem" />
-        <Card
-          style={{
-            padding: spacing.md,
-            borderRadius: radius.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
-          }}
-        >
-          <Skeleton variant="rectangular" width="100%" height="220px" />
-        </Card>
-        <Card
-          style={{
-            padding: spacing.md,
-            borderRadius: radius.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.sm,
-          }}
-        >
-          <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
-          <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
-          <Skeleton variant="rectangular" width="140px" height="36px" />
-        </Card>
-        {[0, 1, 2].map((index) => (
+      <div className="places-page">
+        <div className="places-loading">
+          <Skeleton variant="text" width="220px" height="1.5rem" />
+          <Skeleton variant="text" width="min(100%, 460px)" height="1rem" />
           <Card
-            key={`places-skeleton-${index}`}
             style={{
               padding: spacing.md,
               borderRadius: radius.lg,
               border: `1px solid ${colors.borderSecondary}35`,
             }}
           >
-            <Skeleton
-              variant="text"
-              width="50%"
-              height="1rem"
-              style={{ marginBottom: spacing.xs }}
-            />
-            <Skeleton variant="text" width="80%" height="0.9rem" />
+            <Skeleton variant="rectangular" width="100%" height="220px" />
           </Card>
-        ))}
+          <Card
+            style={{
+              padding: spacing.md,
+              borderRadius: radius.lg,
+              border: `1px solid ${colors.borderSecondary}35`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.sm,
+            }}
+          >
+            <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
+            <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
+            <Skeleton variant="rectangular" width="140px" height="36px" />
+          </Card>
+          {[0, 1, 2].map((index) => (
+            <Card
+              key={`places-skeleton-${index}`}
+              style={{
+                padding: spacing.md,
+                borderRadius: radius.lg,
+                border: `1px solid ${colors.borderSecondary}35`,
+              }}
+            >
+              <Skeleton
+                variant="text"
+                width="50%"
+                height="1rem"
+                style={{ marginBottom: spacing.xs }}
+              />
+              <Skeleton variant="text" width="80%" height="0.9rem" />
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 960,
-        margin: '0 auto',
-        padding: spacing.md,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.lg,
-      }}
-    >
-      <h1 style={{ ...sectionTitleStyle, marginBottom: spacing.xs }}>Places we want to go</h1>
-      <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-        Add places you’d like to visit together. Mark them when you’ve been.
-      </p>
+    <div className="places-page">
+      <header className="places-header">
+        <h1 className="places-title">Places we want to go</h1>
+        <p className="places-subtitle">
+          Add places to visit together and track the ones you have already explored.
+        </p>
+      </header>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-        <h2
-          style={{
-            margin: 0,
-            fontSize: typography.fontSize.base,
-            color: colors.textSecondary,
-            fontWeight: 600,
-          }}
-        >
-          📍 Map
-        </h2>
-        <PlacesMap places={places} />
-        {places.length > 0 &&
-          places.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number').length ===
-            0 && (
-            <p style={{ margin: 0, color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
-              Add places using the search below to see them on the map.
-            </p>
+      <section className="ui-control-surface places-surface" aria-label="Places map and add form">
+        <div className="places-map-block">
+          <h2 className="places-surface-title">Map</h2>
+          <PlacesMap places={places} />
+          {places.length > 0 && !hasMappedPlaces && (
+            <p className="places-map-hint">Use the place search to add coordinates and pin places on the map.</p>
           )}
-      </div>
+        </div>
 
-      <form
-        onSubmit={handleAdd}
-        style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}
-      >
-        <Input
-          ref={nameInputRef}
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
-          placeholder="Place name or address"
-          aria-label="Place name"
-          style={{ maxWidth: 400 }}
-        />
-        <Input
-          value={notesInput}
-          onChange={(e) => setNotesInput(e.target.value)}
-          placeholder="Notes (optional)"
-          aria-label="Notes"
-          style={{ maxWidth: 400 }}
-        />
-        <Button
-          type="submit"
-          variant="secondary"
-          disabled={!nameInput.trim() || isSubmitting}
-          style={{ alignSelf: 'flex-start' }}
-        >
-          <PlusIcon style={{ width: 18, height: 18 }} />
-          Add place
-        </Button>
-      </form>
+        <form onSubmit={handleAdd} className="places-add-form">
+          <div className="ui-control-input-shell places-add-input-shell">
+            <Input
+              ref={nameInputRef}
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Place name or address"
+              aria-label="Place name"
+              className="ui-control-input places-add-input"
+            />
+          </div>
+          <div className="ui-control-input-shell places-add-input-shell">
+            <Input
+              value={notesInput}
+              onChange={(e) => setNotesInput(e.target.value)}
+              placeholder="Notes (optional)"
+              aria-label="Notes"
+              className="ui-control-input places-add-input"
+            />
+          </div>
+          <Button
+            type="submit"
+            variant="secondary"
+            disabled={!nameInput.trim() || isSubmitting}
+            className="places-add-button"
+            style={{ fontFamily: typography.fontFamily.body.join(', ') }}
+          >
+            <PlusIcon style={{ width: 16, height: 16 }} />
+            Add place
+          </Button>
+        </form>
+      </section>
 
       <SubNav
         ariaLabel="Places: filter by list"
         tabs={[
-          { id: 'want', label: 'Want to go', icon: '📍', count: wantCount },
-          { id: 'visited', label: 'Visited', icon: '✅', count: visitedCount },
+          { id: 'want', label: 'Want to go', count: wantCount },
+          { id: 'visited', label: 'Visited', count: visitedCount },
         ]}
         activeId={filter}
         onSelect={(id) => setFilter(id as PlaceFilter)}
       />
 
-      <ul
-        style={{
-          listStyle: 'none',
-          margin: 0,
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.sm,
-        }}
-      >
+      <ul className="places-items" aria-live="polite">
         {filtered.length === 0 && (
-          <li style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
+          <li className="places-empty">
             {filter === 'want' ? 'No places yet. Add one above.' : 'No visited places yet.'}
           </li>
         )}
+
         {filtered.map((place) => (
           <li key={place.id}>
-            <Card
-              style={{
-                padding: spacing.md,
-                border: `1px solid ${colors.borderSecondary}35`,
-                borderRadius: radius.lg,
-                background: colors.surface,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: spacing.xs,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: spacing.sm,
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 600, color: colors.textPrimary }}>{place.name}</span>
+            <Card className="places-item-card">
+              <div className="places-item-top">
+                <div className="places-item-title-wrap">
+                  <span className="places-item-title">{place.name}</span>
                   {place.visitedAt && (
-                    <span
-                      style={{
-                        marginLeft: spacing.sm,
-                        padding: '2px 8px',
-                        borderRadius: radius.sm,
-                        background: colors.secondaryMuted,
-                        color: colors.secondary,
-                        fontSize: typography.fontSize.xs,
-                        fontWeight: 600,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
+                    <span className="places-item-visited">
                       <CheckIcon style={{ width: 12, height: 12 }} />
                       Visited
                     </span>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: spacing.xs }}>
+
+                <div className="places-item-actions">
                   {place.visitedAt ? (
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => markUnvisited(place.id)}
                       disabled={isSubmitting}
+                      className="places-action-btn"
+                      style={{ fontFamily: typography.fontFamily.body.join(', ') }}
                     >
                       Mark unvisited
                     </Button>
@@ -310,33 +251,27 @@ const PlacesList: React.FC = () => {
                       variant="ghost"
                       onClick={() => markVisited(place.id)}
                       disabled={isSubmitting}
+                      className="places-action-btn"
+                      style={{ fontFamily: typography.fontFamily.body.join(', ') }}
                     >
                       Mark visited
                     </Button>
                   )}
+
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => setPlaceToDelete(place)}
                     disabled={isSubmitting}
-                    style={{ color: colors.error }}
+                    className="places-delete-btn"
                     aria-label={`Delete ${place.name}`}
                   >
-                    <TrashIcon style={{ width: 18, height: 18 }} />
+                    <TrashIcon style={{ width: 16, height: 16 }} />
                   </Button>
                 </div>
               </div>
-              {place.notes && (
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: typography.fontSize.sm,
-                    color: colors.textSecondary,
-                  }}
-                >
-                  {place.notes}
-                </p>
-              )}
+
+              {place.notes && <p className="places-item-notes">{place.notes}</p>}
             </Card>
           </li>
         ))}
