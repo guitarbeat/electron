@@ -11,13 +11,12 @@ import FoodDropGame from './components/food-drop/FoodDropGame';
 import SpinWheel from './components/extras/spin-wheel/SpinWheel';
 import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizBubble from './components/quiz/QuizBubble';
-import DragDismissZone from './components/common/DragDismissZone';
-import RestoreBubblesButton from './components/common/RestoreBubblesButton';
-import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
+import { BubbleDismissProvider } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import AppHeader from './components/layout/AppHeader';
+import ToolsDrawer, { ToolId } from './components/tools/ToolsDrawer';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -25,36 +24,27 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'places', label: 'Places', icon: '📍' },
 ];
 
-type WorkspaceTab = 'queue' | 'places';
-
-const TAB_COPY: Record<
-  WorkspaceTab,
-  {
-    title: string;
-    helper: string;
-  }
-> = {
-  queue: {
-    title: 'Movie Planner',
-    helper: 'Plan what to watch without leaving this screen.',
-  },
-  places: {
-    title: 'Places Planner',
-    helper: 'Capture and sort places for your next outing.',
-  },
-};
+const TOOL_OPTIONS: { id: ToolId; label: string }[] = [
+  { id: 'messages', label: 'Messages' },
+  { id: 'spin', label: 'Spin' },
+  { id: 'snake', label: 'Snake' },
+  { id: 'food-drop', label: 'Food Drop' },
+  { id: 'quiz', label: 'Quiz' },
+  { id: 'matchmaker', label: 'Matchmaker' },
+];
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz(true);
-  const { isDragging, isHoveringDismiss } = useBubbleDismiss();
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
   const [showQuizEditor, setShowQuizEditor] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [activeTool, setActiveTool] = useState<ToolId>('messages');
 
   useEffect(() => {
     const theme = activeTab === 'places' ? 'places' : 'movies';
@@ -78,7 +68,34 @@ const AppInner: React.FC = () => {
   };
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
-  const panelCopy = TAB_COPY[activeTab as WorkspaceTab];
+
+  const renderActiveTool = () => {
+    switch (activeTool) {
+      case 'messages':
+        return <MessageBoard mode="embedded" />;
+      case 'spin':
+        return <SpinWheel mode="embedded" />;
+      case 'snake':
+        return <SnakeGame mode="embedded" />;
+      case 'food-drop':
+        return <FoodDropGame mode="embedded" />;
+      case 'quiz':
+        return (
+          <QuizBubble
+            mode="embedded"
+            quizData={quizData}
+            quizCompleted={quizCompleted}
+            currentUser={currentUser}
+            onQuizComplete={handleQuizComplete}
+            onOpenQuizEditor={handleOpenQuizEditor}
+          />
+        );
+      case 'matchmaker':
+        return <MatchmakerBubble mode="embedded" currentUser={currentUser} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -91,7 +108,6 @@ const AppInner: React.FC = () => {
           tabs={MAIN_TABS}
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          showWatchlistControlsSlot={activeTab === 'queue'}
           currentUser={currentUser}
         />
 
@@ -99,20 +115,8 @@ const AppInner: React.FC = () => {
           id="main-content"
           className="main-container"
           tabIndex={-1}
-          aria-labelledby="active-panel-title"
+          aria-label={activeTabMeta?.label || 'Main workspace'}
         >
-          <section className="panel-summary" aria-live="polite">
-            <div className="panel-summary__title-row">
-              <h2 id="active-panel-title" className="panel-summary__title">
-                {panelCopy.title}
-              </h2>
-              <span className="panel-summary__meta">
-                {activeTabMeta?.icon} {currentUser ? currentUser : 'Guest'}
-              </span>
-            </div>
-            <p className="panel-summary__hint">{panelCopy.helper}</p>
-          </section>
-
           {MAIN_TABS.map((tab) => {
             const isActivePanel = tab.id === activeTab;
             return (
@@ -126,7 +130,7 @@ const AppInner: React.FC = () => {
               >
                 {isActivePanel ? (
                   tab.id === 'queue' ? (
-                    <Watchlist topControlsMountId="watchlist-top-controls-slot" />
+                    <Watchlist />
                   ) : (
                     <PlacesList />
                   )
@@ -149,20 +153,26 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <MessageBoard mode="floating" />
-        <SpinWheel mode="floating" />
-        <SnakeGame mode="floating" />
-        <FoodDropGame mode="floating" />
-        <QuizBubble
-          quizData={quizData}
-          quizCompleted={quizCompleted}
-          currentUser={currentUser}
-          onQuizComplete={handleQuizComplete}
-          onOpenQuizEditor={handleOpenQuizEditor}
-        />
-        <MatchmakerBubble currentUser={currentUser} />
-        <DragDismissZone visible={isDragging} isHovering={isHoveringDismiss} />
-        <RestoreBubblesButton />
+        <button
+          type="button"
+          className="tools-launcher"
+          onClick={() => setIsToolsOpen(true)}
+          aria-haspopup="dialog"
+          aria-controls="tools-drawer"
+          aria-expanded={isToolsOpen}
+        >
+          Tools
+        </button>
+
+        <ToolsDrawer
+          isOpen={isToolsOpen}
+          onClose={() => setIsToolsOpen(false)}
+          activeTool={activeTool}
+          onSelectTool={setActiveTool}
+          options={TOOL_OPTIONS}
+        >
+          {isToolsOpen ? renderActiveTool() : null}
+        </ToolsDrawer>
       </div>
     </ThemeProvider>
   );

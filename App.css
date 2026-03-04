@@ -163,18 +163,13 @@ body {
 .app-header-subtitle {
   margin: 0.14rem 0 0;
   color: color-mix(in srgb, var(--color-text-secondary) 78%, transparent);
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
 .app-header-nav-row {
   margin-top: 0.32rem;
-}
-
-.app-header-watchlist-slot {
-  margin-top: 0.32rem;
-  padding: 0 0.1rem 0.1rem;
 }
 
 .profile-chip {
@@ -240,44 +235,23 @@ body {
   outline: none;
 }
 
-.panel-summary {
-  margin-bottom: 1rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
-  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
-}
-
-.panel-summary__title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.panel-summary__title {
-  margin: 0;
-  font-size: clamp(1.1rem, 1rem + 0.8vw, 1.45rem);
-  letter-spacing: 0.01em;
-}
-
-.panel-summary__meta {
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 75%, transparent);
-  font-size: 0.72rem;
-  white-space: nowrap;
-}
-
-.panel-summary__hint {
-  margin: 0.28rem 0 0;
-  font-size: 0.8rem;
-  color: color-mix(in srgb, var(--color-text-secondary) 70%, transparent);
-}
-
 .tab-panel {
   min-height: 320px;
+}
+
+.tools-launcher {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  min-height: 2.5rem;
+  min-width: 5.2rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 65%, transparent);
+  background: color-mix(in srgb, var(--color-surface-2) 96%, transparent);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 300;
 }
 
 @media (max-width: 640px) {
@@ -289,17 +263,7 @@ body {
     margin-top: 0.22rem;
   }
 
-  .app-header-watchlist-slot {
-    margin-top: 0.25rem;
-    padding: 0;
-  }
-
   .main-container {
     padding: 0.75rem;
-  }
-
-  .panel-summary {
-    margin-bottom: 0.75rem;
-    border-radius: 14px;
   }
 }

@@ -189,7 +189,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 ) : (
                   <EyeOffIcon style={{ width: '12px' }} />
                 )}
-                {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
+                <span className="movie-item-primary-action-label">
+                  {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
+                </span>
               </Button>
 
               {!isMobile && (
@@ -469,6 +471,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
             isLoading={isUpdating}
             loadingText="Updating..."
             disabled={isGuest}
+            className="movie-item-primary-action movie-item-primary-action--mobile"
             style={{
               width: '100%',
               display: 'flex',
@@ -480,7 +483,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
             }}
           >
             {watchedByCurrentUser ? <EyeIcon /> : <EyeOffIcon />}
-            {watchedByCurrentUser ? 'Mark as Unwatched' : 'Mark as Watched'}
+            <span className="movie-item-primary-action-label">
+              {watchedByCurrentUser ? 'Mark as Unwatched' : 'Mark as Watched'}
+            </span>
           </Button>
 
           <Button

@@ -13,6 +13,7 @@ const BUBBLE_EDGE_MARGIN = 16;
 const DRAG_THRESHOLD = 4;
 
 interface QuizBubbleProps {
+  mode?: 'floating' | 'embedded';
   quizData: QuizData | null | undefined;
   quizCompleted: boolean;
   currentUser: User | null;
@@ -31,6 +32,7 @@ const clampBubble = (x: number, y: number) => {
 };
 
 const QuizBubble: React.FC<QuizBubbleProps> = ({
+  mode = 'floating',
   quizData,
   quizCompleted,
   currentUser,
@@ -39,6 +41,7 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
 }) => {
   const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { themeTokens } = useTheme();
+  const isEmbedded = mode === 'embedded';
   const [isOpen, setIsOpen] = useState(false);
   const [isTakingQuiz, setIsTakingQuiz] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
@@ -120,6 +123,44 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
     onQuizComplete();
     closeModal();
   };
+
+  if (isEmbedded) {
+    return (
+      <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        {!isTakingQuiz && (
+          <>
+            <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
+              {quizCompleted ? 'Retake any time to refresh your match.' : 'Take when you want.'}
+            </p>
+            <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+              <Button
+                variant={quizCompleted ? 'ghost' : 'secondary'}
+                onClick={() => setIsTakingQuiz(true)}
+              >
+                {quizCompleted ? 'Retake' : 'Start Quiz'}
+              </Button>
+              <Button variant="ghost" onClick={onOpenQuizEditor} disabled={!currentUser}>
+                {currentUser ? 'Edit Quiz' : 'Pick user to edit'}
+              </Button>
+            </div>
+          </>
+        )}
+
+        {isTakingQuiz &&
+          (quizData ? (
+            <QuizFlow
+              quizData={quizData}
+              onComplete={() => {
+                onQuizComplete();
+                setIsTakingQuiz(false);
+              }}
+            />
+          ) : (
+            <p style={{ margin: 0, color: colors.textSecondary }}>Loading quiz…</p>
+          ))}
+      </div>
+    );
+  }
 
   if (isHidden('quiz')) return null;
 

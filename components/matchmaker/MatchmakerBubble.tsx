@@ -6,6 +6,7 @@ import { colors, radius, shadows, spacing, typography } from '../../design-syste
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 
 interface MatchmakerBubbleProps {
+  mode?: 'floating' | 'embedded';
   currentUser: User | null;
 }
 
@@ -23,9 +24,10 @@ const clampBubble = (x: number, y: number) => {
   };
 };
 
-const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
+const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ mode = 'floating', currentUser }) => {
   const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { themeTokens } = useTheme();
+  const isEmbedded = mode === 'embedded';
   const [isOpen, setIsOpen] = useState(false);
 
   const [bubblePosition, setBubblePosition] = useState(() => {
@@ -113,6 +115,21 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
     }
     setIsOpen((previous) => !previous);
   };
+
+  if (isEmbedded) {
+    return (
+      <div
+        style={{
+          minHeight: 0,
+          height: '100%',
+          overflow: 'auto',
+          padding: spacing.sm,
+        }}
+      >
+        <Matchmaker currentUser={currentUser} />
+      </div>
+    );
+  }
 
   if (isHidden('matchmaker')) return null;
 
