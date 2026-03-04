@@ -9,6 +9,7 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import { spacing, colors, shadows, motion, typography } from '../../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
+import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 
 interface MessageBoardProps {
   mode?: 'floating' | 'embedded';
@@ -52,6 +53,7 @@ const getDefaultBubblePosition = (isMobile: boolean): BubblePosition => {
 };
 
 const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
+  const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, handleReaction } =
@@ -127,6 +129,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     };
     didDragRef.current = false;
     setIsDraggingBubble(true);
+    setDismissDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -153,15 +156,22 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     const nextX = dragState.origin.x + deltaX;
     const nextY = dragState.origin.y + deltaY;
     setBubblePosition(clampBubblePosition(nextX, nextY));
+    checkDismissZoneHit(nextX, nextY, BUBBLE_SIZE);
   };
 
   const handleDragEnd = () => {
-    if (didDragRef.current) {
+    const wasDragged = didDragRef.current;
+    if (wasDragged) {
       hasCustomPositionRef.current = true;
     }
     setIsDraggingBubble(false);
+    setDismissDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
+    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+      dismiss('messages');
+      return;
+    }
   };
 
   const finishDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -205,6 +215,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
       : null;
 
   if (!isEmbedded && isMinimized) {
+    if (isHidden('messages')) return null;
     return (
       <button
         type="button"
