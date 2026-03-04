@@ -9,6 +9,7 @@ import { SpinRoulette } from './SpinRoulette';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
 import { typography, colors, shadows, spacing, radius } from '../../../design-system/tokens';
+import { useBubbleDismiss } from '../../../context/BubbleDismissContext';
 import './SpinWheel.css';
 
 const BUBBLE_SIZE = 60;
@@ -16,6 +17,7 @@ const BUBBLE_EDGE_MARGIN = 16;
 const DRAG_THRESHOLD = 4;
 
 const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'floating' }) => {
+  const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser);
   const unwatchedMovies = movies ? movies.filter((m) => m.watchedBy.length < 2) : [];
@@ -72,6 +74,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     };
     didDragRef.current = false;
     setIsDragging(true);
+    setDismissDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -87,21 +90,30 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
-    setBubblePosition(clampBubble(ds.origin.x + deltaX, ds.origin.y + deltaY));
+    const newX = ds.origin.x + deltaX;
+    const newY = ds.origin.y + deltaY;
+    setBubblePosition(clampBubble(newX, newY));
+    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     const ds = dragStateRef.current;
     if (!ds || ds.pointerId !== event.pointerId) return;
-    if (!didDragRef.current) {
-      // Only open if spin is available
+    const wasDragged = didDragRef.current;
+    setIsDragging(false);
+    setDismissDragging(false);
+    dragStateRef.current = null;
+    didDragRef.current = false;
+    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+      dismiss('spin');
+      try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+      return;
+    }
+    if (!wasDragged) {
       if (canSpin) {
         setIsMinimized(false);
       }
     }
-    setIsDragging(false);
-    dragStateRef.current = null;
-    didDragRef.current = false;
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch {
@@ -218,6 +230,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
 
   // Minimized bubble
   if (isMinimized && mode === 'floating') {
+    if (isHidden('spin')) return null;
     return (
       <button
         type="button"
