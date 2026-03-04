@@ -28,9 +28,6 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
   const { themeTokens } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   
-  // Check if current user can drag bubbles (only Aaron or Electra)
-  const canDragBubbles = currentUser === 'Aaron' || currentUser === 'Electra';
-  
   const [bubblePosition, setBubblePosition] = useState(() => {
     if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
     return {
@@ -48,11 +45,6 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
   const didDragRef = useRef(false);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    // Prevent dragging if user is not Aaron or Electra
-    if (!canDragBubbles) {
-      return;
-    }
-    
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     dragStateRef.current = {
       pointerId: event.pointerId,
@@ -151,7 +143,7 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: canDragBubbles ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
+          cursor: isDragging ? 'grabbing' : 'grab',
           boxShadow: themeTokens.glow,
           padding: 0,
           zIndex: 1000,

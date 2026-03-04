@@ -96,6 +96,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
   return {
     places: places ?? [],
     isLoading,
+    isSubmitting: false,
     error,
     refresh,
     addPlace,

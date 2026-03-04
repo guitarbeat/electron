@@ -183,7 +183,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
               style={{
                 fontSize: '11px',
                 color: colors.textTertiary,
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
               }}
             >
               {formatTime(msg.createdAt)}
@@ -254,8 +254,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
             margin: 0,
             lineHeight: 1.25,
             fontSize: '17px',
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+            fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
           }}
         >
           {msg.content}

@@ -83,13 +83,13 @@ export const colors = {
   gradientCard: 'linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%)',
 } as const;
 
-// * Typography scale (Modern, legible, responsive)
+// * Typography scale (PAPYRUS EVERYWHERE!)
 export const typography = {
   fontFamily: {
-    heading: ['Inter', 'SF Pro Display', 'system-ui', '-apple-system', 'sans-serif'],
-    body: ['Inter', 'SF Pro Text', 'system-ui', '-apple-system', 'sans-serif'],
-    sans: ['Inter', 'SF Pro Text', 'system-ui', '-apple-system', 'sans-serif'],
-    mono: ['Menlo', 'Monaco', 'Courier New', 'monospace'],
+    heading: ['Papyrus', 'Comic Sans MS', 'cursive', 'sans-serif'],
+    body: ['Papyrus', 'Comic Sans MS', 'cursive', 'sans-serif'],
+    sans: ['Papyrus', 'Comic Sans MS', 'cursive', 'sans-serif'],
+    mono: ['Papyrus', 'Comic Sans MS', 'cursive', 'monospace'],
   },
   fontSize: {
     xs: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem)',

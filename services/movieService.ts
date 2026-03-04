@@ -66,7 +66,7 @@ const mockMovies: Movie[] = [
 ];
 
 const { fetchData, saveData } = createGistService<Movie>({
-  filename: 'movies.json',
+  filename: 'movielist.json',
   mockData: mockMovies,
   typeName: 'Movie',
 });

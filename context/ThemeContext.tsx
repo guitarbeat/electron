@@ -76,7 +76,7 @@ export const placesTheme = {
 
 interface ThemeContextValue {
   currentTheme: 'movies' | 'places';
-  themeTokens: typeof moviesTheme;
+  themeTokens: typeof moviesTheme | typeof placesTheme;
   setTheme: (theme: 'movies' | 'places') => void;
 }
 
@@ -86,7 +86,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }
   children, 
   activeTab 
 }) => {
-  const currentTheme = activeTab === 'places' ? 'places' : 'movies';
+  const currentTheme: 'movies' | 'places' = activeTab === 'places' ? 'places' : 'movies';
   const themeTokens = currentTheme === 'places' ? placesTheme : moviesTheme;
 
   const setTheme = (theme: 'movies' | 'places') => {
