@@ -100,17 +100,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     setIsProfileOpen(false);
   };
 
-  const activeWorkspaceLabel = activeTab === 'places' ? 'Places' : 'Movies';
-
   return (
     <header className="app-header">
       <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
         <div className="app-header-inner">
-          <div className="app-header-brand">
-            <h1 className="app-header-title">Aaron &amp; Electra</h1>
-            <p className="app-header-subtitle">Workspace: {activeWorkspaceLabel}</p>
-          </div>
-
           <button
             ref={triggerRef}
             type="button"

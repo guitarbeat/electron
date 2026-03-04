@@ -8,13 +8,17 @@ import Button from '../../ui/Button';
 import { SpinRoulette } from './SpinRoulette';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
-import { typography, colors, shadows, spacing, radius } from '../../../design-system/tokens';
+import { typography, colors, spacing, radius } from '../../../design-system/tokens';
 import { useBubbleDismiss } from '../../../context/BubbleDismissContext';
+import {
+  FLOATING_BUBBLE_SIZE,
+  FLOATING_BUBBLE_EDGE_MARGIN,
+  FLOATING_DRAG_THRESHOLD,
+  clampFloatingBubblePosition,
+  getFloatingBubbleButtonStyle,
+  getFloatingContainerStyle,
+} from '../../ui/floatingBubbleStyles';
 import './SpinWheel.css';
-
-const BUBBLE_SIZE = 60;
-const BUBBLE_EDGE_MARGIN = 16;
-const DRAG_THRESHOLD = 4;
 
 const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'floating' }) => {
   const {
@@ -41,10 +45,12 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
 
   // Draggable bubble state
   const [bubblePosition, setBubblePosition] = useState(() => {
-    if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
+    if (typeof window === 'undefined') {
+      return { x: FLOATING_BUBBLE_EDGE_MARGIN, y: FLOATING_BUBBLE_EDGE_MARGIN };
+    }
     return {
-      x: BUBBLE_EDGE_MARGIN + 4,
-      y: window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN - 140,
+      x: FLOATING_BUBBLE_EDGE_MARGIN + 4,
+      y: window.innerHeight - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 140,
     };
   });
   const [isDragging, setIsDragging] = useState(false);
@@ -55,19 +61,6 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     origin: { x: number; y: number };
   } | null>(null);
   const didDragRef = useRef(false);
-
-  const clampBubble = (x: number, y: number) => {
-    if (typeof window === 'undefined') return { x, y };
-    const maxX = Math.max(BUBBLE_EDGE_MARGIN, window.innerWidth - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN);
-    const maxY = Math.max(
-      BUBBLE_EDGE_MARGIN,
-      window.innerHeight - BUBBLE_SIZE - BUBBLE_EDGE_MARGIN
-    );
-    return {
-      x: Math.min(Math.max(x, BUBBLE_EDGE_MARGIN), maxX),
-      y: Math.min(Math.max(y, BUBBLE_EDGE_MARGIN), maxY),
-    };
-  };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -90,15 +83,15 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     const deltaY = event.clientY - ds.startY;
     if (
       !didDragRef.current &&
-      (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)
+      (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD)
     ) {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
     const newX = ds.origin.x + deltaX;
     const newY = ds.origin.y + deltaY;
-    setBubblePosition(clampBubble(newX, newY));
-    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
+    setBubblePosition(clampFloatingBubblePosition(newX, newY));
+    checkDismissZoneHit(newX, newY, FLOATING_BUBBLE_SIZE);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -109,7 +102,10 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     setDismissDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
-    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+    if (
+      wasDragged &&
+      checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
+    ) {
       dismiss('spin');
       try {
         event.currentTarget.releasePointerCapture(event.pointerId);
@@ -248,27 +244,15 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         style={{
-          position: 'fixed',
-          left: bubblePosition.x,
-          top: bubblePosition.y,
-          width: `${BUBBLE_SIZE}px`,
-          height: `${BUBBLE_SIZE}px`,
-          borderRadius: radius.full,
-          border: `3px solid ${colors.surfaceElevated}`,
-          background: canSpin
-            ? 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(255, 105, 180, 0.95) 0%, rgba(180, 60, 130, 0.95) 100%)'
-            : 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(100, 100, 120, 0.7) 0%, rgba(60, 60, 80, 0.7) 100%)',
-          color: '#fff',
-          fontSize: '1.4rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: isDragging ? 'grabbing' : 'grab',
-          boxShadow: shadows.glow,
-          padding: 0,
-          zIndex: 1000,
-          touchAction: 'none',
-          userSelect: 'none',
+          ...getFloatingBubbleButtonStyle({
+            position: bubblePosition,
+            isDragging,
+            background: canSpin
+              ? 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(255, 105, 180, 0.95) 0%, rgba(180, 60, 130, 0.95) 100%)'
+              : 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(100, 100, 120, 0.7) 0%, rgba(60, 60, 80, 0.7) 100%)',
+            color: '#fff',
+            fontSize: '1.4rem',
+          }),
         }}
         aria-label={canSpin ? 'Open Spin Wheel' : 'Spin Wheel (locked)'}
       >
@@ -302,16 +286,13 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   // Expanded panel
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100vw',
-        height: '100vh',
+      style={getFloatingContainerStyle({
+        isEmbedded: mode === 'embedded',
+        isViewportExpanded: true,
+        isMobile: false,
+        desktopWidth: '100%',
         zIndex: 1001,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      })}
     >
       <Card
         style={{
