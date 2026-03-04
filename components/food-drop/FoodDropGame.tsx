@@ -17,7 +17,6 @@ import {
 import {
   FOOD_DROP_WORLD_HEIGHT,
   FOOD_DROP_WORLD_WIDTH,
-  FOOD_LEVELS,
   FoodDropStatus,
 } from './foodDropConfig';
 import { FoodDropEngine, FoodDropSnapshot } from './foodDropEngine';
@@ -556,7 +555,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
               fontWeight: typography.fontWeight.semibold,
             }}
           >
-            Next: {FOOD_LEVELS[snapshot.nextLevel]?.emoji ?? '🍒'}
+            Next: L{snapshot.nextLevel + 1}
           </span>
           <span
             style={{

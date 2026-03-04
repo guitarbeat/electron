@@ -94,8 +94,27 @@ const FRUIT_COLORS = [
   '#f78fb3',
   '#f06595',
 ];
+const FRUIT_SPRITE_NAMES = [
+  'blueberry',
+  'grape',
+  'lemon',
+  'orange',
+  'apple',
+  'dragonfruit',
+  'pear',
+  'peach',
+  'pineapple',
+  'watermelon',
+];
 
 export class FoodDropEngine {
+  private static fruitSprites: Array<HTMLImageElement | null> = FRUIT_SPRITE_NAMES.map((name) => {
+    if (typeof Image === 'undefined') return null;
+    const sprite = new Image();
+    sprite.src = `/food-drop/fruits/${name}.svg`;
+    return sprite;
+  });
+
   private engine: Engine;
 
   private world: World;
@@ -799,6 +818,14 @@ export class FoodDropEngine {
     ctx.save();
     ctx.translate(body.x, body.y);
     ctx.rotate(body.angle);
+
+    const sprite = FoodDropEngine.fruitSprites[body.level] ?? null;
+    if (sprite && sprite.complete && sprite.naturalWidth > 0 && sprite.naturalHeight > 0) {
+      const size = body.radius * 2.12;
+      ctx.drawImage(sprite, -size / 2, -size / 2, size, size);
+      ctx.restore();
+      return;
+    }
 
     const fruitColor = FRUIT_COLORS[body.level % FRUIT_COLORS.length];
     const highlight = ctx.createRadialGradient(

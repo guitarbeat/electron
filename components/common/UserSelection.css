@@ -9,7 +9,7 @@
 }
 
 .user-selection--inline {
-  align-items: flex-end;
+  align-items: center;
 }
 
 .user-selection--panel {
@@ -57,7 +57,7 @@
 }
 
 .user-selection--inline .user-selection__profiles {
-  align-items: flex-end;
+  align-items: center;
 }
 
 .user-selection__title {
@@ -91,8 +91,8 @@
 .user-selection--inline .user-selection__bubble-row {
   width: auto;
   max-width: 100%;
-  gap: 0.35rem;
-  justify-content: flex-end;
+  gap: 0.44rem;
+  justify-content: center;
 }
 
 .user-selection__bubble-slot {
@@ -111,7 +111,7 @@
 }
 
 .user-selection--inline .gel-avatar-name {
-  font-size: 0.58rem !important;
+  font-size: 0.66rem !important;
   letter-spacing: 0.06em !important;
   text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 56%, transparent) !important;
   transform: none !important;
@@ -158,9 +158,9 @@
 }
 
 .user-selection__guest-bubble.is-inline {
-  width: 56px;
-  height: 56px;
-  gap: 0.1rem;
+  width: 72px;
+  height: 72px;
+  gap: 0.14rem;
   box-shadow: 0 0 20px color-mix(in srgb, var(--color-secondary) 20%, transparent);
 }
 
@@ -185,7 +185,7 @@
 }
 
 .user-selection__guest-bubble.is-inline .user-selection__guest-emoji {
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 
 .user-selection__guest-label {
@@ -196,7 +196,7 @@
 }
 
 .user-selection__guest-bubble.is-inline .user-selection__guest-label {
-  font-size: 0.5rem;
+  font-size: 0.6rem;
   letter-spacing: 0.05em;
 }
 
