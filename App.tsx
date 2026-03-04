@@ -114,7 +114,9 @@ const AppInner: React.FC = () => {
               <h2 id="active-panel-title" className="panel-intro__title">
                 {panelCopy.title}
               </h2>
-              <span className="panel-intro__badge">{currentUser ? `${currentUser} profile` : 'Guest'}</span>
+              <span className="panel-intro__badge">
+                {currentUser ? `${currentUser} profile` : 'Guest'}
+              </span>
             </div>
             <p className="panel-intro__subtitle">{panelCopy.subtitle}</p>
             <p className="panel-intro__description">{panelCopy.description}</p>

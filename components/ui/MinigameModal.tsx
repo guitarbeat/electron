@@ -23,6 +23,8 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   isOpen,
   onClose,
   title,
+  maxWidth = 520,
+  maxHeight = 720,
   children,
   ariaLabel = 'Dialog',
 }) => {
@@ -61,10 +63,10 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
       <div
         style={{
           position: 'relative',
-          width: '100vw',
-          height: '100vh',
-          maxWidth: '100vw',
-          maxHeight: '100vh',
+          width: 'min(100vw, 100%)',
+          height: 'min(100vh, 100%)',
+          maxWidth: `min(${maxWidth}px, 100vw)`,
+          maxHeight: `min(${maxHeight}px, 100vh)`,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
