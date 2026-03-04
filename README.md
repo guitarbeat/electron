@@ -19,7 +19,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1kqFxiDluP0wGmKF3T41vjN
 - **Watchlist**: Manage a collaborative list of movies using GitHub Gists.
 - **Chat & Message Board**: Real-time communication for collaborators.
 - **Memories**: Capture and share notes and memories.
-- **Minigames**: Includes a built-in Snake game and a Quiz system.
+- **Minigames**: Includes built-in Snake, Food Drop, and Quiz games.
 - **Places**: Integrated map and places list.
 
 ## Run Locally

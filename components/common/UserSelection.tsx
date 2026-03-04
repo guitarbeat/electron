@@ -1,14 +1,12 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
-import type { User } from '../../types';
-import GelBubbleAvatar from './GelBubbleAvatar';
+import type { MainTab, User } from '../../types';
 import { usePins } from '../../hooks/usePins';
-import { spacing } from '../../design-system/tokens';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
-import ThemeToggle from '../ui/ThemeToggle';
-import { MainTab } from '../../types';
+import ImageWithFallback from './ImageWithFallback';
+import { userImageSources } from '../../config/imageConfig';
+import './UserSelection.css';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
@@ -22,14 +20,14 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   onTabChange,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
-  const { userHasPin, verifyUserPin, refresh, isLoading } = usePins();
-  const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
+  const { userHasPin, verifyUserPin, isLoading } = usePins();
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  const isMobile = useMediaQuery(breakpoints.sm);
-  const bubbleSize = isMobile ? 'compact' : 'default';
+  const activeUser: User = currentUser ?? 'Aaron';
 
   const handleUserClick = (user: User) => {
+    if (isLoading || isVerifying) return;
+
     if (user === currentUser) {
       setCurrentUser(null);
       onUserSelected?.(null);
@@ -62,100 +60,108 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: isMobile ? `${spacing.sm} 0` : `${spacing.lg} 0`,
-        width: '100%',
-        maxWidth: '800px',
-        margin: '0 auto',
-        gap: spacing.xl,
-      }}
-    >
-      {/* Theme Toggle Section (optional label handled by parent sheet title) */}
+    <div className="user-selection-vapor">
+      <div className="user-selection-vapor__scanlines" aria-hidden="true" />
+      <div className="user-selection-vapor__sun" aria-hidden="true" />
+      <div className="user-selection-vapor__aura user-selection-vapor__aura--left" aria-hidden="true" />
+      <div
+        className="user-selection-vapor__aura user-selection-vapor__aura--right"
+        aria-hidden="true"
+      />
+
+      <header className="user-selection-vapor__header">
+        <h3 className="user-selection-vapor__title">Who is watching?</h3>
+        <p className="user-selection-vapor__subtitle">
+          You are in guest mode. Pick <strong>Aaron</strong> or <strong>Electra</strong> to save
+          personalized updates and actions.
+        </p>
+      </header>
+
       {onTabChange && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-          }}
-        >
-          <ThemeToggle activeTab={activeTab} onChange={onTabChange} isMobile={isMobile} />
+        <div className="user-selection-vapor__tabs" role="tablist" aria-label="Choose section">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'queue'}
+            className={`user-selection-vapor__tab ${activeTab === 'queue' ? 'is-active' : ''}`}
+            onClick={() => onTabChange('queue')}
+          >
+            <span aria-hidden="true">🎬</span>
+            <span>Movies</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'places'}
+            className={`user-selection-vapor__tab ${activeTab === 'places' ? 'is-active' : ''}`}
+            onClick={() => onTabChange('places')}
+          >
+            <span aria-hidden="true">📍</span>
+            <span>Places</span>
+          </button>
         </div>
       )}
 
-      {/* Profile Selection Section */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: spacing.md,
-          width: '100%',
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            color: '#fff',
-            fontSize: isMobile ? '1rem' : '1.125rem',
-            fontWeight: 600,
-            textAlign: 'center',
-            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-            fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
-          }}
+      <div className="user-selection-vapor__carousel">
+        <button
+          type="button"
+          className={`user-selection-vapor__profile-card is-side is-left ${activeUser === 'Aaron' ? 'is-muted' : ''}`}
+          onClick={() => handleUserClick('Aaron')}
+          disabled={isLoading || isVerifying}
+          aria-label="Select Aaron as profile"
         >
-          Who's watching?
-        </h3>
+          <span className="user-selection-vapor__avatar-wrap">
+            <ImageWithFallback sources={userImageSources.Aaron} alt="Aaron profile" />
+          </span>
+          {userHasPin('Aaron') && <span className="user-selection-vapor__lock-badge">🔒</span>}
+        </button>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 'clamp(16px, 4vw, 40px)',
-            width: '100%',
-            flexWrap: 'nowrap',
-            padding: `0 ${spacing.md}`,
-            position: 'relative',
-          }}
+        <button
+          type="button"
+          className="user-selection-vapor__profile-card is-active"
+          onClick={() => handleUserClick(activeUser)}
+          disabled={isLoading || isVerifying}
+          aria-label={`Select ${activeUser} as profile${userHasPin(activeUser) ? ' (PIN protected)' : ''}`}
         >
-          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-            <GelBubbleAvatar
-              user="Aaron"
-              hasPin={userHasPin('Aaron')}
-              isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
-              isSmall={currentUser !== null && currentUser !== 'Aaron'}
-              size={bubbleSize}
-              onClick={() => handleUserClick('Aaron')}
-              onMouseEnter={() => setHoveredAvatar('Aaron')}
-              onMouseLeave={() => setHoveredAvatar(null)}
-              onFocus={() => setHoveredAvatar('Aaron')}
-              onBlur={() => setHoveredAvatar(null)}
-            />
-          </div>
+          <span className="user-selection-vapor__avatar-wrap">
+            <ImageWithFallback sources={userImageSources[activeUser]} alt={`${activeUser} profile`} />
+          </span>
+          {userHasPin(activeUser) && <span className="user-selection-vapor__lock-badge">🔒</span>}
+          <span className="user-selection-vapor__active-label">{activeUser}</span>
+        </button>
 
-          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-            <GelBubbleAvatar
-              user="Electra"
-              hasPin={userHasPin('Electra')}
-              isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
-              isSmall={currentUser !== null && currentUser !== 'Electra'}
-              size={bubbleSize}
-              onClick={() => handleUserClick('Electra')}
-              onMouseEnter={() => setHoveredAvatar('Electra')}
-              onMouseLeave={() => setHoveredAvatar(null)}
-              onFocus={() => setHoveredAvatar('Electra')}
-              onBlur={() => setHoveredAvatar(null)}
-              animationOffset
-            />
-          </div>
-        </div>
+        <button
+          type="button"
+          className={`user-selection-vapor__profile-card is-side is-right ${activeUser === 'Electra' ? 'is-muted' : ''}`}
+          onClick={() => handleUserClick('Electra')}
+          disabled={isLoading || isVerifying}
+          aria-label="Select Electra as profile"
+        >
+          <span className="user-selection-vapor__avatar-wrap">
+            <ImageWithFallback sources={userImageSources.Electra} alt="Electra profile" />
+          </span>
+          {userHasPin('Electra') && <span className="user-selection-vapor__lock-badge">🔒</span>}
+        </button>
       </div>
+
+      <div className="user-selection-vapor__pager" aria-hidden="true">
+        <span className={`user-selection-vapor__dot ${activeUser === 'Aaron' ? 'is-active' : ''}`} />
+        <span
+          className={`user-selection-vapor__dot ${activeUser === 'Electra' ? 'is-active' : ''}`}
+        />
+      </div>
+
+      <footer className="user-selection-vapor__footer">
+        <p>Select Profile</p>
+        <button
+          type="button"
+          className="user-selection-vapor__add-button"
+          aria-label="Add profile (coming soon)"
+          disabled
+        >
+          +
+        </button>
+      </footer>
 
       <PinDialog
         isOpen={!!pendingUser}
