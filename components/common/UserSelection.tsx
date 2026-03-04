@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import type { User } from '../../types';
 import { usePins } from '../../hooks/usePins';
+import { useRandomCatImage } from '../../hooks/useRandomCatImage';
 import PinDialog from './PinDialog';
 import ImageWithFallback from './ImageWithFallback';
 import { userImageSources } from '../../config/imageConfig';
@@ -17,7 +18,13 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
   const { userHasPin, verifyUserPin, isLoading } = usePins();
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const { sources: aaronCatSources } = useRandomCatImage();
+  const { sources: electraCatSources } = useRandomCatImage();
   const activeUser: User = currentUser ?? 'Aaron';
+  const getAvatarSources = (user: User): string[] => {
+    const catSources = user === 'Aaron' ? aaronCatSources : electraCatSources;
+    return catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
+  };
 
   const handleUserClick = (user: User) => {
     if (isLoading || isVerifying) return;
@@ -77,29 +84,26 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
       <div className="user-selection-vapor__carousel">
         <button
           type="button"
-          className={`user-selection-vapor__profile-card is-side is-left ${activeUser === 'Aaron' ? 'is-muted' : ''}`}
+          className={`user-selection-vapor__profile-card is-side is-left user-selection-vapor__profile-card--aaron ${activeUser === 'Aaron' ? 'is-muted' : ''}`}
           onClick={() => handleUserClick('Aaron')}
           disabled={isLoading || isVerifying}
           aria-label="Select Aaron as profile"
         >
           <span className="user-selection-vapor__avatar-wrap">
-            <ImageWithFallback sources={userImageSources.Aaron} alt="Aaron profile" />
+            <ImageWithFallback sources={getAvatarSources('Aaron')} alt="Aaron profile" />
           </span>
           {userHasPin('Aaron') && <span className="user-selection-vapor__lock-badge">🔒</span>}
         </button>
 
         <button
           type="button"
-          className="user-selection-vapor__profile-card is-active"
+          className={`user-selection-vapor__profile-card is-active ${activeUser === 'Aaron' ? 'user-selection-vapor__profile-card--aaron' : 'user-selection-vapor__profile-card--electra'}`}
           onClick={() => handleUserClick(activeUser)}
           disabled={isLoading || isVerifying}
           aria-label={`Select ${activeUser} as profile${userHasPin(activeUser) ? ' (PIN protected)' : ''}`}
         >
           <span className="user-selection-vapor__avatar-wrap">
-            <ImageWithFallback
-              sources={userImageSources[activeUser]}
-              alt={`${activeUser} profile`}
-            />
+            <ImageWithFallback sources={getAvatarSources(activeUser)} alt={`${activeUser} profile`} />
           </span>
           {userHasPin(activeUser) && <span className="user-selection-vapor__lock-badge">🔒</span>}
           <span className="user-selection-vapor__active-label">{activeUser}</span>
@@ -107,13 +111,13 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
 
         <button
           type="button"
-          className={`user-selection-vapor__profile-card is-side is-right ${activeUser === 'Electra' ? 'is-muted' : ''}`}
+          className={`user-selection-vapor__profile-card is-side is-right user-selection-vapor__profile-card--electra ${activeUser === 'Electra' ? 'is-muted' : ''}`}
           onClick={() => handleUserClick('Electra')}
           disabled={isLoading || isVerifying}
           aria-label="Select Electra as profile"
         >
           <span className="user-selection-vapor__avatar-wrap">
-            <ImageWithFallback sources={userImageSources.Electra} alt="Electra profile" />
+            <ImageWithFallback sources={getAvatarSources('Electra')} alt="Electra profile" />
           </span>
           {userHasPin('Electra') && <span className="user-selection-vapor__lock-badge">🔒</span>}
         </button>

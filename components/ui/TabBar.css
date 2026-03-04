@@ -3,9 +3,8 @@
 }
 
 .app-tabbar__inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0.35rem 0.75rem;
+  width: 100%;
+  padding: 0.2rem 0;
   display: grid;
   grid-template-columns: repeat(var(--tab-count, 3), minmax(0, 1fr));
 }
@@ -30,6 +29,10 @@
     background 0.15s ease,
     color 0.15s ease,
     box-shadow var(--theme-transition-duration) var(--theme-transition-easing);
+}
+
+.app-header-nav-row .app-tabbar__tab {
+  min-height: 2.65rem;
 }
 
 .app-tabbar__tab:hover {
