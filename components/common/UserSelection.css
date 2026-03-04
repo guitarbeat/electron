@@ -142,6 +142,8 @@
 }
 
 .user-selection-vapor__profile-card {
+  --bubble-glow: rgba(69, 202, 255, 0.24);
+  --bubble-border: rgba(255, 255, 255, 0.25);
   position: relative;
   border: 0;
   padding: 0;
@@ -152,11 +154,20 @@
   justify-content: center;
   cursor: pointer;
   transition: transform 240ms ease, opacity 240ms ease, filter 240ms ease;
+  animation: vapor-bubble-float 5.8s ease-in-out infinite;
 }
 
 .user-selection-vapor__profile-card:disabled {
   opacity: 0.65;
   cursor: wait;
+}
+
+.user-selection-vapor__profile-card--aaron {
+  --bubble-glow: rgba(255, 154, 139, 0.3);
+}
+
+.user-selection-vapor__profile-card--electra {
+  --bubble-glow: rgba(69, 202, 255, 0.32);
 }
 
 .user-selection-vapor__profile-card .user-selection-vapor__avatar-wrap {
@@ -167,14 +178,17 @@
 .user-selection-vapor__profile-card.is-side {
   opacity: 0.7;
   transform: scale(0.78);
+  animation-duration: 6.6s;
 }
 
 .user-selection-vapor__profile-card.is-side.is-left {
   transform: translateX(0.9rem) rotateY(20deg) scale(0.78);
+  animation-delay: 0.45s;
 }
 
 .user-selection-vapor__profile-card.is-side.is-right {
   transform: translateX(-0.9rem) rotateY(-20deg) scale(0.78);
+  animation-delay: 1.1s;
 }
 
 .user-selection-vapor__profile-card.is-side.is-muted {
@@ -184,6 +198,7 @@
 
 .user-selection-vapor__profile-card.is-active {
   z-index: 2;
+  animation-duration: 5.2s;
 }
 
 .user-selection-vapor__profile-card.is-active .user-selection-vapor__avatar-wrap {
@@ -196,7 +211,7 @@
   overflow: hidden;
   border-radius: 50%;
   padding: 0.26rem;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--bubble-border);
   background: linear-gradient(
     140deg,
     var(--vapor-orange) 0%,
@@ -204,8 +219,12 @@
     var(--vapor-cyan) 100%
   );
   box-shadow:
-    0 0 14px rgba(69, 202, 255, 0.4),
+    0 0 14px var(--bubble-glow),
     inset 0 0 10px rgba(69, 202, 255, 0.2);
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
 }
 
 .user-selection-vapor__avatar-wrap img {
@@ -225,6 +244,45 @@
 .user-selection-vapor__profile-card.is-active .user-selection-vapor__avatar-wrap img {
   filter: none;
   opacity: 1;
+}
+
+.user-selection-vapor__avatar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  opacity: 0;
+  transform: scale(1.02);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 280ms ease;
+}
+
+.user-selection-vapor__profile-card:hover .user-selection-vapor__avatar-wrap,
+.user-selection-vapor__profile-card:focus-visible .user-selection-vapor__avatar-wrap {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow:
+    0 0 22px color-mix(in srgb, var(--bubble-glow) 85%, white 15%),
+    0 0 38px color-mix(in srgb, var(--bubble-glow) 55%, transparent),
+    inset 0 0 14px rgba(255, 255, 255, 0.14);
+}
+
+.user-selection-vapor__profile-card:hover .user-selection-vapor__avatar-wrap::before,
+.user-selection-vapor__profile-card:focus-visible .user-selection-vapor__avatar-wrap::before {
+  opacity: 1;
+  transform: scale(1.085);
+}
+
+.user-selection-vapor__profile-card.is-active .user-selection-vapor__avatar-wrap::before {
+  opacity: 1;
+  transform: scale(1.09);
+}
+
+.user-selection-vapor__profile-card.is-active .user-selection-vapor__avatar-wrap {
+  box-shadow:
+    0 0 26px color-mix(in srgb, var(--bubble-glow) 85%, white 15%),
+    0 0 44px color-mix(in srgb, var(--bubble-glow) 55%, transparent),
+    inset 0 0 16px rgba(255, 255, 255, 0.16);
 }
 
 .user-selection-vapor__lock-badge {
@@ -278,6 +336,16 @@
   height: 0.7rem;
   background: #fff;
   box-shadow: 0 0 14px rgba(255, 255, 255, 0.75);
+}
+
+@keyframes vapor-bubble-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -5px;
+  }
 }
 
 .user-selection-vapor__footer {
@@ -341,5 +409,16 @@
     margin-top: 0.65rem;
     font-size: 1.2rem;
     letter-spacing: 0.19em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-selection-vapor__profile-card {
+    animation: none;
+  }
+
+  .user-selection-vapor__profile-card,
+  .user-selection-vapor__avatar-wrap {
+    transition: none;
   }
 }

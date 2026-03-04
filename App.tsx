@@ -4,7 +4,6 @@ import { useUser } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
-import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 import Watchlist from './components/watchlist';
 import MessageBoard from './components/common/MessageBoard';
 import SnakeGame from './components/snake/SnakeGame';
@@ -17,13 +16,11 @@ import RestoreBubblesButton from './components/common/RestoreBubblesButton';
 import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
-import TabBar from './components/ui/TabBar';
 import MinigameModal from './components/ui/MinigameModal';
 import DebugMovies from './components/debug/DebugMovies';
 import AppHeader from './components/layout/AppHeader';
 import { spacing, colors, typography, layout } from './design-system/tokens';
 import './App.css';
-import './components/ui/ProfileBubbles.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
@@ -33,7 +30,6 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
-  const isMobile = useMediaQuery(breakpoints.sm);
   const { quizData } = useQuiz(true);
   const { isDragging, isHoveringDismiss } = useBubbleDismiss();
 
@@ -94,24 +90,13 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
-        <AppHeader currentUser={currentUser} />
-
-        {(!isMobile || activeTab === 'queue') && (
-          <div className="app-top-dock">
-            <div className="app-top-dock__inner">
-              {!isMobile && (
-                <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} />
-              )}
-              {activeTab === 'queue' && (
-                <div
-                  id="watchlist-top-controls-slot"
-                  className="app-top-dock__watchlist-slot"
-                  aria-live="polite"
-                />
-              )}
-            </div>
-          </div>
-        )}
+        <AppHeader
+          tabs={MAIN_TABS}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          showWatchlistControlsSlot={activeTab === 'queue'}
+          currentUser={currentUser}
+        />
 
         <main
           id="main-content"
@@ -122,9 +107,7 @@ const AppInner: React.FC = () => {
             maxWidth: layout.contentMaxWidth,
             margin: '0 auto',
             paddingTop: spacing.lg,
-            paddingBottom: isMobile
-              ? `calc(${layout.tabBarHeight} + ${spacing.xl} + env(safe-area-inset-bottom, 0px))`
-              : spacing.xl,
+            paddingBottom: spacing.xl,
             paddingLeft: spacing.md,
             paddingRight: spacing.md,
             outline: 'none',
@@ -150,10 +133,6 @@ const AppInner: React.FC = () => {
             );
           })}
         </main>
-
-        {isMobile && (
-          <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} mobileFixed />
-        )}
 
         <MinigameModal
           isOpen={showQuizEditor}

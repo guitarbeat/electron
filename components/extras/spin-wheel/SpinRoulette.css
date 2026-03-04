@@ -60,7 +60,6 @@
     inset 0 0 30px rgba(0, 0, 0, 0.45),
     0 0 22px rgba(0, 0, 0, 0.32),
     0 0 36px var(--spin-glow);
-  mask: linear-gradient(90deg, transparent, #000 18% 82%, transparent);
 }
 
 .spin-roulette__a3d {
@@ -98,12 +97,12 @@
 }
 
 .spin-roulette__card {
-  --w: clamp(96px, 22%, 126px);
+  --w: clamp(56px, 14%, 76px);
   --ba: calc(1turn / var(--n));
   grid-area: 1 / 1;
   place-self: center;
   width: var(--w);
-  aspect-ratio: 7 / 10;
+  aspect-ratio: 2 / 3;
   border-radius: 0.9rem;
   backface-visibility: hidden;
   overflow: hidden;
@@ -115,7 +114,10 @@
   box-shadow:
     0 6px 22px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(0, 0, 0, 0.28);
-  transform: rotateY(calc(var(--i) * var(--ba))) translateZ(clamp(120px, 28vw, 170px));
+  transform:
+    rotateY(calc(var(--i) * var(--ba)))
+    translateZ(clamp(132px, 30vw, 182px))
+    translateY(calc(-1 * clamp(82px, 20%, 118px)));
 }
 
 .spin-roulette__card::after {
@@ -386,8 +388,11 @@
 
 @media (max-width: 520px) {
   .spin-roulette__card {
-    --w: clamp(86px, 25%, 108px);
-    transform: rotateY(calc(var(--i) * var(--ba))) translateZ(clamp(98px, 30vw, 132px));
+    --w: clamp(50px, 16%, 66px);
+    transform:
+      rotateY(calc(var(--i) * var(--ba)))
+      translateZ(clamp(100px, 30vw, 136px))
+      translateY(calc(-1 * clamp(72px, 18%, 96px)));
   }
 
   .spin-roulette__hub {
