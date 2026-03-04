@@ -91,6 +91,7 @@ const ToolsDrawer: React.FC<ToolsDrawerProps> = ({
       <button className="tools-drawer__backdrop" type="button" onClick={onClose} aria-label="Close tools" />
       <section
         ref={panelRef}
+        id="tools-drawer"
         role="dialog"
         aria-modal="true"
         aria-label="Tools"

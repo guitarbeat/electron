@@ -1,5 +1,4 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useUser } from '../../context/UserContext';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import FixMatchDialog from '../common/FixMatchDialog';
@@ -11,11 +10,13 @@ import MovieItem from '../common/MovieItem';
 import { SuggestionItemCard } from '../common/DashboardCards';
 import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps } from './types';
-import WatchlistTopControls from './components/WatchlistTopControls';
+import WorkspaceLayout from '../layout/WorkspaceLayout';
+import WatchlistControlsPane from './components/WatchlistControlsPane';
 import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
 import { spacing, colors, radius, typography } from '../../design-system/tokens';
 import './Watchlist.css';
+import './WatchlistControls.css';
 
 const MOBILE_SKELETON_KEYS = ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'];
 const DESKTOP_SKELETON_KEYS = [
@@ -29,10 +30,7 @@ const DESKTOP_SKELETON_KEYS = [
   'desktop-8',
 ];
 
-const Watchlist: React.FC<WatchlistProps> = ({
-  isPaused = false,
-  topControlsMountId = 'watchlist-top-controls-slot',
-}) => {
+const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
 
   const {
@@ -73,6 +71,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
     acceptSuggestion,
     rejectSuggestion,
     isSuggestionsLoading,
+    pendingSuggestions,
     memories,
     addMemory,
     updateMemory,
@@ -87,16 +86,6 @@ const Watchlist: React.FC<WatchlistProps> = ({
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [suggestionToReject, setSuggestionToReject] = useState<MovieSuggestion | null>(null);
-  const [topControlsMount, setTopControlsMount] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    setTopControlsMount(document.getElementById(topControlsMountId));
-  }, [topControlsMountId]);
-
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
       previousMoviesRef.current = movies || null;
@@ -269,8 +258,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
     [updateMemory, setToast]
   );
 
-  const handleAddAction = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddAction = async () => {
     if (!searchQuery.trim()) return;
 
     setIsAdding(true);
@@ -300,6 +288,22 @@ const Watchlist: React.FC<WatchlistProps> = ({
       setIsSuggesting(false);
     }
   };
+
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.trim().toLowerCase();
+    const movieMatches = (movies || [])
+      .map((movie) => movie.title)
+      .filter((title) => title.toLowerCase().includes(query));
+    const suggestionMatches = pendingSuggestions
+      .map((suggestion) => suggestion.title)
+      .filter((title) => title.toLowerCase().includes(query));
+
+    const deduped = Array.from(new Set([...movieMatches, ...suggestionMatches]));
+    return deduped.slice(0, 6);
+  }, [movies, pendingSuggestions, searchQuery]);
+
+  const topSuggestion = searchSuggestions[0] || null;
 
   // Optimization: Index memories for O(1) lookup to prevent O(N*M) filtering in render
   const memoryIndex = useMemo(() => {
@@ -372,8 +376,8 @@ const Watchlist: React.FC<WatchlistProps> = ({
     );
   };
 
-  const topControls = (
-    <WatchlistTopControls
+  const controlsPane = (
+    <WatchlistControlsPane
       contentTab={contentTab}
       setContentTab={setContentTab}
       sortMode={sortMode}
@@ -381,16 +385,19 @@ const Watchlist: React.FC<WatchlistProps> = ({
       tabCounts={tabCounts}
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
-      onSubmit={handleAddAction}
-      isAdding={isAdding}
-      isSuggesting={isSuggesting}
+      onAdd={handleAddAction}
+      isBusy={isAdding || isSuggesting}
+      addLabel={currentUser ? 'Add movie' : 'Suggest movie'}
+      topSuggestion={topSuggestion}
+      onEnterAction="selectTopResult"
+      onSelectSuggestion={(title) => setSearchQuery(title)}
+      suggestions={searchSuggestions}
       isMobile={isMobile}
-      suggestionError={suggestionError}
     />
   );
 
-  return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: spacing.md }}>
+  const contentPane = (
+    <>
       {showConfetti && <Confetti isActive={showConfetti} />}
 
       {moviesError && (
@@ -400,12 +407,12 @@ const Watchlist: React.FC<WatchlistProps> = ({
             border: `1px solid ${colors.error}`,
             borderRadius: radius.md,
             padding: spacing.md,
-            marginBottom: spacing.md,
+            gap: spacing.md,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: spacing.md,
             flexWrap: 'wrap',
+            marginBottom: spacing.md,
           }}
         >
           <span style={{ color: colors.error, flex: 1, minWidth: 0 }}>{moviesError.message}</span>
@@ -415,13 +422,10 @@ const Watchlist: React.FC<WatchlistProps> = ({
         </div>
       )}
 
-      {topControlsMount ? (
-        createPortal(topControls, topControlsMount)
-      ) : (
-        <div className="watchlist-top-controls-fallback">{topControls}</div>
+      {suggestionError && (
+        <p style={{ color: colors.error, margin: `0 0 ${spacing.md}` }}>{suggestionError}</p>
       )}
 
-      {/* --- Content Section --- */}
       <div
         ref={movieResultsRef}
         style={{
@@ -494,12 +498,23 @@ const Watchlist: React.FC<WatchlistProps> = ({
               </p>
               {!searchQuery && contentTab === 'all' && (
                 <p style={{ marginTop: spacing.sm, fontSize: typography.fontSize.sm }}>
-                  Try searching for a title in the bar above.
+                  Try searching for a title in the controls panel.
                 </p>
               )}
             </div>
           )}
       </div>
+    </>
+  );
+
+  return (
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: spacing.md }}>
+      <WorkspaceLayout
+        isMobile={isMobile}
+        controls={controlsPane}
+        mobileTopBar={controlsPane}
+        content={contentPane}
+      />
 
       <ConfirmDialog
         isOpen={!!movieToDelete}
