@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './hooks/useAudio';
 import { useUser } from './context/UserContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
@@ -15,7 +16,7 @@ import RestoreBubblesButton from './components/common/RestoreBubblesButton';
 import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
-import TabBar from './components/ui/TabBar';
+import ThemeToggle from './components/ui/ThemeToggle';
 import BottomSheet from './components/ui/BottomSheet';
 import MinigameModal from './components/ui/MinigameModal';
 import UserSelection from './components/common/UserSelection';
@@ -41,6 +42,52 @@ const AppInner: React.FC = () => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
   const [showQuizEditor, setShowQuizEditor] = useState(false);
+
+  return (
+    <ThemeProvider activeTab={activeTab}>
+      <AppInnerWithTheme 
+        currentUser={currentUser}
+        playSwitch={playSwitch}
+        isMobile={isMobile}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        quizData={quizData}
+        isDragging={isDragging}
+        isHoveringDismiss={isHoveringDismiss}
+        showProfileSheet={showProfileSheet}
+        setShowProfileSheet={setShowProfileSheet}
+        quizCompleted={quizCompleted}
+        setQuizCompleted={setQuizCompleted}
+        showQuizEditor={showQuizEditor}
+        setShowQuizEditor={setShowQuizEditor}
+      />
+    </ThemeProvider>
+  );
+};
+
+const AppInnerWithTheme: React.FC<any> = ({
+  currentUser,
+  playSwitch,
+  isMobile,
+  activeTab,
+  setActiveTab,
+  quizData,
+  isDragging,
+  isHoveringDismiss,
+  showProfileSheet,
+  setShowProfileSheet,
+  quizCompleted,
+  setQuizCompleted,
+  showQuizEditor,
+  setShowQuizEditor,
+}) => {
+  const { themeTokens } = useTheme();
+
+  // Update body data-theme attribute when active tab changes
+  useEffect(() => {
+    const theme = activeTab === 'places' ? 'places' : 'movies';
+    document.body.setAttribute('data-theme', theme);
+  }, [activeTab]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -148,9 +195,15 @@ const AppInner: React.FC = () => {
         </div>
       </header>
 
+      {isMobile && (
+        <div className="app-top-tabs">
+          <ThemeToggle activeTab={activeTab} onChange={handleTabChange} isMobile={true} />
+        </div>
+      )}
+
       {!isMobile && (
-        <div className="app-top-tabs" style={{ borderBottom: `1px solid ${colors.borderSubtle}` }}>
-          <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="app-top-tabs">
+          <ThemeToggle activeTab={activeTab} onChange={handleTabChange} />
         </div>
       )}
 
@@ -234,7 +287,7 @@ const AppInner: React.FC = () => {
       </main>
 
       {isMobile && (
-        <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} mobileFixed />
+        <ThemeToggle activeTab={activeTab} onChange={handleTabChange} isMobile={true} />
       )}
 
       <BottomSheet

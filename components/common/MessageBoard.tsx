@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import { useToast } from '../../context/ToastContext';
 import { useChatLogic } from '../../hooks/useChatLogic';
+import { useTheme } from '../../context/ThemeContext';
 import ChatWindow from '../message-board/ChatWindow';
 import MessageList from '../message-board/MessageList';
 import MessageInput from '../message-board/MessageInput';
@@ -56,6 +57,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { currentUser } = useUser();
   const { showToast } = useToast();
+  const { themeTokens } = useTheme();
   const { messages, isLoading, error, isSubmitting, handleSend, handleDelete, handleReaction } =
     useChatLogic();
   const isMobile = useMediaQuery(breakpoints.sm);
@@ -63,7 +65,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [messageToDeleteId, setMessageToDeleteId] = useState<string | null>(null);
   const [lastViewedCount, setLastViewedCount] = useState(0);
-  const isEmbedded = mode === 'embedded';
+  const isEmbedded = mode === 'floating';
   const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => {
     if (typeof window === 'undefined') {
       return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
@@ -237,9 +239,9 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
           width: `${BUBBLE_SIZE}px`,
           height: `${BUBBLE_SIZE}px`,
           borderRadius: '50%',
-          backgroundColor: colors.accent,
+          backgroundColor: themeTokens.accent,
           border: `3px solid ${colors.surfaceElevated}`,
-          boxShadow: shadows.glow,
+          boxShadow: themeTokens.glow,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
