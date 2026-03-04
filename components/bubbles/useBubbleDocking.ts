@@ -1,23 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BubbleId, useBubbleDismiss } from '../../context/BubbleDismissContext';
 import {
-  BubbleSlot,
   BubbleToolId,
   BubbleViewportBucket,
   clampToViewport,
-  getAdjacentSlot,
   getDockSlots,
-  getNearestSlot,
   getViewportBucket,
-  parseSlotKey,
-  toSlotKey,
 } from './bubbleLayout';
 
-const STORAGE_KEY = 'bubbleDocking:v1';
+const STORAGE_KEY = 'bubbleDocking:v2';
 const LONG_PRESS_MS = 180;
 const MOVE_THRESHOLD = 5;
+const KEYBOARD_MOVE_STEP = 28;
 
-type SlotPersistence = Record<BubbleViewportBucket, Partial<Record<BubbleToolId, string>>>;
+type PositionPersistence = Record<
+  BubbleViewportBucket,
+  Partial<Record<BubbleToolId, { x: number; y: number }>>
+>;
 
 interface UseBubbleDockingProps {
   bubbleIds: BubbleToolId[];
@@ -35,21 +34,23 @@ interface PointerState {
   timer: number | null;
 }
 
-const loadPersisted = (): SlotPersistence => {
+const getEmptyPersistence = (): PositionPersistence => ({ mobile: {}, desktop: {} });
+
+const loadPersisted = (): PositionPersistence => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { mobile: {}, desktop: {} };
-    const parsed = JSON.parse(raw) as SlotPersistence;
+    if (!raw) return getEmptyPersistence();
+    const parsed = JSON.parse(raw) as PositionPersistence;
     return {
       mobile: parsed.mobile || {},
       desktop: parsed.desktop || {},
     };
   } catch {
-    return { mobile: {}, desktop: {} };
+    return getEmptyPersistence();
   }
 };
 
-const savePersisted = (value: SlotPersistence) => {
+const savePersisted = (value: PositionPersistence) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 };
 
@@ -58,7 +59,7 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
   const [bucket, setBucket] = useState<BubbleViewportBucket>(() =>
     typeof window === 'undefined' ? 'desktop' : getViewportBucket(window.innerWidth)
   );
-  const [persisted, setPersisted] = useState<SlotPersistence>(() => loadPersisted());
+  const [persisted, setPersisted] = useState<PositionPersistence>(() => loadPersisted());
   const [livePositions, setLivePositions] = useState<Partial<Record<BubbleToolId, { x: number; y: number }>>>({});
   const [movingBubbleId, setMovingBubbleId] = useState<BubbleToolId | null>(null);
   const [moveModeId, setMoveModeId] = useState<BubbleToolId | null>(null);
@@ -76,55 +77,29 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const slots = useMemo(() => {
-    if (typeof window === 'undefined') return [];
-    return getDockSlots(window.innerWidth, window.innerHeight, bucket);
-  }, [bucket]);
-
   const visibleIds = useMemo(
     () => bubbleIds.filter((id) => !hiddenBubbles.has(id as BubbleId)),
     [bubbleIds, hiddenBubbles]
   );
 
-  const maxSlotIndex = useMemo(() => {
-    return slots.reduce((max, candidate) => Math.max(max, candidate.slot.index), 0);
-  }, [slots]);
+  const defaultPositions = useMemo(() => {
+    if (typeof window === 'undefined') return {} as Partial<Record<BubbleToolId, { x: number; y: number }>>;
 
-  const assignments = useMemo(() => {
-    const bucketAssignments = persisted[bucket] || {};
-    const used = new Set<string>();
-    const byId: Partial<Record<BubbleToolId, BubbleSlot>> = {};
+    const slots = getDockSlots(window.innerWidth, window.innerHeight, bucket);
+    const byId: Partial<Record<BubbleToolId, { x: number; y: number }>> = {};
 
     visibleIds.forEach((id, index) => {
-      const parsed = bucketAssignments[id] ? parseSlotKey(bucketAssignments[id] as string) : null;
-      const fallback: BubbleSlot = {
-        edge: index % 2 === 0 ? 'left' : 'right',
-        index: Math.floor(index / 2),
-      };
-      let candidate = parsed || fallback;
-      if (candidate.index > maxSlotIndex) {
-        candidate = { ...candidate, index: maxSlotIndex };
-      }
-
-      let key = toSlotKey(candidate);
-      if (used.has(key)) {
-        const free = slots.find((slot) => !used.has(toSlotKey(slot.slot)));
-        if (free) {
-          candidate = free.slot;
-          key = toSlotKey(candidate);
-        }
-      }
-
-      used.add(key);
-      byId[id] = candidate;
+      const slot = slots[index % slots.length];
+      byId[id] = slot
+        ? { x: slot.x, y: slot.y }
+        : clampToViewport(16 + index * 14, 120 + index * 14, window.innerWidth, window.innerHeight);
     });
 
     return byId;
-  }, [bucket, persisted, visibleIds, slots, maxSlotIndex]);
+  }, [bucket, visibleIds]);
 
   const positionMap = useMemo(() => {
     const positions: Partial<Record<BubbleToolId, { x: number; y: number }>> = {};
-    const slotByKey = new Map(slots.map((slot) => [toSlotKey(slot.slot), slot]));
 
     visibleIds.forEach((id) => {
       const live = livePositions[id];
@@ -133,25 +108,33 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
         return;
       }
 
-      const assigned = assignments[id];
-      if (!assigned) return;
-      const slotPos = slotByKey.get(toSlotKey(assigned));
-      if (slotPos) {
-        positions[id] = { x: slotPos.x, y: slotPos.y };
+      const saved = persisted[bucket]?.[id];
+      if (saved && typeof window !== 'undefined') {
+        positions[id] = clampToViewport(saved.x, saved.y, window.innerWidth, window.innerHeight);
+        return;
+      }
+
+      const fallback = defaultPositions[id];
+      if (fallback) {
+        positions[id] = fallback;
       }
     });
 
     return positions;
-  }, [assignments, livePositions, slots, visibleIds]);
+  }, [defaultPositions, livePositions, persisted, bucket, visibleIds]);
 
-  const persistSlot = useCallback(
-    (id: BubbleToolId, slot: BubbleSlot) => {
+  const persistPosition = useCallback(
+    (id: BubbleToolId, position: { x: number; y: number }) => {
+      if (typeof window === 'undefined') return;
+
+      const clamped = clampToViewport(position.x, position.y, window.innerWidth, window.innerHeight);
+
       setPersisted((previous) => {
-        const next: SlotPersistence = {
+        const next: PositionPersistence = {
           mobile: { ...previous.mobile },
           desktop: { ...previous.desktop },
         };
-        next[bucket][id] = toSlotKey(slot);
+        next[bucket][id] = clamped;
         savePersisted(next);
         return next;
       });
@@ -167,48 +150,30 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
     });
   }, []);
 
-  const resolveFreeSlot = useCallback(
-    (id: BubbleToolId, preferred: BubbleSlot): BubbleSlot => {
-      const occupied = new Set<string>();
-      visibleIds.forEach((candidateId) => {
-        if (candidateId === id) return;
-        const assigned = assignments[candidateId];
-        if (assigned) occupied.add(toSlotKey(assigned));
-      });
-
-      const preferredKey = toSlotKey(preferred);
-      if (!occupied.has(preferredKey)) return preferred;
-
-      const preferredPos = slots.find((slot) => toSlotKey(slot.slot) === preferredKey);
-      const candidates = slots
-        .filter((slot) => !occupied.has(toSlotKey(slot.slot)))
-        .sort((a, b) => {
-          if (!preferredPos) return 0;
-          const da = (a.x - preferredPos.x) ** 2 + (a.y - preferredPos.y) ** 2;
-          const db = (b.x - preferredPos.x) ** 2 + (b.y - preferredPos.y) ** 2;
-          return da - db;
-        });
-
-      return candidates[0]?.slot || preferred;
-    },
-    [assignments, slots, visibleIds]
-  );
-
   const moveByKeyboard = useCallback(
     (id: BubbleToolId, direction: 'left' | 'right' | 'up' | 'down') => {
-      const current = assignments[id];
+      if (typeof window === 'undefined') return;
+      const current = positionMap[id] || defaultPositions[id];
       if (!current) return;
-      const next = getAdjacentSlot(current, direction, maxSlotIndex);
-      const resolved = resolveFreeSlot(id, next);
-      persistSlot(id, resolved);
-      setA11yAnnouncement(`${id} bubble moved to ${resolved.edge} slot ${resolved.index + 1}`);
+
+      const deltaX = direction === 'left' ? -KEYBOARD_MOVE_STEP : direction === 'right' ? KEYBOARD_MOVE_STEP : 0;
+      const deltaY = direction === 'up' ? -KEYBOARD_MOVE_STEP : direction === 'down' ? KEYBOARD_MOVE_STEP : 0;
+      const next = clampToViewport(
+        current.x + deltaX,
+        current.y + deltaY,
+        window.innerWidth,
+        window.innerHeight
+      );
+
+      persistPosition(id, next);
+      setA11yAnnouncement(`${id} bubble moved to x ${Math.round(next.x)}, y ${Math.round(next.y)}`);
     },
-    [assignments, maxSlotIndex, persistSlot, resolveFreeSlot]
+    [defaultPositions, persistPosition, positionMap]
   );
 
   const getBubbleProps = useCallback(
     (id: BubbleToolId) => {
-      const position = positionMap[id] || { x: 0, y: 0 };
+      const position = positionMap[id] || defaultPositions[id] || { x: 16, y: 120 };
       const isDraggingBubble = movingBubbleId === id;
 
       const onPointerDown: React.PointerEventHandler<HTMLButtonElement> = (event) => {
@@ -286,11 +251,7 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
             dismiss(id as BubbleId);
             clearLive(id);
           } else {
-            const nearest = getNearestSlot(live.x, live.y, slots);
-            if (nearest) {
-              const resolved = resolveFreeSlot(id, nearest.slot);
-              persistSlot(id, resolved);
-            }
+            persistPosition(id, live);
             clearLive(id);
           }
           setDragging(false);
@@ -368,16 +329,15 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
     },
     [
       positionMap,
+      defaultPositions,
       movingBubbleId,
       moveModeId,
       livePositions,
-      slots,
       checkDismissZoneHit,
       dismiss,
       clearLive,
       onActivate,
-      persistSlot,
-      resolveFreeSlot,
+      persistPosition,
       setDragging,
       moveByKeyboard,
     ]
