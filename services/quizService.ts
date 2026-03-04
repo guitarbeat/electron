@@ -29,7 +29,6 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
     const isDefaultToken = !token || (token as string) === 'YOUR_GITHUB_TOKEN';
 
     if (isDefaultToken) {
-      // eslint-disable-next-line no-console
       console.warn('Using default token, returning default quiz data.');
       return defaultQuizData;
     }
@@ -43,7 +42,6 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
     });
 
     if (response.status === 401 || response.status === 404) {
-      // eslint-disable-next-line no-console
       console.warn(`GitHub API returned ${response.status}, using default quiz data.`);
       return defaultQuizData;
     }
@@ -64,7 +62,6 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
 
     // Validate data structure
     if (!parsedData || !Array.isArray(parsedData.questions)) {
-      // eslint-disable-next-line no-console
       console.warn('Invalid quiz data format fetched from Gist, returning defaults');
       return defaultQuizData;
     }
@@ -78,7 +75,6 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
 
     return sanitizedData;
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error fetching quiz data from Gist:', error);
     // Return defaults on error
     return defaultQuizData;
@@ -104,12 +100,11 @@ export const saveQuizData = async (data: QuizData): Promise<void> => {
 
     if (!response.ok) {
       const errorBody = await response.json();
-      // eslint-disable-next-line no-console
+
       console.error('GitHub API error details:', errorBody);
       throw new Error(`GitHub API responded with ${response.status}`);
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error saving quiz data to Gist:', error);
     throw error;
   }

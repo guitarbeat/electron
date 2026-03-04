@@ -83,5 +83,13 @@ export const useMessages = () => {
     [refresh]
   );
 
-  return { messages, isLoading, isSubmitting: false, error, addMessage, deleteMessage, toggleReaction };
+  return {
+    messages,
+    isLoading,
+    isSubmitting: false,
+    error,
+    addMessage,
+    deleteMessage,
+    toggleReaction,
+  };
 };

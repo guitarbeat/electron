@@ -39,7 +39,6 @@ const loadLeaderboard = (): SnakeLeaderboardEntry[] => {
       .sort((a, b) => b.score - a.score || b.createdAt.localeCompare(a.createdAt))
       .slice(0, MAX_LEADERBOARD_ENTRIES);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Failed to parse snake leaderboard:', error);
     return [];
   }

@@ -5,3 +5,18 @@
 .watchlist-tabs-scroll::-webkit-scrollbar {
   display: none;
 }
+
+.watchlist-top-controls {
+  padding: 0.5rem;
+  background: rgba(23, 33, 58, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(126, 151, 201, 0.25);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.watchlist-top-controls-fallback {
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}

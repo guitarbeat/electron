@@ -61,12 +61,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
   const authorName = msg.author || 'Anonymous';
   const currentUsername = currentUser || 'Anonymous';
-  
+
   // Memoize expensive calculations
   const { isCurrentUser, userStyle, reactionSummary, userReaction } = useMemo(() => {
     const isCurrentUser = currentUser && authorName.toLowerCase() === currentUser.toLowerCase();
     const userStyle = getMessageBubbleStyle(authorName);
-    
+
     // Get user's current reaction from persisted data
     const getUserReaction = (): string | null => {
       if (!msg.reactions) return null;
@@ -87,7 +87,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
           hasUserReacted: users.includes(currentUsername),
         }));
     };
-    
+
     return {
       isCurrentUser,
       userStyle,

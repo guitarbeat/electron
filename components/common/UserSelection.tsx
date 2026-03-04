@@ -16,7 +16,11 @@ interface UserSelectionProps {
   onTabChange?: (tab: MainTab) => void;
 }
 
-const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected, activeTab = 'queue', onTabChange }) => {
+const UserSelection: React.FC<UserSelectionProps> = ({
+  onUserSelected,
+  activeTab = 'queue',
+  onTabChange,
+}) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin, refresh, isLoading } = usePins();
   const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
@@ -80,11 +84,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected, activeTab
             width: '100%',
           }}
         >
-          <ThemeToggle
-            activeTab={activeTab}
-            onChange={onTabChange}
-            isMobile={isMobile}
-          />
+          <ThemeToggle activeTab={activeTab} onChange={onTabChange} isMobile={isMobile} />
         </div>
       )}
 
@@ -111,7 +111,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected, activeTab
         >
           Who's watching?
         </h3>
-        
+
         <div
           style={{
             display: 'flex',

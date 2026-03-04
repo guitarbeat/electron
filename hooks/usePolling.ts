@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // FIX: Implemented the usePolling custom hook to resolve compilation errors.
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { pollingManager } from '../services/PollingManager';
@@ -75,7 +74,6 @@ export const usePolling = <T>(
         return result;
       });
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('Polling execution failed:', e);
       setError(e);
     } finally {

@@ -99,7 +99,7 @@ export const getPins = async (): Promise<UserPins> => {
   const now = Date.now();
   console.log('🌐 Getting PINs from Gist...');
   console.log('📊 Cache check:', { cachedPins, now, lastFetchTime, cacheAge: now - lastFetchTime });
-  
+
   if (cachedPins && now - lastFetchTime < CACHE_TTL) {
     console.log('⚡ Using cached PINs:', cachedPins);
     return cachedPins;

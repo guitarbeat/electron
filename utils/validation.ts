@@ -1,4 +1,9 @@
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, MAX_MESSAGE_LENGTH, MAX_AUTHOR_LENGTH } from '../config/security';
+import {
+  sanitizeInput,
+  MAX_MOVIE_TITLE_LENGTH,
+  MAX_MESSAGE_LENGTH,
+  MAX_AUTHOR_LENGTH,
+} from '../config/security';
 
 export interface ValidationRule {
   required?: boolean;
@@ -19,46 +24,47 @@ export interface ValidationResult {
 
 export const createValidator = (rules: ValidationRules) => {
   return (data: Record<string, string>): ValidationResult => {
-    const errors: Record<string, string> = {};
-
-    for (const [field, rule] of Object.entries(rules)) {
+    const errors = Object.entries(rules).reduce<Record<string, string>>((acc, [field, rule]) => {
       const value = data[field] || '';
+      const trimmedValue = value.trim();
 
       // Required validation
-      if (rule.required && !value.trim()) {
-        errors[field] = `${field} is required`;
-        continue;
+      if (rule.required && !trimmedValue) {
+        acc[field] = `${field} is required`;
+        return acc;
       }
 
       // Skip other validations if field is empty and not required
-      if (!value.trim() && !rule.required) {
-        continue;
+      if (!trimmedValue && !rule.required) {
+        return acc;
       }
 
       const cleanValue = sanitizeInput(value);
 
       // Length validations
       if (rule.maxLength && cleanValue.length > rule.maxLength) {
-        errors[field] = `${field} exceeds maximum length of ${rule.maxLength} characters`;
+        acc[field] = `${field} exceeds maximum length of ${rule.maxLength} characters`;
       }
 
       if (rule.minLength && cleanValue.length < rule.minLength) {
-        errors[field] = `${field} must be at least ${rule.minLength} characters`;
+        acc[field] = `${field} must be at least ${rule.minLength} characters`;
       }
 
       // Pattern validation
       if (rule.pattern && !rule.pattern.test(cleanValue)) {
-        errors[field] = `${field} format is invalid`;
+        acc[field] = `${field} format is invalid`;
       }
 
       // Custom validation
       if (rule.custom) {
         const customError = rule.custom(cleanValue);
         if (customError) {
-          errors[field] = customError;
+          acc[field] = customError;
         }
       }
-    }
+
+      return acc;
+    }, {});
 
     return {
       isValid: Object.keys(errors).length === 0,
@@ -111,7 +117,10 @@ export const validatePlace = createValidator({
 });
 
 // Utility function to validate and throw errors
-export const validateAndThrow = (validator: (data: Record<string, string>) => ValidationResult, data: Record<string, string>) => {
+export const validateAndThrow = (
+  validator: (data: Record<string, string>) => ValidationResult,
+  data: Record<string, string>
+) => {
   const result = validator(data);
   if (!result.isValid) {
     const firstError = Object.values(result.errors)[0];

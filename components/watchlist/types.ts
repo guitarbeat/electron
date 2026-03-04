@@ -3,4 +3,5 @@ export type SortMode = 'recent' | 'title' | 'year';
 
 export interface WatchlistProps {
   isPaused?: boolean;
+  topControlsMountId?: string;
 }

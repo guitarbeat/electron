@@ -74,11 +74,11 @@ const AppInner: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'queue':
-        return <Watchlist />;
+        return <Watchlist topControlsMountId="watchlist-top-controls-slot" />;
       case 'places':
         return <PlacesList />;
       default:
-        return <Watchlist />;
+        return <Watchlist topControlsMountId="watchlist-top-controls-slot" />;
     }
   };
 
@@ -98,24 +98,18 @@ const AppInner: React.FC = () => {
 
         <AppHeader onProfileClick={() => setShowProfileSheet(true)} currentUser={currentUser} />
 
-        {isMobile && (
-          <div className="app-top-tabs">
-            <ThemeToggle activeTab={activeTab} onChange={handleTabChange} isMobile={true} />
+        <div className="app-top-dock">
+          <div className="app-top-dock__inner">
+            <ThemeToggle activeTab={activeTab} onChange={handleTabChange} />
+            {activeTab === 'queue' && (
+              <div
+                id="watchlist-top-controls-slot"
+                className="app-top-dock__watchlist-slot"
+                aria-live="polite"
+              />
+            )}
           </div>
-        )}
-
-        {!isMobile && (
-          <div
-            className="app-top-controls"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              padding: `${spacing.md} 0`,
-            }}
-          >
-            <UserSelection activeTab={activeTab} onTabChange={handleTabChange} />
-          </div>
-        )}
+        </div>
 
         <main
           id="main-content"
@@ -154,8 +148,6 @@ const AppInner: React.FC = () => {
             );
           })}
         </main>
-
-        {isMobile && <ThemeToggle activeTab={activeTab} onChange={handleTabChange} isMobile={true} />}
 
         <BottomSheet
           isOpen={showProfileSheet}

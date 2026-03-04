@@ -40,9 +40,9 @@ export const useChatLogic = () => {
       try {
         await toggleReaction(messageId, emoji, username);
       } catch (error) {
-        showToast({ 
-          message: getErrorMessage(error, 'Failed to add reaction'), 
-          type: 'error' 
+        showToast({
+          message: getErrorMessage(error, 'Failed to add reaction'),
+          type: 'error',
         });
       }
     },
