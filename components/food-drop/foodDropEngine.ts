@@ -63,7 +63,7 @@ interface MergeBurst {
   label: string;
 }
 
-const FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + FOOD_DROP_WALL_THICKNESS / 2;
+const SAFETY_FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + 120;
 const LEFT_WALL_X = -FOOD_DROP_WALL_THICKNESS / 2;
 const RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS / 2;
 const CONTAINER_INSET_X = 10;
@@ -466,10 +466,10 @@ export class FoodDropEngine {
   private setupBoundaries() {
     const floor = Bodies.rectangle(
       FOOD_DROP_WORLD_WIDTH / 2,
-      FLOOR_Y,
+      SAFETY_FLOOR_Y,
       FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS * 2,
       FOOD_DROP_WALL_THICKNESS,
-      { isStatic: true, restitution: 0.2, label: 'floor' }
+      { isStatic: true, restitution: 0.05, label: 'safety-floor' }
     );
 
     const leftWall = Bodies.rectangle(
@@ -830,7 +830,7 @@ export class FoodDropEngine {
 
     const sprite = FoodDropEngine.fruitSprites[body.level] ?? null;
     if (sprite && sprite.complete && sprite.naturalWidth > 0 && sprite.naturalHeight > 0) {
-      const size = body.radius * 2.12;
+      const size = body.radius * 2.02;
       ctx.drawImage(sprite, -size / 2, -size / 2, size, size);
       ctx.restore();
       return;
