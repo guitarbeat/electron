@@ -39,7 +39,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const isMobile = useMediaQuery(breakpoints.sm);
-  const bubbleSize = isMobile || variant === 'inline' ? 'compact' : 'default';
+  const bubbleSize = variant === 'inline' ? 'tiny' : isMobile ? 'compact' : 'default';
   const isDisabled = isLoading || isVerifying;
   const users: User[] = ['Aaron', 'Electra'];
   const profiles: ProfileValue[] = includeGuest ? ['Guest', ...users] : users;
@@ -104,45 +104,12 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             const isActive = selectedProfile === profile;
             const isHovered = hoveredAvatar === profile || isActive;
 
-            if (variant === 'inline') {
-              return (
-                <button
-                  key={profile}
-                  type="button"
-                  className={`user-selection__pill${isActive ? ' is-active' : ''}`}
-                  onClick={() => selectProfile(profile)}
-                  onMouseEnter={() => setHoveredAvatar(profile)}
-                  onMouseLeave={() => setHoveredAvatar(null)}
-                  onFocus={() => setHoveredAvatar(profile)}
-                  onBlur={() => setHoveredAvatar(null)}
-                  disabled={isDisabled}
-                  aria-pressed={isActive}
-                  aria-label={`Switch to ${profile} profile${profile !== 'Guest' && userHasPin(profile) ? ' (PIN protected)' : ''}`}
-                  title={
-                    profile === 'Guest'
-                      ? 'Guest profile'
-                      : `${profile}${userHasPin(profile) ? ' (PIN protected)' : ''}`
-                  }
-                >
-                  <span className="user-selection__pill-emoji" aria-hidden>
-                    {profile === 'Guest' ? '👥' : '👤'}
-                  </span>
-                  <span className="user-selection__pill-label">{profile}</span>
-                  {profile !== 'Guest' && userHasPin(profile) && (
-                    <span className="user-selection__pill-lock" aria-hidden>
-                      🔒
-                    </span>
-                  )}
-                </button>
-              );
-            }
-
             if (profile === 'Guest') {
               return (
                 <button
                   key={profile}
                   type="button"
-                  className={`user-selection__guest-bubble${isActive ? ' is-active' : ''}${isHovered ? ' is-hovered' : ''}`}
+                  className={`user-selection__guest-bubble${isActive ? ' is-active' : ''}${isHovered ? ' is-hovered' : ''}${variant === 'inline' ? ' is-inline' : ''}`}
                   onClick={() => selectProfile('Guest')}
                   onMouseEnter={() => setHoveredAvatar('Guest')}
                   onMouseLeave={() => setHoveredAvatar(null)}
@@ -166,7 +133,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   user={profile}
                   hasPin={userHasPin(profile)}
                   isHovered={isHovered}
-                  isSmall={selectedProfile !== 'Guest' && selectedProfile !== profile}
+                  isSmall={
+                    variant === 'panel' && selectedProfile !== 'Guest' && selectedProfile !== profile
+                  }
                   size={bubbleSize}
                   disabled={isDisabled}
                   onClick={() => selectProfile(profile)}
