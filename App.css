@@ -64,7 +64,6 @@ body {
 
 .app-header,
 .app-tabbar__tab,
-.user-selection__guest-bubble,
 .gel-bubble,
 .card,
 .button,
@@ -126,18 +125,24 @@ body {
 }
 
 .app-header-shell {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0.3rem 1rem 0.45rem;
+  padding: 0.42rem 1rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
   border-top: none;
-  border-radius: 0 0 14px 14px;
-  box-shadow: 0 6px 16px rgba(3, 8, 18, 0.22);
-  background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 8px 20px rgba(3, 8, 18, 0.24);
+  background:
+    radial-gradient(
+      circle at 20% 0%,
+      color-mix(in srgb, var(--color-accent) 10%, transparent) 0%,
+      transparent 42%
+    ),
+    color-mix(in srgb, var(--color-surface-2) 92%, transparent);
 }
 
 .app-header-shell.is-mobile {
-  padding: 0.25rem 0.75rem 0.4rem;
+  padding: 0.3rem 0.7rem 0.45rem;
 }
 
 .app-header-inner {
@@ -179,9 +184,9 @@ body {
 }
 
 .main-container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: clamp(0.8rem, 1.1vw, 1.15rem);
   outline: none;
 }
 
@@ -214,6 +219,6 @@ body {
   }
 
   .main-container {
-    padding: 0.75rem;
+    padding: 0.72rem;
   }
 }
