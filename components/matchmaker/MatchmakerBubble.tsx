@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { User } from '../../types';
 import Matchmaker from './Matchmaker';
 import { colors, radius, shadows, spacing, typography } from '../../design-system/tokens';
+import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 
 interface MatchmakerBubbleProps {
   currentUser: User | null;
@@ -22,6 +23,7 @@ const clampBubble = (x: number, y: number) => {
 };
 
 const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
+  const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const [isOpen, setIsOpen] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
     if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
@@ -49,6 +51,7 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
     };
     didDragRef.current = false;
     setIsDragging(true);
+    setDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -64,7 +67,10 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
-    setBubblePosition(clampBubble(dragState.origin.x + deltaX, dragState.origin.y + deltaY));
+    const newX = dragState.origin.x + deltaX;
+    const newY = dragState.origin.y + deltaY;
+    setBubblePosition(clampBubble(newX, newY));
+    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -72,8 +78,15 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const dragged = didDragRef.current;
     setIsDragging(false);
+    setDragging(false);
     dragStateRef.current = null;
     if (dragged) {
+      if (checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+        didDragRef.current = false;
+        dismiss('matchmaker');
+        try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+        return;
+      }
       window.setTimeout(() => {
         didDragRef.current = false;
       }, 0);
@@ -98,6 +111,8 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
     bubblePosition.y > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400);
   const isRightHalf =
     bubblePosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 400);
+
+  if (isHidden('matchmaker')) return null;
 
   return (
     <>

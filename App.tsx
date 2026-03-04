@@ -10,6 +10,9 @@ import SnakeGame from './components/snake/SnakeGame';
 import SpinWheel from './components/extras/spin-wheel/SpinWheel';
 import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
 import QuizBubble from './components/quiz/QuizBubble';
+import DragDismissZone from './components/common/DragDismissZone';
+import RestoreBubblesButton from './components/common/RestoreBubblesButton';
+import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import TabBar from './components/ui/TabBar';
@@ -25,12 +28,13 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 ];
 const PROFILE_PROMPT_SEEN_KEY = 'profilePromptSeen';
 
-const App: React.FC = () => {
+const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const { quizData } = useQuiz(true);
+  const { isDragging, isHoveringDismiss } = useBubbleDismiss();
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -276,8 +280,16 @@ const App: React.FC = () => {
         onOpenQuizEditor={handleOpenQuizEditor}
       />
       <MatchmakerBubble currentUser={currentUser} />
+      <DragDismissZone visible={isDragging} isHovering={isHoveringDismiss} />
+      <RestoreBubblesButton />
     </div>
   );
 };
+
+const App: React.FC = () => (
+  <BubbleDismissProvider>
+    <AppInner />
+  </BubbleDismissProvider>
+);
 
 export default App;

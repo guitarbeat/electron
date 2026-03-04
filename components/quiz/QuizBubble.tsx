@@ -5,6 +5,7 @@ import { colors, radius, shadows, spacing, typography } from '../../design-syste
 import Button from '../ui/Button';
 import MinigameModal from '../ui/MinigameModal';
 import QuizFlow from './QuizFlow';
+import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 
 const BUBBLE_SIZE = 60;
 const BUBBLE_EDGE_MARGIN = 16;
@@ -38,6 +39,7 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
   onQuizComplete,
   onOpenQuizEditor,
 }) => {
+  const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const [isOpen, setIsOpen] = useState(false);
   const [isTakingQuiz, setIsTakingQuiz] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
@@ -66,6 +68,7 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
     };
     didDragRef.current = false;
     setIsDragging(true);
+    setDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -81,18 +84,27 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
       didDragRef.current = true;
     }
     if (!didDragRef.current) return;
-    setBubblePosition(clampBubble(ds.origin.x + deltaX, ds.origin.y + deltaY));
+    const newX = ds.origin.x + deltaX;
+    const newY = ds.origin.y + deltaY;
+    setBubblePosition(clampBubble(newX, newY));
+    checkDismissZoneHit(newX, newY, BUBBLE_SIZE);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     const ds = dragStateRef.current;
     if (!ds || ds.pointerId !== event.pointerId) return;
-    if (!didDragRef.current) {
-      setIsOpen(true);
-    }
+    const wasDragged = didDragRef.current;
     setIsDragging(false);
+    setDragging(false);
     dragStateRef.current = null;
     didDragRef.current = false;
+    if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
+      dismiss('quiz');
+      return;
+    }
+    if (!wasDragged) {
+      setIsOpen(true);
+    }
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch {
@@ -109,6 +121,8 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
     onQuizComplete();
     closeModal();
   };
+
+  if (isHidden('quiz')) return null;
 
   return (
     <>
