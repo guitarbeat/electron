@@ -6,15 +6,22 @@ import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import { useMediaQuery, breakpoints } from './hooks/useMediaQuery';
 import Watchlist from './components/watchlist';
-import AppHeader from './components/layout/AppHeader';
-import FloatingBubbles from './components/layout/FloatingBubbles';
-import { BubbleDismissProvider } from './context/BubbleDismissContext';
+import MessageBoard from './components/common/MessageBoard';
+import SnakeGame from './components/snake/SnakeGame';
+import SpinWheel from './components/extras/spin-wheel/SpinWheel';
+import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
+import QuizBubble from './components/quiz/QuizBubble';
+import DragDismissZone from './components/common/DragDismissZone';
+import RestoreBubblesButton from './components/common/RestoreBubblesButton';
+import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import ThemeToggle from './components/ui/ThemeToggle';
 import BottomSheet from './components/ui/BottomSheet';
 import MinigameModal from './components/ui/MinigameModal';
 import UserSelection from './components/common/UserSelection';
+import DebugMovies from './components/debug/DebugMovies';
+import AppHeader from './components/layout/AppHeader';
 import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
 import './App.css';
 
@@ -29,6 +36,8 @@ const AppInner: React.FC = () => {
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(breakpoints.sm);
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const { quizData } = useQuiz(true);
+  const { isDragging, isHoveringDismiss } = useBubbleDismiss();
   const [showProfileSheet, setShowProfileSheet] = useState(false);
 
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -38,19 +47,24 @@ const AppInner: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
-      <AppInnerWithTheme 
-        currentUser={currentUser}
-        playSwitch={playSwitch}
-        isMobile={isMobile}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        showProfileSheet={showProfileSheet}
-        setShowProfileSheet={setShowProfileSheet}
-        quizCompleted={quizCompleted}
-        setQuizCompleted={setQuizCompleted}
-        showQuizEditor={showQuizEditor}
-        setShowQuizEditor={setShowQuizEditor}
-      />
+      <BubbleDismissProvider>
+        <AppInnerWithTheme 
+          currentUser={currentUser}
+          playSwitch={playSwitch}
+          isMobile={isMobile}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          quizData={quizData}
+          isDragging={isDragging}
+          isHoveringDismiss={isHoveringDismiss}
+          showProfileSheet={showProfileSheet}
+          setShowProfileSheet={setShowProfileSheet}
+          quizCompleted={quizCompleted}
+          setQuizCompleted={setQuizCompleted}
+          showQuizEditor={showQuizEditor}
+          setShowQuizEditor={setShowQuizEditor}
+        />
+      </BubbleDismissProvider>
     </ThemeProvider>
   );
 };
@@ -61,6 +75,9 @@ const AppInnerWithTheme: React.FC<any> = ({
   isMobile,
   activeTab,
   setActiveTab,
+  quizData,
+  isDragging,
+  isHoveringDismiss,
   showProfileSheet,
   setShowProfileSheet,
   quizCompleted,
@@ -259,11 +276,20 @@ const AppInnerWithTheme: React.FC<any> = ({
         </div>
       </MinigameModal>
 
-      <FloatingBubbles
+      <MessageBoard mode="floating" />
+      <SpinWheel mode="floating" />
+      <SnakeGame mode="floating" />
+      <QuizBubble
+        quizData={quizData}
         quizCompleted={quizCompleted}
+        currentUser={currentUser}
         onQuizComplete={handleQuizComplete}
         onOpenQuizEditor={handleOpenQuizEditor}
       />
+      <MatchmakerBubble currentUser={currentUser} />
+      <DragDismissZone visible={isDragging} isHovering={isHoveringDismiss} />
+      <RestoreBubblesButton />
+      <DebugMovies />
     </div>
   );
 };
