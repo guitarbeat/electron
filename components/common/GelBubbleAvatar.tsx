@@ -26,7 +26,10 @@ interface GelBubbleAvatarProps {
 const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
   default: { bubble: 'clamp(140px, 35vw, 200px)', name: 'clamp(1rem, 4vw, 1.25rem)' },
   compact: { bubble: 'clamp(90px, 22vw, 140px)', name: 'clamp(0.8rem, 3vw, 1rem)' },
-  tiny: { bubble: '72px', name: '0.7rem' },
+  tiny: {
+    bubble: 'var(--inline-profile-bubble-size, clamp(84px, 10vw, 132px))',
+    name: 'var(--inline-profile-name-size, clamp(0.7rem, 0.85vw, 0.92rem))',
+  },
 };
 
 const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({

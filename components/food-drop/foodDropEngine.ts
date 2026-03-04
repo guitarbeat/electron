@@ -66,22 +66,22 @@ interface MergeBurst {
 const FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + FOOD_DROP_WALL_THICKNESS / 2;
 const LEFT_WALL_X = -FOOD_DROP_WALL_THICKNESS / 2;
 const RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS / 2;
-const BASKET_INSET_X = 8;
-const BASKET_WIDTH = FOOD_DROP_WORLD_WIDTH - BASKET_INSET_X * 2;
-const BASKET_BASE_THICKNESS = 12;
-const BASKET_BASE_Y = FOOD_DROP_WORLD_HEIGHT - BASKET_BASE_THICKNESS / 2 - 6;
-const BASKET_WALL_THICKNESS = 12;
-const BASKET_WALL_HEIGHT = 74;
-const BASKET_LEFT_WALL_X = BASKET_INSET_X + BASKET_WALL_THICKNESS / 2;
-const BASKET_RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH - BASKET_INSET_X - BASKET_WALL_THICKNESS / 2;
-const BASKET_WALL_CENTER_Y = BASKET_BASE_Y - BASKET_WALL_HEIGHT / 2;
-const BASKET_TOP_Y = BASKET_BASE_Y - BASKET_BASE_THICKNESS / 2;
-const BASKET_INNER_LEFT_X = BASKET_LEFT_WALL_X + BASKET_WALL_THICKNESS / 2;
-const BASKET_INNER_RIGHT_X = BASKET_RIGHT_WALL_X - BASKET_WALL_THICKNESS / 2;
+const CONTAINER_INSET_X = 10;
+const CONTAINER_WIDTH = FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X * 2;
+const CONTAINER_BASE_THICKNESS = 16;
+const CONTAINER_BASE_Y = FOOD_DROP_WORLD_HEIGHT - CONTAINER_BASE_THICKNESS / 2 - 2;
+const CONTAINER_WALL_THICKNESS = 14;
+const CONTAINER_WALL_HEIGHT = FOOD_DROP_WORLD_HEIGHT + 40;
+const CONTAINER_LEFT_WALL_X = CONTAINER_INSET_X + CONTAINER_WALL_THICKNESS / 2;
+const CONTAINER_RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X - CONTAINER_WALL_THICKNESS / 2;
+const CONTAINER_WALL_CENTER_Y = FOOD_DROP_WORLD_HEIGHT / 2 + 20;
+const CONTAINER_FLOOR_TOP_Y = CONTAINER_BASE_Y - CONTAINER_BASE_THICKNESS / 2;
+const CONTAINER_INNER_LEFT_X = CONTAINER_LEFT_WALL_X + CONTAINER_WALL_THICKNESS / 2;
+const CONTAINER_INNER_RIGHT_X = CONTAINER_RIGHT_WALL_X - CONTAINER_WALL_THICKNESS / 2;
 const STREAK_TIMEOUT_MS = 2600;
 const FEVER_THRESHOLD = 100;
 const FEVER_DURATION_MS = 9000;
-const BASKET_BONUS_POINTS = 15;
+const CONTAINER_BONUS_POINTS = 15;
 const FRUIT_COLORS = [
   '#ff6b6b',
   '#ff8fab',
@@ -104,6 +104,7 @@ const FRUIT_SPRITE_NAMES = [
   'pear',
   'peach',
   'pineapple',
+  'honeydew',
   'watermelon',
 ];
 
@@ -232,8 +233,8 @@ export class FoodDropEngine {
 
   setLauncherX(targetX: number) {
     const radius = FOOD_LEVELS[this.currentLevel].radius * this.currentScale;
-    const minX = FOOD_DROP_WALL_THICKNESS + radius;
-    const maxX = FOOD_DROP_WORLD_WIDTH - FOOD_DROP_WALL_THICKNESS - radius;
+    const minX = CONTAINER_INNER_LEFT_X + radius;
+    const maxX = CONTAINER_INNER_RIGHT_X - radius;
     this.launcherX = Math.min(Math.max(targetX, minX), maxX);
   }
 
@@ -300,7 +301,7 @@ export class FoodDropEngine {
 
     this.renderBoardDecor(ctx);
 
-    this.renderBasket(ctx);
+    this.renderContainer(ctx);
 
     ctx.save();
     ctx.setLineDash([6, 6]);
@@ -369,14 +370,17 @@ export class FoodDropEngine {
 
   private renderBoardDecor(ctx: CanvasRenderingContext2D) {
     ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
-    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, 14);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
+    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_LOSE_LINE_Y);
 
-    ctx.fillStyle = '#7c4a24';
-    ctx.font = 'bold 22px "Trebuchet MS", system-ui';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText('FRUIT MERGE', FOOD_DROP_WORLD_WIDTH / 2, 8);
+    ctx.strokeStyle = 'rgba(121, 85, 72, 0.22)';
+    ctx.lineWidth = 1;
+    for (let x = -FOOD_DROP_LOSE_LINE_Y; x < FOOD_DROP_WORLD_WIDTH + FOOD_DROP_LOSE_LINE_Y; x += 14) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + FOOD_DROP_LOSE_LINE_Y, FOOD_DROP_LOSE_LINE_Y);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -424,32 +428,37 @@ export class FoodDropEngine {
     ctx.restore();
   }
 
-  private renderBasket(ctx: CanvasRenderingContext2D) {
-    const basketTopY = BASKET_BASE_Y - BASKET_BASE_THICKNESS / 2;
+  private renderContainer(ctx: CanvasRenderingContext2D) {
+    const floorTopY = CONTAINER_FLOOR_TOP_Y;
+    const wallTopY = floorTopY - CONTAINER_WALL_HEIGHT + CONTAINER_BASE_THICKNESS / 2;
 
     ctx.save();
     ctx.fillStyle = '#c68642';
-    ctx.fillRect(BASKET_INSET_X, basketTopY, BASKET_WIDTH, BASKET_BASE_THICKNESS);
+    ctx.fillRect(CONTAINER_INSET_X, floorTopY, CONTAINER_WIDTH, CONTAINER_BASE_THICKNESS);
     ctx.fillRect(
-      BASKET_LEFT_WALL_X - BASKET_WALL_THICKNESS / 2,
-      basketTopY - BASKET_WALL_HEIGHT + BASKET_BASE_THICKNESS / 2,
-      BASKET_WALL_THICKNESS,
-      BASKET_WALL_HEIGHT
+      CONTAINER_LEFT_WALL_X - CONTAINER_WALL_THICKNESS / 2,
+      wallTopY,
+      CONTAINER_WALL_THICKNESS,
+      CONTAINER_WALL_HEIGHT
     );
     ctx.fillRect(
-      BASKET_RIGHT_WALL_X - BASKET_WALL_THICKNESS / 2,
-      basketTopY - BASKET_WALL_HEIGHT + BASKET_BASE_THICKNESS / 2,
-      BASKET_WALL_THICKNESS,
-      BASKET_WALL_HEIGHT
+      CONTAINER_RIGHT_WALL_X - CONTAINER_WALL_THICKNESS / 2,
+      wallTopY,
+      CONTAINER_WALL_THICKNESS,
+      CONTAINER_WALL_HEIGHT
     );
 
     ctx.strokeStyle = '#7a4a1f';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(BASKET_INSET_X - 1, basketTopY + 1);
-    ctx.lineTo(BASKET_INSET_X + BASKET_WIDTH + 1, basketTopY + 1);
-    ctx.moveTo(BASKET_INSET_X, basketTopY + BASKET_BASE_THICKNESS - 1);
-    ctx.lineTo(BASKET_INSET_X + BASKET_WIDTH, basketTopY + BASKET_BASE_THICKNESS - 1);
+    ctx.moveTo(CONTAINER_INSET_X - 1, floorTopY + 1);
+    ctx.lineTo(CONTAINER_INSET_X + CONTAINER_WIDTH + 1, floorTopY + 1);
+    ctx.moveTo(CONTAINER_INSET_X, floorTopY + CONTAINER_BASE_THICKNESS - 1);
+    ctx.lineTo(CONTAINER_INSET_X + CONTAINER_WIDTH, floorTopY + CONTAINER_BASE_THICKNESS - 1);
+    ctx.moveTo(CONTAINER_INSET_X + 1, wallTopY);
+    ctx.lineTo(CONTAINER_INSET_X + 1, floorTopY + CONTAINER_BASE_THICKNESS);
+    ctx.moveTo(CONTAINER_INSET_X + CONTAINER_WIDTH - 1, wallTopY);
+    ctx.lineTo(CONTAINER_INSET_X + CONTAINER_WIDTH - 1, floorTopY + CONTAINER_BASE_THICKNESS);
     ctx.stroke();
     ctx.restore();
   }
@@ -479,31 +488,31 @@ export class FoodDropEngine {
       { isStatic: true, restitution: 0.2, label: 'right-wall' }
     );
 
-    const basketBase = Bodies.rectangle(
+    const containerBase = Bodies.rectangle(
       FOOD_DROP_WORLD_WIDTH / 2,
-      BASKET_BASE_Y,
-      BASKET_WIDTH,
-      BASKET_BASE_THICKNESS,
-      { isStatic: true, restitution: 0.12, friction: 0.08, label: 'basket-base' }
+      CONTAINER_BASE_Y,
+      CONTAINER_WIDTH,
+      CONTAINER_BASE_THICKNESS,
+      { isStatic: true, restitution: 0.12, friction: 0.08, label: 'container-base' }
     );
 
-    const basketLeftWall = Bodies.rectangle(
-      BASKET_LEFT_WALL_X,
-      BASKET_WALL_CENTER_Y,
-      BASKET_WALL_THICKNESS,
-      BASKET_WALL_HEIGHT,
-      { isStatic: true, restitution: 0.14, friction: 0.1, label: 'basket-left-wall' }
+    const containerLeftWall = Bodies.rectangle(
+      CONTAINER_LEFT_WALL_X,
+      CONTAINER_WALL_CENTER_Y,
+      CONTAINER_WALL_THICKNESS,
+      CONTAINER_WALL_HEIGHT,
+      { isStatic: true, restitution: 0.14, friction: 0.1, label: 'container-left-wall' }
     );
 
-    const basketRightWall = Bodies.rectangle(
-      BASKET_RIGHT_WALL_X,
-      BASKET_WALL_CENTER_Y,
-      BASKET_WALL_THICKNESS,
-      BASKET_WALL_HEIGHT,
-      { isStatic: true, restitution: 0.14, friction: 0.1, label: 'basket-right-wall' }
+    const containerRightWall = Bodies.rectangle(
+      CONTAINER_RIGHT_WALL_X,
+      CONTAINER_WALL_CENTER_Y,
+      CONTAINER_WALL_THICKNESS,
+      CONTAINER_WALL_HEIGHT,
+      { isStatic: true, restitution: 0.14, friction: 0.1, label: 'container-right-wall' }
     );
 
-    World.add(this.world, [floor, leftWall, rightWall, basketBase, basketLeftWall, basketRightWall]);
+    World.add(this.world, [floor, leftWall, rightWall, containerBase, containerLeftWall, containerRightWall]);
   }
 
   private bindCollisionEvents() {
@@ -582,8 +591,8 @@ export class FoodDropEngine {
       this.timeSinceMergeMs = 0;
       this.streak += mergeCount;
       const comboBonus = mergeCount > 1 ? (mergeCount - 1) * 5 : 0;
-      const basketBonus = this.getBasketMergeBonus(mergedCenters);
-      const rawPoints = mergeScore + comboBonus + basketBonus;
+      const containerBonus = this.getContainerMergeBonus(mergedCenters);
+      const rawPoints = mergeScore + comboBonus + containerBonus;
       const totalPoints = Math.round(rawPoints * this.getScoreMultiplier());
       this.score += totalPoints;
       this.feverCharge += mergeCount * 18;
@@ -609,13 +618,13 @@ export class FoodDropEngine {
           `Combo +${comboBonus}`
         );
       }
-      if (basketBonus > 0) {
+      if (containerBonus > 0) {
         this.createMergeBurst(
           FOOD_DROP_WORLD_WIDTH / 2,
-          BASKET_TOP_Y - 14,
-          basketBonus,
+          CONTAINER_FLOOR_TOP_Y - 14,
+          containerBonus,
           20,
-          `Basket +${basketBonus}`
+          `Container +${containerBonus}`
         );
       }
       if (totalPoints !== rawPoints) {
@@ -631,14 +640,14 @@ export class FoodDropEngine {
     }
   }
 
-  private getBasketMergeBonus(mergedCenters: Array<{ x: number; y: number }>): number {
+  private getContainerMergeBonus(mergedCenters: Array<{ x: number; y: number }>): number {
     const bonusMerges = mergedCenters.filter(({ x: mergedX, y: mergedY }) => {
-      const insideBasketX = mergedX >= BASKET_INNER_LEFT_X + 4 && mergedX <= BASKET_INNER_RIGHT_X - 4;
-      const nearBottom = mergedY >= BASKET_TOP_Y - 20;
-      return insideBasketX && nearBottom;
+      const insideX = mergedX >= CONTAINER_INNER_LEFT_X + 4 && mergedX <= CONTAINER_INNER_RIGHT_X - 4;
+      const nearBottom = mergedY >= CONTAINER_FLOOR_TOP_Y - 20;
+      return insideX && nearBottom;
     }).length;
 
-    return bonusMerges * BASKET_BONUS_POINTS;
+    return bonusMerges * CONTAINER_BONUS_POINTS;
   }
 
   private getScoreMultiplier(): number {
@@ -661,18 +670,18 @@ export class FoodDropEngine {
       return;
     }
 
-    // Immediate fail if any fruit misses the basket and falls to either side.
-    const hasMissedBasket = dynamicBodies.some((body) => {
+    // Immediate fail if any fruit escapes the container side walls and drops below the danger zone.
+    const hasMissedContainer = dynamicBodies.some((body) => {
       const level = FoodDropEngine.getBodyLevel(body) ?? 0;
       const radius = FoodDropEngine.getBodyRadius(body, level);
-      const isOutsideBasket =
-        body.position.x + radius < BASKET_INNER_LEFT_X ||
-        body.position.x - radius > BASKET_INNER_RIGHT_X;
-      const isBelowBasketRim = body.position.y + radius >= BASKET_TOP_Y + 8;
-      return isOutsideBasket && isBelowBasketRim;
+      const isOutsideContainer =
+        body.position.x + radius < CONTAINER_INNER_LEFT_X ||
+        body.position.x - radius > CONTAINER_INNER_RIGHT_X;
+      const isBelowDangerZone = body.position.y + radius >= FOOD_DROP_LOSE_LINE_Y + 8;
+      return isOutsideContainer && isBelowDangerZone;
     });
 
-    if (hasMissedBasket) {
+    if (hasMissedContainer) {
       this.status = 'game-over';
       this.canDrop = false;
       return;
