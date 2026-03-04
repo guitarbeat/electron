@@ -17,7 +17,6 @@ import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismiss
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
-import DebugMovies from './components/debug/DebugMovies';
 import AppHeader from './components/layout/AppHeader';
 import UserSelection from './components/common/UserSelection';
 import './App.css';
@@ -33,21 +32,16 @@ const TAB_COPY: Record<
   WorkspaceTab,
   {
     title: string;
-    subtitle: string;
-    description: string;
+    helper: string;
   }
 > = {
   queue: {
     title: 'Movie Planner',
-    subtitle: 'Curate what to watch next',
-    description:
-      'Track picks, manage shared memories, and keep suggestions moving without bouncing between screens.',
+    helper: 'Plan what to watch without leaving this screen.',
   },
   places: {
     title: 'Places Planner',
-    subtitle: 'Capture date ideas and destinations',
-    description:
-      'Review saved spots, prioritize options, and keep the next plan visible in one focused workspace.',
+    helper: 'Capture and sort places for your next outing.',
   },
 };
 
@@ -85,9 +79,7 @@ const AppInner: React.FC = () => {
   };
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
-  const panelTitle = activeTabMeta?.label || 'Movies';
   const panelCopy = TAB_COPY[activeTab as WorkspaceTab];
-  const modeLabel = activeTab === 'places' ? 'Places mode' : 'Movie mode';
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -110,26 +102,16 @@ const AppInner: React.FC = () => {
           tabIndex={-1}
           aria-labelledby="active-panel-title"
         >
-          <section className="panel-intro animate-fade-in" aria-live="polite">
-            <p className="panel-intro__eyebrow">{activeTabMeta?.icon} Current workspace</p>
-            <div className="panel-intro__title-row">
-              <h2 id="active-panel-title" className="panel-intro__title">
+          <section className="panel-summary animate-fade-in" aria-live="polite">
+            <div className="panel-summary__title-row">
+              <h2 id="active-panel-title" className="panel-summary__title">
                 {panelCopy.title}
               </h2>
-              <div className="panel-intro__badge-group">
-                <span
-                  className={`panel-intro__badge panel-intro__badge--mode ${activeTab === 'places' ? 'is-places' : 'is-movies'}`}
-                >
-                  {activeTabMeta?.icon} {modeLabel}
-                </span>
-                <span className="panel-intro__badge panel-intro__badge--profile">
-                  {currentUser ? `${currentUser} profile` : 'Guest'}
-                </span>
-              </div>
+              <span className="panel-summary__meta">
+                {activeTabMeta?.icon} {currentUser ? currentUser : 'Guest'}
+              </span>
             </div>
-            <p className="panel-intro__subtitle">{panelCopy.subtitle}</p>
-            <p className="panel-intro__description">{panelCopy.description}</p>
-            <p className="sr-only">{panelTitle}</p>
+            <p className="panel-summary__hint">{panelCopy.helper}</p>
           </section>
 
           <section
@@ -189,7 +171,6 @@ const AppInner: React.FC = () => {
         <MatchmakerBubble currentUser={currentUser} />
         <DragDismissZone visible={isDragging} isHovering={isHoveringDismiss} />
         <RestoreBubblesButton />
-        <DebugMovies />
       </div>
     </ThemeProvider>
   );
