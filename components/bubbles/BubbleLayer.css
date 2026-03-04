@@ -1,0 +1,92 @@
+.bubble-launchers {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 240;
+}
+
+.bubble-launcher {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--color-border-subtle) 80%, transparent);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 45%),
+    color-mix(in srgb, var(--color-accent) 26%, var(--color-surface-2) 74%);
+  color: var(--color-text-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.bubble-launcher:active {
+  cursor: grabbing;
+}
+
+.bubble-launcher.is-move-mode {
+  border-color: color-mix(in srgb, var(--color-accent) 85%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+.bubble-launcher__emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.bubble-tool-panel {
+  position: fixed;
+  inset: auto 1rem 1rem auto;
+  width: min(980px, calc(100vw - 120px));
+  height: min(82vh, 780px);
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+  background: color-mix(in srgb, var(--color-surface-0) 96%, transparent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+  z-index: 320;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bubble-tool-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+}
+
+.bubble-tool-panel__title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.bubble-tool-panel__close {
+  min-height: 2rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface-2) 90%, transparent);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 0 0.6rem;
+}
+
+.bubble-tool-panel__content {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+@media (max-width: 640px) {
+  .bubble-tool-panel {
+    inset: auto 0 0 0;
+    width: 100%;
+    height: 84vh;
+    border-radius: 14px 14px 0 0;
+  }
+}
