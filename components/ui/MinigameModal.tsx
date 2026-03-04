@@ -23,8 +23,6 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   isOpen,
   onClose,
   title,
-  maxWidth = 520,
-  maxHeight = 720,
   children,
   ariaLabel = 'Dialog',
 }) => {
@@ -48,7 +46,9 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: spacing.md,
+        width: '100vw',
+        height: '100vh',
+        padding: 0,
         background: 'rgba(0,0,0,0.5)',
         backdropFilter: 'blur(4px)',
         WebkitBackdropFilter: 'blur(4px)',
@@ -61,16 +61,16 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
       <div
         style={{
           position: 'relative',
-          width: '100%',
-          maxWidth,
-          maxHeight,
-          height: '85vh',
+          width: '100vw',
+          height: '100vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           background: colors.surface,
-          borderRadius: 16,
-          border: `1px solid ${colors.borderSecondary}40`,
+          borderRadius: 0,
+          border: 'none',
           boxShadow: shadows.cardElevated,
         }}
         onClick={(e) => e.stopPropagation()}

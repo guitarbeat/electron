@@ -299,6 +299,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 
   const handleMinimize = () => setIsMinimized(true);
   const handleMaximize = () => setIsMinimized(false);
+  const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
 
   let gameStatusLabel = 'Playing';
   if (gameState.status === 'paused') gameStatusLabel = 'Paused';
@@ -370,17 +371,18 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   return (
     <div
       style={
-        isFullscreen
+        isViewportExpanded
           ? {
               position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              inset: 0,
+              width: '100vw',
+              height: '100vh',
               zIndex: 2000,
               backgroundColor: colors.surface,
               display: 'flex',
               flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
               padding: spacing.md,
             }
           : isEmbedded
@@ -400,21 +402,21 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     >
       <Card
         style={{
-          padding: isMobile && !isFullscreen ? spacing.md : spacing.lg,
-          border: isFullscreen ? 'none' : `1px solid ${colors.borderSecondary}30`,
-          borderRadius: isFullscreen ? 0 : '24px',
+          padding: isMobile && !isViewportExpanded ? spacing.md : spacing.lg,
+          border: isViewportExpanded ? 'none' : `1px solid ${colors.borderSecondary}30`,
+          borderRadius: isViewportExpanded ? 0 : '24px',
           background: 'rgba(15, 23, 42, 0.95)',
           backdropFilter: 'blur(16px)',
-          boxShadow: isFullscreen
+          boxShadow: isViewportExpanded
             ? 'none'
             : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-          maxHeight: isFullscreen ? '100%' : 'min(520px, 75vh)',
+          maxHeight: isViewportExpanded ? '100%' : 'min(520px, 75vh)',
           overflowY: 'auto',
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
-          height: isFullscreen ? '100%' : 'auto',
+          height: isViewportExpanded ? '100%' : 'auto',
           display: 'flex',
           flexDirection: 'column',
-          margin: isMobile && !isFullscreen ? '0 8px' : 0,
+          margin: isMobile && !isViewportExpanded ? '0 8px' : 0,
         }}
         onAnimationEnd={() => setShake(0)}
       >
@@ -444,6 +446,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
                 padding: '4px 8px',
                 fontSize: 12,
                 border: `1px solid ${colors.borderSecondary}30`,
+                display: isEmbedded ? 'inline-flex' : 'none',
               }}
             >
               {isFullscreen ? 'Exit Full' : 'Fullscreen'}

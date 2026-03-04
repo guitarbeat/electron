@@ -304,27 +304,29 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     <div
       style={{
         position: 'fixed',
-        bottom: `max(${spacing.lg}, env(safe-area-inset-bottom))`,
-        right: spacing.lg,
-        width: 'min(420px, calc(100vw - 32px))',
-        maxHeight: 'min(600px, 80vh)',
+        inset: 0,
+        width: '100vw',
+        height: '100vh',
         zIndex: 1001,
         display: 'flex',
-        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <Card
         style={{
           padding: spacing.md,
-          border: `1px solid ${colors.borderSecondary}30`,
-          borderRadius: '24px',
+          border: 'none',
+          borderRadius: 0,
           background: 'rgba(15, 23, 42, 0.95)',
           backdropFilter: 'blur(16px)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          maxHeight: 'min(600px, 80vh)',
+          width: '100%',
+          height: '100%',
+          maxHeight: '100vh',
         }}
       >
         {/* Header */}

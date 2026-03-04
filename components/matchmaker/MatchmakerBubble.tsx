@@ -114,11 +114,6 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
     setIsOpen((previous) => !previous);
   };
 
-  const isBottomHalf =
-    bubblePosition.y > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400);
-  const isRightHalf =
-    bubblePosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 400);
-
   if (isHidden('matchmaker')) return null;
 
   return (
@@ -161,38 +156,29 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
         <div
           style={{
             position: 'fixed',
-            width: 'min(500px, calc(100vw - 32px))',
-            maxHeight: 'min(640px, 82vh)',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
             zIndex: 1001,
             display: 'flex',
-            flexDirection: 'column',
-            ...(isBottomHalf
-              ? { bottom: `calc(100vh - ${bubblePosition.y}px - ${BUBBLE_SIZE}px)` }
-              : { top: `${bubblePosition.y}px` }),
-            ...(isRightHalf
-              ? { right: `calc(100vw - ${bubblePosition.x}px - ${BUBBLE_SIZE}px)` }
-              : { left: `${bubblePosition.x}px` }),
-            ...(typeof window !== 'undefined' &&
-              window.innerWidth <= 640 && {
-                left: '16px',
-                right: '16px',
-                bottom: isBottomHalf ? '16px' : 'auto',
-                top: !isBottomHalf ? '16px' : 'auto',
-              }),
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <div
             style={{
               padding: spacing.md,
-              border: `1px solid ${colors.borderSecondary}30`,
-              borderRadius: '24px',
+              border: 'none',
+              borderRadius: 0,
               background: 'rgba(15, 23, 42, 0.95)',
               backdropFilter: 'blur(16px)',
               boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              maxHeight: 'min(640px, 82vh)',
+              width: '100%',
+              height: '100%',
+              maxHeight: '100vh',
               animation: 'slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             }}
           >
