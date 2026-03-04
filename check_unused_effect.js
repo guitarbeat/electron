@@ -10,10 +10,8 @@ function walk(dir, fileList = []) {
       if (file !== 'node_modules' && file !== '.git' && file !== 'dist' && file !== 'build') {
         walk(filePath, fileList);
       }
-    } else {
-      if (file.endsWith('.tsx') || file.endsWith('.ts')) {
-        fileList.push(filePath);
-      }
+    } else if (file.endsWith('.tsx') || file.endsWith('.ts')) {
+      fileList.push(filePath);
     }
   }
   return fileList;

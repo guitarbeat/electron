@@ -101,10 +101,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
 
       {isProfileOpen && (
-        <div
-          ref={panelRef}
-          className={`profile-panel${isMobile ? ' is-mobile' : ''}`}
-        >
+        <div ref={panelRef} className={`profile-panel${isMobile ? ' is-mobile' : ''}`}>
           <div className={`profile-panel__inner${isMobile ? ' is-mobile' : ''}`}>
             <UserSelection onUserSelected={handleUserSelected} />
           </div>
