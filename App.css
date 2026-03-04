@@ -64,8 +64,7 @@ body {
 
 .app-header,
 .app-tabbar__tab,
-.profile-chip,
-.profile-select-cta,
+.user-selection__pill,
 .card,
 .button,
 .bubble,
@@ -143,7 +142,7 @@ body {
 .app-header-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.8rem;
 }
 
@@ -172,60 +171,10 @@ body {
   margin-top: 0.32rem;
 }
 
-.profile-chip {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.36rem;
-  min-height: 2.35rem;
-  min-width: 2.35rem;
-  padding: 0 0.9rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  background: color-mix(in srgb, var(--color-surface-3) 85%, transparent);
-  color: var(--color-text-primary);
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  touch-action: manipulation;
-  box-shadow: 0 5px 20px color-mix(in srgb, var(--color-accent) 24%, transparent);
-  transition: border-color 0.18s ease;
-}
-
-.profile-chip-mobile {
-  padding: 0 0.7rem;
-}
-
-.profile-chip:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 80%, transparent);
-}
-
-.profile-panel {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  right: 1.25rem;
-  width: min(560px, calc(100vw - 32px));
-  z-index: 101;
-}
-
-.profile-panel.is-mobile {
-  left: 0;
-  right: 0;
+.app-header-profile {
   width: 100%;
-  padding: 0.2rem 0.9rem 0;
-}
-
-.profile-panel__inner {
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.45);
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
-}
-
-.profile-panel__inner.is-mobile {
-  border-radius: 14px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .main-container {

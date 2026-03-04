@@ -12,6 +12,7 @@ import {
   getFloatingBubbleBadgeStyle,
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
+  getFloatingPanelCardStyle,
 } from '../ui/floatingBubbleStyles';
 import {
   FOOD_DROP_WORLD_HEIGHT,
@@ -440,21 +441,15 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     <div style={containerStyle}>
       <Card
         style={{
-          padding: isMobile && !isViewportExpanded ? spacing.md : spacing.lg,
-          border: isViewportExpanded ? 'none' : `1px solid ${colors.borderSecondary}30`,
-          borderRadius: isViewportExpanded ? 0 : '24px',
-          background:
-            'radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.18), transparent 42%), radial-gradient(circle at 100% 100%, rgba(251, 146, 60, 0.16), transparent 46%), rgba(15, 23, 42, 0.95)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: isViewportExpanded
-            ? 'none'
-            : '0 18px 44px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.12) inset, 0 0 34px rgba(56, 189, 248, 0.12)',
-          maxHeight: isViewportExpanded ? '100%' : 'min(640px, 82vh)',
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          height: isViewportExpanded ? '100%' : 'auto',
-          margin: isMobile && !isViewportExpanded ? '0 8px' : 0,
+          ...getFloatingPanelCardStyle({
+            isViewportExpanded,
+            isMobile,
+            maxHeight: 'min(640px, 82vh)',
+            background:
+              'radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.18), transparent 42%), radial-gradient(circle at 100% 100%, rgba(251, 146, 60, 0.16), transparent 46%), rgba(15, 23, 42, 0.95)',
+            shadow:
+              '0 18px 44px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.12) inset, 0 0 34px rgba(56, 189, 248, 0.12)',
+          }),
         }}
       >
         <div

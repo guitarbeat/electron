@@ -63,6 +63,18 @@ interface MergeBurst {
 const FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + FOOD_DROP_WALL_THICKNESS / 2;
 const LEFT_WALL_X = -FOOD_DROP_WALL_THICKNESS / 2;
 const RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS / 2;
+const BASKET_INSET_X = 26;
+const BASKET_WIDTH = FOOD_DROP_WORLD_WIDTH - BASKET_INSET_X * 2;
+const BASKET_BASE_THICKNESS = 12;
+const BASKET_BASE_Y = FOOD_DROP_WORLD_HEIGHT - BASKET_BASE_THICKNESS / 2 - 6;
+const BASKET_WALL_THICKNESS = 12;
+const BASKET_WALL_HEIGHT = 82;
+const BASKET_LEFT_WALL_X = BASKET_INSET_X + BASKET_WALL_THICKNESS / 2;
+const BASKET_RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH - BASKET_INSET_X - BASKET_WALL_THICKNESS / 2;
+const BASKET_WALL_CENTER_Y = BASKET_BASE_Y - BASKET_WALL_HEIGHT / 2;
+const BASKET_TOP_Y = BASKET_BASE_Y - BASKET_BASE_THICKNESS / 2;
+const BASKET_INNER_LEFT_X = BASKET_LEFT_WALL_X + BASKET_WALL_THICKNESS / 2;
+const BASKET_INNER_RIGHT_X = BASKET_RIGHT_WALL_X - BASKET_WALL_THICKNESS / 2;
 
 export class FoodDropEngine {
   private engine: Engine;
@@ -239,6 +251,8 @@ export class FoodDropEngine {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
+    this.renderBasket(ctx);
+
     ctx.save();
     ctx.setLineDash([8, 6]);
     ctx.strokeStyle = 'rgba(248, 113, 113, 0.75)';
@@ -325,6 +339,40 @@ export class FoodDropEngine {
     ctx.restore();
   }
 
+  private renderBasket(ctx: CanvasRenderingContext2D) {
+    const basketTopY = BASKET_BASE_Y - BASKET_BASE_THICKNESS / 2;
+
+    ctx.save();
+    const basketGlow = ctx.createLinearGradient(0, basketTopY - 16, 0, FOOD_DROP_WORLD_HEIGHT);
+    basketGlow.addColorStop(0, 'rgba(251, 191, 36, 0)');
+    basketGlow.addColorStop(1, 'rgba(217, 119, 6, 0.2)');
+    ctx.fillStyle = basketGlow;
+    ctx.fillRect(0, basketTopY - 18, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT - basketTopY + 18);
+
+    ctx.fillStyle = '#92400e';
+    ctx.fillRect(BASKET_INSET_X, basketTopY, BASKET_WIDTH, BASKET_BASE_THICKNESS);
+    ctx.fillRect(
+      BASKET_LEFT_WALL_X - BASKET_WALL_THICKNESS / 2,
+      basketTopY - BASKET_WALL_HEIGHT + BASKET_BASE_THICKNESS / 2,
+      BASKET_WALL_THICKNESS,
+      BASKET_WALL_HEIGHT
+    );
+    ctx.fillRect(
+      BASKET_RIGHT_WALL_X - BASKET_WALL_THICKNESS / 2,
+      basketTopY - BASKET_WALL_HEIGHT + BASKET_BASE_THICKNESS / 2,
+      BASKET_WALL_THICKNESS,
+      BASKET_WALL_HEIGHT
+    );
+
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.88)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(BASKET_INSET_X - 1, basketTopY + 1);
+    ctx.lineTo(BASKET_INSET_X + BASKET_WIDTH + 1, basketTopY + 1);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   private setupBoundaries() {
     const floor = Bodies.rectangle(
       FOOD_DROP_WORLD_WIDTH / 2,
@@ -350,7 +398,31 @@ export class FoodDropEngine {
       { isStatic: true, restitution: 0.2, label: 'right-wall' }
     );
 
-    World.add(this.world, [floor, leftWall, rightWall]);
+    const basketBase = Bodies.rectangle(
+      FOOD_DROP_WORLD_WIDTH / 2,
+      BASKET_BASE_Y,
+      BASKET_WIDTH,
+      BASKET_BASE_THICKNESS,
+      { isStatic: true, restitution: 0.12, friction: 0.08, label: 'basket-base' }
+    );
+
+    const basketLeftWall = Bodies.rectangle(
+      BASKET_LEFT_WALL_X,
+      BASKET_WALL_CENTER_Y,
+      BASKET_WALL_THICKNESS,
+      BASKET_WALL_HEIGHT,
+      { isStatic: true, restitution: 0.14, friction: 0.1, label: 'basket-left-wall' }
+    );
+
+    const basketRightWall = Bodies.rectangle(
+      BASKET_RIGHT_WALL_X,
+      BASKET_WALL_CENTER_Y,
+      BASKET_WALL_THICKNESS,
+      BASKET_WALL_HEIGHT,
+      { isStatic: true, restitution: 0.14, friction: 0.1, label: 'basket-right-wall' }
+    );
+
+    World.add(this.world, [floor, leftWall, rightWall, basketBase, basketLeftWall, basketRightWall]);
   }
 
   private bindCollisionEvents() {
@@ -445,6 +517,23 @@ export class FoodDropEngine {
 
     if (dynamicBodies.length === 0) {
       this.overflowSettledMs = 0;
+      return;
+    }
+
+    // Immediate fail if any fruit misses the basket and falls to either side.
+    const hasMissedBasket = dynamicBodies.some((body) => {
+      const level = FoodDropEngine.getBodyLevel(body) ?? 0;
+      const radius = FoodDropEngine.getBodyRadius(body, level);
+      const isOutsideBasket =
+        body.position.x + radius < BASKET_INNER_LEFT_X ||
+        body.position.x - radius > BASKET_INNER_RIGHT_X;
+      const isBelowBasketRim = body.position.y + radius >= BASKET_TOP_Y + 8;
+      return isOutsideBasket && isBelowBasketRim;
+    });
+
+    if (hasMissedBasket) {
+      this.status = 'game-over';
+      this.canDrop = false;
       return;
     }
 

@@ -21,7 +21,7 @@ const FloatingBubbles: React.FC<FloatingBubblesProps> = ({
   onQuizComplete,
   onOpenQuizEditor,
 }) => {
-  const { quizData } = useQuiz(true);
+  const { quizData } = useQuiz();
   const { currentUser } = useUser();
   const { isDragging, isHoveringDismiss } = useBubbleDismiss();
 

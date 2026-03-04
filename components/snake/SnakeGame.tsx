@@ -14,6 +14,7 @@ import {
   getFloatingBubbleBadgeStyle,
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
+  getFloatingPanelCardStyle,
 } from '../ui/floatingBubbleStyles';
 import {
   createInitialGameState,
@@ -347,21 +348,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     >
       <Card
         style={{
-          padding: isMobile && !isViewportExpanded ? spacing.md : spacing.lg,
-          border: isViewportExpanded ? 'none' : `1px solid ${colors.borderSecondary}30`,
-          borderRadius: isViewportExpanded ? 0 : '24px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: isViewportExpanded
-            ? 'none'
-            : '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset',
-          maxHeight: isViewportExpanded ? '100%' : 'min(520px, 75vh)',
-          overflowY: 'auto',
+          ...getFloatingPanelCardStyle({
+            isViewportExpanded,
+            isMobile,
+          }),
           animation: shake > 0 ? 'snake-shake 0.5s' : 'none',
-          height: isViewportExpanded ? '100%' : 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          margin: isMobile && !isViewportExpanded ? '0 8px' : 0,
         }}
         onAnimationEnd={() => setShake(0)}
       >
