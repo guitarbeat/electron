@@ -4,7 +4,7 @@ import assert from 'node:assert';
 // Mock fetch to simulate network latency
 let fetchCount = 0;
 
-global.fetch = async (): Promise<Response> => {
+global.fetch = async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> => {
   fetchCount++;
   // Simulate network delay
   await new Promise((resolve) => {
