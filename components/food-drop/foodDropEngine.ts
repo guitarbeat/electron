@@ -5,6 +5,9 @@ import {
   FOOD_DROP_LAUNCHER_START_X,
   FOOD_DROP_LOSE_LINE_Y,
   FOOD_DROP_OVERFLOW_SETTLED_MS,
+  FOOD_DROP_SIZE_VARIANCE_MAX,
+  FOOD_DROP_SIZE_VARIANCE_MAX_LEVEL,
+  FOOD_DROP_SIZE_VARIANCE_MIN,
   FOOD_DROP_SETTLED_ANGULAR_THRESHOLD,
   FOOD_DROP_SETTLED_SPEED_THRESHOLD,
   FOOD_DROP_SPAWN_COOLDOWN_MS,
@@ -21,6 +24,7 @@ import {
 
 interface FoodBodyMeta {
   foodLevel: number;
+  sizeScale: number;
 }
 
 interface MergePair {
@@ -33,6 +37,8 @@ export interface FoodDropSnapshot {
   status: FoodDropStatus;
   nextLevel: number;
   currentLevel: number;
+  nextScale: number;
+  currentScale: number;
   canDrop: boolean;
   launcherX: number;
 }
@@ -43,6 +49,15 @@ interface RenderBody {
   radius: number;
   level: number;
   angle: number;
+}
+
+interface MergeBurst {
+  x: number;
+  y: number;
+  ageMs: number;
+  ttlMs: number;
+  radius: number;
+  label: string;
 }
 
 const FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + FOOD_DROP_WALL_THICKNESS / 2;
@@ -72,6 +87,12 @@ export class FoodDropEngine {
 
   private nextLevel: number;
 
+  private currentScale: number;
+
+  private nextScale: number;
+
+  private mergeBursts: MergeBurst[] = [];
+
   private readonly queueMergePairs = (event: IEventCollision<Engine>) => {
     event.pairs.forEach((pair) => {
       if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
@@ -94,6 +115,8 @@ export class FoodDropEngine {
 
     this.currentLevel = FoodDropEngine.randomSpawnLevel();
     this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
+    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
 
     this.setupBoundaries();
     this.bindCollisionEvents();
@@ -119,6 +142,9 @@ export class FoodDropEngine {
     this.pendingMergePairs.clear();
     this.currentLevel = FoodDropEngine.randomSpawnLevel();
     this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
+    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
+    this.mergeBursts = [];
     this.clampLauncherToCurrentLevel();
   }
 
@@ -132,13 +158,15 @@ export class FoodDropEngine {
       status: this.status,
       nextLevel: this.nextLevel,
       currentLevel: this.currentLevel,
+      nextScale: this.nextScale,
+      currentScale: this.currentScale,
       canDrop: this.canDrop && this.status === 'running',
       launcherX: this.launcherX,
     };
   }
 
   setLauncherX(targetX: number) {
-    const { radius } = FOOD_LEVELS[this.currentLevel];
+    const radius = FOOD_LEVELS[this.currentLevel].radius * this.currentScale;
     const minX = FOOD_DROP_WALL_THICKNESS + radius;
     const maxX = FOOD_DROP_WORLD_WIDTH - FOOD_DROP_WALL_THICKNESS - radius;
     this.launcherX = Math.min(Math.max(targetX, minX), maxX);
@@ -156,14 +184,17 @@ export class FoodDropEngine {
     const body = FoodDropEngine.createFoodBody(
       this.currentLevel,
       this.launcherX,
-      FOOD_DROP_SPAWN_Y
+      FOOD_DROP_SPAWN_Y,
+      this.currentScale
     );
     World.add(this.world, body);
 
     this.canDrop = false;
     this.cooldownRemainingMs = FOOD_DROP_SPAWN_COOLDOWN_MS;
     this.currentLevel = this.nextLevel;
+    this.currentScale = this.nextScale;
     this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
     this.clampLauncherToCurrentLevel();
 
     return true;
@@ -181,6 +212,7 @@ export class FoodDropEngine {
 
     Engine.update(this.engine, deltaMs);
     this.processPendingMerges();
+    this.updateMergeBursts(deltaMs);
     this.updateOverflowState(deltaMs);
   }
 
@@ -188,9 +220,23 @@ export class FoodDropEngine {
     ctx.clearRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
     const gradient = ctx.createLinearGradient(0, 0, 0, FOOD_DROP_WORLD_HEIGHT);
-    gradient.addColorStop(0, '#0f172a');
-    gradient.addColorStop(1, '#1e293b');
+    gradient.addColorStop(0, '#111827');
+    gradient.addColorStop(0.45, '#1f2937');
+    gradient.addColorStop(1, '#0b1020');
     ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
+
+    const glow = ctx.createRadialGradient(
+      FOOD_DROP_WORLD_WIDTH * 0.2,
+      FOOD_DROP_WORLD_HEIGHT * 0.08,
+      10,
+      FOOD_DROP_WORLD_WIDTH * 0.2,
+      FOOD_DROP_WORLD_HEIGHT * 0.08,
+      FOOD_DROP_WORLD_WIDTH * 0.75
+    );
+    glow.addColorStop(0, 'rgba(56, 189, 248, 0.16)');
+    glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    ctx.fillStyle = glow;
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
     ctx.save();
@@ -203,7 +249,7 @@ export class FoodDropEngine {
     ctx.stroke();
     ctx.restore();
 
-    const { radius } = FOOD_LEVELS[this.currentLevel];
+    const radius = FOOD_LEVELS[this.currentLevel].radius * this.currentScale;
     const launcherY = FOOD_DROP_SPAWN_Y;
 
     ctx.save();
@@ -223,9 +269,27 @@ export class FoodDropEngine {
       angle: 0,
     });
 
+    ctx.save();
+    const launcherAura = ctx.createRadialGradient(
+      this.launcherX,
+      launcherY,
+      radius * 0.35,
+      this.launcherX,
+      launcherY,
+      radius * 1.85
+    );
+    launcherAura.addColorStop(0, 'rgba(252, 211, 77, 0.28)');
+    launcherAura.addColorStop(1, 'rgba(252, 211, 77, 0)');
+    ctx.fillStyle = launcherAura;
+    ctx.beginPath();
+    ctx.arc(this.launcherX, launcherY, radius * 1.85, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
     this.getRenderableBodies().forEach((body) => {
       FoodDropEngine.drawFoodCircle(ctx, body);
     });
+    this.renderMergeBursts(ctx);
 
     if (this.status === 'paused') {
       ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
@@ -244,6 +308,21 @@ export class FoodDropEngine {
       ctx.textAlign = 'center';
       ctx.fillText('Game Over', FOOD_DROP_WORLD_WIDTH / 2, FOOD_DROP_WORLD_HEIGHT / 2 - 8);
     }
+
+    ctx.save();
+    const vignette = ctx.createRadialGradient(
+      FOOD_DROP_WORLD_WIDTH / 2,
+      FOOD_DROP_WORLD_HEIGHT / 2,
+      FOOD_DROP_WORLD_WIDTH * 0.2,
+      FOOD_DROP_WORLD_WIDTH / 2,
+      FOOD_DROP_WORLD_HEIGHT / 2,
+      FOOD_DROP_WORLD_WIDTH * 0.9
+    );
+    vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vignette.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
+    ctx.restore();
   }
 
   private setupBoundaries() {
@@ -303,6 +382,8 @@ export class FoodDropEngine {
     const consumed = new Set<number>();
     const nextPairs = [...this.pendingMergePairs.values()];
     this.pendingMergePairs.clear();
+    let mergeCount = 0;
+    let mergeScore = 0;
 
     nextPairs.forEach(({ bodyA, bodyB }) => {
       if (consumed.has(bodyA.id) || consumed.has(bodyB.id)) return;
@@ -317,18 +398,44 @@ export class FoodDropEngine {
       const mergedY = (bodyA.position.y + bodyB.position.y) / 2;
       const mergedVelocityX = (bodyA.velocity.x + bodyB.velocity.x) / 2;
       const mergedVelocityY = (bodyA.velocity.y + bodyB.velocity.y) / 2;
+      const scaleA = FoodDropEngine.getBodyScale(bodyA);
+      const scaleB = FoodDropEngine.getBodyScale(bodyB);
 
       consumed.add(bodyA.id);
       consumed.add(bodyB.id);
       World.remove(this.world, bodyA);
       World.remove(this.world, bodyB);
 
-      const mergedBody = FoodDropEngine.createFoodBody(targetLevel, mergedX, mergedY);
+      const mergedScale = Math.max(
+        FOOD_DROP_SIZE_VARIANCE_MIN,
+        Math.min(
+          FOOD_DROP_SIZE_VARIANCE_MAX,
+          (scaleA + scaleB) / 2 + (Math.random() - 0.5) * 0.08
+        )
+      );
+      const mergedBody = FoodDropEngine.createFoodBody(targetLevel, mergedX, mergedY, mergedScale);
       Body.setVelocity(mergedBody, { x: mergedVelocityX, y: mergedVelocityY });
       World.add(this.world, mergedBody);
 
-      this.score += scoreForMergeTargetLevel(targetLevel);
+      const points = scoreForMergeTargetLevel(targetLevel);
+      mergeCount += 1;
+      mergeScore += points;
+      this.createMergeBurst(mergedX, mergedY, points, FOOD_LEVELS[targetLevel].radius * mergedScale);
     });
+
+    if (mergeCount > 0) {
+      const comboBonus = mergeCount > 1 ? (mergeCount - 1) * 5 : 0;
+      this.score += mergeScore + comboBonus;
+      if (comboBonus > 0) {
+        this.createMergeBurst(
+          FOOD_DROP_WORLD_WIDTH / 2,
+          FOOD_DROP_LOSE_LINE_Y + 26,
+          comboBonus,
+          22,
+          `Combo +${comboBonus}`
+        );
+      }
+    }
   }
 
   private updateOverflowState(deltaMs: number) {
@@ -343,7 +450,7 @@ export class FoodDropEngine {
 
     const hasOverflow = dynamicBodies.some((body) => {
       const bodyLevel = FoodDropEngine.getBodyLevel(body) ?? 0;
-      const { radius } = FOOD_LEVELS[bodyLevel];
+      const radius = FoodDropEngine.getBodyRadius(body, bodyLevel);
       return body.position.y - radius < FOOD_DROP_LOSE_LINE_Y;
     });
 
@@ -376,20 +483,33 @@ export class FoodDropEngine {
     return typeof level === 'number' ? level : null;
   }
 
-  private static createFoodBody(level: number, x: number, y: number): Body {
+  private static getBodyScale(body: Body): number {
+    const plugin = body.plugin as Partial<FoodBodyMeta> | undefined;
+    return typeof plugin?.sizeScale === 'number' ? plugin.sizeScale : 1;
+  }
+
+  private static getBodyRadius(body: Body, level: number): number {
+    return body.circleRadius ?? FOOD_LEVELS[level].radius * FoodDropEngine.getBodyScale(body);
+  }
+
+  private static createFoodBody(level: number, x: number, y: number, sizeScale = 1): Body {
     const { radius } = FOOD_LEVELS[level];
     const body = Bodies.circle(x, y, radius, {
-      restitution: 0.18,
-      friction: 0.02,
-      frictionAir: 0.006,
+      restitution: 0.26,
+      friction: 0.018,
+      frictionAir: 0.005,
       density: 0.001,
       label: `food-${level}`,
       slop: 0.4,
     });
+    if (Math.abs(sizeScale - 1) > 0.001) {
+      Body.scale(body, sizeScale, sizeScale);
+    }
 
     body.plugin = {
       ...(body.plugin ?? {}),
       foodLevel: level,
+      sizeScale,
     };
 
     return body;
@@ -404,12 +524,64 @@ export class FoodDropEngine {
         return {
           x: body.position.x,
           y: body.position.y,
-          radius: FOOD_LEVELS[level].radius,
+          radius: FoodDropEngine.getBodyRadius(body, level),
           level,
           angle: body.angle,
         };
       })
       .filter((body): body is RenderBody => body !== null);
+  }
+
+  private createMergeBurst(
+    x: number,
+    y: number,
+    points: number,
+    radius: number,
+    label = `+${points}`
+  ) {
+    this.mergeBursts.push({
+      x,
+      y,
+      ageMs: 0,
+      ttlMs: 520,
+      radius,
+      label,
+    });
+  }
+
+  private updateMergeBursts(deltaMs: number) {
+    if (this.mergeBursts.length === 0) return;
+    this.mergeBursts = this.mergeBursts
+      .map((burst) => ({
+        ...burst,
+        ageMs: burst.ageMs + deltaMs,
+      }))
+      .filter((burst) => burst.ageMs < burst.ttlMs);
+  }
+
+  private renderMergeBursts(ctx: CanvasRenderingContext2D) {
+    if (this.mergeBursts.length === 0) return;
+
+    this.mergeBursts.forEach((burst) => {
+      const progress = burst.ageMs / burst.ttlMs;
+      const alpha = 1 - progress;
+      const animatedRadius = burst.radius + progress * 12;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = '#fde68a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(burst.x, burst.y, animatedRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#fef3c7';
+      ctx.font = 'bold 14px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(burst.label, burst.x, burst.y - burst.radius - progress * 18);
+      ctx.restore();
+    });
   }
 
   private static drawFoodCircle(ctx: CanvasRenderingContext2D, body: RenderBody) {
@@ -449,5 +621,13 @@ export class FoodDropEngine {
   private static randomSpawnLevel() {
     const span = FOOD_DROP_SPAWN_MAX_LEVEL - FOOD_DROP_SPAWN_MIN_LEVEL + 1;
     return FOOD_DROP_SPAWN_MIN_LEVEL + Math.floor(Math.random() * span);
+  }
+
+  private static randomSpawnScale(level: number): number {
+    const normalized = Math.min(1, Math.max(0, level / FOOD_DROP_SIZE_VARIANCE_MAX_LEVEL));
+    const levelVariance = 1 - normalized * 0.55;
+    const min = 1 - (1 - FOOD_DROP_SIZE_VARIANCE_MIN) * levelVariance;
+    const max = 1 + (FOOD_DROP_SIZE_VARIANCE_MAX - 1) * levelVariance;
+    return min + Math.random() * (max - min);
   }
 }

@@ -170,6 +170,47 @@ body {
   text-transform: uppercase;
 }
 
+.app-header-subtitle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.app-header-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.25rem;
+  padding: 0.02rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.63rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+  color: color-mix(in srgb, var(--color-text-primary) 95%, transparent);
+  background: color-mix(in srgb, var(--color-surface-2) 88%, transparent);
+}
+
+.app-header-mode-badge.is-movies {
+  border-color: color-mix(in srgb, #f472b6 70%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #f472b6 25%, var(--color-surface-2) 75%) 0%,
+    color-mix(in srgb, #a78bfa 20%, var(--color-surface-2) 80%) 100%
+  );
+}
+
+.app-header-mode-badge.is-places {
+  border-color: color-mix(in srgb, #84cc16 70%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #fde047 24%, var(--color-surface-2) 76%) 0%,
+    color-mix(in srgb, #4ade80 22%, var(--color-surface-2) 78%) 100%
+  );
+}
+
 .app-header-nav-row {
   margin-top: 0.32rem;
 }
@@ -297,6 +338,40 @@ body {
   color: color-mix(in srgb, var(--color-text-primary) 90%, transparent);
 }
 
+.panel-intro__badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.panel-intro__badge--mode {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.panel-intro__badge--mode.is-movies {
+  border-color: color-mix(in srgb, #f472b6 70%, transparent);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, #f472b6 24%, var(--color-surface-2) 76%) 0%,
+    color-mix(in srgb, #c084fc 20%, var(--color-surface-2) 80%) 100%
+  );
+}
+
+.panel-intro__badge--mode.is-places {
+  border-color: color-mix(in srgb, #84cc16 70%, transparent);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, #fde047 25%, var(--color-surface-2) 75%) 0%,
+    color-mix(in srgb, #4ade80 20%, var(--color-surface-2) 80%) 100%
+  );
+}
+
+.panel-intro__badge--profile {
+  background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+}
+
 .panel-intro__subtitle {
   margin: 0.34rem 0 0;
   font-size: 0.88rem;
@@ -308,6 +383,10 @@ body {
   max-width: 68ch;
   font-size: 0.82rem;
   color: color-mix(in srgb, var(--color-text-secondary) 70%, transparent);
+}
+
+.homepage-user-selection {
+  margin-bottom: 1rem;
 }
 
 .tab-panel {
@@ -339,5 +418,15 @@ body {
   .panel-intro {
     margin-bottom: 0.75rem;
     border-radius: 14px;
+  }
+
+  .homepage-user-selection {
+    margin-bottom: 0.75rem;
+  }
+
+  .app-header-mode-badge {
+    min-height: 1.2rem;
+    font-size: 0.6rem;
+    padding: 0.02rem 0.42rem;
   }
 }

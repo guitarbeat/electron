@@ -60,13 +60,24 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     setIsProfileOpen(false);
   };
 
+  const modeLabel = activeTab === 'places' ? 'Places mode' : 'Movie mode';
+  const modeIcon = activeTab === 'places' ? '📍' : '🎬';
+
   return (
     <header className="app-header">
       <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
         <div className="app-header-inner">
           <div className="app-header-brand">
             <h1 className="app-header-title">Aaron &amp; Electra</h1>
-            <p className="app-header-subtitle">Movies &amp; Places</p>
+            <div className="app-header-subtitle-row">
+              <p className="app-header-subtitle">Movies &amp; Places</p>
+              <span
+                className={`app-header-mode-badge${activeTab === 'places' ? ' is-places' : ' is-movies'}`}
+              >
+                <span aria-hidden>{modeIcon}</span>
+                {modeLabel}
+              </span>
+            </div>
           </div>
 
           <button
