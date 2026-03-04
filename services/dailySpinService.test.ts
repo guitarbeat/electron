@@ -147,6 +147,31 @@ test('dailySpinService', async (t) => {
     assert.equal(content.movieTitle, 'Updated Title');
   });
 
+  await t.test('updateDailySpin handles empty update object idempotently', async () => {
+    let callCount = 0;
+    fetchMock.mock.mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return mockGistResponse(JSON.stringify(mockSpin));
+      }
+      if (callCount === 2) {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(null, { status: 500 });
+    });
+
+    const updates = {};
+    const result = await updateDailySpin(updates);
+
+    assert.deepEqual(result, mockSpin);
+
+    assert.equal(fetchMock.mock.callCount(), 2);
+    const saveCall = fetchMock.mock.calls[1];
+    const body = JSON.parse(saveCall.arguments[1]?.body);
+    const content = JSON.parse(body.files[GIST_DAILY_SPIN_FILENAME].content);
+    assert.deepEqual(content, mockSpin);
+  });
+
   await t.test('updateDailySpin throws if no current spin exists', async () => {
     // Mock getDailySpin response (null)
     fetchMock.mock.mockImplementationOnce(async () => mockGistResponse(null));
