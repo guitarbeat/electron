@@ -150,8 +150,7 @@ body {
   background: rgba(10, 15, 30, 0.8);
 }
 
-.profile-chip,
-.profile-select-cta {
+.profile-chip {
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -166,13 +165,11 @@ body {
   transition: transform 0.15s ease;
 }
 
-.profile-chip:hover,
-.profile-select-cta:hover {
+.profile-chip:hover {
   transform: translateY(-1px);
 }
 
-.profile-chip:active,
-.profile-select-cta:active {
+.profile-chip:active {
   transform: translateY(0);
 }
 
