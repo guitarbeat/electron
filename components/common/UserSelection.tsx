@@ -7,14 +7,18 @@ import { usePins } from '../../hooks/usePins';
 import { spacing } from '../../design-system/tokens';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
+import ThemeToggle from '../ui/ThemeToggle';
+import { MainTab } from '../../types';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
+  activeTab?: MainTab;
+  onTabChange?: (tab: MainTab) => void;
 }
 
-const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
+const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected, activeTab = 'queue', onTabChange }) => {
   const { currentUser, setCurrentUser } = useUser();
-  const { userHasPin, verifyUserPin } = usePins();
+  const { userHasPin, verifyUserPin, refresh, isLoading } = usePins();
   const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -63,49 +67,134 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
         width: '100%',
         maxWidth: '800px',
         margin: '0 auto',
+        gap: spacing.xl,
       }}
     >
+      {/* Theme Toggle Section */}
+      {onTabChange && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: spacing.md,
+            width: '100%',
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              color: '#fff',
+              fontSize: isMobile ? '1rem' : '1.125rem',
+              fontWeight: 600,
+              textAlign: 'center',
+              textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+              fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
+            }}
+          >
+            Choose Your Experience
+          </h3>
+          <ThemeToggle 
+            activeTab={activeTab} 
+            onChange={onTabChange}
+            isMobile={isMobile}
+          />
+        </div>
+      )}
+
+      {/* Profile Selection Section */}
       <div
         style={{
           display: 'flex',
-          justifyContent: 'center',
+          flexDirection: 'column',
           alignItems: 'center',
-          gap: 'clamp(16px, 4vw, 40px)',
+          gap: spacing.md,
           width: '100%',
-          flexWrap: 'nowrap',
-          padding: `0 ${spacing.md}`,
-          position: 'relative',
         }}
       >
-        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-          <GelBubbleAvatar
-            user="Aaron"
-            hasPin={userHasPin('Aaron')}
-            isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
-            isSmall={currentUser !== null && currentUser !== 'Aaron'}
-            size={bubbleSize}
-            onClick={() => handleUserClick('Aaron')}
-            onMouseEnter={() => setHoveredAvatar('Aaron')}
-            onMouseLeave={() => setHoveredAvatar(null)}
-            onFocus={() => setHoveredAvatar('Aaron')}
-            onBlur={() => setHoveredAvatar(null)}
-          />
+        <h3
+          style={{
+            margin: 0,
+            color: '#fff',
+            fontSize: isMobile ? '1rem' : '1.125rem',
+            fontWeight: 600,
+            textAlign: 'center',
+            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+            fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
+          }}
+        >
+          Who's Watching?
+        </h3>
+        
+        {/* Debug Info */}
+        <div style={{ 
+          fontSize: '10px', 
+          color: '#888', 
+          textAlign: 'center',
+          marginBottom: spacing.sm,
+          fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
+        }}>
+          {isLoading ? 'Loading PINs...' : `PINs loaded. Debug: Check console for details`}
+          <button
+            type="button"
+            onClick={() => refresh()}
+            style={{
+              marginLeft: spacing.sm,
+              padding: '2px 6px',
+              fontSize: '10px',
+              background: '#333',
+              color: '#fff',
+              border: '1px solid #555',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            🔄 Refresh
+          </button>
         </div>
+        
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 'clamp(16px, 4vw, 40px)',
+            width: '100%',
+            flexWrap: 'nowrap',
+            padding: `0 ${spacing.md}`,
+            position: 'relative',
+          }}
+        >
+          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+            <GelBubbleAvatar
+              user="Aaron"
+              hasPin={userHasPin('Aaron')}
+              isHovered={hoveredAvatar === 'Aaron' || currentUser === 'Aaron'}
+              isSmall={currentUser !== null && currentUser !== 'Aaron'}
+              size={bubbleSize}
+              onClick={() => handleUserClick('Aaron')}
+              onMouseEnter={() => setHoveredAvatar('Aaron')}
+              onMouseLeave={() => setHoveredAvatar(null)}
+              onFocus={() => setHoveredAvatar('Aaron')}
+              onBlur={() => setHoveredAvatar(null)}
+            />
+          </div>
 
-        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-          <GelBubbleAvatar
-            user="Electra"
-            hasPin={userHasPin('Electra')}
-            isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
-            isSmall={currentUser !== null && currentUser !== 'Electra'}
-            size={bubbleSize}
-            onClick={() => handleUserClick('Electra')}
-            onMouseEnter={() => setHoveredAvatar('Electra')}
-            onMouseLeave={() => setHoveredAvatar(null)}
-            onFocus={() => setHoveredAvatar('Electra')}
-            onBlur={() => setHoveredAvatar(null)}
-            animationOffset
-          />
+          <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+            <GelBubbleAvatar
+              user="Electra"
+              hasPin={userHasPin('Electra')}
+              isHovered={hoveredAvatar === 'Electra' || currentUser === 'Electra'}
+              isSmall={currentUser !== null && currentUser !== 'Electra'}
+              size={bubbleSize}
+              onClick={() => handleUserClick('Electra')}
+              onMouseEnter={() => setHoveredAvatar('Electra')}
+              onMouseLeave={() => setHoveredAvatar(null)}
+              onFocus={() => setHoveredAvatar('Electra')}
+              onBlur={() => setHoveredAvatar(null)}
+              animationOffset
+            />
+          </div>
         </div>
       </div>
 

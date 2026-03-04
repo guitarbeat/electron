@@ -65,7 +65,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [messageToDeleteId, setMessageToDeleteId] = useState<string | null>(null);
   const [lastViewedCount, setLastViewedCount] = useState(0);
-  const isEmbedded = mode === 'floating';
+  const isEmbedded = mode === 'embedded';
   const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => {
     if (typeof window === 'undefined') {
       return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };

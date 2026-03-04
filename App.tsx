@@ -24,6 +24,7 @@ import DebugMovies from './components/debug/DebugMovies';
 import AppHeader from './components/layout/AppHeader';
 import { spacing, colors, typography, layout, shadows, radius } from './design-system/tokens';
 import './App.css';
+import './components/ui/ProfileBubbles.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'queue', label: 'Movies', icon: '🎬' },
@@ -156,8 +157,64 @@ const AppInnerWithTheme: React.FC<any> = ({
       )}
 
       {!isMobile && (
-        <div className="app-top-tabs">
+        <div className="app-top-controls" style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: spacing.lg,
+          padding: `${spacing.md} 0`,
+        }}>
           <ThemeToggle activeTab={activeTab} onChange={handleTabChange} />
+          <div className="profile-bubbles" style={{
+            display: 'flex',
+            gap: spacing.sm,
+            alignItems: 'center',
+          }}>
+            <button
+              type="button"
+              className={`profile-bubble aaron-bubble ${currentUser === 'Aaron' ? 'active' : ''}`}
+              onClick={() => {
+                // Handle Aaron selection
+                setShowProfileSheet(true);
+              }}
+              style={{
+                borderRadius: radius.full,
+                border: `2px solid ${colors.border}`,
+                background: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 50%, #fff 100%)',
+                color: colors.textPrimary,
+                padding: `${spacing.sm} ${spacing.md}`,
+                fontSize: typography.fontSize.sm,
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(255, 127, 198, 0.3)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+              }}
+            >
+              👤 Aaron
+            </button>
+            <button
+              type="button"
+              className={`profile-bubble electra-bubble ${currentUser === 'Electra' ? 'active' : ''}`}
+              onClick={() => {
+                // Handle Electra selection
+                setShowProfileSheet(true);
+              }}
+              style={{
+                borderRadius: radius.full,
+                border: `2px solid ${colors.border}`,
+                background: 'linear-gradient(135deg, #95dcff 0%, #b3e8ff 50%, #fff 100%)',
+                color: colors.textPrimary,
+                padding: `${spacing.sm} ${spacing.md}`,
+                fontSize: typography.fontSize.sm,
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(149, 220, 255, 0.3)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+              }}
+            >
+              👤 Electra
+            </button>
+          </div>
         </div>
       )}
 
@@ -247,7 +304,7 @@ const AppInnerWithTheme: React.FC<any> = ({
       <BottomSheet
         isOpen={showProfileSheet}
         onClose={() => setShowProfileSheet(false)}
-        title="Who is watching?"
+        title="Choose Your Experience"
       >
         <p
           style={{
@@ -260,7 +317,7 @@ const AppInnerWithTheme: React.FC<any> = ({
         >
           Pick a profile for personalized updates and saved actions.
         </p>
-        <UserSelection onUserSelected={() => setShowProfileSheet(false)} />
+        <UserSelection onUserSelected={() => setShowProfileSheet(false)} activeTab={activeTab} onTabChange={handleTabChange} />
       </BottomSheet>
 
       <MinigameModal
