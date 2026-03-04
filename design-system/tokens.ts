@@ -205,10 +205,10 @@ export const shadows = {
 export const zIndex = {
   base: 0,
   elevated: 10,
-  dropdown: 20,
-  overlay: 30,
-  modal: 40,
-  tooltip: 50,
+  dropdown: 100,
+  overlay: 900,
+  modal: 2000,
+  tooltip: 2100,
 } as const;
 
 // * Layout constants for app shell/navigation
