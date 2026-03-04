@@ -1,4 +1,4 @@
-import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig';
+import { GIST_FILENAME, GIST_TOKEN, GIST_ID, GIST_API_URL } from '../config/gistConfig.ts';
 import type { Movie } from '../types';
 
 // Cache variables to store the last known state
@@ -8,11 +8,6 @@ let lastETag: string | null = null;
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
   try {
-    if (!GIST_TOKEN?.trim()) {
-      throw new Error(
-        'VITE_GIST_TOKEN is missing or empty. Add it to your .env (GitHub token with "gist" scope), then restart the dev server.'
-      );
-    }
     if (!GIST_ID?.trim()) {
       throw new Error(
         'VITE_GIST_ID is missing or empty. Add your Gist ID to .env (from the Gist URL), then restart the dev server.'
@@ -20,9 +15,12 @@ export const getMovies = async (): Promise<Movie[]> => {
     }
 
     const headers: Record<string, string> = {
-      Authorization: `token ${GIST_TOKEN}`,
       Accept: 'application/vnd.github.v3+json',
     };
+
+    if (GIST_TOKEN?.trim()) {
+      headers.Authorization = `token ${GIST_TOKEN}`;
+    }
 
     // Use ETag for conditional request if available
     if (lastETag) {
@@ -62,9 +60,8 @@ export const getMovies = async (): Promise<Movie[]> => {
     const file = gist.files[GIST_FILENAME];
 
     if (!file) {
-      const hint = `Your Gist must contain a file named "${GIST_FILENAME}" with a JSON array of movie objects. Create that file in the Gist (e.g. paste [] and save) then refresh.`;
-      console.error(hint);
-      throw new Error(`Gist is missing "${GIST_FILENAME}". ${hint}`);
+      console.warn(`Gist is missing "${GIST_FILENAME}". Returning an empty movie list.`);
+      return [];
     }
 
     if (!file.content) {

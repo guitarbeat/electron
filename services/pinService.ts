@@ -1,4 +1,4 @@
-import { GIST_TOKEN, GIST_ID } from '../config/gistConfig';
+import { GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
 import type { User } from '../types.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';

@@ -1,4 +1,4 @@
-import { GIST_TOKEN, GIST_API_URL, GIST_SPIN_HISTORY_FILENAME } from '../config/gistConfig';
+import { GIST_TOKEN, GIST_API_URL, GIST_SPIN_HISTORY_FILENAME } from '../config/gistConfig.ts';
 import type { SpinEntry, SpinHistory, User } from '../types.ts';
 
 export const getSpinHistory = async (): Promise<SpinHistory> => {
