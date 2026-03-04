@@ -117,7 +117,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
   };
 
   const handleBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) {
+    if (event.button !== 0) {
       return;
     }
 
@@ -130,7 +130,11 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     didDragRef.current = false;
     setIsDraggingBubble(true);
     setDismissDragging(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Ignore capture errors from canceled pointer interactions.
+    }
   };
 
   const handleBubblePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
