@@ -9,7 +9,6 @@ import PinDialog from './PinDialog';
 import ThemeToggle from '../ui/ThemeToggle';
 import './UserSelection.css';
 
-type ProfileValue = User | 'Guest';
 type UserSelectionVariant = 'inline' | 'panel';
 
 interface UserSelectionProps {
@@ -17,7 +16,6 @@ interface UserSelectionProps {
   activeTab?: MainTab;
   onTabChange?: (tab: MainTab) => void;
   variant?: UserSelectionVariant;
-  includeGuest?: boolean;
   title?: string;
   subtitle?: string;
   className?: string;
@@ -28,14 +26,13 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   activeTab = 'queue',
   onTabChange,
   variant = 'inline',
-  includeGuest = true,
   title = "Who's watching?",
   subtitle = 'Choose a profile to personalize your feed.',
   className,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin, setUserPin, removeUserPin, isLoading } = usePins();
-  const [hoveredAvatar, setHoveredAvatar] = useState<ProfileValue | null>(null);
+  const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPinSettings, setIsSavingPinSettings] = useState(false);
@@ -44,20 +41,12 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const bubbleSize = variant === 'inline' ? 'tiny' : isMobile ? 'compact' : 'default';
   const isDisabled = isLoading || isVerifying;
   const users: User[] = ['Aaron', 'Electra'];
-  const profiles: ProfileValue[] = includeGuest ? ['Guest', ...users] : users;
-  const selectedProfile: ProfileValue = currentUser ?? 'Guest';
-  const selectedNamedUser = selectedProfile === 'Guest' ? null : selectedProfile;
+  const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
 
-  const selectProfile = (profile: ProfileValue) => {
+  const selectProfile = (profile: User) => {
     if (isDisabled) return;
-    if (profile === selectedProfile) return;
-
-    if (profile === 'Guest') {
-      setCurrentUser(null);
-      onUserSelected?.(null);
-      return;
-    }
+    if (profile === currentUser) return;
 
     if (userHasPin(profile)) {
       setPendingUser(profile);
@@ -65,6 +54,12 @@ const UserSelection: React.FC<UserSelectionProps> = ({
       setCurrentUser(profile);
       onUserSelected?.(profile);
     }
+  };
+
+  const handleLogout = () => {
+    if (isDisabled) return;
+    setCurrentUser(null);
+    onUserSelected?.(null);
   };
 
   const handlePinSubmit = async (pin: string): Promise<boolean> => {
@@ -147,32 +142,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         )}
 
         <div className="user-selection__bubble-row" role="group" aria-label="Select profile">
-          {profiles.map((profile, index) => {
-            const isActive = selectedProfile === profile;
+          {users.map((profile, index) => {
+            const isActive = currentUser === profile;
             const isHovered = hoveredAvatar === profile || isActive;
-
-            if (profile === 'Guest') {
-              return (
-                <button
-                  key={profile}
-                  type="button"
-                  className={`user-selection__guest-bubble${isActive ? ' is-active' : ''}${isHovered ? ' is-hovered' : ''}${variant === 'inline' ? ' is-inline' : ''}`}
-                  onClick={() => selectProfile('Guest')}
-                  onMouseEnter={() => setHoveredAvatar('Guest')}
-                  onMouseLeave={() => setHoveredAvatar(null)}
-                  onFocus={() => setHoveredAvatar('Guest')}
-                  onBlur={() => setHoveredAvatar(null)}
-                  disabled={isDisabled}
-                  aria-pressed={isActive}
-                  aria-label="Select Guest profile"
-                >
-                  <span className="user-selection__guest-emoji" aria-hidden>
-                    {'\u{1F465}'}
-                  </span>
-                  <span className="user-selection__guest-label">Guest</span>
-                </button>
-              );
-            }
 
             return (
               <div key={profile} className="user-selection__bubble-slot">
@@ -180,9 +152,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   user={profile}
                   hasPin={userHasPin(profile)}
                   isHovered={isHovered}
-                  isSmall={
-                    variant === 'panel' && selectedProfile !== 'Guest' && selectedProfile !== profile
-                  }
+                  isSmall={variant === 'panel' && currentUser !== null && currentUser !== profile}
                   size={bubbleSize}
                   disabled={isDisabled}
                   onClick={() => selectProfile(profile)}
@@ -196,6 +166,20 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             );
           })}
         </div>
+
+        {selectedNamedUser ? (
+          <button
+            type="button"
+            className="user-selection__pin-button user-selection__logout-button"
+            onClick={handleLogout}
+            disabled={isDisabled}
+            aria-label="Log out"
+          >
+            Log out
+          </button>
+        ) : (
+          <p className="user-selection__logged-out">Logged out</p>
+        )}
 
         {selectedNamedUser && (
           <button
