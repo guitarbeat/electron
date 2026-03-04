@@ -1,5 +1,6 @@
-import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_API_URL, GIST_ID } from '../config/gistConfig';
-import type { Place } from '../types';
+import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
+import type { Place } from '../types.ts';
+import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 const mockPlaces: Place[] = [
   {
@@ -35,13 +36,7 @@ export const getPlaces = async (): Promise<Place[]> => {
       return mockPlaces;
     }
 
-    const response = await fetch(GIST_API_URL, {
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      cache: 'no-cache',
-    });
+    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
 
     if (!response.ok) {
       // Return mock data for 401 and other auth errors instead of throwing
@@ -53,13 +48,12 @@ export const getPlaces = async (): Promise<Place[]> => {
     }
 
     const gist = await response.json();
-    const file = gist.files[GIST_PLACES_FILENAME];
-
-    if (!file || !file.content) {
+    const content = getGistFileContent(gist, GIST_PLACES_FILENAME);
+    if (content === null) {
       return [];
     }
 
-    const places = JSON.parse(file.content);
+    const places = JSON.parse(content);
     return Array.isArray(places) ? places : [];
   } catch (error) {
     console.error('Error fetching places from Gist:', error);
@@ -71,20 +65,11 @@ export const getPlaces = async (): Promise<Place[]> => {
 
 export const savePlaces = async (places: Place[]): Promise<void> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      body: JSON.stringify({
-        files: {
-          [GIST_PLACES_FILENAME]: {
-            content: JSON.stringify(places, null, 2),
-          },
-        },
-      }),
-    });
+    const response = await patchGistFile(
+      GIST_PLACES_FILENAME,
+      JSON.stringify(places, null, 2),
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

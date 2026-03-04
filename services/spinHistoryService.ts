@@ -1,28 +1,22 @@
-import { GIST_TOKEN, GIST_API_URL, GIST_SPIN_HISTORY_FILENAME } from '../config/gistConfig';
+import { GIST_TOKEN, GIST_SPIN_HISTORY_FILENAME } from '../config/gistConfig.ts';
 import type { SpinEntry, SpinHistory, User } from '../types.ts';
+import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 export const getSpinHistory = async (): Promise<SpinHistory> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      cache: 'no-cache',
-    });
+    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
 
     if (!response.ok) {
       throw new Error(`GitHub API responded with ${response.status}`);
     }
 
     const gist = await response.json();
-    const file = gist.files[GIST_SPIN_HISTORY_FILENAME];
-
-    if (!file || !file.content) {
+    const content = getGistFileContent(gist, GIST_SPIN_HISTORY_FILENAME);
+    if (content === null) {
       return [];
     }
 
-    const parsed = JSON.parse(file.content);
+    const parsed = JSON.parse(content);
     return Array.isArray(parsed) ? (parsed as SpinHistory) : [];
   } catch (error) {
     console.error('Error fetching spin history from Gist:', error);
@@ -32,20 +26,11 @@ export const getSpinHistory = async (): Promise<SpinHistory> => {
 
 export const saveSpinHistory = async (history: SpinHistory): Promise<void> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      body: JSON.stringify({
-        files: {
-          [GIST_SPIN_HISTORY_FILENAME]: {
-            content: JSON.stringify(history, null, 2),
-          },
-        },
-      }),
-    });
+    const response = await patchGistFile(
+      GIST_SPIN_HISTORY_FILENAME,
+      JSON.stringify(history, null, 2),
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

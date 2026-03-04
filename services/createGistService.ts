@@ -1,17 +1,16 @@
-import { GIST_TOKEN, GIST_API_URL, GIST_ID } from '../config/gistConfig';
+import { GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
+import {
+  type GistPayload,
+  buildGithubApiErrorMessage,
+  fetchGist,
+  getGistFileContent,
+  patchGistFile,
+} from './gistClient.ts';
 
 export interface GistServiceConfig<T> {
   filename: string;
   mockData: T[];
   typeName: string;
-}
-
-export interface GistFile {
-  content?: string;
-}
-
-export interface GistResponse {
-  files: Record<string, GistFile>;
 }
 
 const createGistService = <T>({ filename, mockData, typeName }: GistServiceConfig<T>) => {
@@ -28,20 +27,7 @@ const createGistService = <T>({ filename, mockData, typeName }: GistServiceConfi
         return mockData;
       }
 
-      const headers: Record<string, string> = {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      };
-
-      // Use ETag for conditional request if available
-      if (lastETag) {
-        headers['If-None-Match'] = lastETag;
-      }
-
-      const response = await fetch(GIST_API_URL, {
-        headers,
-        cache: 'no-cache',
-      });
+      const response = await fetchGist({ token: GIST_TOKEN, eTag: lastETag, cache: 'no-cache' });
 
       // If the content hasn't changed, return the cached version
       if (response.status === 304) {
@@ -57,13 +43,7 @@ const createGistService = <T>({ filename, mockData, typeName }: GistServiceConfi
           );
           return mockData;
         }
-        let msg = `GitHub API responded with ${status}.`;
-        try {
-          const errBody = await response.clone().json();
-          if (errBody?.message) msg += ` GitHub says: "${errBody.message}".`;
-        } catch {
-          /* ignore parse error */
-        }
+        let msg = await buildGithubApiErrorMessage(response);
         if (status === 404) {
           msg +=
             ' Check that VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
@@ -71,22 +51,17 @@ const createGistService = <T>({ filename, mockData, typeName }: GistServiceConfi
         throw new Error(msg);
       }
 
-      const gist: GistResponse = await response.json();
-      const file = gist.files[filename];
-
-      if (!file) {
+      const gist: GistPayload = await response.json();
+      const content = getGistFileContent(gist, filename);
+      if (content === null) {
         const hint = `Your Gist must contain a file named "${filename}" with a JSON array of ${typeName.toLowerCase()} objects. Create that file in the Gist (e.g. paste []) and save then refresh.`;
         console.error(hint);
         throw new Error(`Gist is missing "${filename}". ${hint}`);
       }
 
-      if (!file.content) {
-        return [];
-      }
-
       let data: T[];
       try {
-        data = JSON.parse(file.content);
+        data = JSON.parse(content);
       } catch (parseErr) {
         throw new Error(
           `${filename} contains invalid JSON. It must be a JSON array of ${typeName.toLowerCase()} objects.`
@@ -115,20 +90,7 @@ const createGistService = <T>({ filename, mockData, typeName }: GistServiceConfi
 
   const saveData = async (data: T[]): Promise<void> => {
     try {
-      const response = await fetch(GIST_API_URL, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `token ${GIST_TOKEN}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-        body: JSON.stringify({
-          files: {
-            [filename]: {
-              content: JSON.stringify(data, null, 2), // Pretty-print the JSON
-            },
-          },
-        }),
-      });
+      const response = await patchGistFile(filename, JSON.stringify(data, null, 2), GIST_TOKEN);
 
       if (!response.ok) {
         const errorBody = await response.json();

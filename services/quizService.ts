@@ -4,8 +4,9 @@
  * Handles fetching and saving quiz data from/to GitHub Gist
  */
 
-import { GIST_TOKEN, GIST_QUIZ_FILENAME, GIST_API_URL } from '../config/gistConfig';
-import type { QuizQuestion, QuizCharacter } from '../components/quiz/types';
+import { GIST_TOKEN, GIST_QUIZ_FILENAME } from '../config/gistConfig.ts';
+import type { QuizQuestion, QuizCharacter } from '../components/quiz/types.ts';
+import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 import {
   quizQuestions as defaultQuestions,
   characterDescriptions as defaultDescriptions,
@@ -33,13 +34,7 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
       return defaultQuizData;
     }
 
-    const response = await fetch(GIST_API_URL, {
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      cache: 'no-cache',
-    });
+    const response = await fetchGist({ token, cache: 'no-cache' });
 
     if (response.status === 401 || response.status === 404) {
       console.warn(`GitHub API returned ${response.status}, using default quiz data.`);
@@ -51,14 +46,13 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
     }
 
     const gist = await response.json();
-    const file = gist.files[GIST_QUIZ_FILENAME];
-
-    if (!file || !file.content) {
+    const content = getGistFileContent(gist, GIST_QUIZ_FILENAME);
+    if (content === null) {
       // Return default data if file doesn't exist yet
       return defaultQuizData;
     }
 
-    const parsedData = JSON.parse(file.content);
+    const parsedData = JSON.parse(content);
 
     // Validate data structure
     if (!parsedData || !Array.isArray(parsedData.questions)) {
@@ -83,20 +77,7 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
 
 export const saveQuizData = async (data: QuizData): Promise<void> => {
   try {
-    const response = await fetch(GIST_API_URL, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      body: JSON.stringify({
-        files: {
-          [GIST_QUIZ_FILENAME]: {
-            content: JSON.stringify(data, null, 2),
-          },
-        },
-      }),
-    });
+    const response = await patchGistFile(GIST_QUIZ_FILENAME, JSON.stringify(data, null, 2), GIST_TOKEN);
 
     if (!response.ok) {
       const errorBody = await response.json();
