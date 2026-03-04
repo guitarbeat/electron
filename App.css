@@ -2,6 +2,109 @@
   position: relative;
 }
 
+/* Theme transition styles */
+:root {
+  --theme-transition-duration: 300ms;
+  --theme-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme-aware CSS variables */
+body[data-theme="movies"] {
+  --color-accent: #ff7fc6;
+  --color-accent-hover: #ff9bd3;
+  --color-accent-muted: #ff7fc640;
+  --color-accent-light: #ffc2e6;
+  --color-secondary: #95dcff;
+  --color-secondary-hover: #b3e8ff;
+  --color-secondary-muted: #95dcff40;
+  --color-tertiary: #a78af2;
+  --color-tertiary-hover: #c0a8ff;
+  --color-background: #020617;
+  --color-surface: rgba(15, 23, 42, 0.65);
+  --color-surface-elevated: rgba(30, 41, 59, 0.8);
+  --color-surface-0: #0a0f1e;
+  --color-surface-1: rgba(15, 23, 42, 0.7);
+  --color-surface-2: rgba(30, 41, 59, 0.85);
+  --color-surface-3: rgba(51, 65, 85, 0.92);
+  --glow-primary: 0 0 15px rgba(255, 127, 198, 0.4), 0 0 30px rgba(255, 127, 198, 0.15);
+  --glow-strong: 0 0 20px rgba(255, 127, 198, 0.6), 0 0 40px rgba(255, 127, 198, 0.25);
+  --gradient-primary: linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 100%);
+  --gradient-card: linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%);
+}
+
+body[data-theme="places"] {
+  --color-accent: #fff06a;
+  --color-accent-hover: #fff8bf;
+  --color-accent-muted: #fff06a40;
+  --color-accent-light: #fff8cc;
+  --color-secondary: #90ee90;
+  --color-secondary-hover: #a8f5a8;
+  --color-secondary-muted: #90ee9040;
+  --color-tertiary: #ffb347;
+  --color-tertiary-hover: #ffc266;
+  --color-background: #0a0f1a;
+  --color-surface: rgba(20, 25, 40, 0.65);
+  --color-surface-elevated: rgba(35, 45, 60, 0.8);
+  --color-surface-0: #0f1419;
+  --color-surface-1: rgba(20, 25, 40, 0.7);
+  --color-surface-2: rgba(35, 45, 60, 0.85);
+  --color-surface-3: rgba(55, 65, 75, 0.92);
+  --glow-primary: 0 0 15px rgba(255, 240, 106, 0.4), 0 0 30px rgba(144, 238, 144, 0.15);
+  --glow-strong: 0 0 20px rgba(255, 240, 106, 0.6), 0 0 40px rgba(144, 238, 144, 0.25);
+  --gradient-primary: linear-gradient(135deg, #fff06a 0%, #90ee90 100%);
+  --gradient-card: linear-gradient(180deg, rgba(45, 55, 70, 0.95) 0%, rgba(35, 45, 60, 0.88) 100%);
+}
+
+/* Apply smooth transitions for theme changes */
+body {
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-easing),
+    color var(--theme-transition-duration) var(--theme-transition-easing),
+    border-color var(--theme-transition-duration) var(--theme-transition-easing);
+}
+
+/* Elements that should transition with theme */
+.app-header,
+.app-top-tabs,
+.app-tabbar__tab,
+.profile-chip,
+.profile-select-cta,
+.card,
+.button,
+.bubble,
+.theme-toggle__slider {
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-easing),
+    border-color var(--theme-transition-duration) var(--theme-transition-easing),
+    box-shadow var(--theme-transition-duration) var(--theme-transition-easing);
+}
+
+/* Theme Toggle specific styles */
+.app-top-tabs {
+  position: sticky;
+  top: var(--app-top-tabs-offset, 56px);
+  z-index: 110;
+  backdrop-filter: blur(8px);
+  background: rgba(10, 15, 30, 0.8);
+  padding: 1rem 0;
+}
+
+/* Animation for theme toggle */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
 .skip-link {
   position: absolute;
   top: -120px;

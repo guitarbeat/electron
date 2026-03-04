@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { User } from '../../types';
 import type { QuizData } from '../../services/quizService';
 import { colors, radius, shadows, spacing, typography } from '../../design-system/tokens';
+import { useTheme } from '../../context/ThemeContext';
 import Button from '../ui/Button';
 import MinigameModal from '../ui/MinigameModal';
 import QuizFlow from './QuizFlow';
@@ -40,6 +41,7 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
   onOpenQuizEditor,
 }) => {
   const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
+  const { themeTokens } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [isTakingQuiz, setIsTakingQuiz] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
@@ -141,14 +143,14 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
           borderRadius: radius.full,
           border: `3px solid ${colors.surfaceElevated}`,
           background:
-            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(99, 102, 241, 0.95) 0%, rgba(79, 70, 229, 0.95) 100%)',
+            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), ' + themeTokens.gradientPrimary,
           color: '#fff',
           fontSize: '1.5rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: isDragging ? 'grabbing' : 'grab',
-          boxShadow: shadows.glow,
+          boxShadow: themeTokens.glow,
           padding: 0,
           zIndex: 1000,
           touchAction: 'none',

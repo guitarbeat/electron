@@ -3,7 +3,10 @@
  *
  * Centralized design tokens for consistent spacing, colors, typography, and motion.
  * Modernized: Inter font stack, improved contrast, surface layering system.
+ * Now supports theme switching between Movies and Places modes.
  */
+
+import { moviesTheme, placesTheme } from '../context/ThemeContext';
 
 // * Spacing scale (Tight but balanced)
 export const spacing = {
@@ -17,6 +20,7 @@ export const spacing = {
 } as const;
 
 // * Color palette (Modernized -- retro accents, modern foundations)
+// Default colors (Movies theme - backward compatibility)
 export const colors = {
   // Base
   background: '#020617',
@@ -123,12 +127,14 @@ export const motion = {
     normal: '200ms',
     slow: '300ms',
     button: '80ms',
+    theme: '300ms', // Theme transition duration
   },
   reducedDuration: {
     fast: '0.01ms',
     normal: '0.01ms',
     slow: '0.01ms',
     button: '0.01ms',
+    theme: '0.01ms',
   },
   easing: {
     ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
@@ -215,3 +221,6 @@ export const layout = {
   contentPaddingX: '1rem',
   contentPaddingXDesktop: '1.5rem',
 } as const;
+
+// Export theme objects for direct access
+export { moviesTheme, placesTheme };

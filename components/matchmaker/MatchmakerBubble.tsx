@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { User } from '../../types';
+import { useTheme } from '../../context/ThemeContext';
 import Matchmaker from './Matchmaker';
 import { colors, radius, shadows, spacing, typography } from '../../design-system/tokens';
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
@@ -24,6 +25,7 @@ const clampBubble = (x: number, y: number) => {
 
 const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
   const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
+  const { themeTokens } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   
   // Check if current user can drag bubbles (only Aaron or Electra)
@@ -143,14 +145,14 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
           borderRadius: radius.full,
           border: `3px solid ${colors.surfaceElevated}`,
           background:
-            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), linear-gradient(145deg, rgba(255, 105, 180, 0.95) 0%, rgba(180, 60, 130, 0.95) 100%)',
+            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), ' + themeTokens.gradientPrimary,
           color: '#fff',
           fontSize: '1.45rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: canDragBubbles ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
-          boxShadow: shadows.glow,
+          boxShadow: themeTokens.glow,
           padding: 0,
           zIndex: 1000,
           touchAction: 'none',
