@@ -500,7 +500,9 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
             {!isEmbedded && (
-              <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
+              <h2
+                style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}
+              >
                 Food Drop
               </h2>
             )}
@@ -539,9 +541,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
           <span>Score: {snapshot.score}</span>
           <span>Best: {bestScore}</span>
           <span>{statusLabel[snapshot.status]}</span>
-          <span>
-            Next: {FOOD_LEVELS[snapshot.nextLevel]?.emoji ?? '🍒'}
-          </span>
+          <span>Next: {FOOD_LEVELS[snapshot.nextLevel]?.emoji ?? '🍒'}</span>
         </div>
 
         <div

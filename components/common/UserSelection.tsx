@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
-import type { MainTab, User } from '../../types';
+import type { User } from '../../types';
 import { usePins } from '../../hooks/usePins';
 import PinDialog from './PinDialog';
 import ImageWithFallback from './ImageWithFallback';
@@ -10,15 +10,9 @@ import './UserSelection.css';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
-  activeTab?: MainTab;
-  onTabChange?: (tab: MainTab) => void;
 }
 
-const UserSelection: React.FC<UserSelectionProps> = ({
-  onUserSelected,
-  activeTab = 'queue',
-  onTabChange,
-}) => {
+const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin, isLoading } = usePins();
   const [pendingUser, setPendingUser] = useState<User | null>(null);
@@ -76,31 +70,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           personalized updates and actions.
         </p>
       </header>
-
-      {onTabChange && (
-        <div className="user-selection-vapor__tabs" role="tablist" aria-label="Choose section">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'queue'}
-            className={`user-selection-vapor__tab ${activeTab === 'queue' ? 'is-active' : ''}`}
-            onClick={() => onTabChange('queue')}
-          >
-            <span aria-hidden="true">🎬</span>
-            <span>Movies</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'places'}
-            className={`user-selection-vapor__tab ${activeTab === 'places' ? 'is-active' : ''}`}
-            onClick={() => onTabChange('places')}
-          >
-            <span aria-hidden="true">📍</span>
-            <span>Places</span>
-          </button>
-        </div>
-      )}
 
       <div className="user-selection-vapor__carousel">
         <button

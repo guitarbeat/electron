@@ -1,4 +1,4 @@
-import Matter, { Body, Engine, Events, World } from 'matter-js';
+import { Bodies, Body, Engine, Events, World } from 'matter-js';
 import {
   FOOD_DROP_GRAVITY,
   FOOD_DROP_LAUNCHER_START_X,
@@ -78,8 +78,8 @@ export class FoodDropEngine {
     });
     this.world = this.engine.world;
 
-    this.currentLevel = this.randomSpawnLevel();
-    this.nextLevel = this.randomSpawnLevel();
+    this.currentLevel = FoodDropEngine.randomSpawnLevel();
+    this.nextLevel = FoodDropEngine.randomSpawnLevel();
 
     this.setupBoundaries();
     this.bindCollisionEvents();
@@ -102,8 +102,8 @@ export class FoodDropEngine {
     this.cooldownRemainingMs = 0;
     this.overflowSettledMs = 0;
     this.pendingMergePairs.clear();
-    this.currentLevel = this.randomSpawnLevel();
-    this.nextLevel = this.randomSpawnLevel();
+    this.currentLevel = FoodDropEngine.randomSpawnLevel();
+    this.nextLevel = FoodDropEngine.randomSpawnLevel();
   }
 
   setStatus(nextStatus: FoodDropStatus) {
@@ -122,7 +122,7 @@ export class FoodDropEngine {
   }
 
   setLauncherX(targetX: number) {
-    const radius = FOOD_LEVELS[this.currentLevel].radius;
+    const { radius } = FOOD_LEVELS[this.currentLevel];
     const minX = FOOD_DROP_WALL_THICKNESS + radius;
     const maxX = FOOD_DROP_WORLD_WIDTH - FOOD_DROP_WALL_THICKNESS - radius;
     this.launcherX = Math.min(Math.max(targetX, minX), maxX);
@@ -137,13 +137,17 @@ export class FoodDropEngine {
       return false;
     }
 
-    const body = this.createFoodBody(this.currentLevel, this.launcherX, FOOD_DROP_SPAWN_Y);
+    const body = FoodDropEngine.createFoodBody(
+      this.currentLevel,
+      this.launcherX,
+      FOOD_DROP_SPAWN_Y
+    );
     World.add(this.world, body);
 
     this.canDrop = false;
     this.cooldownRemainingMs = FOOD_DROP_SPAWN_COOLDOWN_MS;
     this.currentLevel = this.nextLevel;
-    this.nextLevel = this.randomSpawnLevel();
+    this.nextLevel = FoodDropEngine.randomSpawnLevel();
 
     return true;
   }
@@ -182,7 +186,7 @@ export class FoodDropEngine {
     ctx.stroke();
     ctx.restore();
 
-    const radius = FOOD_LEVELS[this.currentLevel].radius;
+    const { radius } = FOOD_LEVELS[this.currentLevel];
     const launcherY = FOOD_DROP_SPAWN_Y;
 
     ctx.save();
@@ -194,7 +198,7 @@ export class FoodDropEngine {
     ctx.stroke();
     ctx.restore();
 
-    this.drawFoodCircle(ctx, {
+    FoodDropEngine.drawFoodCircle(ctx, {
       x: this.launcherX,
       y: launcherY,
       radius,
@@ -203,7 +207,7 @@ export class FoodDropEngine {
     });
 
     this.getRenderableBodies().forEach((body) => {
-      this.drawFoodCircle(ctx, body);
+      FoodDropEngine.drawFoodCircle(ctx, body);
     });
 
     if (this.status === 'paused') {
@@ -226,7 +230,7 @@ export class FoodDropEngine {
   }
 
   private setupBoundaries() {
-    const floor = Matter.Bodies.rectangle(
+    const floor = Bodies.rectangle(
       FOOD_DROP_WORLD_WIDTH / 2,
       FLOOR_Y,
       FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS * 2,
@@ -234,7 +238,7 @@ export class FoodDropEngine {
       { isStatic: true, restitution: 0.2, label: 'floor' }
     );
 
-    const leftWall = Matter.Bodies.rectangle(
+    const leftWall = Bodies.rectangle(
       LEFT_WALL_X,
       FOOD_DROP_WORLD_HEIGHT / 2,
       FOOD_DROP_WALL_THICKNESS,
@@ -242,7 +246,7 @@ export class FoodDropEngine {
       { isStatic: true, restitution: 0.2, label: 'left-wall' }
     );
 
-    const rightWall = Matter.Bodies.rectangle(
+    const rightWall = Bodies.rectangle(
       RIGHT_WALL_X,
       FOOD_DROP_WORLD_HEIGHT / 2,
       FOOD_DROP_WALL_THICKNESS,
@@ -256,7 +260,7 @@ export class FoodDropEngine {
   private bindCollisionEvents() {
     Events.on(this.engine, 'collisionStart', (event) => {
       event.pairs.forEach((pair) => {
-        if (!this.canBodiesMerge(pair.bodyA, pair.bodyB)) {
+        if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
           return;
         }
         const key =
@@ -268,11 +272,11 @@ export class FoodDropEngine {
     });
   }
 
-  private canBodiesMerge(bodyA: Body, bodyB: Body): boolean {
+  private static canBodiesMerge(bodyA: Body, bodyB: Body): boolean {
     if (bodyA.isStatic || bodyB.isStatic) return false;
 
-    const levelA = this.getBodyLevel(bodyA);
-    const levelB = this.getBodyLevel(bodyB);
+    const levelA = FoodDropEngine.getBodyLevel(bodyA);
+    const levelB = FoodDropEngine.getBodyLevel(bodyB);
 
     if (levelA === null || levelB === null) return false;
     if (levelA !== levelB) return false;
@@ -291,9 +295,9 @@ export class FoodDropEngine {
     nextPairs.forEach(({ bodyA, bodyB }) => {
       if (consumed.has(bodyA.id) || consumed.has(bodyB.id)) return;
       if (!this.world.bodies.includes(bodyA) || !this.world.bodies.includes(bodyB)) return;
-      if (!this.canBodiesMerge(bodyA, bodyB)) return;
+      if (!FoodDropEngine.canBodiesMerge(bodyA, bodyB)) return;
 
-      const sourceLevel = this.getBodyLevel(bodyA);
+      const sourceLevel = FoodDropEngine.getBodyLevel(bodyA);
       if (sourceLevel === null) return;
 
       const targetLevel = sourceLevel + 1;
@@ -307,7 +311,7 @@ export class FoodDropEngine {
       World.remove(this.world, bodyA);
       World.remove(this.world, bodyB);
 
-      const mergedBody = this.createFoodBody(targetLevel, mergedX, mergedY);
+      const mergedBody = FoodDropEngine.createFoodBody(targetLevel, mergedX, mergedY);
       Body.setVelocity(mergedBody, { x: mergedVelocityX, y: mergedVelocityY });
       World.add(this.world, mergedBody);
 
@@ -317,7 +321,7 @@ export class FoodDropEngine {
 
   private updateOverflowState(deltaMs: number) {
     const dynamicBodies = this.world.bodies.filter(
-      (body) => !body.isStatic && this.getBodyLevel(body) !== null
+      (body) => !body.isStatic && FoodDropEngine.getBodyLevel(body) !== null
     );
 
     if (dynamicBodies.length === 0) {
@@ -326,7 +330,8 @@ export class FoodDropEngine {
     }
 
     const hasOverflow = dynamicBodies.some((body) => {
-      const radius = FOOD_LEVELS[this.getBodyLevel(body) ?? 0].radius;
+      const bodyLevel = FoodDropEngine.getBodyLevel(body) ?? 0;
+      const { radius } = FOOD_LEVELS[bodyLevel];
       return body.position.y - radius < FOOD_DROP_LOSE_LINE_Y;
     });
 
@@ -353,15 +358,15 @@ export class FoodDropEngine {
     }
   }
 
-  private getBodyLevel(body: Body): number | null {
+  private static getBodyLevel(body: Body): number | null {
     const plugin = body.plugin as Partial<FoodBodyMeta> | undefined;
     const level = plugin?.foodLevel;
     return typeof level === 'number' ? level : null;
   }
 
-  private createFoodBody(level: number, x: number, y: number): Body {
-    const radius = FOOD_LEVELS[level].radius;
-    const body = Matter.Bodies.circle(x, y, radius, {
+  private static createFoodBody(level: number, x: number, y: number): Body {
+    const { radius } = FOOD_LEVELS[level];
+    const body = Bodies.circle(x, y, radius, {
       restitution: 0.18,
       friction: 0.02,
       frictionAir: 0.006,
@@ -382,7 +387,7 @@ export class FoodDropEngine {
     return this.world.bodies
       .filter((body) => !body.isStatic)
       .map((body) => {
-        const level = this.getBodyLevel(body);
+        const level = FoodDropEngine.getBodyLevel(body);
         if (level === null) return null;
         return {
           x: body.position.x,
@@ -395,12 +400,19 @@ export class FoodDropEngine {
       .filter((body): body is RenderBody => body !== null);
   }
 
-  private drawFoodCircle(ctx: CanvasRenderingContext2D, body: RenderBody) {
+  private static drawFoodCircle(ctx: CanvasRenderingContext2D, body: RenderBody) {
     ctx.save();
     ctx.translate(body.x, body.y);
     ctx.rotate(body.angle);
 
-    const ringGradient = ctx.createRadialGradient(-body.radius / 3, -body.radius / 3, 2, 0, 0, body.radius);
+    const ringGradient = ctx.createRadialGradient(
+      -body.radius / 3,
+      -body.radius / 3,
+      2,
+      0,
+      0,
+      body.radius
+    );
     ringGradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
     ringGradient.addColorStop(1, 'rgba(255, 255, 255, 0.22)');
 
@@ -422,7 +434,7 @@ export class FoodDropEngine {
     ctx.restore();
   }
 
-  private randomSpawnLevel() {
+  private static randomSpawnLevel() {
     const span = FOOD_DROP_SPAWN_MAX_LEVEL - FOOD_DROP_SPAWN_MIN_LEVEL + 1;
     return FOOD_DROP_SPAWN_MIN_LEVEL + Math.floor(Math.random() * span);
   }
