@@ -85,6 +85,7 @@ const FEVER_DURATION_MS = 9000;
 const CONTAINER_BONUS_POINTS = 15;
 const GAME_OVER_GRACE_MS = 1200;
 const SPAWN_LEVEL_WEIGHTS = [34, 28, 20, 12, 6];
+const RAPID_COMBO_WINDOW_MS = 600;
 const PHYSICS_SUBSTEP_MS = 1000 / 120;
 const MAX_STEP_MS = 34;
 const FRUIT_COLORS = [
@@ -157,6 +158,10 @@ export class FoodDropEngine {
 
   private feverMsRemaining = 0;
 
+  private rapidComboCount = 0;
+
+  private rapidComboWindowMs = 0;
+
   private readonly queueMergePairs = (event: IEventCollision<Engine>) => {
     event.pairs.forEach((pair) => {
       if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
@@ -216,6 +221,8 @@ export class FoodDropEngine {
     this.timeSinceMergeMs = 0;
     this.feverCharge = 0;
     this.feverMsRemaining = 0;
+    this.rapidComboCount = 0;
+    this.rapidComboWindowMs = 0;
     this.clampLauncherToCurrentLevel();
   }
 
@@ -284,6 +291,12 @@ export class FoodDropEngine {
     if (this.feverMsRemaining > 0) {
       this.feverMsRemaining = Math.max(0, this.feverMsRemaining - deltaMs);
     }
+    if (this.rapidComboWindowMs > 0) {
+      this.rapidComboWindowMs = Math.max(0, this.rapidComboWindowMs - deltaMs);
+      if (this.rapidComboWindowMs === 0) {
+        this.rapidComboCount = 0;
+      }
+    }
 
     if (!this.canDrop) {
       this.cooldownRemainingMs = Math.max(0, this.cooldownRemainingMs - deltaMs);
@@ -314,13 +327,15 @@ export class FoodDropEngine {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
-    this.renderBoardDecor(ctx);
+    const isDangerActive = this.isDangerActive();
+    this.renderBoardDecor(ctx, isDangerActive);
 
     this.renderContainer(ctx);
 
     ctx.save();
     ctx.setLineDash([6, 6]);
-    ctx.strokeStyle = 'rgba(229, 57, 53, 0.5)';
+    const pulse = 0.45 + 0.25 * Math.sin(Date.now() * 0.008);
+    ctx.strokeStyle = isDangerActive ? `rgba(220, 38, 38, ${pulse})` : 'rgba(229, 57, 53, 0.5)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(0, FOOD_DROP_LOSE_LINE_Y);
@@ -383,7 +398,7 @@ export class FoodDropEngine {
     }
   }
 
-  private renderBoardDecor(ctx: CanvasRenderingContext2D) {
+  private renderBoardDecor(ctx: CanvasRenderingContext2D, isDangerActive: boolean) {
     ctx.save();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_LOSE_LINE_Y);
@@ -395,6 +410,14 @@ export class FoodDropEngine {
       ctx.moveTo(x, 0);
       ctx.lineTo(x + FOOD_DROP_LOSE_LINE_Y, FOOD_DROP_LOSE_LINE_Y);
       ctx.stroke();
+    }
+    if (isDangerActive) {
+      const dangerGlow = ctx.createLinearGradient(0, 0, 0, FOOD_DROP_LOSE_LINE_Y + 52);
+      const alpha = 0.08 + 0.06 * Math.sin(Date.now() * 0.006);
+      dangerGlow.addColorStop(0, `rgba(239, 68, 68, ${Math.max(0.02, alpha)})`);
+      dangerGlow.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      ctx.fillStyle = dangerGlow;
+      ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_LOSE_LINE_Y + 52);
     }
     ctx.restore();
   }
@@ -603,7 +626,8 @@ export class FoodDropEngine {
         clampedMergedY,
         mergedScale
       );
-      Body.setVelocity(mergedBody, { x: mergedVelocityX, y: mergedVelocityY });
+      const popImpulse = Math.min(2.2, 0.8 + targetLevel * 0.1);
+      Body.setVelocity(mergedBody, { x: mergedVelocityX, y: mergedVelocityY - popImpulse });
       World.add(this.world, mergedBody);
 
       const points = scoreForMergeTargetLevel(targetLevel);
@@ -619,11 +643,22 @@ export class FoodDropEngine {
     });
 
     if (mergeCount > 0) {
+      if (this.rapidComboWindowMs > 0) {
+        this.rapidComboCount += mergeCount;
+      } else {
+        this.rapidComboCount = mergeCount;
+      }
+      this.rapidComboWindowMs = RAPID_COMBO_WINDOW_MS;
+
       this.timeSinceMergeMs = 0;
       this.streak += mergeCount;
       const comboBonus = mergeCount > 1 ? (mergeCount - 1) * 5 : 0;
       const containerBonus = this.getContainerMergeBonus(mergedCenters);
-      const rawPoints = mergeScore + comboBonus + containerBonus;
+      const rapidComboBonus =
+        this.rapidComboCount > 1
+          ? Math.min(160, Math.round(mergeScore * (this.rapidComboCount - 1) * 0.22))
+          : 0;
+      const rawPoints = mergeScore + comboBonus + containerBonus + rapidComboBonus;
       const totalPoints = Math.round(rawPoints * this.getScoreMultiplier());
       this.score += totalPoints;
       this.feverCharge += mergeCount * 18;
@@ -647,6 +682,15 @@ export class FoodDropEngine {
           comboBonus,
           22,
           `Combo +${comboBonus}`
+        );
+      }
+      if (rapidComboBonus > 0) {
+        this.createMergeBurst(
+          FOOD_DROP_WORLD_WIDTH * 0.38,
+          FOOD_DROP_LOSE_LINE_Y + 22,
+          rapidComboBonus,
+          20,
+          `x${this.rapidComboCount} Rapid`
         );
       }
       if (containerBonus > 0) {
@@ -754,6 +798,19 @@ export class FoodDropEngine {
       this.status = 'game-over';
       this.canDrop = false;
     }
+  }
+
+  private isDangerActive(): boolean {
+    const now = Date.now();
+    return this.world.bodies.some((body) => {
+      if (body.isStatic) return false;
+      const level = FoodDropEngine.getBodyLevel(body);
+      if (level === null) return false;
+      const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
+      if (spawnedAt !== null && now - spawnedAt < GAME_OVER_GRACE_MS) return false;
+      const radius = FoodDropEngine.getBodyRadius(body, level);
+      return body.position.y - radius < FOOD_DROP_LOSE_LINE_Y + 40;
+    });
   }
 
   private static getBodyLevel(body: Body): number | null {
