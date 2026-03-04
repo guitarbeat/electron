@@ -65,7 +65,7 @@ body {
 
 /* Elements that should transition with theme */
 .app-header,
-.app-top-tabs,
+.app-top-dock,
 .app-tabbar__tab,
 .profile-chip,
 .profile-select-cta,
@@ -79,14 +79,34 @@ body {
     box-shadow var(--theme-transition-duration) var(--theme-transition-easing);
 }
 
-/* Theme Toggle specific styles */
-.app-top-tabs {
+/* Top dock: main mode toggle + watchlist controls mount */
+.app-top-dock {
   position: sticky;
   top: var(--app-top-tabs-offset, 56px);
   z-index: 110;
-  backdrop-filter: blur(8px);
-  background: rgba(10, 15, 30, 0.8);
-  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0.75rem 0.5rem;
+  backdrop-filter: blur(12px);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface-0) 92%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface-0) 70%, transparent) 100%
+  );
+}
+
+.app-top-dock__inner {
+  width: min(1100px, 100%);
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
+  border-radius: 20px;
+  box-shadow: 0 10px 35px rgba(3, 8, 18, 0.28);
+  background: color-mix(in srgb, var(--color-surface-2) 88%, transparent);
+  padding: 0.25rem 0.5rem 0.75rem;
+}
+
+.app-top-dock__watchlist-slot {
+  margin-top: 0.5rem;
+  padding: 0 0.5rem;
 }
 
 /* Animation for theme toggle */
@@ -142,14 +162,6 @@ body {
   gap: 1rem;
 }
 
-.app-top-tabs {
-  position: sticky;
-  top: var(--app-top-tabs-offset, 56px);
-  z-index: 110;
-  backdrop-filter: blur(8px);
-  background: rgba(10, 15, 30, 0.8);
-}
-
 .profile-chip {
   appearance: none;
   display: inline-flex;
@@ -176,5 +188,19 @@ body {
 @media (max-width: 640px) {
   .app-header-inner {
     padding: 0.25rem 0.75rem;
+  }
+
+  .app-top-dock {
+    padding: 0.5rem 0.5rem 0.25rem;
+  }
+
+  .app-top-dock__inner {
+    border-radius: 16px;
+    padding: 0.25rem 0.25rem 0.5rem;
+  }
+
+  .app-top-dock__watchlist-slot {
+    margin-top: 0.25rem;
+    padding: 0 0.25rem;
   }
 }

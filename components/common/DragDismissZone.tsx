@@ -17,21 +17,18 @@ const DragDismissZone: React.FC<DragDismissZoneProps> = ({ visible, isHovering }
         opacity: visible ? 1 : 0,
         pointerEvents: 'none',
         zIndex: 9999,
-        transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background 0.15s ease',
+        transition:
+          'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background 0.15s ease',
         width: 56,
         height: 56,
         borderRadius: '50%',
-        background: isHovering
-          ? 'rgba(239, 68, 68, 0.9)'
-          : 'rgba(255, 255, 255, 0.12)',
+        background: isHovering ? 'rgba(239, 68, 68, 0.9)' : 'rgba(255, 255, 255, 0.12)',
         backdropFilter: 'blur(12px)',
         border: `2px solid ${isHovering ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 255, 255, 0.2)'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: isHovering
-          ? '0 0 24px rgba(239, 68, 68, 0.4)'
-          : '0 4px 16px rgba(0, 0, 0, 0.3)',
+        boxShadow: isHovering ? '0 0 24px rgba(239, 68, 68, 0.4)' : '0 4px 16px rgba(0, 0, 0, 0.3)',
       }}
       aria-hidden
     >

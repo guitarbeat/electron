@@ -1,35 +1,22 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useUser } from '../../context/UserContext';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import FixMatchDialog from '../common/FixMatchDialog';
 import Confetti from '../effects/Confetti';
 import Button from '../ui/Button';
-import Input from '../ui/Input';
-import { PlusIcon, Spinner, FilmIcon } from '../common/icons';
-import MasonryGrid from '../ui/MasonryGrid';
+import { FilmIcon } from '../common/icons';
 import { MovieCardSkeleton, SuggestionSkeleton } from '../ui/Skeleton';
-import SubNav from '../ui/SubNav';
 import MovieItem from '../common/MovieItem';
 import { SuggestionItemCard } from '../common/DashboardCards';
 import { useWatchlist } from './hooks/useWatchlist';
-import { WatchlistProps, SortMode, ContentTab } from './types';
+import { WatchlistProps } from './types';
+import WatchlistTopControls from './components/WatchlistTopControls';
 import { getEmptyStateMessage } from './utils';
 import { Movie, MovieSuggestion, SharedMemory } from '../../types';
-import { spacing, colors, radius, typography, layout } from '../../design-system/tokens';
+import { spacing, colors, radius, typography } from '../../design-system/tokens';
 import './Watchlist.css';
 
-const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
-  { id: 'all', label: 'All', icon: '🎬' },
-  { id: 'to-watch', label: 'Queue', icon: '📋' },
-  { id: 'watched', label: 'Watched', icon: '✅' },
-  { id: 'suggestions', label: 'Suggestions', icon: '💡' },
-];
-
-const SORT_OPTIONS: { id: SortMode; label: string }[] = [
-  { id: 'recent', label: 'Recent' },
-  { id: 'title', label: 'A–Z' },
-  { id: 'year', label: 'Year' },
-];
 const MOBILE_SKELETON_KEYS = ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'];
 const DESKTOP_SKELETON_KEYS = [
   'desktop-1',
@@ -42,7 +29,10 @@ const DESKTOP_SKELETON_KEYS = [
   'desktop-8',
 ];
 
-const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
+const Watchlist: React.FC<WatchlistProps> = ({
+  isPaused = false,
+  topControlsMountId = 'watchlist-top-controls-slot',
+}) => {
   const { currentUser } = useUser();
 
   const {
@@ -97,6 +87,15 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [suggestionToReject, setSuggestionToReject] = useState<MovieSuggestion | null>(null);
+  const [topControlsMount, setTopControlsMount] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    setTopControlsMount(document.getElementById(topControlsMountId));
+  }, [topControlsMountId]);
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -373,6 +372,23 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     );
   };
 
+  const topControls = (
+    <WatchlistTopControls
+      contentTab={contentTab}
+      setContentTab={setContentTab}
+      sortMode={sortMode}
+      setSortMode={setSortMode}
+      tabCounts={tabCounts}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      onSubmit={handleAddAction}
+      isAdding={isAdding}
+      isSuggesting={isSuggesting}
+      isMobile={isMobile}
+      suggestionError={suggestionError}
+    />
+  );
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: spacing.md }}>
       {showConfetti && <Confetti isActive={showConfetti} />}
@@ -399,126 +415,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         </div>
       )}
 
-      {/* --- Sub-nav: tabs + sort (full card so top is never cut off) --- */}
-      <div
-        style={{
-          marginBottom: spacing.lg,
-          marginTop: spacing.md,
-          position: 'sticky',
-          top: isMobile
-            ? spacing.sm
-            : `calc(${layout.topBarHeight} + ${layout.desktopNavHeight} + ${spacing.sm})`,
-          zIndex: 25,
-          padding: isMobile ? spacing.sm : spacing.md,
-          background: 'rgba(23, 33, 58, 0.55)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: radius.lg,
-          border: `1px solid ${colors.borderSecondary}25`,
-          boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: isMobile ? spacing.md : spacing.lg,
-          }}
-        >
-          <SubNav
-            ariaLabel="Movies: filter and sort"
-            scrollClassName="watchlist-tabs-scroll"
-            tabs={MOVIE_TABS.map((t) => ({
-              id: t.id,
-              label: t.label,
-              icon: t.icon,
-              count: tabCounts[t.id] ?? 0,
-            }))}
-            activeId={contentTab}
-            onSelect={(id) => setContentTab(id as ContentTab)}
-            chips={SORT_OPTIONS}
-            activeChipId={sortMode}
-            onChipSelect={(id) => setSortMode(id as SortMode)}
-            chipLabel="Sort by"
-          />
-
-          {/* Search + Add: full-width bar */}
-          <form
-            onSubmit={handleAddAction}
-            style={{
-              display: 'flex',
-              alignItems: 'stretch',
-              gap: 0,
-              background: colors.surfaceElevated,
-              borderRadius: radius.lg,
-              border: `1px solid ${colors.borderSecondary}35`,
-              overflow: 'hidden',
-              minHeight: '48px',
-              transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-            }}
-          >
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search or add a movie…"
-              aria-label="Search or add a movie"
-              style={{
-                minHeight: '48px',
-                flex: 1,
-                border: 'none',
-                background: 'transparent',
-                paddingLeft: spacing.md,
-                paddingRight: spacing.sm,
-                fontSize: typography.fontSize.sm,
-              }}
-            />
-            {searchQuery.trim() ? (
-              <Button
-                type="submit"
-                variant="secondary"
-                size="sm"
-                disabled={isAdding || isSuggesting}
-                isLoading={isAdding || isSuggesting}
-                style={{
-                  minHeight: '48px',
-                  minWidth: '56px',
-                  borderRadius: 0,
-                  borderLeft: `1px solid ${colors.borderSecondary}40`,
-                }}
-                title="Add or suggest movie"
-                aria-label="Add or suggest movie"
-              >
-                {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-              </Button>
-            ) : (
-              <div
-                style={{
-                  padding: `0 ${spacing.md}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: colors.textTertiary,
-                  opacity: 0.6,
-                }}
-                aria-hidden
-              >
-                <PlusIcon style={{ width: 20, height: 20 }} />
-              </div>
-            )}
-          </form>
-        </div>
-
-        {suggestionError && (
-          <div
-            style={{
-              color: colors.error,
-              fontSize: typography.fontSize.xs,
-              marginTop: -spacing.xs,
-            }}
-          >
-            {suggestionError}
-          </div>
-        )}
-      </div>
+      {topControlsMount ? (
+        createPortal(topControls, topControlsMount)
+      ) : (
+        <div className="watchlist-top-controls-fallback">{topControls}</div>
+      )}
 
       {/* --- Content Section --- */}
       <div
@@ -529,12 +430,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           transition: 'opacity 0.2s ease',
         }}
       >
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(200px, 1fr))', 
-          gap: spacing.md, 
-          alignItems: 'start' 
-        }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile
+              ? 'repeat(auto-fill, minmax(140px, 1fr))'
+              : 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: spacing.md,
+            alignItems: 'start',
+          }}
+        >
           {isLoading && (!movies || movies.length === 0) ? (
             <>
               {contentTab === 'suggestions' && (

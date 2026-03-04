@@ -39,7 +39,6 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
           await saveMatchmakerGame(updatedGame);
           refresh();
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.error('Matchmaker mutation failed:', err);
         } finally {
           setIsSubmitting(false);

@@ -47,7 +47,7 @@ export type AgentToolName =
 export interface AgentToolCall {
   id: string;
   name: AgentToolName;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   args: any;
 }
 
@@ -55,7 +55,7 @@ export interface AgentToolResult {
   id: string;
   name: AgentToolName;
   ok: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   result?: any;
   error?: string;
 }

@@ -43,41 +43,41 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ activeTab, onChange, isMobile
           {/* Movies Mode Elements */}
           <div className="theme-toggle__movies">
             <div className="theme-toggle__film-reel">
-              <div className="theme-toggle__film-reel-center"></div>
-              <div className="theme-toggle__film-reel-spokes"></div>
+              <div className="theme-toggle__film-reel-center" />
+              <div className="theme-toggle__film-reel-spokes" />
             </div>
             <div className="theme-toggle__film-strip">
-              <div className="theme-toggle__film-frame"></div>
-              <div className="theme-toggle__film-frame"></div>
-              <div className="theme-toggle__film-frame"></div>
+              <div className="theme-toggle__film-frame" />
+              <div className="theme-toggle__film-frame" />
+              <div className="theme-toggle__film-frame" />
             </div>
             <div className="theme-toggle__popcorn">
-              <div className="theme-toggle__popcorn-kernel"></div>
-              <div className="theme-toggle__popcorn-kernel"></div>
-              <div className="theme-toggle__popcorn-kernel"></div>
+              <div className="theme-toggle__popcorn-kernel" />
+              <div className="theme-toggle__popcorn-kernel" />
+              <div className="theme-toggle__popcorn-kernel" />
             </div>
           </div>
 
           {/* Places Mode Elements */}
           <div className="theme-toggle__places">
             <div className="theme-toggle__map-pin">
-              <div className="theme-toggle__pin-head"></div>
-              <div className="theme-toggle__pin-point"></div>
+              <div className="theme-toggle__pin-head" />
+              <div className="theme-toggle__pin-point" />
             </div>
             <div className="theme-toggle__cloud cloud1">
-              <div className="theme-toggle__cloud-part"></div>
-              <div className="theme-toggle__cloud-part"></div>
+              <div className="theme-toggle__cloud-part" />
+              <div className="theme-toggle__cloud-part" />
             </div>
             <div className="theme-toggle__cloud cloud2">
-              <div className="theme-toggle__cloud-part"></div>
-              <div className="theme-toggle__cloud-part"></div>
+              <div className="theme-toggle__cloud-part" />
+              <div className="theme-toggle__cloud-part" />
             </div>
             <div className="theme-toggle__stars">
-              <div className="theme-toggle__star star1"></div>
-              <div className="theme-toggle__star star2"></div>
-              <div className="theme-toggle__star star3"></div>
-              <div className="theme-toggle__star star4"></div>
-              <div className="theme-toggle__star star5"></div>
+              <div className="theme-toggle__star star1" />
+              <div className="theme-toggle__star star2" />
+              <div className="theme-toggle__star star3" />
+              <div className="theme-toggle__star star4" />
+              <div className="theme-toggle__star star5" />
             </div>
           </div>
 

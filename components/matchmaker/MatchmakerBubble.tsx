@@ -27,7 +27,7 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
   const { isHidden, setDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
   const { themeTokens } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const [bubblePosition, setBubblePosition] = useState(() => {
     if (typeof window === 'undefined') return { x: BUBBLE_EDGE_MARGIN, y: BUBBLE_EDGE_MARGIN };
     return {
@@ -87,7 +87,11 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
       if (checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
         didDragRef.current = false;
         dismiss('matchmaker');
-        try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+        try {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        } catch {
+          /* */
+        }
         return;
       }
       window.setTimeout(() => {
@@ -136,8 +140,7 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
           height: `${BUBBLE_SIZE}px`,
           borderRadius: radius.full,
           border: `3px solid ${colors.surfaceElevated}`,
-          background:
-            'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), ' + themeTokens.gradientPrimary,
+          background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 40%), ${themeTokens.gradientPrimary}`,
           color: '#fff',
           fontSize: '1.45rem',
           display: 'flex',

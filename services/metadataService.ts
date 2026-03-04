@@ -139,7 +139,7 @@ interface TvMazeShow {
     name: string;
     country: { name: string; code: string; timezone: string } | null;
   } | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   dvdCountry: any | null;
   externals: { tvrage: number; thetvdb: number; imdb: string | null };
   image: TvMazeImage | null;
@@ -218,7 +218,6 @@ export const fetchMovieMetadata = async (
             return toMetadataResultFromOmdb(omdbData);
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
           console.error('Error fetching metadata by OMDb ID:', error);
         }
       }
@@ -234,7 +233,6 @@ export const fetchMovieMetadata = async (
           return toMetadataResultFromOmdb(omdbData);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error fetching metadata by OMDb title:', error);
       }
     }
@@ -260,13 +258,11 @@ export const fetchMovieMetadata = async (
         };
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Error fetching metadata from TVMaze:', error);
     }
 
     return {};
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error fetching metadata:', error);
     return {};
   }
@@ -321,14 +317,12 @@ export const searchMovies = async (query: string): Promise<MetadataResult[]> => 
   if (omdbResult.status === 'fulfilled') {
     results.push(...omdbResult.value);
   } else {
-    // eslint-disable-next-line no-console
     console.error('Error searching OMDb metadata:', omdbResult.reason);
   }
 
   if (tvmazeResult.status === 'fulfilled') {
     results.push(...tvmazeResult.value);
   } else {
-    // eslint-disable-next-line no-console
     console.error('Error searching TVMaze metadata:', tvmazeResult.reason);
   }
 

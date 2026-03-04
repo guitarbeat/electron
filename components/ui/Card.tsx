@@ -25,7 +25,7 @@ const Card: React.FC<CardProps> = ({
     <div
       className={`ui-card ui-card--${isInteractive && variant === 'default' ? 'interactive' : variant} ${className}`.trim()}
       role={isInteractive ? role || 'button' : role}
-      tabIndex={isInteractive ? tabIndex ?? 0 : tabIndex}
+      tabIndex={isInteractive ? (tabIndex ?? 0) : tabIndex}
       style={{
         overflowWrap: 'break-word',
         wordBreak: 'break-word',

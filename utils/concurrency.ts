@@ -13,7 +13,6 @@ export const concurrentMap = async <T, R>(
   const results = new Array(items.length);
   const iterator = items.entries();
   const worker = async () => {
-    // eslint-disable-next-line no-restricted-syntax
     for (const [index, item] of iterator) {
       // eslint-disable-next-line no-await-in-loop
       results[index] = await fn(item);

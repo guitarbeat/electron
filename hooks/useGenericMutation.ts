@@ -29,7 +29,6 @@ export interface MutationConfig<TData, TMutationResult = void> {
   onError?: (error: Error) => void;
 }
 
-
 export const useGenericMutation = <TData, TMutationResult = void>({
   fetchData,
   saveData,
@@ -111,25 +110,21 @@ export const useGenericMutation = <TData, TMutationResult = void>({
       if (!Array.isArray(data)) {
         throw new Error('removeItem can only be used with array data');
       }
-      await performMutation((latestData) => 
-        (latestData as any[]).filter(predicate) as TData
-      );
+      await performMutation((latestData) => (latestData as any[]).filter(predicate) as TData);
     },
     [data, performMutation]
   );
 
   const updateItem = useCallback(
-    async (
-      predicate: (item: ArrayItem<TData>) => boolean,
-      updates: Partial<ArrayItem<TData>>
-    ) => {
+    async (predicate: (item: ArrayItem<TData>) => boolean, updates: Partial<ArrayItem<TData>>) => {
       if (!Array.isArray(data)) {
         throw new Error('updateItem can only be used with array data');
       }
-      await performMutation((latestData) =>
-        (latestData as any[]).map((item) =>
-          predicate(item) ? { ...item, ...updates } : item
-        ) as TData
+      await performMutation(
+        (latestData) =>
+          (latestData as any[]).map((item) =>
+            predicate(item) ? { ...item, ...updates } : item
+          ) as TData
       );
     },
     [data, performMutation]

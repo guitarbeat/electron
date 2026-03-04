@@ -52,7 +52,12 @@ interface SnakeGameProps {
 }
 
 const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
-  const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
+  const {
+    isHidden,
+    setDragging: setDismissDragging,
+    checkDismissZoneHit,
+    dismiss,
+  } = useBubbleDismiss();
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const isEmbedded = mode === 'embedded';
@@ -141,7 +146,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     didDragRef.current = false;
     if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
       dismiss('snake');
-      try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        /* */
+      }
       return;
     }
     if (!wasDragged) {

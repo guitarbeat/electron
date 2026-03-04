@@ -52,7 +52,9 @@ const createGistService = <T>({ filename, mockData, typeName }: GistServiceConfi
         const { status } = response;
         // Return mock data for 401/403 auth errors instead of throwing
         if (status === 401 || status === 403) {
-          console.warn(`GitHub API returned ${status}. Falling back to mock ${typeName.toLowerCase()} data.`);
+          console.warn(
+            `GitHub API returned ${status}. Falling back to mock ${typeName.toLowerCase()} data.`
+          );
           return mockData;
         }
         let msg = `GitHub API responded with ${status}.`;

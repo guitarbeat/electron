@@ -23,7 +23,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
 
       const trimmed = sanitizeInput(name.trim());
       if (!trimmed) throw new Error('Place name cannot be empty');
-      
+
       const place: Place = {
         id: crypto.randomUUID(),
         name: trimmed,
@@ -72,8 +72,8 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
   const markVisited = useCallback(
     async (id: string) => {
       const latestPlaces = await getPlaces();
-      const updatedPlaces = latestPlaces.map((p) => 
-        (p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p)
+      const updatedPlaces = latestPlaces.map((p) =>
+        p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p
       );
       await savePlaces(updatedPlaces);
       refresh();
@@ -84,8 +84,8 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
   const markUnvisited = useCallback(
     async (id: string) => {
       const latestPlaces = await getPlaces();
-      const updatedPlaces = latestPlaces.map((p) => 
-        (p.id === id ? { ...p, visitedAt: undefined } : p)
+      const updatedPlaces = latestPlaces.map((p) =>
+        p.id === id ? { ...p, visitedAt: undefined } : p
       );
       await savePlaces(updatedPlaces);
       refresh();

@@ -27,7 +27,6 @@ test('dailySpinService', async (t) => {
   // Mock Date using mock.timers to freeze time
   t.mock.timers.enable({ apis: ['Date'], now: MOCK_DATE });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let fetchMock: any;
 
   // Restore fetch after all tests in this suite

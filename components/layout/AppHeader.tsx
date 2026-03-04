@@ -27,9 +27,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) =>
         zIndex: 100,
       }}
     >
-      <div 
-        className="app-header-inner" 
-        style={{ 
+      <div
+        className="app-header-inner"
+        style={{
           maxWidth: layout.contentMaxWidth,
           padding: isMobile ? `0 ${spacing.md}` : `0 ${spacing.lg}`,
           display: 'flex',
@@ -84,12 +84,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) =>
                 touchAction: 'manipulation',
               }}
             >
-              <span aria-hidden style={{ fontSize: '16px' }}>{currentUser ? '👤' : '👥'}</span>
+              <span aria-hidden style={{ fontSize: '16px' }}>
+                {currentUser ? '👤' : '👥'}
+              </span>
               <span style={{ display: isMobile && currentUser ? 'none' : 'inline' }}>
                 {currentUser || 'Guest'}
               </span>
             </button>
-            
+
             <button
               type="button"
               className="mobile-menu-toggle"
@@ -132,7 +134,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) =>
               touchAction: 'manipulation',
             }}
           >
-            <span aria-hidden style={{ marginRight: spacing.xs }}>{currentUser ? '👤' : '👥'}</span>
+            <span aria-hidden style={{ marginRight: spacing.xs }}>
+              {currentUser ? '👤' : '👥'}
+            </span>
             <span>{currentUser || 'Guest'}</span>
           </button>
         )}
@@ -140,7 +144,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onProfileClick, currentUser }) =>
 
       {/* Mobile Menu Overlay */}
       {isMobile && isMenuOpen && (
-        <div 
+        <div
           className="mobile-menu-overlay"
           style={{
             position: 'absolute',

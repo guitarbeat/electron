@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 type Listener<T> = (data: T | undefined, error: any | null) => void;
 
 class PollingManager {
@@ -104,7 +103,6 @@ class PollingManager {
         this.errors.delete(key);
         this.notify(key, data, null);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error(`Polling failed for ${key}`, e);
 
         // Ignore stale responses from previous subscriptions/fetch functions.

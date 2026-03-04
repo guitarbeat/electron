@@ -17,9 +17,9 @@ interface PlacesMapProps {
  */
 const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const mapRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
@@ -30,15 +30,12 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
         typeof p.lat === 'number' && typeof p.lng === 'number'
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateMarkersAndBounds = (map: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       markersRef.current.forEach((m: any) => m.setMap(null));
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { google } = window as any;
       const bounds = new google.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
@@ -61,7 +58,6 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
     };
 
     const initMap = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { google } = window as any;
       if (!containerRef.current || !google?.maps) return;
 
@@ -83,7 +79,6 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       updateMarkersAndBounds(map);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((window as any).google?.maps?.Map) {
       if (mapRef.current) {
         updateMarkersAndBounds(mapRef.current);
