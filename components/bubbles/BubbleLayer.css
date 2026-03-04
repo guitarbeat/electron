@@ -40,6 +40,29 @@
   pointer-events: auto;
   touch-action: none;
   transition: transform 180ms ease, box-shadow 200ms ease, border-color 180ms ease;
+  overflow: hidden;
+}
+
+.bubble-launcher::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, white 35%, transparent);
+  pointer-events: none;
+}
+
+.bubble-launcher::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 42%;
+  height: 24%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+  filter: blur(0.4px);
+  pointer-events: none;
 }
 
 .bubble-launcher:hover {
