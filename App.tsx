@@ -209,7 +209,7 @@ const AppInnerWithTheme: React.FC<any> = ({
                 fontSize: typography.fontSize.sm,
               }}
             >
-              You are in guest mode. Pick Aaron or Electra to make personal updates.
+              You’re in guest mode. Choose a profile to save your updates.
             </p>
             <button
               type="button"
@@ -222,7 +222,7 @@ const AppInnerWithTheme: React.FC<any> = ({
                 color: colors.textPrimary,
               }}
             >
-              Choose Profile
+              Choose profile
             </button>
           </section>
         )}

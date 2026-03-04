@@ -70,32 +70,18 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected, activeTab
         gap: spacing.xl,
       }}
     >
-      {/* Theme Toggle Section */}
+      {/* Theme Toggle Section (optional label handled by parent sheet title) */}
       {onTabChange && (
         <div
           style={{
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            gap: spacing.md,
+            justifyContent: 'center',
             width: '100%',
           }}
         >
-          <h3
-            style={{
-              margin: 0,
-              color: '#fff',
-              fontSize: isMobile ? '1rem' : '1.125rem',
-              fontWeight: 600,
-              textAlign: 'center',
-              textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-              fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
-            }}
-          >
-            Choose Your Experience
-          </h3>
-          <ThemeToggle 
-            activeTab={activeTab} 
+          <ThemeToggle
+            activeTab={activeTab}
             onChange={onTabChange}
             isMobile={isMobile}
           />
@@ -123,35 +109,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({ onUserSelected, activeTab
             fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
           }}
         >
-          Who's Watching?
+          Who's watching?
         </h3>
-        
-        {/* Debug Info */}
-        <div style={{ 
-          fontSize: '10px', 
-          color: '#888', 
-          textAlign: 'center',
-          marginBottom: spacing.sm,
-          fontFamily: "'Papyrus', 'Comic Sans MS', cursive, sans-serif",
-        }}>
-          {isLoading ? 'Loading PINs...' : `PINs loaded. Debug: Check console for details`}
-          <button
-            type="button"
-            onClick={() => refresh()}
-            style={{
-              marginLeft: spacing.sm,
-              padding: '2px 6px',
-              fontSize: '10px',
-              background: '#333',
-              color: '#fff',
-              border: '1px solid #555',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            🔄 Refresh
-          </button>
-        </div>
         
         <div
           style={{
