@@ -69,6 +69,9 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     currentScale: 1,
     canDrop: true,
     launcherX: FOOD_DROP_WORLD_WIDTH / 2,
+    streak: 0,
+    multiplier: 1,
+    feverMsRemaining: 0,
   });
 
   const engineRef = useRef<FoodDropEngine | null>(null);
@@ -112,7 +115,10 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
         Math.abs(prev.nextScale - next.nextScale) < 0.001 &&
         Math.abs(prev.currentScale - next.currentScale) < 0.001 &&
         prev.canDrop === next.canDrop &&
-        Math.abs(prev.launcherX - next.launcherX) < 0.5
+        Math.abs(prev.launcherX - next.launcherX) < 0.5 &&
+        prev.streak === next.streak &&
+        Math.abs(prev.multiplier - next.multiplier) < 0.001 &&
+        prev.feverMsRemaining === next.feverMsRemaining
       ) {
         return prev;
       }
@@ -552,6 +558,33 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
           >
             Next: {FOOD_LEVELS[snapshot.nextLevel]?.emoji ?? '🍒'}
           </span>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid rgba(253, 186, 116, 0.35)',
+              background: 'rgba(124, 45, 18, 0.24)',
+              fontWeight: typography.fontWeight.semibold,
+            }}
+          >
+            Streak: {snapshot.streak}
+          </span>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid rgba(254, 202, 202, 0.35)',
+              background:
+                snapshot.feverMsRemaining > 0
+                  ? 'rgba(127, 29, 29, 0.45)'
+                  : 'rgba(30, 41, 59, 0.42)',
+              fontWeight: typography.fontWeight.semibold,
+            }}
+          >
+            {snapshot.feverMsRemaining > 0
+              ? `FEVER x2 (${Math.ceil(snapshot.feverMsRemaining / 1000)}s)`
+              : `Boost x${snapshot.multiplier.toFixed(2)}`}
+          </span>
         </div>
 
         <div
@@ -632,7 +665,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
               letterSpacing: '0.02em',
             }}
           >
-            Arrow/A-D move launcher · Space/Down drop · P pause · R restart
+            Arrow/A-D move launcher · Space/Down drop · stack fast for streaks and FEVER · P pause · R restart
           </p>
         )}
       </Card>

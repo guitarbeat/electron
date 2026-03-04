@@ -41,6 +41,9 @@ export interface FoodDropSnapshot {
   currentScale: number;
   canDrop: boolean;
   launcherX: number;
+  streak: number;
+  multiplier: number;
+  feverMsRemaining: number;
 }
 
 interface RenderBody {
@@ -63,18 +66,34 @@ interface MergeBurst {
 const FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + FOOD_DROP_WALL_THICKNESS / 2;
 const LEFT_WALL_X = -FOOD_DROP_WALL_THICKNESS / 2;
 const RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS / 2;
-const BASKET_INSET_X = 26;
+const BASKET_INSET_X = 8;
 const BASKET_WIDTH = FOOD_DROP_WORLD_WIDTH - BASKET_INSET_X * 2;
 const BASKET_BASE_THICKNESS = 12;
 const BASKET_BASE_Y = FOOD_DROP_WORLD_HEIGHT - BASKET_BASE_THICKNESS / 2 - 6;
 const BASKET_WALL_THICKNESS = 12;
-const BASKET_WALL_HEIGHT = 82;
+const BASKET_WALL_HEIGHT = 74;
 const BASKET_LEFT_WALL_X = BASKET_INSET_X + BASKET_WALL_THICKNESS / 2;
 const BASKET_RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH - BASKET_INSET_X - BASKET_WALL_THICKNESS / 2;
 const BASKET_WALL_CENTER_Y = BASKET_BASE_Y - BASKET_WALL_HEIGHT / 2;
 const BASKET_TOP_Y = BASKET_BASE_Y - BASKET_BASE_THICKNESS / 2;
 const BASKET_INNER_LEFT_X = BASKET_LEFT_WALL_X + BASKET_WALL_THICKNESS / 2;
 const BASKET_INNER_RIGHT_X = BASKET_RIGHT_WALL_X - BASKET_WALL_THICKNESS / 2;
+const STREAK_TIMEOUT_MS = 2600;
+const FEVER_THRESHOLD = 100;
+const FEVER_DURATION_MS = 9000;
+const BASKET_BONUS_POINTS = 15;
+const FRUIT_COLORS = [
+  '#ff6b6b',
+  '#ff8fab',
+  '#ffa94d',
+  '#b8f28e',
+  '#85dcb8',
+  '#74c0fc',
+  '#cba6f7',
+  '#ffd166',
+  '#f78fb3',
+  '#f06595',
+];
 
 export class FoodDropEngine {
   private engine: Engine;
@@ -104,6 +123,14 @@ export class FoodDropEngine {
   private nextScale: number;
 
   private mergeBursts: MergeBurst[] = [];
+
+  private streak = 0;
+
+  private timeSinceMergeMs = 0;
+
+  private feverCharge = 0;
+
+  private feverMsRemaining = 0;
 
   private readonly queueMergePairs = (event: IEventCollision<Engine>) => {
     event.pairs.forEach((pair) => {
@@ -157,6 +184,10 @@ export class FoodDropEngine {
     this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
     this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
     this.mergeBursts = [];
+    this.streak = 0;
+    this.timeSinceMergeMs = 0;
+    this.feverCharge = 0;
+    this.feverMsRemaining = 0;
     this.clampLauncherToCurrentLevel();
   }
 
@@ -174,6 +205,9 @@ export class FoodDropEngine {
       currentScale: this.currentScale,
       canDrop: this.canDrop && this.status === 'running',
       launcherX: this.launcherX,
+      streak: this.streak,
+      multiplier: this.getScoreMultiplier(),
+      feverMsRemaining: this.feverMsRemaining,
     };
   }
 
@@ -215,6 +249,14 @@ export class FoodDropEngine {
   step(deltaMs: number) {
     if (this.status !== 'running') return;
 
+    this.timeSinceMergeMs += deltaMs;
+    if (this.streak > 0 && this.timeSinceMergeMs >= STREAK_TIMEOUT_MS) {
+      this.streak = 0;
+    }
+    if (this.feverMsRemaining > 0) {
+      this.feverMsRemaining = Math.max(0, this.feverMsRemaining - deltaMs);
+    }
+
     if (!this.canDrop) {
       this.cooldownRemainingMs = Math.max(0, this.cooldownRemainingMs - deltaMs);
       if (this.cooldownRemainingMs <= 0) {
@@ -231,32 +273,20 @@ export class FoodDropEngine {
   render(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, FOOD_DROP_WORLD_HEIGHT);
-    gradient.addColorStop(0, '#111827');
-    gradient.addColorStop(0.45, '#1f2937');
-    gradient.addColorStop(1, '#0b1020');
-    ctx.fillStyle = gradient;
+    const bg = ctx.createLinearGradient(0, 0, 0, FOOD_DROP_WORLD_HEIGHT);
+    bg.addColorStop(0, '#f4e4c8');
+    bg.addColorStop(1, '#ecd9b4');
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
-    const glow = ctx.createRadialGradient(
-      FOOD_DROP_WORLD_WIDTH * 0.2,
-      FOOD_DROP_WORLD_HEIGHT * 0.08,
-      10,
-      FOOD_DROP_WORLD_WIDTH * 0.2,
-      FOOD_DROP_WORLD_HEIGHT * 0.08,
-      FOOD_DROP_WORLD_WIDTH * 0.75
-    );
-    glow.addColorStop(0, 'rgba(56, 189, 248, 0.16)');
-    glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
+    this.renderBoardDecor(ctx);
 
     this.renderBasket(ctx);
 
     ctx.save();
-    ctx.setLineDash([8, 6]);
-    ctx.strokeStyle = 'rgba(248, 113, 113, 0.75)';
-    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = 'rgba(229, 57, 53, 0.5)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(0, FOOD_DROP_LOSE_LINE_Y);
     ctx.lineTo(FOOD_DROP_WORLD_WIDTH, FOOD_DROP_LOSE_LINE_Y);
@@ -266,14 +296,7 @@ export class FoodDropEngine {
     const radius = FOOD_LEVELS[this.currentLevel].radius * this.currentScale;
     const launcherY = FOOD_DROP_SPAWN_Y;
 
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.setLineDash([4, 6]);
-    ctx.beginPath();
-    ctx.moveTo(this.launcherX, launcherY);
-    ctx.lineTo(this.launcherX, FOOD_DROP_WORLD_HEIGHT - 12);
-    ctx.stroke();
-    ctx.restore();
+    this.renderDropBeam(ctx, launcherY);
 
     FoodDropEngine.drawFoodCircle(ctx, {
       x: this.launcherX,
@@ -304,38 +327,81 @@ export class FoodDropEngine {
       FoodDropEngine.drawFoodCircle(ctx, body);
     });
     this.renderMergeBursts(ctx);
+    this.renderBoostHud(ctx);
 
     if (this.status === 'paused') {
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+      ctx.fillStyle = 'rgba(80, 55, 25, 0.35)';
       ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 28px system-ui';
+      ctx.fillStyle = '#4a2f19';
+      ctx.font = 'bold 28px "Trebuchet MS", system-ui';
       ctx.textAlign = 'center';
       ctx.fillText('Paused', FOOD_DROP_WORLD_WIDTH / 2, FOOD_DROP_WORLD_HEIGHT / 2);
     }
 
     if (this.status === 'game-over') {
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+      ctx.fillStyle = 'rgba(120, 24, 24, 0.34)';
       ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
-      ctx.fillStyle = '#fecaca';
-      ctx.font = 'bold 28px system-ui';
+      ctx.fillStyle = '#7f1d1d';
+      ctx.font = 'bold 28px "Trebuchet MS", system-ui';
       ctx.textAlign = 'center';
       ctx.fillText('Game Over', FOOD_DROP_WORLD_WIDTH / 2, FOOD_DROP_WORLD_HEIGHT / 2 - 8);
     }
+  }
+
+  private renderBoardDecor(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, 14);
+
+    ctx.fillStyle = '#7c4a24';
+    ctx.font = 'bold 22px "Trebuchet MS", system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText('FRUIT MERGE', FOOD_DROP_WORLD_WIDTH / 2, 8);
+    ctx.restore();
+  }
+
+  private renderDropBeam(ctx: CanvasRenderingContext2D, launcherY: number) {
+    const beamTop = Math.max(6, launcherY - 95);
+    const beam = ctx.createLinearGradient(this.launcherX, beamTop, this.launcherX, launcherY + 6);
+    beam.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    beam.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+    beam.addColorStop(1, 'rgba(255, 180, 60, 0)');
 
     ctx.save();
-    const vignette = ctx.createRadialGradient(
-      FOOD_DROP_WORLD_WIDTH / 2,
-      FOOD_DROP_WORLD_HEIGHT / 2,
-      FOOD_DROP_WORLD_WIDTH * 0.2,
-      FOOD_DROP_WORLD_WIDTH / 2,
-      FOOD_DROP_WORLD_HEIGHT / 2,
-      FOOD_DROP_WORLD_WIDTH * 0.9
-    );
-    vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    vignette.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
+    ctx.fillStyle = beam;
+    ctx.fillRect(this.launcherX - 16, beamTop, 32, launcherY + 6 - beamTop);
+    ctx.restore();
+  }
+
+  private renderBoostHud(ctx: CanvasRenderingContext2D) {
+    if (this.streak <= 1 && this.feverMsRemaining <= 0) {
+      return;
+    }
+
+    ctx.save();
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    let y = 14;
+
+    if (this.streak > 1) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.fillRect(FOOD_DROP_WORLD_WIDTH - 128, y - 4, 116, 24);
+      ctx.fillStyle = '#9a3412';
+      ctx.font = 'bold 13px "Trebuchet MS", system-ui';
+      ctx.fillText(`Streak x${this.streak}`, FOOD_DROP_WORLD_WIDTH - 18, y);
+      y += 30;
+    }
+
+    if (this.feverMsRemaining > 0) {
+      const seconds = Math.ceil(this.feverMsRemaining / 1000);
+      ctx.fillStyle = 'rgba(254, 202, 202, 0.7)';
+      ctx.fillRect(FOOD_DROP_WORLD_WIDTH - 160, y - 4, 148, 24);
+      ctx.fillStyle = '#9f1239';
+      ctx.font = 'bold 13px "Trebuchet MS", system-ui';
+      ctx.fillText(`FEVER x2  ${seconds}s`, FOOD_DROP_WORLD_WIDTH - 18, y);
+    }
+
     ctx.restore();
   }
 
@@ -343,13 +409,7 @@ export class FoodDropEngine {
     const basketTopY = BASKET_BASE_Y - BASKET_BASE_THICKNESS / 2;
 
     ctx.save();
-    const basketGlow = ctx.createLinearGradient(0, basketTopY - 16, 0, FOOD_DROP_WORLD_HEIGHT);
-    basketGlow.addColorStop(0, 'rgba(251, 191, 36, 0)');
-    basketGlow.addColorStop(1, 'rgba(217, 119, 6, 0.2)');
-    ctx.fillStyle = basketGlow;
-    ctx.fillRect(0, basketTopY - 18, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT - basketTopY + 18);
-
-    ctx.fillStyle = '#92400e';
+    ctx.fillStyle = '#c68642';
     ctx.fillRect(BASKET_INSET_X, basketTopY, BASKET_WIDTH, BASKET_BASE_THICKNESS);
     ctx.fillRect(
       BASKET_LEFT_WALL_X - BASKET_WALL_THICKNESS / 2,
@@ -364,11 +424,13 @@ export class FoodDropEngine {
       BASKET_WALL_HEIGHT
     );
 
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.88)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#7a4a1f';
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(BASKET_INSET_X - 1, basketTopY + 1);
     ctx.lineTo(BASKET_INSET_X + BASKET_WIDTH + 1, basketTopY + 1);
+    ctx.moveTo(BASKET_INSET_X, basketTopY + BASKET_BASE_THICKNESS - 1);
+    ctx.lineTo(BASKET_INSET_X + BASKET_WIDTH, basketTopY + BASKET_BASE_THICKNESS - 1);
     ctx.stroke();
     ctx.restore();
   }
@@ -456,6 +518,7 @@ export class FoodDropEngine {
     this.pendingMergePairs.clear();
     let mergeCount = 0;
     let mergeScore = 0;
+    const mergedCenters: Array<{ x: number; y: number }> = [];
 
     nextPairs.forEach(({ bodyA, bodyB }) => {
       if (consumed.has(bodyA.id) || consumed.has(bodyB.id)) return;
@@ -492,12 +555,32 @@ export class FoodDropEngine {
       const points = scoreForMergeTargetLevel(targetLevel);
       mergeCount += 1;
       mergeScore += points;
+      mergedCenters.push({ x: mergedX, y: mergedY });
       this.createMergeBurst(mergedX, mergedY, points, FOOD_LEVELS[targetLevel].radius * mergedScale);
     });
 
     if (mergeCount > 0) {
+      this.timeSinceMergeMs = 0;
+      this.streak += mergeCount;
       const comboBonus = mergeCount > 1 ? (mergeCount - 1) * 5 : 0;
-      this.score += mergeScore + comboBonus;
+      const basketBonus = this.getBasketMergeBonus(mergedCenters);
+      const rawPoints = mergeScore + comboBonus + basketBonus;
+      const totalPoints = Math.round(rawPoints * this.getScoreMultiplier());
+      this.score += totalPoints;
+      this.feverCharge += mergeCount * 18;
+
+      if (this.feverMsRemaining <= 0 && this.feverCharge >= FEVER_THRESHOLD) {
+        this.feverMsRemaining = FEVER_DURATION_MS;
+        this.feverCharge = 0;
+        this.createMergeBurst(
+          FOOD_DROP_WORLD_WIDTH / 2,
+          FOOD_DROP_LOSE_LINE_Y + 50,
+          0,
+          26,
+          'FEVER x2'
+        );
+      }
+
       if (comboBonus > 0) {
         this.createMergeBurst(
           FOOD_DROP_WORLD_WIDTH / 2,
@@ -507,7 +590,46 @@ export class FoodDropEngine {
           `Combo +${comboBonus}`
         );
       }
+      if (basketBonus > 0) {
+        this.createMergeBurst(
+          FOOD_DROP_WORLD_WIDTH / 2,
+          BASKET_TOP_Y - 14,
+          basketBonus,
+          20,
+          `Basket +${basketBonus}`
+        );
+      }
+      if (totalPoints !== rawPoints) {
+        const bonusFromMultiplier = totalPoints - rawPoints;
+        this.createMergeBurst(
+          FOOD_DROP_WORLD_WIDTH * 0.72,
+          FOOD_DROP_LOSE_LINE_Y + 22,
+          bonusFromMultiplier,
+          18,
+          `Boost +${bonusFromMultiplier}`
+        );
+      }
     }
+  }
+
+  private getBasketMergeBonus(mergedCenters: Array<{ x: number; y: number }>): number {
+    const bonusMerges = mergedCenters.filter(({ x: mergedX, y: mergedY }) => {
+      const insideBasketX = mergedX >= BASKET_INNER_LEFT_X + 4 && mergedX <= BASKET_INNER_RIGHT_X - 4;
+      const nearBottom = mergedY >= BASKET_TOP_Y - 20;
+      return insideBasketX && nearBottom;
+    }).length;
+
+    return bonusMerges * BASKET_BONUS_POINTS;
+  }
+
+  private getScoreMultiplier(): number {
+    if (this.feverMsRemaining > 0) {
+      return 2;
+    }
+    if (this.streak >= 7) return 1.6;
+    if (this.streak >= 5) return 1.45;
+    if (this.streak >= 3) return 1.25;
+    return 1;
   }
 
   private updateOverflowState(deltaMs: number) {
@@ -658,14 +780,14 @@ export class FoodDropEngine {
 
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = '#fde68a';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(burst.x, burst.y, animatedRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      ctx.fillStyle = '#fef3c7';
-      ctx.font = 'bold 14px system-ui';
+      ctx.fillStyle = '#7c2d12';
+      ctx.font = 'bold 14px "Trebuchet MS", system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.fillText(burst.label, burst.x, burst.y - burst.radius - progress * 18);
@@ -678,31 +800,69 @@ export class FoodDropEngine {
     ctx.translate(body.x, body.y);
     ctx.rotate(body.angle);
 
-    const ringGradient = ctx.createRadialGradient(
-      -body.radius / 3,
-      -body.radius / 3,
+    const fruitColor = FRUIT_COLORS[body.level % FRUIT_COLORS.length];
+    const highlight = ctx.createRadialGradient(
+      -body.radius * 0.35,
+      -body.radius * 0.4,
       2,
       0,
       0,
-      body.radius
+      body.radius * 1.1
     );
-    ringGradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-    ringGradient.addColorStop(1, 'rgba(255, 255, 255, 0.22)');
+    highlight.addColorStop(0, 'rgba(255,255,255,0.55)');
+    highlight.addColorStop(0.35, fruitColor);
+    highlight.addColorStop(1, fruitColor);
 
-    ctx.fillStyle = ringGradient;
+    ctx.fillStyle = highlight;
     ctx.beginPath();
     ctx.arc(0, 0, body.radius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#472a14';
+    ctx.lineWidth = 2.2;
     ctx.stroke();
 
-    ctx.font = `${Math.floor(body.radius * 1.2)}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#0f172a';
-    ctx.fillText(FOOD_LEVELS[body.level].emoji, 0, body.radius * 0.04);
+    const leafW = Math.max(5, body.radius * 0.48);
+    const leafH = Math.max(4, body.radius * 0.32);
+    ctx.save();
+    ctx.translate(0, -body.radius * 0.82);
+    ctx.rotate(-0.35);
+    ctx.fillStyle = '#5aa449';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, leafW, leafH, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#365f2a';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
+
+    const eyeY = -body.radius * 0.1;
+    const eyeDx = body.radius * 0.28;
+    const eyeR = Math.max(1.8, body.radius * 0.12);
+    ctx.fillStyle = '#2a1a12';
+    ctx.beginPath();
+    ctx.arc(-eyeDx, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.arc(eyeDx, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.beginPath();
+    ctx.arc(-eyeDx - eyeR * 0.2, eyeY - eyeR * 0.2, eyeR * 0.4, 0, Math.PI * 2);
+    ctx.arc(eyeDx - eyeR * 0.2, eyeY - eyeR * 0.2, eyeR * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#2a1a12';
+    ctx.lineWidth = Math.max(1.2, body.radius * 0.09);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(0, body.radius * 0.12, body.radius * 0.35, 0.15, Math.PI - 0.15);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255, 120, 140, 0.45)';
+    ctx.beginPath();
+    ctx.arc(-body.radius * 0.46, body.radius * 0.08, body.radius * 0.12, 0, Math.PI * 2);
+    ctx.arc(body.radius * 0.46, body.radius * 0.08, body.radius * 0.12, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
   }
