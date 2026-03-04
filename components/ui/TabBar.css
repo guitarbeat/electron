@@ -7,7 +7,7 @@
   margin: 0 auto;
   padding: 0.35rem 0.75rem;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--tab-count, 3), minmax(0, 1fr));
 }
 
 .app-tabbar__tab {
@@ -16,7 +16,7 @@
   border-radius: 0.75rem;
   background: color-mix(in srgb, var(--color-surface-2) 65%, transparent);
   color: var(--color-text-secondary);
-  min-height: 2.75rem;
+  min-height: 2.9rem;
   padding: 0.45rem 0.5rem;
   cursor: pointer;
   display: inline-flex;

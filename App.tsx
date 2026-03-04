@@ -17,10 +17,8 @@ import RestoreBubblesButton from './components/common/RestoreBubblesButton';
 import { BubbleDismissProvider, useBubbleDismiss } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
-import ThemeToggle from './components/ui/ThemeToggle';
-import BottomSheet from './components/ui/BottomSheet';
+import TabBar from './components/ui/TabBar';
 import MinigameModal from './components/ui/MinigameModal';
-import UserSelection from './components/common/UserSelection';
 import DebugMovies from './components/debug/DebugMovies';
 import AppHeader from './components/layout/AppHeader';
 import { spacing, colors, typography, layout } from './design-system/tokens';
@@ -40,7 +38,6 @@ const AppInner: React.FC = () => {
   const { isDragging, isHoveringDismiss } = useBubbleDismiss();
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const [showProfileSheet, setShowProfileSheet] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
@@ -97,20 +94,24 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
-        <AppHeader onProfileClick={() => setShowProfileSheet(true)} currentUser={currentUser} />
+        <AppHeader currentUser={currentUser} />
 
-        <div className="app-top-dock">
-          <div className="app-top-dock__inner">
-            <ThemeToggle activeTab={activeTab} onChange={handleTabChange} />
-            {activeTab === 'queue' && (
-              <div
-                id="watchlist-top-controls-slot"
-                className="app-top-dock__watchlist-slot"
-                aria-live="polite"
-              />
-            )}
+        {(!isMobile || activeTab === 'queue') && (
+          <div className="app-top-dock">
+            <div className="app-top-dock__inner">
+              {!isMobile && (
+                <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} />
+              )}
+              {activeTab === 'queue' && (
+                <div
+                  id="watchlist-top-controls-slot"
+                  className="app-top-dock__watchlist-slot"
+                  aria-live="polite"
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <main
           id="main-content"
@@ -150,16 +151,9 @@ const AppInner: React.FC = () => {
           })}
         </main>
 
-        <BottomSheet
-          isOpen={showProfileSheet}
-          onClose={() => setShowProfileSheet(false)}
-        >
-          <UserSelection
-            onUserSelected={() => setShowProfileSheet(false)}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-        </BottomSheet>
+        {isMobile && (
+          <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} mobileFixed />
+        )}
 
         <MinigameModal
           isOpen={showQuizEditor}

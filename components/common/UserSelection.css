@@ -83,7 +83,6 @@
 }
 
 .user-selection-vapor__header,
-.user-selection-vapor__tabs,
 .user-selection-vapor__carousel,
 .user-selection-vapor__pager,
 .user-selection-vapor__footer {
@@ -131,40 +130,6 @@
 
 .user-selection-vapor__subtitle strong:last-child {
   color: var(--vapor-cyan);
-}
-
-.user-selection-vapor__tabs {
-  margin: 0 auto 1.15rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(0, 0, 0, 0.35);
-  box-shadow: 0 10px 26px rgba(20, 8, 30, 0.35);
-}
-
-.user-selection-vapor__tab {
-  border: 0;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  background: transparent;
-  color: rgba(218, 225, 236, 0.7);
-  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
-  font-size: 0.83rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 200ms ease;
-}
-
-.user-selection-vapor__tab.is-active {
-  color: #fff;
-  background: linear-gradient(to right, var(--vapor-purple), var(--vapor-cyan));
-  box-shadow: 0 0 16px rgba(176, 106, 179, 0.5);
 }
 
 .user-selection-vapor__carousel {
@@ -356,11 +321,6 @@
     font-size: 0.67rem;
     max-width: 31ch;
     letter-spacing: 0.05em;
-  }
-
-  .user-selection-vapor__tab {
-    padding: 0.45rem 0.8rem;
-    font-size: 0.78rem;
   }
 
   .user-selection-vapor__carousel {
