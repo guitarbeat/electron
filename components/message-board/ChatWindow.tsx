@@ -5,12 +5,25 @@ interface ChatWindowProps {
   children: React.ReactNode;
   isEditMode?: boolean;
   onToggleEditMode?: () => void;
+  onClose?: () => void;
 }
+
+const linkStyle: React.CSSProperties = {
+  color: colors.secondary,
+  fontSize: '15px',
+  fontWeight: 400,
+  cursor: 'pointer',
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  fontFamily: typography.fontFamily.body.join(', '),
+};
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   children,
   isEditMode = false,
   onToggleEditMode,
+  onClose,
 }) => {
   return (
     <div
@@ -19,9 +32,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         flexDirection: 'column',
         height: '100%',
         backgroundColor: colors.surfaceElevated,
-        borderRadius: '20px',
         overflow: 'hidden',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
@@ -39,29 +50,39 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           position: 'relative',
         }}
       >
+        <span
+          style={{
+            fontFamily: typography.fontFamily.heading.join(', '),
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontSize: '14px',
+            color: colors.textPrimary,
+          }}
+        >
+          Messages
+        </span>
+
         {onToggleEditMode && (
           <button
             type="button"
             onClick={onToggleEditMode}
-            style={{
-              position: 'absolute',
-              right: spacing.md,
-              color: colors.secondary,
-              fontSize: '15px',
-              fontWeight: 400,
-              cursor: 'pointer',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              fontFamily: typography.fontFamily.body.join(', '),
-            }}
+            style={{ ...linkStyle, position: 'absolute', right: onClose ? '70px' : spacing.md }}
           >
             {isEditMode ? 'Done' : 'Edit'}
           </button>
         )}
+
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ ...linkStyle, position: 'absolute', right: spacing.md }}
+          >
+            Close
+          </button>
+        )}
       </div>
 
-      {/* Chat Content Area */}
       <div
         style={{
           flex: 1,
