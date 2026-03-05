@@ -24,6 +24,7 @@ import { useFoodDropBestScore } from './useFoodDropBestScore';
 
 interface FoodDropGameProps {
   mode?: 'floating' | 'embedded';
+  onRequestClose?: () => void;
 }
 
 const KEYBOARD_STEP = 14;
@@ -47,7 +48,7 @@ function safeReleasePointerCapture(
   }
 }
 
-const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
+const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating', onRequestClose }) => {
   const {
     isHidden,
     setDragging: setDismissDragging,
@@ -384,6 +385,14 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     safeReleasePointerCapture(event.currentTarget, event.pointerId);
   };
 
+  const handleHide = () => {
+    if (isEmbedded) {
+      onRequestClose?.();
+      return;
+    }
+    setIsMinimized(true);
+  };
+
   const containerStyle = useMemo<React.CSSProperties>(() => {
     return getFloatingContainerStyle({
       isEmbedded,
@@ -484,7 +493,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
             </Button>
           </div>
           {!isEmbedded && !isFullscreen && (
-            <Button size="sm" variant="ghost" onClick={() => setIsMinimized(true)}>
+            <Button size="sm" variant="ghost" onClick={handleHide}>
               Hide
             </Button>
           )}

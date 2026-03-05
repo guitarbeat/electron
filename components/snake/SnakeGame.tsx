@@ -54,6 +54,7 @@ const KEY_TO_DIRECTION: Record<string, Direction> = {
 
 interface SnakeGameProps {
   mode?: 'floating' | 'embedded';
+  onRequestClose?: () => void;
 }
 
 function buildInitialSnakeState(mode: SnakeGameProps['mode']): SnakeGameState {
@@ -75,7 +76,7 @@ function safeReleasePointerCapture(element: HTMLButtonElement, pointerId: number
   }
 }
 
-const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
+const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose }) => {
   const {
     isHidden,
     setDragging: setDismissDragging,
@@ -300,7 +301,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
     setHasRecordedGameOverScore(true);
   }, [gameState.score, gameState.status, hasRecordedGameOverScore, recordScore]);
 
-  const handleMinimize = () => setIsMinimized(true);
+  const handleMinimize = () => {
+    if (isEmbedded) {
+      onRequestClose?.();
+      return;
+    }
+    setIsMinimized(true);
+  };
   const handleMaximize = () => setIsMinimized(false);
   const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
 
