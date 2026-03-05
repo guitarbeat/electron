@@ -92,7 +92,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         cursor: disabled ? 'wait' : 'pointer',
         padding: 0,
         opacity: opacityValue,
-        transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition:
+          'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         filter: isSmall ? 'grayscale(0.4)' : 'none',
       }}
     >

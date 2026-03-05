@@ -22,4 +22,3 @@ export const getEmptyStateMessage = (searchQuery: string, contentTab: ContentTab
   }
   return 'No picks yet - add your first movie-night plan above.';
 };
-

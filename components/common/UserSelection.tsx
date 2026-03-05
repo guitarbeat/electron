@@ -190,8 +190,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                         ['--float-y' as string]: floatingPosition.y,
                         ['--float-drift-x' as string]: floatingPosition.driftX,
                         ['--float-drift-y' as string]: floatingPosition.driftY,
-                      ['--float-duration' as string]: floatingPosition.duration,
-                      ['--float-delay' as string]: floatingPosition.delay,
+                        ['--float-duration' as string]: floatingPosition.duration,
+                        ['--float-delay' as string]: floatingPosition.delay,
                       } as CSSProperties)
                     : undefined
                 }
@@ -269,4 +269,3 @@ const UserSelection: React.FC<UserSelectionProps> = ({
 };
 
 export default UserSelection;
-

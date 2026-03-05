@@ -1,12 +1,11 @@
 .ui-control-surface {
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
   border-radius: 16px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-surface-2) 44%, transparent) 0%,
-      color-mix(in srgb, var(--color-surface-1) 96%, transparent) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface-2) 44%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface-1) 96%, transparent) 100%
+  );
   padding: 0.85rem;
   box-shadow:
     0 8px 24px color-mix(in srgb, #000 22%, transparent),
@@ -34,7 +33,10 @@
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
   border-radius: 10px;
   background: color-mix(in srgb, var(--color-surface-2) 85%, transparent);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .ui-control-input-shell:focus-within {

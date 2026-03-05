@@ -140,7 +140,9 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
 
   if (isEmbedded) {
     return (
-      <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+      <div
+        style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.md }}
+      >
         {renderHeader(onOpenQuizEditor)}
         {renderQuizContent(onQuizComplete)}
       </div>
@@ -179,7 +181,16 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
         ariaLabel="Personality quiz panel"
         maxWidth={840}
       >
-        <div style={{ padding: spacing.lg, overflow: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        <div
+          style={{
+            padding: spacing.lg,
+            overflow: 'auto',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.md,
+          }}
+        >
           {renderHeader(() => {
             closeModal();
             onOpenQuizEditor();

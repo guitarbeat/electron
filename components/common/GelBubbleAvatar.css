@@ -89,15 +89,14 @@
   inset: -3px;
   border-radius: 50%;
   pointer-events: none;
-  background:
-    conic-gradient(
-      from 20deg,
-      rgba(255, 255, 255, 0.82) 0deg,
-      rgba(153, 227, 255, 0.38) 86deg,
-      rgba(255, 148, 218, 0.38) 185deg,
-      rgba(255, 255, 255, 0.82) 290deg,
-      rgba(255, 255, 255, 0.82) 360deg
-    );
+  background: conic-gradient(
+    from 20deg,
+    rgba(255, 255, 255, 0.82) 0deg,
+    rgba(153, 227, 255, 0.38) 86deg,
+    rgba(255, 148, 218, 0.38) 185deg,
+    rgba(255, 255, 255, 0.82) 290deg,
+    rgba(255, 255, 255, 0.82) 360deg
+  );
   -webkit-mask: radial-gradient(circle, transparent 66%, black 69%);
   mask: radial-gradient(circle, transparent 66%, black 69%);
   mix-blend-mode: screen;

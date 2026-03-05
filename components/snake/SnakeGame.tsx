@@ -457,4 +457,3 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
 };
 
 export default SnakeGame;
-

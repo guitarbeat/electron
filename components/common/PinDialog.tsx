@@ -478,4 +478,3 @@ const PinDialog: React.FC<PinDialogProps> = ({
 };
 
 export default PinDialog;
-

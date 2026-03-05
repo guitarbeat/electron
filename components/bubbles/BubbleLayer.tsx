@@ -91,7 +91,15 @@ const BubbleLayer: React.FC<BubbleLayerProps> = ({
     <>
       <div className="bubble-launchers" aria-label="Tool bubbles">
         {TOOL_CONFIG.filter((tool) => visibleIds.includes(tool.id)).map((tool) => {
-          const { position, isMoveMode, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onKeyDown } = getBubbleProps(tool.id);
+          const {
+            position,
+            isMoveMode,
+            onPointerDown,
+            onPointerMove,
+            onPointerUp,
+            onPointerCancel,
+            onKeyDown,
+          } = getBubbleProps(tool.id);
           return (
             <button
               key={tool.id}
@@ -122,7 +130,12 @@ const BubbleLayer: React.FC<BubbleLayerProps> = ({
       <RestoreBubblesButton />
 
       {activeTool && (
-        <section className="bubble-tool-panel" role="dialog" aria-modal="true" aria-label="Tool panel">
+        <section
+          className="bubble-tool-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tool panel"
+        >
           <header className="bubble-tool-panel__header">
             <h2 className="bubble-tool-panel__title">
               {TOOL_CONFIG.find((tool) => tool.id === activeTool)?.label}

@@ -238,4 +238,3 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ mode = 'floating', 
 };
 
 export default MatchmakerBubble;
-

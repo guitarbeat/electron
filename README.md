@@ -32,21 +32,25 @@ Follow these steps to set up the project locally.
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd collaborative-movie-watchlist
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 3. Set up environment variables:
    Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
+
    Open `.env` and fill in the required values (see [Environment Variables](#environment-variables)).
 
 4. Start the development server:
@@ -78,8 +82,8 @@ The application requires certain environment variables to function correctly. Re
 - `VITE_GIST_TOKEN` **(Required)**: A GitHub Personal Access Token with the `gist` scope to read/write the Gist.
 - `VITE_SUPABASE_URL` **(Required)**: Your Supabase project URL.
 - `VITE_SUPABASE_PUBLISHABLE_KEY` **(Required)**: Your Supabase anon/publishable key.
-- `VITE_OMDB_API_KEY` *(Optional)*: OMDB API key for fetching movie metadata.
-- `VITE_GOOGLE_PLACES_API_KEY` *(Optional)*: Google Places API key for place name autocomplete on the Places tab.
+- `VITE_OMDB_API_KEY` _(Optional)_: OMDB API key for fetching movie metadata.
+- `VITE_GOOGLE_PLACES_API_KEY` _(Optional)_: Google Places API key for place name autocomplete on the Places tab.
 
 ## Project Structure
 
