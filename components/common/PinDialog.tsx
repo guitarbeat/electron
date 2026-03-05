@@ -81,38 +81,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
     e.preventDefault();
     setError('');
 
-    if (mode === 'enter') {
-      if (pin.length !== PIN_LENGTH) {
-        setError('PIN must be 4 digits');
-        setIsShaking(true);
-        return;
-      }
-      const success = await onSubmit(pin);
-      if (!success) {
-        setError('Incorrect PIN');
-        setIsShaking(true);
-        setPin('');
-      }
-    } else if (mode === 'set') {
-      if (step === 'new') {
-        if (newPin.length !== PIN_LENGTH) {
-          setError('PIN must be 4 digits');
-          setIsShaking(true);
-          return;
-        }
-        setStep('confirm');
-        setError('');
-      } else if (step === 'confirm') {
-        if (confirmPin !== newPin) {
-          setError('PINs do not match');
-          setIsShaking(true);
-          setConfirmPin('');
-          return;
-        }
-        await onSubmit(newPin);
-      }
-    } else if (mode === 'change') {
-      if (step === 'current') {
+    try {
+      if (mode === 'enter') {
         if (pin.length !== PIN_LENGTH) {
           setError('PIN must be 4 digits');
           setIsShaking(true);
@@ -120,30 +90,74 @@ const PinDialog: React.FC<PinDialogProps> = ({
         }
         const success = await onSubmit(pin);
         if (!success) {
-          setError('Incorrect current PIN');
+          setError('Incorrect PIN');
           setIsShaking(true);
           setPin('');
-          return;
         }
-        setStep('new');
-        setError('');
-      } else if (step === 'new') {
-        if (newPin.length !== PIN_LENGTH) {
-          setError('PIN must be 4 digits');
-          setIsShaking(true);
-          return;
+      } else if (mode === 'set') {
+        if (step === 'new') {
+          if (newPin.length !== PIN_LENGTH) {
+            setError('PIN must be 4 digits');
+            setIsShaking(true);
+            return;
+          }
+          setStep('confirm');
+          setError('');
+        } else if (step === 'confirm') {
+          if (confirmPin !== newPin) {
+            setError('PINs do not match');
+            setIsShaking(true);
+            setConfirmPin('');
+            return;
+          }
+          const success = await onSubmit(newPin);
+          if (!success) {
+            setError('Unable to save PIN. Please try again.');
+            setIsShaking(true);
+          }
         }
-        setStep('confirm');
-        setError('');
-      } else if (step === 'confirm') {
-        if (confirmPin !== newPin) {
-          setError('PINs do not match');
-          setIsShaking(true);
-          setConfirmPin('');
-          return;
+      } else if (mode === 'change') {
+        if (step === 'current') {
+          if (pin.length !== PIN_LENGTH) {
+            setError('PIN must be 4 digits');
+            setIsShaking(true);
+            return;
+          }
+          const success = await onSubmit(pin);
+          if (!success) {
+            setError('Incorrect current PIN');
+            setIsShaking(true);
+            setPin('');
+            return;
+          }
+          setStep('new');
+          setError('');
+        } else if (step === 'new') {
+          if (newPin.length !== PIN_LENGTH) {
+            setError('PIN must be 4 digits');
+            setIsShaking(true);
+            return;
+          }
+          setStep('confirm');
+          setError('');
+        } else if (step === 'confirm') {
+          if (confirmPin !== newPin) {
+            setError('PINs do not match');
+            setIsShaking(true);
+            setConfirmPin('');
+            return;
+          }
+          const success = await onSubmit(pin, newPin);
+          if (!success) {
+            setError('Unable to update PIN. Please try again.');
+            setIsShaking(true);
+          }
         }
-        await onSubmit(pin, newPin);
       }
+    } catch (submitError) {
+      console.error('PIN submit failed:', submitError);
+      setError('Unable to save PIN. Please try again.');
+      setIsShaking(true);
     }
   };
 
