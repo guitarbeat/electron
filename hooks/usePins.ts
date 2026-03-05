@@ -36,22 +36,32 @@ export const usePins = () => {
 
   const setUserPin = useCallback(
     async (user: User, pin: string): Promise<boolean> => {
-      const success = await setPin(user, pin);
-      if (success) {
-        await refresh();
+      try {
+        const success = await setPin(user, pin);
+        if (success) {
+          await refresh();
+        }
+        return success;
+      } catch (error) {
+        console.error('Error setting PIN:', error);
+        return false;
       }
-      return success;
     },
     [refresh]
   );
 
   const removeUserPin = useCallback(
     async (user: User): Promise<boolean> => {
-      const success = await removePin(user);
-      if (success) {
-        await refresh();
+      try {
+        const success = await removePin(user);
+        if (success) {
+          await refresh();
+        }
+        return success;
+      } catch (error) {
+        console.error('Error removing PIN:', error);
+        return false;
       }
-      return success;
     },
     [refresh]
   );
