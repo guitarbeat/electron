@@ -9,16 +9,17 @@ import type { ContentTab } from './types.ts';
  */
 export const getEmptyStateMessage = (searchQuery: string, contentTab: ContentTab): string => {
   if (searchQuery) {
-    return 'No results match your search.';
+    return 'Nothing matched this search yet.';
   }
   if (contentTab === 'suggestions') {
-    return 'No pending suggestions right now.';
+    return 'No surprise picks waiting right now.';
   }
   if (contentTab === 'to-watch') {
-    return "All caught up! You've watched everything in your queue.";
+    return "You're caught up. Time to add a new date-night pick.";
   }
   if (contentTab === 'watched') {
-    return 'No watched movies yet. Mark one as watched to start your history.';
+    return 'No shared movie memories yet. Mark one as watched to start your story.';
   }
-  return 'No movies yet — add your first one above!';
+  return 'No picks yet - add your first movie-night plan above.';
 };
+

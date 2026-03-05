@@ -17,6 +17,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({ tabs, activeTab, onTabChange }) =
     <header className="app-header">
       <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
         <div className="app-header-inner">
+          <div className="app-header-brand">
+            <h1 className="app-header-title">Date Night Orbit</h1>
+            <p className="app-header-subtitle">our little corner of the universe</p>
+          </div>
           <div className="app-header-profile">
             <UserSelection variant="inline" />
           </div>

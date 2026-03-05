@@ -39,7 +39,7 @@
   cursor: grab;
   pointer-events: auto;
   touch-action: none;
-  transition: transform 180ms ease, box-shadow 200ms ease, border-color 180ms ease;
+  transition: transform 220ms ease, box-shadow 240ms ease, border-color 200ms ease;
   overflow: hidden;
 }
 
@@ -66,13 +66,13 @@
 }
 
 .bubble-launcher:hover {
-  transform: translateY(-1px) scale(1.04) rotate(-1deg);
+  transform: translateY(-1px) scale(1.02);
   border-color: color-mix(in srgb, var(--color-accent) 72%, var(--color-border-subtle) 28%);
   box-shadow:
     inset 0 -12px 24px color-mix(in srgb, var(--color-surface-0) 68%, var(--color-secondary) 32%),
     inset 0 10px 18px rgba(255, 255, 255, 0.22),
-    0 0 30px color-mix(in srgb, var(--color-accent) 36%, transparent),
-    0 12px 30px rgba(2, 8, 22, 0.48);
+    0 0 24px color-mix(in srgb, var(--color-accent) 32%, transparent),
+    0 10px 24px rgba(2, 8, 22, 0.42);
 }
 
 .bubble-launcher:active {

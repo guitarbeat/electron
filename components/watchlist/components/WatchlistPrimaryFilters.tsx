@@ -2,10 +2,10 @@ import React from 'react';
 import { ContentTab } from '../types';
 
 const FILTERS: { id: ContentTab; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'to-watch', label: 'Queue' },
-  { id: 'watched', label: 'Watched' },
-  { id: 'suggestions', label: 'Suggestions' },
+  { id: 'all', label: 'Our picks' },
+  { id: 'to-watch', label: 'Date queue' },
+  { id: 'watched', label: 'Shared memories' },
+  { id: 'suggestions', label: 'Surprises' },
 ];
 
 interface WatchlistPrimaryFiltersProps {
