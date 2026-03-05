@@ -73,6 +73,8 @@ const CONTAINER_FLOOR_TOP_Y = CONTAINER_BASE_Y - CONTAINER_BASE_THICKNESS / 2;
 const CONTAINER_INNER_LEFT_X = CONTAINER_LEFT_WALL_X + CONTAINER_WALL_THICKNESS / 2;
 const CONTAINER_INNER_RIGHT_X = CONTAINER_RIGHT_WALL_X - CONTAINER_WALL_THICKNESS / 2;
 const GAME_OVER_GRACE_MS = 1200;
+const FIXED_STEP_MS = 1000 / 60;
+const MAX_FRAME_MS = 50;
 const SPAWN_LEVEL_WEIGHTS = [34, 28, 20, 12, 6];
 const FRUIT_COLORS = [
   '#ff6b6b',
@@ -234,17 +236,26 @@ export class FoodDropEngine {
   step(deltaMs: number) {
     if (this.status !== 'running') return;
 
-    if (!this.canDrop) {
-      this.cooldownRemainingMs = Math.max(0, this.cooldownRemainingMs - deltaMs);
-      if (this.cooldownRemainingMs <= 0) {
-        this.canDrop = true;
+    const frameMs = Math.min(MAX_FRAME_MS, Math.max(0, deltaMs));
+    let remainingMs = frameMs;
+
+    while (remainingMs > 0) {
+      const stepMs = Math.min(FIXED_STEP_MS, remainingMs);
+
+      if (!this.canDrop) {
+        this.cooldownRemainingMs = Math.max(0, this.cooldownRemainingMs - stepMs);
+        if (this.cooldownRemainingMs <= 0) {
+          this.canDrop = true;
+        }
       }
+
+      Engine.update(this.engine, stepMs);
+      remainingMs -= stepMs;
     }
-    Engine.update(this.engine, deltaMs);
 
     this.processPendingMerges();
-    this.updateMergeBursts(deltaMs);
-    this.updateOverflowState(deltaMs);
+    this.updateMergeBursts(frameMs);
+    this.updateOverflowState(frameMs);
   }
 
   render(ctx: CanvasRenderingContext2D) {

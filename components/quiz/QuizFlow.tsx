@@ -27,7 +27,6 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const totalQuestions = questions.length;
   const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
 
-  // Handle case where questions are missing or index is invalid
   if (!currentQuestion) {
     return (
       <div
@@ -45,7 +44,6 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     );
   }
 
-  // Get current answer for this question
   const currentAnswer = answers.find((a) => a.questionId === currentQuestion.id);
 
   const handleAnswer = (
@@ -60,7 +58,6 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
       xyPosition,
     };
 
-    // Update or add answer
     setAnswers((prev) => {
       const filtered = prev.filter((a) => a.questionId !== currentQuestion.id);
       return [...filtered, newAnswer];
@@ -70,12 +67,12 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
-    } else {
-      // Calculate results using the utility function
-      const result = calculateQuizResults(answers, questions);
-      setQuizResult(result);
-      setShowResults(true);
+      return;
     }
+
+    const result = calculateQuizResults(answers, questions);
+    setQuizResult(result);
+    setShowResults(true);
   };
 
   const handlePrevious = () => {
@@ -109,6 +106,49 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
       currentAnswer.scaleValue !== undefined ||
       currentAnswer.xyPosition !== undefined);
 
+  const renderCurrentQuestion = () => {
+    switch (currentQuestion.type) {
+      case 'multiple-choice':
+        return (
+          <MultipleChoiceQuestion
+            key={currentQuestion.id}
+            question={currentQuestion}
+            selectedIndex={currentAnswer?.answerIndex ?? null}
+            onSelect={(index) => handleAnswer(index)}
+          />
+        );
+      case 'agree-disagree':
+        return (
+          <AgreeDisagreeQuestion
+            key={currentQuestion.id}
+            question={currentQuestion}
+            selectedValue={currentAnswer?.scaleValue ?? null}
+            onSelect={(value) => handleAnswer(undefined, value)}
+          />
+        );
+      case 'image-choice':
+        return (
+          <ImageChoiceQuestion
+            key={currentQuestion.id}
+            question={currentQuestion}
+            selectedIndex={currentAnswer?.answerIndex ?? null}
+            onSelect={(index) => handleAnswer(index)}
+          />
+        );
+      case 'xy-axis':
+        return (
+          <XYAxisQuestion
+            key={currentQuestion.id}
+            question={currentQuestion as XYAxisQuestionType}
+            selectedPosition={currentAnswer?.xyPosition ?? null}
+            onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       style={{
@@ -116,7 +156,6 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         margin: '0 auto',
       }}
     >
-      {/* Progress bar */}
       <div
         style={{
           marginBottom: spacing.xl,
@@ -174,7 +213,6 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
               position: 'relative',
             }}
           >
-            {/* Animated shimmer effect */}
             <div
               style={{
                 position: 'absolute',
@@ -188,45 +226,10 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         </div>
       </div>
 
-      {/* Question card */}
       <Card variant="elevated" className="animate-fade-in" key={currentQuestion.id}>
-        <div style={{ padding: spacing['2xl'] }}>
-          {currentQuestion.type === 'multiple-choice' && (
-            <MultipleChoiceQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              selectedIndex={currentAnswer?.answerIndex ?? null}
-              onSelect={(index) => handleAnswer(index)}
-            />
-          )}
-          {currentQuestion.type === 'agree-disagree' && (
-            <AgreeDisagreeQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              selectedValue={currentAnswer?.scaleValue ?? null}
-              onSelect={(value) => handleAnswer(undefined, value)}
-            />
-          )}
-          {currentQuestion.type === 'image-choice' && (
-            <ImageChoiceQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              selectedIndex={currentAnswer?.answerIndex ?? null}
-              onSelect={(index) => handleAnswer(index)}
-            />
-          )}
-          {currentQuestion.type === 'xy-axis' && (
-            <XYAxisQuestion
-              key={currentQuestion.id}
-              question={currentQuestion as XYAxisQuestionType}
-              selectedPosition={currentAnswer?.xyPosition ?? null}
-              onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
-            />
-          )}
-        </div>
+        <div style={{ padding: spacing['2xl'] }}>{renderCurrentQuestion()}</div>
       </Card>
 
-      {/* Navigation buttons */}
       <div
         style={{
           display: 'flex',
@@ -247,7 +250,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
           }}
           aria-label="Previous question"
         >
-          ← Previous
+          {'<- Previous'}
         </Button>
 
         <Button
@@ -262,7 +265,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
           }}
           aria-label={currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'}
         >
-          {currentQuestionIndex === totalQuestions - 1 ? 'See Results ✨' : 'Next →'}
+          {currentQuestionIndex === totalQuestions - 1 ? 'See Results' : 'Next ->'}
         </Button>
       </div>
     </div>
