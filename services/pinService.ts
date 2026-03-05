@@ -13,6 +13,37 @@ let cachedPins: UserPins | null = null;
 let lastFetchTime = 0;
 let fetchPromise: Promise<UserPins> | null = null;
 
+const parsePinsContent = (fileContent: string | undefined): UserPins => {
+  if (!fileContent) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(fileContent) as UserPins;
+  } catch (parseError) {
+    console.error('Error parsing PIN file:', parseError);
+    return {};
+  }
+};
+
+const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserPins> => {
+  const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    cache,
+    headers: {
+      Authorization: `token ${GIST_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch gist: ${response.status}`);
+  }
+
+  const gist = await response.json();
+  const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content as string | undefined;
+  return parsePinsContent(fileContent);
+};
+
 /**
  * Clears the PIN cache - useful for testing or when PINs are changed externally
  */
@@ -106,43 +137,16 @@ export const getPins = async (): Promise<UserPins> => {
 
   const fetchStartTime = Date.now();
 
-  fetchPromise = fetch(`https://api.github.com/gists/${GIST_ID}`, {
-    headers: {
-      Authorization: `token ${GIST_TOKEN}`,
-      Accept: 'application/vnd.github.v3+json',
-    },
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch gist: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((gist) => {
-      const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content;
-
+  fetchPromise = fetchPinsFromGist()
+    .then((parsedPins) => {
       // Check if cache was updated by a write operation while we were fetching
       if (lastFetchTime > fetchStartTime && cachedPins) {
         return cachedPins;
       }
 
-      if (!fileContent) {
-        cachedPins = {};
-        lastFetchTime = Date.now();
-        return {};
-      }
-
-      try {
-        const parsedPins = JSON.parse(fileContent);
-        cachedPins = parsedPins;
-        lastFetchTime = Date.now();
-        return parsedPins as UserPins;
-      } catch (parseError) {
-        console.error('Error parsing PIN file:', parseError);
-        cachedPins = {};
-        lastFetchTime = Date.now();
-        return {};
-      }
+      cachedPins = parsedPins;
+      lastFetchTime = Date.now();
+      return parsedPins;
     })
     .catch((error) => {
       console.error('Error fetching PINs:', error);
@@ -200,18 +204,28 @@ export const savePins = async (pins: UserPins): Promise<boolean> => {
  * Sets or updates a PIN for a user.
  */
 export const setPin = async (user: User, pin: string): Promise<boolean> => {
-  const pins = await getPins();
-  pins[user] = await secureHashPin(pin);
-  return savePins(pins);
+  try {
+    const freshPins = await fetchPinsFromGist('no-cache');
+    freshPins[user] = await secureHashPin(pin);
+    return savePins(freshPins);
+  } catch (error) {
+    console.error('Error setting PIN:', error);
+    return false;
+  }
 };
 
 /**
  * Removes a PIN for a user.
  */
 export const removePin = async (user: User): Promise<boolean> => {
-  const pins = await getPins();
-  delete pins[user];
-  return savePins(pins);
+  try {
+    const freshPins = await fetchPinsFromGist('no-cache');
+    delete freshPins[user];
+    return savePins(freshPins);
+  } catch (error) {
+    console.error('Error removing PIN:', error);
+    return false;
+  }
 };
 
 /**
