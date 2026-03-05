@@ -314,6 +314,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
           isEditMode={isEditMode}
           onToggleEditMode={() => setIsEditMode(!isEditMode)}
           onClose={isEmbedded ? undefined : handleToggle}
+          showHeader={!isEmbedded}
         >
           <MessageList
             messages={messages ?? null}
