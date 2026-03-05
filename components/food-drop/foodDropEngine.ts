@@ -14,7 +14,6 @@ import {
   FOOD_DROP_SPAWN_MAX_LEVEL,
   FOOD_DROP_SPAWN_MIN_LEVEL,
   FOOD_DROP_SPAWN_Y,
-  FOOD_DROP_WALL_THICKNESS,
   FOOD_DROP_WORLD_HEIGHT,
   FOOD_DROP_WORLD_WIDTH,
   FOOD_LEVELS,
@@ -64,9 +63,6 @@ interface MergeBurst {
   label: string;
 }
 
-const SAFETY_FLOOR_Y = FOOD_DROP_WORLD_HEIGHT + 120;
-const LEFT_WALL_X = -FOOD_DROP_WALL_THICKNESS / 2;
-const RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS / 2;
 const CONTAINER_INSET_X = 10;
 const CONTAINER_WIDTH = FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X * 2;
 const CONTAINER_BASE_THICKNESS = 16;
@@ -79,15 +75,8 @@ const CONTAINER_WALL_CENTER_Y = FOOD_DROP_WORLD_HEIGHT / 2 + 20;
 const CONTAINER_FLOOR_TOP_Y = CONTAINER_BASE_Y - CONTAINER_BASE_THICKNESS / 2;
 const CONTAINER_INNER_LEFT_X = CONTAINER_LEFT_WALL_X + CONTAINER_WALL_THICKNESS / 2;
 const CONTAINER_INNER_RIGHT_X = CONTAINER_RIGHT_WALL_X - CONTAINER_WALL_THICKNESS / 2;
-const STREAK_TIMEOUT_MS = 2600;
-const FEVER_THRESHOLD = 100;
-const FEVER_DURATION_MS = 9000;
-const CONTAINER_BONUS_POINTS = 15;
 const GAME_OVER_GRACE_MS = 1200;
 const SPAWN_LEVEL_WEIGHTS = [34, 28, 20, 12, 6];
-const RAPID_COMBO_WINDOW_MS = 600;
-const PHYSICS_SUBSTEP_MS = 1000 / 120;
-const MAX_STEP_MS = 34;
 const FRUIT_COLORS = [
   '#ff6b6b',
   '#ff8fab',
@@ -150,18 +139,6 @@ export class FoodDropEngine {
 
   private mergeBursts: MergeBurst[] = [];
 
-  private streak = 0;
-
-  private timeSinceMergeMs = 0;
-
-  private feverCharge = 0;
-
-  private feverMsRemaining = 0;
-
-  private rapidComboCount = 0;
-
-  private rapidComboWindowMs = 0;
-
   private readonly queueMergePairs = (event: IEventCollision<Engine>) => {
     event.pairs.forEach((pair) => {
       if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
@@ -179,9 +156,6 @@ export class FoodDropEngine {
     this.engine = Engine.create({
       gravity: { x: 0, y: FOOD_DROP_GRAVITY },
       enableSleeping: false,
-      positionIterations: 10,
-      velocityIterations: 8,
-      constraintIterations: 3,
     });
     this.world = this.engine.world;
 
@@ -217,12 +191,6 @@ export class FoodDropEngine {
     this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
     this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
     this.mergeBursts = [];
-    this.streak = 0;
-    this.timeSinceMergeMs = 0;
-    this.feverCharge = 0;
-    this.feverMsRemaining = 0;
-    this.rapidComboCount = 0;
-    this.rapidComboWindowMs = 0;
     this.clampLauncherToCurrentLevel();
   }
 
@@ -240,9 +208,9 @@ export class FoodDropEngine {
       currentScale: this.currentScale,
       canDrop: this.canDrop && this.status === 'running',
       launcherX: this.launcherX,
-      streak: this.streak,
-      multiplier: this.getScoreMultiplier(),
-      feverMsRemaining: this.feverMsRemaining,
+      streak: 0,
+      multiplier: 1,
+      feverMsRemaining: 0,
     };
   }
 
@@ -284,34 +252,13 @@ export class FoodDropEngine {
   step(deltaMs: number) {
     if (this.status !== 'running') return;
 
-    this.timeSinceMergeMs += deltaMs;
-    if (this.streak > 0 && this.timeSinceMergeMs >= STREAK_TIMEOUT_MS) {
-      this.streak = 0;
-    }
-    if (this.feverMsRemaining > 0) {
-      this.feverMsRemaining = Math.max(0, this.feverMsRemaining - deltaMs);
-    }
-    if (this.rapidComboWindowMs > 0) {
-      this.rapidComboWindowMs = Math.max(0, this.rapidComboWindowMs - deltaMs);
-      if (this.rapidComboWindowMs === 0) {
-        this.rapidComboCount = 0;
-      }
-    }
-
     if (!this.canDrop) {
       this.cooldownRemainingMs = Math.max(0, this.cooldownRemainingMs - deltaMs);
       if (this.cooldownRemainingMs <= 0) {
         this.canDrop = true;
       }
     }
-
-    let remainingMs = Math.min(MAX_STEP_MS, deltaMs);
-    while (remainingMs > 0) {
-      const substepMs = Math.min(PHYSICS_SUBSTEP_MS, remainingMs);
-      Engine.update(this.engine, substepMs);
-      remainingMs -= substepMs;
-      this.stabilizeBodiesWithinContainer();
-    }
+    Engine.update(this.engine, deltaMs);
 
     this.processPendingMerges();
     this.updateMergeBursts(deltaMs);
@@ -377,7 +324,6 @@ export class FoodDropEngine {
       FoodDropEngine.drawFoodCircle(ctx, body);
     });
     this.renderMergeBursts(ctx);
-    this.renderBoostHud(ctx);
 
     if (this.status === 'paused') {
       ctx.fillStyle = 'rgba(80, 55, 25, 0.35)';
@@ -435,37 +381,6 @@ export class FoodDropEngine {
     ctx.restore();
   }
 
-  private renderBoostHud(ctx: CanvasRenderingContext2D) {
-    if (this.streak <= 1 && this.feverMsRemaining <= 0) {
-      return;
-    }
-
-    ctx.save();
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    let y = 14;
-
-    if (this.streak > 1) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-      ctx.fillRect(FOOD_DROP_WORLD_WIDTH - 128, y - 4, 116, 24);
-      ctx.fillStyle = '#9a3412';
-      ctx.font = 'bold 13px "Trebuchet MS", system-ui';
-      ctx.fillText(`Streak x${this.streak}`, FOOD_DROP_WORLD_WIDTH - 18, y);
-      y += 30;
-    }
-
-    if (this.feverMsRemaining > 0) {
-      const seconds = Math.ceil(this.feverMsRemaining / 1000);
-      ctx.fillStyle = 'rgba(254, 202, 202, 0.7)';
-      ctx.fillRect(FOOD_DROP_WORLD_WIDTH - 160, y - 4, 148, 24);
-      ctx.fillStyle = '#9f1239';
-      ctx.font = 'bold 13px "Trebuchet MS", system-ui';
-      ctx.fillText(`FEVER x2  ${seconds}s`, FOOD_DROP_WORLD_WIDTH - 18, y);
-    }
-
-    ctx.restore();
-  }
-
   private renderContainer(ctx: CanvasRenderingContext2D) {
     const floorTopY = CONTAINER_FLOOR_TOP_Y;
     const wallTopY = floorTopY - CONTAINER_WALL_HEIGHT + CONTAINER_BASE_THICKNESS / 2;
@@ -502,30 +417,6 @@ export class FoodDropEngine {
   }
 
   private setupBoundaries() {
-    const floor = Bodies.rectangle(
-      FOOD_DROP_WORLD_WIDTH / 2,
-      SAFETY_FLOOR_Y,
-      FOOD_DROP_WORLD_WIDTH + FOOD_DROP_WALL_THICKNESS * 2,
-      FOOD_DROP_WALL_THICKNESS,
-      { isStatic: true, restitution: 0.05, label: 'safety-floor' }
-    );
-
-    const leftWall = Bodies.rectangle(
-      LEFT_WALL_X,
-      FOOD_DROP_WORLD_HEIGHT / 2,
-      FOOD_DROP_WALL_THICKNESS,
-      FOOD_DROP_WORLD_HEIGHT * 2,
-      { isStatic: true, restitution: 0.2, label: 'left-wall' }
-    );
-
-    const rightWall = Bodies.rectangle(
-      RIGHT_WALL_X,
-      FOOD_DROP_WORLD_HEIGHT / 2,
-      FOOD_DROP_WALL_THICKNESS,
-      FOOD_DROP_WORLD_HEIGHT * 2,
-      { isStatic: true, restitution: 0.2, label: 'right-wall' }
-    );
-
     const containerBase = Bodies.rectangle(
       FOOD_DROP_WORLD_WIDTH / 2,
       CONTAINER_BASE_Y,
@@ -550,7 +441,7 @@ export class FoodDropEngine {
       { isStatic: true, restitution: 0.14, friction: 0.1, label: 'container-right-wall' }
     );
 
-    World.add(this.world, [floor, leftWall, rightWall, containerBase, containerLeftWall, containerRightWall]);
+    World.add(this.world, [containerBase, containerLeftWall, containerRightWall]);
   }
 
   private bindCollisionEvents() {
@@ -584,7 +475,6 @@ export class FoodDropEngine {
     this.pendingMergePairs.clear();
     let mergeCount = 0;
     let mergeScore = 0;
-    const mergedCenters: Array<{ x: number; y: number }> = [];
 
     nextPairs.forEach(({ bodyA, bodyB }) => {
       if (consumed.has(bodyA.id) || consumed.has(bodyB.id)) return;
@@ -633,7 +523,6 @@ export class FoodDropEngine {
       const points = scoreForMergeTargetLevel(targetLevel);
       mergeCount += 1;
       mergeScore += points;
-      mergedCenters.push({ x: clampedMergedX, y: clampedMergedY });
       this.createMergeBurst(
         clampedMergedX,
         clampedMergedY,
@@ -643,96 +532,17 @@ export class FoodDropEngine {
     });
 
     if (mergeCount > 0) {
-      if (this.rapidComboWindowMs > 0) {
-        this.rapidComboCount += mergeCount;
-      } else {
-        this.rapidComboCount = mergeCount;
-      }
-      this.rapidComboWindowMs = RAPID_COMBO_WINDOW_MS;
-
-      this.timeSinceMergeMs = 0;
-      this.streak += mergeCount;
-      const comboBonus = mergeCount > 1 ? (mergeCount - 1) * 5 : 0;
-      const containerBonus = this.getContainerMergeBonus(mergedCenters);
-      const rapidComboBonus =
-        this.rapidComboCount > 1
-          ? Math.min(160, Math.round(mergeScore * (this.rapidComboCount - 1) * 0.22))
-          : 0;
-      const rawPoints = mergeScore + comboBonus + containerBonus + rapidComboBonus;
-      const totalPoints = Math.round(rawPoints * this.getScoreMultiplier());
-      this.score += totalPoints;
-      this.feverCharge += mergeCount * 18;
-
-      if (this.feverMsRemaining <= 0 && this.feverCharge >= FEVER_THRESHOLD) {
-        this.feverMsRemaining = FEVER_DURATION_MS;
-        this.feverCharge = 0;
+      this.score += mergeScore;
+      if (mergeCount > 1) {
         this.createMergeBurst(
           FOOD_DROP_WORLD_WIDTH / 2,
-          FOOD_DROP_LOSE_LINE_Y + 50,
-          0,
-          26,
-          'FEVER x2'
-        );
-      }
-
-      if (comboBonus > 0) {
-        this.createMergeBurst(
-          FOOD_DROP_WORLD_WIDTH / 2,
-          FOOD_DROP_LOSE_LINE_Y + 26,
-          comboBonus,
-          22,
-          `Combo +${comboBonus}`
-        );
-      }
-      if (rapidComboBonus > 0) {
-        this.createMergeBurst(
-          FOOD_DROP_WORLD_WIDTH * 0.38,
-          FOOD_DROP_LOSE_LINE_Y + 22,
-          rapidComboBonus,
-          20,
-          `x${this.rapidComboCount} Rapid`
-        );
-      }
-      if (containerBonus > 0) {
-        this.createMergeBurst(
-          FOOD_DROP_WORLD_WIDTH / 2,
-          CONTAINER_FLOOR_TOP_Y - 14,
-          containerBonus,
-          20,
-          `Container +${containerBonus}`
-        );
-      }
-      if (totalPoints !== rawPoints) {
-        const bonusFromMultiplier = totalPoints - rawPoints;
-        this.createMergeBurst(
-          FOOD_DROP_WORLD_WIDTH * 0.72,
-          FOOD_DROP_LOSE_LINE_Y + 22,
-          bonusFromMultiplier,
-          18,
-          `Boost +${bonusFromMultiplier}`
+          FOOD_DROP_LOSE_LINE_Y + 24,
+          mergeCount,
+          16,
+          `${mergeCount}x merge`
         );
       }
     }
-  }
-
-  private getContainerMergeBonus(mergedCenters: Array<{ x: number; y: number }>): number {
-    const bonusMerges = mergedCenters.filter(({ x: mergedX, y: mergedY }) => {
-      const insideX = mergedX >= CONTAINER_INNER_LEFT_X + 4 && mergedX <= CONTAINER_INNER_RIGHT_X - 4;
-      const nearBottom = mergedY >= CONTAINER_FLOOR_TOP_Y - 20;
-      return insideX && nearBottom;
-    }).length;
-
-    return bonusMerges * CONTAINER_BONUS_POINTS;
-  }
-
-  private getScoreMultiplier(): number {
-    if (this.feverMsRemaining > 0) {
-      return 2;
-    }
-    if (this.streak >= 7) return 1.6;
-    if (this.streak >= 5) return 1.45;
-    if (this.streak >= 3) return 1.25;
-    return 1;
   }
 
   private updateOverflowState(deltaMs: number) {
@@ -860,23 +670,6 @@ export class FoodDropEngine {
     };
 
     return body;
-  }
-
-  private stabilizeBodiesWithinContainer() {
-    this.world.bodies.forEach((body) => {
-      if (body.isStatic) return;
-      const level = FoodDropEngine.getBodyLevel(body);
-      if (level === null) return;
-
-      const radius = FoodDropEngine.getBodyRadius(body, level);
-      const maxY = CONTAINER_FLOOR_TOP_Y - radius;
-      if (body.position.y > maxY) {
-        Body.setPosition(body, { x: body.position.x, y: maxY });
-        if (body.velocity.y > 0) {
-          Body.setVelocity(body, { x: body.velocity.x * 0.96, y: 0 });
-        }
-      }
-    });
   }
 
   private getRenderableBodies(): RenderBody[] {
