@@ -47,7 +47,7 @@ export const usePins = () => {
         return false;
       }
     },
-    [refresh]
+    []
   );
 
   const removeUserPin = useCallback(
@@ -64,7 +64,7 @@ export const usePins = () => {
         return false;
       }
     },
-    [refresh]
+    []
   );
 
   const verifyUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {

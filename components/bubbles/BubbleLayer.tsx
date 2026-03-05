@@ -91,20 +91,20 @@ const BubbleLayer: React.FC<BubbleLayerProps> = ({
     <>
       <div className="bubble-launchers" aria-label="Tool bubbles">
         {TOOL_CONFIG.filter((tool) => visibleIds.includes(tool.id)).map((tool) => {
-          const props = getBubbleProps(tool.id);
+          const { position, isMoveMode, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onKeyDown } = getBubbleProps(tool.id);
           return (
             <button
               key={tool.id}
               type="button"
-              className={`bubble-launcher${props.isMoveMode ? ' is-move-mode' : ''}`}
-              style={{ left: props.position.x, top: props.position.y }}
-              onPointerDown={props.onPointerDown}
-              onPointerMove={props.onPointerMove}
-              onPointerUp={props.onPointerUp}
-              onPointerCancel={props.onPointerCancel}
-              onKeyDown={props.onKeyDown}
-              aria-label={`${tool.label} bubble${props.isMoveMode ? ', move mode' : ''}`}
-              title={`${tool.label}${props.isMoveMode ? ' (move mode)' : ''}`}
+              className={`bubble-launcher${isMoveMode ? ' is-move-mode' : ''}`}
+              style={{ left: position.x, top: position.y }}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerCancel}
+              onKeyDown={onKeyDown}
+              aria-label={`${tool.label} bubble${isMoveMode ? ', move mode' : ''}`}
+              title={`${tool.label}${isMoveMode ? ' (move mode)' : ''}`}
             >
               <span className="bubble-launcher__emoji" aria-hidden>
                 {tool.emoji}

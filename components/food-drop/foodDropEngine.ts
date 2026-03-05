@@ -283,7 +283,9 @@ export class FoodDropEngine {
     ctx.stroke();
     ctx.restore();
 
-    const radius = FOOD_LEVELS[this.currentLevel]?.radius * this.currentScale;
+    const levelData = FOOD_LEVELS[this.currentLevel];
+    if (!levelData) return;
+    const radius = levelData.radius * this.currentScale;
     if (!Number.isFinite(radius) || radius <= 0) return;
     const launcherY = FOOD_DROP_SPAWN_Y;
 
@@ -338,6 +340,7 @@ export class FoodDropEngine {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private renderBoardDecor(ctx: CanvasRenderingContext2D, isDangerActive: boolean) {
     ctx.save();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
@@ -375,6 +378,7 @@ export class FoodDropEngine {
     ctx.restore();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private renderContainer(ctx: CanvasRenderingContext2D) {
     const floorTopY = CONTAINER_FLOOR_TOP_Y;
     const wallTopY = floorTopY - CONTAINER_WALL_HEIGHT + CONTAINER_BASE_THICKNESS / 2;
@@ -628,6 +632,7 @@ export class FoodDropEngine {
     );
   }
 
+  // eslint-disable-next-line class-methods-use-this
   private shouldSkipDangerCheck(body: Body, nowMs: number): boolean {
     const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
     return spawnedAt !== null && nowMs - spawnedAt < GAME_OVER_GRACE_MS;
