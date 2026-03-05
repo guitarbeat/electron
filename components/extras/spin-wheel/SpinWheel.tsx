@@ -35,6 +35,7 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose
     dismiss,
   } = useBubbleDismiss();
   const isEmbedded = mode === 'embedded';
+  const isViewportExpanded = !isEmbedded;
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser);
   const unwatchedMovies = movies ? movies.filter((m) => m.watchedBy.length < 2) : [];
@@ -305,13 +306,16 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose
   // Expanded panel
   return (
     <div
-      style={getFloatingContainerStyle({
-        isEmbedded,
-        isViewportExpanded: true,
-        isMobile: false,
-        desktopWidth: '100%',
-        zIndex: 1001,
-      })}
+      style={{
+        ...getFloatingContainerStyle({
+          isEmbedded,
+          isViewportExpanded,
+          isMobile: false,
+          desktopWidth: '100%',
+          zIndex: 1001,
+        }),
+        ...(isEmbedded ? { height: '100%' } : {}),
+      }}
     >
       <Card
         style={{
@@ -330,21 +334,23 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose
         }}
       >
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.sm,
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
-            Spin
-          </h2>
-          <Button size="sm" variant="ghost" onClick={handleHide}>
-            Hide
-          </Button>
-        </div>
+        {!isEmbedded && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: spacing.sm,
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
+              Spin
+            </h2>
+            <Button size="sm" variant="ghost" onClick={handleHide}>
+              Hide
+            </Button>
+          </div>
+        )}
 
         {/* Loading overlay */}
         {status === 'loading' && (
@@ -369,6 +375,7 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                minWidth: 0,
                 opacity: status === 'result' ? 0.75 : 1,
                 pointerEvents: status === 'result' ? 'none' : 'auto',
                 transition: 'opacity 0.3s ease',
@@ -378,7 +385,11 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose
                 movies={unwatchedMovies}
                 disabled={!canSpin}
                 onSpinComplete={handleSpinResult}
-                style={{ width: '100%', height: '100%' }}
+                style={{
+                  width: 'min(100%, 460px)',
+                  height: 'auto',
+                  aspectRatio: '1 / 1',
+                }}
               />
             </div>
 
