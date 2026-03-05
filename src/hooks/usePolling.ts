@@ -1,6 +1,6 @@
 // FIX: Implemented the usePolling custom hook to resolve compilation errors.
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { pollingManager } from '../services/PollingManager';
+import { pollingManager } from '@/services/PollingManager;
 
 export const usePolling = <T>(
   fetchFn: () => Promise<T>,

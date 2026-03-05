@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { colors, radius } from '../../design-system/tokens';
+import { colors, radius } from '@/design-system/tokens;
 
 interface ImageWithFallbackProps {
   sources: string[];

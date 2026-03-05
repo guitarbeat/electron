@@ -3,7 +3,7 @@ import {
   MAX_MOVIE_TITLE_LENGTH,
   MAX_MESSAGE_LENGTH,
   MAX_AUTHOR_LENGTH,
-} from '../config/security';
+} from '@/config/security;
 
 export interface ValidationRule {
   required?: boolean;

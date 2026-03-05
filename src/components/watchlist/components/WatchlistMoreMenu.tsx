@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import BottomSheet from '../../ui/BottomSheet';
-import { ChevronDownIcon } from '../../common/icons';
-import { typography } from '../../../design-system/tokens';
-import { SortMode } from '../types';
+import BottomSheet from '@/ui/BottomSheet;
+import { ChevronDownIcon } from '@/common/icons;
+import { typography } from '@/design-system/tokens;
+import { SortMode } from '@/types;
 
 const SORT_OPTIONS: { id: SortMode; label: string }[] = [
   { id: 'recent', label: 'Recent' },

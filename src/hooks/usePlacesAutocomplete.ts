@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { GOOGLE_PLACES_API_KEY } from '../config/googlePlaces';
+import { GOOGLE_PLACES_API_KEY } from '@/config/googlePlaces;
 
 /** Minimal type for Google Places Autocomplete (loaded from script). */
 interface GooglePlaceResult {

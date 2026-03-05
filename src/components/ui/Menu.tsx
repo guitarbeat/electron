@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { colors, radius, shadows, spacing, typography, zIndex } from '../../design-system/tokens';
+import { colors, radius, shadows, spacing, typography, zIndex } from '@/design-system/tokens;
 
 interface MenuProps {
   trigger: React.ReactNode;

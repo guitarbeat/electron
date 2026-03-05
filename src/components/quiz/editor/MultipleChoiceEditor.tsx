@@ -1,9 +1,9 @@
 import React from 'react';
-import { MultipleChoiceQuestion, QuizCharacter } from '../types';
-import ScoreSlider from '../ScoreSlider';
-import Input from '../../ui/Input';
-import Button from '../../ui/Button';
-import { spacing, colors, typography, radius } from '../../../design-system/tokens';
+import { MultipleChoiceQuestion, QuizCharacter } from '@/types;
+import ScoreSlider from '@/ScoreSlider;
+import Input from '@/ui/Input;
+import Button from '@/ui/Button;
+import { spacing, colors, typography, radius } from '@/design-system/tokens;
 
 interface MultipleChoiceEditorProps {
   question: MultipleChoiceQuestion;

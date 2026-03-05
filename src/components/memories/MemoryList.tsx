@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { SharedMemory, User } from '../../types';
-import Button from '../ui/Button';
-import Textarea from '../ui/Textarea';
-import ConfirmDialog from '../ui/ConfirmDialog';
-import { colors, radius, spacing, typography } from '../../design-system/tokens';
+import { SharedMemory, User } from '@/types;
+import Button from '@/ui/Button;
+import Textarea from '@/ui/Textarea;
+import ConfirmDialog from '@/ui/ConfirmDialog;
+import { colors, radius, spacing, typography } from '@/design-system/tokens;
 import MemoryNoteText from './MemoryNoteText';
 import {
   ALL_MOVIES_FILTER,

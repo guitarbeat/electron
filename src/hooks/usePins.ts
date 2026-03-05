@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User } from '../types';
-import { getPins, setPin, removePin, verifyPin, UserPins } from '../services/pinService';
+import { User } from '@/types;
+import { getPins, setPin, removePin, verifyPin, UserPins } from '@/services/pinService;
 
 export const usePins = () => {
   const [pins, setPinsState] = useState<UserPins>({});

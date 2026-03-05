@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { typography } from '../../design-system/tokens';
+import { typography } from '@/design-system/tokens;
 
 interface GlossyQuizButtonProps {
   onClick: () => void;

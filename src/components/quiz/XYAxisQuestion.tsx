@@ -7,7 +7,7 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { XYAxisQuestion as XYAxisQuestionType } from './types';
-import { spacing, colors, typography, radius, shadows } from '../../design-system/tokens';
+import { spacing, colors, typography, radius, shadows } from '@/design-system/tokens;
 
 interface XYAxisQuestionProps {
   question: XYAxisQuestionType;

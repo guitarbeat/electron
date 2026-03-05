@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing, motion, borders } from '../../design-system/tokens';
+import { colors, radius, spacing, motion, borders } from '@/design-system/tokens;
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;

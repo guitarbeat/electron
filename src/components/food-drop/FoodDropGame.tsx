@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
-import { useUser } from '../../context/UserContext';
-import { colors, radius, spacing, typography } from '../../design-system/tokens';
+import Button from '@/ui/Button;
+import Card from '@/ui/Card;
+import { useBubbleDismiss } from '@/context/BubbleDismissContext;
+import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery;
+import { useUser } from '@/context/UserContext;
+import { colors, radius, spacing, typography } from '@/design-system/tokens;
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_DRAG_THRESHOLD,
@@ -13,7 +13,7 @@ import {
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
   getFloatingPanelCardStyle,
-} from '../ui/floatingBubbleStyles';
+} from '@/ui/floatingBubbleStyles;
 import {
   FOOD_DROP_WORLD_HEIGHT,
   FOOD_DROP_WORLD_WIDTH,
@@ -21,7 +21,7 @@ import {
 } from './foodDropConfig';
 import { FoodDropEngine, FoodDropSnapshot } from './foodDropEngine';
 import { useFoodDropBestScore } from './useFoodDropBestScore';
-import { useToolHide } from '../../hooks/useToolHide';
+import { useToolHide } from '@/hooks/useToolHide;
 
 interface FoodDropGameProps {
   mode?: 'floating' | 'embedded';

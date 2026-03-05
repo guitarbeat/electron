@@ -4,14 +4,14 @@
  * Handles fetching and saving quiz data from/to GitHub Gist
  */
 
-import { GIST_TOKEN, GIST_QUIZ_FILENAME } from '../config/gistConfig.ts';
-import type { QuizQuestion, QuizCharacter } from '../components/quiz/types.ts';
+import { GIST_TOKEN, GIST_QUIZ_FILENAME } from '@/config/gistConfig.ts;
+import type { QuizQuestion, QuizCharacter } from '@/components/quiz/types.ts;
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 import {
   quizQuestions as defaultQuestions,
   characterDescriptions as defaultDescriptions,
   neitherDescription as defaultNeither,
-} from '../components/quiz/data';
+} from '@/components/quiz/data;
 
 export interface QuizData {
   questions: QuizQuestion[];

@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useMediaQuery, breakpoints } from '../../../hooks/useMediaQuery';
-import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/memoryUtils';
-import { SortMode, ContentTab } from '../types';
-import { Movie, User } from '../../../types';
-import { useMovies } from '../../../hooks/useMovies';
-import { useSuggestions } from '../../../hooks/useSuggestions';
-import { useMemories } from '../../../hooks/useMemories';
-import { useToast } from '../../../context/ToastContext';
+import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery;
+import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '@/memories/memoryUtils;
+import { SortMode, ContentTab } from '@/types;
+import { Movie, User } from '@/types;
+import { useMovies } from '@/hooks/useMovies;
+import { useSuggestions } from '@/hooks/useSuggestions;
+import { useMemories } from '@/hooks/useMemories;
+import { useToast } from '@/context/ToastContext;
 
 const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 

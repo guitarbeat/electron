@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
-import type { Movie } from '../../types';
-import Card from '../ui/Card';
-import { colors, radius, spacing, typography, shadows } from '../../design-system/tokens';
+import type { Movie } from '@/types;
+import Card from '@/ui/Card;
+import { colors, radius, spacing, typography, shadows } from '@/design-system/tokens;
 
 export interface SwipeCardHandle {
   swipe: (direction: 'left' | 'right') => void;

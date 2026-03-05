@@ -5,10 +5,10 @@
  */
 
 import React from 'react';
-import { XYAxisQuestion, QuizCharacter } from '../types';
-import ScoreSlider from '../ScoreSlider';
-import Input from '../../ui/Input';
-import { spacing, colors, typography, radius } from '../../../design-system/tokens';
+import { XYAxisQuestion, QuizCharacter } from '@/types;
+import ScoreSlider from '@/ScoreSlider;
+import Input from '@/ui/Input;
+import { spacing, colors, typography, radius } from '@/design-system/tokens;
 
 interface XYAxisEditorProps {
   question: XYAxisQuestion;

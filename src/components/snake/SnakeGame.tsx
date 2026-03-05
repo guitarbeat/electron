@@ -1,11 +1,11 @@
 import './SnakeGame.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import { useUser } from '../../context/UserContext';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
-import { colors, spacing, typography } from '../../design-system/tokens';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import Button from '@/ui/Button;
+import Card from '@/ui/Card;
+import { useUser } from '@/context/UserContext;
+import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery;
+import { colors, spacing, typography } from '@/design-system/tokens;
+import { useBubbleDismiss } from '@/context/BubbleDismissContext;
 import { useSnakeAudio } from './useSnakeAudio';
 import {
   FLOATING_BUBBLE_SIZE,
@@ -15,7 +15,7 @@ import {
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
   getFloatingPanelCardStyle,
-} from '../ui/floatingBubbleStyles';
+} from '@/ui/floatingBubbleStyles;
 import {
   createInitialGameState,
   enqueueDirection,
@@ -27,7 +27,7 @@ import { useSnakeLeaderboard } from './useSnakeLeaderboard';
 import SnakeBoard from './SnakeBoard';
 import SnakeControls from './SnakeControls';
 import SnakeLeaderboard from './SnakeLeaderboard';
-import { useToolHide } from '../../hooks/useToolHide';
+import { useToolHide } from '@/hooks/useToolHide;
 
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
