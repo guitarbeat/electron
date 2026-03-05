@@ -56,6 +56,25 @@ interface SnakeGameProps {
   mode?: 'floating' | 'embedded';
 }
 
+function buildInitialSnakeState(mode: SnakeGameProps['mode']): SnakeGameState {
+  const state = createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT });
+  return mode === 'embedded' ? { ...state, status: 'paused' as const } : state;
+}
+
+function gameStatusText(status: SnakeGameState['status']): string {
+  if (status === 'paused') return 'Paused';
+  if (status === 'game-over') return 'Game Over';
+  return 'Playing';
+}
+
+function safeReleasePointerCapture(element: HTMLButtonElement, pointerId: number) {
+  try {
+    element.releasePointerCapture(pointerId);
+  } catch {
+    // Ignore release capture errors
+  }
+}
+
 const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const {
     isHidden,
@@ -66,10 +85,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const { currentUser } = useUser();
   const isMobile = useMediaQuery(breakpoints.sm);
   const isEmbedded = mode === 'embedded';
-  const [gameState, setGameState] = useState<SnakeGameState>(() => {
-    const state = createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT });
-    return mode === 'embedded' ? { ...state, status: 'paused' as const } : state;
-  });
+  const [gameState, setGameState] = useState<SnakeGameState>(() => buildInitialSnakeState(mode));
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
@@ -141,21 +157,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
       checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
     ) {
       dismiss('snake');
-      try {
-        event.currentTarget.releasePointerCapture(event.pointerId);
-      } catch {
-        /* */
-      }
+      safeReleasePointerCapture(event.currentTarget, event.pointerId);
       return;
     }
     if (!wasDragged) {
       handleMaximize();
     }
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Ignore release capture errors
-    }
+    safeReleasePointerCapture(event.currentTarget, event.pointerId);
   };
 
   useEffect(() => {
@@ -189,8 +197,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   };
 
   const restartGame = useCallback(() => {
-    setGameState(createInitialGameState({ width: BOARD_WIDTH, height: BOARD_HEIGHT }));
-  }, []);
+    setGameState(buildInitialSnakeState(mode));
+  }, [mode]);
 
   const handleDirection = useCallback((direction: Direction) => {
     setGameState((previousState) => {
@@ -296,9 +304,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
   const handleMaximize = () => setIsMinimized(false);
   const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
 
-  let gameStatusLabel = 'Playing';
-  if (gameState.status === 'paused') gameStatusLabel = 'Paused';
-  if (gameState.status === 'game-over') gameStatusLabel = 'Game Over';
+  const gameStatusLabel = gameStatusText(gameState.status);
 
   if (isMinimized && !isEmbedded) {
     if (isHidden('snake')) return null;

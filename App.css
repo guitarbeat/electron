@@ -7,6 +7,11 @@
 :root {
   --theme-transition-duration: 300ms;
   --theme-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --gradient-metal-bg: linear-gradient(180deg, #bcc2cb 0%, #8a929d 45%, #666f7c 100%);
+  --gradient-metal-surface: linear-gradient(180deg, #f0f3f7 0%, #b9c0ca 50%, #7a8390 100%);
+  --gradient-metal-pill: linear-gradient(180deg, #f7f9fc 0%, #c7ced8 42%, #8a93a0 100%);
+  --y2k-metal-glint-a: rgba(255, 127, 198, 0.22);
+  --y2k-metal-glint-b: rgba(149, 220, 255, 0.2);
 }
 
 body[data-theme='movies'] {
@@ -30,6 +35,11 @@ body[data-theme='movies'] {
   --glow-strong: 0 0 20px rgba(255, 127, 198, 0.6), 0 0 40px rgba(255, 127, 198, 0.25);
   --gradient-primary: linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 100%);
   --gradient-card: linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%);
+  --gradient-metal-bg: linear-gradient(180deg, #d8dde3 0%, #9ba4b0 44%, #5e6876 100%);
+  --gradient-metal-surface: linear-gradient(180deg, #f5f7fa 0%, #c4ccd7 46%, #7f8997 100%);
+  --gradient-metal-pill: linear-gradient(180deg, #ffffff 0%, #d0d7e1 42%, #8a95a3 100%);
+  --y2k-metal-glint-a: rgba(255, 127, 198, 0.28);
+  --y2k-metal-glint-b: rgba(149, 220, 255, 0.22);
 }
 
 body[data-theme='places'] {
@@ -53,11 +63,21 @@ body[data-theme='places'] {
   --glow-strong: 0 0 20px rgba(255, 240, 106, 0.6), 0 0 40px rgba(144, 238, 144, 0.25);
   --gradient-primary: linear-gradient(135deg, #fff06a 0%, #90ee90 100%);
   --gradient-card: linear-gradient(180deg, rgba(45, 55, 70, 0.95) 0%, rgba(35, 45, 60, 0.88) 100%);
+  --gradient-metal-bg: linear-gradient(180deg, #d2d8df 0%, #9aa2ae 46%, #616b78 100%);
+  --gradient-metal-surface: linear-gradient(180deg, #eff3f7 0%, #c3cad4 48%, #7f8793 100%);
+  --gradient-metal-pill: linear-gradient(180deg, #fefefe 0%, #d1d7df 40%, #8b949f 100%);
+  --y2k-metal-glint-a: rgba(255, 240, 106, 0.24);
+  --y2k-metal-glint-b: rgba(144, 238, 144, 0.2);
 }
 
 body {
+  background-image:
+    radial-gradient(circle at 16% 18%, var(--y2k-metal-glint-a) 0%, transparent 34%),
+    radial-gradient(circle at 85% 76%, var(--y2k-metal-glint-b) 0%, transparent 32%),
+    var(--gradient-metal-bg);
   transition:
     background-color var(--theme-transition-duration) var(--theme-transition-easing),
+    background-image var(--theme-transition-duration) var(--theme-transition-easing),
     color var(--theme-transition-duration) var(--theme-transition-easing),
     border-color var(--theme-transition-duration) var(--theme-transition-easing);
 }
@@ -116,11 +136,9 @@ body {
   top: 0;
   z-index: 120;
   backdrop-filter: blur(12px);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-surface-0) 95%, transparent) 0%,
-    color-mix(in srgb, var(--color-surface-0) 80%, transparent) 100%
-  );
+  background:
+    linear-gradient(110deg, rgba(255, 255, 255, 0.2) 0%, transparent 26%),
+    var(--gradient-metal-bg);
   border-bottom: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
 }
 
@@ -133,12 +151,9 @@ body {
   border-radius: 0 0 16px 16px;
   box-shadow: 0 8px 20px rgba(3, 8, 18, 0.24);
   background:
-    radial-gradient(
-      circle at 20% 0%,
-      color-mix(in srgb, var(--color-accent) 10%, transparent) 0%,
-      transparent 42%
-    ),
-    color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+    radial-gradient(circle at 10% 0%, var(--y2k-metal-glint-a) 0%, transparent 36%),
+    radial-gradient(circle at 85% 100%, var(--y2k-metal-glint-b) 0%, transparent 34%),
+    var(--gradient-metal-surface);
 }
 
 .app-header-shell.is-mobile {

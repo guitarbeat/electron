@@ -36,7 +36,6 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
   const { themeTokens } = useTheme();
   const isEmbedded = mode === 'embedded';
   const [isOpen, setIsOpen] = useState(false);
-  const [isTakingQuiz, setIsTakingQuiz] = useState(false);
   const [bubblePosition, setBubblePosition] = useState(() => {
     if (typeof window === 'undefined') {
       return { x: FLOATING_BUBBLE_EDGE_MARGIN, y: FLOATING_BUBBLE_EDGE_MARGIN };
@@ -114,7 +113,6 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
 
   const closeModal = () => {
     setIsOpen(false);
-    setIsTakingQuiz(false);
   };
 
   const handleComplete = () => {
@@ -122,40 +120,29 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
     closeModal();
   };
 
+  const renderHeader = (onEditClick: () => void) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
+        {quizCompleted ? 'Retake any time to refresh your match.' : 'Take when you want.'}
+      </p>
+      <Button variant="ghost" onClick={onEditClick} disabled={!currentUser}>
+        {currentUser ? 'Edit Quiz' : 'Pick user to edit'}
+      </Button>
+    </div>
+  );
+
+  const renderQuizContent = (onComplete: () => void) =>
+    quizData ? (
+      <QuizFlow quizData={quizData} onComplete={onComplete} />
+    ) : (
+      <p style={{ margin: 0, color: colors.textSecondary }}>Loading quiz...</p>
+    );
+
   if (isEmbedded) {
     return (
       <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-        {!isTakingQuiz && (
-          <>
-            <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-              {quizCompleted ? 'Retake any time to refresh your match.' : 'Take when you want.'}
-            </p>
-            <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-              <Button
-                variant={quizCompleted ? 'ghost' : 'secondary'}
-                onClick={() => setIsTakingQuiz(true)}
-              >
-                {quizCompleted ? 'Retake' : 'Start Quiz'}
-              </Button>
-              <Button variant="ghost" onClick={onOpenQuizEditor} disabled={!currentUser}>
-                {currentUser ? 'Edit Quiz' : 'Pick user to edit'}
-              </Button>
-            </div>
-          </>
-        )}
-
-        {isTakingQuiz &&
-          (quizData ? (
-            <QuizFlow
-              quizData={quizData}
-              onComplete={() => {
-                onQuizComplete();
-                setIsTakingQuiz(false);
-              }}
-            />
-          ) : (
-            <p style={{ margin: 0, color: colors.textSecondary }}>Loading quiz…</p>
-          ))}
+        {renderHeader(onOpenQuizEditor)}
+        {renderQuizContent(onQuizComplete)}
       </div>
     );
   }
@@ -182,51 +169,22 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
         }}
         aria-label="Open Quiz"
       >
-        ❓
+        ?
       </button>
 
       <MinigameModal
         isOpen={isOpen}
         onClose={closeModal}
-        title={isTakingQuiz ? 'Quiz' : 'Personality Quiz'}
+        title="Personality Quiz"
         ariaLabel="Personality quiz panel"
         maxWidth={840}
       >
-        <div style={{ padding: spacing.lg, overflow: 'auto', flex: 1 }}>
-          {!isTakingQuiz && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              <p
-                style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}
-              >
-                {quizCompleted ? 'Retake any time to refresh your match.' : 'Take when you want.'}
-              </p>
-              <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-                <Button
-                  variant={quizCompleted ? 'ghost' : 'secondary'}
-                  onClick={() => setIsTakingQuiz(true)}
-                >
-                  {quizCompleted ? 'Retake' : 'Start Quiz'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    closeModal();
-                    onOpenQuizEditor();
-                  }}
-                  disabled={!currentUser}
-                >
-                  {currentUser ? 'Edit Quiz' : 'Pick user to edit'}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {isTakingQuiz &&
-            (quizData ? (
-              <QuizFlow quizData={quizData} onComplete={handleComplete} />
-            ) : (
-              <p style={{ margin: 0, color: colors.textSecondary }}>Loading quiz…</p>
-            ))}
+        <div style={{ padding: spacing.lg, overflow: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+          {renderHeader(() => {
+            closeModal();
+            onOpenQuizEditor();
+          })}
+          {renderQuizContent(handleComplete)}
         </div>
       </MinigameModal>
     </>
