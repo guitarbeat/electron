@@ -327,7 +327,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
         }}
         aria-label="Open Snake Game"
       >
-        🐍
+        S
         {bestScore > 0 && (
           <span
             style={{
@@ -446,7 +446,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
               fontSize: typography.fontSize.xs,
             }}
           >
-            Arrow keys / WASD to move · Space to pause · R to restart
+            Arrow keys / WASD to move | Space to pause | R to restart
           </p>
         )}
       </Card>
@@ -455,3 +455,4 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating' }) => {
 };
 
 export default SnakeGame;
+

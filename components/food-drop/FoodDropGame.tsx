@@ -36,6 +36,17 @@ const statusLabel: Record<FoodDropStatus, string> = {
   'game-over': 'Game Over',
 };
 
+function safeReleasePointerCapture(
+  element: HTMLButtonElement | HTMLCanvasElement,
+  pointerId: number
+) {
+  try {
+    element.releasePointerCapture(pointerId);
+  } catch {
+    // Ignore release errors.
+  }
+}
+
 const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
   const {
     isHidden,
@@ -222,11 +233,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
       checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
     ) {
       dismiss('foodDrop');
-      try {
-        event.currentTarget.releasePointerCapture(event.pointerId);
-      } catch {
-        /* ignore */
-      }
+      safeReleasePointerCapture(event.currentTarget, event.pointerId);
       return;
     }
 
@@ -234,11 +241,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
       setIsMinimized(false);
     }
 
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Ignore release errors.
-    }
+    safeReleasePointerCapture(event.currentTarget, event.pointerId);
   };
 
   useEffect(() => {
@@ -369,11 +372,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     dropFruit();
     pointerDragRef.current = null;
 
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Ignore release errors.
-    }
+    safeReleasePointerCapture(event.currentTarget, event.pointerId);
   };
 
   const handleCanvasPointerCancel = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -382,11 +381,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
 
     pointerDragRef.current = null;
 
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Ignore release errors.
-    }
+    safeReleasePointerCapture(event.currentTarget, event.pointerId);
   };
 
   const containerStyle = useMemo<React.CSSProperties>(() => {
@@ -640,3 +635,4 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
 };
 
 export default FoodDropGame;
+
