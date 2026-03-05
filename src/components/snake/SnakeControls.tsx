@@ -1,6 +1,6 @@
 import React from 'react';
-import Button from '../ui/Button';
-import { colors, radius, spacing } from '../../design-system/tokens';
+import Button from '@/ui/Button;
+import { colors, radius, spacing } from '@/design-system/tokens;
 import { Direction, GameStatus } from './snakeGameLogic';
 
 interface SnakeControlsProps {

@@ -1,8 +1,8 @@
 import React, { memo, useState, useEffect, useRef, useMemo } from 'react';
-import { Message, User } from '../../types';
+import { Message, User } from '@/types;
 import { TrashIcon } from './icons';
-import { spacing, typography, colors } from '../../design-system/tokens';
-import { getMessageBubbleStyle } from '../../hooks/useUserColors';
+import { spacing, typography, colors } from '@/design-system/tokens;
+import { getMessageBubbleStyle } from '@/hooks/useUserColors;
 import './MessageItem.css';
 
 // iOS-style reactions

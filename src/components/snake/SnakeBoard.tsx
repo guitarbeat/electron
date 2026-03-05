@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { colors, radius } from '../../design-system/tokens';
+import { colors, radius } from '@/design-system/tokens;
 import type { SnakeGameState, GridPosition } from './snakeGameLogic';
 
 function keyForCell(position: GridPosition) {

@@ -6,18 +6,18 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useQuiz } from '../../hooks/useQuiz';
-import { useUndoRedo } from '../../hooks/useUndoRedo';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { useToast } from '../../context/ToastContext';
-import { QuizData } from '../../services/quizService';
+import { useQuiz } from '@/hooks/useQuiz;
+import { useUndoRedo } from '@/hooks/useUndoRedo;
+import { useMediaQuery } from '@/hooks/useMediaQuery;
+import { useToast } from '@/context/ToastContext;
+import { QuizData } from '@/services/quizService;
 import { QuizQuestion } from './types';
 import QuestionsTab from './editor/QuestionsTab';
 import DescriptionsTab from './editor/DescriptionsTab';
-import Card from '../ui/Card';
-import Button from '../ui/Button';
-import { spacing, colors, typography, radius } from '../../design-system/tokens';
-import { ArrowLeftIcon } from '../common/icons';
+import Card from '@/ui/Card;
+import Button from '@/ui/Button;
+import { spacing, colors, typography, radius } from '@/design-system/tokens;
+import { ArrowLeftIcon } from '@/common/icons;
 
 interface QuizEditorProps {
   onClose: () => void;

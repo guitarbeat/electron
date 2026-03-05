@@ -1,19 +1,19 @@
 import React, { useRef, useState } from 'react';
-import type { User } from '../../types';
-import type { QuizData } from '../../services/quizService';
-import { colors, spacing, typography } from '../../design-system/tokens';
-import { useTheme } from '../../context/ThemeContext';
-import Button from '../ui/Button';
-import MinigameModal from '../ui/MinigameModal';
+import type { User } from '@/types;
+import type { QuizData } from '@/services/quizService;
+import { colors, spacing, typography } from '@/design-system/tokens;
+import { useTheme } from '@/context/ThemeContext;
+import Button from '@/ui/Button;
+import MinigameModal from '@/ui/MinigameModal;
 import QuizFlow from './QuizFlow';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import { useBubbleDismiss } from '@/context/BubbleDismissContext;
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
   FLOATING_DRAG_THRESHOLD,
   clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
-} from '../ui/floatingBubbleStyles';
+} from '@/ui/floatingBubbleStyles;
 
 interface QuizBubbleProps {
   mode?: 'floating' | 'embedded';

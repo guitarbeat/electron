@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors } from '../../design-system/tokens';
+import { colors } from '@/design-system/tokens;
 
 interface DragDismissZoneProps {
   visible: boolean;

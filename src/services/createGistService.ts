@@ -1,4 +1,4 @@
-import { GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
+import { GIST_TOKEN, GIST_ID } from '@/config/gistConfig.ts;
 import {
   type GistPayload,
   buildGithubApiErrorMessage,

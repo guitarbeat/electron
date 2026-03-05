@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Movie, User } from '../../../types';
-import { colors, shadows, typography } from '../../../design-system/tokens';
-import ImageWithFallback from '../../common/ImageWithFallback';
-import { ChevronLeftIcon, ChevronRightIcon, StarFilledIcon } from '../../common/icons';
-import { userImageSources } from '../../../config/imageConfig';
+import { Movie, User } from '@/types;
+import { colors, shadows, typography } from '@/design-system/tokens;
+import ImageWithFallback from '@/common/ImageWithFallback;
+import { ChevronLeftIcon, ChevronRightIcon, StarFilledIcon } from '@/common/icons;
+import { userImageSources } from '@/config/imageConfig;
 import './RotaryDialCarousel.css';
 
 function cn(...classes: (string | undefined | null | false)[]) {

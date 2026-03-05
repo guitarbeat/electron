@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
-import { ImageChoiceQuestion } from '../types';
-import ScoreSlider from '../ScoreSlider';
-import Input from '../../ui/Input';
-import Button from '../../ui/Button';
-import { spacing, colors, typography, radius } from '../../../design-system/tokens';
-import { useToast } from '../../../context/ToastContext';
+import { ImageChoiceQuestion } from '@/types;
+import ScoreSlider from '@/ScoreSlider;
+import Input from '@/ui/Input;
+import Button from '@/ui/Button;
+import { spacing, colors, typography, radius } from '@/design-system/tokens;
+import { useToast } from '@/context/ToastContext;
 
 interface ImageChoiceEditorProps {
   question: ImageChoiceQuestion;

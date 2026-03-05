@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { typography } from '../../design-system/tokens';
+import { typography } from '@/design-system/tokens;
 import './Input.css';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {

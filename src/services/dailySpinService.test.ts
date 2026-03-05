@@ -8,8 +8,8 @@ import {
   hasSpunToday,
   getTodaySpin,
 } from './dailySpinService.ts';
-import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '../config/gistConfig.ts';
-import type { DailySpin } from '../types.ts';
+import { GIST_DAILY_SPIN_FILENAME, GIST_API_URL } from '@/config/gistConfig.ts;
+import type { DailySpin } from '@/types.ts;
 
 // A fixed Wednesday for testing
 const MOCK_DATE = new Date('2024-03-20T12:00:00Z');

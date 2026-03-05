@@ -1,9 +1,9 @@
 import './PinDialog.css';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { User } from '../../types';
-import Card from '../ui/Card';
-import Button from '../ui/Button';
+import { User } from '@/types;
+import Card from '@/ui/Card;
+import Button from '@/ui/Button;
 import {
   colors,
   spacing,
@@ -12,7 +12,7 @@ import {
   radius,
   motion,
   shadows,
-} from '../../design-system/tokens';
+} from '@/design-system/tokens;
 
 interface PinDialogProps {
   isOpen: boolean;

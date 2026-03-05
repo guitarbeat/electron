@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContentTab } from '../types';
+import { ContentTab } from '@/types;
 
 const FILTERS: { id: ContentTab; label: string }[] = [
   { id: 'all', label: 'Our picks' },

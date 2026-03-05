@@ -1,5 +1,5 @@
-import { GIST_FILENAME, GIST_TOKEN } from '../config/gistConfig.ts';
-import type { Movie } from '../types.ts';
+import { GIST_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts;
+import type { Movie } from '@/types.ts;
 import {
   buildGithubApiErrorMessage,
   fetchGist,

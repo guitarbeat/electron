@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAudio } from '../../hooks/useAudio';
-import { typography } from '../../design-system/tokens';
+import { useAudio } from '@/hooks/useAudio;
+import { typography } from '@/design-system/tokens;
 import './Button.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

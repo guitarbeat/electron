@@ -1,23 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useUser } from '../../context/UserContext';
-import { useToast } from '../../context/ToastContext';
-import { useChatLogic } from '../../hooks/useChatLogic';
-import { useTheme } from '../../context/ThemeContext';
-import ChatWindow from '../message-board/ChatWindow';
-import MessageList from '../message-board/MessageList';
-import MessageInput from '../message-board/MessageInput';
-import ConfirmDialog from '../ui/ConfirmDialog';
-import { colors, motion } from '../../design-system/tokens';
+import { useUser } from '@/context/UserContext;
+import { useToast } from '@/context/ToastContext;
+import { useChatLogic } from '@/hooks/useChatLogic;
+import { useTheme } from '@/context/ThemeContext;
+import ChatWindow from '@/message-board/ChatWindow;
+import MessageList from '@/message-board/MessageList;
+import MessageInput from '@/message-board/MessageInput;
+import ConfirmDialog from '@/ui/ConfirmDialog;
+import { colors, motion } from '@/design-system/tokens;
 import { MessageIcon } from './icons';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery;
+import { useBubbleDismiss } from '@/context/BubbleDismissContext;
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
   FLOATING_DRAG_THRESHOLD,
   clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
-} from '../ui/floatingBubbleStyles';
+} from '@/ui/floatingBubbleStyles;
 
 interface MessageBoardProps {
   mode?: 'floating' | 'embedded';

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
-import type { MainTab } from '../types.ts';
+import type { MainTab } from '@/types.ts;
 import { moviesTheme, placesTheme } from './themeTokens.ts';
 
 export { moviesTheme, placesTheme };

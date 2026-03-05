@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { setTimeout } from 'node:timers/promises';
-import { pollingManager } from '../services/PollingManager.ts';
+import { pollingManager } from '@/services/PollingManager.ts;
 
 const USE_MESSAGES_PATH = path.join(process.cwd(), 'hooks', 'useMessages.ts');
 

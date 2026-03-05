@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { User } from '../../types';
-import { useTheme } from '../../context/ThemeContext';
+import { User } from '@/types;
+import { useTheme } from '@/context/ThemeContext;
 import Matchmaker from './Matchmaker';
-import { colors, radius, spacing, typography } from '../../design-system/tokens';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import { colors, radius, spacing, typography } from '@/design-system/tokens;
+import { useBubbleDismiss } from '@/context/BubbleDismissContext;
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
@@ -11,7 +11,7 @@ import {
   clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
-} from '../ui/floatingBubbleStyles';
+} from '@/ui/floatingBubbleStyles;
 
 interface MatchmakerBubbleProps {
   mode?: 'floating' | 'embedded';

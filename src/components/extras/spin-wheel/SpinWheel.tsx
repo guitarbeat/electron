@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Movie, DailySpin, SpinEntry } from '../../../types';
-import { useUser } from '../../../context/UserContext';
-import { useMovies } from '../../../hooks/useMovies';
-import { CheckIcon, SyncIcon } from '../../common/icons';
-import Card from '../../ui/Card';
-import Button from '../../ui/Button';
+import { Movie, DailySpin, SpinEntry } from '@/types;
+import { useUser } from '@/context/UserContext;
+import { useMovies } from '@/hooks/useMovies;
+import { CheckIcon, SyncIcon } from '@/common/icons;
+import Card from '@/ui/Card;
+import Button from '@/ui/Button;
 import { SpinRoulette } from './SpinRoulette';
-import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
-import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
-import { typography, colors, spacing, radius } from '../../../design-system/tokens';
-import { useBubbleDismiss, type BubbleId } from '../../../context/BubbleDismissContext';
+import { getTodaySpin, saveDailySpin } from '@/services/dailySpinService;
+import { getSpinHistory, upsertTodaySpinEntry } from '@/services/spinHistoryService;
+import { typography, colors, spacing, radius } from '@/design-system/tokens;
+import { useBubbleDismiss, type BubbleId } from '@/context/BubbleDismissContext;
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
@@ -17,8 +17,8 @@ import {
   clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
-} from '../../ui/floatingBubbleStyles';
-import { useToolHide } from '../../../hooks/useToolHide';
+} from '@/ui/floatingBubbleStyles;
+import { useToolHide } from '@/hooks/useToolHide;
 import './SpinWheel.css';
 
 interface SpinWheelProps {
