@@ -1,0 +1,41 @@
+/* Watchlist controls: hide scrollbar on tab strip, keep scroll */
+.watchlist-tabs-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+.watchlist-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.watchlist-top-controls {
+  padding: 0.5rem;
+  background: rgba(23, 33, 58, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(126, 151, 201, 0.25);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.watchlist-top-controls-fallback {
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.watchlist-header {
+  margin-bottom: 0.85rem;
+}
+
+.watchlist-title {
+  margin: 0;
+  font-size: 1.34rem;
+  letter-spacing: 0.03em;
+  color: var(--color-text-primary);
+}
+
+.watchlist-subtitle {
+  margin: 0.3rem 0 0;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--color-text-secondary) 86%, transparent);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
