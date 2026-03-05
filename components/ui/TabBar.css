@@ -7,10 +7,15 @@
   padding: 0.18rem 0;
   display: grid;
   grid-template-columns: repeat(var(--tab-count, 3), minmax(0, 1fr));
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 209, 226, 0.18) 0%, transparent 30%),
+    radial-gradient(circle at 88% 100%, rgba(255, 222, 186, 0.16) 0%, transparent 34%);
 }
 
 .app-tabbar__tab {
   position: relative;
+  overflow: hidden;
   appearance: none;
   border: 1px solid color-mix(in srgb, #ffffff 36%, #59616d 64%);
   border-radius: 0.85rem;
@@ -35,6 +40,16 @@
     box-shadow 0.22s ease;
 }
 
+.app-tabbar__tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(130deg, rgba(255, 255, 255, 0.34) 0%, transparent 24%),
+    linear-gradient(300deg, rgba(255, 255, 255, 0.22) 0%, transparent 24%);
+}
+
 .app-header-nav-row .app-tabbar__tab {
   min-height: 2.4rem;
 }
@@ -44,7 +59,8 @@
     linear-gradient(120deg, color-mix(in srgb, var(--y2k-metal-glint-a) 75%, transparent) 0%, transparent 34%),
     linear-gradient(300deg, color-mix(in srgb, var(--y2k-metal-glint-b) 70%, transparent) 0%, transparent 38%),
     linear-gradient(180deg, #ffffff 0%, #dce2ea 40%, #99a2ae 100%);
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 8px 14px rgba(24, 27, 36, 0.2);
 }
 
 .app-tabbar__tab.is-active {
@@ -53,11 +69,12 @@
   background:
     linear-gradient(130deg, color-mix(in srgb, var(--y2k-metal-glint-a) 85%, transparent) 0%, transparent 36%),
     linear-gradient(305deg, color-mix(in srgb, var(--y2k-metal-glint-b) 80%, transparent) 0%, transparent 40%),
-    linear-gradient(180deg, #ffffff 0%, #d8dee7 38%, #8b95a3 100%);
+    linear-gradient(180deg, #fffaf6 0%, #e7dde7 34%, #a19ba8 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.72),
     inset 0 -1px 0 rgba(69, 76, 88, 0.52),
-    0 8px 16px rgba(25, 30, 38, 0.24);
+    0 8px 16px rgba(25, 30, 38, 0.24),
+    0 0 24px color-mix(in srgb, var(--color-accent) 26%, transparent);
 }
 
 .app-tabbar__tab.is-active::after {
@@ -79,6 +96,7 @@
 .app-tabbar__icon {
   font-size: 1rem;
   line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 .app-tabbar__label {
@@ -86,6 +104,13 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-tabbar__tab {
+    transition: none;
+  }
 }
 
 .app-tabbar--mobile {
