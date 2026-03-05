@@ -1,14 +1,16 @@
 .ui-control-surface {
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
-  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
+  border-radius: 16px;
   background:
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--color-surface-2) 44%, transparent) 0%,
       color-mix(in srgb, var(--color-surface-1) 96%, transparent) 100%
     );
-  padding: 0.8rem;
-  box-shadow: 0 8px 22px color-mix(in srgb, #000 25%, transparent);
+  padding: 0.85rem;
+  box-shadow:
+    0 8px 24px color-mix(in srgb, #000 22%, transparent),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .ui-control-surface.is-compact {
@@ -29,24 +31,29 @@
   gap: 0.35rem;
   padding: 0 0.62rem;
   min-height: 2.7rem;
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 74%, transparent);
-  border-radius: 9px;
-  background: color-mix(in srgb, var(--color-surface-2) 88%, transparent);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 65%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-surface-2) 85%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .ui-control-input-shell:focus-within {
   border-color: color-mix(in srgb, var(--color-accent) 72%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 24%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
   background: color-mix(in srgb, var(--color-surface-2) 95%, transparent);
 }
 
 .ui-control-input-icon {
   width: 0.95rem;
   height: 0.95rem;
-  opacity: 0.72;
+  opacity: 0.65;
   flex-shrink: 0;
   color: var(--color-text-secondary);
+  transition: opacity 0.2s ease;
+}
+
+.ui-control-input-shell:focus-within .ui-control-input-icon {
+  opacity: 0.9;
 }
 
 .ui-control-input {

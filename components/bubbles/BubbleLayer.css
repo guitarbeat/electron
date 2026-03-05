@@ -103,33 +103,50 @@
   inset: auto 1rem 1rem auto;
   width: min(980px, calc(100vw - 104px));
   height: min(82vh, 780px);
-  border-radius: 14px;
+  border-radius: 18px;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
   background:
     radial-gradient(
       circle at 14% 0%,
-      color-mix(in srgb, var(--color-accent) 12%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 10%, transparent) 0%,
       transparent 42%
     ),
     color-mix(in srgb, var(--color-surface-0) 96%, transparent);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
   z-index: 320;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: panel-slide-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes panel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .bubble-tool-panel__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 0.8rem;
+  padding: 0.65rem 0.9rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
 }
 
 .bubble-tool-panel__title {
   margin: 0;
   font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .bubble-tool-panel__close {
@@ -139,13 +156,16 @@
   background: color-mix(in srgb, var(--color-surface-2) 90%, transparent);
   color: var(--color-text-primary);
   cursor: pointer;
-  padding: 0 0.6rem;
-  transition: border-color 0.16s ease, box-shadow 0.2s ease;
+  padding: 0 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: border-color 0.16s ease, box-shadow 0.2s ease, background 0.16s ease;
 }
 
 .bubble-tool-panel__close:hover {
   border-color: color-mix(in srgb, var(--color-accent) 70%, transparent);
   box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--color-surface-3) 95%, transparent);
 }
 
 .bubble-tool-panel__close:focus-visible {
@@ -157,13 +177,27 @@
   min-height: 0;
   flex: 1;
   overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
 }
 
 @media (max-width: 640px) {
   .bubble-tool-panel {
     inset: auto 0 0 0;
     width: 100%;
-    height: 84vh;
-    border-radius: 14px 14px 0 0;
+    height: 86vh;
+    border-radius: 18px 18px 0 0;
+    animation: panel-slide-up-mobile 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  
+  @keyframes panel-slide-up-mobile {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
