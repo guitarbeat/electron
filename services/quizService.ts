@@ -77,7 +77,11 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
 
 export const saveQuizData = async (data: QuizData): Promise<void> => {
   try {
-    const response = await patchGistFile(GIST_QUIZ_FILENAME, JSON.stringify(data, null, 2), GIST_TOKEN);
+    const response = await patchGistFile(
+      GIST_QUIZ_FILENAME,
+      JSON.stringify(data, null, 2),
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

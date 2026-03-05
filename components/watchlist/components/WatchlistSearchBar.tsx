@@ -72,7 +72,11 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
       </div>
 
       {showSuggestions && (
-        <ul className="watchlist-search__suggestions" role="listbox" aria-label="Search suggestions">
+        <ul
+          className="watchlist-search__suggestions"
+          role="listbox"
+          aria-label="Search suggestions"
+        >
           {suggestions.map((suggestion) => (
             <li key={suggestion}>
               <button
@@ -94,4 +98,3 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
 };
 
 export default WatchlistSearchBar;
-

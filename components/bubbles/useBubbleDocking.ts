@@ -60,7 +60,9 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
     typeof window === 'undefined' ? 'desktop' : getViewportBucket(window.innerWidth)
   );
   const [persisted, setPersisted] = useState<PositionPersistence>(() => loadPersisted());
-  const [livePositions, setLivePositions] = useState<Partial<Record<BubbleToolId, { x: number; y: number }>>>({});
+  const [livePositions, setLivePositions] = useState<
+    Partial<Record<BubbleToolId, { x: number; y: number }>>
+  >({});
   const [movingBubbleId, setMovingBubbleId] = useState<BubbleToolId | null>(null);
   const [moveModeId, setMoveModeId] = useState<BubbleToolId | null>(null);
   const [a11yAnnouncement, setA11yAnnouncement] = useState('');
@@ -83,7 +85,8 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
   );
 
   const defaultPositions = useMemo(() => {
-    if (typeof window === 'undefined') return {} as Partial<Record<BubbleToolId, { x: number; y: number }>>;
+    if (typeof window === 'undefined')
+      return {} as Partial<Record<BubbleToolId, { x: number; y: number }>>;
 
     const slots = getDockSlots(window.innerWidth, window.innerHeight, bucket);
     const byId: Partial<Record<BubbleToolId, { x: number; y: number }>> = {};
@@ -127,7 +130,12 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
     (id: BubbleToolId, position: { x: number; y: number }) => {
       if (typeof window === 'undefined') return;
 
-      const clamped = clampToViewport(position.x, position.y, window.innerWidth, window.innerHeight);
+      const clamped = clampToViewport(
+        position.x,
+        position.y,
+        window.innerWidth,
+        window.innerHeight
+      );
 
       setPersisted((previous) => {
         const next: PositionPersistence = {
@@ -156,8 +164,10 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
       const current = positionMap[id] || defaultPositions[id];
       if (!current) return;
 
-      const deltaX = direction === 'left' ? -KEYBOARD_MOVE_STEP : direction === 'right' ? KEYBOARD_MOVE_STEP : 0;
-      const deltaY = direction === 'up' ? -KEYBOARD_MOVE_STEP : direction === 'down' ? KEYBOARD_MOVE_STEP : 0;
+      const deltaX =
+        direction === 'left' ? -KEYBOARD_MOVE_STEP : direction === 'right' ? KEYBOARD_MOVE_STEP : 0;
+      const deltaY =
+        direction === 'up' ? -KEYBOARD_MOVE_STEP : direction === 'down' ? KEYBOARD_MOVE_STEP : 0;
       const next = clampToViewport(
         current.x + deltaX,
         current.y + deltaY,

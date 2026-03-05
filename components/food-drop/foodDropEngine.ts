@@ -67,7 +67,8 @@ const CONTAINER_BASE_Y = FOOD_DROP_WORLD_HEIGHT - CONTAINER_BASE_THICKNESS / 2 -
 const CONTAINER_WALL_THICKNESS = 14;
 const CONTAINER_WALL_HEIGHT = FOOD_DROP_WORLD_HEIGHT + 40;
 const CONTAINER_LEFT_WALL_X = CONTAINER_INSET_X + CONTAINER_WALL_THICKNESS / 2;
-const CONTAINER_RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X - CONTAINER_WALL_THICKNESS / 2;
+const CONTAINER_RIGHT_WALL_X =
+  FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X - CONTAINER_WALL_THICKNESS / 2;
 const CONTAINER_WALL_CENTER_Y = FOOD_DROP_WORLD_HEIGHT / 2 + 20;
 const CONTAINER_FLOOR_TOP_Y = CONTAINER_BASE_Y - CONTAINER_BASE_THICKNESS / 2;
 const CONTAINER_INNER_LEFT_X = CONTAINER_LEFT_WALL_X + CONTAINER_WALL_THICKNESS / 2;
@@ -348,7 +349,11 @@ export class FoodDropEngine {
 
     ctx.strokeStyle = 'rgba(121, 85, 72, 0.22)';
     ctx.lineWidth = 1;
-    for (let x = -FOOD_DROP_LOSE_LINE_Y; x < FOOD_DROP_WORLD_WIDTH + FOOD_DROP_LOSE_LINE_Y; x += 14) {
+    for (
+      let x = -FOOD_DROP_LOSE_LINE_Y;
+      x < FOOD_DROP_WORLD_WIDTH + FOOD_DROP_LOSE_LINE_Y;
+      x += 14
+    ) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x + FOOD_DROP_LOSE_LINE_Y, FOOD_DROP_LOSE_LINE_Y);
@@ -511,10 +516,7 @@ export class FoodDropEngine {
 
       const mergedScale = Math.max(
         FOOD_DROP_SIZE_VARIANCE_MIN,
-        Math.min(
-          FOOD_DROP_SIZE_VARIANCE_MAX,
-          (scaleA + scaleB) / 2 + (Math.random() - 0.5) * 0.08
-        )
+        Math.min(FOOD_DROP_SIZE_VARIANCE_MAX, (scaleA + scaleB) / 2 + (Math.random() - 0.5) * 0.08)
       );
       const mergedRadius = FOOD_LEVELS[targetLevel].radius * mergedScale;
       const clampedMergedX = Math.min(
@@ -776,7 +778,12 @@ export class FoodDropEngine {
   }
 
   private static drawFoodCircle(ctx: CanvasRenderingContext2D, body: RenderBody) {
-    if (!Number.isFinite(body.x) || !Number.isFinite(body.y) || !Number.isFinite(body.radius) || body.radius <= 0) {
+    if (
+      !Number.isFinite(body.x) ||
+      !Number.isFinite(body.y) ||
+      !Number.isFinite(body.radius) ||
+      body.radius <= 0
+    ) {
       return;
     }
     ctx.save();

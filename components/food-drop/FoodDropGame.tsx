@@ -14,11 +14,7 @@ import {
   getFloatingContainerStyle,
   getFloatingPanelCardStyle,
 } from '../ui/floatingBubbleStyles';
-import {
-  FOOD_DROP_WORLD_HEIGHT,
-  FOOD_DROP_WORLD_WIDTH,
-  FoodDropStatus,
-} from './foodDropConfig';
+import { FOOD_DROP_WORLD_HEIGHT, FOOD_DROP_WORLD_WIDTH, FoodDropStatus } from './foodDropConfig';
 import { FoodDropEngine, FoodDropSnapshot } from './foodDropEngine';
 import { useFoodDropBestScore } from './useFoodDropBestScore';
 import { useToolHide } from '../../hooks/useToolHide';
@@ -639,4 +635,3 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating', onReques
 };
 
 export default FoodDropGame;
-

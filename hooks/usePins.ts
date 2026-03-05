@@ -33,39 +33,33 @@ export const usePins = () => {
 
   const userHasPin = useCallback((user: User): boolean => !!pins[user], [pins]);
 
-  const setUserPin = useCallback(
-    async (user: User, pin: string): Promise<boolean> => {
-      try {
-        const success = await setPin(user, pin);
-        if (success) {
-          const latestPins = await getPins();
-          setPinsState(latestPins);
-        }
-        return success;
-      } catch (error) {
-        console.error('Error setting PIN:', error);
-        return false;
+  const setUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {
+    try {
+      const success = await setPin(user, pin);
+      if (success) {
+        const latestPins = await getPins();
+        setPinsState(latestPins);
       }
-    },
-    []
-  );
+      return success;
+    } catch (error) {
+      console.error('Error setting PIN:', error);
+      return false;
+    }
+  }, []);
 
-  const removeUserPin = useCallback(
-    async (user: User): Promise<boolean> => {
-      try {
-        const success = await removePin(user);
-        if (success) {
-          const latestPins = await getPins();
-          setPinsState(latestPins);
-        }
-        return success;
-      } catch (error) {
-        console.error('Error removing PIN:', error);
-        return false;
+  const removeUserPin = useCallback(async (user: User): Promise<boolean> => {
+    try {
+      const success = await removePin(user);
+      if (success) {
+        const latestPins = await getPins();
+        setPinsState(latestPins);
       }
-    },
-    []
-  );
+      return success;
+    } catch (error) {
+      console.error('Error removing PIN:', error);
+      return false;
+    }
+  }, []);
 
   const verifyUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {
     return verifyPin(user, pin);

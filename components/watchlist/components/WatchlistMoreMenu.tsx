@@ -16,7 +16,11 @@ interface WatchlistMoreMenuProps {
   isMobile: boolean;
 }
 
-const WatchlistMoreMenu: React.FC<WatchlistMoreMenuProps> = ({ sortMode, setSortMode, isMobile }) => {
+const WatchlistMoreMenu: React.FC<WatchlistMoreMenuProps> = ({
+  sortMode,
+  setSortMode,
+  isMobile,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   if (isMobile) {
