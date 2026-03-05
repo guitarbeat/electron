@@ -171,6 +171,10 @@ body {
   gap: 0.8rem;
 }
 
+.app-header-inner--minimal {
+  justify-content: flex-end;
+}
+
 .app-header-brand {
   min-width: 0;
   flex: 1;
@@ -212,6 +216,51 @@ body {
   outline: none;
 }
 
+.home-hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.1rem 0 1.15rem;
+  padding: clamp(0.5rem, 1.2vw, 0.95rem);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 42%),
+    radial-gradient(circle at 82% 82%, color-mix(in srgb, var(--color-secondary) 24%, transparent), transparent 48%),
+    color-mix(in srgb, var(--color-surface-1) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 75%, transparent);
+}
+
+.home-hero__title {
+  margin: 0;
+  line-height: 0.95;
+  font-size: clamp(3.2rem, 10vw, 8.8rem);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
+  color: color-mix(in srgb, var(--color-text-primary) 80%, var(--color-accent) 20%);
+  text-shadow:
+    0 4px 24px color-mix(in srgb, var(--color-accent) 30%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.home-hero__word {
+  transition: color 180ms ease, text-shadow 200ms ease, transform 180ms ease;
+}
+
+.home-hero__word.is-active {
+  color: color-mix(in srgb, var(--color-text-primary) 72%, var(--color-secondary) 28%);
+  text-shadow:
+    0 0 20px color-mix(in srgb, var(--color-accent) 35%, transparent),
+    0 0 34px color-mix(in srgb, var(--color-secondary) 30%, transparent);
+}
+
+.home-hero__connector {
+  display: inline-block;
+  margin: 0 0.34em;
+  color: color-mix(in srgb, var(--color-text-secondary) 74%, var(--color-accent) 26%);
+}
+
 .tab-panel {
   min-height: 320px;
 }
@@ -242,5 +291,15 @@ body {
 
   .main-container {
     padding: 0.72rem;
+  }
+
+  .home-hero {
+    margin-bottom: 0.9rem;
+    border-radius: 16px;
+  }
+
+  .home-hero__title {
+    font-size: clamp(2.6rem, 12.5vw, 4.4rem);
+    letter-spacing: 0.035em;
   }
 }

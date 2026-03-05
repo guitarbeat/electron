@@ -176,6 +176,17 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
       const position = positionMap[id] || defaultPositions[id] || { x: 16, y: 120 };
       const isDraggingBubble = movingBubbleId === id;
 
+      const startDragging = (state: PointerState) => {
+        if (state.dragging) return;
+        state.dragging = true;
+        if (state.timer) {
+          window.clearTimeout(state.timer);
+          state.timer = null;
+        }
+        setMovingBubbleId(id);
+        setDragging(true);
+      };
+
       const onPointerDown: React.PointerEventHandler<HTMLButtonElement> = (event) => {
         if (event.pointerType === 'mouse' && event.button !== 0) return;
 
@@ -193,9 +204,7 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
         const timer = window.setTimeout(() => {
           const active = pointerStatesRef.current[id];
           if (!active) return;
-          active.dragging = true;
-          setMovingBubbleId(id);
-          setDragging(true);
+          startDragging(active);
         }, LONG_PRESS_MS);
 
         state.timer = timer;
@@ -219,11 +228,10 @@ export const useBubbleDocking = ({ bubbleIds, onActivate }: UseBubbleDockingProp
         }
 
         if (!state.dragging) {
-          if (state.moved && state.timer) {
-            window.clearTimeout(state.timer);
-            state.timer = null;
+          if (!state.moved) {
+            return;
           }
-          return;
+          startDragging(state);
         }
 
         const next = clampToViewport(
