@@ -7,7 +7,7 @@ import ChatWindow from '../message-board/ChatWindow';
 import MessageList from '../message-board/MessageList';
 import MessageInput from '../message-board/MessageInput';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { spacing, colors, shadows, motion, typography } from '../../design-system/tokens';
+import { colors, motion } from '../../design-system/tokens';
 import { MessageIcon } from './icons';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import { useBubbleDismiss } from '../../context/BubbleDismissContext';
@@ -95,7 +95,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
     }
 
     const handleResize = () => {
-      setBubblePosition((previous) => clampBubblePosition(previous.x, previous.y));
+      setBubblePosition((previous) => clampFloatingBubblePosition(previous.x, previous.y));
     };
 
     window.addEventListener('resize', handleResize);
@@ -309,74 +309,13 @@ const MessageBoard: React.FC<MessageBoardProps> = ({ mode = 'floating' }) => {
 
   return (
     <div style={containerStyle} className="message-board-container">
-      {isEmbedded ? (
-        <div
-          style={{
-            padding: `${spacing.sm} ${spacing.md}`,
-            backgroundColor: 'transparent',
-            color: colors.textPrimary,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontWeight: 'bold',
-            borderBottom: `1px solid ${colors.borderSecondary}20`,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: typography.fontFamily.heading.join(', '),
-              textTransform: 'uppercase',
-              letterSpacing: typography.letterSpacing.wide,
-              textShadow: shadows.textGlow,
-            }}
-          >
-            Messages
-          </span>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={handleToggle}
-          style={{
-            width: '100%',
-            padding: `${spacing.sm} ${spacing.md}`,
-            backgroundColor: 'transparent',
-            color: colors.textPrimary,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            border: 'none',
-            borderBottom: `1px solid ${colors.borderSecondary}20`,
-          }}
-          aria-label="Minimize messages panel"
-        >
-          <span
-            style={{
-              fontFamily: typography.fontFamily.heading.join(', '),
-              textTransform: 'uppercase',
-              letterSpacing: typography.letterSpacing.wide,
-              textShadow: shadows.textGlow,
-            }}
-          >
-            Messages
-          </span>
-          <span
-            style={{
-              fontSize: '20px',
-              lineHeight: 1,
-              color: colors.textPrimary,
-            }}
-            aria-hidden
-          >
-            −
-          </span>
-        </button>
-      )}
-
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <ChatWindow isEditMode={isEditMode} onToggleEditMode={() => setIsEditMode(!isEditMode)}>
+        <ChatWindow
+          isEditMode={isEditMode}
+          onToggleEditMode={() => setIsEditMode(!isEditMode)}
+          onClose={isEmbedded ? undefined : handleToggle}
+          showHeader={!isEmbedded}
+        >
           <MessageList
             messages={messages ?? null}
             isLoading={isLoading}

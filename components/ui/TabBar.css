@@ -28,11 +28,11 @@
   justify-content: center;
   gap: 0.12rem;
   transition:
-    border-color 0.15s ease,
-    background 0.2s ease,
-    color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.2s ease;
+    border-color 0.18s ease,
+    background 0.22s ease,
+    color 0.18s ease,
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s ease;
 }
 
 .app-header-nav-row .app-tabbar__tab {
