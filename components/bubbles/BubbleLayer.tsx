@@ -64,7 +64,7 @@ const BubbleLayer: React.FC<BubbleLayerProps> = ({
       case 'messages':
         return <MessageBoard mode="embedded" />;
       case 'spin':
-        return <SpinWheel mode="embedded" />;
+        return <SpinWheel mode="embedded" onRequestClose={() => setActiveTool(null)} />;
       case 'snake':
         return <SnakeGame mode="embedded" />;
       case 'foodDrop':

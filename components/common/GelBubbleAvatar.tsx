@@ -13,6 +13,8 @@ interface GelBubbleAvatarProps {
   hasPin: boolean;
   isHovered: boolean;
   isSmall?: boolean;
+  selectionState?: 'neutral' | 'active' | 'inactive';
+  isSelectionAnimating?: boolean;
   size?: BubbleSize;
   onClick: () => void;
   onMouseEnter: () => void;
@@ -37,6 +39,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   hasPin,
   isHovered,
   isSmall = false,
+  selectionState = 'neutral',
+  isSelectionAnimating = false,
   size = 'default',
   onClick,
   onMouseEnter,
@@ -75,9 +79,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       onBlur={onBlur}
       disabled={disabled}
       aria-label={`Select ${user} as user${hasPin ? ' (PIN protected)' : ''}`}
-      className={`gel-bubble y2k-avatar-bubble ${animationOffset ? 'gel-bubble-offset' : ''}`}
+      className={`gel-bubble y2k-avatar-bubble ${animationOffset ? 'gel-bubble-offset' : ''} gel-bubble--${selectionState}${isSelectionAnimating ? ' is-selection-animating' : ''}`}
       style={{
         ['--gel-accent' as string]: accentColor,
+        ['--gel-base-scale' as string]: isSmall ? 0.62 : 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -87,8 +92,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         cursor: disabled ? 'wait' : 'pointer',
         padding: 0,
         opacity: opacityValue,
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isSmall ? 'scale(0.6)' : 'none',
+        transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         filter: isSmall ? 'grayscale(0.4)' : 'none',
       }}
     >

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import type { MainTab, User } from '../../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
@@ -37,12 +37,38 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPinSettings, setIsSavingPinSettings] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [selectionAnimatedUser, setSelectionAnimatedUser] = useState<User | null>(null);
+  const [isSelectionAnimating, setIsSelectionAnimating] = useState(false);
+  const previousUserRef = useRef<User | null>(currentUser);
   const isMobile = useMediaQuery(breakpoints.sm);
   const bubbleSize = variant === 'inline' ? 'tiny' : isMobile ? 'compact' : 'default';
   const isDisabled = isLoading || isVerifying;
   const users: User[] = ['Aaron', 'Electra'];
+  const floatingInlinePositions = useMemo(
+    () => [
+      { x: '18vw', y: '28vh', driftX: '10vw', driftY: '-9vh', duration: '12.4s', delay: '0s' },
+      { x: '70vw', y: '58vh', driftX: '-11vw', driftY: '8vh', duration: '14.2s', delay: '0.7s' },
+    ],
+    []
+  );
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
+
+  useEffect(() => {
+    if (!currentUser || previousUserRef.current === currentUser) {
+      previousUserRef.current = currentUser;
+      return;
+    }
+
+    setSelectionAnimatedUser(currentUser);
+    setIsSelectionAnimating(true);
+    const timer = window.setTimeout(() => {
+      setIsSelectionAnimating(false);
+    }, 560);
+
+    previousUserRef.current = currentUser;
+    return () => window.clearTimeout(timer);
+  }, [currentUser]);
 
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
@@ -145,14 +171,38 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           {users.map((profile, index) => {
             const isActive = currentUser === profile;
             const isHovered = hoveredAvatar === profile || isActive;
+            const selectionState =
+              !currentUser || !isSelectionAnimating || !selectionAnimatedUser
+                ? 'neutral'
+                : profile === selectionAnimatedUser
+                  ? 'active'
+                  : 'inactive';
+            const floatingPosition = floatingInlinePositions[index] ?? floatingInlinePositions[0];
 
             return (
-              <div key={profile} className="user-selection__bubble-slot">
+              <div
+                key={profile}
+                className={`user-selection__bubble-slot${variant === 'inline' ? ' user-selection__bubble-slot--floating' : ''}`}
+                style={
+                  variant === 'inline'
+                    ? ({
+                        ['--float-x' as string]: floatingPosition.x,
+                        ['--float-y' as string]: floatingPosition.y,
+                        ['--float-drift-x' as string]: floatingPosition.driftX,
+                        ['--float-drift-y' as string]: floatingPosition.driftY,
+                      ['--float-duration' as string]: floatingPosition.duration,
+                      ['--float-delay' as string]: floatingPosition.delay,
+                      } as CSSProperties)
+                    : undefined
+                }
+              >
                 <GelBubbleAvatar
                   user={profile}
                   hasPin={userHasPin(profile)}
                   isHovered={isHovered}
                   isSmall={variant === 'panel' && currentUser !== null && currentUser !== profile}
+                  selectionState={selectionState}
+                  isSelectionAnimating={isSelectionAnimating}
                   size={bubbleSize}
                   disabled={isDisabled}
                   onClick={() => selectProfile(profile)}

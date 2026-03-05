@@ -91,11 +91,12 @@
 }
 
 .user-selection--inline .user-selection__bubble-row {
-  width: auto;
-  max-width: 100%;
-  gap: 0.44rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 140;
 }
 
 .user-selection__bubble-slot {
@@ -109,8 +110,20 @@
   flex: 0 0 auto;
 }
 
+.user-selection__bubble-slot--floating {
+  position: fixed;
+  left: var(--float-x, 22vw);
+  top: var(--float-y, 28vh);
+  min-width: auto;
+  pointer-events: none;
+  animation: profile-float-drift var(--float-duration, 12s) ease-in-out infinite alternate;
+  animation-delay: var(--float-delay, 0s);
+}
+
 .user-selection--inline .gel-bubble {
   gap: 0.22rem !important;
+  pointer-events: auto;
+  transform-origin: center;
 }
 
 .user-selection--inline .gel-avatar-name {
@@ -172,6 +185,18 @@
   text-transform: uppercase;
 }
 
+@keyframes profile-float-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(calc(var(--float-drift-x, 8vw) * 0.56), calc(var(--float-drift-y, -6vh) * 0.56), 0);
+  }
+  100% {
+    transform: translate3d(var(--float-drift-x, 8vw), var(--float-drift-y, -6vh), 0);
+  }
+}
+
 @media (max-width: 640px) {
   :root {
     --inline-profile-bubble-size: clamp(70px, 20vw, 98px);
@@ -189,7 +214,7 @@
   }
 
   .user-selection--inline .user-selection__bubble-row {
-    gap: 0.3rem;
+    inset: 0;
   }
 
   .user-selection__logged-out {
