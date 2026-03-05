@@ -79,16 +79,7 @@ const AppInner: React.FC = () => {
         >
           <section className="home-hero" aria-label="Home view selector">
             <h2 className="home-hero__title">
-              {MAIN_TABS.map((tab, index) => (
-                <React.Fragment key={tab.id}>
-                  <span className={`home-hero__word${activeTab === tab.id ? ' is-active' : ''}`}>{tab.label}</span>
-                  {index < MAIN_TABS.length - 1 ? (
-                    <span className="home-hero__connector" aria-hidden>
-                      or
-                    </span>
-                  ) : null}
-                </React.Fragment>
-              ))}
+              <span className="home-hero__word is-active">{activeTabMeta?.label}</span>
             </h2>
           </section>
 
