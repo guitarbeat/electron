@@ -17,7 +17,12 @@ const BUBBLE_EDGE_MARGIN = 16;
 const DRAG_THRESHOLD = 4;
 
 const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'floating' }) => {
-  const { isHidden, setDragging: setDismissDragging, checkDismissZoneHit, dismiss } = useBubbleDismiss();
+  const {
+    isHidden,
+    setDragging: setDismissDragging,
+    checkDismissZoneHit,
+    dismiss,
+  } = useBubbleDismiss();
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser);
   const unwatchedMovies = movies ? movies.filter((m) => m.watchedBy.length < 2) : [];
@@ -106,7 +111,11 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     didDragRef.current = false;
     if (wasDragged && checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
       dismiss('spin');
-      try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        /* */
+      }
       return;
     }
     if (!wasDragged) {

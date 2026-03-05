@@ -7,13 +7,17 @@ interface DragDismissZoneProps {
 }
 
 const DragDismissZone: React.FC<DragDismissZoneProps> = ({ visible, isHovering }) => {
+  let scale = 0.5;
+  if (visible) {
+    scale = isHovering ? 1.3 : 1;
+  }
   return (
     <div
       style={{
         position: 'fixed',
         bottom: 20,
         left: '50%',
-        transform: `translateX(-50%) scale(${visible && isHovering ? 1.3 : visible ? 1 : 0.5})`,
+        transform: `translateX(-50%) scale(${scale})`,
         opacity: visible ? 1 : 0,
         pointerEvents: 'none',
         zIndex: 9999,
