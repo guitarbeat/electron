@@ -1,10 +1,10 @@
 .places-page {
-  max-width: 960px;
+  max-width: 1020px;
   margin: 0 auto;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
+  gap: 1rem;
 }
 
 .places-loading {
@@ -16,7 +16,8 @@
 .places-header {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
+  max-width: 700px;
 }
 
 .places-title {
@@ -28,8 +29,9 @@
 
 .places-subtitle {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: color-mix(in srgb, var(--color-text-secondary) 85%, transparent);
   font-size: 0.9rem;
+  line-height: 1.42;
 }
 
 .places-surface {
@@ -58,26 +60,27 @@
 }
 
 .places-add-form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
   gap: 0.5rem;
 }
 
 .places-add-input-shell {
-  max-width: 26rem;
+  max-width: none;
 }
 
 .places-add-input {
-  max-width: 26rem;
+  max-width: none;
 }
 
 .places-add-button.ui-button {
-  align-self: flex-start;
   min-height: 2.5rem;
   border-radius: 9px;
   padding: 0 0.72rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .places-items {
@@ -106,6 +109,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.2s ease;
+}
+
+.places-item-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  box-shadow: 0 10px 22px color-mix(in srgb, #000 30%, transparent);
 }
 
 .places-item-top {
@@ -145,6 +155,7 @@
   display: flex;
   gap: 0.35rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .places-action-btn.ui-button {
@@ -182,6 +193,11 @@
 
   .places-surface {
     gap: 0.62rem;
+  }
+
+  .places-add-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .places-item-top {

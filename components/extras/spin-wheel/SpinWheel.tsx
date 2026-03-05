@@ -30,7 +30,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser);
   const unwatchedMovies = movies ? movies.filter((m) => m.watchedBy.length < 2) : [];
-  const canSpin = Boolean(currentUser) && unwatchedMovies.length >= 2;
+  const canSpin = unwatchedMovies.length >= 2;
 
   const [isMinimized, setIsMinimized] = useState(mode === 'floating');
   const [status, setStatus] = useState<'loading' | 'idle' | 'spinning' | 'saving' | 'result'>(
@@ -193,7 +193,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   }, [isMinimized, status]);
 
   const handleSpinResult = async (movie: Movie) => {
-    if (!currentUser) return;
+    const spinner = currentUser ?? movie.addedBy;
     setStatus('saving');
     setSelectedMovie(movie);
     setSaveError(null);
@@ -203,19 +203,19 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
         date: today,
         movieId: movie.id,
         movieTitle: movie.title,
-        spunBy: currentUser,
+        spunBy: spinner,
         createdAt: new Date().toISOString(),
       };
       await saveDailySpin(dailySpin);
       try {
-        await upsertTodaySpinEntry(today, currentUser, movie.id, movie.title);
+        await upsertTodaySpinEntry(today, spinner, movie.id, movie.title);
         setSpinHistory((prev) => [
           {
             id: '',
             date: today,
             movieId: movie.id,
             movieTitle: movie.title,
-            spunBy: currentUser,
+            spunBy: spinner,
             createdAt: dailySpin.createdAt,
           },
           ...prev.slice(0, 6),
