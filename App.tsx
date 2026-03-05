@@ -77,6 +77,14 @@ const AppInner: React.FC = () => {
           tabIndex={-1}
           aria-label={activeTabMeta?.label || 'Main workspace'}
         >
+          <section className="home-hero" aria-label="Home view selector">
+            <h2 className="home-hero__title">
+              <span className={`home-hero__word${activeTab === 'queue' ? ' is-active' : ''}`}>Movies</span>
+              <span className="home-hero__connector">or</span>
+              <span className={`home-hero__word${activeTab === 'places' ? ' is-active' : ''}`}>Places</span>
+            </h2>
+          </section>
+
           {MAIN_TABS.map((tab) => {
             const isActivePanel = tab.id === activeTab;
             return (
