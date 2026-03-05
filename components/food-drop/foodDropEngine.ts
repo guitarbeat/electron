@@ -128,13 +128,13 @@ export class FoodDropEngine {
 
   private pendingMergePairs: Map<string, MergePair> = new Map();
 
-  private currentLevel: number;
+  private currentLevel!: number;
 
-  private nextLevel: number;
+  private nextLevel!: number;
 
-  private currentScale: number;
+  private currentScale!: number;
 
-  private nextScale: number;
+  private nextScale!: number;
 
   private mergeBursts: MergeBurst[] = [];
 
@@ -283,7 +283,8 @@ export class FoodDropEngine {
     ctx.stroke();
     ctx.restore();
 
-    const radius = FOOD_LEVELS[this.currentLevel].radius * this.currentScale;
+    const radius = FOOD_LEVELS[this.currentLevel]?.radius * this.currentScale;
+    if (!Number.isFinite(radius) || radius <= 0) return;
     const launcherY = FOOD_DROP_SPAWN_Y;
 
     this.renderDropBeam(ctx, launcherY);
@@ -770,6 +771,9 @@ export class FoodDropEngine {
   }
 
   private static drawFoodCircle(ctx: CanvasRenderingContext2D, body: RenderBody) {
+    if (!Number.isFinite(body.x) || !Number.isFinite(body.y) || !Number.isFinite(body.radius) || body.radius <= 0) {
+      return;
+    }
     ctx.save();
     ctx.translate(body.x, body.y);
     ctx.rotate(body.angle);
