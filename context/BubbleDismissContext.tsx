@@ -32,7 +32,9 @@ function loadHidden(): Set<BubbleId> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return new Set(JSON.parse(raw) as BubbleId[]);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return new Set();
 }
 
@@ -55,7 +57,7 @@ export const BubbleDismissProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   const dismiss = useCallback((id: BubbleId) => {
-    setHiddenBubbles(prev => {
+    setHiddenBubbles((prev) => {
       const next = new Set(prev);
       next.add(id);
       saveHidden(next);
@@ -64,7 +66,7 @@ export const BubbleDismissProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const restore = useCallback((id: BubbleId) => {
-    setHiddenBubbles(prev => {
+    setHiddenBubbles((prev) => {
       const next = new Set(prev);
       next.delete(id);
       saveHidden(next);
@@ -84,35 +86,47 @@ export const BubbleDismissProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!dragging) setIsHoveringDismiss(false);
   }, []);
 
-  const checkDismissZoneHit = useCallback((bubbleX: number, bubbleY: number, bubbleSize: number) => {
-    const bubbleCenterX = bubbleX + bubbleSize / 2;
-    const bubbleCenterY = bubbleY + bubbleSize / 2;
-    const zoneX = typeof window !== 'undefined' ? window.innerWidth / 2 : 0;
-    const zoneY = typeof window !== 'undefined' ? window.innerHeight - 50 : 0;
-    const dist = Math.sqrt((bubbleCenterX - zoneX) ** 2 + (bubbleCenterY - zoneY) ** 2);
-    const hit = dist < DISMISS_ZONE_RADIUS;
-    setIsHoveringDismiss(hit);
-    return hit;
-  }, []);
-
-  const value = useMemo(() => ({
-    hiddenBubbles,
-    isDragging,
-    isHoveringDismiss,
-    dismiss,
-    restore,
-    restoreAll,
-    isHidden,
-    setDragging,
-    checkDismissZoneHit,
-    bubbleLabels: BUBBLE_LABELS,
-  }), [hiddenBubbles, isDragging, isHoveringDismiss, dismiss, restore, restoreAll, isHidden, setDragging, checkDismissZoneHit]);
-
-  return (
-    <BubbleDismissContext.Provider value={value}>
-      {children}
-    </BubbleDismissContext.Provider>
+  const checkDismissZoneHit = useCallback(
+    (bubbleX: number, bubbleY: number, bubbleSize: number) => {
+      const bubbleCenterX = bubbleX + bubbleSize / 2;
+      const bubbleCenterY = bubbleY + bubbleSize / 2;
+      const zoneX = typeof window !== 'undefined' ? window.innerWidth / 2 : 0;
+      const zoneY = typeof window !== 'undefined' ? window.innerHeight - 50 : 0;
+      const dist = Math.sqrt((bubbleCenterX - zoneX) ** 2 + (bubbleCenterY - zoneY) ** 2);
+      const hit = dist < DISMISS_ZONE_RADIUS;
+      setIsHoveringDismiss(hit);
+      return hit;
+    },
+    []
   );
+
+  const value = useMemo(
+    () => ({
+      hiddenBubbles,
+      isDragging,
+      isHoveringDismiss,
+      dismiss,
+      restore,
+      restoreAll,
+      isHidden,
+      setDragging,
+      checkDismissZoneHit,
+      bubbleLabels: BUBBLE_LABELS,
+    }),
+    [
+      hiddenBubbles,
+      isDragging,
+      isHoveringDismiss,
+      dismiss,
+      restore,
+      restoreAll,
+      isHidden,
+      setDragging,
+      checkDismissZoneHit,
+    ]
+  );
+
+  return <BubbleDismissContext.Provider value={value}>{children}</BubbleDismissContext.Provider>;
 };
 
 export function useBubbleDismiss() {

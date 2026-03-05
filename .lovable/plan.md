@@ -1,11 +1,11 @@
-
-
 ## Plan: Dismiss bubbles via drag-to-X
 
 **What changes:** When any floating bubble starts being dragged, a dismiss zone (X icon) appears at the bottom center of the screen. Dropping the bubble on the X hides it. Hidden bubbles can be restored from a small toggle button.
 
 ### Components affected
+
 All 5 floating bubble components share duplicated drag logic:
+
 - `MessageBoard.tsx` (💬)
 - `SpinWheel.tsx` (🎰)
 - `SnakeGame.tsx` (🐍)
@@ -32,8 +32,8 @@ All 5 floating bubble components share duplicated drag logic:
 5. **Render `DragDismissZone` once in App.tsx**, connected to context.
 
 ### Technical details
+
 - Dismiss zone hit-test: check if bubble center is within ~60px of the dismiss zone center
 - localStorage key: `hiddenBubbles` storing an array of IDs
 - The dismiss zone appears with a short fade+scale animation when dragging starts
 - When hovering over the zone, it grows slightly and turns red to indicate "drop to dismiss"
-

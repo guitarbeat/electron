@@ -84,7 +84,11 @@ const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
       if (checkDismissZoneHit(bubblePosition.x, bubblePosition.y, BUBBLE_SIZE)) {
         didDragRef.current = false;
         dismiss('matchmaker');
-        try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* */ }
+        try {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        } catch {
+          /* */
+        }
         return;
       }
       window.setTimeout(() => {

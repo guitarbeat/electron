@@ -163,7 +163,8 @@ export const borders = {
 export const shadows = {
   // Card shadows
   card: '0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2)',
-  cardHover: '0 10px 30px rgba(0,0,0,0.4), 0 0 15px rgba(255, 127, 198, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+  cardHover:
+    '0 10px 30px rgba(0,0,0,0.4), 0 0 15px rgba(255, 127, 198, 0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
   cardElevated: '0 4px 16px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.2)',
 
   // Button shadows (subtle 3D)

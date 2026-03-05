@@ -4,15 +4,7 @@ import { createPortal } from 'react-dom';
 import { User } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import {
-  colors,
-  spacing,
-  typography,
-  zIndex,
-  radius,
-  motion,
-  shadows,
-} from '../../design-system/tokens';
+import { colors, spacing, typography, zIndex, radius, shadows } from '../../design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -50,7 +42,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setConfirmPin('');
       setError('');
       setIsShaking(false);
-      setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
+      setStep(mode === 'set' ? 'new' : 'current');
       document.body.classList.add('modal-open');
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
@@ -61,8 +53,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
   useEffect(() => {
     if (isShaking) {
       const timer = setTimeout(() => setIsShaking(false), 500);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+      };
     }
+    return undefined;
   }, [isShaking]);
 
   useEffect(() => {
@@ -73,8 +68,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
         }
       };
       window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     }
+    return undefined;
   }, [isOpen, onCancel]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,6 +145,18 @@ const PinDialog: React.FC<PinDialogProps> = ({
     }
   };
 
+  const getCurrentValue = () => {
+    if (step === 'current') return pin;
+    if (step === 'new') return newPin;
+    return confirmPin;
+  };
+
+  const getCurrentSetter = () => {
+    if (step === 'current') return setPin;
+    if (step === 'new') return setNewPin;
+    return setConfirmPin;
+  };
+
   const handleNumberClick = (num: number) => {
     const setter = getCurrentSetter();
     const value = getCurrentValue();
@@ -193,18 +203,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
     return 'Secure your account';
   };
 
-  const getCurrentValue = () => {
-    if (step === 'current') return pin;
-    if (step === 'new') return newPin;
-    return confirmPin;
-  };
-
-  const getCurrentSetter = () => {
-    if (step === 'current') return setPin;
-    if (step === 'new') return setNewPin;
-    return setConfirmPin;
-  };
-
   if (!isOpen) return null;
 
   return createPortal(
@@ -228,9 +226,16 @@ const PinDialog: React.FC<PinDialogProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pin-dialog-title"
+      tabIndex={-1}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onCancel();
+      }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="document"
+        tabIndex={0}
         style={{ animation: 'pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         <Card

@@ -529,12 +529,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           transition: 'opacity 0.2s ease',
         }}
       >
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(200px, 1fr))', 
-          gap: spacing.md, 
-          alignItems: 'start' 
-        }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile
+              ? 'repeat(auto-fill, minmax(140px, 1fr))'
+              : 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: spacing.md,
+            alignItems: 'start',
+          }}
+        >
           {isLoading && (!movies || movies.length === 0) ? (
             <>
               {contentTab === 'suggestions' && (

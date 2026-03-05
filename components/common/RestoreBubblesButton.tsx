@@ -28,7 +28,7 @@ const RestoreBubblesButton: React.FC = () => {
             animation: 'slide-up-fade 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
           }}
         >
-          {hiddenIds.map(id => {
+          {hiddenIds.map((id) => {
             const info = bubbleLabels[id];
             return (
               <button
@@ -52,8 +52,8 @@ const RestoreBubblesButton: React.FC = () => {
                   fontSize: 13,
                   textAlign: 'left',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 <span>{info.emoji}</span>
                 <span>{info.label}</span>
@@ -65,7 +65,10 @@ const RestoreBubblesButton: React.FC = () => {
               <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0' }} />
               <button
                 type="button"
-                onClick={() => { restoreAll(); setIsOpen(false); }}
+                onClick={() => {
+                  restoreAll();
+                  setIsOpen(false);
+                }}
                 style={{
                   display: 'block',
                   width: '100%',
@@ -78,8 +81,8 @@ const RestoreBubblesButton: React.FC = () => {
                   fontSize: 12,
                   textAlign: 'left',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 Restore all
               </button>
@@ -89,7 +92,7 @@ const RestoreBubblesButton: React.FC = () => {
       )}
       <button
         type="button"
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Restore hidden bubbles"
         style={{
           width: 36,
