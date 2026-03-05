@@ -37,7 +37,6 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     'idle'
   );
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-  const [hasSpunToday, setHasSpunToday] = useState(false);
   const [todaySpinData, setTodaySpinData] = useState<DailySpin | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [spinHistory, setSpinHistory] = useState<SpinEntry[]>([]);
@@ -137,7 +136,6 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
       const todaySpin = await getTodaySpin();
       if (todaySpin) {
         setTodaySpinData(todaySpin);
-        setHasSpunToday(true);
         setStatus('result');
         const movie = unwatchedMoviesRef.current.find((m) => m.id === todaySpin.movieId);
         if (movie) {
@@ -224,7 +222,6 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
         console.error('History save failed', histErr);
       }
       setTodaySpinData(dailySpin);
-      setHasSpunToday(true);
       setStatus('result');
     } catch (err) {
       console.error('Save failed', err);
@@ -357,7 +354,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
             >
               <SpinRoulette
                 movies={unwatchedMovies}
-                disabled={hasSpunToday || !canSpin}
+                disabled={!canSpin}
                 onSpinComplete={handleSpinResult}
                 style={{ width: '100%', height: '100%' }}
               />
