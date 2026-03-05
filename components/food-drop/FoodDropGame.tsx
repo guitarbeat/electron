@@ -68,9 +68,6 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
     currentScale: 1,
     canDrop: true,
     launcherX: FOOD_DROP_WORLD_WIDTH / 2,
-    streak: 0,
-    multiplier: 1,
-    feverMsRemaining: 0,
   });
 
   const engineRef = useRef<FoodDropEngine | null>(null);
@@ -114,10 +111,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating' }) => {
         Math.abs(prev.nextScale - next.nextScale) < 0.001 &&
         Math.abs(prev.currentScale - next.currentScale) < 0.001 &&
         prev.canDrop === next.canDrop &&
-        Math.abs(prev.launcherX - next.launcherX) < 0.5 &&
-        prev.streak === next.streak &&
-        Math.abs(prev.multiplier - next.multiplier) < 0.001 &&
-        prev.feverMsRemaining === next.feverMsRemaining
+        Math.abs(prev.launcherX - next.launcherX) < 0.5
       ) {
         return prev;
       }

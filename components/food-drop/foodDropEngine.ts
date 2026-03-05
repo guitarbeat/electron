@@ -41,9 +41,6 @@ export interface FoodDropSnapshot {
   currentScale: number;
   canDrop: boolean;
   launcherX: number;
-  streak: number;
-  multiplier: number;
-  feverMsRemaining: number;
 }
 
 interface RenderBody {
@@ -208,9 +205,6 @@ export class FoodDropEngine {
       currentScale: this.currentScale,
       canDrop: this.canDrop && this.status === 'running',
       launcherX: this.launcherX,
-      streak: 0,
-      multiplier: 1,
-      feverMsRemaining: 0,
     };
   }
 
