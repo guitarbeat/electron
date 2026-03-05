@@ -22,6 +22,43 @@ View your app in AI Studio: https://ai.studio/apps/drive/1kqFxiDluP0wGmKF3T41vjN
 - **Minigames**: Includes built-in Snake, Food Drop, and Quiz games.
 - **Places**: Integrated map and places list.
 
+## Architecture
+
+### High-level flow
+
+```mermaid
+flowchart TD
+  A["index.tsx"] --> B["UserProvider + ToastProvider"]
+  B --> C["App.tsx (AppInner)"]
+  C --> D["ThemeProvider + BubbleDismissProvider"]
+  D --> E["AppHeader / TabBar"]
+  D --> F["Main tab panels"]
+  F --> G["Watchlist (Movies tab)"]
+  F --> H["PlacesList (Places tab)"]
+  D --> I["BubbleLayer + Quiz/Matchmaker bubbles"]
+  D --> J["MinigameModal + QuizEditor"]
+  C --> K["hooks/useAudio + hooks/useQuiz"]
+```
+
+### Key directories
+
+- `components/layout`: Header and top-level layout primitives.
+- `components/ui`: Shared UI pieces (TabBar, inputs, modal wrappers).
+- `components/watchlist`: Movie queue and watchlist-specific UI.
+- `components/places`: Places tab UI and related interactions.
+- `components/bubbles`: Floating bubble layer and interactive bubbles.
+- `components/extras`, `components/snake`, `components/food-drop`: Minigame features.
+- `context`: Cross-cutting app state (`UserContext`, `ThemeContext`, toast, bubble dismissal).
+- `hooks`: Behavioral units (`useAudio`, `useQuiz`, and feature hooks).
+- `styles`: Shared global utilities and cross-feature visual tokens.
+
+### State and theming model
+
+- `App.tsx` owns `activeTab`, quiz completion state, and quiz editor modal visibility.
+- `ThemeProvider` receives `activeTab` and drives tab-aware theme tokens.
+- `body[data-theme]` is switched between `movies` and `places` to update CSS variables.
+- Visual direction uses a metallic base gradient with Y2K accent glints (pink/cyan for Movies, yellow/green for Places).
+
 ## Run Locally
 
 **Prerequisites:** Node.js (v18+ recommended)

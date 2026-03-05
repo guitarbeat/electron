@@ -141,10 +141,7 @@ export class FoodDropEngine {
       if (!FoodDropEngine.canBodiesMerge(pair.bodyA, pair.bodyB)) {
         return;
       }
-      const key =
-        pair.bodyA.id < pair.bodyB.id
-          ? `${pair.bodyA.id}-${pair.bodyB.id}`
-          : `${pair.bodyB.id}-${pair.bodyA.id}`;
+      const key = FoodDropEngine.mergePairKey(pair.bodyA, pair.bodyB);
       this.pendingMergePairs.set(key, { bodyA: pair.bodyA, bodyB: pair.bodyB });
     });
   };
@@ -156,10 +153,7 @@ export class FoodDropEngine {
     });
     this.world = this.engine.world;
 
-    this.currentLevel = FoodDropEngine.randomSpawnLevel();
-    this.nextLevel = FoodDropEngine.randomSpawnLevel();
-    this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
-    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
+    this.initializeSpawnQueue();
 
     this.setupBoundaries();
     this.bindCollisionEvents();
@@ -183,10 +177,7 @@ export class FoodDropEngine {
     this.cooldownRemainingMs = 0;
     this.overflowSettledMs = 0;
     this.pendingMergePairs.clear();
-    this.currentLevel = FoodDropEngine.randomSpawnLevel();
-    this.nextLevel = FoodDropEngine.randomSpawnLevel();
-    this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
-    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
+    this.initializeSpawnQueue();
     this.mergeBursts = [];
     this.clampLauncherToCurrentLevel();
   }
@@ -210,8 +201,8 @@ export class FoodDropEngine {
 
   setLauncherX(targetX: number) {
     const radius = FOOD_LEVELS[this.currentLevel].radius * this.currentScale;
-    const minX = CONTAINER_INNER_LEFT_X + radius;
-    const maxX = CONTAINER_INNER_RIGHT_X - radius;
+    const minX = FoodDropEngine.minLauncherX(radius);
+    const maxX = FoodDropEngine.maxLauncherX(radius);
     this.launcherX = Math.min(Math.max(targetX, minX), maxX);
   }
 
@@ -234,10 +225,7 @@ export class FoodDropEngine {
 
     this.canDrop = false;
     this.cooldownRemainingMs = FOOD_DROP_SPAWN_COOLDOWN_MS;
-    this.currentLevel = this.nextLevel;
-    this.currentScale = this.nextScale;
-    this.nextLevel = FoodDropEngine.randomSpawnLevel();
-    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
+    this.advanceSpawnQueue();
     this.clampLauncherToCurrentLevel();
 
     return true;
@@ -448,6 +436,20 @@ export class FoodDropEngine {
     this.setLauncherX(this.launcherX);
   }
 
+  private initializeSpawnQueue() {
+    this.currentLevel = FoodDropEngine.randomSpawnLevel();
+    this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.currentScale = FoodDropEngine.randomSpawnScale(this.currentLevel);
+    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
+  }
+
+  private advanceSpawnQueue() {
+    this.currentLevel = this.nextLevel;
+    this.currentScale = this.nextScale;
+    this.nextLevel = FoodDropEngine.randomSpawnLevel();
+    this.nextScale = FoodDropEngine.randomSpawnScale(this.nextLevel);
+  }
+
   private static canBodiesMerge(bodyA: Body, bodyB: Body): boolean {
     if (bodyA.isStatic || bodyB.isStatic) return false;
 
@@ -541,9 +543,7 @@ export class FoodDropEngine {
 
   private updateOverflowState(deltaMs: number) {
     const now = Date.now();
-    const dynamicBodies = this.world.bodies.filter(
-      (body) => !body.isStatic && FoodDropEngine.getBodyLevel(body) !== null
-    );
+    const dynamicBodies = this.getDynamicFruitBodies();
 
     if (dynamicBodies.length === 0) {
       this.overflowSettledMs = 0;
@@ -552,15 +552,12 @@ export class FoodDropEngine {
 
     // Immediate fail if any fruit escapes the container side walls and drops below the danger zone.
     const hasMissedContainer = dynamicBodies.some((body) => {
-      const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
-      if (spawnedAt !== null && now - spawnedAt < GAME_OVER_GRACE_MS) {
+      if (this.shouldSkipDangerCheck(body, now)) {
         return false;
       }
       const level = FoodDropEngine.getBodyLevel(body) ?? 0;
       const radius = FoodDropEngine.getBodyRadius(body, level);
-      const isOutsideContainer =
-        body.position.x + radius < CONTAINER_INNER_LEFT_X ||
-        body.position.x - radius > CONTAINER_INNER_RIGHT_X;
+      const isOutsideContainer = FoodDropEngine.isOutsideContainer(body, radius);
       const isBelowDangerZone = body.position.y + radius >= FOOD_DROP_LOSE_LINE_Y + 8;
       return isOutsideContainer && isBelowDangerZone;
     });
@@ -572,8 +569,7 @@ export class FoodDropEngine {
     }
 
     const hasOverflow = dynamicBodies.some((body) => {
-      const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
-      if (spawnedAt !== null && now - spawnedAt < GAME_OVER_GRACE_MS) {
+      if (this.shouldSkipDangerCheck(body, now)) {
         return false;
       }
       const bodyLevel = FoodDropEngine.getBodyLevel(body) ?? 0;
@@ -606,15 +602,23 @@ export class FoodDropEngine {
 
   private isDangerActive(): boolean {
     const now = Date.now();
-    return this.world.bodies.some((body) => {
-      if (body.isStatic) return false;
-      const level = FoodDropEngine.getBodyLevel(body);
-      if (level === null) return false;
-      const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
-      if (spawnedAt !== null && now - spawnedAt < GAME_OVER_GRACE_MS) return false;
+    return this.getDynamicFruitBodies().some((body) => {
+      if (this.shouldSkipDangerCheck(body, now)) return false;
+      const level = FoodDropEngine.getBodyLevel(body) ?? 0;
       const radius = FoodDropEngine.getBodyRadius(body, level);
       return body.position.y - radius < FOOD_DROP_LOSE_LINE_Y + 40;
     });
+  }
+
+  private getDynamicFruitBodies(): Body[] {
+    return this.world.bodies.filter(
+      (body) => !body.isStatic && FoodDropEngine.getBodyLevel(body) !== null
+    );
+  }
+
+  private shouldSkipDangerCheck(body: Body, nowMs: number): boolean {
+    const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
+    return spawnedAt !== null && nowMs - spawnedAt < GAME_OVER_GRACE_MS;
   }
 
   private static getBodyLevel(body: Body): number | null {
@@ -631,6 +635,25 @@ export class FoodDropEngine {
   private static getBodySpawnedAt(body: Body): number | null {
     const plugin = body.plugin as Partial<FoodBodyMeta> | undefined;
     return typeof plugin?.spawnedAtMs === 'number' ? plugin.spawnedAtMs : null;
+  }
+
+  private static minLauncherX(radius: number): number {
+    return CONTAINER_INNER_LEFT_X + radius;
+  }
+
+  private static maxLauncherX(radius: number): number {
+    return CONTAINER_INNER_RIGHT_X - radius;
+  }
+
+  private static isOutsideContainer(body: Body, radius: number): boolean {
+    return (
+      body.position.x + radius < CONTAINER_INNER_LEFT_X ||
+      body.position.x - radius > CONTAINER_INNER_RIGHT_X
+    );
+  }
+
+  private static mergePairKey(bodyA: Body, bodyB: Body): string {
+    return bodyA.id < bodyB.id ? `${bodyA.id}-${bodyB.id}` : `${bodyB.id}-${bodyA.id}`;
   }
 
   private static getBodyRadius(body: Body, level: number): number {
