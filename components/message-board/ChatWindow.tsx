@@ -6,6 +6,7 @@ interface ChatWindowProps {
   isEditMode?: boolean;
   onToggleEditMode?: () => void;
   onClose?: () => void;
+  showHeader?: boolean;
 }
 
 const linkStyle: React.CSSProperties = {
@@ -24,6 +25,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   isEditMode = false,
   onToggleEditMode,
   onClose,
+  showHeader = true,
 }) => {
   return (
     <div
@@ -36,52 +38,54 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         fontFamily: typography.fontFamily.body.join(', '),
       }}
     >
-      <div
-        style={{
-          background: 'rgba(27, 40, 69, 0.9)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          padding: `${spacing.sm} ${spacing.md}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '44px',
-          borderBottom: `1px solid ${colors.accentMuted}`,
-          position: 'relative',
-        }}
-      >
-        <span
+      {showHeader && (
+        <div
           style={{
-            fontFamily: typography.fontFamily.heading.join(', '),
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            fontSize: '14px',
-            color: colors.textPrimary,
+            background: 'rgba(27, 40, 69, 0.9)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            padding: `${spacing.sm} ${spacing.md}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '44px',
+            borderBottom: `1px solid ${colors.accentMuted}`,
+            position: 'relative',
           }}
         >
-          Messages
-        </span>
-
-        {onToggleEditMode && (
-          <button
-            type="button"
-            onClick={onToggleEditMode}
-            style={{ ...linkStyle, position: 'absolute', right: onClose ? '70px' : spacing.md }}
+          <span
+            style={{
+              fontFamily: typography.fontFamily.heading.join(', '),
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontSize: '14px',
+              color: colors.textPrimary,
+            }}
           >
-            {isEditMode ? 'Done' : 'Edit'}
-          </button>
-        )}
+            Messages
+          </span>
 
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ ...linkStyle, position: 'absolute', right: spacing.md }}
-          >
-            Close
-          </button>
-        )}
-      </div>
+          {onToggleEditMode && (
+            <button
+              type="button"
+              onClick={onToggleEditMode}
+              style={{ ...linkStyle, position: 'absolute', right: onClose ? '70px' : spacing.md }}
+            >
+              {isEditMode ? 'Done' : 'Edit'}
+            </button>
+          )}
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ ...linkStyle, position: 'absolute', right: spacing.md }}
+            >
+              Close
+            </button>
+          )}
+        </div>
+      )}
 
       <div
         style={{
