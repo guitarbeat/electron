@@ -5,12 +5,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/watchlist';
-import MessageBoard from './components/common/MessageBoard';
-import SnakeGame from './components/snake/SnakeGame';
-import FoodDropGame from './components/food-drop/FoodDropGame';
-import SpinWheel from './components/extras/spin-wheel/SpinWheel';
-import MatchmakerBubble from './components/matchmaker/MatchmakerBubble';
-import QuizBubble from './components/quiz/QuizBubble';
 import { BubbleDismissProvider } from './context/BubbleDismissContext';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
@@ -57,6 +51,7 @@ const AppInner: React.FC = () => {
   };
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
+  const activeHeroLabel = activeTabMeta?.label || MAIN_TABS[0].label;
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -65,11 +60,7 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
-        <AppHeader
-          tabs={MAIN_TABS}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
+        <AppHeader tabs={MAIN_TABS} activeTab={activeTab} onTabChange={handleTabChange} />
 
         <main
           id="main-content"
@@ -78,8 +69,10 @@ const AppInner: React.FC = () => {
           aria-label={activeTabMeta?.label || 'Main workspace'}
         >
           <section className="home-hero" aria-label="Home view selector">
-            <h2 className="home-hero__title">
-              <span className="home-hero__word is-active">{activeTabMeta?.label}</span>
+            <h2 className="home-hero__title" aria-live="polite">
+              <span key={activeTab} className="home-hero__word home-hero__word--animated is-active">
+                {activeHeroLabel}
+              </span>
             </h2>
           </section>
 
@@ -94,13 +87,7 @@ const AppInner: React.FC = () => {
                 hidden={!isActivePanel}
                 className="tab-panel"
               >
-                {isActivePanel ? (
-                  tab.id === 'queue' ? (
-                    <Watchlist />
-                  ) : (
-                    <PlacesList />
-                  )
-                ) : null}
+                {isActivePanel ? (tab.id === 'queue' ? <Watchlist /> : <PlacesList />) : null}
               </section>
             );
           })}
@@ -138,4 +125,3 @@ const App: React.FC = () => (
 );
 
 export default App;
-
