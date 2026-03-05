@@ -18,6 +18,7 @@ import {
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
 } from '../../ui/floatingBubbleStyles';
+import { useToolHide } from '../../../hooks/useToolHide';
 import './SpinWheel.css';
 
 interface SpinWheelProps {
@@ -245,13 +246,7 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose
     }
   };
 
-  const handleHide = () => {
-    if (isEmbedded) {
-      onRequestClose?.();
-      return;
-    }
-    setIsMinimized(true);
-  };
+  const handleHide = useToolHide({ isEmbedded, onRequestClose, setIsMinimized });
 
   // Minimized bubble
   if (isMinimized && mode === 'floating') {

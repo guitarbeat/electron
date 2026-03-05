@@ -20,3 +20,22 @@
   margin-top: 0.75rem;
   margin-bottom: 1rem;
 }
+
+.watchlist-header {
+  margin-bottom: 0.85rem;
+}
+
+.watchlist-title {
+  margin: 0;
+  font-size: 1.34rem;
+  letter-spacing: 0.03em;
+  color: var(--color-text-primary);
+}
+
+.watchlist-subtitle {
+  margin: 0.3rem 0 0;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--color-text-secondary) 86%, transparent);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}

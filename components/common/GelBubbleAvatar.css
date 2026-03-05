@@ -6,14 +6,14 @@
 
 @keyframes y2k-sweep {
   0% {
-    transform: translateX(-130%) rotate(-16deg);
+    transform: translateX(-125%) rotate(-12deg);
     opacity: 0;
   }
   18% {
-    opacity: 0.65;
+    opacity: 0.42;
   }
   100% {
-    transform: translateX(140%) rotate(-16deg);
+    transform: translateX(132%) rotate(-12deg);
     opacity: 0;
   }
 }
@@ -21,12 +21,12 @@
 @keyframes y2k-twinkle {
   0%,
   100% {
-    transform: scale(0.7) rotate(0deg);
-    opacity: 0.45;
+    transform: scale(0.78) rotate(0deg);
+    opacity: 0.38;
   }
   50% {
-    transform: scale(1.25) rotate(20deg);
-    opacity: 1;
+    transform: scale(1.06) rotate(12deg);
+    opacity: 0.9;
   }
 }
 
@@ -37,8 +37,8 @@
     filter: hue-rotate(0deg);
   }
   50% {
-    transform: rotate(6deg) scale(1.02);
-    filter: hue-rotate(24deg);
+    transform: rotate(2.8deg) scale(1.01);
+    filter: hue-rotate(10deg);
   }
 }
 
@@ -102,7 +102,7 @@
   mask: radial-gradient(circle, transparent 66%, black 69%);
   mix-blend-mode: screen;
   opacity: 0.95;
-  animation: y2k-ring-shift 4.4s ease-in-out infinite;
+  animation: y2k-ring-shift 7.2s ease-in-out infinite;
 }
 
 .gel-avatar-sweep {
@@ -119,7 +119,7 @@
     transparent 63%
   );
   mix-blend-mode: screen;
-  animation: y2k-sweep 2.9s ease-in-out infinite;
+  animation: y2k-sweep 4.8s ease-in-out infinite;
 }
 
 .gel-avatar-star {
@@ -130,7 +130,7 @@
   background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.15) 70%);
   clip-path: polygon(50% 0%, 62% 37%, 100% 50%, 62% 63%, 50% 100%, 38% 63%, 0% 50%, 38% 37%);
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-  animation: y2k-twinkle 1.8s ease-in-out infinite;
+  animation: y2k-twinkle 2.8s ease-in-out infinite;
 }
 
 .gel-avatar-star-left {

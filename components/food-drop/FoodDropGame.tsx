@@ -21,6 +21,7 @@ import {
 } from './foodDropConfig';
 import { FoodDropEngine, FoodDropSnapshot } from './foodDropEngine';
 import { useFoodDropBestScore } from './useFoodDropBestScore';
+import { useToolHide } from '../../hooks/useToolHide';
 
 interface FoodDropGameProps {
   mode?: 'floating' | 'embedded';
@@ -385,13 +386,7 @@ const FoodDropGame: React.FC<FoodDropGameProps> = ({ mode = 'floating', onReques
     safeReleasePointerCapture(event.currentTarget, event.pointerId);
   };
 
-  const handleHide = () => {
-    if (isEmbedded) {
-      onRequestClose?.();
-      return;
-    }
-    setIsMinimized(true);
-  };
+  const handleHide = useToolHide({ isEmbedded, onRequestClose, setIsMinimized });
 
   const containerStyle = useMemo<React.CSSProperties>(() => {
     return getFloatingContainerStyle({

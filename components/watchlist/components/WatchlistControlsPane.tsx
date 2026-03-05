@@ -54,7 +54,7 @@ const WatchlistControlsPane: React.FC<WatchlistControlsPaneProps> = ({
           onEnterAction={onEnterAction}
           onSelectSuggestion={onSelectSuggestion}
           suggestions={suggestions}
-          placeholder="Search or add a movie..."
+          placeholder="Search or plan your next movie night..."
         />
         <WatchlistMoreMenu sortMode={sortMode} setSortMode={setSortMode} isMobile={isMobile} />
       </div>

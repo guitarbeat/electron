@@ -20,8 +20,8 @@ import BubbleLayer from './components/bubbles/BubbleLayer';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
-  { id: 'queue', label: 'Movies', icon: '🎬' },
-  { id: 'places', label: 'Places', icon: '📍' },
+  { id: 'queue', label: 'Movie Nights', icon: '🎬' },
+  { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
 
 const AppInner: React.FC = () => {
@@ -132,3 +132,4 @@ const App: React.FC = () => (
 );
 
 export default App;
+

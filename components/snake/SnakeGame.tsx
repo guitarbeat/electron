@@ -27,6 +27,7 @@ import { useSnakeLeaderboard } from './useSnakeLeaderboard';
 import SnakeBoard from './SnakeBoard';
 import SnakeControls from './SnakeControls';
 import SnakeLeaderboard from './SnakeLeaderboard';
+import { useToolHide } from '../../hooks/useToolHide';
 
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
@@ -301,13 +302,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
     setHasRecordedGameOverScore(true);
   }, [gameState.score, gameState.status, hasRecordedGameOverScore, recordScore]);
 
-  const handleMinimize = () => {
-    if (isEmbedded) {
-      onRequestClose?.();
-      return;
-    }
-    setIsMinimized(true);
-  };
+  const handleHide = useToolHide({ isEmbedded, onRequestClose, setIsMinimized });
   const handleMaximize = () => setIsMinimized(false);
   const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
 
@@ -402,7 +397,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
             </Button>
           </div>
           {!isEmbedded && !isFullscreen && (
-            <Button size="sm" variant="ghost" onClick={handleMinimize}>
+            <Button size="sm" variant="ghost" onClick={handleHide}>
               Hide
             </Button>
           )}

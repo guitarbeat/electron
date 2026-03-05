@@ -499,7 +499,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               </p>
               {!searchQuery && contentTab === 'all' && (
                 <p style={{ marginTop: spacing.sm, fontSize: typography.fontSize.sm }}>
-                  Try searching for a title in the controls panel.
+                  Search for a title and plan your next date-night watch.
                 </p>
               )}
             </div>
@@ -510,6 +510,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: spacing.md }}>
+      <header className="watchlist-header">
+        <h1 className="watchlist-title">Movie night queue</h1>
+        <p className="watchlist-subtitle">
+          Pick your next cozy watch together and turn completed films into shared memories.
+        </p>
+        <hr className="memory-lane-divider" />
+      </header>
+
       <WorkspaceLayout
         isMobile={isMobile}
         controls={controlsPane}

@@ -154,10 +154,11 @@ const PlacesList: React.FC = () => {
   return (
     <div className="places-page">
       <header className="places-header">
-        <h1 className="places-title">Places we want to go</h1>
+        <h1 className="places-title">Date spots wishlist</h1>
         <p className="places-subtitle">
-          Add places to visit together and track the ones you have already explored.
+          Save dream spots for your next outing, then mark the places you explored together.
         </p>
+        <hr className="memory-lane-divider" />
       </header>
 
       <section className="ui-control-surface places-surface" aria-label="Places map and add form">
@@ -165,7 +166,9 @@ const PlacesList: React.FC = () => {
           <h2 className="places-surface-title">Map</h2>
           <PlacesMap places={places} />
           {places.length > 0 && !hasMappedPlaces && (
-            <p className="places-map-hint">Use the place search to add coordinates and pin places on the map.</p>
+            <p className="places-map-hint">
+              Use search results to add coordinates and pin your date spots on the map.
+            </p>
           )}
         </div>
 
@@ -205,8 +208,8 @@ const PlacesList: React.FC = () => {
       <SubNav
         ariaLabel="Places: filter by list"
         tabs={[
-          { id: 'want', label: 'Want to go', count: wantCount },
-          { id: 'visited', label: 'Visited', count: visitedCount },
+          { id: 'want', label: 'Dream spots', count: wantCount },
+          { id: 'visited', label: 'Been together', count: visitedCount },
         ]}
         activeId={filter}
         onSelect={(id) => setFilter(id as PlaceFilter)}
@@ -215,7 +218,9 @@ const PlacesList: React.FC = () => {
       <ul className="places-items" aria-live="polite">
         {filtered.length === 0 && (
           <li className="places-empty">
-            {filter === 'want' ? 'No places yet. Add one above.' : 'No visited places yet.'}
+            {filter === 'want'
+              ? 'No date spots yet. Add one above.'
+              : 'No shared spot history yet.'}
           </li>
         )}
 
