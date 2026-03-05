@@ -1,0 +1,212 @@
+.watchlist-controls-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.watchlist-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.watchlist-search__row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.watchlist-search__input-wrap {
+  flex: 1;
+}
+
+.watchlist-search__input-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.watchlist-search__add.ui-button {
+  min-height: 2.7rem;
+  min-width: 5rem;
+  border-radius: 9px;
+  padding: 0 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.watchlist-search__add-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.watchlist-search__suggestions {
+  list-style: none;
+  margin: 0.45rem 0 0;
+  padding: 0.24rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 78%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--color-surface-2) 96%, transparent);
+  max-height: 10rem;
+  overflow: auto;
+}
+
+.watchlist-search__suggestion-btn {
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 6px;
+  min-height: 2rem;
+  padding: 0 0.55rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.watchlist-search__suggestion-btn:hover {
+  background: color-mix(in srgb, var(--color-surface-3) 82%, transparent);
+  color: var(--color-text-primary);
+}
+
+.watchlist-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.watchlist-filters__btn {
+  min-height: 2.2rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 76%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--color-surface-2) 94%, transparent);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0 0.6rem;
+  font-size: 0.84rem;
+  transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.watchlist-filters__btn:hover {
+  border-color: color-mix(in srgb, var(--color-border-subtle) 96%, transparent);
+  color: var(--color-text-primary);
+}
+
+.watchlist-filters__btn.is-active {
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-accent) 78%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface-2) 82%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.watchlist-filters__count {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 82%, transparent);
+  background: color-mix(in srgb, var(--color-surface-3) 86%, transparent);
+  font-size: 0.72rem;
+}
+
+.watchlist-more {
+  position: relative;
+}
+
+.watchlist-more-trigger {
+  min-height: 2.7rem;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 78%, transparent);
+  background: color-mix(in srgb, var(--color-surface-2) 93%, transparent);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 0 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  list-style: none;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.watchlist-more-trigger:hover {
+  border-color: color-mix(in srgb, var(--color-border-subtle) 95%, transparent);
+  background: color-mix(in srgb, var(--color-surface-3) 74%, transparent);
+}
+
+.watchlist-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.watchlist-more-menu {
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface-2) 94%, transparent);
+  padding: 0.5rem;
+  margin-top: 0.45rem;
+}
+
+.watchlist-more-menu__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.watchlist-more-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.watchlist-more-menu__item {
+  min-height: 2rem;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+  background: color-mix(in srgb, var(--color-surface-3) 88%, transparent);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.watchlist-more-menu__item.is-active {
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-accent) 65%, transparent);
+}
+
+.watchlist-search__add:focus-visible,
+.watchlist-more-trigger:focus-visible,
+.watchlist-filters__btn:focus-visible,
+.watchlist-search__suggestion-btn:focus-visible,
+.watchlist-more-menu__item:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 78%, transparent);
+  outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+  .watchlist-controls-pane__top {
+    align-items: stretch;
+  }
+
+  .watchlist-search__row {
+    gap: 0.35rem;
+  }
+
+  .watchlist-search__add.ui-button {
+    min-width: 4.4rem;
+    padding: 0 0.58rem;
+  }
+
+  .watchlist-filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .watchlist-filters__btn {
+    min-height: 2rem;
+    padding: 0 0.42rem;
+    font-size: 0.75rem;
+  }
+
+  .watchlist-filters__count {
+    display: none;
+  }
+}
