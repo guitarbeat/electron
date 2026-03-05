@@ -72,12 +72,9 @@ const mockMovies: Movie[] = [
 // Fetches the raw content of the Gist file.
 export const getMovies = async (): Promise<Movie[]> => {
   try {
-    // If credentials are missing, use mock data instead of erroring
+    // If credentials are missing, throw error instead of silent fallback
     if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
-      console.warn(
-        'GitHub credentials not configured. Using mock movie data. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.'
-      );
-      return mockMovies;
+      throw new Error('GitHub credentials not configured. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.');
     }
 
     const headers: Record<string, string> = {
@@ -104,8 +101,7 @@ export const getMovies = async (): Promise<Movie[]> => {
       const { status } = response;
       // Return mock data for 401/403 auth errors instead of throwing
       if (status === 401 || status === 403) {
-        console.warn(`GitHub API returned ${status}. Falling back to mock movies.`);
-        return mockMovies;
+        throw new Error(`GitHub API returned ${status}. Falling back to mock movies.`);
       }
       let msg = `GitHub API responded with ${status}.`;
       try {
@@ -157,9 +153,7 @@ export const getMovies = async (): Promise<Movie[]> => {
     return movies;
   } catch (error) {
     console.error('Error fetching movies from Gist:', error);
-    // Return mock data as fallback when API fails
-    console.warn('Falling back to mock movie data');
-    return mockMovies;
+    throw error;
   }
 };
 

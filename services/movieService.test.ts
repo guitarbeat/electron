@@ -40,7 +40,7 @@ test('getMovies returns movies when Gist fetch is successful', async () => {
   }
 });
 
-test('getMovies returns empty array if file is missing in Gist', async () => {
+test('getMovies throws error if file is missing in Gist', async () => {
   const mockFetch = mock.method(global, 'fetch', async () => {
     return {
       ok: true,
@@ -52,8 +52,7 @@ test('getMovies returns empty array if file is missing in Gist', async () => {
 
   try {
     const mockConsoleError = mock.method(console, 'error', () => {});
-    const movies = await getMovies();
-    assert.equal(movies.length, 5);
+    await assert.rejects(getMovies(), /Gist is missing/);
     mockConsoleError.mock.restore();
   } finally {
     mockFetch.mock.restore();
@@ -92,8 +91,7 @@ test('getMovies throws error on network failure', async () => {
 
   try {
     const mockConsoleError = mock.method(console, 'error', () => {});
-    const movies = await getMovies();
-    assert.equal(movies.length, 5);
+    await assert.rejects(getMovies(), /GitHub API responded with 500/);
     mockConsoleError.mock.restore();
   } finally {
     mockFetch.mock.restore();
