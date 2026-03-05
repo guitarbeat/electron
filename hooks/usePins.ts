@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import { getPins, setPin, removePin, verifyPin, UserPins, clearPinCache } from '../services/pinService';
+import { getPins, setPin, removePin, verifyPin, UserPins } from '../services/pinService';
 
 export const usePins = () => {
   const [pins, setPinsState] = useState<UserPins>({});
@@ -8,7 +8,6 @@ export const usePins = () => {
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
-    clearPinCache(); // Clear cache to force fresh fetch
     try {
       const fetchedPins = await getPins();
       setPinsState(fetchedPins);
@@ -39,7 +38,8 @@ export const usePins = () => {
       try {
         const success = await setPin(user, pin);
         if (success) {
-          await refresh();
+          const latestPins = await getPins();
+          setPinsState(latestPins);
         }
         return success;
       } catch (error) {
@@ -55,7 +55,8 @@ export const usePins = () => {
       try {
         const success = await removePin(user);
         if (success) {
-          await refresh();
+          const latestPins = await getPins();
+          setPinsState(latestPins);
         }
         return success;
       } catch (error) {

@@ -44,10 +44,44 @@
 
 .y2k-avatar-bubble {
   isolation: isolate;
+  transform: scale(var(--gel-base-scale, 1));
+  transform-origin: center;
 }
 
 .gel-avatar-shell {
   overflow: hidden;
+}
+
+@keyframes profile-select-grow {
+  0% {
+    transform: scale(var(--gel-base-scale, 1));
+  }
+  45% {
+    transform: scale(calc(var(--gel-base-scale, 1) * 1.2));
+  }
+  100% {
+    transform: scale(var(--gel-base-scale, 1));
+  }
+}
+
+@keyframes profile-select-shrink {
+  0% {
+    transform: scale(var(--gel-base-scale, 1));
+  }
+  45% {
+    transform: scale(calc(var(--gel-base-scale, 1) * 0.82));
+  }
+  100% {
+    transform: scale(var(--gel-base-scale, 1));
+  }
+}
+
+.gel-bubble--active.is-selection-animating {
+  animation: profile-select-grow 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gel-bubble--inactive.is-selection-animating {
+  animation: profile-select-shrink 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .gel-avatar-chrome-ring {

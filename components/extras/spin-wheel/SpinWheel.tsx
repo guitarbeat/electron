@@ -9,7 +9,7 @@ import { SpinRoulette } from './SpinRoulette';
 import { getTodaySpin, saveDailySpin } from '../../../services/dailySpinService';
 import { getSpinHistory, upsertTodaySpinEntry } from '../../../services/spinHistoryService';
 import { typography, colors, spacing, radius } from '../../../design-system/tokens';
-import { useBubbleDismiss } from '../../../context/BubbleDismissContext';
+import { useBubbleDismiss, type BubbleId } from '../../../context/BubbleDismissContext';
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
@@ -20,13 +20,21 @@ import {
 } from '../../ui/floatingBubbleStyles';
 import './SpinWheel.css';
 
-const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'floating' }) => {
+interface SpinWheelProps {
+  mode?: 'floating' | 'embedded';
+  onRequestClose?: () => void;
+}
+
+const SPIN_BUBBLE_ID: BubbleId = 'spin';
+
+const SpinWheel: React.FC<SpinWheelProps> = ({ mode = 'floating', onRequestClose }) => {
   const {
     isHidden,
     setDragging: setDismissDragging,
     checkDismissZoneHit,
     dismiss,
   } = useBubbleDismiss();
+  const isEmbedded = mode === 'embedded';
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser);
   const unwatchedMovies = movies ? movies.filter((m) => m.watchedBy.length < 2) : [];
@@ -105,7 +113,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
       wasDragged &&
       checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
     ) {
-      dismiss('spin');
+      dismiss(SPIN_BUBBLE_ID);
       try {
         event.currentTarget.releasePointerCapture(event.pointerId);
       } catch {
@@ -171,6 +179,12 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   }, [isMinimized, hasOpened, loadTodaySpin]);
 
   useEffect(() => {
+    if (isEmbedded) {
+      setIsMinimized(false);
+    }
+  }, [isEmbedded]);
+
+  useEffect(() => {
     if (isMinimized || status === 'loading' || status === 'idle') return;
     if (status !== 'result') return;
     let isMounted = true;
@@ -230,9 +244,17 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
     }
   };
 
+  const handleHide = () => {
+    if (isEmbedded) {
+      onRequestClose?.();
+      return;
+    }
+    setIsMinimized(true);
+  };
+
   // Minimized bubble
   if (isMinimized && mode === 'floating') {
-    if (isHidden('spin')) return null;
+    if (isHidden(SPIN_BUBBLE_ID)) return null;
     return (
       <button
         type="button"
@@ -284,7 +306,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
   return (
     <div
       style={getFloatingContainerStyle({
-        isEmbedded: mode === 'embedded',
+        isEmbedded,
         isViewportExpanded: true,
         isMobile: false,
         desktopWidth: '100%',
@@ -319,7 +341,7 @@ const SpinWheel: React.FC<{ mode?: 'floating' | 'embedded' }> = ({ mode = 'float
           <h2 style={{ margin: 0, fontSize: typography.fontSize.lg, color: colors.textPrimary }}>
             Spin
           </h2>
-          <Button size="sm" variant="ghost" onClick={() => setIsMinimized(true)}>
+          <Button size="sm" variant="ghost" onClick={handleHide}>
             Hide
           </Button>
         </div>
