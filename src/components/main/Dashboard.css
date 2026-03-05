@@ -1,0 +1,144 @@
+/* ── Y2K Card ── */
+
+@keyframes iridescent {
+  0% {
+    border-color: #ff7fc6;
+    box-shadow: 0 0 12px rgba(255, 127, 198, 0.3);
+  }
+  33% {
+    border-color: #95dcff;
+    box-shadow: 0 0 12px rgba(149, 220, 255, 0.3);
+  }
+  66% {
+    border-color: #a78af2;
+    box-shadow: 0 0 12px rgba(167, 138, 242, 0.3);
+  }
+  100% {
+    border-color: #ff7fc6;
+    box-shadow: 0 0 12px rgba(255, 127, 198, 0.3);
+  }
+}
+
+@keyframes shimmer-border {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.y2k-card {
+  border-radius: 18px;
+  border: 2px solid rgba(255, 127, 198, 0.2);
+  background:
+    radial-gradient(ellipse at 10% -10%, rgba(255, 105, 180, 0.06) 0%, transparent 40%),
+    linear-gradient(165deg, rgba(23, 33, 58, 0.88) 0%, rgba(12, 18, 35, 0.92) 100%);
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 24px rgba(255, 127, 198, 0.06);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: iridescent 8s ease-in-out infinite;
+}
+
+.y2k-card:hover {
+  box-shadow:
+    5px 5px 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 30px rgba(255, 127, 198, 0.25),
+    0 0 60px rgba(149, 220, 255, 0.1);
+}
+
+/* ── Card header ── */
+
+.y2k-card-header {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+  /* Glossy gel shine */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    transparent 100%
+  );
+}
+
+.y2k-card-header:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.03) 40%,
+    transparent 100%
+  );
+}
+
+/* ── Y2K header text ── */
+
+.y2k-header {
+  background: linear-gradient(135deg, #ff7fc6 0%, #95dcff 50%, #a78af2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none; /* required for gradient text */
+  filter: drop-shadow(0 0 6px rgba(255, 127, 198, 0.35));
+}
+
+/* ── Card body ── */
+
+.y2k-card-body {
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── "Open Full" link ── */
+
+.y2k-link {
+  background: transparent;
+  border: none;
+  color: #ff7fc6;
+  font-size: calc(0.7rem + 0.2vw);
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 4px 8px;
+  transition:
+    opacity 0.2s ease,
+    text-shadow 0.2s ease;
+}
+
+.y2k-link:hover {
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(255, 127, 198, 0.6);
+}
+
+/* ── Item hover ── */
+
+.y2k-item {
+  transition: all 0.2s ease;
+}
+
+.y2k-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 127, 198, 0.3) !important;
+  box-shadow: 0 0 12px rgba(255, 127, 198, 0.12);
+}
+
+/* ── Fade-in ── */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

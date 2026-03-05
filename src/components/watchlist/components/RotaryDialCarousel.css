@@ -1,0 +1,267 @@
+.rotary-dial-container {
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+  position: relative;
+  width: 100%;
+  height: 850px;
+  /* Increased to fit the circle */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotary-dial-container * {
+  transform-style: preserve-3d;
+}
+
+/* Card Container */
+.rdc-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1e293b;
+  overflow: visible;
+  /* Allow avatars to pop out */
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.rdc-card-active {
+  box-shadow:
+    0 0 30px rgba(255, 255, 255, 0.1),
+    0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.rdc-watched-both {
+  filter: grayscale(80%) brightness(0.7);
+  opacity: 0.8;
+}
+
+/* Poster Background */
+.rdc-poster {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Gradient Overlay */
+.rdc-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Content Layout */
+.rdc-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.rdc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: auto;
+  /* Push body and footer down */
+}
+
+.rdc-body {
+  margin-bottom: 8px;
+}
+
+.rdc-footer {
+  margin-top: 4px;
+}
+
+/* Content Elements */
+.rdc-wheel-track {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.05);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.rdc-index {
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.rdc-pill {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: white;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rdc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.rdc-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.rdc-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.rdc-title {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.2;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Status Indicators (Avatars) */
+.rdc-status-container {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Controls */
+.rdc-controls {
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.rdc-btn-spin {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rdc-btn-spin:hover {
+  transform: scale(1.1);
+}
+
+.rdc-btn-spin:active {
+  transform: scale(0.95);
+}
+
+.rdc-btn-spin svg {
+  width: 20px;
+  height: 20px;
+}
+
+.rdc-hint {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.rdc-hint-desktop {
+  display: none;
+}
+
+.rdc-hint-mobile {
+  display: inline;
+}
+
+@media (min-width: 768px) {
+  .rdc-hint-desktop {
+    display: inline;
+  }
+
+  .rdc-hint-mobile {
+    display: none;
+  }
+}
+
+.rdc-no-poster {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  color: #64748b;
+  font-size: 12px;
+}
+
+@keyframes rdc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
