@@ -5,9 +5,9 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { usePolling } from './usePolling';
-import { getQuizData, saveQuizData, QuizData } from '../services/quizService';
-import { QuizQuestion, QuizCharacter } from '../components/quiz/types';
+import { usePolling } from '@/hooks/usePolling';
+import { getQuizData, saveQuizData, QuizData } from '@/services/quizService';
+import { QuizQuestion, QuizCharacter } from '@/quiz/types';
 
 export const useQuiz = (isPaused: boolean = false) => {
   const {

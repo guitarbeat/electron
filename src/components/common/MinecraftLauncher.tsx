@@ -9,7 +9,6 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
   const { showToast } = useToast();
   const serverAddress = import.meta.env.VITE_MINECRAFT_SERVER_ADDRESS || 'localhost';
   const serverPort = import.meta.env.VITE_MINECRAFT_SERVER_PORT || '25565';
-  const webInterfacePort = import.meta.env.VITE_MINECRAFT_WEB_INTERFACE_PORT || '8123';
 
   const copyToClipboard = async (text: string): Promise<boolean> => {
     // Try modern clipboard API first (works on HTTPS/localhost)
@@ -45,7 +44,7 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
 
   const launchMinecraft = async () => {
     const minecraftUrl = `minecraft://${serverAddress}:${serverPort}`;
-    const serverInfo = `Server: ${serverAddress}\nPort: ${serverPort}\nWeb Interface: http://${serverAddress}:${webInterfacePort}`;
+    const serverInfo = `Server: ${serverAddress}\nPort: ${serverPort}`;
 
     try {
       // Try to open the Minecraft protocol handler
@@ -111,14 +110,6 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
     }
   };
 
-  const openWebInterface = () => {
-    window.open(`http://${serverAddress}:${webInterfacePort}`, '_blank');
-    showToast({
-      message: 'Opening Minecraft web interface...',
-      type: 'info',
-      duration: 2000,
-    });
-  };
 
   return (
     <div className={`minecraft-launcher ${className}`}>
@@ -133,16 +124,6 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
         Launch Minecraft
       </button>
 
-      <button
-        onClick={openWebInterface}
-        className="web-interface-btn"
-        aria-label={`Open Minecraft web interface at ${serverAddress}:${webInterfacePort}`}
-      >
-        <span className="web-icon" role="img" aria-label="Web">
-          🌐
-        </span>
-        Web Interface
-      </button>
     </div>
   );
 };

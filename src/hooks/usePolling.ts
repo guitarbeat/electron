@@ -125,18 +125,21 @@ export const usePolling = <T>(
     }
 
     return undefined;
-  }, [interval, executeLocal, isPaused, key]);
+  }, [interval, isPaused, key]);
 
   const refresh = useCallback(() => {
     if (key) {
       setIsLoading(true);
-      pollingManager.refresh(key).catch(() => {
+      setError(null);
+      pollingManager.refresh(key).catch((error) => {
+        console.error('Polling refresh failed:', error);
+        setError(error);
         setIsLoading(false);
       });
     } else {
       executeLocal(true);
     }
-  }, [executeLocal, key]);
+  }, [key]);
 
   return { data, error, isLoading, refresh };
 };

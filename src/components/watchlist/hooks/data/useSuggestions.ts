@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
-import { usePolling } from '../../../hooks/usePolling';
+import { usePolling } from '@/hooks/usePolling';
 import {
   getSuggestions,
   saveSuggestions,
   addSuggestion as addSuggestionService,
-} from '../../../services/suggestionService';
-import { MovieSuggestion, User } from '../../../types';
+} from '@/services/suggestionService';
+import { MovieSuggestion, User } from '@/types';
 
 const POLLING_INTERVAL = 300000; // 5 minutes
 

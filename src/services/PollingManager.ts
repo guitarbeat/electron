@@ -85,6 +85,8 @@ class PollingManager {
       return Promise.resolve();
     }
 
+    // Track the current fetch function to detect stale responses
+    const currentFetchFn = fetchFn;
     const request = (async () => {
       try {
         const data = await fetchFn();
@@ -94,9 +96,9 @@ class PollingManager {
           throw new Error('Fetched data is null or undefined');
         }
 
-        // Ignore stale responses from previous subscriptions/fetch functions.
-        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== fetchFn) {
-          return;
+        // Check if this response is stale before processing
+        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== currentFetchFn) {
+          return; // Silently ignore stale response
         }
 
         this.cache.set(key, data);
@@ -105,15 +107,16 @@ class PollingManager {
       } catch (e) {
         console.error(`Polling failed for ${key}`, e);
 
-        // Ignore stale responses from previous subscriptions/fetch functions.
-        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== fetchFn) {
-          return;
+        // Check if this error response is stale before processing
+        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== currentFetchFn) {
+          return; // Silently ignore stale error
         }
 
         this.errors.set(key, e);
         this.notify(key, undefined, e);
       } finally {
-        if (this.inFlight.get(key) === request!) {
+        // Clean up inFlight only if this is still the current request
+        if (this.inFlight.get(key) === request) {
           this.inFlight.delete(key);
         }
       }
