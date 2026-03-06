@@ -91,3 +91,18 @@ export interface MatchmakerGame {
   createdAt: string;
   startedBy: User;
 }
+
+export type {
+  AgreeDisagreeQuestion,
+  CharacterScores,
+  ImageChoiceQuestion,
+  MultipleChoiceQuestion,
+  QuestionType,
+  QuizAnswer,
+  QuizCharacter,
+  QuizQuestion,
+  QuizResult,
+  XYAxisQuestion,
+} from './components/quiz/types';
+export { CHARACTERS } from './components/quiz/types';
+export type { ContentTab, SortMode, WatchlistProps } from './components/watchlist/types';
