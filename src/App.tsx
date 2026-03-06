@@ -10,7 +10,7 @@ import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import AppHeader from './components/layout/AppHeader';
-import BubbleLayer from './components/bubbles/BubbleLayer';
+import { BubbleLayer } from './components/bubble-system';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [

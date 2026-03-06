@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useMediaQuery, breakpoints } from '../../../hooks/useMediaQuery';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/memoryUtils';
+import { STORAGE_KEYS, FILTERS } from '../Watchlist.styles';
 import { SortMode, ContentTab } from '../types';
 import { Movie, User } from '../../../types';
-import { useMovies } from '../../../hooks/useMovies';
-import { useSuggestions } from '../../../hooks/useSuggestions';
-import { useMemories } from '../../../hooks/useMemories';
+import { useMovies, useSuggestions, useMemories } from './data';
 import { useToast } from '../../../context/ToastContext';
 
-const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
+const MEMORY_FILTER_STORAGE_KEY = STORAGE_KEYS.MEMORY_FILTER;
 
 interface UseWatchlistProps {
   currentUser: User | null;
@@ -55,14 +54,14 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     const searchParams = new URLSearchParams(window.location.search);
     const urlFilter = searchParams.get('memoryFilter');
     const savedFilter = localStorage.getItem(MEMORY_FILTER_STORAGE_KEY);
-    const initialFilter = urlFilter || savedFilter || ALL_MOVIES_FILTER;
+    const initialFilter = urlFilter || savedFilter || FILTERS.MEMORY_FILTER_DEFAULT;
     setActiveMemoryFilter(initialFilter);
   }, []);
 
   useEffect(() => {
     localStorage.setItem(MEMORY_FILTER_STORAGE_KEY, activeMemoryFilter);
     const url = new URL(window.location.href);
-    if (activeMemoryFilter === ALL_MOVIES_FILTER) {
+    if (activeMemoryFilter === FILTERS.ALL_MOVIES) {
       url.searchParams.delete('memoryFilter');
     } else {
       url.searchParams.set('memoryFilter', activeMemoryFilter);
@@ -71,7 +70,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   }, [activeMemoryFilter]);
 
   useEffect(() => {
-    if (activeMemoryFilter !== ALL_MOVIES_FILTER) {
+    if (activeMemoryFilter !== FILTERS.MEMORY_FILTER_DEFAULT) {
       setIsMemoryWallCollapsed(false);
     }
   }, [activeMemoryFilter]);

@@ -1,20 +1,19 @@
 import { useState, useCallback, useRef } from 'react';
-import { MatchmakerGame, User } from '../types';
-import { usePolling } from './usePolling';
-import { getMatchmakerGame, saveMatchmakerGame } from '../services/matchmakerService';
+import type { MatchmakerGame, User } from '../types.ts';
+import { useUnifiedPolling } from './core/useUnifiedPolling.ts';
+import { matchmakerService } from '../services/features/matchmakerService.ts';
 
 export const useMatchmaker = (currentUser: User | null, isPaused: boolean = false) => {
   const {
     data: game,
     isLoading,
     refresh,
-  } = usePolling(
-    getMatchmakerGame,
-    5000,
-    (prev, next) => JSON.stringify(prev) === JSON.stringify(next),
+  } = useUnifiedPolling(
+    () => matchmakerService.getMatchmakerGame(),
+    'matchmaker',
     {
-      key: 'matchmaker',
-      isPaused,
+      interval: 5000,
+      enabled: !isPaused,
     }
   );
 
@@ -34,9 +33,9 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
 
         setIsSubmitting(true);
         try {
-          const latestGame = await getMatchmakerGame();
+          const latestGame = await matchmakerService.getMatchmakerGame();
           const updatedGame = mutationFn(latestGame);
-          await saveMatchmakerGame(updatedGame);
+          await matchmakerService.saveMatchmakerGame(updatedGame);
           refresh();
         } catch (err) {
           console.error('Matchmaker mutation failed:', err);
