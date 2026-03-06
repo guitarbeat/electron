@@ -11,6 +11,7 @@ import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import AppHeader from './components/layout/AppHeader';
 import BubbleLayer from './components/bubbles/BubbleLayer';
+import MinecraftLauncher from './src/components/common/MinecraftLauncher';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -74,6 +75,9 @@ const AppInner: React.FC = () => {
                 {activeHeroLabel}
               </span>
             </h2>
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+              <MinecraftLauncher />
+            </div>
           </section>
 
           {MAIN_TABS.map((tab) => {
