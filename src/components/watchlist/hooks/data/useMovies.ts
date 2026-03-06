@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Movie, User } from '../../../types';
-import { usePolling } from '../../../hooks/usePolling';
-import { getMovies, saveMovies } from '../../../services/movieService';
-import { fetchMovieMetadata, MetadataResult } from '../../../services/metadataService';
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../../../config/security';
-import { concurrentMap } from '../../../utils/concurrency';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Movie, User } from '../../../../types';
+import { usePolling } from '../../../../hooks/usePolling';
+import { getMovies, saveMovies } from '../../../../services/movieService';
+import { fetchMovieMetadata, MetadataResult } from '../../../../services/metadataService';
+import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '../../../../config/security';
+import { concurrentMap } from '../../../../utils/concurrency';
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
 export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
@@ -32,7 +32,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
-  const mutationLockRef = useRef<Promise<void> | null>(null);
+  const mutationLockRef = useRef<Promise<Movie[]> | null>(null);
   const hasAutoSyncedRef = useRef(false);
 
   // Effect to seed the initial movies if the Gist is empty
@@ -50,7 +50,12 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [], category: 'Humor' },
           { title: 'Kung Fu Panda', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
           { title: 'Free Guy', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'The Super Mario Bros. Movie', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+          {
+            title: 'The Super Mario Bros. Movie',
+            addedBy: 'Aaron',
+            watchedBy: [],
+            category: 'Movies',
+          },
         ];
 
         try {
@@ -67,7 +72,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   }, [isLoading, movies, refresh]);
 
   const performMutation = useCallback(
-    async (mutationFn: () => Promise<Movie[]>) => {
+    async (mutationFn: () => Promise<Movie[]>): Promise<Movie[]> => {
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
       setIsSubmitting(true);
@@ -106,11 +111,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       }
 
       const sanitizedTitle = sanitizeInput(title.trim());
-      const addedBy = user?.name || 'Anonymous';
+      const addedBy = user || 'Anonymous';
 
       return performMutation(async () => {
         // Create base movie object
-        const baseMovie: Omit<Movie, 'posterUrl' | 'year' | 'plot' | 'imdbRating' | 'runtime' | 'genre' | 'director'> = {
+        const baseMovie: Omit<
+          Movie,
+          'posterUrl' | 'year' | 'plot' | 'imdbRating' | 'runtime' | 'genre' | 'director'
+        > = {
           id: crypto.randomUUID(),
           title: sanitizedTitle,
           addedBy,
@@ -124,14 +132,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           const metadata = await fetchMovieMetadata(sanitizedTitle);
           const safeMetadata = extractSafeMetadata(metadata);
           const movie = { ...baseMovie, ...safeMetadata };
-          
+
           const updatedMovies = [...(movies || []), movie];
           await saveMovies(updatedMovies);
           await refresh();
           return updatedMovies;
         } catch (metadataError) {
           console.warn('Failed to fetch metadata, using base movie:', metadataError);
-          
+
           // Still save the movie even if metadata fetch fails
           const movie = baseMovie as Movie;
           const updatedMovies = [...(movies || []), movie];
@@ -146,15 +154,15 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
   const toggleWatched = useCallback(
     async (movieId: string, user: User | null) => {
-      const userName = user?.name || 'Anonymous';
-      
+      const userName = user || 'Anonymous';
+
       return performMutation(async () => {
         const updatedMovies = (movies || []).map((movie) => {
           if (movie.id === movieId) {
             const watchedBy = movie.watchedBy.includes(userName)
               ? movie.watchedBy.filter((name) => name !== userName)
               : [...movie.watchedBy, userName];
-            
+
             return { ...movie, watchedBy };
           }
           return movie;

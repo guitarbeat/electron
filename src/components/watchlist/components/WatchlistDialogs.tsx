@@ -45,10 +45,7 @@ const WatchlistDialogs: React.FC<WatchlistDialogsProps> = ({
       )}
 
       {successMovieId && (
-        <Confetti
-          trigger={successMovieId}
-          onComplete={() => setSuccessMovieId(null)}
-        />
+        <Confetti trigger={successMovieId} onComplete={() => setSuccessMovieId(null)} />
       )}
     </>
   );

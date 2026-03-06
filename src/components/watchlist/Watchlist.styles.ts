@@ -5,7 +5,7 @@ export const SKELETON_KEYS = {
   MOBILE: ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'],
   DESKTOP: [
     'desktop-1',
-    'desktop-2', 
+    'desktop-2',
     'desktop-3',
     'desktop-4',
     'desktop-5',

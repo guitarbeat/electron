@@ -6,9 +6,7 @@ interface MatchmakerBubbleProps {
   currentUser: User | null;
 }
 
-const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({
-  currentUser,
-}) => {
+const MatchmakerBubble: React.FC<MatchmakerBubbleProps> = ({ currentUser }) => {
   if (!currentUser) return null;
 
   return <Matchmaker currentUser={currentUser} />;
