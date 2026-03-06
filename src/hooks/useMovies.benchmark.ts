@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { concurrentMap } from '@/utils/concurrency;
+import { concurrentMap } from '../utils/concurrency';
 
 describe('concurrentMap Benchmark', () => {
   it('measures execution time with different concurrency levels', async () => {

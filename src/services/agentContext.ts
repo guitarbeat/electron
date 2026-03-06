@@ -6,7 +6,7 @@ import type {
   SharedMemory,
   SpinEntry,
   User,
-} from '@/types;
+} from '../types';
 import { getTodaySpin } from './dailySpinService';
 import { getMemories } from './memoryService';
 import { getMessages } from './messageService';

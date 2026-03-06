@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import Toast from '@/components/ui/Toast;
-import { spacing } from '@/design-system/tokens;
+import Toast from '../components/ui/Toast';
+import { spacing } from '../design-system/tokens';
 
 export type ToastType = 'success' | 'error' | 'info';
 
