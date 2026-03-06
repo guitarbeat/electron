@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
+import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery';
 import './ToolsDrawer.css';
 
 export type ToolId = 'messages' | 'spin' | 'snake' | 'food-drop' | 'quiz' | 'matchmaker';
@@ -56,7 +56,9 @@ const ToolsDrawer: React.FC<ToolsDrawerProps> = ({
       }
 
       if (event.key === 'Tab' && panelRef.current) {
-        const nodes = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+        const nodes = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+        );
         if (!nodes.length) {
           event.preventDefault();
           return;
@@ -88,7 +90,12 @@ const ToolsDrawer: React.FC<ToolsDrawerProps> = ({
 
   return createPortal(
     <div className="tools-drawer" aria-hidden={false}>
-      <button className="tools-drawer__backdrop" type="button" onClick={onClose} aria-label="Close tools" />
+      <button
+        className="tools-drawer__backdrop"
+        type="button"
+        onClick={onClose}
+        aria-label="Close tools"
+      />
       <section
         ref={panelRef}
         id="tools-drawer"

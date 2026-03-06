@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { Place, User } from '../types';
+import { Place, User } from '@/types';
 import { usePolling } from './usePolling';
-import { getPlaces, savePlaces } from '../services/placesService';
-import { validateAndThrow, validatePlace } from '../utils/validation';
-import { sanitizeInput } from '../config/security';
+import { getPlaces, savePlaces } from '@/services/placesService';
+import { validateAndThrow, validatePlace } from '@/utils/validation';
+import { sanitizeInput } from '@/config/security';
 
 export const usePlaces = (currentUser: User | null, isPaused: boolean = false) => {
   const {

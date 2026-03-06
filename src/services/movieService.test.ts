@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
 import { getMovies, saveMovies } from './movieService.ts';
-import { GIST_FILENAME, GIST_API_URL } from '../config/gistConfig.ts';
-import type { Movie } from '../types.ts';
+import { GIST_FILENAME, GIST_API_URL } from '@/config/gistConfig.ts';
+import type { Movie } from '@/types.ts';
 
 const mockMovies: Movie[] = [
   {

@@ -4,14 +4,14 @@
  * Handles fetching and saving quiz data from/to GitHub Gist
  */
 
-import { GIST_TOKEN, GIST_QUIZ_FILENAME } from '../config/gistConfig.ts';
-import type { QuizQuestion, QuizCharacter } from '../components/quiz/types.ts';
+import { GIST_TOKEN, GIST_QUIZ_FILENAME } from '@/config/gistConfig.ts';
+import type { QuizQuestion, QuizCharacter } from '@/components/quiz/types.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 import {
   quizQuestions as defaultQuestions,
   characterDescriptions as defaultDescriptions,
   neitherDescription as defaultNeither,
-} from '../components/quiz/data';
+} from '@/components/quiz/data';
 
 export interface QuizData {
   questions: QuizQuestion[];
@@ -77,7 +77,11 @@ export const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData>
 
 export const saveQuizData = async (data: QuizData): Promise<void> => {
   try {
-    const response = await patchGistFile(GIST_QUIZ_FILENAME, JSON.stringify(data, null, 2), GIST_TOKEN);
+    const response = await patchGistFile(
+      GIST_QUIZ_FILENAME,
+      JSON.stringify(data, null, 2),
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

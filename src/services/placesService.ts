@@ -1,5 +1,5 @@
-import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_ID } from '../config/gistConfig.ts';
-import type { Place } from '../types.ts';
+import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_ID } from '@/config/gistConfig.ts';
+import type { Place } from '@/types.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 const mockPlaces: Place[] = [

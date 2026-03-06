@@ -1,8 +1,8 @@
 import React from 'react';
-import Input from '../../ui/Input';
-import Button from '../../ui/Button';
-import { PlusIcon, SearchIcon } from '../../common/icons';
-import { typography } from '../../../design-system/tokens';
+import Input from '@/ui/Input';
+import Button from '@/ui/Button';
+import { PlusIcon, SearchIcon } from '@/common/icons';
+import { typography } from '@/design-system/tokens';
 
 interface WatchlistSearchBarProps {
   searchQuery: string;
@@ -72,7 +72,11 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
       </div>
 
       {showSuggestions && (
-        <ul className="watchlist-search__suggestions" role="listbox" aria-label="Search suggestions">
+        <ul
+          className="watchlist-search__suggestions"
+          role="listbox"
+          aria-label="Search suggestions"
+        >
           {suggestions.map((suggestion) => (
             <li key={suggestion}>
               <button
@@ -94,4 +98,3 @@ const WatchlistSearchBar: React.FC<WatchlistSearchBarProps> = ({
 };
 
 export default WatchlistSearchBar;
-

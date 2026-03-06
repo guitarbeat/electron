@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { Message } from '../types';
+import { Message } from '@/types';
 import { usePolling } from './usePolling';
-import { getMessages, saveMessages } from '../services/messageService';
-import { validateAndThrow, validateMessage } from '../utils/validation';
-import { sanitizeInput } from '../config/security';
+import { getMessages, saveMessages } from '@/services/messageService';
+import { validateAndThrow, validateMessage } from '@/utils/validation';
+import { sanitizeInput } from '@/config/security';
 
 export const MESSAGE_POLLING_INTERVAL = 10000;
 

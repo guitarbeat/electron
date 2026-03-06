@@ -19,7 +19,9 @@ const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   if (isMobile) {
     return (
       <div className="workspace-layout workspace-layout--mobile">
-        {mobileTopBar ? <div className="workspace-layout__mobile-topbar">{mobileTopBar}</div> : null}
+        {mobileTopBar ? (
+          <div className="workspace-layout__mobile-topbar">{mobileTopBar}</div>
+        ) : null}
         <div className="workspace-layout__content">{content}</div>
         {mobileSheet}
       </div>

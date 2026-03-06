@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import MessageBoard from '../common/MessageBoard';
-import SnakeGame from '../snake/SnakeGame';
-import FoodDropGame from '../food-drop/FoodDropGame';
-import SpinWheel from '../extras/spin-wheel/SpinWheel';
-import QuizBubble from '../quiz/QuizBubble';
-import MatchmakerBubble from '../matchmaker/MatchmakerBubble';
-import type { User } from '../../types';
-import type { QuizData } from '../../services/quizService';
-import DragDismissZone from '../common/DragDismissZone';
-import RestoreBubblesButton from '../common/RestoreBubblesButton';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import MessageBoard from '@/common/MessageBoard';
+import SnakeGame from '@/snake/SnakeGame';
+import FoodDropGame from '@/food-drop/FoodDropGame';
+import SpinWheel from '@/extras/spin-wheel/SpinWheel';
+import QuizBubble from '@/quiz/QuizBubble';
+import MatchmakerBubble from '@/matchmaker/MatchmakerBubble';
+import type { User } from '@/types';
+import type { QuizData } from '@/services/quizService';
+import DragDismissZone from '@/common/DragDismissZone';
+import RestoreBubblesButton from '@/common/RestoreBubblesButton';
+import { useBubbleDismiss } from '@/context/BubbleDismissContext';
 import { BubbleToolId } from './bubbleLayout';
 import { useBubbleDocking } from './useBubbleDocking';
 import './BubbleLayer.css';
@@ -122,7 +122,12 @@ const BubbleLayer: React.FC<BubbleLayerProps> = ({
       <RestoreBubblesButton />
 
       {activeTool && (
-        <section className="bubble-tool-panel" role="dialog" aria-modal="true" aria-label="Tool panel">
+        <section
+          className="bubble-tool-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tool panel"
+        >
           <header className="bubble-tool-panel__header">
             <h2 className="bubble-tool-panel__title">
               {TOOL_CONFIG.find((tool) => tool.id === activeTool)?.label}

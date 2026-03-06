@@ -3,8 +3,8 @@ import {
   MAX_AUTHOR_LENGTH,
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
-} from '../config/security';
-import type { DailySpin, Movie, User } from '../types';
+} from '@/config/security';
+import type { DailySpin, Movie, User } from '@/types';
 import { deleteDailySpin, getTodaySpin, saveDailySpin } from './dailySpinService';
 import {
   addMemory,

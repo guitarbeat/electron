@@ -26,7 +26,7 @@ export const getMovies = async (): Promise<Movie[]> => {
     }
 
     if (!response.ok) {
-      const status = response.status;
+      const { status } = response;
       let msg = await buildGithubApiErrorMessage(response);
       if (status === 401 || status === 404) {
         msg +=
@@ -75,7 +75,11 @@ export const getMovies = async (): Promise<Movie[]> => {
 // Saves the entire movie list back to the Gist, overwriting the previous content.
 export const saveMovies = async (movies: Movie[]): Promise<void> => {
   try {
-    const response = await patchGistFile(GIST_FILENAME, JSON.stringify(movies, null, 2), GIST_TOKEN);
+    const response = await patchGistFile(
+      GIST_FILENAME,
+      JSON.stringify(movies, null, 2),
+      GIST_TOKEN
+    );
 
     if (!response.ok) {
       const errorBody = await response.json();

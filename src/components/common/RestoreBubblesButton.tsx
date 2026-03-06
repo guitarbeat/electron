@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useBubbleDismiss, BubbleId } from '../../context/BubbleDismissContext';
-import { colors, radius, spacing, shadows } from '../../design-system/tokens';
+import { useBubbleDismiss, BubbleId } from '@/context/BubbleDismissContext';
+import { colors, radius, spacing, shadows } from '@/design-system/tokens';
 
 const RestoreBubblesButton: React.FC = () => {
   const { hiddenBubbles, restore, restoreAll, bubbleLabels } = useBubbleDismiss();

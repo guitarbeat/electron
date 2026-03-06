@@ -8,8 +8,8 @@ import {
   deleteSpinEntry,
   upsertTodaySpinEntry,
 } from './spinHistoryService.ts';
-import { GIST_SPIN_HISTORY_FILENAME } from '../config/gistConfig.ts';
-import type { SpinHistory } from '../types.ts';
+import { GIST_SPIN_HISTORY_FILENAME } from '@/config/gistConfig.ts';
+import type { SpinHistory } from '@/types.ts';
 
 const MOCK_DATE = new Date('2024-03-20T12:00:00Z');
 

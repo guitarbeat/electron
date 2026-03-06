@@ -1,8 +1,8 @@
 import React from 'react';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
-import type { MainTab } from '../../types';
-import UserSelection from '../common/UserSelection';
-import TabBar from '../ui/TabBar';
+import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery';
+import type { MainTab } from '@/types';
+import UserSelection from '@/common/UserSelection';
+import TabBar from '@/ui/TabBar';
 
 interface AppHeaderProps {
   tabs: { id: MainTab; label: string; icon?: string }[];

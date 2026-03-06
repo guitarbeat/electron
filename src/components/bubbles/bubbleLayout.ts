@@ -22,11 +22,16 @@ const BOTTOM_OFFSET = 96;
 export const getViewportBucket = (width: number): BubbleViewportBucket =>
   width <= 640 ? 'mobile' : 'desktop';
 
-export const getDockSlots = (width: number, height: number, bucket: BubbleViewportBucket): BubbleSlotPosition[] => {
+export const getDockSlots = (
+  width: number,
+  height: number,
+  bucket: BubbleViewportBucket
+): BubbleSlotPosition[] => {
   const maxByHeight = Math.max(
     1,
-    Math.floor((height - TOP_OFFSET - BOTTOM_OFFSET - BUBBLE_SIZE) / (BUBBLE_SIZE + BUBBLE_SLOT_GAP)) +
-      1
+    Math.floor(
+      (height - TOP_OFFSET - BOTTOM_OFFSET - BUBBLE_SIZE) / (BUBBLE_SIZE + BUBBLE_SLOT_GAP)
+    ) + 1
   );
   const perEdge = Math.max(1, Math.min(maxByHeight, bucket === 'mobile' ? 3 : 6));
 
@@ -54,7 +59,11 @@ export const parseSlotKey = (key: string): BubbleSlot | null => {
   return { edge, index };
 };
 
-export const getNearestSlot = (x: number, y: number, slots: BubbleSlotPosition[]): BubbleSlotPosition | null => {
+export const getNearestSlot = (
+  x: number,
+  y: number,
+  slots: BubbleSlotPosition[]
+): BubbleSlotPosition | null => {
   if (!slots.length) return null;
   let nearest = slots[0];
   let nearestDist = Number.POSITIVE_INFINITY;

@@ -87,7 +87,7 @@ const AppInner: React.FC = () => {
                 hidden={!isActivePanel}
                 className="tab-panel"
               >
-                {isActivePanel ? (tab.id === 'queue' ? <Watchlist /> : <PlacesList />) : null}
+                {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
               </section>
             );
           })}

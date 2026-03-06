@@ -116,9 +116,7 @@
   box-shadow:
     0 6px 22px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(0, 0, 0, 0.28);
-  transform:
-    rotate(calc(var(--i) * var(--ba)))
-    translateY(calc(-1 * clamp(132px, 32%, 176px)))
+  transform: rotate(calc(var(--i) * var(--ba))) translateY(calc(-1 * clamp(132px, 32%, 176px)))
     rotate(calc(-1 * var(--i) * var(--ba)));
 }
 
@@ -357,7 +355,8 @@
   --spin-angle-1: -125deg;
 }
 
-.spin-roulette__glass-wrap:has(.spin-roulette__glass-btn:hover:not(:disabled)) .spin-roulette__glass-shadow {
+.spin-roulette__glass-wrap:has(.spin-roulette__glass-btn:hover:not(:disabled))
+  .spin-roulette__glass-shadow {
   filter: blur(clamp(2px, 0.06rem, 6px));
 }
 
@@ -371,7 +370,8 @@
   transform: rotate3d(1, 0, 0, 18deg);
 }
 
-.spin-roulette__glass-wrap:has(.spin-roulette__glass-btn:active:not(:disabled)) .spin-roulette__glass-shadow::after {
+.spin-roulette__glass-wrap:has(.spin-roulette__glass-btn:active:not(:disabled))
+  .spin-roulette__glass-shadow::after {
   top: calc(var(--shadow-cutoff-fix) - 0.34rem);
   opacity: 0.7;
 }
@@ -391,9 +391,7 @@
 @media (max-width: 520px) {
   .spin-roulette__card {
     --w: clamp(56px, 17%, 72px);
-    transform:
-      rotate(calc(var(--i) * var(--ba)))
-      translateY(calc(-1 * clamp(104px, 31%, 136px)))
+    transform: rotate(calc(var(--i) * var(--ba))) translateY(calc(-1 * clamp(104px, 31%, 136px)))
       rotate(calc(-1 * var(--i) * var(--ba)));
   }
 

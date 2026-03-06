@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { MainTab, Movie, Place } from '../../types';
-import { useMovies } from '../../hooks/useMovies';
-import { usePlaces } from '../../hooks/usePlaces';
-import { useUser } from '../../context/UserContext';
-import Skeleton from '../ui/Skeleton';
-import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
+import { MainTab, Movie, Place } from '@/types';
+import { useMovies } from '@/hooks/useMovies';
+import { usePlaces } from '@/hooks/usePlaces';
+import { useUser } from '@/context/UserContext';
+import Skeleton from '@/ui/Skeleton';
+import { colors, spacing, typography, radius, shadows } from '@/design-system/tokens';
 import './Dashboard.css';
-import { ChevronDownIcon, ChevronUpIcon } from '../common/icons';
+import { ChevronDownIcon, ChevronUpIcon } from '@/common/icons';
 
 /* ── Reusable accordion card ── */
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import Button from '../ui/Button';
-import { colors, radius, spacing, typography } from '../../design-system/tokens';
+import Button from '@/ui/Button';
+import { colors, radius, spacing, typography } from '@/design-system/tokens';
 import { SnakeLeaderboardEntry } from './useSnakeLeaderboard';
 
 interface SnakeLeaderboardProps {

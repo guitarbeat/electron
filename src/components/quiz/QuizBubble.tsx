@@ -1,19 +1,19 @@
 import React, { useRef, useState } from 'react';
-import type { User } from '../../types';
-import type { QuizData } from '../../services/quizService';
-import { colors, spacing, typography } from '../../design-system/tokens';
-import { useTheme } from '../../context/ThemeContext';
-import Button from '../ui/Button';
-import MinigameModal from '../ui/MinigameModal';
+import type { User } from '@/types';
+import type { QuizData } from '@/services/quizService';
+import { colors, spacing, typography } from '@/design-system/tokens';
+import { useTheme } from '@/context/ThemeContext';
+import Button from '@/ui/Button';
+import MinigameModal from '@/ui/MinigameModal';
 import QuizFlow from './QuizFlow';
-import { useBubbleDismiss } from '../../context/BubbleDismissContext';
+import { useBubbleDismiss } from '@/context/BubbleDismissContext';
 import {
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
   FLOATING_DRAG_THRESHOLD,
   clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
-} from '../ui/floatingBubbleStyles';
+} from '@/ui/floatingBubbleStyles';
 
 interface QuizBubbleProps {
   mode?: 'floating' | 'embedded';
@@ -140,7 +140,9 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
 
   if (isEmbedded) {
     return (
-      <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+      <div
+        style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.md }}
+      >
         {renderHeader(onOpenQuizEditor)}
         {renderQuizContent(onQuizComplete)}
       </div>
@@ -179,7 +181,16 @@ const QuizBubble: React.FC<QuizBubbleProps> = ({
         ariaLabel="Personality quiz panel"
         maxWidth={840}
       >
-        <div style={{ padding: spacing.lg, overflow: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        <div
+          style={{
+            padding: spacing.lg,
+            overflow: 'auto',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.md,
+          }}
+        >
           {renderHeader(() => {
             closeModal();
             onOpenQuizEditor();

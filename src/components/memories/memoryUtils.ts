@@ -1,4 +1,4 @@
-import type { Movie, SharedMemory } from '../../types';
+import type { Movie, SharedMemory } from '@/types';
 
 export const MAX_NOTE_LENGTH = 280;
 export const INITIAL_VISIBLE_COUNT = 6;

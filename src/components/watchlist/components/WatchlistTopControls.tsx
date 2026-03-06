@@ -1,10 +1,10 @@
 import React from 'react';
-import { PlusIcon, Spinner } from '../../common/icons';
-import Button from '../../ui/Button';
-import Input from '../../ui/Input';
-import SubNav from '../../ui/SubNav';
-import { ContentTab, SortMode } from '../types';
-import { colors, radius, spacing, typography } from '../../../design-system/tokens';
+import { PlusIcon, Spinner } from '@/common/icons';
+import Button from '@/ui/Button';
+import Input from '@/ui/Input';
+import SubNav from '@/ui/SubNav';
+import { ContentTab, SortMode } from '@/types';
+import { colors, radius, spacing, typography } from '@/design-system/tokens';
 
 const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🎬' },
