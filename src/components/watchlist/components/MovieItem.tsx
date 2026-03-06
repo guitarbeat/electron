@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import { Movie, User, SharedMemory } from '@/types';
-import { TrashIcon, EyeIcon, EyeOffIcon, MagicWandIcon, FilmIcon } from './icons';
+import { TrashIcon, EyeIcon, EyeOffIcon, MagicWandIcon, FilmIcon } from '@/common/icons';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import IconButton from '@/ui/IconButton';

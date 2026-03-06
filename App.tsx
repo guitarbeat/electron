@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './hooks/useAudio';
 import { useUser } from './context/UserContext';
+import { UserProvider } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
@@ -10,7 +11,7 @@ import QuizEditor from './src/components/quiz/QuizEditor';
 import PlacesList from './src/components/places/PlacesList';
 import MinigameModal from './src/components/ui/MinigameModal';
 import AppHeader from './src/components/layout/AppHeader';
-import MinecraftLauncher from './src/components/common/MinecraftLauncher';
+import FloatingBubbles from './src/components/layout/FloatingBubbles';
 import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
@@ -75,9 +76,6 @@ const AppInner: React.FC = () => {
                 {activeHeroLabel}
               </span>
             </h2>
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <MinecraftLauncher />
-            </div>
           </section>
 
           {MAIN_TABS.map((tab) => {
@@ -110,25 +108,25 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        {/* BubbleLayer component not found - commented out */}
-        {/* <BubbleLayer
-          quizData={quizData}
+        <FloatingBubbles
           quizCompleted={quizCompleted}
           currentUser={currentUser}
           onQuizComplete={handleQuizComplete}
           onOpenQuizEditor={handleOpenQuizEditor}
-        /> */}
+        />
       </div>
     </ThemeProvider>
   );
 };
 
 const App: React.FC = () => (
-  <BubbleDismissProvider>
-    <ToastProvider>
-      <AppInner />
-    </ToastProvider>
-  </BubbleDismissProvider>
+  <UserProvider>
+    <BubbleDismissProvider>
+      <ToastProvider>
+        <AppInner />
+      </ToastProvider>
+    </BubbleDismissProvider>
+  </UserProvider>
 );
 
 export default App;

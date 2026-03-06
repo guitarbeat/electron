@@ -22,7 +22,11 @@ export const getMovies = async (): Promise<Movie[]> => {
 
     // If the content hasn't changed, return the cached version
     if (response.status === 304) {
-      return cachedMovies;
+      // Only return cached data if we have previously cached content
+      if (cachedMovies.length > 0) {
+        return cachedMovies;
+      }
+      // If cache is empty, fall through to fetch fresh data
     }
 
     if (!response.ok) {
@@ -57,12 +61,15 @@ export const getMovies = async (): Promise<Movie[]> => {
       throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
     }
 
-    // Update cache and ETag only after successful parsing
-    cachedMovies = movies;
-
-    const etag = response.headers.get('ETag');
+    // Update cache and ETag atomically only after successful parsing
+    const etag = response.headers.get('etag') || response.headers.get('ETag');
     if (etag) {
+      cachedMovies = movies;
       lastETag = etag;
+    } else {
+      // If no ETag, update cache but clear ETag to force refresh next time
+      cachedMovies = movies;
+      lastETag = null;
     }
 
     return movies;
@@ -82,10 +89,19 @@ export const saveMovies = async (movies: Movie[]): Promise<void> => {
     );
 
     if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('GitHub API error details:', errorBody);
+      let errorBody;
+      try {
+        errorBody = await response.json();
+        console.error('GitHub API error details:', errorBody);
+      } catch {
+        console.error('GitHub API error: Unable to parse error body');
+      }
       throw new Error(`GitHub API responded with ${response.status}`);
     }
+
+    // Update local cache after successful save
+    cachedMovies = movies;
+    lastETag = null; // Clear ETag to force fresh data on next fetch
   } catch (error) {
     console.error('Error saving movies to Gist:', error);
     throw error;

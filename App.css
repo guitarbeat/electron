@@ -332,9 +332,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 1.2em;
+  min-height: 1.4em;
   margin: 0;
-  line-height: 0.95;
+  padding: 0.2em 0;
+  line-height: 1.1;
   font-size: clamp(3.2rem, 10vw, 8.8rem);
   letter-spacing: 0.05em;
   text-transform: uppercase;

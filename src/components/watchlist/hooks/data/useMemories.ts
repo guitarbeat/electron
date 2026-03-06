@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from 'react';
-import { usePolling } from '../../../hooks/usePolling';
+import { usePolling } from '@/hooks/usePolling';
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
   getMemories,
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
-} from '../../../services/memoryService';
-import { SharedMemory } from '../../../types';
+} from '@/services/memoryService';
+import { SharedMemory } from '@/types';
 
 const POLLING_INTERVAL = 30000;
 
