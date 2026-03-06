@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
-import { QuizData } from '@/services/quizService;
+import { QuizData } from '../../services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
 import ImageChoiceQuestion from './ImageChoiceQuestion';
 import XYAxisQuestion from './XYAxisQuestion';
 import ResultsScreen from './ResultsScreen';
-import Card from '@/ui/Card;
-import Button from '@/ui/Button;
-import { spacing, colors, typography, shadows } from '@/design-system/tokens;
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import { spacing, colors, typography, shadows } from '../../design-system/tokens';
 import { calculateQuizResults } from './quizScoring';
 
 interface QuizFlowProps {

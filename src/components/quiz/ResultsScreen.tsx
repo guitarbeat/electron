@@ -1,8 +1,8 @@
 import React from 'react';
 import { QuizResult, QuizCharacter } from './types';
-import Card from '@/ui/Card;
-import Button from '@/ui/Button;
-import { spacing, typography, colors, shadows } from '@/design-system/tokens;
+import Card from '../ui/Card';
+import Button from '../ui/Button';
+import { spacing, typography, colors, shadows } from '../../design-system/tokens';
 
 interface ResultsScreenProps {
   result: QuizResult;

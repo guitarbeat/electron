@@ -1,12 +1,12 @@
 /* eslint-disable react/prop-types */
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '@/context/UserContext;
-import type { MainTab, User } from '@/types;
+import { useUser } from '../../context/UserContext';
+import type { MainTab, User } from '../../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
-import { usePins } from '@/hooks/usePins;
-import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery;
+import { usePins } from '../../hooks/usePins';
+import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
-import ThemeToggle from '@/ui/ThemeToggle;
+import ThemeToggle from '../ui/ThemeToggle';
 import './UserSelection.css';
 
 type UserSelectionVariant = 'inline' | 'panel';

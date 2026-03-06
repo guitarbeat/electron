@@ -1,9 +1,9 @@
 import './GelBubbleAvatar.css';
 import React from 'react';
-import { User } from '@/types;
+import { User } from '../../types';
 import ImageWithFallback from './ImageWithFallback';
-import { userImageSources } from '@/config/imageConfig;
-import { useRandomCatImage } from '@/hooks/useRandomCatImage;
+import { userImageSources } from '../../config/imageConfig';
+import { useRandomCatImage } from '../../hooks/useRandomCatImage';
 import { LockIcon } from './icons';
 
 type BubbleSize = 'default' | 'compact' | 'tiny';

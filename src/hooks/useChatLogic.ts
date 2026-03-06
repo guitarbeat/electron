@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useMessages } from './useMessages';
-import { useToast } from '@/context/ToastContext;
-import { getErrorMessage } from '@/utils/errorHandling;
+import { useToast } from '../context/ToastContext';
+import { getErrorMessage } from '../utils/errorHandling';
 
 export const useChatLogic = () => {
   const { showToast } = useToast();

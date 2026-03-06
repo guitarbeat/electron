@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BubbleId, useBubbleDismiss } from '@/context/BubbleDismissContext;
+import { BubbleId, useBubbleDismiss } from '../../context/BubbleDismissContext';
 import {
   BubbleToolId,
   BubbleViewportBucket,
