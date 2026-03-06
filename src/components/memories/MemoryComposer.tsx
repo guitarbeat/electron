@@ -1,9 +1,9 @@
 import React from 'react';
-import { Movie, User } from '../../types';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
-import Textarea from '../ui/Textarea';
-import { colors, radius, spacing, typography } from '../../design-system/tokens';
+import { Movie, User } from '@/types';
+import Input from '@/ui/Input';
+import Button from '@/ui/Button';
+import Textarea from '@/ui/Textarea';
+import { colors, radius, spacing, typography } from '@/design-system/tokens';
 import { canCreateMemory } from './memoryUtils';
 
 interface MemoryComposerProps {

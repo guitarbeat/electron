@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, spacing, typography, radius } from '../../design-system/tokens';
+import { colors, spacing, typography, radius } from '@/design-system/tokens';
 
 export interface SubNavTab {
   id: string;

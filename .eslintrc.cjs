@@ -23,6 +23,8 @@ module.exports = {
   rules: {
     'react-refresh/only-export-components': 'off',
     'react/react-in-jsx-scope': 'off',
+    'react/prop-types': 'off',
+    'import/no-unresolved': 'off',
     'import/prefer-default-export': 'off',
     'react/require-default-props': 'off',
     'react/jsx-props-no-spreading': 'off',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing, typography, motion, borders } from '../../design-system/tokens';
+import { colors, radius, spacing, typography, motion, borders } from '@/design-system/tokens';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;

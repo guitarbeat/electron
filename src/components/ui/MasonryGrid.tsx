@@ -1,5 +1,5 @@
 import React from 'react';
-import { spacing } from '../../design-system/tokens';
+import { spacing } from '@/design-system/tokens';
 import './MasonryGrid.css';
 
 interface MasonryGridProps {

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { colors, spacing, shadows, typography } from '../../design-system/tokens';
+import { colors, spacing, shadows, typography } from '@/design-system/tokens';
 
 export interface MinigameModalProps {
   isOpen: boolean;

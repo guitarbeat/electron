@@ -1,6 +1,6 @@
 import React from 'react';
-import Card from '../ui/Card';
-import { colors, spacing, typography, radius, shadows } from '../../design-system/tokens';
+import Card from '@/ui/Card';
+import { colors, spacing, typography, radius, shadows } from '@/design-system/tokens';
 
 /** Shared card style for all extras sections */
 const sectionStyle: React.CSSProperties = {

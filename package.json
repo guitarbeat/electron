@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "build:dev": "vite build --mode development",
     "check:case-collisions": "./scripts/check-case-collisions.sh",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "lint": "eslint \"src/**/*.ts\" \"src/**/*.tsx\" --report-unused-disable-directives",
     "format": "prettier --write .",
     "check-types": "tsc --noEmit",
     "test:snake": "node --test components/snake/snakeGameLogic.test.ts",

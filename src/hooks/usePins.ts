@@ -6,17 +6,21 @@ export const usePins = () => {
   const [pins, setPinsState] = useState<UserPins>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  const syncPins = useCallback(async () => {
+    const latestPins = await getPins();
+    setPinsState(latestPins);
+  }, []);
+
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedPins = await getPins();
-      setPinsState(fetchedPins);
+      await syncPins();
     } catch (error) {
       console.error('Error fetching PINs:', error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [syncPins]);
 
   useEffect(() => {
     refresh();
@@ -38,8 +42,7 @@ export const usePins = () => {
       try {
         const success = await setPin(user, pin);
         if (success) {
-          const latestPins = await getPins();
-          setPinsState(latestPins);
+          await syncPins();
         }
         return success;
       } catch (error) {
@@ -47,7 +50,7 @@ export const usePins = () => {
         return false;
       }
     },
-    [refresh]
+    [syncPins]
   );
 
   const removeUserPin = useCallback(
@@ -55,8 +58,7 @@ export const usePins = () => {
       try {
         const success = await removePin(user);
         if (success) {
-          const latestPins = await getPins();
-          setPinsState(latestPins);
+          await syncPins();
         }
         return success;
       } catch (error) {
@@ -64,7 +66,7 @@ export const usePins = () => {
         return false;
       }
     },
-    [refresh]
+    [syncPins]
   );
 
   const verifyUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {

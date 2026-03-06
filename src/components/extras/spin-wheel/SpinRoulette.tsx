@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Movie } from '../../../types';
-import { colors, typography } from '../../../design-system/tokens';
-import ImageWithFallback from '../../common/ImageWithFallback';
+import { Movie } from '@/types';
+import { colors, typography } from '@/design-system/tokens';
+import ImageWithFallback from '@/common/ImageWithFallback';
 import './SpinRoulette.css';
 
 const FULL_TURNS = 4 + Math.floor(Math.random() * 2); // 4-5 full spins

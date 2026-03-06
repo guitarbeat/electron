@@ -1,9 +1,9 @@
 import './GelBubbleAvatar.css';
 import React from 'react';
-import { User } from '../../types';
+import { User } from '@/types';
 import ImageWithFallback from './ImageWithFallback';
-import { userImageSources } from '../../config/imageConfig';
-import { useRandomCatImage } from '../../hooks/useRandomCatImage';
+import { userImageSources } from '@/config/imageConfig';
+import { useRandomCatImage } from '@/hooks/useRandomCatImage';
 import { LockIcon } from './icons';
 
 type BubbleSize = 'default' | 'compact' | 'tiny';
@@ -92,7 +92,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         cursor: disabled ? 'wait' : 'pointer',
         padding: 0,
         opacity: opacityValue,
-        transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition:
+          'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         filter: isSmall ? 'grayscale(0.4)' : 'none',
       }}
     >

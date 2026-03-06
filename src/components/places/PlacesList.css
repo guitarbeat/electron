@@ -109,7 +109,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.2s ease;
 }
 
 .places-item-card:hover {

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { MainTab } from '../../types';
-import { spacing } from '../../design-system/tokens';
+import { MainTab } from '@/types';
+import { spacing } from '@/design-system/tokens';
 import './TabBar.css';
 
 interface TabBarItem {

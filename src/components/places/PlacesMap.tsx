@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { GOOGLE_PLACES_API_KEY } from '../../config/googlePlaces';
-import { colors, spacing, radius, typography } from '../../design-system/tokens';
-import type { Place } from '../../types';
+import { GOOGLE_PLACES_API_KEY } from '@/config/googlePlaces';
+import { colors, spacing, radius, typography } from '@/design-system/tokens';
+import type { Place } from '@/types';
 
 const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };
 const DEFAULT_ZOOM = 4;

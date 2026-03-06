@@ -1,5 +1,5 @@
-import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN } from '../config/gistConfig.ts';
-import type { MatchmakerGame } from '../types.ts';
+import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
+import type { MatchmakerGame } from '@/types.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 /**

@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, shadows, spacing } from '../../design-system/tokens';
+import { colors, radius, shadows, spacing } from '@/design-system/tokens';
 
 export const FLOATING_BUBBLE_SIZE = 60;
 export const FLOATING_BUBBLE_EDGE_MARGIN = 16;
