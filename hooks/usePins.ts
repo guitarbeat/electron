@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import { getPins, setPin, removePin, verifyPin, UserPins } from '../services/pinService';
+import { pinService, type UserPins } from '../services/features/pinService.ts';
 
 export const usePins = () => {
   const [pins, setPinsState] = useState<UserPins>({});
@@ -9,7 +9,7 @@ export const usePins = () => {
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedPins = await getPins();
+      const fetchedPins = await pinService.getPins();
       setPinsState(fetchedPins);
     } catch (error) {
       console.error('Error fetching PINs:', error);
@@ -36,9 +36,9 @@ export const usePins = () => {
   const setUserPin = useCallback(
     async (user: User, pin: string): Promise<boolean> => {
       try {
-        const success = await setPin(user, pin);
+        const success = await pinService.setPin(user, pin);
         if (success) {
-          const latestPins = await getPins();
+          const latestPins = await pinService.getPins();
           setPinsState(latestPins);
         }
         return success;
@@ -53,9 +53,9 @@ export const usePins = () => {
   const removeUserPin = useCallback(
     async (user: User): Promise<boolean> => {
       try {
-        const success = await removePin(user);
+        const success = await pinService.removePin(user);
         if (success) {
-          const latestPins = await getPins();
+          const latestPins = await pinService.getPins();
           setPinsState(latestPins);
         }
         return success;
@@ -68,7 +68,7 @@ export const usePins = () => {
   );
 
   const verifyUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {
-    return verifyPin(user, pin);
+    return pinService.verifyPin(user, pin);
   }, []);
 
   return {
