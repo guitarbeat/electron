@@ -1,11 +1,11 @@
-import { GIST_FILENAME, GIST_TOKEN } from '../config/gistConfig.ts';
-import type { Movie } from '../types.ts';
+import { GIST_FILENAME, GIST_TOKEN } from '../../../config/gistConfig.ts';
+import type { Movie } from '../../../types.ts';
 import {
   buildGithubApiErrorMessage,
   fetchGist,
   getGistFileContent,
   patchGistFile,
-} from './gistClient.ts';
+} from '../../../services/gistClient.ts';
 
 // Cache variables to store the last known state
 let cachedMovies: Movie[] = [];
