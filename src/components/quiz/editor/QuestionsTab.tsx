@@ -5,14 +5,14 @@ import {
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
   XYAxisQuestion,
-} from '@/types;
+} from '../types';
 import QuestionEditor from './QuestionEditor';
-import { questionTemplates, TemplateType } from '@/QuestionTemplates;
-import QuestionPreview from '@/QuestionPreview;
-import Card from '@/ui/Card;
-import Button from '@/ui/Button;
-import ConfirmDialog from '@/ui/ConfirmDialog;
-import { spacing, colors, typography, radius } from '@/design-system/tokens;
+import { questionTemplates, TemplateType } from '../QuestionTemplates';
+import QuestionPreview from '../QuestionPreview';
+import Card from '../../ui/Card';
+import Button from '../../ui/Button';
+import ConfirmDialog from '../../ui/ConfirmDialog';
+import { spacing, colors, typography, radius } from '../../../design-system/tokens';
 
 // Questions Tab Component
 interface QuestionsTabProps {

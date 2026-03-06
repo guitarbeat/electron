@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { User } from '@/types;
+import type { User } from '../../types';
 
 const STORAGE_PREFIX = 'foodDropBestScore';
 

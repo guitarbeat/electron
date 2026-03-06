@@ -1,7 +1,7 @@
 import React from 'react';
 import { MultipleChoiceQuestion as MultipleChoiceQuestionType } from './types';
-import Button from '@/ui/Button;
-import { spacing, typography, colors } from '@/design-system/tokens;
+import Button from '../ui/Button';
+import { spacing, typography, colors } from '../../design-system/tokens';
 
 interface MultipleChoiceQuestionProps {
   question: MultipleChoiceQuestionType;

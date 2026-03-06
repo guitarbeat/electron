@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { spacing, typography, colors } from '@/design-system/tokens;
-import { MessageIcon, ChevronDownIcon } from '@/common/icons;
-import MessageItem from '@/common/MessageItem;
-import { Message, User } from '@/types;
+import { spacing, typography, colors } from '../../design-system/tokens';
+import { MessageIcon, ChevronDownIcon } from '../common/icons';
+import MessageItem from '../common/MessageItem';
+import { Message, User } from '../../types';
 import './MessageList.css';
 
 interface MessageListProps {
