@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContentTab, SortMode } from '@/types;
+import { ContentTab, SortMode } from '../types';
 import WatchlistSearchBar from './WatchlistSearchBar';
 import WatchlistPrimaryFilters from './WatchlistPrimaryFilters';
 import WatchlistMoreMenu from './WatchlistMoreMenu';

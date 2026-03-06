@@ -5,15 +5,15 @@ import {
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
   XYAxisQuestion,
-} from '@/types;
+} from '../types';
 import MultipleChoiceEditor from './MultipleChoiceEditor';
 import AgreeDisagreeEditor from './AgreeDisagreeEditor';
 import ImageChoiceEditor from './ImageChoiceEditor';
 import XYAxisEditor from './XYAxisEditor';
-import Card from '@/ui/Card;
-import Button from '@/ui/Button;
-import Textarea from '@/ui/Textarea;
-import { spacing, typography } from '@/design-system/tokens;
+import Card from '../../ui/Card';
+import Button from '../../ui/Button';
+import Textarea from '../../ui/Textarea';
+import { spacing, typography } from '../../../design-system/tokens';
 
 interface QuestionEditorProps {
   question: QuizQuestion;

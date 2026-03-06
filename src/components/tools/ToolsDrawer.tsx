@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery;
+import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import './ToolsDrawer.css';
 
 export type ToolId = 'messages' | 'spin' | 'snake' | 'food-drop' | 'quiz' | 'matchmaker';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useUser } from '@/context/UserContext;
-import { useMovies } from '@/hooks/useMovies;
-import { getMovies } from '@/services/movieService;
+import { useUser } from '../../context/UserContext';
+import { useMovies } from '../../hooks/useMovies';
+import { getMovies } from '../../services/movieService';
 
 const DebugMovies: React.FC = () => {
   const { currentUser } = useUser();

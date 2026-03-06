@@ -1,7 +1,7 @@
 import React from 'react';
-import { AgreeDisagreeQuestion } from '@/types;
-import ScoreSlider from '@/ScoreSlider;
-import { spacing, colors, typography, radius } from '@/design-system/tokens;
+import { AgreeDisagreeQuestion } from '../types';
+import ScoreSlider from '../ScoreSlider';
+import { spacing, colors, typography, radius } from '../../../design-system/tokens';
 
 interface AgreeDisagreeEditorProps {
   question: AgreeDisagreeQuestion;

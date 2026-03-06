@@ -1,5 +1,5 @@
 import React from 'react';
-import { spacing, typography, colors } from '@/design-system/tokens;
+import { spacing, typography, colors } from '../../design-system/tokens';
 
 interface ChatWindowProps {
   children: React.ReactNode;

@@ -1,6 +1,6 @@
 import './Confetti.css';
 import React, { useEffect, useState } from 'react';
-import { colors } from '@/design-system/tokens;
+import { colors } from '../../design-system/tokens';
 
 interface ConfettiProps {
   isActive: boolean;
