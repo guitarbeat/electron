@@ -1,6 +1,6 @@
-import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts;
-import { sanitizeInput } from '@/config/security.ts;
-import type { MovieSuggestion } from '@/types.ts;
+import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '../config/gistConfig.ts';
+import { sanitizeInput } from '../config/security.ts';
+import type { MovieSuggestion } from '../types.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 export const getSuggestions = async (): Promise<MovieSuggestion[]> => {
