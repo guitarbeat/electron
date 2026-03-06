@@ -7,9 +7,41 @@ interface MinecraftLauncherProps {
 
 const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' }) => {
   const { showToast } = useToast();
-  const serverAddress = '64.181.223.201';
-  const serverPort = '25565'; // Java Edition server port
-  const webInterfacePort = '8123';
+  const serverAddress = import.meta.env.VITE_MINECRAFT_SERVER_ADDRESS || 'localhost';
+  const serverPort = import.meta.env.VITE_MINECRAFT_SERVER_PORT || '25565';
+  const webInterfacePort = import.meta.env.VITE_MINECRAFT_WEB_INTERFACE_PORT || '8123';
+
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    // Try modern clipboard API first (works on HTTPS/localhost)
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        console.warn('Modern clipboard API failed:', error);
+      }
+    }
+
+    // Fallback for HTTP environments using execCommand
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      return successful;
+    } catch (error) {
+      console.warn('Fallback clipboard method failed:', error);
+      return false;
+    }
+  };
 
   const launchMinecraft = async () => {
     const minecraftUrl = `minecraft://${serverAddress}:${serverPort}`;
@@ -26,16 +58,24 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
 
       // Attempt to copy server info to clipboard as backup
       try {
-        await navigator.clipboard.writeText(serverInfo);
-        showToast({
-          message: 'Minecraft launch attempted! Server info copied to clipboard as backup.',
-          type: 'info',
-          duration: 3000,
-        });
+        const copied = await copyToClipboard(serverInfo);
+        if (copied) {
+          showToast({
+            message: 'Minecraft launch attempted! Server info copied to clipboard as backup.',
+            type: 'info',
+            duration: 3000,
+          });
+        } else {
+          showToast({
+            message: `Minecraft launch attempted! Server info: ${serverInfo.replace('\n', ', ')}`,
+            type: 'info',
+            duration: 5000,
+          });
+        }
       } catch (clipboardError) {
         // Clipboard failed, but protocol launch succeeded
         showToast({
-          message: "Minecraft launch attempted! If it didn't work, add server manually.",
+          message: `Minecraft launch attempted! Server info: ${serverInfo.replace('\n', ', ')}`,
           type: 'info',
           duration: 3000,
         });
@@ -43,16 +83,27 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
     } catch (error) {
       // Protocol launch failed, try to copy server info
       try {
-        await navigator.clipboard.writeText(serverInfo);
-        showToast({
-          message: 'Minecraft protocol not supported. Server info copied to clipboard.',
-          type: 'info',
-          duration: 5000,
-        });
+        const copied = await copyToClipboard(serverInfo);
+        if (copied) {
+          showToast({
+            message: 'Minecraft protocol not supported. Server info copied to clipboard.',
+            type: 'info',
+            duration: 5000,
+          });
+        } else {
+          showToast({
+            message: `Minecraft protocol not supported. Please manually add server: ${serverInfo.replace(
+              '\n',
+              ', '
+            )}`,
+            type: 'error',
+            duration: 8000,
+          });
+        }
       } catch (clipboardError) {
         // Both protocol and clipboard failed
         showToast({
-          message: `Minecraft protocol not supported. Server: ${serverAddress}, Port: ${serverPort}`,
+          message: `Minecraft protocol not supported. Server info: ${serverInfo.replace('\n', ', ')}`,
           type: 'error',
           duration: 8000,
         });
@@ -70,67 +121,26 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
   };
 
   return (
-    <div
-      className={`minecraft-launcher ${className}`}
-      style={{ display: 'flex', gap: '12px', alignItems: 'center' }}
-    >
+    <div className={`minecraft-launcher ${className}`}>
       <button
         onClick={launchMinecraft}
         className="minecraft-launcher-btn"
-        style={{
-          backgroundColor: '#4CAF50',
-          color: 'white',
-          border: 'none',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#45a049';
-          e.currentTarget.style.transform = 'scale(1.05)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#4CAF50';
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
+        aria-label={`Launch Minecraft on server ${serverAddress}:${serverPort}`}
       >
-        <span style={{ fontSize: '20px' }}>⛏️</span>
+        <span className="minecraft-icon" role="img" aria-label="Pickaxe">
+          ⛏️
+        </span>
         Launch Minecraft
       </button>
 
       <button
         onClick={openWebInterface}
         className="web-interface-btn"
-        style={{
-          backgroundColor: '#2196F3',
-          color: 'white',
-          border: 'none',
-          padding: '12px 20px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          transition: 'all 0.3s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#1976D2';
-          e.currentTarget.style.transform = 'scale(1.05)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#2196F3';
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
+        aria-label={`Open Minecraft web interface at ${serverAddress}:${webInterfacePort}`}
       >
-        <span style={{ fontSize: '16px' }}>🌐</span>
+        <span className="web-icon" role="img" aria-label="Web">
+          🌐
+        </span>
         Web Interface
       </button>
     </div>
