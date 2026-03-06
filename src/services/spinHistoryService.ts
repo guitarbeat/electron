@@ -1,5 +1,5 @@
-import { GIST_TOKEN, GIST_SPIN_HISTORY_FILENAME } from '@/config/gistConfig.ts';
-import type { SpinEntry, SpinHistory, User } from '@/types.ts';
+import { GIST_TOKEN, GIST_SPIN_HISTORY_FILENAME } from '../config/gistConfig.ts';
+import type { SpinEntry, SpinHistory, User } from '../types.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
 
 export const getSpinHistory = async (): Promise<SpinHistory> => {
