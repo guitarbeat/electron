@@ -36,8 +36,8 @@
   "devDependencies": {
     "@types/matter-js": "^0.20.2",
     "@types/node": "^25.2.3",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",

@@ -4,14 +4,14 @@ import { useUser } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
-import Watchlist from './components/watchlist';
+import Watchlist from './src/components/watchlist';
 import { BubbleDismissProvider } from './context/BubbleDismissContext';
-import QuizEditor from './components/quiz/QuizEditor';
-import PlacesList from './components/places/PlacesList';
-import MinigameModal from './components/ui/MinigameModal';
-import AppHeader from './components/layout/AppHeader';
-import BubbleLayer from './components/bubbles/BubbleLayer';
+import QuizEditor from './src/components/quiz/QuizEditor';
+import PlacesList from './src/components/places/PlacesList';
+import MinigameModal from './src/components/ui/MinigameModal';
+import AppHeader from './src/components/layout/AppHeader';
 import MinecraftLauncher from './src/components/common/MinecraftLauncher';
+import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -110,13 +110,14 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <BubbleLayer
+        {/* BubbleLayer component not found - commented out */}
+        {/* <BubbleLayer
           quizData={quizData}
           quizCompleted={quizCompleted}
           currentUser={currentUser}
           onQuizComplete={handleQuizComplete}
           onOpenQuizEditor={handleOpenQuizEditor}
-        />
+        /> */}
       </div>
     </ThemeProvider>
   );
@@ -124,7 +125,9 @@ const AppInner: React.FC = () => {
 
 const App: React.FC = () => (
   <BubbleDismissProvider>
-    <AppInner />
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   </BubbleDismissProvider>
 );
 

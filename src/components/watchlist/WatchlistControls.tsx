@@ -178,7 +178,7 @@ const WatchlistMoreMenu: React.FC<{
       >
         ⋯
       </Button>
-      
+
       {isOpen && (
         <div className="watchlist-more-menu__dropdown">
           <div className="watchlist-more-menu__section">

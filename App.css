@@ -482,3 +482,29 @@ body {
     letter-spacing: 0.035em;
   }
 }
+
+/* Minecraft Launcher Styles */
+.minecraft-launcher-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.minecraft-launcher-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.minecraft-launcher-btn:focus {
+  outline: 2px solid #4CAF50;
+  outline-offset: 2px;
+}

@@ -101,7 +101,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     });
 
     previousMoviesRef.current = movies;
-  }, [movies, setShowConfetti, setToast]);
+  }, [movies, setShowConfetti, setToast]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Search suggestions logic
   const searchSuggestions = useMemo(() => {
@@ -109,13 +109,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     const query = searchQuery.toLowerCase();
     const movieMatches = movies
-      .filter(m => m.title.toLowerCase().includes(query))
-      .map(m => m.title)
+      .filter((m) => m.title.toLowerCase().includes(query))
+      .map((m) => m.title)
       .slice(0, 3);
 
     const suggestionMatches = pendingSuggestions
-      .filter(s => s.title.toLowerCase().includes(query))
-      .map(s => s.title)
+      .filter((s) => s.title.toLowerCase().includes(query))
+      .map((s) => s.title)
       .slice(0, 3);
 
     const deduped = Array.from(new Set([...movieMatches, ...suggestionMatches]));
@@ -149,62 +149,88 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   }, [searchQuery, currentUser, addMovie, addSuggestion, setIsAdding, setSearchQuery, setToast]);
 
-  const handleSuggestionAction = useCallback(async (title: string) => {
-    setSearchQuery(title);
-    await handleAddAction();
-  }, [setSearchQuery, handleAddAction]);
+  const handleSuggestionAction = useCallback(
+    async (title: string) => {
+      setSearchQuery(title);
+      await handleAddAction();
+    },
+    [setSearchQuery, handleAddAction]
+  );
 
-  const handleDeleteMovie = useCallback((movie: Movie) => {
-    setMovieToDelete(movie);
-  }, [setMovieToDelete]);
+  const handleDeleteMovie = useCallback(
+    (movie: Movie) => {
+      setMovieToDelete(movie);
+    },
+    [setMovieToDelete]
+  );
 
-  const handleFixMatch = useCallback((movie: Movie) => {
-    setMovieToFix(movie);
-  }, [setMovieToFix]);
+  const handleFixMatch = useCallback(
+    (movie: Movie) => {
+      setMovieToFix(movie);
+    },
+    [setMovieToFix]
+  );
 
-  const handleAddMemory = useCallback((movie: Movie, memory: Omit<SharedMemory, 'id'>) => {
-    addMemory(movie.id, memory);
-  }, [addMemory]);
+  const handleAddMemory = useCallback(
+    (movie: Movie, memory: Omit<SharedMemory, 'id'>) => {
+      addMemory(movie.id, memory);
+    },
+    [addMemory]
+  );
 
   // Render functions
-  const renderMovieItem = useCallback((movie: Movie, index: number) => {
-    const movieMemories = memories.filter(m => m.movieId === movie.id);
-    const isProcessing = processingSuggestionId === movie.id;
+  const renderMovieItem = useCallback(
+    (movie: Movie, index: number) => {
+      const movieMemories = memories.filter((m) => m.movieId === movie.id);
+      const isProcessing = processingSuggestionId === movie.id;
 
-    return (
-      <MovieItem
-        key={movie.id}
-        movie={movie}
-        index={index}
-        memories={movieMemories}
-        currentUser={currentUser}
-        onToggleWatched={() => toggleWatched(movie.id)}
-        onDelete={() => handleDeleteMovie(movie)}
-        onFixMatch={() => handleFixMatch(movie)}
-        onAddMemory={(memory) => handleAddMemory(movie, memory)}
-        isProcessing={isProcessing}
-      />
-    );
-  }, [memories, currentUser, processingSuggestionId, toggleWatched, handleDeleteMovie, handleFixMatch, handleAddMemory]);
+      return (
+        <MovieItem
+          key={movie.id}
+          movie={movie}
+          index={index}
+          memories={movieMemories}
+          currentUser={currentUser}
+          onToggleWatched={() => toggleWatched(movie.id)}
+          onDelete={() => handleDeleteMovie(movie)}
+          onFixMatch={() => handleFixMatch(movie)}
+          onAddMemory={(memory) => handleAddMemory(movie, memory)}
+          isProcessing={isProcessing}
+        />
+      );
+    },
+    [
+      memories,
+      currentUser,
+      processingSuggestionId,
+      toggleWatched,
+      handleDeleteMovie,
+      handleFixMatch,
+      handleAddMemory,
+    ]
+  );
 
-  const renderSuggestionItem = useCallback((suggestion: MovieSuggestion, index: number) => {
-    return (
-      <SuggestionItemCard
-        key={suggestion.id}
-        suggestion={suggestion}
-        currentUser={currentUser}
-        onAccept={() => acceptSuggestion(suggestion.id)}
-        onReject={() => rejectSuggestion(suggestion.id)}
-        isProcessing={processingSuggestionId === suggestion.id}
-      />
-    );
-  }, [currentUser, acceptSuggestion, rejectSuggestion, processingSuggestionId]);
+  const renderSuggestionItem = useCallback(
+    (suggestion: MovieSuggestion, index: number) => {
+      return (
+        <SuggestionItemCard
+          key={suggestion.id}
+          suggestion={suggestion}
+          currentUser={currentUser}
+          onAccept={() => acceptSuggestion(suggestion.id)}
+          onReject={() => rejectSuggestion(suggestion.id)}
+          isProcessing={processingSuggestionId === suggestion.id}
+        />
+      );
+    },
+    [currentUser, acceptSuggestion, rejectSuggestion, processingSuggestionId]
+  );
 
   const getEmptyStateMessage = useCallback(() => {
     if (contentTab === 'suggestions') {
       return 'No movie suggestions yet. Be the first to suggest something!';
     }
-    
+
     if (searchQuery) {
       return `No movies found matching "${searchQuery}"`;
     }
@@ -235,7 +261,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     <WorkspaceLayout>
       <div className="watchlist">
         <WatchlistHeader />
-        
+
         <div className="watchlist-top-controls-fallback">
           <WatchlistTopControls
             contentTab={contentTab}
@@ -283,7 +309,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
         {filteredMovies.length === 0 && filteredSuggestions.length === 0 && !isLoading && (
           <div className="watchlist-empty-state">
-            <div 
+            <div
               style={{
                 textAlign: 'center',
                 padding: spacing['3xl'],

@@ -38,7 +38,9 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   const primaryButton = (
     <Button
       type="button"
-      onClick={() => isMobile && onCloseBottomSheet ? handleAction(() => onToggle(movie)) : onToggle(movie)}
+      onClick={() =>
+        isMobile && onCloseBottomSheet ? handleAction(() => onToggle(movie)) : onToggle(movie)
+      }
       variant={watchedByCurrentUser ? 'primary' : 'secondary'}
       size={isMobile ? 'md' : 'sm'}
       isLoading={isUpdating}
@@ -78,7 +80,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
         {primaryButton}
-        
+
         <Button
           type="button"
           onClick={() => handleAction(() => onFixMatch?.(movie))}
@@ -125,7 +127,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   return (
     <div className="movie-actions">
       {primaryButton}
-      
+
       <div className="movie-secondary-actions">
         <IconButton
           type="button"

@@ -6,16 +6,11 @@ interface WatchlistHeaderProps {
   subtitle?: string;
 }
 
-const WatchlistHeader: React.FC<WatchlistHeaderProps> = ({ 
-  title = "Watchlist", 
-  subtitle 
-}) => {
+const WatchlistHeader: React.FC<WatchlistHeaderProps> = ({ title = 'Watchlist', subtitle }) => {
   return (
     <header className="watchlist-header">
       <h1 className="watchlist-title">{title}</h1>
-      {subtitle && (
-        <p className="watchlist-subtitle">{subtitle}</p>
-      )}
+      {subtitle && <p className="watchlist-subtitle">{subtitle}</p>}
     </header>
   );
 };

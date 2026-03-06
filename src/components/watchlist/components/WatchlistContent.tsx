@@ -16,8 +16,14 @@ interface WatchlistContentProps {
 
 const MOBILE_SKELETON_KEYS = ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'];
 const DESKTOP_SKELETON_KEYS = [
-  'desktop-1', 'desktop-2', 'desktop-3', 'desktop-4',
-  'desktop-5', 'desktop-6', 'desktop-7', 'desktop-8',
+  'desktop-1',
+  'desktop-2',
+  'desktop-3',
+  'desktop-4',
+  'desktop-5',
+  'desktop-6',
+  'desktop-7',
+  'desktop-8',
 ];
 
 const WatchlistContent: React.FC<WatchlistContentProps> = ({
