@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getUserColor } from './useUserColors.ts';
-import { colors } from '@/design-system/tokens.ts';
+import { colors } from '../design-system/tokens.ts';
 
 test('getUserColor returns correct style for Aaron', () => {
   const style = getUserColor('Aaron');

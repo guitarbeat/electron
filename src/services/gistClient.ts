@@ -1,4 +1,4 @@
-import { GIST_API_URL } from '@/config/gistConfig.ts';
+import { GIST_API_URL } from '../config/gistConfig.ts';
 
 export interface GistFile {
   content?: string;

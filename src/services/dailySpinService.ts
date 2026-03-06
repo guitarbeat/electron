@@ -1,5 +1,5 @@
-import { GIST_TOKEN, GIST_API_URL, GIST_DAILY_SPIN_FILENAME } from '@/config/gistConfig.ts';
-import type { DailySpin } from '@/types.ts';
+import { GIST_TOKEN, GIST_API_URL, GIST_DAILY_SPIN_FILENAME } from '../config/gistConfig.ts';
+import type { DailySpin } from '../types.ts';
 
 /**
  * Gets the current date in YYYY-MM-DD format (UTC).
