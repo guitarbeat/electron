@@ -1,10 +1,29 @@
 import type { BubbleToolId } from '../types/bubbleLayout';
 
+export interface BaseBubbleProps {
+  id: BubbleToolId;
+  label: string;
+  emoji: string;
+  isActive?: boolean;
+  isDragging?: boolean;
+  isMoveMode?: boolean;
+  position?: { x: number; y: number };
+  onActivate?: (id: BubbleToolId) => void;
+  onPointerDown?: (event: React.PointerEvent) => void;
+  onPointerMove?: (event: React.PointerEvent) => void;
+  onPointerUp?: (event: React.PointerEvent) => void;
+  onPointerCancel?: (event: React.PointerEvent) => void;
+  onKeyDown?: (event: React.KeyboardEvent) => void;
+  className?: string;
+  children?: React.ReactNode;
+}
+
 export interface BubbleToolConfig {
   id: BubbleToolId;
   label: string;
   emoji: string;
   component: React.ComponentType<any>;
+  embeddedComponent?: React.ComponentType<any>;
   defaultPosition?: { x: number; y: number };
   requiresAuth?: boolean;
   props?: Record<string, any>;

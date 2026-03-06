@@ -5,12 +5,11 @@ import { ThemeProvider } from './context/ThemeContext';
 import { MainTab } from './types';
 import { useQuiz } from './hooks/useQuiz';
 import Watchlist from './components/watchlist';
-import { BubbleDismissProvider } from './context/BubbleDismissContext';
+import { BubbleDismissProvider, BubbleLayer } from './components/bubble-system';
 import QuizEditor from './components/quiz/QuizEditor';
 import PlacesList from './components/places/PlacesList';
 import MinigameModal from './components/ui/MinigameModal';
 import AppHeader from './components/layout/AppHeader';
-import { BubbleLayer } from './components/bubble-system';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [

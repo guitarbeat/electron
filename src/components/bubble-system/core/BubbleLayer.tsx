@@ -8,20 +8,26 @@ import DragDismissZone from '../../common/DragDismissZone';
 import RestoreBubblesButton from '../../common/RestoreBubblesButton';
 import { useQuiz } from '../../../hooks/useQuiz';
 import { useUser } from '../../../context/UserContext';
-import { useBubbleDismiss } from '../../../context/BubbleDismissContext';
+import { useBubbleDismiss } from '../context/BubbleDismissContext';
 import { useBubbleDocking } from '../hooks/useBubbleDocking';
 import { BUBBLE_TOOLS, getToolConfig } from '../tools/bubbleTools';
 import type { BubbleToolId } from '../types/bubbleLayout';
+import type { User } from '../../../types';
+import type { QuizData } from '../../../services/quizService';
 import './BubbleLayer.css';
 
 interface BubbleLayerProps {
+  quizData: QuizData | null | undefined;
   quizCompleted: boolean;
+  currentUser: User | null;
   onQuizComplete: () => void;
   onOpenQuizEditor: () => void;
 }
 
 const BubbleLayer: React.FC<BubbleLayerProps> = ({
+  quizData,
   quizCompleted,
+  currentUser,
   onQuizComplete,
   onOpenQuizEditor,
 }) => {
@@ -58,18 +64,16 @@ const BubbleLayer: React.FC<BubbleLayerProps> = ({
         return <div>Food Drop Game (Embedded)</div>;
       case 'quiz':
         return (
-          <div>
-            Quiz Component (Embedded)
-            {/* Will be properly integrated */}
-          </div>
+          <QuizBubble
+            quizData={quizData}
+            quizCompleted={quizCompleted}
+            currentUser={currentUser}
+            onQuizComplete={onQuizComplete}
+            onOpenQuizEditor={onOpenQuizEditor}
+          />
         );
       case 'matchmaker':
-        return (
-          <div>
-            Matchmaker Component (Embedded)
-            {/* Will be properly integrated */}
-          </div>
-        );
+        return <MatchmakerBubble currentUser={currentUser} />;
       default:
         return null;
     }

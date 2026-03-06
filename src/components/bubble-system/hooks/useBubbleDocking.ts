@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BubbleId, useBubbleDismiss } from '../../context/BubbleDismissContext';
+import { BubbleId, useBubbleDismiss } from '../context/BubbleDismissContext';
 import {
-  BubbleToolId,
-  BubbleViewportBucket,
   clampToViewport,
   getDockSlots,
   getViewportBucket,
-} from './bubbleLayout';
+} from '../utils/layout';
+import type { BubbleToolId, BubbleViewportBucket } from '../types/bubbleLayout';
 
 const STORAGE_KEY = 'bubbleDocking:v2';
 const LONG_PRESS_MS = 180;
