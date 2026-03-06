@@ -4,108 +4,100 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
-import { getMovies, saveMovies } from '../services/features/movies/movieService.ts';
-import { metadataService } from '../services/metadataService.ts';
-import { performMutation } from '../utils/concurrency.ts';
-import type { Movie } from '../types.ts';
+import { getMovies, saveMovies } from '../src/services/movieService.ts';
+import { fetchMovieMetadata as fetchExternalMetadata } from '../src/services/metadataService.ts';
+import { useGenericMutation } from './useGenericMutation.ts';
+import type { Movie, User } from '../types.ts';
 
 // Cache for metadata to avoid repeated fetches
 const metadataCache = new Map<string, Partial<Movie>>();
 
 const fetchMovieMetadata = async (movie: Partial<Movie>): Promise<Partial<Movie>> => {
-  if (metadataCache.has(movie.imdbID)) {
-    return metadataCache.get(movie.imdbID)!;
+  if (movie.id && metadataCache.has(movie.id)) {
+    return metadataCache.get(movie.id)!;
   }
 
   try {
-    const metadata = await metadataService.getMetadata(movie.imdbID);
-    metadataCache.set(movie.imdbID, metadata);
+    const metadata = await fetchExternalMetadata(movie.title || '', 'movie', movie.id);
+    if (movie.id) {
+      metadataCache.set(movie.id, metadata);
+    }
     return metadata;
   } catch (error) {
-    console.warn(`Failed to fetch metadata for ${movie.imdbID}:`, error);
+    console.warn(`Failed to fetch metadata for ${movie.id}:`, error);
     return movie;
   }
 };
 
 export const useMovies = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mutationLockRef = useRef<Promise<void>>(Promise.resolve());
+
+  const mutation = useGenericMutation<Movie[]>({
+    fetchData: getMovies,
+    saveData: saveMovies,
+    onError: (err) => setError(err.message),
+  });
 
   const loadMovies = useCallback(async () => {
     try {
-      setIsLoading(true);
       setError(null);
-      const fetchedMovies = await getMovies();
-      setMovies(fetchedMovies);
+      await mutation.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load movies');
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [mutation]);
 
   const addMovie = useCallback(
     async (baseMovie: Partial<Movie>) => {
       const movieWithMetadata = await fetchMovieMetadata(baseMovie);
       
       const newMovie: Movie = {
-        imdbID: movieWithMetadata.imdbID || baseMovie.imdbID || '',
+        id: movieWithMetadata.id || baseMovie.id || crypto.randomUUID(),
         title: movieWithMetadata.title || baseMovie.title || 'Unknown Title',
-        year: movieWithMetadata.year || baseMovie.year || 'Unknown Year',
-        poster: movieWithMetadata.poster || baseMovie.poster || '',
-        rated: movieWithMetadata.rated || baseMovie.rated || 'N/A',
-        genre: movieWithMetadata.genre || baseMovie.genre || 'Unknown',
-        director: movieWithMetadata.director || baseMovie.director || 'Unknown',
-        actors: movieWithMetadata.actors || baseMovie.actors || 'Unknown',
-        plot: movieWithMetadata.plot || baseMovie.plot || 'No plot available',
-        runtime: movieWithMetadata.runtime || baseMovie.runtime || 'N/A',
-        addedAt: Date.now(),
+        addedBy: 'Aaron',
+        watchedBy: [],
+        createdAt: new Date().toISOString(),
+        posterUrl: movieWithMetadata.posterUrl,
+        year: movieWithMetadata.year,
+        plot: movieWithMetadata.plot,
+        imdbRating: movieWithMetadata.imdbRating,
+        runtime: movieWithMetadata.runtime,
+        genre: movieWithMetadata.genre,
+        director: movieWithMetadata.director,
       };
 
-      await performMutation(mutationLockRef, async () => {
-        const latestMovies = await getMovies();
+      await mutation.performMutation((latestMovies) => {
         const updatedMovies = [...latestMovies, newMovie];
-        await saveMovies(updatedMovies);
-        setMovies(updatedMovies);
+        return updatedMovies;
       });
     },
     []
   );
 
   const removeMovie = useCallback(
-    async (imdbID: string) => {
-      await performMutation(mutationLockRef, async () => {
-        const latestMovies = await getMovies();
-        const updatedMovies = latestMovies.filter((movie) => movie.imdbID !== imdbID);
-        await saveMovies(updatedMovies);
-        setMovies(updatedMovies);
-      });
+    async (id: string) => {
+      await mutation.performMutation((latestMovies) => 
+        latestMovies.filter((movie) => movie.id !== id)
+      );
     },
-    []
+    [mutation]
   );
 
   const updateMovie = useCallback(
-    async (imdbID: string, updates: Partial<Movie>) => {
-      await performMutation(mutationLockRef, async () => {
-        const latestMovies = await getMovies();
-        const updatedMovies = latestMovies.map((movie) =>
-          movie.imdbID === imdbID ? { ...movie, ...updates } : movie
-        );
-        await saveMovies(updatedMovies);
-        setMovies(updatedMovies);
-      });
+    async (id: string, updates: Partial<Movie>) => {
+      await mutation.performMutation((latestMovies) =>
+        latestMovies.map((movie) =>
+          movie.id === id ? { ...movie, ...updates } : movie
+        )
+      );
     },
-    []
+    [mutation]
   );
 
   const clearMovies = useCallback(async () => {
-    await performMutation(mutationLockRef, async () => {
-      await saveMovies([]);
-      setMovies([]);
-    });
-  }, []);
+    await mutation.performMutation(() => []);
+  }, [mutation]);
 
   const refreshMovies = useCallback(() => {
     // Clear cache by forcing a fresh fetch
@@ -113,14 +105,15 @@ export const useMovies = () => {
   }, [loadMovies]);
 
   return {
-    movies,
-    isLoading,
+    movies: mutation.data || [],
+    isLoading: mutation.isLoading,
     error,
+    isSubmitting: mutation.isSubmitting,
     addMovie,
     removeMovie,
     updateMovie,
     clearMovies,
-    refreshMovies,
+    refreshMovies: mutation.refresh,
     loadMovies,
   };
 };
