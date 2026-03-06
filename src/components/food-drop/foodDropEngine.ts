@@ -67,7 +67,8 @@ const CONTAINER_BASE_Y = FOOD_DROP_WORLD_HEIGHT - CONTAINER_BASE_THICKNESS / 2 -
 const CONTAINER_WALL_THICKNESS = 14;
 const CONTAINER_WALL_HEIGHT = FOOD_DROP_WORLD_HEIGHT + 40;
 const CONTAINER_LEFT_WALL_X = CONTAINER_INSET_X + CONTAINER_WALL_THICKNESS / 2;
-const CONTAINER_RIGHT_WALL_X = FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X - CONTAINER_WALL_THICKNESS / 2;
+const CONTAINER_RIGHT_WALL_X =
+  FOOD_DROP_WORLD_WIDTH - CONTAINER_INSET_X - CONTAINER_WALL_THICKNESS / 2;
 const CONTAINER_WALL_CENTER_Y = FOOD_DROP_WORLD_HEIGHT / 2 + 20;
 const CONTAINER_FLOOR_TOP_Y = CONTAINER_BASE_Y - CONTAINER_BASE_THICKNESS / 2;
 const CONTAINER_INNER_LEFT_X = CONTAINER_LEFT_WALL_X + CONTAINER_WALL_THICKNESS / 2;
@@ -268,9 +269,9 @@ export class FoodDropEngine {
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_WORLD_HEIGHT);
 
     const isDangerActive = this.isDangerActive();
-    this.renderBoardDecor(ctx, isDangerActive);
+    FoodDropEngine.renderBoardDecor(ctx, isDangerActive);
 
-    this.renderContainer(ctx);
+    FoodDropEngine.renderContainer(ctx);
 
     ctx.save();
     ctx.setLineDash([6, 6]);
@@ -283,7 +284,9 @@ export class FoodDropEngine {
     ctx.stroke();
     ctx.restore();
 
-    const radius = FOOD_LEVELS[this.currentLevel]?.radius * this.currentScale;
+    const currentFood = FOOD_LEVELS[this.currentLevel];
+    if (!currentFood) return;
+    const radius = currentFood.radius * this.currentScale;
     if (!Number.isFinite(radius) || radius <= 0) return;
     const launcherY = FOOD_DROP_SPAWN_Y;
 
@@ -338,14 +341,18 @@ export class FoodDropEngine {
     }
   }
 
-  private renderBoardDecor(ctx: CanvasRenderingContext2D, isDangerActive: boolean) {
+  private static renderBoardDecor(ctx: CanvasRenderingContext2D, isDangerActive: boolean) {
     ctx.save();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
     ctx.fillRect(0, 0, FOOD_DROP_WORLD_WIDTH, FOOD_DROP_LOSE_LINE_Y);
 
     ctx.strokeStyle = 'rgba(121, 85, 72, 0.22)';
     ctx.lineWidth = 1;
-    for (let x = -FOOD_DROP_LOSE_LINE_Y; x < FOOD_DROP_WORLD_WIDTH + FOOD_DROP_LOSE_LINE_Y; x += 14) {
+    for (
+      let x = -FOOD_DROP_LOSE_LINE_Y;
+      x < FOOD_DROP_WORLD_WIDTH + FOOD_DROP_LOSE_LINE_Y;
+      x += 14
+    ) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x + FOOD_DROP_LOSE_LINE_Y, FOOD_DROP_LOSE_LINE_Y);
@@ -375,7 +382,7 @@ export class FoodDropEngine {
     ctx.restore();
   }
 
-  private renderContainer(ctx: CanvasRenderingContext2D) {
+  private static renderContainer(ctx: CanvasRenderingContext2D) {
     const floorTopY = CONTAINER_FLOOR_TOP_Y;
     const wallTopY = floorTopY - CONTAINER_WALL_HEIGHT + CONTAINER_BASE_THICKNESS / 2;
 
@@ -507,10 +514,7 @@ export class FoodDropEngine {
 
       const mergedScale = Math.max(
         FOOD_DROP_SIZE_VARIANCE_MIN,
-        Math.min(
-          FOOD_DROP_SIZE_VARIANCE_MAX,
-          (scaleA + scaleB) / 2 + (Math.random() - 0.5) * 0.08
-        )
+        Math.min(FOOD_DROP_SIZE_VARIANCE_MAX, (scaleA + scaleB) / 2 + (Math.random() - 0.5) * 0.08)
       );
       const mergedRadius = FOOD_LEVELS[targetLevel].radius * mergedScale;
       const clampedMergedX = Math.min(
@@ -564,7 +568,7 @@ export class FoodDropEngine {
 
     // Immediate fail if any fruit escapes the container side walls and drops below the danger zone.
     const hasMissedContainer = dynamicBodies.some((body) => {
-      if (this.shouldSkipDangerCheck(body, now)) {
+      if (FoodDropEngine.shouldSkipDangerCheck(body, now)) {
         return false;
       }
       const level = FoodDropEngine.getBodyLevel(body) ?? 0;
@@ -581,7 +585,7 @@ export class FoodDropEngine {
     }
 
     const hasOverflow = dynamicBodies.some((body) => {
-      if (this.shouldSkipDangerCheck(body, now)) {
+      if (FoodDropEngine.shouldSkipDangerCheck(body, now)) {
         return false;
       }
       const bodyLevel = FoodDropEngine.getBodyLevel(body) ?? 0;
@@ -615,7 +619,7 @@ export class FoodDropEngine {
   private isDangerActive(): boolean {
     const now = Date.now();
     return this.getDynamicFruitBodies().some((body) => {
-      if (this.shouldSkipDangerCheck(body, now)) return false;
+      if (FoodDropEngine.shouldSkipDangerCheck(body, now)) return false;
       const level = FoodDropEngine.getBodyLevel(body) ?? 0;
       const radius = FoodDropEngine.getBodyRadius(body, level);
       return body.position.y - radius < FOOD_DROP_LOSE_LINE_Y + 40;
@@ -628,7 +632,7 @@ export class FoodDropEngine {
     );
   }
 
-  private shouldSkipDangerCheck(body: Body, nowMs: number): boolean {
+  private static shouldSkipDangerCheck(body: Body, nowMs: number): boolean {
     const spawnedAt = FoodDropEngine.getBodySpawnedAt(body);
     return spawnedAt !== null && nowMs - spawnedAt < GAME_OVER_GRACE_MS;
   }
@@ -771,7 +775,12 @@ export class FoodDropEngine {
   }
 
   private static drawFoodCircle(ctx: CanvasRenderingContext2D, body: RenderBody) {
-    if (!Number.isFinite(body.x) || !Number.isFinite(body.y) || !Number.isFinite(body.radius) || body.radius <= 0) {
+    if (
+      !Number.isFinite(body.x) ||
+      !Number.isFinite(body.y) ||
+      !Number.isFinite(body.radius) ||
+      body.radius <= 0
+    ) {
       return;
     }
     ctx.save();
