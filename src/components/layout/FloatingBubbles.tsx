@@ -1,14 +1,14 @@
 import React from 'react';
-import MessageBoard from '@/common/MessageBoard;
-import SnakeGame from '@/snake/SnakeGame;
-import SpinWheel from '@/extras/spin-wheel/SpinWheel;
-import MatchmakerBubble from '@/matchmaker/MatchmakerBubble;
-import QuizBubble from '@/quiz/QuizBubble;
-import DragDismissZone from '@/common/DragDismissZone;
-import RestoreBubblesButton from '@/common/RestoreBubblesButton;
-import { useQuiz } from '@/hooks/useQuiz;
-import { useUser } from '@/context/UserContext;
-import { useBubbleDismiss } from '@/context/BubbleDismissContext;
+import MessageBoard from '../common/MessageBoard';
+import SnakeGame from '../snake/SnakeGame';
+import SpinWheel from '../extras/spin-wheel/SpinWheel';
+import MatchmakerBubble from '../matchmaker/MatchmakerBubble';
+import QuizBubble from '../quiz/QuizBubble';
+import DragDismissZone from '../common/DragDismissZone';
+import RestoreBubblesButton from '../common/RestoreBubblesButton';
+import { useQuiz } from '../../hooks/useQuiz';
+import { useUser } from '../../context/UserContext';
+import { useBubbleDismiss } from '../../context/BubbleDismissContext';
 
 interface FloatingBubblesProps {
   quizCompleted: boolean;

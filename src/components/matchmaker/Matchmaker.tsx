@@ -1,12 +1,12 @@
 import './Matchmaker.css';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { User, Movie } from '@/types;
-import { useMatchmaker } from '@/hooks/useMatchmaker;
-import { useMovies } from '@/hooks/useMovies;
-import { useToast } from '@/context/ToastContext;
+import { User, Movie } from '../../types';
+import { useMatchmaker } from '../../hooks/useMatchmaker';
+import { useMovies } from '../../hooks/useMovies';
+import { useToast } from '../../context/ToastContext';
 import SwipeCard from './SwipeCard';
-import Button from '@/ui/Button;
-import ConfirmDialog from '@/ui/ConfirmDialog;
+import Button from '../ui/Button';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import {
   colors,
   spacing,
@@ -14,7 +14,7 @@ import {
   typography,
   shadows,
   motion as motionTokens,
-} from '@/design-system/tokens;
+} from '../../design-system/tokens';
 
 interface MatchmakerProps {
   currentUser: User | null;

@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
-import { MatchmakerGame, User } from '@/types;
+import { MatchmakerGame, User } from '../types';
 import { usePolling } from './usePolling';
-import { getMatchmakerGame, saveMatchmakerGame } from '@/services/matchmakerService;
+import { getMatchmakerGame, saveMatchmakerGame } from '../services/matchmakerService';
 
 export const useMatchmaker = (currentUser: User | null, isPaused: boolean = false) => {
   const {

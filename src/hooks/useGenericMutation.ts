@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { createError } from '@/utils/errorHandling;
+import { createError } from '../utils/errorHandling';
 
 type AsyncFunction<T> = () => Promise<T>;
 type MutationFunction<T> = (data: T) => T;
