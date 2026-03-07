@@ -14,6 +14,10 @@ import PlacesList from './src/components/places/PlacesList';
 import Matchmaker from './src/components/matchmaker/Matchmaker';
 import MinecraftBubble from './src/components/common/MinecraftBubble';
 import DraggableFeatureBubble from './src/components/common/DraggableFeatureBubble';
+import SnakeGame from './src/components/snake/SnakeGame';
+import FoodDropGame from './src/components/extras/FoodDropGame';
+import SpinWheelGame from './src/components/extras/SpinWheelGame';
+import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
 import TabBar from './src/components/ui/TabBar';
@@ -36,6 +40,9 @@ const AppInner: React.FC = () => {
     return localStorage.getItem('quizCompleted') === 'true';
   });
   const [showQuizEditor, setShowQuizEditor] = useState(false);
+  const [showFoodDrop, setShowFoodDrop] = useState(false);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showMemories, setShowMemories] = useState(false);
 
   useEffect(() => {
     const theme = activeTab === 'places' ? 'places' : 'movies';
@@ -143,6 +150,45 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
+        <MinigameModal
+          isOpen={showFoodDrop}
+          onClose={() => setShowFoodDrop(false)}
+          title="Food Drop"
+          ariaLabel="Food drop game"
+          maxWidth={620}
+          maxHeight={780}
+        >
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <FoodDropGame />
+          </div>
+        </MinigameModal>
+
+        <MinigameModal
+          isOpen={showSpinWheel}
+          onClose={() => setShowSpinWheel(false)}
+          title="Spin Wheel"
+          ariaLabel="Spin wheel picker"
+          maxWidth={680}
+          maxHeight={860}
+        >
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <SpinWheelGame />
+          </div>
+        </MinigameModal>
+
+        <MinigameModal
+          isOpen={showMemories}
+          onClose={() => setShowMemories(false)}
+          title="Memories"
+          ariaLabel="Memories panel"
+          maxWidth={760}
+          maxHeight={860}
+        >
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <FloatingMemoriesPanel />
+          </div>
+        </MinigameModal>
+
         <div className="floating-bubbles">
           {quizData && currentUser ? (
             <QuizFlow
@@ -155,29 +201,24 @@ const AppInner: React.FC = () => {
           ) : null}
           {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
           <MinecraftBubble />
+          <SnakeGame mode="floating" />
           <DraggableFeatureBubble
             title="Food Drop Game"
             icon="🍔"
-            message="Food Drop game coming soon."
             initialPosition={{ x: 300, y: 200 }}
-          />
-          <DraggableFeatureBubble
-            title="Snake Game"
-            icon="🐍"
-            message="Snake game coming soon."
-            initialPosition={{ x: 400, y: 300 }}
+            onActivate={() => setShowFoodDrop(true)}
           />
           <DraggableFeatureBubble
             title="Memories"
             icon="💭"
-            message="Memories panel coming soon."
             initialPosition={{ x: 500, y: 400 }}
+            onActivate={() => setShowMemories(true)}
           />
           <DraggableFeatureBubble
             title="Spin Wheel"
             icon="🎡"
-            message="Spin wheel coming soon."
             initialPosition={{ x: 600, y: 200 }}
+            onActivate={() => setShowSpinWheel(true)}
           />
         </div>
       </div>
