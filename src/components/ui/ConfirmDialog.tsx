@@ -76,11 +76,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={messageId}
-        style={{ width: '100%', maxWidth: '420px' }}
       >
         <Card
           variant="elevated"
-          style={{ width: '100%', padding: spacing.xl, position: 'relative' }}
+          style={{ width: '100%', maxWidth: '420px', padding: spacing.xl, position: 'relative' }}
         >
           <button
             type="button"

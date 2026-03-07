@@ -15,7 +15,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       idProp ?? (label ? `textarea-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
     const errorId = error && id ? `${id}-error` : undefined;
     return (
-      <div style={{ width: '100%' }}>
+      <div>
         {label && (
           <label
             htmlFor={id}
