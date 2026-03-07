@@ -1,16 +1,15 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useWatchlist } from './hooks/useWatchlist';
-import { WatchlistProps } from './types';
 import WorkspaceLayout from '@/layout/WorkspaceLayout';
-import { Movie, MovieSuggestion } from '@/types';
+import { Movie, MovieSuggestion, WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import FixMatchDialog from '@/common/FixMatchDialog';
 import Confetti from '@/effects/Confetti';
+import { MovieCardSkeleton } from '@/ui/Skeleton';
 
 // Components
 import WatchlistTopControls from './components/controls/WatchlistTopControls';
-import WatchlistContent from './components/WatchlistContent';
 import MovieCard from './components/MovieCard';
 
 // Styles
@@ -71,6 +70,18 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const skeletonKeys = isMobile
+    ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
+    : [
+        'desktop-1',
+        'desktop-2',
+        'desktop-3',
+        'desktop-4',
+        'desktop-5',
+        'desktop-6',
+        'desktop-7',
+        'desktop-8',
+      ];
 
   // Handle confetti when both users watch a movie
   useEffect(() => {
@@ -364,16 +375,32 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             >
               <p>{getEmptyStateMessage()}</p>
             </div>
+          ) : isLoading ? (
+            <div className="watchlist-content">
+              {skeletonKeys.map((key) => (
+                <MovieCardSkeleton key={key} />
+              ))}
+            </div>
+          ) : contentTab === 'suggestions' ? (
+            <div className="watchlist-content">
+              {filteredSuggestions.length > 0 ? (
+                filteredSuggestions.map((suggestion) => renderSuggestionItem(suggestion))
+              ) : (
+                <div className="watchlist-empty-state">
+                  <p>No suggestions available</p>
+                </div>
+              )}
+            </div>
           ) : (
-            <WatchlistContent
-              isLoading={isLoading}
-              isMobile={isMobile}
-              filteredMovies={filteredMovies}
-              filteredSuggestions={filteredSuggestions}
-              contentTab={contentTab}
-              renderMovieItem={renderMovieItem}
-              renderSuggestionItem={renderSuggestionItem}
-            />
+            <div className="watchlist-content">
+              {filteredMovies.length > 0 ? (
+                filteredMovies.map((movie) => renderMovieItem(movie))
+              ) : (
+                <div className="watchlist-empty-state">
+                  <p>No movies found</p>
+                </div>
+              )}
+            </div>
           )}
 
           {movieToDelete && (
