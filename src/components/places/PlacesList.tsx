@@ -13,7 +13,7 @@ import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
 import { colors, spacing, typography, radius } from '@/design-system/tokens';
 import { useToast } from '@/context/ToastContext';
 import type { Place } from '@/types';
-import '../ui/ControlSurface.css';
+import '../ui/ui.css';
 import './PlacesList.css';
 
 type PlaceFilter = 'want' | 'visited';
