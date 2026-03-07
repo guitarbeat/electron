@@ -1,15 +1,27 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useMediaQuery, breakpoints } from '../../../hooks/useMediaQuery';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/memoryUtils';
-import { STORAGE_KEYS, FILTERS } from '../Watchlist.styles';
-import { SortMode, ContentTab } from '../types';
-import { Movie, User } from '../../../types';
+import {
+  addMemory as addMemoryService,
+  deleteMemory as deleteMemoryService,
+  getMemories,
+  toggleMemoryPin as toggleMemoryPinService,
+  updateMemory as updateMemoryService,
+} from '@/services/memoryService';
+import { usePolling } from '@/hooks/usePolling';
+import { SortMode, ContentTab, Movie, User, SharedMemory } from '@/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
-import { useMemories } from './useMemories';
 import { useToast } from '../../../context/ToastContext';
 
-const MEMORY_FILTER_STORAGE_KEY = STORAGE_KEYS.MEMORY_FILTER;
+const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
+const MEMORY_FILTER_DEFAULT = 'all';
+const POLLING_INTERVAL = 30000;
+const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) => {
+  if (!prev) return false;
+  if (prev.length !== next.length) return false;
+  return JSON.stringify(prev) === JSON.stringify(next);
+};
 
 interface UseWatchlistProps {
   currentUser: User | null;
@@ -56,14 +68,14 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     const searchParams = new URLSearchParams(window.location.search);
     const urlFilter = searchParams.get('memoryFilter');
     const savedFilter = localStorage.getItem(MEMORY_FILTER_STORAGE_KEY);
-    const initialFilter = urlFilter || savedFilter || FILTERS.MEMORY_FILTER_DEFAULT;
+    const initialFilter = urlFilter || savedFilter || MEMORY_FILTER_DEFAULT;
     setActiveMemoryFilter(initialFilter);
   }, []);
 
   useEffect(() => {
     localStorage.setItem(MEMORY_FILTER_STORAGE_KEY, activeMemoryFilter);
     const url = new URL(window.location.href);
-    if (activeMemoryFilter === FILTERS.ALL_MOVIES) {
+    if (activeMemoryFilter === ALL_MOVIES_FILTER) {
       url.searchParams.delete('memoryFilter');
     } else {
       url.searchParams.set('memoryFilter', activeMemoryFilter);
@@ -72,7 +84,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   }, [activeMemoryFilter]);
 
   useEffect(() => {
-    if (activeMemoryFilter !== FILTERS.MEMORY_FILTER_DEFAULT) {
+    if (activeMemoryFilter !== MEMORY_FILTER_DEFAULT) {
       setIsMemoryWallCollapsed(false);
     }
   }, [activeMemoryFilter]);
@@ -113,14 +125,53 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   } = useSuggestions(isPaused);
 
   const {
-    memories,
-    addMemory,
-    updateMemory,
-    deleteMemory: deleteMemoryRecord,
-    toggleMemoryPin,
+    data: polledMemories,
     isLoading: isMemoriesLoading,
     error: memoriesError,
-  } = useMemories(isPaused);
+    refresh: refreshMemories,
+  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual, {
+    key: 'memories',
+    isPaused,
+  });
+  const memories = useMemo(() => {
+    return [...(polledMemories || [])].sort((a, b) => {
+      if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
+        return a.isPinned ? -1 : 1;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [polledMemories]);
+  const addMemory = useCallback(
+    async (movieId: string | undefined, movieTitle: string, author: string, note: string) => {
+      const result = await addMemoryService(movieId, movieTitle, author, note);
+      refreshMemories();
+      return result;
+    },
+    [refreshMemories]
+  );
+  const updateMemory = useCallback(
+    async (memoryId: string, updates: { note?: string; movieId?: string; movieTitle?: string }) => {
+      const result = await updateMemoryService(memoryId, updates);
+      refreshMemories();
+      return result;
+    },
+    [refreshMemories]
+  );
+  const deleteMemoryRecord = useCallback(
+    async (memoryId: string) => {
+      await deleteMemoryService(memoryId);
+      refreshMemories();
+    },
+    [refreshMemories]
+  );
+  const toggleMemoryPin = useCallback(
+    async (memoryId: string) => {
+      const result = await toggleMemoryPinService(memoryId);
+      refreshMemories();
+      return result;
+    },
+    [refreshMemories]
+  );
 
   const unwatchedMovies = useMemo(
     () => (movies ? movies.filter((movie) => movie.watchedBy.length < 2) : []),

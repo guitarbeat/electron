@@ -92,6 +92,13 @@ export interface MatchmakerGame {
   startedBy: User;
 }
 
+export type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
+export type SortMode = 'recent' | 'title' | 'year';
+
+export interface WatchlistProps {
+  isPaused?: boolean;
+}
+
 export type {
   AgreeDisagreeQuestion,
   CharacterScores,
@@ -105,4 +112,3 @@ export type {
   XYAxisQuestion,
 } from './components/quiz/types';
 export { CHARACTERS } from './components/quiz/types';
-export type { ContentTab, SortMode, WatchlistProps } from './components/watchlist/types';
