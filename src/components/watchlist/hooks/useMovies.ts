@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '@/types';
-import { usePolling } from './usePolling';
+import { usePolling } from '@/hooks/usePolling';
 import { getMovies, saveMovies } from '@/services/movieService';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '@/config/security';
@@ -322,21 +322,21 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     () =>
       movies
         ? [...movies].sort((a, b) => {
-            const aWatchedByBoth = a.watchedBy.length === 2;
-            const bWatchedByBoth = b.watchedBy.length === 2;
+          const aWatchedByBoth = a.watchedBy.length === 2;
+          const bWatchedByBoth = b.watchedBy.length === 2;
 
-            if (aWatchedByBoth && !bWatchedByBoth) {
-              return 1; // a (watched) comes after b (unwatched)
-            }
-            if (!aWatchedByBoth && bWatchedByBoth) {
-              return -1; // a (unwatched) comes before b (watched)
-            }
+          if (aWatchedByBoth && !bWatchedByBoth) {
+            return 1; // a (watched) comes after b (unwatched)
+          }
+          if (!aWatchedByBoth && bWatchedByBoth) {
+            return -1; // a (unwatched) comes before b (watched)
+          }
 
-            // For movies in the same group (both watched or both unwatched), sort by creation date
-            if (b.createdAt > a.createdAt) return 1;
-            if (b.createdAt < a.createdAt) return -1;
-            return 0;
-          })
+          // For movies in the same group (both watched or both unwatched), sort by creation date
+          if (b.createdAt > a.createdAt) return 1;
+          if (b.createdAt < a.createdAt) return -1;
+          return 0;
+        })
         : [],
     [movies]
   );
