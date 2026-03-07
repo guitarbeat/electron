@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
-import { colors, spacing, typography } from '@/design-system/tokens';
+import { useToast } from '@/context/ToastContext';
+import { colors, spacing, typography, radius } from '@/design-system/tokens';
 
 const BOARD_WIDTH = 320;
 const BOARD_HEIGHT = 420;
@@ -8,6 +9,8 @@ const BASKET_WIDTH = 72;
 const FOOD_SIZE = 20;
 const TICK_MS = 32;
 const HIGHSCORE_KEY = 'foodDropHighScore';
+
+type Difficulty = 'easy' | 'normal' | 'hard';
 
 interface FallingFood {
   id: string;
@@ -21,6 +24,15 @@ const FOOD_EMOJIS = ['🍕', '🍔', '🍟', '🌮', '🍣', '🍿', '🍩'];
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
+const difficultyConfig: Record<
+  Difficulty,
+  { spawnChance: number; speedBoost: number; label: string }
+> = {
+  easy: { spawnChance: 0.08, speedBoost: 0.9, label: 'Easy' },
+  normal: { spawnChance: 0.12, speedBoost: 1, label: 'Normal' },
+  hard: { spawnChance: 0.17, speedBoost: 1.18, label: 'Hard' },
+};
+
 const getStoredHighScore = () => {
   if (typeof window === 'undefined') return 0;
   const raw = window.localStorage.getItem(HIGHSCORE_KEY);
@@ -29,16 +41,19 @@ const getStoredHighScore = () => {
 };
 
 const FoodDropGame: React.FC = () => {
+  const { showToast } = useToast();
   const [basketX, setBasketX] = useState(BOARD_WIDTH / 2 - BASKET_WIDTH / 2);
   const [foods, setFoods] = useState<FallingFood[]>([]);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [running, setRunning] = useState(false);
   const [highScore, setHighScore] = useState(getStoredHighScore);
+  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const directionRef = useRef<0 | 1 | -1>(0);
+  const boardRef = useRef<HTMLDivElement | null>(null);
 
   const isGameOver = lives <= 0;
-  const speedMultiplier = 1 + score * 0.015;
+  const speedMultiplier = (1 + score * 0.015) * difficultyConfig[difficulty].speedBoost;
 
   const resetGame = () => {
     setBasketX(BOARD_WIDTH / 2 - BASKET_WIDTH / 2);
@@ -61,7 +76,7 @@ const FoodDropGame: React.FC = () => {
           .map((food) => ({ ...food, y: food.y + food.speed * speedMultiplier }))
           .filter((food) => food.y < BOARD_HEIGHT + FOOD_SIZE);
 
-        if (Math.random() < 0.12) {
+        if (Math.random() < difficultyConfig[difficulty].spawnChance) {
           nextFoods.push({
             id: `food-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             x: Math.random() * (BOARD_WIDTH - FOOD_SIZE),
@@ -76,7 +91,7 @@ const FoodDropGame: React.FC = () => {
     }, TICK_MS);
 
     return () => window.clearInterval(interval);
-  }, [running, isGameOver, speedMultiplier]);
+  }, [running, isGameOver, speedMultiplier, difficulty]);
 
   useEffect(() => {
     if (!running || isGameOver) return;
@@ -127,10 +142,13 @@ const FoodDropGame: React.FC = () => {
       const next = Math.max(currentHigh, score);
       if (next !== currentHigh && typeof window !== 'undefined') {
         window.localStorage.setItem(HIGHSCORE_KEY, String(next));
+        showToast({ message: `New Food Drop high score: ${next}`, type: 'success' });
+      } else {
+        showToast({ message: `Game over. Score: ${score}`, type: 'info' });
       }
       return next;
     });
-  }, [isGameOver, score]);
+  }, [isGameOver, score, showToast]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -170,6 +188,13 @@ const FoodDropGame: React.FC = () => {
     return 'Running';
   }, [isGameOver, running]);
 
+  const moveBasketFromPointer = (clientX: number) => {
+    if (!boardRef.current) return;
+    const rect = boardRef.current.getBoundingClientRect();
+    const next = clientX - rect.left - BASKET_WIDTH / 2;
+    setBasketX(clamp(next, 0, BOARD_WIDTH - BASKET_WIDTH));
+  };
+
   return (
     <div style={{ padding: spacing.md, color: colors.textPrimary }}>
       <div
@@ -190,16 +215,22 @@ const FoodDropGame: React.FC = () => {
       </div>
 
       <div
+        ref={boardRef}
         style={{
           width: '100%',
           maxWidth: BOARD_WIDTH,
           height: BOARD_HEIGHT,
           margin: '0 auto',
-          borderRadius: 12,
+          borderRadius: radius.md,
           border: `1px solid ${colors.borderSecondary}40`,
           background: 'linear-gradient(180deg, rgba(22,32,55,0.9) 0%, rgba(34,18,20,0.95) 100%)',
           position: 'relative',
           overflow: 'hidden',
+          touchAction: 'none',
+        }}
+        onPointerMove={(event) => {
+          if (!running || isGameOver) return;
+          moveBasketFromPointer(event.clientX);
         }}
       >
         {foods.map((food) => (
@@ -255,32 +286,13 @@ const FoodDropGame: React.FC = () => {
         <Button
           variant="ghost"
           size="sm"
-          onPointerDown={() => {
-            directionRef.current = -1;
-          }}
-          onPointerUp={() => {
-            directionRef.current = 0;
-          }}
-          onPointerLeave={() => {
-            directionRef.current = 0;
-          }}
+          onClick={() =>
+            setDifficulty((current) =>
+              current === 'easy' ? 'normal' : current === 'normal' ? 'hard' : 'easy'
+            )
+          }
         >
-          Move Left
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onPointerDown={() => {
-            directionRef.current = 1;
-          }}
-          onPointerUp={() => {
-            directionRef.current = 0;
-          }}
-          onPointerLeave={() => {
-            directionRef.current = 0;
-          }}
-        >
-          Move Right
+          Difficulty: {difficultyConfig[difficulty].label}
         </Button>
       </div>
     </div>
