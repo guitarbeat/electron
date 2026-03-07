@@ -23,14 +23,14 @@
 /* Content Grid */
 .watchlist-content {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.85rem;
   align-items: start;
 }
 
 .watchlist-content > .movie-item-card {
   width: 100%;
-  max-width: 320px;
+  max-width: 250px;
   justify-self: center;
 }
 
@@ -325,12 +325,12 @@
 
 @media (max-width: 640px) {
   .watchlist-content {
-    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-    gap: 0.65rem;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.55rem;
   }
 
   .watchlist-content > .movie-item-card {
-    max-width: 240px;
+    max-width: 200px;
   }
 }
 

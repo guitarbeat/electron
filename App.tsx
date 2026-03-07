@@ -4,7 +4,6 @@ import { useUser } from './src/context/UserContext';
 import { UserProvider } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { MainTab } from './src/types';
-import { useQuiz } from './src/hooks/useQuiz';
 import Watchlist from './src/components/watchlist';
 import { BubbleDismissProvider } from './src/context/BubbleDismissContext';
 import QuizEditor from './src/components/quiz/QuizEditor';
@@ -23,7 +22,6 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
-  const { quizData } = useQuiz();
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -53,10 +51,6 @@ const AppInner: React.FC = () => {
   };
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
-  const inactiveTabMeta = useMemo(
-    () => MAIN_TABS.find((item) => item.id !== activeTab) || MAIN_TABS[0],
-    [activeTab]
-  );
   const activeHeroLabel = activeTabMeta?.label || MAIN_TABS[0].label;
   const activeTabDescription =
     activeTab === 'queue'
@@ -97,34 +91,6 @@ const AppInner: React.FC = () => {
               </div>
             </div>
 
-            <div className="home-hero__tiles" aria-label="Quick switches">
-              {MAIN_TABS.map((tab) => {
-                const isActiveTile = tab.id === activeTab;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    className={`home-tile ${isActiveTile ? 'is-active' : ''}`}
-                    onClick={() => handleTabChange(tab.id)}
-                    aria-pressed={isActiveTile}
-                  >
-                    <span className="home-tile__icon" aria-hidden>
-                      {tab.icon}
-                    </span>
-                    <span className="home-tile__label">{tab.label}</span>
-                    <span className="home-tile__state">{isActiveTile ? 'Active' : 'Open'}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              className="home-hero__switch"
-              onClick={() => handleTabChange(inactiveTabMeta.id)}
-            >
-              Jump to {inactiveTabMeta.label}
-            </button>
           </section>
 
           {MAIN_TABS.map((tab) => {
