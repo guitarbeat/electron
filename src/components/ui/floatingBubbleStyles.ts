@@ -22,8 +22,28 @@ interface BubbleButtonStyleOptions {
   fontSize?: string | number;
 }
 
-export const getFloatingBubbleButtonStyle = (options: BubbleButtonStyleOptions) => {
-  const { position, isDragging, background, color, fontSize } = options;
+export function getFloatingBubbleButtonStyle(options: BubbleButtonStyleOptions): any;
+export function getFloatingBubbleButtonStyle(position: { x: number; y: number }, isDragging: boolean): any;
+export function getFloatingBubbleButtonStyle(
+  arg1: BubbleButtonStyleOptions | { x: number; y: number },
+  arg2?: boolean
+): any {
+  let position: { x: number; y: number };
+  let isDragging: boolean;
+  let background: string | undefined;
+  let color: string | undefined;
+  let fontSize: string | number | undefined;
+
+  if ('position' in arg1) {
+    position = arg1.position;
+    isDragging = arg1.isDragging;
+    background = arg1.background;
+    color = arg1.color;
+    fontSize = arg1.fontSize;
+  } else {
+    position = arg1;
+    isDragging = arg2 || false;
+  }
   return {
     position: 'fixed' as const,
     left: position.x,
@@ -51,15 +71,16 @@ interface ContainerStyleOptions {
   isViewportExpanded?: boolean;
   isMobile?: boolean;
   desktopWidth?: string;
+  zIndex?: number;
 }
 
 export const getFloatingContainerStyle = (options: ContainerStyleOptions = {}) => {
-  const { isEmbedded } = options;
+  const { isEmbedded, zIndex } = options;
   return {
     position: (isEmbedded ? 'relative' : 'fixed') as any,
     inset: isEmbedded ? 'auto' : 0,
     pointerEvents: (isEmbedded ? 'auto' : 'none') as any,
-    zIndex: 999,
+    zIndex: zIndex || 999,
   };
 };
 
