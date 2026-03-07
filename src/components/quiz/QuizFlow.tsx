@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
 import { User } from '@/types';
 import { QuizData } from '@/services/quizService';
-import MultipleChoiceQuestion from './MultipleChoiceQuestion';
-import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
-import ImageChoiceQuestion from './ImageChoiceQuestion';
-import XYAxisQuestion from './XYAxisQuestion';
+import {
+  MultipleChoiceQuestionView,
+  AgreeDisagreeQuestionView,
+  ImageChoiceQuestionView,
+  XYAxisQuestionView,
+} from './QuestionViews';
 import ResultsScreen from './ResultsScreen';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
@@ -142,7 +144,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     switch (currentQuestion.type) {
       case 'multiple-choice':
         return (
-          <MultipleChoiceQuestion
+          <MultipleChoiceQuestionView
             key={currentQuestion.id}
             question={currentQuestion}
             selectedIndex={currentAnswer?.answerIndex ?? null}
@@ -151,7 +153,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
         );
       case 'agree-disagree':
         return (
-          <AgreeDisagreeQuestion
+          <AgreeDisagreeQuestionView
             key={currentQuestion.id}
             question={currentQuestion}
             selectedValue={currentAnswer?.scaleValue ?? null}
@@ -160,7 +162,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
         );
       case 'image-choice':
         return (
-          <ImageChoiceQuestion
+          <ImageChoiceQuestionView
             key={currentQuestion.id}
             question={currentQuestion}
             selectedIndex={currentAnswer?.answerIndex ?? null}
@@ -169,7 +171,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
         );
       case 'xy-axis':
         return (
-          <XYAxisQuestion
+          <XYAxisQuestionView
             key={currentQuestion.id}
             question={currentQuestion as XYAxisQuestionType}
             selectedPosition={currentAnswer?.xyPosition ?? null}

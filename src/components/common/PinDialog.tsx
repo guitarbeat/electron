@@ -1,4 +1,3 @@
-import './PinDialog.css';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { User } from '@/types';

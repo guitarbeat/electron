@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './src/hooks/useAudio';
+import { breakpoints, useMediaQuery } from './src/hooks/useMediaQuery';
+import { useQuiz } from './src/hooks/useQuiz';
 import { useUser } from './src/context/UserContext';
 import { UserProvider } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
@@ -7,10 +9,14 @@ import { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
 import { BubbleDismissProvider } from './src/context/BubbleDismissContext';
 import QuizEditor from './src/components/quiz/QuizEditor';
+import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
+import Matchmaker from './src/components/matchmaker/Matchmaker';
+import MinecraftBubble from './src/components/common/MinecraftBubble';
+import DraggableFeatureBubble from './src/components/common/DraggableFeatureBubble';
+import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
-import AppHeader from './src/components/layout/AppHeader';
-import FloatingBubbles from './src/components/layout/FloatingBubbles';
+import TabBar from './src/components/ui/TabBar';
 import { ToastProvider } from './src/context/ToastContext';
 import './App.css';
 
@@ -22,6 +28,8 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
+  const { quizData } = useQuiz();
+  const isMobile = useMediaQuery(breakpoints.sm);
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -64,7 +72,19 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
-        <AppHeader tabs={MAIN_TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+        <header className="app-header">
+          <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
+            <div className="app-header-inner app-header-inner--minimal">
+              <div className="app-header-profile">
+                <UserSelection variant="inline" />
+              </div>
+            </div>
+
+            <div className="app-header-nav-row">
+              <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} />
+            </div>
+          </div>
+        </header>
 
         <main
           id="main-content"
@@ -123,12 +143,43 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <FloatingBubbles
-          quizCompleted={quizCompleted}
-          currentUser={currentUser}
-          onQuizComplete={handleQuizComplete}
-          onOpenQuizEditor={handleOpenQuizEditor}
-        />
+        <div className="floating-bubbles">
+          {quizData && currentUser ? (
+            <QuizFlow
+              quizData={quizData}
+              currentUser={currentUser}
+              onComplete={handleQuizComplete}
+              onEdit={handleOpenQuizEditor}
+              isCompleted={quizCompleted}
+            />
+          ) : null}
+          {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
+          <MinecraftBubble />
+          <DraggableFeatureBubble
+            title="Food Drop Game"
+            icon="🍔"
+            message="Food Drop game coming soon."
+            initialPosition={{ x: 300, y: 200 }}
+          />
+          <DraggableFeatureBubble
+            title="Snake Game"
+            icon="🐍"
+            message="Snake game coming soon."
+            initialPosition={{ x: 400, y: 300 }}
+          />
+          <DraggableFeatureBubble
+            title="Memories"
+            icon="💭"
+            message="Memories panel coming soon."
+            initialPosition={{ x: 500, y: 400 }}
+          />
+          <DraggableFeatureBubble
+            title="Spin Wheel"
+            icon="🎡"
+            message="Spin wheel coming soon."
+            initialPosition={{ x: 600, y: 200 }}
+          />
+        </div>
       </div>
     </ThemeProvider>
   );

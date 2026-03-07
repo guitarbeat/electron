@@ -1,5 +1,4 @@
 import React from 'react';
-import './WorkspaceLayout.css';
 
 interface WorkspaceLayoutProps {
   isMobile: boolean;
