@@ -57,7 +57,7 @@ class PollingManager {
     }
   }
 
-  private startPolling(key: string, interval: number) {
+  startPolling(key: string, interval: number) {
     // Execute immediately
     void this.execute(key);
     const id = setInterval(() => void this.execute(key), interval);
@@ -65,7 +65,7 @@ class PollingManager {
     this.activeIntervals.set(key, interval);
   }
 
-  private stopPolling(key: string) {
+  stopPolling(key: string) {
     const id = this.intervals.get(key);
     if (id) {
       clearInterval(id);
