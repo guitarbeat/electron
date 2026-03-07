@@ -18,6 +18,7 @@ import SnakeGame from './src/components/snake/SnakeGame';
 import FoodDropGame from './src/components/extras/FoodDropGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
+import ChromaticDotField from './src/components/effects/ChromaticDotField';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
 import TabBar from './src/components/ui/TabBar';
@@ -100,6 +101,7 @@ const AppInner: React.FC = () => {
           aria-label={activeTabMeta?.label || 'Main workspace'}
         >
           <section className="home-hero" aria-label="Home view selector">
+            <ChromaticDotField className="home-hero__fx" />
             <div className="home-hero__content">
               <p className="home-hero__eyebrow">Weekend Control Room</p>
               <h2 className="home-hero__title" aria-live="polite">
@@ -117,7 +119,6 @@ const AppInner: React.FC = () => {
                 {currentUser ? <span className="home-chip">Pilot: {currentUser}</span> : null}
               </div>
             </div>
-
           </section>
 
           {MAIN_TABS.map((tab) => {
@@ -131,7 +132,7 @@ const AppInner: React.FC = () => {
                 hidden={!isActivePanel}
                 className="tab-panel"
               >
-                {isActivePanel ? (tab.id === 'queue' ? <Watchlist /> : <PlacesList />) : null}
+                {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
               </section>
             );
           })}
