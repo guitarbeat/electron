@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  QuizCharacter,
   QuizQuestion,
   MultipleChoiceQuestion,
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
   XYAxisQuestion,
 } from '../types';
-import QuestionEditor from './QuestionEditor';
 import { questionTemplates, TemplateType } from '../QuestionTemplates';
 import QuestionPreview from '../QuestionPreview';
+import ScoreSlider from '../ScoreSlider';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
+import Input from '../../ui/Input';
+import Textarea from '../../ui/Textarea';
 import ConfirmDialog from '../../ui/ConfirmDialog';
+import { useToast } from '../../../context/ToastContext';
 import { spacing, colors, typography, radius } from '../../../design-system/tokens';
 
-// Questions Tab Component
 interface QuestionsTabProps {
   questions: QuizQuestion[];
   editingQuestion: QuizQuestion | null;
@@ -31,6 +34,584 @@ interface QuestionsTabProps {
   setDragOverIndex: (index: number | null) => void;
   isMobile: boolean;
 }
+
+const QUADRANT_INFO = [
+  { key: 'topLeft', icon: '⬆⬅', name: 'Top-Left', position: 'left + top' },
+  { key: 'topRight', icon: '⬆➡', name: 'Top-Right', position: 'right + top' },
+  { key: 'bottomLeft', icon: '⬇⬅', name: 'Bottom-Left', position: 'left + bottom' },
+  { key: 'bottomRight', icon: '⬇➡', name: 'Bottom-Right', position: 'right + bottom' },
+] as const;
+
+const AgreeDisagreeEditor: React.FC<{
+  question: AgreeDisagreeQuestion;
+  onChange: (q: AgreeDisagreeQuestion) => void;
+}> = ({ question, onChange }) => {
+  const levels = ['stronglyDisagree', 'disagree', 'neutral', 'agree', 'stronglyAgree'] as const;
+  const levelLabels = {
+    stronglyDisagree: 'Strongly Disagree',
+    disagree: 'Disagree',
+    neutral: 'Neutral',
+    agree: 'Agree',
+    stronglyAgree: 'Strongly Agree',
+  };
+
+  return (
+    <div>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>
+        Scoring by Response
+      </h3>
+      {levels.map((level) => (
+        <div
+          key={level}
+          style={{
+            marginBottom: spacing.md,
+            padding: spacing.md,
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+          }}
+        >
+          <div
+            style={{
+              marginBottom: spacing.sm,
+              fontWeight: typography.fontWeight.medium,
+              color: colors.textSecondary,
+            }}
+          >
+            {levelLabels[level]}
+          </div>
+          <ScoreSlider
+            scores={question.scores[level]}
+            onChange={(scores) => {
+              onChange({
+                ...question,
+                scores: { ...question.scores, [level]: scores },
+              });
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const MultipleChoiceEditor: React.FC<{
+  question: MultipleChoiceQuestion;
+  onChange: (q: MultipleChoiceQuestion) => void;
+}> = ({ question, onChange }) => {
+  const updateOption = (
+    index: number,
+    field: 'text' | 'scores',
+    value: string | Partial<Record<QuizCharacter, number>>
+  ) => {
+    const newOptions = [...question.options];
+    newOptions[index] = { ...newOptions[index], [field]: value };
+    onChange({ ...question, options: newOptions });
+  };
+
+  const addOption = () => {
+    onChange({
+      ...question,
+      options: [...question.options, { text: 'New option', scores: {} }],
+    });
+  };
+
+  const removeOption = (index: number) => {
+    if (question.options.length <= 2) return;
+    onChange({
+      ...question,
+      options: question.options.filter((_, i) => i !== index),
+    });
+  };
+
+  return (
+    <div>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Options</h3>
+      {question.options.map((option, idx) => (
+        <div
+          key={idx}
+          style={{
+            marginBottom: spacing.lg,
+            padding: spacing.md,
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+          }}
+        >
+          <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm }}>
+            <div style={{ flex: 1 }}>
+              <Input
+                value={option.text}
+                onChange={(e) => updateOption(idx, 'text', e.target.value)}
+                placeholder="Option text"
+                style={{ textAlign: 'left' }}
+              />
+            </div>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => removeOption(idx)}
+              disabled={question.options.length <= 2}
+            >
+              ✕
+            </Button>
+          </div>
+          <ScoreSlider
+            scores={option.scores}
+            onChange={(scores) => {
+              const newOptions = [...question.options];
+              newOptions[idx] = { ...newOptions[idx], scores };
+              onChange({ ...question, options: newOptions });
+            }}
+          />
+        </div>
+      ))}
+      <Button variant="secondary" size="sm" onClick={addOption}>
+        + Add Option
+      </Button>
+    </div>
+  );
+};
+
+const ImageChoiceEditor: React.FC<{
+  question: ImageChoiceQuestion;
+  onChange: (q: ImageChoiceQuestion) => void;
+}> = ({ question, onChange }) => {
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { showToast } = useToast();
+
+  const updateOption = (index: number, field: 'imageUrl' | 'alt', value: string) => {
+    const newOptions = [...question.options];
+    newOptions[index] = { ...newOptions[index], [field]: value };
+    onChange({ ...question, options: newOptions });
+  };
+
+  const handleImageUpload = async (index: number, file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showToast({ message: 'Please select an image file.', type: 'error' });
+      return;
+    }
+
+    if (file.size > 500 * 1024) {
+      showToast({
+        message: 'Image too large. Please use an image under 500KB for Gist storage.',
+        type: 'error',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      const newOptions = [...question.options];
+      newOptions[index] = {
+        ...newOptions[index],
+        imageUrl: base64,
+        alt: newOptions[index].alt || file.name.replace(/\.[^/.]+$/, ''),
+      };
+      onChange({ ...question, options: newOptions });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const addOption = () => {
+    onChange({
+      ...question,
+      options: [...question.options, { imageUrl: '', alt: 'New image', scores: {} }],
+    });
+  };
+
+  const removeOption = (index: number) => {
+    if (question.options.length <= 2) return;
+    onChange({
+      ...question,
+      options: question.options.filter((_, i) => i !== index),
+    });
+  };
+
+  const isBase64Image = (url: string) => url.startsWith('data:image');
+
+  return (
+    <div>
+      <h3 style={{ fontSize: typography.fontSize.lg, marginBottom: spacing.md }}>Image Options</h3>
+      <p
+        style={{
+          fontSize: typography.fontSize.sm,
+          color: colors.textTertiary,
+          marginBottom: spacing.lg,
+        }}
+      >
+        Upload images (under 500KB) or enter URLs to existing images in /quiz-photos/
+      </p>
+      {question.options.map((option, idx) => (
+        <div
+          key={idx}
+          style={{
+            marginBottom: spacing.lg,
+            padding: spacing.md,
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              gap: spacing.md,
+              marginBottom: spacing.md,
+              alignItems: 'flex-start',
+            }}
+          >
+            <div
+              style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: radius.md,
+                border: `2px dashed ${colors.borderSecondary}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                backgroundColor: colors.background,
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+              onClick={() => fileInputRefs.current[idx]?.click()}
+            >
+              {option.imageUrl ? (
+                <img
+                  src={option.imageUrl}
+                  alt={option.alt}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: spacing.sm,
+                    color: colors.textTertiary,
+                    fontSize: typography.fontSize.xs,
+                  }}
+                >
+                  Click to upload
+                </div>
+              )}
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <input
+                ref={(el) => {
+                  fileInputRefs.current[idx] = el;
+                }}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(idx, file);
+                }}
+              />
+
+              <div style={{ marginBottom: spacing.sm }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => fileInputRefs.current[idx]?.click()}
+                  style={{ width: '100%' }}
+                >
+                  📷 Upload Image
+                </Button>
+              </div>
+
+              <Input
+                label="Or enter URL"
+                value={isBase64Image(option.imageUrl) ? '(uploaded image)' : option.imageUrl}
+                onChange={(e) => updateOption(idx, 'imageUrl', e.target.value)}
+                placeholder="/quiz-photos/quiz-img-1.png"
+                style={{ textAlign: 'left' }}
+                disabled={isBase64Image(option.imageUrl)}
+              />
+
+              {isBase64Image(option.imageUrl) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateOption(idx, 'imageUrl', '')}
+                  style={{ marginTop: spacing.xs, fontSize: typography.fontSize.xs }}
+                >
+                  Clear uploaded image
+                </Button>
+              )}
+            </div>
+
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => removeOption(idx)}
+              disabled={question.options.length <= 2}
+              style={{ flexShrink: 0 }}
+            >
+              ✕
+            </Button>
+          </div>
+
+          <div style={{ marginBottom: spacing.sm }}>
+            <Input
+              label="Alt Text (description)"
+              value={option.alt}
+              onChange={(e) => updateOption(idx, 'alt', e.target.value)}
+              placeholder="Description of the image"
+              style={{ textAlign: 'left' }}
+            />
+          </div>
+
+          <ScoreSlider
+            scores={option.scores}
+            onChange={(scores) => {
+              const newOptions = [...question.options];
+              newOptions[idx] = { ...newOptions[idx], scores };
+              onChange({ ...question, options: newOptions });
+            }}
+          />
+        </div>
+      ))}
+      <Button variant="secondary" size="sm" onClick={addOption}>
+        + Add Image Option
+      </Button>
+    </div>
+  );
+};
+
+const XYAxisEditor: React.FC<{
+  question: XYAxisQuestion;
+  onChange: (q: XYAxisQuestion) => void;
+}> = ({ question, onChange }) => {
+  const updateXAxis = (field: 'leftLabel' | 'rightLabel', value: string) => {
+    onChange({
+      ...question,
+      xAxis: { ...question.xAxis, [field]: value },
+    });
+  };
+
+  const updateYAxis = (field: 'topLabel' | 'bottomLabel', value: string) => {
+    onChange({
+      ...question,
+      yAxis: { ...question.yAxis, [field]: value },
+    });
+  };
+
+  const updateQuadrantScores = (
+    quadrant: keyof XYAxisQuestion['quadrantScores'],
+    scores: Partial<Record<QuizCharacter, number>>
+  ) => {
+    onChange({
+      ...question,
+      quadrantScores: {
+        ...question.quadrantScores,
+        [quadrant]: scores,
+      },
+    });
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          marginBottom: spacing.lg,
+          padding: spacing.md,
+          backgroundColor: colors.surface,
+          borderRadius: radius.md,
+        }}
+      >
+        <h3
+          style={{
+            fontSize: typography.fontSize.base,
+            marginBottom: spacing.md,
+            color: colors.textPrimary,
+          }}
+        >
+          Axis Labels
+        </h3>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: spacing.md,
+          }}
+        >
+          <Input
+            label="Y-Axis Top"
+            value={question.yAxis.topLabel}
+            onChange={(e) => updateYAxis('topLabel', e.target.value)}
+            placeholder="e.g., Spontaneous"
+            style={{ textAlign: 'left' }}
+          />
+          <Input
+            label="Y-Axis Bottom"
+            value={question.yAxis.bottomLabel}
+            onChange={(e) => updateYAxis('bottomLabel', e.target.value)}
+            placeholder="e.g., Planned"
+            style={{ textAlign: 'left' }}
+          />
+          <Input
+            label="X-Axis Left"
+            value={question.xAxis.leftLabel}
+            onChange={(e) => updateXAxis('leftLabel', e.target.value)}
+            placeholder="e.g., Solo"
+            style={{ textAlign: 'left' }}
+          />
+          <Input
+            label="X-Axis Right"
+            value={question.xAxis.rightLabel}
+            onChange={(e) => updateXAxis('rightLabel', e.target.value)}
+            placeholder="e.g., Social"
+            style={{ textAlign: 'left' }}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h3
+          style={{
+            fontSize: typography.fontSize.base,
+            marginBottom: spacing.md,
+            color: colors.textPrimary,
+          }}
+        >
+          Quadrant Scores
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+          {QUADRANT_INFO.map(({ key, icon, name, position }) => (
+            <div
+              key={key}
+              style={{
+                padding: spacing.md,
+                backgroundColor: colors.surface,
+                borderRadius: radius.md,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.sm,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>{icon}</span>
+                <span
+                  style={{
+                    fontSize: typography.fontSize.sm,
+                    fontWeight: typography.fontWeight.bold,
+                    color: colors.textPrimary,
+                  }}
+                >
+                  {name}
+                </span>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    color: colors.textTertiary,
+                    marginLeft: 'auto',
+                  }}
+                >
+                  ({position})
+                </span>
+              </div>
+              <ScoreSlider
+                scores={question.quadrantScores[key]}
+                onChange={(scores) => updateQuadrantScores(key, scores)}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const QuestionEditor: React.FC<{
+  question: QuizQuestion;
+  onSave: (q: QuizQuestion) => void;
+  onCancel: () => void;
+}> = ({ question, onSave, onCancel }) => {
+  const [local, setLocal] = useState<QuizQuestion>(question);
+  const updateField = <K extends keyof QuizQuestion>(field: K, value: QuizQuestion[K]) => {
+    setLocal({ ...local, [field]: value } as QuizQuestion);
+  };
+
+  return (
+    <Card variant="elevated" style={{ padding: spacing.md }}>
+      <div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: spacing.md,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: typography.fontSize.lg,
+              margin: 0,
+              fontFamily: typography.fontFamily.heading.join(', '),
+            }}
+          >
+            Edit Question
+          </h2>
+          <div style={{ display: 'flex', gap: spacing.sm }}>
+            <Button variant="primary" size="sm" onClick={() => onSave(local)}>
+              Save
+            </Button>
+            <Button variant="secondary" size="sm" onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: spacing.md }}>
+          <Textarea
+            label="Question Text"
+            value={local.question}
+            onChange={(e) => updateField('question', e.target.value)}
+            style={{ textAlign: 'left', minHeight: '80px' }}
+          />
+        </div>
+
+        <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: spacing.xs }}>
+          {local.type === 'multiple-choice' && (
+            <MultipleChoiceEditor
+              question={local as MultipleChoiceQuestion}
+              onChange={(q) => setLocal(q)}
+            />
+          )}
+
+          {local.type === 'agree-disagree' && (
+            <AgreeDisagreeEditor
+              question={local as AgreeDisagreeQuestion}
+              onChange={(q) => setLocal(q)}
+            />
+          )}
+
+          {local.type === 'image-choice' && (
+            <ImageChoiceEditor
+              question={local as ImageChoiceQuestion}
+              onChange={(q) => setLocal(q)}
+            />
+          )}
+
+          {local.type === 'xy-axis' && (
+            <XYAxisEditor question={local as XYAxisQuestion} onChange={(q) => setLocal(q)} />
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
 
 const QuestionsTab: React.FC<QuestionsTabProps> = ({
   questions,
@@ -115,7 +696,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
     setExpandedQuestions(new Set());
   };
 
-  // Drag handlers
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
   };
@@ -167,7 +747,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
 
   return (
     <div>
-      {/* Add Question Buttons / Templates */}
       <Card
         variant="default"
         style={{
@@ -323,7 +902,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
         )}
       </Card>
 
-      {/* Expand/Collapse controls */}
       <div
         style={{
           display: 'flex',
@@ -340,7 +918,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
         </Button>
       </div>
 
-      {/* Questions List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
         {questions.map((q, index) => {
           const isExpanded = expandedQuestions.has(q.id);
@@ -365,7 +942,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                 cursor: 'grab',
               }}
             >
-              {/* Question header row */}
               <div
                 style={{
                   display: 'flex',
@@ -373,7 +949,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   gap: spacing.sm,
                 }}
               >
-                {/* Drag handle */}
                 <div
                   style={{
                     cursor: 'grab',
@@ -386,7 +961,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   ⋮⋮
                 </div>
 
-                {/* Question info */}
                 <div
                   style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                   onClick={() => toggleExpand(q.id)}
@@ -441,7 +1015,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   </p>
                 </div>
 
-                {/* Action buttons */}
                 <div style={{ display: 'flex', gap: spacing.xs, flexShrink: 0 }}>
                   <Button
                     variant="ghost"
@@ -486,7 +1059,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                 </div>
               </div>
 
-              {/* Expanded content - option preview */}
               {isExpanded && (
                 <div
                   style={{
@@ -530,7 +1102,6 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   );
 };
 
-// Options summary for collapsed view
 const OptionsSummary: React.FC<{ options: MultipleChoiceQuestion['options'] }> = ({ options }) => (
   <div style={{ fontSize: '11px', color: colors.textTertiary }}>
     {options.map((opt, i) => {
