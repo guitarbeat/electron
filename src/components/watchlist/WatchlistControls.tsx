@@ -49,73 +49,73 @@ const WatchlistSearchBar: React.FC<{
   suggestions,
   placeholder = 'Search titles...',
 }) => {
-  const showSuggestions = searchQuery.trim().length > 0 && suggestions.length > 0;
+    const showSuggestions = searchQuery.trim().length > 0 && suggestions.length > 0;
 
-  return (
-    <div className="watchlist-search">
-      <div className="watchlist-search__row">
-        <div className="ui-control-input-shell watchlist-search__input-wrap">
-          <SearchIcon className="ui-control-input-icon watchlist-search__input-icon" aria-hidden />
-          <Input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder={placeholder}
-            aria-label="Search movies"
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return;
-              if (onEnterAction === 'selectTopResult' && topSuggestion) {
-                event.preventDefault();
-                setSearchQuery(topSuggestion);
-                onSelectSuggestion?.(topSuggestion);
-              }
-            }}
-            className="ui-control-input watchlist-search__input"
-          />
+    return (
+      <div className="watchlist-search">
+        <div className="watchlist-search__row">
+          <div className="ui-control-input-shell watchlist-search__input-wrap">
+            <SearchIcon className="ui-control-input-icon watchlist-search__input-icon" aria-hidden />
+            <Input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={placeholder}
+              aria-label="Search movies"
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') return;
+                if (onEnterAction === 'selectTopResult' && topSuggestion) {
+                  event.preventDefault();
+                  setSearchQuery(topSuggestion);
+                  onSelectSuggestion?.(topSuggestion);
+                }
+              }}
+              className="ui-control-input watchlist-search__input"
+            />
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onAdd}
+            disabled={isBusy || !searchQuery.trim()}
+            isLoading={isBusy}
+            loadingText=""
+            className="watchlist-search__add"
+            aria-label={addLabel}
+            title={addLabel}
+            style={{ fontFamily: typography.fontFamily.body.join(', ') }}
+          >
+            <span className="watchlist-search__add-content">
+              <PlusIcon aria-hidden />
+              <span>Add</span>
+            </span>
+          </Button>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onAdd}
-          disabled={isBusy || !searchQuery.trim()}
-          isLoading={isBusy}
-          loadingText=""
-          className="watchlist-search__add"
-          aria-label={addLabel}
-          title={addLabel}
-          style={{ fontFamily: typography.fontFamily.body.join(', ') }}
-        >
-          <span className="watchlist-search__add-content">
-            <PlusIcon size={16} aria-hidden />
-            <span>Add</span>
-          </span>
-        </Button>
-      </div>
 
-      {showSuggestions && (
-        <ul
-          className="watchlist-search__suggestions"
-          role="listbox"
-          aria-label="Search suggestions"
-        >
-          {suggestions.map((suggestion) => (
-            <li key={suggestion}>
-              <button
-                type="button"
-                className="watchlist-search__suggestion-btn"
-                onClick={() => {
-                  setSearchQuery(suggestion);
-                  onSelectSuggestion?.(suggestion);
-                }}
-              >
-                {suggestion}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
+        {showSuggestions && (
+          <ul
+            className="watchlist-search__suggestions"
+            role="listbox"
+            aria-label="Search suggestions"
+          >
+            {suggestions.map((suggestion) => (
+              <li key={suggestion}>
+                <button
+                  type="button"
+                  className="watchlist-search__suggestion-btn"
+                  onClick={() => {
+                    setSearchQuery(suggestion);
+                    onSelectSuggestion?.(suggestion);
+                  }}
+                >
+                  {suggestion}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  };
 
 // Primary Filters Component
 const WatchlistPrimaryFilters: React.FC<{
@@ -187,9 +187,8 @@ const WatchlistMoreMenu: React.FC<{
               <button
                 key={option.id}
                 type="button"
-                className={`watchlist-more-menu__option${
-                  sortMode === option.id ? ' is-active' : ''
-                }`}
+                className={`watchlist-more-menu__option${sortMode === option.id ? ' is-active' : ''
+                  }`}
                 onClick={() => {
                   setSortMode(option.id);
                   setIsOpen(false);

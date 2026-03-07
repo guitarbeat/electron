@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { usePolling } from './usePolling';
+import { usePolling } from '@/hooks/usePolling';
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,

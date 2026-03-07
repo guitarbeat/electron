@@ -4,7 +4,9 @@ import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/mem
 import { STORAGE_KEYS, FILTERS } from '../Watchlist.styles';
 import { SortMode, ContentTab } from '../types';
 import { Movie, User } from '../../../types';
-import { useMovies, useSuggestions, useMemories } from './data';
+import { useMovies } from '@/hooks/useMovies';
+import { useSuggestions } from '@/hooks/useSuggestions';
+import { useMemories } from './useMemories';
 import { useToast } from '../../../context/ToastContext';
 
 const MEMORY_FILTER_STORAGE_KEY = STORAGE_KEYS.MEMORY_FILTER;
