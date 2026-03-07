@@ -14,7 +14,6 @@ import { colors, spacing, typography, radius } from '@/design-system/tokens';
 import { useToast } from '@/context/ToastContext';
 import type { Place } from '@/types';
 import '../ui/ui.css';
-import './PlacesList.css';
 
 type PlaceFilter = 'want' | 'visited';
 
