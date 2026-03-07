@@ -27,7 +27,7 @@ export interface MovieMetadataProps {
 
 export interface MovieActionsProps {
   movie: Movie;
-  currentUser: string | null;
+  currentUser: User | null;
   watchedByCurrentUser: boolean;
   isUpdating: boolean;
   isMobile: boolean;
@@ -40,7 +40,7 @@ export interface MovieActionsProps {
 export interface MovieMemoriesProps {
   movie: Movie;
   memories: SharedMemory[];
-  currentUser: string | null;
+  currentUser: User | null;
   isMobile: boolean;
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;

@@ -14,26 +14,92 @@ export const clampFloatingBubblePosition = (x: number, y: number) => {
   };
 };
 
-export const getFloatingBubbleButtonStyle = (
-  position: { x: number; y: number },
-  isDragging: boolean
-) => ({
-  position: 'fixed' as const,
-  left: position.x,
-  top: position.y,
-  width: FLOATING_BUBBLE_SIZE,
-  height: FLOATING_BUBBLE_SIZE,
-  borderRadius: '50%',
-  border: 'none',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+interface BubbleButtonStyleOptions {
+  position: { x: number; y: number };
+  isDragging: boolean;
+  background?: string;
+  color?: string;
+  fontSize?: string | number;
+}
+
+export const getFloatingBubbleButtonStyle = (options: BubbleButtonStyleOptions) => {
+  const { position, isDragging, background, color, fontSize } = options;
+  return {
+    position: 'fixed' as const,
+    left: position.x,
+    top: position.y,
+    width: FLOATING_BUBBLE_SIZE,
+    height: FLOATING_BUBBLE_SIZE,
+    borderRadius: '50%',
+    border: 'none',
+    background: background || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: color || 'white',
+    fontSize: fontSize || '20px',
+    cursor: isDragging ? 'grabbing' : 'grab',
+    transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease',
+    boxShadow: isDragging ? '0 8px 24px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    transform: isDragging ? 'scale(0.95)' : 'scale(1)',
+  };
+};
+
+interface ContainerStyleOptions {
+  isEmbedded?: boolean;
+  isViewportExpanded?: boolean;
+  isMobile?: boolean;
+  desktopWidth?: string;
+}
+
+export const getFloatingContainerStyle = (options: ContainerStyleOptions = {}) => {
+  const { isEmbedded } = options;
+  return {
+    position: (isEmbedded ? 'relative' : 'fixed') as any,
+    inset: isEmbedded ? 'auto' : 0,
+    pointerEvents: (isEmbedded ? 'auto' : 'none') as any,
+    zIndex: 999,
+  };
+};
+
+interface PanelCardStyleOptions {
+  isViewportExpanded?: boolean;
+  isMobile?: boolean;
+  maxHeight?: string;
+  background?: string;
+  shadow?: string;
+}
+
+export const getFloatingPanelCardStyle = (options: PanelCardStyleOptions = {}) => {
+  const { isViewportExpanded, isMobile, maxHeight, background, shadow } = options;
+  return {
+    position: (isMobile && isViewportExpanded ? 'fixed' : 'absolute') as any,
+    bottom: isMobile ? 0 : '80px',
+    right: isMobile ? 0 : '20px',
+    width: isMobile ? '100%' : '380px',
+    maxHeight: maxHeight || (isMobile ? '80vh' : '600px'),
+    zIndex: 1001,
+    pointerEvents: 'auto' as const,
+    background: background || undefined,
+    boxShadow: shadow || undefined,
+  };
+};
+
+export const getFloatingBubbleBadgeStyle = () => ({
+  position: 'absolute' as const,
+  top: -4,
+  right: -4,
+  background: '#ef4444',
   color: 'white',
-  fontSize: '20px',
-  cursor: isDragging ? 'grabbing' : 'grab',
-  transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease',
-  boxShadow: isDragging ? '0 8px 24px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
+  borderRadius: 'full',
+  minWidth: '20px',
+  height: '20px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  zIndex: 1000,
-  transform: isDragging ? 'scale(0.95)' : 'scale(1)',
+  fontSize: '10px',
+  fontWeight: 'bold',
+  padding: '0 4px',
+  border: '2px solid white',
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Movie, SharedMemory } from '@/types';
+import { Movie, SharedMemory, User } from '@/types';
 import { spacing, typography, colors } from '@/design-system/tokens';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
@@ -7,7 +7,7 @@ import MemoryComposer from '@/memories/MemoryComposer';
 interface MovieMemoriesProps {
   movie: Movie;
   memories: SharedMemory[];
-  currentUser: string | null;
+  currentUser: User | null;
   isMobile: boolean;
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
@@ -65,16 +65,16 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           <MemoryComposer
             watchedMovieOptions={[movie]}
             selectedMovieId={movie.id}
-            onSelectedMovieIdChange={() => {}}
+            onSelectedMovieIdChange={() => { }}
             currentUser={currentUser}
             onSubmit={handleMemorySubmit}
             isSubmitting={isSubmittingMemory}
             canSubmit={!isSubmittingMemory}
             isMobile={isMobile}
             note=""
-            onNoteChange={() => {}}
+            onNoteChange={() => { }}
             isComposerOpen
-            onComposerToggle={() => {}}
+            onComposerToggle={() => { }}
             remainingChars={280}
             error={null}
             successMessage={null}
@@ -101,15 +101,15 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           }}
           movieFilterOptions={[]}
           activeMovieFilter={movie.id}
-          onActiveMovieFilterChange={() => {}}
+          onActiveMovieFilterChange={() => { }}
           sortMode="newest"
-          onSortModeChange={() => {}}
-          onShowMore={() => {}}
-          onShowLess={() => {}}
+          onSortModeChange={() => { }}
+          onShowMore={() => { }}
+          onShowLess={() => { }}
           visibleCount={100}
           isLoading={false}
           memoriesError={null}
-          onJumpToMovie={() => {}}
+          onJumpToMovie={() => { }}
         />
       ) : (
         <p

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Movie } from '@/types';
 
 interface FixMatchDialogProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface FixMatchDialogProps {
   title?: string;
   message?: string;
   className?: string;
+  movie?: Movie;
 }
 
 const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
