@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Movie, SharedMemory } from '../types.ts';
+import type { Movie, SharedMemory } from '../src/types.ts';
 import {
   buildMovieMemorySummaries,
   formatMemoryTimestamp,
   sortMemories,
-} from '../components/memories/memoryUtils.ts';
+} from '../src/components/memories/memoryUtils.ts';
 
 const movie: Movie = {
   id: 'm1',

@@ -5,7 +5,7 @@ import {
   enqueueDirection,
   stepGame,
   type SnakeGameState,
-} from '../components/snake/snakeGameLogic.ts';
+} from '../src/components/snake/snakeGameLogic.ts';
 
 test('createInitialGameState creates valid board state and food placement', () => {
   const state = createInitialGameState({ width: 8, height: 8 }, () => 0);

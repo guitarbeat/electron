@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pollingManager } from '../services/PollingManager.ts';
+import { pollingManager } from '../src/services/PollingManager.ts';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
