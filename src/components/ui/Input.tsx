@@ -14,13 +14,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const errorId = `${id}-error`;
 
     return (
-      <div className="ui-input">
+      <div className="ui-input" style={{ fontFamily: typography.fontFamily.body.join(', ') }}>
         {label && (
-          <label
-            htmlFor={id}
-            className="ui-input__label"
-            style={{ fontFamily: typography.fontFamily.body.join(', ') }}
-          >
+          <label htmlFor={id} className="ui-input__label">
             {label}
           </label>
         )}
@@ -30,19 +26,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
           className={`ui-input__field ${error ? 'ui-input__field--error' : ''} ${className}`.trim()}
-          style={{
-            fontFamily: typography.fontFamily.body.join(', '),
-            ...style,
-          }}
+          style={style}
           {...props}
         />
         {error && (
-          <div
-            id={errorId}
-            role="alert"
-            className="ui-input__error"
-            style={{ fontFamily: typography.fontFamily.body.join(', ') }}
-          >
+          <div id={errorId} role="alert" className="ui-input__error">
             {error}
           </div>
         )}
