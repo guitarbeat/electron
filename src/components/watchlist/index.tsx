@@ -131,7 +131,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     if (currentUser) {
       setIsAdding(true);
       try {
-        await addMovie(searchQuery.trim());
+        await addMovie(searchQuery.trim(), currentUser);
         setSearchQuery('');
         setToast({ message: `"${searchQuery.trim()}" added to watchlist!`, type: 'success' });
       } catch (error) {
@@ -172,10 +172,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   );
 
   const handleAddMemory = useCallback(
-    (movie: Movie, memory: Omit<SharedMemory, 'id'>) => {
-      addMemory(movie.id, memory);
+    async (movie: Movie, memory: Omit<SharedMemory, 'id'>) => {
+      await addMemory(movie.id, movie.title, currentUser || 'Unknown', memory.note);
     },
-    [addMemory]
+    [addMemory, currentUser]
   );
 
   // Render functions
@@ -191,10 +191,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           index={index}
           memories={movieMemories}
           currentUser={currentUser}
-          onToggleWatched={() => toggleWatched(movie.id)}
+          onToggleWatched={() => toggleWatched(movie.id, currentUser)}
           onDelete={() => handleDeleteMovie(movie)}
           onFixMatch={() => handleFixMatch(movie)}
-          onAddMemory={(memory) => handleAddMemory(movie, memory)}
+          onAddMemory={async (note: string) => {
+  await handleAddMemory(movie, { note, movieId: movie.id, movieTitle: movie.title, author: currentUser || 'Unknown' });
+}}
           isProcessing={isProcessing}
         />
       );
@@ -217,8 +219,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           key={suggestion.id}
           suggestion={suggestion}
           currentUser={currentUser}
-          onAccept={() => acceptSuggestion(suggestion.id)}
-          onReject={() => rejectSuggestion(suggestion.id)}
+          onAccept={() => acceptSuggestion(suggestion.id, currentUser || 'Aaron')}
+          onReject={() => rejectSuggestion(suggestion.id, currentUser || 'Aaron')}
           isProcessing={processingSuggestionId === suggestion.id}
         />
       );

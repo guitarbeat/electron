@@ -15,8 +15,8 @@ export interface Place {
 export interface Movie {
   id: string;
   title: string;
-  addedBy: string;
-  watchedBy: string[];
+  addedBy: User;
+  watchedBy: User[];
   createdAt: string;
 
   // Metadata
