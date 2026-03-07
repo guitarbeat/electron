@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAudio } from './hooks/useAudio';
-import { useUser } from './context/UserContext';
-import { UserProvider } from './context/UserContext';
-import { ThemeProvider } from './context/ThemeContext';
+import { useAudio } from './src/hooks/useAudio';
+import { useUser } from './src/context/UserContext';
+import { UserProvider } from './src/context/UserContext';
+import { ThemeProvider } from './src/context/ThemeContext';
 import { MainTab } from './types';
-import { useQuiz } from './hooks/useQuiz';
+import { useQuiz } from './src/hooks/useQuiz';
 import Watchlist from './src/components/watchlist';
-import { BubbleDismissProvider } from './context/BubbleDismissContext';
+import { BubbleDismissProvider } from './src/context/BubbleDismissContext';
 import QuizEditor from './src/components/quiz/QuizEditor';
 import PlacesList from './src/components/places/PlacesList';
 import MinigameModal from './src/components/ui/MinigameModal';
 import AppHeader from './src/components/layout/AppHeader';
 import FloatingBubbles from './src/components/layout/FloatingBubbles';
-import { ToastProvider } from './context/ToastContext';
+import { ToastProvider } from './src/context/ToastContext';
 import './App.css';
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
