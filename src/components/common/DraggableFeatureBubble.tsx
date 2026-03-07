@@ -9,8 +9,9 @@ import {
 interface DraggableFeatureBubbleProps {
   icon: string;
   title: string;
-  message: string;
+  message?: string;
   initialPosition: { x: number; y: number };
+  onActivate?: () => void;
 }
 
 interface DragState {
@@ -25,6 +26,7 @@ const DraggableFeatureBubble: React.FC<DraggableFeatureBubbleProps> = ({
   title,
   message,
   initialPosition,
+  onActivate,
 }) => {
   const { showToast } = useToast();
   const [position, setPosition] = useState(initialPosition);
@@ -76,8 +78,12 @@ const DraggableFeatureBubble: React.FC<DraggableFeatureBubbleProps> = ({
 
   const handleClick = () => {
     if (hasDraggedRef.current) return;
+    if (onActivate) {
+      onActivate();
+      return;
+    }
     showToast({
-      message,
+      message: message || `${title} is ready.`,
       type: 'info',
       duration: 2500,
     });
