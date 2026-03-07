@@ -1,8 +1,6 @@
 import React from 'react';
-import { MovieCardSkeleton, SuggestionSkeleton } from '@/ui/Skeleton';
-import MovieItem from '@/movie/MovieItem';
-import { SuggestionItemCard } from '@/common/DashboardCards';
-import { Movie, MovieSuggestion, SharedMemory } from '@/types';
+import { MovieCardSkeleton } from '@/ui/Skeleton';
+import { Movie, MovieSuggestion } from '@/types';
 
 interface WatchlistContentProps {
   isLoading: boolean;
@@ -10,8 +8,8 @@ interface WatchlistContentProps {
   filteredMovies: Movie[];
   filteredSuggestions: MovieSuggestion[];
   contentTab: string;
-  renderMovieItem: (movie: Movie, index: number) => React.ReactNode;
-  renderSuggestionItem: (suggestion: MovieSuggestion, index: number) => React.ReactNode;
+  renderMovieItem: (movie: Movie) => React.ReactNode;
+  renderSuggestionItem: (suggestion: MovieSuggestion) => React.ReactNode;
 }
 
 const MOBILE_SKELETON_KEYS = ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4'];
@@ -51,7 +49,7 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
     return (
       <div className="watchlist-content">
         {filteredSuggestions.length > 0 ? (
-          filteredSuggestions.map((suggestion, index) => renderSuggestionItem(suggestion, index))
+          filteredSuggestions.map((suggestion) => renderSuggestionItem(suggestion))
         ) : (
           <div className="watchlist-empty-state">
             <p>No suggestions available</p>
@@ -64,7 +62,7 @@ const WatchlistContent: React.FC<WatchlistContentProps> = ({
   return (
     <div className="watchlist-content">
       {filteredMovies.length > 0 ? (
-        filteredMovies.map((movie, index) => renderMovieItem(movie, index))
+        filteredMovies.map((movie) => renderMovieItem(movie))
       ) : (
         <div className="watchlist-empty-state">
           <p>No movies found</p>

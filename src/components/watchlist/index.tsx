@@ -3,8 +3,7 @@ import { useUser } from '@/context/UserContext';
 import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps } from './types';
 import WorkspaceLayout from '@/layout/WorkspaceLayout';
-import { Movie, MovieSuggestion, SharedMemory } from '@/types';
-import { spacing, colors, radius, typography } from '@/design-system/tokens';
+import { Movie, MovieSuggestion } from '@/types';
 
 // Components
 import {
@@ -14,7 +13,6 @@ import {
   WatchlistDialogs,
 } from './components';
 import MovieItem from '@/components/movie/MovieItem';
-import { SuggestionItemCard } from '@/common/DashboardCards';
 
 // Styles
 import './Watchlist.css';
@@ -74,7 +72,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [suggestionToReject, setSuggestionToReject] = useState<MovieSuggestion | null>(null);
 
   // Handle confetti when both users watch a movie
   useEffect(() => {
@@ -187,7 +184,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const renderMovieItem = useCallback(
     (movie: Movie) => {
       const movieMemories = memories.filter((m) => m.movieId === movie.id);
-      const isProcessing = processingSuggestionId === movie.id;
 
       return (
         <MovieItem
@@ -212,7 +208,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       memories,
       currentUser,
       filteredMovies,
-      processingSuggestionId,
       toggleWatched,
       handleDeleteMovie,
       handleFixMatch,
@@ -220,9 +215,73 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     ]
   );
 
-  const renderSuggestionItem = useCallback((suggestion: MovieSuggestion, index: number) => {
-    return <SuggestionItemCard key={suggestion.id} suggestion={suggestion} />;
-  }, []);
+  const renderSuggestionItem = useCallback(
+    (suggestion: MovieSuggestion) => {
+      const isProcessing = processingSuggestionId === suggestion.id;
+
+      return (
+        <article key={suggestion.id} className="suggestion-item-card">
+          <h3 className="suggestion-item-card__title">{suggestion.title}</h3>
+          <p className="suggestion-item-card__meta">
+            Suggested by {suggestion.suggestedBy} on{' '}
+            {new Date(suggestion.createdAt).toLocaleDateString()}
+          </p>
+          {suggestion.reason ? (
+            <p className="suggestion-item-card__reason">{suggestion.reason}</p>
+          ) : null}
+
+          {currentUser ? (
+            <div className="suggestion-item-card__actions">
+              <button
+                type="button"
+                className="suggestion-item-card__button is-accept"
+                disabled={isProcessing}
+                onClick={async () => {
+                  if (!currentUser) return;
+                  setProcessingSuggestionId(suggestion.id);
+                  try {
+                    await addMovie(suggestion.title);
+                    await acceptSuggestion(suggestion.id, currentUser);
+                    setToast({ message: `Added "${suggestion.title}"`, type: 'success' });
+                  } finally {
+                    setProcessingSuggestionId(null);
+                  }
+                }}
+              >
+                {isProcessing ? 'Adding…' : 'Accept'}
+              </button>
+              <button
+                type="button"
+                className="suggestion-item-card__button is-reject"
+                disabled={isProcessing}
+                onClick={async () => {
+                  if (!currentUser) return;
+                  setProcessingSuggestionId(suggestion.id);
+                  try {
+                    await rejectSuggestion(suggestion.id, currentUser);
+                    setToast({ message: `Rejected "${suggestion.title}"`, type: 'info' });
+                  } finally {
+                    setProcessingSuggestionId(null);
+                  }
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          ) : null}
+        </article>
+      );
+    },
+    [
+      acceptSuggestion,
+      addMovie,
+      currentUser,
+      processingSuggestionId,
+      rejectSuggestion,
+      setProcessingSuggestionId,
+      setToast,
+    ]
+  );
 
   const getEmptyStateMessage = useCallback(() => {
     if (contentTab === 'suggestions') {
