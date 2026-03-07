@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useToast } from '../../context/ToastContext';
-import { 
-  clampFloatingBubblePosition, 
+import {
+  clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
-  FLOATING_DRAG_THRESHOLD
+  FLOATING_DRAG_THRESHOLD,
 } from '../ui/floatingBubbleStyles';
 
 interface MinecraftBubbleProps {
@@ -16,14 +16,14 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
   const { showToast } = useToast();
   const serverAddress = import.meta.env.VITE_MINECRAFT_SERVER_ADDRESS || 'localhost';
   const serverPort = import.meta.env.VITE_MINECRAFT_SERVER_PORT || '25565';
-  
+
   const [position, setPosition] = useState(() => {
     // Position in bottom right corner
     const x = window.innerWidth - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 80;
     const y = window.innerHeight - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 80;
     return clampFloatingBubblePosition(x, y);
   });
-  
+
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
@@ -140,34 +140,46 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
     setIsDragging(true);
   };
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !dragRef.current) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !dragRef.current) return;
 
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
 
-    // Check if we've moved beyond the drag threshold
-    if (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD) {
-      const newX = e.clientX - dragRef.current.startX;
-      const newY = e.clientY - dragRef.current.startY;
-      setPosition(clampFloatingBubblePosition(newX, newY));
-    }
-  }, [dragStart, isDragging]);
+      // Check if we've moved beyond the drag threshold
+      if (
+        Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD ||
+        Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD
+      ) {
+        const newX = e.clientX - dragRef.current.startX;
+        const newY = e.clientY - dragRef.current.startY;
+        setPosition(clampFloatingBubblePosition(newX, newY));
+      }
+    },
+    [dragStart, isDragging]
+  );
 
-  const handleMouseUp = useCallback((e: MouseEvent) => {
-    if (!isDragging || !dragRef.current) return;
+  const handleMouseUp = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !dragRef.current) return;
 
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
 
-    // If we haven't moved beyond the drag threshold, treat it as a click
-    if (Math.abs(deltaX) <= FLOATING_DRAG_THRESHOLD && Math.abs(deltaY) <= FLOATING_DRAG_THRESHOLD) {
-      launchMinecraft();
-    }
+      // If we haven't moved beyond the drag threshold, treat it as a click
+      if (
+        Math.abs(deltaX) <= FLOATING_DRAG_THRESHOLD &&
+        Math.abs(deltaY) <= FLOATING_DRAG_THRESHOLD
+      ) {
+        launchMinecraft();
+      }
 
-    setIsDragging(false);
-    dragRef.current = null;
-  }, [dragStart, isDragging, launchMinecraft]);
+      setIsDragging(false);
+      dragRef.current = null;
+    },
+    [dragStart, isDragging, launchMinecraft]
+  );
 
   useEffect(() => {
     if (isDragging) {

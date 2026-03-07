@@ -51,11 +51,11 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     if (hasError && resetKeys) {
-      const prevPropsAsRecord = prevProps as Record<string, unknown>;
-      const propsAsRecord = this.props as Record<string, unknown>;
+      const prevPropsAsRecord = prevProps as unknown as Record<string, unknown>;
+      const propsAsRecord = this.props as unknown as Record<string, unknown>;
       const prevKeys = resetKeys.map((key) => prevPropsAsRecord[String(key)]);
       const currentKeys = resetKeys.map((key) => propsAsRecord[String(key)]);
-      
+
       if (prevKeys.some((key, index) => key !== currentKeys[index])) {
         this.reset();
       }
@@ -66,13 +66,13 @@ export class ErrorBoundary extends Component<Props, State> {
     const { onError } = this.props;
 
     this.setState({ errorInfo });
-    
+
     // Log error for debugging
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     // Call custom error handler if provided
     onError?.(error, errorInfo);
-    
+
     // Auto-reset after 30 seconds for transient errors
     this.resetTimeoutId = setTimeout(() => {
       this.reset();
@@ -90,7 +90,7 @@ export class ErrorBoundary extends Component<Props, State> {
       clearTimeout(this.resetTimeoutId);
       this.resetTimeoutId = null;
     }
-    
+
     this.setState({
       hasError: false,
       error: null,
@@ -106,27 +106,25 @@ export class ErrorBoundary extends Component<Props, State> {
     if (hasError) {
       // Use custom fallback if provided
       if (fallback) {
-        return typeof fallback === 'function' 
-          ? fallback(error, this.reset)
-          : fallback;
+        return typeof fallback === 'function' ? fallback(error, this.reset) : fallback;
       }
 
       // Default error UI
       return (
-        <div style={{
-          padding: '20px',
-          border: '1px solid #ff6b6b',
-          borderRadius: '8px',
-          backgroundColor: '#ffe0e0',
-          color: '#d63031',
-          fontFamily: 'monospace',
-          fontSize: '14px',
-          maxWidth: '600px',
-        }}>
-          <h2 style={{ margin: '0 0 10px 0', color: '#d63031' }}>
-            🚨 Something went wrong
-          </h2>
-          
+        <div
+          style={{
+            padding: '20px',
+            border: '1px solid #ff6b6b',
+            borderRadius: '8px',
+            backgroundColor: '#ffe0e0',
+            color: '#d63031',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            maxWidth: '600px',
+          }}
+        >
+          <h2 style={{ margin: '0 0 10px 0', color: '#d63031' }}>🚨 Something went wrong</h2>
+
           <p style={{ margin: '0 0 15px 0' }}>
             An unexpected error occurred. The error ID is: <code>{errorId}</code>
           </p>
@@ -136,15 +134,17 @@ export class ErrorBoundary extends Component<Props, State> {
               <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
                 Error Details (Development Only)
               </summary>
-              <pre style={{
-                marginTop: '10px',
-                padding: '10px',
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderRadius: '4px',
-                overflow: 'auto',
-                fontSize: '12px',
-              }}>
+              <pre
+                style={{
+                  marginTop: '10px',
+                  padding: '10px',
+                  backgroundColor: '#f8f9fa',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  overflow: 'auto',
+                  fontSize: '12px',
+                }}
+              >
                 {error.toString()}
                 {errorInfo && errorInfo.componentStack}
               </pre>
@@ -166,7 +166,7 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               Try Again
             </button>
-            
+
             <button
               onClick={() => window.location.reload()}
               style={{
@@ -231,6 +231,6 @@ export function withErrorBoundary<P extends object>(
   );
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 }

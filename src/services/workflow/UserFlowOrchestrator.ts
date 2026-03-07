@@ -15,7 +15,7 @@ export interface UserFlowState {
   errors: Record<string, string>;
 }
 
-export type UserFlowType = 
+export type UserFlowType =
   | 'movie-selection'
   | 'matchmaker-game'
   | 'memory-creation'

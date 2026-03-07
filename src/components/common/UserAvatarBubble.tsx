@@ -43,15 +43,15 @@ const UserAvatarBubble: React.FC<UserAvatarBubbleProps> = ({ user, position }) =
   const getAvatarStyle = () => {
     const baseStyle = getFloatingBubbleButtonStyle(bubblePosition, isDragging);
     const userStyle = userColors || { primary: '#667eea', glowColor: 'rgba(102, 126, 234, 0.55)' };
-    
+
     return {
       ...baseStyle,
       background: (userStyle as any).gradient || baseStyle.background,
-      boxShadow: isDragging 
-        ? `0 8px 24px ${userStyle.glowColor}` 
+      boxShadow: isDragging
+        ? `0 8px 24px ${userStyle.glowColor}`
         : `0 4px 12px ${userStyle.glowColor}`,
       border: currentUser === user ? '3px solid white' : baseStyle.border,
-      transform: isDragging ? 'scale(0.95)' : (currentUser === user ? 'scale(1.1)' : 'scale(1)'),
+      transform: isDragging ? 'scale(0.95)' : currentUser === user ? 'scale(1.1)' : 'scale(1)',
       zIndex: currentUser === user ? 1001 : 1000,
     };
   };
@@ -63,9 +63,7 @@ const UserAvatarBubble: React.FC<UserAvatarBubbleProps> = ({ user, position }) =
       onClick={handleClick}
       title={`${user} ${currentUser === user ? '(Active)' : '(Click to select)'}`}
     >
-      <span style={{ fontSize: '24px', fontWeight: 'bold' }}>
-        {user === 'Aaron' ? '👨‍💻' : '👩‍🎨'}
-      </span>
+      <span style={{ fontSize: '24px', fontWeight: 'bold' }}>{user === 'Aaron' ? '👨‍💻' : '👩‍🎨'}</span>
     </button>
   );
 };

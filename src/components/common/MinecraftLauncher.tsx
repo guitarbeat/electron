@@ -1,5 +1,5 @@
 import React from 'react';
-import { useToast } from '../../../context/ToastContext';
+import { useToast } from '@/context/ToastContext';
 
 interface MinecraftLauncherProps {
   className?: string;
@@ -110,7 +110,6 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
     }
   };
 
-
   return (
     <div className={`minecraft-launcher ${className}`}>
       <button
@@ -123,7 +122,6 @@ const MinecraftLauncher: React.FC<MinecraftLauncherProps> = ({ className = '' })
         </span>
         Launch Minecraft
       </button>
-
     </div>
   );
 };

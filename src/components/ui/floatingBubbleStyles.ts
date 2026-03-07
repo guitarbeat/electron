@@ -23,7 +23,10 @@ interface BubbleButtonStyleOptions {
 }
 
 export function getFloatingBubbleButtonStyle(options: BubbleButtonStyleOptions): any;
-export function getFloatingBubbleButtonStyle(position: { x: number; y: number }, isDragging: boolean): any;
+export function getFloatingBubbleButtonStyle(
+  position: { x: number; y: number },
+  isDragging: boolean
+): any;
 export function getFloatingBubbleButtonStyle(
   arg1: BubbleButtonStyleOptions | { x: number; y: number },
   arg2?: boolean
@@ -64,7 +67,7 @@ export function getFloatingBubbleButtonStyle(
     zIndex: 1000,
     transform: isDragging ? 'scale(0.95)' : 'scale(1)',
   };
-};
+}
 
 interface ContainerStyleOptions {
   isEmbedded?: boolean;

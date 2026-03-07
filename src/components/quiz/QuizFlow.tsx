@@ -116,7 +116,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
             Retake Quiz
           </Button>
         </div>
-      )
+      );
     }
 
     if (quizResult) {

@@ -5,9 +5,8 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useWorkflow } from './useWorkflow';
-import { useUserFlow } from './useWorkflow';
-import type { User, MatchmakerGame, Movie } from '../../types';
+import { useWorkflow, useUserFlow } from './useWorkflow';
+import type { User, MatchmakerGame, Movie } from '../types';
 
 interface UseEnhancedMatchmakerOptions {
   onMatchFound?: (movie: Movie) => void;
@@ -25,17 +24,17 @@ export function useEnhancedMatchmaker(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [matchAnimation, setMatchAnimation] = useState(false);
   const [lastMatchedMovie, setLastMatchedMovie] = useState<Movie | null>(null);
-  
+
   const submissionLockRef = useRef<Promise<void> | null>(null);
   const previousMatchesRef = useRef<string[]>([]);
 
   // Use enhanced workflow for data management
-  const { 
-    data: workflowData, 
-    error, 
-    isLoading, 
+  const {
+    data: workflowData,
+    error,
+    isLoading,
     retry,
-    workflowState 
+    workflowState,
   } = useWorkflow<MatchmakerGame>(
     `matchmaker-${currentUser || 'anonymous'}`,
     async () => {
@@ -62,45 +61,48 @@ export function useEnhancedMatchmaker(
   const { flowState, startFlow, nextStep, abortFlow } = useUserFlow('matchmaker-game');
 
   // Check for new matches and trigger animations
-  const checkForNewMatches = useCallback((currentGame: MatchmakerGame | null) => {
-    if (!currentGame || !currentUser) return;
+  const checkForNewMatches = useCallback(
+    (currentGame: MatchmakerGame | null) => {
+      if (!currentGame || !currentUser) return;
 
-    const currentMatches = currentGame.aaronLikes.filter(id => 
-      currentGame.electraLikes.includes(id)
-    );
-    
-    const previousMatches = previousMatchesRef.current;
-    const newMatches = currentMatches.filter(id => !previousMatches.includes(id));
+      const currentMatches = currentGame.aaronLikes.filter((id) =>
+        currentGame.electraLikes.includes(id)
+      );
 
-    if (newMatches.length > 0) {
-      // Get movie details for the new match
-      const getMovieDetails = async () => {
-        try {
-          const { getMovies } = await import('../services/movieService');
-          const movies = await getMovies();
-          const matchedMovie = movies.find(m => m.id === newMatches[0]);
-          
-          if (matchedMovie) {
-            setLastMatchedMovie(matchedMovie);
-            setMatchAnimation(true);
-            onMatchFound?.(matchedMovie);
-            
-            // Reset animation after duration
-            setTimeout(() => {
-              setMatchAnimation(false);
-              setLastMatchedMovie(null);
-            }, 4000);
+      const previousMatches = previousMatchesRef.current;
+      const newMatches = currentMatches.filter((id) => !previousMatches.includes(id));
+
+      if (newMatches.length > 0) {
+        // Get movie details for the new match
+        const getMovieDetails = async () => {
+          try {
+            const { getMovies } = await import('../services/movieService');
+            const movies = await getMovies();
+            const matchedMovie = movies.find((m) => m.id === newMatches[0]);
+
+            if (matchedMovie) {
+              setLastMatchedMovie(matchedMovie);
+              setMatchAnimation(true);
+              onMatchFound?.(matchedMovie);
+
+              // Reset animation after duration
+              setTimeout(() => {
+                setMatchAnimation(false);
+                setLastMatchedMovie(null);
+              }, 4000);
+            }
+          } catch (error) {
+            console.error('Error fetching movie details:', error);
           }
-        } catch (error) {
-          console.error('Error fetching movie details:', error);
-        }
-      };
+        };
 
-      getMovieDetails();
-    }
+        getMovieDetails();
+      }
 
-    previousMatchesRef.current = currentMatches;
-  }, [currentUser, onMatchFound]);
+      previousMatchesRef.current = currentMatches;
+    },
+    [currentUser, onMatchFound]
+  );
 
   // Enhanced mutation with better error handling and retry logic
   const performMutation = useCallback(
@@ -116,7 +118,8 @@ export function useEnhancedMatchmaker(
 
         setIsSubmitting(true);
         try {
-          const { getMatchmakerGame, saveMatchmakerGame } = await import('../services/matchmakerService');
+          const { getMatchmakerGame, saveMatchmakerGame } =
+            await import('../services/matchmakerService');
           const latestGame = await getMatchmakerGame();
           const updatedGame = mutationFn(latestGame);
           await saveMatchmakerGame(updatedGame);
@@ -186,8 +189,10 @@ export function useEnhancedMatchmaker(
           electraDislikes: latestGame.electraDislikes || [],
         };
 
-        const userLikes = currentUser === 'Aaron' ? updatedGame.aaronLikes : updatedGame.electraLikes;
-        const userDislikes = currentUser === 'Aaron' ? updatedGame.aaronDislikes : updatedGame.electraDislikes;
+        const userLikes =
+          currentUser === 'Aaron' ? updatedGame.aaronLikes : updatedGame.electraLikes;
+        const userDislikes =
+          currentUser === 'Aaron' ? updatedGame.aaronDislikes : updatedGame.electraDislikes;
 
         if (liked) {
           if (!userLikes.includes(movieId) && !userDislikes.includes(movieId)) {
@@ -206,9 +211,12 @@ export function useEnhancedMatchmaker(
         }
 
         // Check if game is complete
-        const totalSwipes = updatedGame.aaronLikes.length + updatedGame.aaronDislikes.length +
-                           updatedGame.electraLikes.length + updatedGame.electraDislikes.length;
-        
+        const totalSwipes =
+          updatedGame.aaronLikes.length +
+          updatedGame.aaronDislikes.length +
+          updatedGame.electraLikes.length +
+          updatedGame.electraDislikes.length;
+
         if (totalSwipes >= updatedGame.moviePool.length * 2) {
           updatedGame.status = 'completed';
           onGameComplete?.(getMatchesFromGame(updatedGame));
@@ -236,21 +244,24 @@ export function useEnhancedMatchmaker(
       };
 
       const userLikes = currentUser === 'Aaron' ? updatedGame.aaronLikes : updatedGame.electraLikes;
-      const userDislikes = currentUser === 'Aaron' ? updatedGame.aaronDislikes : updatedGame.electraDislikes;
+      const userDislikes =
+        currentUser === 'Aaron' ? updatedGame.aaronDislikes : updatedGame.electraDislikes;
       const userSwipedIds = [...userLikes, ...userDislikes];
 
       if (userSwipedIds.length === 0) return updatedGame;
 
       const poolInReverse = [...updatedGame.moviePool].reverse();
-      const lastSwipedId = poolInReverse.find(id => userSwipedIds.includes(id));
+      const lastSwipedId = poolInReverse.find((id) => userSwipedIds.includes(id));
 
       if (lastSwipedId) {
         if (currentUser === 'Aaron') {
-          updatedGame.aaronLikes = updatedGame.aaronLikes.filter(id => id !== lastSwipedId);
-          updatedGame.aaronDislikes = updatedGame.aaronDislikes.filter(id => id !== lastSwipedId);
+          updatedGame.aaronLikes = updatedGame.aaronLikes.filter((id) => id !== lastSwipedId);
+          updatedGame.aaronDislikes = updatedGame.aaronDislikes.filter((id) => id !== lastSwipedId);
         } else {
-          updatedGame.electraLikes = updatedGame.electraLikes.filter(id => id !== lastSwipedId);
-          updatedGame.electraDislikes = updatedGame.electraDislikes.filter(id => id !== lastSwipedId);
+          updatedGame.electraLikes = updatedGame.electraLikes.filter((id) => id !== lastSwipedId);
+          updatedGame.electraDislikes = updatedGame.electraDislikes.filter(
+            (id) => id !== lastSwipedId
+          );
         }
       }
 
@@ -268,20 +279,23 @@ export function useEnhancedMatchmaker(
   }, [performMutation, abortFlow]);
 
   // Get current matches from game
-  const matches = game ? game.aaronLikes.filter(id => game.electraLikes.includes(id)) : [];
+  const matches = game ? game.aaronLikes.filter((id) => game.electraLikes.includes(id)) : [];
 
   // Get remaining movies for current user
-  const getRemainingMovies = useCallback((allMovies: Movie[]): Movie[] => {
-    if (!game) return [];
+  const getRemainingMovies = useCallback(
+    (allMovies: Movie[]): Movie[] => {
+      if (!game) return [];
 
-    const userLikes = currentUser === 'Aaron' ? game.aaronLikes : game.electraLikes;
-    const userDislikes = currentUser === 'Aaron' ? game.aaronDislikes : game.electraDislikes;
-    const swipedIds = [...userLikes, ...userDislikes];
+      const userLikes = currentUser === 'Aaron' ? game.aaronLikes : game.electraLikes;
+      const userDislikes = currentUser === 'Aaron' ? game.aaronDislikes : game.electraDislikes;
+      const swipedIds = [...userLikes, ...userDislikes];
 
-    return game.moviePool
-      .map(id => allMovies.find(m => m.id === id))
-      .filter((m): m is Movie => !!m && !swipedIds.includes(m.id));
-  }, [game, currentUser]);
+      return game.moviePool
+        .map((id) => allMovies.find((m) => m.id === id))
+        .filter((m): m is Movie => !!m && !swipedIds.includes(m.id));
+    },
+    [game, currentUser]
+  );
 
   return {
     // State
@@ -291,23 +305,23 @@ export function useEnhancedMatchmaker(
     isSubmitting,
     workflowState,
     flowState,
-    
+
     // Match state
     matches,
     matchAnimation,
     lastMatchedMovie,
-    
+
     // Actions
     startNewGame,
     swipe,
     undo,
     endCurrentGame,
     retry,
-    
+
     // Helpers
     getRemainingMovies,
     getMatchesFromGame,
-    
+
     // Flow management
     isFlowActive: flowState?.isFlowActive || false,
     currentStep: flowState?.step || 0,

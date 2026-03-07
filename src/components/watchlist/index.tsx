@@ -202,7 +202,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           onAddMemory={async (note: string) => {
             await handleAddMemory(movie, {
               note,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
             });
           }}
         />
@@ -220,17 +220,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     ]
   );
 
-  const renderSuggestionItem = useCallback(
-    (suggestion: MovieSuggestion, index: number) => {
-      return (
-        <SuggestionItemCard
-          key={suggestion.id}
-          suggestion={suggestion}
-        />
-      );
-    },
-    []
-  );
+  const renderSuggestionItem = useCallback((suggestion: MovieSuggestion, index: number) => {
+    return <SuggestionItemCard key={suggestion.id} suggestion={suggestion} />;
+  }, []);
 
   const getEmptyStateMessage = useCallback(() => {
     if (contentTab === 'suggestions') {
@@ -255,7 +247,38 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     return (
       <WorkspaceLayout
         isMobile={isMobile}
-        controls={<WatchlistTopControls
+        controls={
+          <WatchlistTopControls
+            contentTab={contentTab}
+            setContentTab={setContentTab}
+            sortMode={sortMode}
+            setSortMode={setSortMode}
+            tabCounts={tabCounts}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onSubmit={handleAddAction}
+            isAdding={isAdding}
+            isSuggesting={isSuggesting}
+            isMobile={isMobile}
+            suggestionError={suggestionError}
+          />
+        }
+        content={
+          <div className="watchlist-error">
+            <h2>Error loading movies</h2>
+            <p>{moviesError}</p>
+            <button onClick={refreshMovies}>Try again</button>
+          </div>
+        }
+      />
+    );
+  }
+
+  return (
+    <WorkspaceLayout
+      isMobile={isMobile}
+      controls={
+        <WatchlistTopControls
           contentTab={contentTab}
           setContentTab={setContentTab}
           sortMode={sortMode}
@@ -268,61 +291,41 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           isSuggesting={isSuggesting}
           isMobile={isMobile}
           suggestionError={suggestionError}
-        />}
-        content={<div className="watchlist-error">
-          <h2>Error loading movies</h2>
-          <p>{moviesError}</p>
-          <button onClick={refreshMovies}>Try again</button>
-        </div>}
-      />
-    );
-  }
-
-  return (
-    <WorkspaceLayout
-      isMobile={isMobile}
-      controls={<WatchlistTopControls
-        contentTab={contentTab}
-        setContentTab={setContentTab}
-        sortMode={sortMode}
-        setSortMode={setSortMode}
-        tabCounts={tabCounts}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSubmit={handleAddAction}
-        isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        isMobile={isMobile}
-        suggestionError={suggestionError}
-      />}
-      content={<div className="watchlist">
-        <WatchlistHeader />
-
-        {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
-          <div className="watchlist-empty-state" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <p>{getEmptyStateMessage()}</p>
-          </div>
-        ) : (
-          <WatchlistContent
-            isLoading={isLoading}
-            isMobile={isMobile}
-            filteredMovies={filteredMovies}
-            filteredSuggestions={filteredSuggestions}
-            contentTab={contentTab}
-            renderMovieItem={renderMovieItem}
-            renderSuggestionItem={renderSuggestionItem}
-          />
-        )}
-
-        <WatchlistDialogs
-          movieToDelete={movieToDelete}
-          setMovieToDelete={setMovieToDelete}
-          fixMatchDialogMovie={movieToFix}
-          setFixMatchDialogMovie={setMovieToFix}
-          successMovieId={showConfetti ? 'confetti-trigger' : null}
-          setSuccessMovieId={setSuccessMovieId}
         />
-      </div>}
+      }
+      content={
+        <div className="watchlist">
+          <WatchlistHeader />
+
+          {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
+            <div
+              className="watchlist-empty-state"
+              style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}
+            >
+              <p>{getEmptyStateMessage()}</p>
+            </div>
+          ) : (
+            <WatchlistContent
+              isLoading={isLoading}
+              isMobile={isMobile}
+              filteredMovies={filteredMovies}
+              filteredSuggestions={filteredSuggestions}
+              contentTab={contentTab}
+              renderMovieItem={renderMovieItem}
+              renderSuggestionItem={renderSuggestionItem}
+            />
+          )}
+
+          <WatchlistDialogs
+            movieToDelete={movieToDelete}
+            setMovieToDelete={setMovieToDelete}
+            fixMatchDialogMovie={movieToFix}
+            setFixMatchDialogMovie={setMovieToFix}
+            successMovieId={showConfetti ? 'confetti-trigger' : null}
+            setSuccessMovieId={setSuccessMovieId}
+          />
+        </div>
+      }
     />
   );
 };

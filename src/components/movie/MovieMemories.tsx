@@ -65,16 +65,16 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           <MemoryComposer
             watchedMovieOptions={[movie]}
             selectedMovieId={movie.id}
-            onSelectedMovieIdChange={() => { }}
+            onSelectedMovieIdChange={() => {}}
             currentUser={currentUser}
             onSubmit={handleMemorySubmit}
             isSubmitting={isSubmittingMemory}
             canSubmit={!isSubmittingMemory}
             isMobile={isMobile}
             note=""
-            onNoteChange={() => { }}
+            onNoteChange={() => {}}
             isComposerOpen
-            onComposerToggle={() => { }}
+            onComposerToggle={() => {}}
             remainingChars={280}
             error={null}
             successMessage={null}
@@ -101,15 +101,15 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           }}
           movieFilterOptions={[]}
           activeMovieFilter={movie.id}
-          onActiveMovieFilterChange={() => { }}
+          onActiveMovieFilterChange={() => {}}
           sortMode="newest"
-          onSortModeChange={() => { }}
-          onShowMore={() => { }}
-          onShowLess={() => { }}
+          onSortModeChange={() => {}}
+          onShowMore={() => {}}
+          onShowLess={() => {}}
           visibleCount={100}
           isLoading={false}
           memoriesError={null}
-          onJumpToMovie={() => { }}
+          onJumpToMovie={() => {}}
         />
       ) : (
         <p

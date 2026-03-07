@@ -3,7 +3,7 @@ import { useAudio } from './src/hooks/useAudio';
 import { useUser } from './src/context/UserContext';
 import { UserProvider } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
-import { MainTab } from './types';
+import { MainTab } from './src/types';
 import { useQuiz } from './src/hooks/useQuiz';
 import Watchlist from './src/components/watchlist';
 import { BubbleDismissProvider } from './src/context/BubbleDismissContext';
@@ -20,8 +20,18 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
 
+const LOGIN_USERS = [
+  { id: 'Aaron' as const, icon: '👨‍💻', tagline: 'Movie Curator', styleKey: 'aaron' as const },
+  {
+    id: 'Electra' as const,
+    icon: '👩‍🎨',
+    tagline: 'Date Architect',
+    styleKey: 'electra' as const,
+  },
+];
+
 const AppInner: React.FC = () => {
-  const { currentUser } = useUser();
+  const { currentUser, setCurrentUser } = useUser();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
 
@@ -96,6 +106,31 @@ const AppInner: React.FC = () => {
                 <span className="home-chip">
                   {currentUser ? `Pilot: ${currentUser}` : 'Pilot not selected'}
                 </span>
+              </div>
+
+              <div className="home-hero__login" aria-label="Avatar bubble login">
+                <p className="home-hero__login-label">Avatar Bubble Login</p>
+                <div className="home-hero__login-bubbles">
+                  {LOGIN_USERS.map((user) => {
+                    const isActiveUser = currentUser === user.id;
+                    return (
+                      <button
+                        key={user.id}
+                        type="button"
+                        className={`home-login-bubble home-login-bubble--${user.styleKey} ${isActiveUser ? 'is-active' : ''}`}
+                        onClick={() => setCurrentUser(user.id)}
+                        aria-pressed={isActiveUser}
+                        title={`${user.id} login bubble`}
+                      >
+                        <span className="home-login-bubble__icon" aria-hidden>
+                          {user.icon}
+                        </span>
+                        <span className="home-login-bubble__name">{user.id}</span>
+                        <span className="home-login-bubble__tagline">{user.tagline}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

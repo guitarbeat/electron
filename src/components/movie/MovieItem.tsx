@@ -70,8 +70,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
     <>
       <Card
         variant={watchedByBoth ? 'elevated' : 'default'}
-        className={`movie-item-card slide-up ${watchedByBoth ? 'movie-item-card--watched' : ''
-          } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
+        className={`movie-item-card slide-up ${
+          watchedByBoth ? 'movie-item-card--watched' : ''
+        } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
         onClick={isMobile ? handleCardClick : undefined}
         data-movie-id={movie.id}
         style={{
@@ -194,8 +195,9 @@ const MovieItem: React.FC<MovieItemProps> = ({
                 >
                   {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
                   {memories[0]?.note
-                    ? `: "${memories[0].note.slice(0, 60)}${memories[0].note.length > 60 ? '...' : ''
-                    }"`
+                    ? `: "${memories[0].note.slice(0, 60)}${
+                        memories[0].note.length > 60 ? '...' : ''
+                      }"`
                     : ''}
                 </button>
               )}
