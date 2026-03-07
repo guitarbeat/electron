@@ -1,6 +1,5 @@
 import React from 'react';
 import { useQuiz } from '../../hooks/useQuiz';
-import { useUser } from '../../context/UserContext';
 import QuizBubble from '../quiz/QuizBubble';
 import MatchmakerBubble from '../matchmaker/MatchmakerBubble';
 import MinecraftBubble from '../common/MinecraftBubble';
@@ -8,8 +7,6 @@ import FoodDropBubble from '../food-drop/FoodDropBubble';
 import SnakeBubble from '../snake/SnakeBubble';
 import MemoriesBubble from '../memories/MemoriesBubble';
 import SpinWheelBubble from '../extras/spin-wheel/SpinWheelBubble';
-import UserAvatarBubble from '../common/UserAvatarBubble';
-import { getFloatingBubbleButtonStyle } from '../ui/floatingBubbleStyles';
 
 interface FloatingBubblesProps {
   quizCompleted: boolean;
@@ -28,10 +25,6 @@ const FloatingBubbles: React.FC<FloatingBubblesProps> = ({
 
   return (
     <div className="floating-bubbles">
-      {/* User Avatar Bubbles */}
-      <UserAvatarBubble user="Aaron" position={{ x: 100, y: 100 }} />
-      <UserAvatarBubble user="Electra" position={{ x: 200, y: 100 }} />
-
       {/* Quiz Bubble */}
       <QuizBubble
         quizData={quizData}
