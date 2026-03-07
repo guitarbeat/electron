@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { MainTab } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
-import './ThemeToggle.css';
+import './ui.css';
 
 interface ThemeToggleProps {
   activeTab: MainTab;
