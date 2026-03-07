@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { 
   clampFloatingBubblePosition, 
@@ -29,7 +29,7 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
   const [showTooltip, setShowTooltip] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number } | null>(null);
 
-  const copyToClipboard = async (text: string): Promise<boolean> => {
+  const copyToClipboard = useCallback(async (text: string): Promise<boolean> => {
     // Try modern clipboard API first (works on HTTPS/localhost)
     if (navigator.clipboard && window.isSecureContext) {
       try {
@@ -59,9 +59,9 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
       console.warn('Fallback clipboard method failed:', error);
       return false;
     }
-  };
+  }, []);
 
-  const launchMinecraft = async () => {
+  const launchMinecraft = useCallback(async () => {
     const minecraftUrl = `minecraft://${serverAddress}:${serverPort}`;
     const serverInfo = `Server: ${serverAddress}\nPort: ${serverPort}`;
 
@@ -127,7 +127,7 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
         });
       }
     }
-  };
+  }, [copyToClipboard, serverAddress, serverPort, showToast]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -140,7 +140,7 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
     setIsDragging(true);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !dragRef.current) return;
 
     const deltaX = e.clientX - dragStart.x;
@@ -152,9 +152,9 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
       const newY = e.clientY - dragRef.current.startY;
       setPosition(clampFloatingBubblePosition(newX, newY));
     }
-  };
+  }, [dragStart, isDragging]);
 
-  const handleMouseUp = (e: MouseEvent) => {
+  const handleMouseUp = useCallback((e: MouseEvent) => {
     if (!isDragging || !dragRef.current) return;
 
     const deltaX = e.clientX - dragStart.x;
@@ -167,7 +167,7 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
 
     setIsDragging(false);
     dragRef.current = null;
-  };
+  }, [dragStart, isDragging, launchMinecraft]);
 
   useEffect(() => {
     if (isDragging) {
@@ -178,7 +178,7 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart]);
+  }, [handleMouseMove, handleMouseUp, isDragging]);
 
   return (
     <>

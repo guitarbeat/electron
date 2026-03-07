@@ -3,6 +3,7 @@
  * Manages complex user flows across the application with proper state management,
  * error boundaries, and user experience optimization.
  */
+/* eslint-disable class-methods-use-this */
 
 // Temporarily disabled to isolate useUser context issue
 export interface UserFlowState {

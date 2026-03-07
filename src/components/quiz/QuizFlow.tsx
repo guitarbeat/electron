@@ -23,8 +23,9 @@ interface QuizFlowProps {
 const QuizFlow: React.FC<QuizFlowProps> = ({
   onComplete,
   quizData,
+  currentUser,
   onEdit,
-  isCompleted
+  isCompleted,
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
@@ -187,6 +188,17 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
         margin: '0 auto',
       }}
     >
+      {currentUser && (
+        <p
+          style={{
+            color: colors.textTertiary,
+            fontSize: typography.fontSize.xs,
+            marginBottom: spacing.sm,
+          }}
+        >
+          Taking quiz as {currentUser}
+        </p>
+      )}
       <div
         style={{
           marginBottom: spacing.xl,

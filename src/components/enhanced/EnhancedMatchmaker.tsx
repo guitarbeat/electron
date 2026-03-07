@@ -96,6 +96,11 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
     return getRemainingMovies(movies || []);
   }, [getRemainingMovies, movies]);
 
+  // Map string IDs from hook to actual Movie objects
+  const matchedMovies = useMemo(() => {
+    return matches.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
+  }, [matches, movieMap]);
+
   const availableVibes = useMemo(() => {
     const counts: Record<string, number> = {};
     unwatchedMovies.forEach((m) => {
@@ -301,11 +306,6 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
       </div>
     );
   }
-
-  // Map string IDs from hook to actual Movie objects
-  const matchedMovies = useMemo(() => {
-    return matches.map(id => movieMap.get(id)).filter((m): m is Movie => !!m);
-  }, [matches, movieMap]);
 
   // Active game state
   return (

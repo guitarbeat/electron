@@ -125,7 +125,7 @@ export const usePolling = <T>(
     }
 
     return undefined;
-  }, [interval, isPaused, key]);
+  }, [executeLocal, interval, isPaused, key]);
 
   const refresh = useCallback(() => {
     if (key) {
@@ -139,7 +139,7 @@ export const usePolling = <T>(
     } else {
       executeLocal(true);
     }
-  }, [key]);
+  }, [executeLocal, key]);
 
   return { data, error, isLoading, refresh };
 };

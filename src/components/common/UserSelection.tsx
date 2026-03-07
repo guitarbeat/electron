@@ -10,9 +10,10 @@ interface UserSelectionProps {
 }
 
 const UserSelection: React.FC<UserSelectionProps> = ({
-  className = "",
+  className = '',
   variant = 'default',
-  currentUser
+  onSelect,
+  currentUser,
 }) => {
   const users: User[] = ['Aaron', 'Electra'];
 
@@ -29,6 +30,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         {users.map(user => (
           <div
             key={user}
+            onClick={() => onSelect?.(user)}
             style={{
               padding: `${spacing.xs} ${spacing.sm}`,
               borderRadius: radius.full,
@@ -60,6 +62,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         {users.map(user => (
           <button
             key={user}
+            onClick={() => onSelect?.(user)}
             style={{
               padding: spacing.md,
               borderRadius: radius.md,

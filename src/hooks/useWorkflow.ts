@@ -33,6 +33,8 @@ export function useWorkflow<T>(
   optionsRef.current = options;
 
   useEffect(() => {
+    const { interval, immediate } = optionsRef.current;
+
     setIsLoading(true);
     setError(null);
 
@@ -54,8 +56,8 @@ export function useWorkflow<T>(
         }
       },
       {
-        interval: options.interval,
-        immediate: options.immediate,
+        interval,
+        immediate,
       }
     );
 

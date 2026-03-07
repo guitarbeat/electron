@@ -211,6 +211,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     [
       memories,
       currentUser,
+      filteredMovies,
       processingSuggestionId,
       toggleWatched,
       handleDeleteMovie,

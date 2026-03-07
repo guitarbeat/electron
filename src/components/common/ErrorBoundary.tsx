@@ -41,38 +41,42 @@ export class ErrorBoundary extends Component<Props, State> {
     };
   }
 
+  componentDidUpdate(prevProps: Props) {
+    const { children, resetKeys, resetOnPropsChange } = this.props;
+    const { hasError } = this.state;
+
+    if (hasError && resetOnPropsChange && prevProps.children !== children) {
+      this.reset();
+      return;
+    }
+
+    if (hasError && resetKeys) {
+      const prevPropsAsRecord = prevProps as Record<string, unknown>;
+      const propsAsRecord = this.props as Record<string, unknown>;
+      const prevKeys = resetKeys.map((key) => prevPropsAsRecord[String(key)]);
+      const currentKeys = resetKeys.map((key) => propsAsRecord[String(key)]);
+      
+      if (prevKeys.some((key, index) => key !== currentKeys[index])) {
+        this.reset();
+      }
+    }
+  }
+
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    const { onError } = this.props;
+
     this.setState({ errorInfo });
     
     // Log error for debugging
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // Call custom error handler if provided
-    this.props.onError?.(error, errorInfo);
+    onError?.(error, errorInfo);
     
     // Auto-reset after 30 seconds for transient errors
     this.resetTimeoutId = setTimeout(() => {
       this.reset();
     }, 30000);
-  }
-
-  componentDidUpdate(prevProps: Props) {
-    const { resetKeys, resetOnPropsChange } = this.props;
-    const { hasError } = this.state;
-
-    if (hasError && resetOnPropsChange && prevProps.children !== this.props.children) {
-      this.reset();
-      return;
-    }
-
-    if (hasError && resetKeys) {
-      const prevKeys = resetKeys.map(key => (prevProps as any)[key]);
-      const currentKeys = resetKeys.map(key => (this.props as any)[key]);
-      
-      if (prevKeys.some((key, index) => key !== currentKeys[index])) {
-        this.reset();
-      }
-    }
   }
 
   componentWillUnmount() {
@@ -96,12 +100,15 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    if (this.state.hasError) {
+    const { children, fallback } = this.props;
+    const { error, errorId, errorInfo, hasError } = this.state;
+
+    if (hasError) {
       // Use custom fallback if provided
-      if (this.props.fallback) {
-        return typeof this.props.fallback === 'function' 
-          ? this.props.fallback(this.state.error, this.reset)
-          : this.props.fallback;
+      if (fallback) {
+        return typeof fallback === 'function' 
+          ? fallback(error, this.reset)
+          : fallback;
       }
 
       // Default error UI
@@ -121,10 +128,10 @@ export class ErrorBoundary extends Component<Props, State> {
           </h2>
           
           <p style={{ margin: '0 0 15px 0' }}>
-            An unexpected error occurred. The error ID is: <code>{this.state.errorId}</code>
+            An unexpected error occurred. The error ID is: <code>{errorId}</code>
           </p>
 
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {process.env.NODE_ENV === 'development' && error && (
             <details style={{ marginBottom: '15px' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
                 Error Details (Development Only)
@@ -138,8 +145,8 @@ export class ErrorBoundary extends Component<Props, State> {
                 overflow: 'auto',
                 fontSize: '12px',
               }}>
-                {this.state.error.toString()}
-                {this.state.errorInfo && this.state.errorInfo.componentStack}
+                {error.toString()}
+                {errorInfo && errorInfo.componentStack}
               </pre>
             </details>
           )}
@@ -183,7 +190,7 @@ export class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return children;
   }
 }
 

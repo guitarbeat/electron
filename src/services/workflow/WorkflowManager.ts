@@ -3,6 +3,7 @@
  * Handles orchestration of all application workflows with proper error handling,
  * state management, and performance optimization.
  */
+/* eslint-disable class-methods-use-this */
 
 // Temporarily disabled to isolate useUser context issue
 export interface WorkflowState {
