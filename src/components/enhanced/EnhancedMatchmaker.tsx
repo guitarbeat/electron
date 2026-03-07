@@ -12,13 +12,7 @@ import { LoadingSpinner, LoadingCard, LoadingOverlay } from '../common/LoadingSt
 import SwipeCard from '../matchmaker/SwipeCard';
 import Button from '../ui/Button';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import {
-  colors,
-  spacing,
-  radius,
-  typography,
-  shadows,
-} from '../../design-system/tokens';
+import { colors, spacing, radius, typography, shadows } from '../../design-system/tokens';
 
 import { User, MatchmakerGame, Movie } from '../../types';
 
@@ -88,7 +82,8 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
   const swipedIds = useMemo(() => {
     if (!game) return [];
     const userLikes = currentUser === 'Aaron' ? game.aaronLikes || [] : game.electraLikes || [];
-    const userDislikes = currentUser === 'Aaron' ? game.aaronDislikes || [] : game.electraDislikes || [];
+    const userDislikes =
+      currentUser === 'Aaron' ? game.aaronDislikes || [] : game.electraDislikes || [];
     return [...userLikes, ...userDislikes];
   }, [game, currentUser]);
 
@@ -210,14 +205,16 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
   if (error) {
     return (
       <div style={{ textAlign: 'center', padding: spacing.lg }}>
-        <div style={{
-          color: colors.error,
-          marginBottom: spacing.lg,
-          padding: spacing.md,
-          border: `1px solid ${colors.error}30`,
-          borderRadius: radius.md,
-          backgroundColor: `${colors.error}10`,
-        }}>
+        <div
+          style={{
+            color: colors.error,
+            marginBottom: spacing.lg,
+            padding: spacing.md,
+            border: `1px solid ${colors.error}30`,
+            borderRadius: radius.md,
+            backgroundColor: `${colors.error}10`,
+          }}
+        >
           <h3>Connection Error</h3>
           <p>{error}</p>
           <Button onClick={retry} variant="secondary" size="sm">
@@ -232,30 +229,36 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
   if (!game) {
     return (
       <div style={{ textAlign: 'center', padding: spacing.sm }}>
-        <p style={{
-          color: colors.textSecondary,
-          margin: '0 auto',
-          marginBottom: spacing.lg,
-          maxWidth: 420,
-          fontSize: typography.fontSize.sm,
-        }}>
+        <p
+          style={{
+            color: colors.textSecondary,
+            margin: '0 auto',
+            marginBottom: spacing.lg,
+            maxWidth: 420,
+            fontSize: typography.fontSize.sm,
+          }}
+        >
           Pick a vibe and swipe on 10 movies. If you both like one, it's a match.
         </p>
 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
-          alignItems: 'center',
-        }}>
-          <div style={{
+        <div
+          style={{
             display: 'flex',
-            gap: spacing.sm,
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            marginBottom: spacing.md,
-            maxWidth: '600px',
-          }}>
+            flexDirection: 'column',
+            gap: spacing.md,
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              gap: spacing.sm,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              marginBottom: spacing.md,
+              maxWidth: '600px',
+            }}
+          >
             {availableVibes.length > 0 ? (
               availableVibes.map((v) => (
                 <Button
@@ -311,48 +314,56 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
   return (
     <ErrorBoundary>
       <LoadingOverlay isLoading={isSubmitting} message="Updating...">
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: spacing.lg,
-          position: 'relative',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: spacing.lg,
+            position: 'relative',
+          }}
+        >
           {/* Match Animation Overlay */}
           {matchAnimation && lastMatchedMovie && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 200,
-              pointerEvents: 'none',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.4)',
-              backdropFilter: 'blur(4px)',
-              animation: 'fadeIn 0.3s ease-out',
-            }}>
-              <div style={{
-                textAlign: 'center',
-                animation: 'popInMatch 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 200,
+                pointerEvents: 'none',
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                background: 'rgba(20, 20, 40, 0.95)',
-                padding: spacing.xl,
-                borderRadius: radius.lg,
-                border: `2px solid ${colors.accent}`,
-                boxShadow: shadows.glowStrong,
-              }}>
-                <div style={{
-                  fontSize: '1.2rem',
-                  color: colors.accent,
-                  marginBottom: spacing.sm,
-                  fontWeight: 'bold',
-                  textShadow: shadows.textGlow,
-                }}>
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(4px)',
+                animation: 'fadeIn 0.3s ease-out',
+              }}
+            >
+              <div
+                style={{
+                  textAlign: 'center',
+                  animation: 'popInMatch 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  background: 'rgba(20, 20, 40, 0.95)',
+                  padding: spacing.xl,
+                  borderRadius: radius.lg,
+                  border: `2px solid ${colors.accent}`,
+                  boxShadow: shadows.glowStrong,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '1.2rem',
+                    color: colors.accent,
+                    marginBottom: spacing.sm,
+                    fontWeight: 'bold',
+                    textShadow: shadows.textGlow,
+                  }}
+                >
                   IT'S A MATCH!
                 </div>
                 <img
@@ -367,40 +378,44 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
                     border: `1px solid ${colors.textPrimary}40`,
                   }}
                 />
-                <h3 style={{
-                  margin: 0,
-                  fontSize: typography.fontSize.lg,
-                  color: colors.textPrimary,
-                  textShadow: shadows.textGlow,
-                }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: typography.fontSize.lg,
+                    color: colors.textPrimary,
+                    textShadow: shadows.textGlow,
+                  }}
+                >
                   {lastMatchedMovie.title}
                 </h3>
-                <div style={{ marginTop: spacing.md, fontSize: '2rem' }}>
-                  💖🍿🎬🍿💖
-                </div>
+                <div style={{ marginTop: spacing.md, fontSize: '2rem' }}>💖🍿🎬🍿💖</div>
               </div>
             </div>
           )}
 
           {/* Stats Header */}
-          <div style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: `0 ${spacing.md}`,
-          }}>
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: `0 ${spacing.md}`,
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
               <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.sm }}>
                 Matches:
               </div>
-              <div style={{
-                color: colors.accent,
-                fontWeight: 'bold',
-                textShadow: shadows.textGlow,
-                fontSize: typography.fontSize.lg,
-                animation: matchAnimation ? 'pulse 0.5s ease infinite' : 'none',
-              }}>
+              <div
+                style={{
+                  color: colors.accent,
+                  fontWeight: 'bold',
+                  textShadow: shadows.textGlow,
+                  fontSize: typography.fontSize.lg,
+                  animation: matchAnimation ? 'pulse 0.5s ease infinite' : 'none',
+                }}
+              >
                 {matches.length}
               </div>
             </div>
@@ -413,23 +428,25 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
           </div>
 
           {/* Swipe Area */}
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '520px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
-            padding: spacing.md,
-          }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '520px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+              padding: spacing.md,
+            }}
+          >
             {remainingMovies.length > 0 ? (
               <>
                 {remainingMovies.length > 1 && (
                   <SwipeCard
                     key={remainingMovies[1].id}
                     movie={remainingMovies[1]}
-                    onSwipe={() => { }}
+                    onSwipe={() => {}}
                     active={false}
                   />
                 )}
@@ -442,20 +459,25 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
                 />
               </>
             ) : (
-              <div style={{
-                textAlign: 'center',
-                padding: spacing.xl,
-              }}>
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: spacing.xl,
+                }}
+              >
                 <div style={{ fontSize: '4rem', marginBottom: spacing.md }}>🎬</div>
-                <h3 style={{
-                  color: colors.textPrimary,
-                  fontFamily: typography.fontFamily.heading.join(', '),
-                  marginBottom: spacing.xs,
-                }}>
+                <h3
+                  style={{
+                    color: colors.textPrimary,
+                    fontFamily: typography.fontFamily.heading.join(', '),
+                    marginBottom: spacing.xs,
+                  }}
+                >
                   All Caught Up!
                 </h3>
                 <p style={{ color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-                  Waiting for {currentUser === 'Aaron' ? 'Electra' : 'Aaron'} to finish their swipes.
+                  Waiting for {currentUser === 'Aaron' ? 'Electra' : 'Aaron'} to finish their
+                  swipes.
                 </p>
               </div>
             )}
@@ -463,13 +485,15 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
 
           {/* Action Buttons */}
           {(remainingMovies.length > 0 || swipedIds.length > 0) && (
-            <div style={{
-              display: 'flex',
-              gap: spacing.xl,
-              alignItems: 'center',
-              marginBottom: spacing.md,
-              zIndex: 10,
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: spacing.xl,
+                alignItems: 'center',
+                marginBottom: spacing.md,
+                zIndex: 10,
+              }}
+            >
               {remainingMovies.length > 0 && (
                 <Button
                   variant="ghost"
@@ -546,25 +570,31 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
 
           {/* Matches Display */}
           {matches.length > 0 && (
-            <div style={{
-              width: '100%',
-              padding: spacing.md,
-              borderTop: `1px solid ${colors.borderSecondary}30`,
-              marginTop: spacing.md,
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: spacing.sm,
-              }}>
-                <h4 style={{
-                  color: colors.accent,
-                  fontFamily: typography.fontFamily.heading.join(', '),
-                  fontSize: typography.fontSize.base,
-                  margin: 0,
-                  textShadow: shadows.textGlow,
-                }}>
+            <div
+              style={{
+                width: '100%',
+                padding: spacing.md,
+                borderTop: `1px solid ${colors.borderSecondary}30`,
+                marginTop: spacing.md,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: spacing.sm,
+                }}
+              >
+                <h4
+                  style={{
+                    color: colors.accent,
+                    fontFamily: typography.fontFamily.heading.join(', '),
+                    fontSize: typography.fontSize.base,
+                    margin: 0,
+                    textShadow: shadows.textGlow,
+                  }}
+                >
                   It's a Match!
                 </h4>
                 {matches.length >= 2 && (
@@ -584,16 +614,21 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
                   </Button>
                 )}
               </div>
-              <div style={{
-                display: 'flex',
-                gap: spacing.md,
-                overflowX: 'auto',
-                padding: spacing.sm,
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: spacing.md,
+                  overflowX: 'auto',
+                  padding: spacing.sm,
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
                 {matchedMovies.map((movie) => (
-                  <div key={movie.id} style={{ flexShrink: 0, width: '100px', textAlign: 'center' }}>
+                  <div
+                    key={movie.id}
+                    style={{ flexShrink: 0, width: '100px', textAlign: 'center' }}
+                  >
                     <img
                       src={movie.posterUrl}
                       alt={movie.title}
@@ -607,14 +642,16 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
                         marginBottom: spacing.xs,
                       }}
                     />
-                    <div style={{
-                      fontSize: '10px',
-                      color: colors.textTertiary,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      textTransform: 'uppercase',
-                    }}>
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color: colors.textTertiary,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       {movie.title}
                     </div>
                   </div>

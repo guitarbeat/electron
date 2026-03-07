@@ -11,10 +11,10 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
-  size = 'md', 
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  size = 'md',
   color = '#0984e3',
-  className = ''
+  className = '',
 }) => {
   const sizeMap = {
     sm: { width: '16px', height: '16px', borderWidth: '2px' },
@@ -25,7 +25,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const currentSize = sizeMap[size];
 
   return (
-    <div 
+    <div
       className={`loading-spinner ${className}`}
       style={{
         ...currentSize,
@@ -105,36 +105,18 @@ export const LoadingCard: React.FC<LoadingCardProps> = ({
 }) => {
   return (
     <div className={`loading-card ${className}`} style={{ padding: '16px' }}>
-      {image && (
-        <Skeleton 
-          variant="rectangular" 
-          height="200px" 
-          style={{ marginBottom: '16px' }} 
-        />
-      )}
-      
-      {title && (
-        <Skeleton 
-          width="60%" 
-          height="1.5em" 
-          style={{ marginBottom: '8px' }} 
-        />
-      )}
-      
-      {subtitle && (
-        <Skeleton 
-          width="40%" 
-          height="1em" 
-          style={{ marginBottom: '12px' }} 
-        />
-      )}
-      
+      {image && <Skeleton variant="rectangular" height="200px" style={{ marginBottom: '16px' }} />}
+
+      {title && <Skeleton width="60%" height="1.5em" style={{ marginBottom: '8px' }} />}
+
+      {subtitle && <Skeleton width="40%" height="1em" style={{ marginBottom: '12px' }} />}
+
       {Array.from({ length: text }).map((_, index) => (
-        <Skeleton 
+        <Skeleton
           key={index}
-          width={index === text - 1 ? '80%' : '100%'} 
-          height="1em" 
-          style={{ marginBottom: '4px' }} 
+          width={index === text - 1 ? '80%' : '100%'}
+          height="1em"
+          style={{ marginBottom: '4px' }}
         />
       ))}
     </div>
@@ -155,7 +137,7 @@ export const LoadingList: React.FC<LoadingListProps> = ({
   return (
     <div className={`loading-list ${className}`}>
       {Array.from({ length: count }).map((_, index) => (
-        <div 
+        <div
           key={index}
           style={{
             display: 'flex',
@@ -164,22 +146,10 @@ export const LoadingList: React.FC<LoadingListProps> = ({
             borderBottom: '1px solid #f0f0f0',
           }}
         >
-          <Skeleton 
-            variant="circular" 
-            width="40px" 
-            height="40px" 
-            style={{ marginRight: '12px' }} 
-          />
+          <Skeleton variant="circular" width="40px" height="40px" style={{ marginRight: '12px' }} />
           <div style={{ flex: 1 }}>
-            <Skeleton 
-              width="70%" 
-              height="1em" 
-              style={{ marginBottom: '4px' }} 
-            />
-            <Skeleton 
-              width="50%" 
-              height="0.8em" 
-            />
+            <Skeleton width="70%" height="1em" style={{ marginBottom: '4px' }} />
+            <Skeleton width="50%" height="0.8em" />
           </div>
         </div>
       ))}
@@ -205,7 +175,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   return (
     <div className={`loading-overlay-container ${className}`} style={{ position: 'relative' }}>
       {children}
-      
+
       {isLoading && (
         <div
           className="loading-overlay"
@@ -224,12 +194,14 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
           }}
         >
           <LoadingSpinner size={spinnerSize} />
-          <p style={{ 
-            marginTop: '12px', 
-            color: '#666', 
-            fontSize: '14px',
-            textAlign: 'center' 
-          }}>
+          <p
+            style={{
+              marginTop: '12px',
+              color: '#666',
+              fontSize: '14px',
+              textAlign: 'center',
+            }}
+          >
             {message}
           </p>
         </div>
@@ -256,25 +228,29 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({
   return (
     <div className={`loading-progress ${className}`} style={{ width: '100%' }}>
       {message && (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          marginBottom: '8px',
-          fontSize: '14px',
-          color: '#666' 
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '8px',
+            fontSize: '14px',
+            color: '#666',
+          }}
+        >
           <span>{message}</span>
           {showPercentage && <span>{Math.round(clampedProgress)}%</span>}
         </div>
       )}
-      
-      <div style={{
-        width: '100%',
-        height: '8px',
-        backgroundColor: '#f0f0f0',
-        borderRadius: '4px',
-        overflow: 'hidden',
-      }}>
+
+      <div
+        style={{
+          width: '100%',
+          height: '8px',
+          backgroundColor: '#f0f0f0',
+          borderRadius: '4px',
+          overflow: 'hidden',
+        }}
+      >
         <div
           style={{
             height: '100%',

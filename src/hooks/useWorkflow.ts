@@ -6,8 +6,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { workflowManager } from '../services/workflow/WorkflowManager';
-import { userFlowOrchestrator, type UserFlowState } from '../services/workflow/UserFlowOrchestrator';
-import type { User, Movie, MatchmakerGame } from '../../types';
+import {
+  userFlowOrchestrator,
+  type UserFlowState,
+} from '../services/workflow/UserFlowOrchestrator';
+import type { User, Movie, MatchmakerGame } from '../types';
 
 /**
  * Hook for managing data workflows with automatic retry and error handling
@@ -27,7 +30,7 @@ export function useWorkflow<T>(
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  
+
   const cleanupRef = useRef<(() => void) | null>(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -80,7 +83,7 @@ export function useWorkflow<T>(
   }, [workflowId]);
 
   const retry = useCallback(async () => {
-    setRetryCount(prev => prev + 1);
+    setRetryCount((prev) => prev + 1);
     await refresh();
   }, [refresh]);
 
@@ -104,35 +107,41 @@ export function useUserFlow(flowId: string) {
   const [flowState, setFlowState] = useState<UserFlowState | null>(null);
   const [isFlowActive, setIsFlowActive] = useState(false);
 
-  const startFlow = useCallback((initialData: Record<string, any> = {}) => {
-    try {
-      const state = userFlowOrchestrator.startFlow(flowId, initialData);
-      setFlowState(state);
-      setIsFlowActive(true);
-      return state;
-    } catch (error) {
-      console.error('Failed to start flow:', error);
-      throw error;
-    }
-  }, [flowId]);
-
-  const nextStep = useCallback(async (stepData: any = {}) => {
-    if (!flowState) return;
-
-    try {
-      const newState = userFlowOrchestrator.nextStep(flowId, stepData);
-      setFlowState(newState);
-      
-      if (newState.isCompleted) {
-        setIsFlowActive(false);
+  const startFlow = useCallback(
+    (initialData: Record<string, any> = {}) => {
+      try {
+        const state = userFlowOrchestrator.startFlow(flowId, initialData);
+        setFlowState(state);
+        setIsFlowActive(true);
+        return state;
+      } catch (error) {
+        console.error('Failed to start flow:', error);
+        throw error;
       }
-      
-      return newState;
-    } catch (error) {
-      console.error('Failed to advance step:', error);
-      throw error;
-    }
-  }, [flowId, flowState]);
+    },
+    [flowId]
+  );
+
+  const nextStep = useCallback(
+    async (stepData: any = {}) => {
+      if (!flowState) return;
+
+      try {
+        const newState = userFlowOrchestrator.nextStep(flowId, stepData);
+        setFlowState(newState);
+
+        if (newState.isCompleted) {
+          setIsFlowActive(false);
+        }
+
+        return newState;
+      } catch (error) {
+        console.error('Failed to advance step:', error);
+        throw error;
+      }
+    },
+    [flowId, flowState]
+  );
 
   const previousStep = useCallback(() => {
     if (!flowState) return;
@@ -166,9 +175,12 @@ export function useUserFlow(flowId: string) {
     setIsFlowActive(false);
   }, [flowId]);
 
-  const handleError = useCallback((error: string) => {
-    userFlowOrchestrator.handleFlowError(flowId, error);
-  }, [flowId]);
+  const handleError = useCallback(
+    (error: string) => {
+      userFlowOrchestrator.handleFlowError(flowId, error);
+    },
+    [flowId]
+  );
 
   return {
     flowState,
