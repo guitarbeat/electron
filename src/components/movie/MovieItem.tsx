@@ -77,7 +77,7 @@ const MovieItem: React.FC<MovieItemProps> = ({
         data-movie-id={movie.id}
         style={{
           padding: 0,
-          marginBottom: spacing.sm,
+          marginBottom: 0,
           animationDelay,
           borderColor: watchedByBoth ? colors.accent : colors.border,
           cursor: isMobile ? 'pointer' : 'default',

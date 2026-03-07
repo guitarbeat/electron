@@ -93,9 +93,7 @@ const AppInner: React.FC = () => {
 
               <div className="home-hero__chips" aria-label="Current mode details">
                 <span className="home-chip">Live Mode: {activeTabMeta?.label}</span>
-                <span className="home-chip">
-                  {currentUser ? `Pilot: ${currentUser}` : 'Pilot not selected'}
-                </span>
+                {currentUser ? <span className="home-chip">Pilot: {currentUser}</span> : null}
               </div>
             </div>
 

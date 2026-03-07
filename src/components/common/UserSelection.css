@@ -1,6 +1,6 @@
 :root {
-  --inline-profile-bubble-size: clamp(84px, 10vw, 132px);
-  --inline-profile-name-size: clamp(0.72rem, 0.8vw, 0.92rem);
+  --inline-profile-bubble-size: clamp(44px, 4.2vw, 62px);
+  --inline-profile-name-size: 0;
   --profile-bubble-active-glow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 52%, transparent);
 }
 
@@ -12,6 +12,7 @@
 
 .user-selection--inline {
   align-items: center;
+  width: auto;
 }
 
 .user-selection--panel {
@@ -59,7 +60,9 @@
 }
 
 .user-selection--inline .user-selection__profiles {
+  width: auto;
   align-items: center;
+  gap: 0.18rem;
 }
 
 .user-selection__title {
@@ -91,12 +94,12 @@
 }
 
 .user-selection--inline .user-selection__bubble-row {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 140;
+  position: relative;
+  width: auto;
+  height: auto;
+  gap: 0.46rem;
+  pointer-events: auto;
+  z-index: auto;
 }
 
 .user-selection__bubble-slot {
@@ -121,15 +124,26 @@
 }
 
 .user-selection--inline .gel-bubble {
-  gap: 0.22rem !important;
+  gap: 0 !important;
   pointer-events: auto;
   transform-origin: center;
 }
 
+.user-selection--inline .user-selection__bubble-slot--floating {
+  position: relative;
+  left: auto;
+  top: auto;
+  min-width: 0;
+  pointer-events: auto;
+  animation: inline-bubble-bob 4.2s ease-in-out infinite;
+}
+
+.user-selection--inline .user-selection__bubble-slot--floating:nth-child(2) {
+  animation-delay: 0.45s;
+}
+
 .user-selection--inline .gel-avatar-name {
-  letter-spacing: 0.07em !important;
-  text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 56%, transparent) !important;
-  transform: none !important;
+  display: none;
 }
 
 .user-selection--inline .gel-avatar-shell {
@@ -142,6 +156,16 @@
 .user-selection--inline .gel-bubble:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--color-accent) 72%, transparent);
   outline-offset: 2px;
+}
+
+@keyframes inline-bubble-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 .user-selection__pin-button {
@@ -203,8 +227,8 @@
 
 @media (max-width: 640px) {
   :root {
-    --inline-profile-bubble-size: clamp(70px, 20vw, 98px);
-    --inline-profile-name-size: clamp(0.64rem, 2vw, 0.78rem);
+    --inline-profile-bubble-size: clamp(40px, 11vw, 52px);
+    --inline-profile-name-size: 0;
   }
 
   .user-selection__subtitle {
@@ -215,10 +239,6 @@
   .user-selection--panel .user-selection__bubble-row {
     gap: clamp(10px, 3vw, 22px);
     padding: 0 0.3rem;
-  }
-
-  .user-selection--inline .user-selection__bubble-row {
-    inset: 0;
   }
 
   .user-selection__logged-out {

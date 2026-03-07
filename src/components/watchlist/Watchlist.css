@@ -20,6 +20,26 @@
   font-size: 0.9rem;
 }
 
+/* Content Grid */
+.watchlist-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.watchlist-content > .movie-item-card {
+  width: 100%;
+  max-width: 320px;
+  justify-self: center;
+}
+
+.watchlist-content > .suggestion-item-card,
+.watchlist-content > .watchlist-empty-state,
+.watchlist-content > .watchlist-error {
+  grid-column: 1 / -1;
+}
+
 /* Controls Pane */
 .watchlist-controls-pane {
   display: flex;
@@ -445,6 +465,15 @@
 }
 
 @media (max-width: 640px) {
+  .watchlist-content {
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 0.65rem;
+  }
+
+  .watchlist-content > .movie-item-card {
+    max-width: 240px;
+  }
+
   .movie-item-secondary-actions {
     display: none;
   }
