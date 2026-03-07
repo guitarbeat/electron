@@ -409,8 +409,15 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               onCancel={() => setMovieToDelete(null)}
               title="Delete Movie"
               message={`Are you sure you want to delete "${movieToDelete.title}"?`}
-              onConfirm={() => {
-                setMovieToDelete(null);
+              onConfirm={async () => {
+                try {
+                  await deleteMovie(movieToDelete.id);
+                  setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'info' });
+                } catch (error) {
+                  setToast({ message: 'Failed to delete movie', type: 'error' });
+                } finally {
+                  setMovieToDelete(null);
+                }
               }}
             />
           )}
