@@ -4,15 +4,14 @@ import { useWatchlist } from './hooks/useWatchlist';
 import { WatchlistProps } from './types';
 import WorkspaceLayout from '@/layout/WorkspaceLayout';
 import { Movie, MovieSuggestion } from '@/types';
+import ConfirmDialog from '@/ui/ConfirmDialog';
+import FixMatchDialog from '@/common/FixMatchDialog';
+import Confetti from '@/effects/Confetti';
 
 // Components
-import {
-  WatchlistHeader,
-  WatchlistTopControls,
-  WatchlistContent,
-  WatchlistDialogs,
-} from './components';
-import MovieItem from '@/components/movie/MovieItem';
+import WatchlistTopControls from './components/controls/WatchlistTopControls';
+import WatchlistContent from './components/WatchlistContent';
+import MovieCard from './components/MovieCard';
 
 // Styles
 import './Watchlist.css';
@@ -186,7 +185,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       const movieMemories = memories.filter((m) => m.movieId === movie.id);
 
       return (
-        <MovieItem
+        <MovieCard
           animationDelay={`${Math.min(filteredMovies.findIndex((m) => m.id === movie.id) * 0.05, 0.5)}s`}
           key={movie.id}
           movie={movie}
@@ -354,7 +353,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       }
       content={
         <div className="watchlist">
-          <WatchlistHeader />
+          <header className="watchlist-header">
+            <h1 className="watchlist-title">Watchlist</h1>
+          </header>
 
           {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
             <div
@@ -375,14 +376,29 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             />
           )}
 
-          <WatchlistDialogs
-            movieToDelete={movieToDelete}
-            setMovieToDelete={setMovieToDelete}
-            fixMatchDialogMovie={movieToFix}
-            setFixMatchDialogMovie={setMovieToFix}
-            successMovieId={showConfetti ? 'confetti-trigger' : null}
-            setSuccessMovieId={setSuccessMovieId}
-          />
+          {movieToDelete && (
+            <ConfirmDialog
+              isOpen={!!movieToDelete}
+              onCancel={() => setMovieToDelete(null)}
+              title="Delete Movie"
+              message={`Are you sure you want to delete "${movieToDelete.title}"?`}
+              onConfirm={() => {
+                setMovieToDelete(null);
+              }}
+            />
+          )}
+
+          {movieToFix && (
+            <FixMatchDialog
+              isOpen={!!movieToFix}
+              onClose={() => setMovieToFix(null)}
+              movie={movieToFix}
+            />
+          )}
+
+          {showConfetti && (
+            <Confetti isActive={showConfetti} onComplete={() => setSuccessMovieId(null)} />
+          )}
         </div>
       }
     />
