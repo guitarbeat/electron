@@ -20,6 +20,7 @@ export function useEnhancedMatchmaker(
   currentUser: User | null,
   options: UseEnhancedMatchmakerOptions = {}
 ) {
+  const { onMatchFound, onGameComplete, autoRetry } = options;
   const [game, setGame] = useState<MatchmakerGame | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [matchAnimation, setMatchAnimation] = useState(false);
@@ -50,7 +51,7 @@ export function useEnhancedMatchmaker(
       },
       onError: (error) => {
         console.error('Matchmaker workflow error:', error);
-        if (options.autoRetry && workflowState?.retryCount < 3) {
+        if (autoRetry && workflowState?.retryCount < 3) {
           setTimeout(retry, 2000);
         }
       },
@@ -82,7 +83,7 @@ export function useEnhancedMatchmaker(
           if (matchedMovie) {
             setLastMatchedMovie(matchedMovie);
             setMatchAnimation(true);
-            options.onMatchFound?.(matchedMovie);
+            onMatchFound?.(matchedMovie);
             
             // Reset animation after duration
             setTimeout(() => {
@@ -99,7 +100,7 @@ export function useEnhancedMatchmaker(
     }
 
     previousMatchesRef.current = currentMatches;
-  }, [currentUser, options.onMatchFound]);
+  }, [currentUser, onMatchFound]);
 
   // Enhanced mutation with better error handling and retry logic
   const performMutation = useCallback(
@@ -162,6 +163,13 @@ export function useEnhancedMatchmaker(
     [currentUser, performMutation, flowState, startFlow, nextStep]
   );
 
+  // Helper function to get matches from game
+  const getMatchesFromGame = useCallback((currentGame: MatchmakerGame): Movie[] => {
+    const matchIds = currentGame.aaronLikes.filter((id) => currentGame.electraLikes.includes(id));
+    // This would need to be enhanced to fetch actual movie data
+    return [];
+  }, []);
+
   // Enhanced swipe with better state management
   const swipe = useCallback(
     async (movieId: string, liked: boolean) => {
@@ -189,13 +197,11 @@ export function useEnhancedMatchmaker(
               updatedGame.electraLikes = [...userLikes, movieId];
             }
           }
-        } else {
-          if (!userDislikes.includes(movieId) && !userLikes.includes(movieId)) {
-            if (currentUser === 'Aaron') {
-              updatedGame.aaronDislikes = [...userDislikes, movieId];
-            } else {
-              updatedGame.electraDislikes = [...userDislikes, movieId];
-            }
+        } else if (!userDislikes.includes(movieId) && !userLikes.includes(movieId)) {
+          if (currentUser === 'Aaron') {
+            updatedGame.aaronDislikes = [...userDislikes, movieId];
+          } else {
+            updatedGame.electraDislikes = [...userDislikes, movieId];
           }
         }
 
@@ -205,13 +211,13 @@ export function useEnhancedMatchmaker(
         
         if (totalSwipes >= updatedGame.moviePool.length * 2) {
           updatedGame.status = 'completed';
-          options.onGameComplete?.(getMatchesFromGame(updatedGame));
+          onGameComplete?.(getMatchesFromGame(updatedGame));
         }
 
         return updatedGame;
       });
     },
-    [currentUser, performMutation, options.onGameComplete]
+    [currentUser, getMatchesFromGame, onGameComplete, performMutation]
   );
 
   // Enhanced undo with better validation
@@ -260,13 +266,6 @@ export function useEnhancedMatchmaker(
     setLastMatchedMovie(null);
     setMatchAnimation(false);
   }, [performMutation, abortFlow]);
-
-  // Helper function to get matches from game
-  const getMatchesFromGame = useCallback((game: MatchmakerGame): Movie[] => {
-    const matchIds = game.aaronLikes.filter(id => game.electraLikes.includes(id));
-    // This would need to be enhanced to fetch actual movie data
-    return [];
-  }, []);
 
   // Get current matches from game
   const matches = game ? game.aaronLikes.filter(id => game.electraLikes.includes(id)) : [];

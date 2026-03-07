@@ -12,11 +12,11 @@
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.tsx\" --report-unused-disable-directives",
     "format": "prettier --write .",
     "check-types": "tsc --noEmit",
-    "test:snake": "node --test components/snake/snakeGameLogic.test.ts",
-    "test:memories": "node --test components/memories/memoryUtils.test.ts components/memories/memoryComposerAuth.test.ts",
-    "test:security": "node --test config/security.test.ts",
-    "test:quiz": "node --experimental-strip-types --test services/quizService.test.ts",
-    "test:all": "node --experimental-strip-types --test **/*.test.ts",
+    "test:snake": "node --experimental-strip-types --test src/components/snake/snakeGameLogic.test.ts",
+    "test:memories": "node --experimental-strip-types --test src/components/memories/memoryUtils.test.ts src/components/memories/memoryComposerAuth.test.ts",
+    "test:security": "node --experimental-strip-types --test src/config/security.test.ts",
+    "test:quiz": "node --experimental-strip-types --test src/components/quiz/quizScoring.test.ts",
+    "test:all": "node --experimental-strip-types --test src/**/*.test.ts",
     "vercel:env": "vercel env pull .env.local"
   },
   "dependencies": {

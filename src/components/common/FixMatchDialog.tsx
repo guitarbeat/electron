@@ -15,9 +15,12 @@ const FixMatchDialog: React.FC<FixMatchDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = "Fix Match",
-  message = "Are you sure you want to fix this match?",
-  className = ""
+  title = 'Fix Match',
+  movie,
+  message = movie
+    ? `Are you sure you want to fix the match for "${movie.title}"?`
+    : 'Are you sure you want to fix this match?',
+  className = '',
 }) => {
   if (!isOpen) return null;
 
