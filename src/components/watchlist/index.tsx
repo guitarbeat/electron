@@ -339,6 +339,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   }, [contentTab, searchQuery]);
 
+  const moviesErrorMessage =
+    moviesError instanceof Error
+      ? moviesError.message
+      : typeof moviesError === 'string'
+        ? moviesError
+        : 'Unable to load movies right now.';
+
   if (moviesError) {
     return (
       <>
@@ -363,7 +370,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           content: (
             <div className="watchlist-error">
               <h2>Error loading movies</h2>
-              <p>{moviesError}</p>
+              <p>{moviesErrorMessage}</p>
               <button onClick={refreshMovies}>Try again</button>
             </div>
           ),
