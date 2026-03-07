@@ -20,14 +20,16 @@ import {
   shadows,
 } from '../../design-system/tokens';
 
+import { User, MatchmakerGame, Movie } from '../../types';
+
 interface EnhancedMatchmakerProps {
-  currentUser: string | null;
+  currentUser: User | null;
 }
 
 const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) => {
   const { showToast } = useToast();
   const { movies, isLoading: isMoviesLoading } = useMovies(currentUser);
-  
+
   const {
     game,
     isLoading: isGameLoading,
@@ -149,7 +151,7 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
 
     const shuffled = poolSource.sort(() => 0.5 - Math.random());
     const pool = shuffled.slice(0, 10).map((m) => m.id);
-    
+
     setSelectedVibe(selectedVibe);
     await startNewGame(pool, selectedVibe);
   };
@@ -172,9 +174,9 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
   const handlePickRandom = () => {
     if (matches.length < 2) return;
     setIsPickingRandom(true);
-    
+
     setTimeout(() => {
-      const winner = matches[Math.floor(Math.random() * matches.length)];
+      const winner = matchedMovies[Math.floor(Math.random() * matchedMovies.length)];
       setRandomWinner(winner);
       setIsPickingRandom(false);
       showToast({
@@ -300,6 +302,11 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
     );
   }
 
+  // Map string IDs from hook to actual Movie objects
+  const matchedMovies = useMemo(() => {
+    return matches.map(id => movieMap.get(id)).filter((m): m is Movie => !!m);
+  }, [matches, movieMap]);
+
   // Active game state
   return (
     <ErrorBoundary>
@@ -422,7 +429,7 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
                   <SwipeCard
                     key={remainingMovies[1].id}
                     movie={remainingMovies[1]}
-                    onSwipe={() => {}}
+                    onSwipe={() => { }}
                     active={false}
                   />
                 )}
@@ -585,7 +592,7 @@ const EnhancedMatchmaker: React.FC<EnhancedMatchmakerProps> = ({ currentUser }) 
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
               }}>
-                {matches.map((movie) => (
+                {matchedMovies.map((movie) => (
                   <div key={movie.id} style={{ flexShrink: 0, width: '100px', textAlign: 'center' }}>
                     <img
                       src={movie.posterUrl}

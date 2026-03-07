@@ -26,7 +26,7 @@ const WatchlistDialogs: React.FC<WatchlistDialogsProps> = ({
       {movieToDelete && (
         <ConfirmDialog
           isOpen={!!movieToDelete}
-          onClose={() => setMovieToDelete(null)}
+          onCancel={() => setMovieToDelete(null)}
           title="Delete Movie"
           message={`Are you sure you want to delete "${movieToDelete.title}"?`}
           onConfirm={() => {
@@ -45,7 +45,7 @@ const WatchlistDialogs: React.FC<WatchlistDialogsProps> = ({
       )}
 
       {successMovieId && (
-        <Confetti trigger={successMovieId} onComplete={() => setSuccessMovieId(null)} />
+        <Confetti isActive={!!successMovieId} onComplete={() => setSuccessMovieId(null)} />
       )}
     </>
   );

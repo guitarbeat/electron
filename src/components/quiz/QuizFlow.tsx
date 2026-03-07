@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
+import { User } from '@/types';
 import { QuizData } from '@/services/quizService';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import AgreeDisagreeQuestion from './AgreeDisagreeQuestion';
@@ -14,12 +15,20 @@ import { calculateQuizResults } from './quizScoring';
 interface QuizFlowProps {
   onComplete: () => void;
   quizData: QuizData;
+  currentUser?: User | null;
+  onEdit?: () => void;
+  isCompleted?: boolean;
 }
 
-const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
+const QuizFlow: React.FC<QuizFlowProps> = ({
+  onComplete,
+  quizData,
+  onEdit,
+  isCompleted
+}) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(isCompleted || false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
   const questions = quizData.questions || [];
@@ -27,7 +36,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
   const totalQuestions = questions.length;
   const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
 
-  if (!currentQuestion) {
+  if (!currentQuestion && !showResults) {
     return (
       <div
         style={{
@@ -37,9 +46,16 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
         }}
       >
         <p style={{ marginBottom: spacing.md }}>No quiz questions available.</p>
-        <Button onClick={onComplete} variant="primary" size="md">
-          Continue
-        </Button>
+        <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'center' }}>
+          <Button onClick={onComplete} variant="primary" size="md">
+            Continue
+          </Button>
+          {onEdit && (
+            <Button onClick={onEdit} variant="secondary" size="md">
+              Edit Quiz
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
@@ -88,16 +104,31 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
     setQuizResult(null);
   };
 
-  if (showResults && quizResult) {
-    return (
-      <ResultsScreen
-        result={quizResult}
-        onContinue={onComplete}
-        onRetake={handleRetake}
-        characterDescriptions={quizData.characterDescriptions}
-        neitherDescription={quizData.neitherDescription}
-      />
-    );
+  if (showResults) {
+    // If we're already completed, we might not have quizResult yet if we just loaded
+    // Need a way to handle 'viewing previous results' if needed, but for now:
+    if (!quizResult && isCompleted) {
+      return (
+        <div style={{ textAlign: 'center', padding: spacing.xl }}>
+          <h3>Quiz Completed!</h3>
+          <Button onClick={handleRetake} variant="primary" style={{ marginTop: spacing.md }}>
+            Retake Quiz
+          </Button>
+        </div>
+      )
+    }
+
+    if (quizResult) {
+      return (
+        <ResultsScreen
+          result={quizResult}
+          onContinue={onComplete}
+          onRetake={handleRetake}
+          characterDescriptions={quizData.characterDescriptions}
+          neitherDescription={quizData.neitherDescription}
+        />
+      );
+    }
   }
 
   const canProceed =
@@ -197,7 +228,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({ onComplete, quizData }) => {
           style={{
             height: '8px',
             backgroundColor: colors.surface,
-            borderRadius: '4px',
+            borderRadius: radius.md,
             overflow: 'hidden',
             border: `2px solid ${colors.borderSecondary}`,
             position: 'relative',
