@@ -9,6 +9,7 @@ import {
   shadows,
   motion,
 } from '@/design-system/tokens';
+import { getModalCloseButtonStyle, getModalOverlayStyle, trapFocusOnTab } from './modalPrimitives';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -16,9 +17,6 @@ interface BottomSheetProps {
   title?: string;
   children: React.ReactNode;
 }
-
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -58,28 +56,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
         return;
       }
 
-      if (event.key === 'Tab' && sheetRef.current) {
-        const nodes = Array.from(
-          sheetRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-        ).filter((node) => !node.hasAttribute('disabled'));
-
-        if (!nodes.length) {
-          event.preventDefault();
-          return;
-        }
-
-        const first = nodes[0];
-        const last = nodes[nodes.length - 1];
-        const active = document.activeElement as HTMLElement | null;
-
-        if (event.shiftKey && active === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && active === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }
+      trapFocusOnTab(event, sheetRef.current);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -120,12 +97,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
   return createPortal(
     <div
       style={{
-        position: 'fixed',
-        inset: 0,
+        ...getModalOverlayStyle('transparent', 'flex-end', 0),
         zIndex: zIndex.modal,
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
       }}
     >
       <div
@@ -183,20 +156,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
           type="button"
           onClick={onClose}
           aria-label="Close panel"
-          style={{
-            position: 'absolute',
-            top: spacing.sm,
-            right: spacing.sm,
-            width: '34px',
-            height: '34px',
-            borderRadius: radius.full,
-            border: `1px solid ${colors.borderSubtle}`,
-            background: colors.surface2,
-            color: colors.textPrimary,
-            cursor: 'pointer',
-            fontSize: '1rem',
-            lineHeight: 1,
-          }}
+          style={{ ...getModalCloseButtonStyle(), fontSize: '1rem' }}
         >
           ✕
         </button>

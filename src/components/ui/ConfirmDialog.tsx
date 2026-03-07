@@ -2,7 +2,8 @@ import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Card from './Card';
 import Button from './Button';
-import { colors, spacing, typography, zIndex, radius } from '@/design-system/tokens';
+import { colors, spacing, typography } from '@/design-system/tokens';
+import { getModalCloseButtonStyle, getModalOverlayStyle, trapFocusOnTab } from './modalPrimitives';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -15,9 +16,6 @@ interface ConfirmDialogProps {
   variant?: 'danger' | 'primary';
   isLoading?: boolean;
 }
-
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
@@ -56,28 +54,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         return;
       }
 
-      if (event.key === 'Tab' && dialogRef.current) {
-        const nodes = Array.from(
-          dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-        ).filter((node) => !node.hasAttribute('disabled'));
-
-        if (!nodes.length) {
-          event.preventDefault();
-          return;
-        }
-
-        const first = nodes[0];
-        const last = nodes[nodes.length - 1];
-        const active = document.activeElement as HTMLElement | null;
-
-        if (event.shiftKey && active === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && active === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }
+      trapFocusOnTab(event, dialogRef.current);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -92,23 +69,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: colors.overlay,
-        backdropFilter: 'blur(4px)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: zIndex.modal,
-        padding: spacing.md,
-      }}
-      role="none presentation"
-    >
+    <div style={getModalOverlayStyle()} role="none presentation">
       <div
         ref={dialogRef}
         role="alertdialog"
@@ -125,19 +86,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onCancel}
             aria-label="Close dialog"
-            style={{
-              position: 'absolute',
-              top: spacing.sm,
-              right: spacing.sm,
-              width: '30px',
-              height: '30px',
-              borderRadius: radius.full,
-              border: `1px solid ${colors.borderSubtle}`,
-              background: colors.surface2,
-              color: colors.textPrimary,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
+            style={{ ...getModalCloseButtonStyle(), width: '30px', height: '30px' }}
           >
             ✕
           </button>

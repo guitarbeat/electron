@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { colors, spacing, shadows, typography } from '@/design-system/tokens';
+import { getModalOverlayStyle } from './modalPrimitives';
 
 export interface MinigameModalProps {
   isOpen: boolean;
@@ -42,17 +43,10 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   return createPortal(
     <div
       style={{
-        position: 'fixed',
-        inset: 0,
+        ...getModalOverlayStyle('rgba(0,0,0,0.5)', 'center', 0),
         zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         width: '100vw',
         height: '100vh',
-        padding: 0,
-        background: 'rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(4px)',
         WebkitBackdropFilter: 'blur(4px)',
       }}
       onClick={onClose}
