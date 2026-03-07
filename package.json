@@ -12,7 +12,7 @@
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.tsx\" --report-unused-disable-directives",
     "format": "prettier --write .",
     "check-types": "tsc --noEmit",
-    "test:all": "echo \"No automated tests configured\"",
+    "test:all": "node --experimental-strip-types --test src/tests/**/*.test.ts",
     "vercel:env": "vercel env pull .env.local"
   },
   "dependencies": {
