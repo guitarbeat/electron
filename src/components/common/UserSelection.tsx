@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import type { MainTab, User } from '../../types';
 import GelBubbleAvatar from './GelBubbleAvatar';
@@ -43,13 +43,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const bubbleSize = variant === 'inline' ? 'tiny' : isMobile ? 'compact' : 'default';
   const isDisabled = isLoading || isVerifying;
   const users: User[] = ['Aaron', 'Electra'];
-  const floatingInlinePositions = useMemo(
-    () => [
-      { x: '18vw', y: '28vh', driftX: '10vw', driftY: '-9vh', duration: '12.4s', delay: '0s' },
-      { x: '70vw', y: '58vh', driftX: '-11vw', driftY: '8vh', duration: '14.2s', delay: '0.7s' },
-    ],
-    []
-  );
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
 
@@ -176,24 +169,11 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 : profile === selectionAnimatedUser
                   ? 'active'
                   : 'inactive';
-            const floatingPosition = floatingInlinePositions[index] ?? floatingInlinePositions[0];
 
             return (
               <div
                 key={profile}
                 className={`user-selection__bubble-slot${variant === 'inline' ? ' user-selection__bubble-slot--floating' : ''}`}
-                style={
-                  variant === 'inline'
-                    ? ({
-                        ['--float-x' as string]: floatingPosition.x,
-                        ['--float-y' as string]: floatingPosition.y,
-                        ['--float-drift-x' as string]: floatingPosition.driftX,
-                        ['--float-drift-y' as string]: floatingPosition.driftY,
-                        ['--float-duration' as string]: floatingPosition.duration,
-                        ['--float-delay' as string]: floatingPosition.delay,
-                      } as CSSProperties)
-                    : undefined
-                }
               >
                 <GelBubbleAvatar
                   user={profile}
@@ -216,21 +196,22 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           })}
         </div>
 
-        {selectedNamedUser ? (
-          <button
-            type="button"
-            className="user-selection__pin-button user-selection__logout-button"
-            onClick={handleLogout}
-            disabled={isDisabled}
-            aria-label="Log out"
-          >
-            Log out
-          </button>
-        ) : (
-          <p className="user-selection__logged-out">Logged out</p>
-        )}
+        {variant === 'panel' &&
+          (selectedNamedUser ? (
+            <button
+              type="button"
+              className="user-selection__pin-button user-selection__logout-button"
+              onClick={handleLogout}
+              disabled={isDisabled}
+              aria-label="Log out"
+            >
+              Log out
+            </button>
+          ) : (
+            <p className="user-selection__logged-out">Logged out</p>
+          ))}
 
-        {selectedNamedUser && (
+        {variant === 'panel' && selectedNamedUser && (
           <button
             type="button"
             className="user-selection__pin-button"
