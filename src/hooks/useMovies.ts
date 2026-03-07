@@ -1,10 +1,105 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '@/types';
 import { usePolling } from '@/hooks/usePolling';
-import { getMovies, saveMovies } from '@/services/movieService';
+import { GIST_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
+import {
+  buildGithubApiErrorMessage,
+  fetchGist,
+  getGistFileContent,
+  patchGistFile,
+} from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '@/config/security';
 import { concurrentMap } from '@/utils/concurrency';
+
+let cachedMovies: Movie[] = [];
+let lastETag: string | null = null;
+
+const getMovies = async (): Promise<Movie[]> => {
+  try {
+    const response = await fetchGist({
+      token: GIST_TOKEN,
+      eTag: lastETag,
+      cache: 'no-cache',
+    });
+
+    if (response.status === 304) {
+      if (cachedMovies.length > 0) {
+        return cachedMovies;
+      }
+    }
+
+    if (!response.ok) {
+      const { status } = response;
+      let msg = await buildGithubApiErrorMessage(response);
+      if (status === 401 || status === 404) {
+        msg +=
+          ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
+      } else if (status === 403) {
+        msg +=
+          ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
+      }
+      throw new Error(msg);
+    }
+
+    const gist = await response.json();
+    const content = getGistFileContent(gist, GIST_FILENAME);
+    if (content === null) {
+      console.warn(`Gist is missing "${GIST_FILENAME}". Returning an empty movie list.`);
+      return [];
+    }
+
+    let movies: Movie[];
+    try {
+      movies = JSON.parse(content);
+    } catch (parseError) {
+      throw new Error(`${GIST_FILENAME} contains invalid JSON.`);
+    }
+    if (!Array.isArray(movies)) {
+      throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
+    }
+
+    const etag = response.headers.get('etag') || response.headers.get('ETag');
+    if (etag) {
+      cachedMovies = movies;
+      lastETag = etag;
+    } else {
+      cachedMovies = movies;
+      lastETag = null;
+    }
+
+    return movies;
+  } catch (error) {
+    console.error('Error fetching movies from Gist:', error);
+    throw error;
+  }
+};
+
+const saveMovies = async (movies: Movie[]): Promise<void> => {
+  try {
+    const response = await patchGistFile(
+      GIST_FILENAME,
+      JSON.stringify(movies, null, 2),
+      GIST_TOKEN
+    );
+
+    if (!response.ok) {
+      try {
+        const errorBody = await response.json();
+        console.error('GitHub API error details:', errorBody);
+      } catch {
+        console.error('GitHub API error: Unable to parse error body');
+      }
+      throw new Error(`GitHub API responded with ${response.status}`);
+    }
+
+    cachedMovies = movies;
+    lastETag = null;
+  } catch (error) {
+    console.error('Error saving movies to Gist:', error);
+    throw error;
+  }
+};
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
 export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {

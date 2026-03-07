@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
 import { User } from '@/types';
-import { QuizData } from '@/services/quizService';
+import type { QuizData } from '@/hooks/useQuiz';
 import {
   MultipleChoiceQuestionView,
   AgreeDisagreeQuestionView,
