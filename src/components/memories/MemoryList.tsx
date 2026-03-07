@@ -4,10 +4,10 @@ import Button from '@/ui/Button';
 import Textarea from '@/ui/Textarea';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { colors, radius, spacing, typography } from '@/design-system/tokens';
-import MemoryNoteText from './MemoryNoteText';
 import {
   ALL_MOVIES_FILTER,
   INITIAL_VISIBLE_COUNT,
+  MEMORY_MENTION_REGEX,
   MemorySortMode,
   formatMemoryTimestamp,
   getStickyNoteRotation,
@@ -35,6 +35,34 @@ interface MemoryListProps {
   onDeleteMemory: (memory: SharedMemory) => Promise<void>;
   onTogglePin: (memory: SharedMemory) => Promise<void>;
 }
+
+const mentionStyle: React.CSSProperties = {
+  fontWeight: 700,
+  textDecoration: 'underline',
+  textUnderlineOffset: '2px',
+};
+
+const renderMemoryNote = (text: string) => {
+  const parts = text.split(MEMORY_MENTION_REGEX);
+  return parts.map((part, index) => {
+    const normalized = part.toLowerCase();
+    if (normalized !== '@aaron' && normalized !== '@electra') {
+      return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
+    }
+    const color = normalized === '@aaron' ? '#376dff' : '#e45858';
+    return (
+      <span
+        key={`${part}-${index}`}
+        style={{
+          ...mentionStyle,
+          color,
+        }}
+      >
+        {part}
+      </span>
+    );
+  });
+};
 
 const MemoryList: React.FC<MemoryListProps> = ({
   memories,
@@ -349,7 +377,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                   }}
                   aria-label={`Jump to movie ${memory.movieTitle}`}
                 >
-                  <MemoryNoteText text={memory.note} />
+                  {renderMemoryNote(memory.note)}
                 </button>
               )}
 

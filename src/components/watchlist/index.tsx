@@ -1,10 +1,8 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useWatchlist } from './hooks/useWatchlist';
-import WorkspaceLayout from '@/layout/WorkspaceLayout';
 import { Movie, MovieSuggestion, WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import FixMatchDialog from '@/common/FixMatchDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 
@@ -14,6 +12,35 @@ import MovieCard from './components/MovieCard';
 
 // Styles
 import './Watchlist.css';
+
+const renderWorkspace = ({
+  isMobile,
+  controls,
+  content,
+}: {
+  isMobile: boolean;
+  controls: React.ReactNode;
+  content: React.ReactNode;
+}) => {
+  if (isMobile) {
+    return (
+      <div className="workspace-layout workspace-layout--mobile">
+        <div className="workspace-layout__content">{content}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="workspace-layout">
+      <aside className="workspace-layout__controls" aria-label="Watchlist controls">
+        {controls}
+      </aside>
+      <section className="workspace-layout__content" aria-label="Watchlist content">
+        {content}
+      </section>
+    </div>
+  );
+};
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
@@ -314,9 +341,42 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   if (moviesError) {
     return (
-      <WorkspaceLayout
-        isMobile={isMobile}
-        controls={
+      <>
+        {renderWorkspace({
+          isMobile,
+          controls: (
+            <WatchlistTopControls
+              contentTab={contentTab}
+              setContentTab={setContentTab}
+              sortMode={sortMode}
+              setSortMode={setSortMode}
+              tabCounts={tabCounts}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onSubmit={handleAddAction}
+              isAdding={isAdding}
+              isSuggesting={isSuggesting}
+              isMobile={isMobile}
+              suggestionError={suggestionError}
+            />
+          ),
+          content: (
+            <div className="watchlist-error">
+              <h2>Error loading movies</h2>
+              <p>{moviesError}</p>
+              <button onClick={refreshMovies}>Try again</button>
+            </div>
+          ),
+        })}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {renderWorkspace({
+        isMobile,
+        controls: (
           <WatchlistTopControls
             contentTab={contentTab}
             setContentTab={setContentTab}
@@ -331,111 +391,93 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             isMobile={isMobile}
             suggestionError={suggestionError}
           />
-        }
-        content={
-          <div className="watchlist-error">
-            <h2>Error loading movies</h2>
-            <p>{moviesError}</p>
-            <button onClick={refreshMovies}>Try again</button>
+        ),
+        content: (
+          <div className="watchlist">
+            <header className="watchlist-header">
+              <h1 className="watchlist-title">Watchlist</h1>
+            </header>
+
+            {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
+              <div
+                className="watchlist-empty-state"
+                style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}
+              >
+                <p>{getEmptyStateMessage()}</p>
+              </div>
+            ) : isLoading ? (
+              <div className="watchlist-content">
+                {skeletonKeys.map((key) => (
+                  <MovieCardSkeleton key={key} />
+                ))}
+              </div>
+            ) : contentTab === 'suggestions' ? (
+              <div className="watchlist-content">
+                {filteredSuggestions.length > 0 ? (
+                  filteredSuggestions.map((suggestion) => renderSuggestionItem(suggestion))
+                ) : (
+                  <div className="watchlist-empty-state">
+                    <p>No suggestions available</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="watchlist-content">
+                {filteredMovies.length > 0 ? (
+                  filteredMovies.map((movie) => renderMovieItem(movie))
+                ) : (
+                  <div className="watchlist-empty-state">
+                    <p>No movies found</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {movieToDelete && (
+              <ConfirmDialog
+                isOpen={!!movieToDelete}
+                onCancel={() => setMovieToDelete(null)}
+                title="Delete Movie"
+                message={`Are you sure you want to delete "${movieToDelete.title}"?`}
+                onConfirm={async () => {
+                  try {
+                    await deleteMovie(movieToDelete.id);
+                    setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'info' });
+                  } catch (error) {
+                    setToast({ message: 'Failed to delete movie', type: 'error' });
+                  } finally {
+                    setMovieToDelete(null);
+                  }
+                }}
+              />
+            )}
+
+            {movieToFix && (
+              <div className="fix-match-dialog-overlay">
+                <div className="fix-match-dialog">
+                  <h2 className="text-lg font-semibold mb-4">Fix Match</h2>
+                  <p className="text-gray-600 mb-6">
+                    Are you sure you want to fix the match for &quot;{movieToFix.title}&quot;?
+                  </p>
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => setMovieToFix(null)}
+                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showConfetti && (
+              <Confetti isActive={showConfetti} onComplete={() => setSuccessMovieId(null)} />
+            )}
           </div>
-        }
-      />
-    );
-  }
-
-  return (
-    <WorkspaceLayout
-      isMobile={isMobile}
-      controls={
-        <WatchlistTopControls
-          contentTab={contentTab}
-          setContentTab={setContentTab}
-          sortMode={sortMode}
-          setSortMode={setSortMode}
-          tabCounts={tabCounts}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSubmit={handleAddAction}
-          isAdding={isAdding}
-          isSuggesting={isSuggesting}
-          isMobile={isMobile}
-          suggestionError={suggestionError}
-        />
-      }
-      content={
-        <div className="watchlist">
-          <header className="watchlist-header">
-            <h1 className="watchlist-title">Watchlist</h1>
-          </header>
-
-          {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
-            <div
-              className="watchlist-empty-state"
-              style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}
-            >
-              <p>{getEmptyStateMessage()}</p>
-            </div>
-          ) : isLoading ? (
-            <div className="watchlist-content">
-              {skeletonKeys.map((key) => (
-                <MovieCardSkeleton key={key} />
-              ))}
-            </div>
-          ) : contentTab === 'suggestions' ? (
-            <div className="watchlist-content">
-              {filteredSuggestions.length > 0 ? (
-                filteredSuggestions.map((suggestion) => renderSuggestionItem(suggestion))
-              ) : (
-                <div className="watchlist-empty-state">
-                  <p>No suggestions available</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="watchlist-content">
-              {filteredMovies.length > 0 ? (
-                filteredMovies.map((movie) => renderMovieItem(movie))
-              ) : (
-                <div className="watchlist-empty-state">
-                  <p>No movies found</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {movieToDelete && (
-            <ConfirmDialog
-              isOpen={!!movieToDelete}
-              onCancel={() => setMovieToDelete(null)}
-              title="Delete Movie"
-              message={`Are you sure you want to delete "${movieToDelete.title}"?`}
-              onConfirm={async () => {
-                try {
-                  await deleteMovie(movieToDelete.id);
-                  setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'info' });
-                } catch (error) {
-                  setToast({ message: 'Failed to delete movie', type: 'error' });
-                } finally {
-                  setMovieToDelete(null);
-                }
-              }}
-            />
-          )}
-
-          {movieToFix && (
-            <FixMatchDialog
-              isOpen={!!movieToFix}
-              onClose={() => setMovieToFix(null)}
-              movie={movieToFix}
-            />
-          )}
-
-          {showConfetti && (
-            <Confetti isActive={showConfetti} onComplete={() => setSuccessMovieId(null)} />
-          )}
-        </div>
-      }
-    />
+        ),
+      })}
+    </>
   );
 };
 
