@@ -1,7 +1,53 @@
 import { useState, useCallback, useRef } from 'react';
 import { MatchmakerGame, User } from '@/types';
 import { usePolling } from './usePolling';
-import { getMatchmakerGame, saveMatchmakerGame } from '@/services/matchmakerService';
+import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
+import { fetchGist, getGistFileContent, patchGistFile } from '@/services/gistClient.ts';
+
+const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
+  try {
+    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API responded with ${response.status}`);
+    }
+
+    const gist = await response.json();
+    const content = getGistFileContent(gist, GIST_MATCHMAKER_FILENAME);
+    if (content === null) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(content);
+    } catch (error) {
+      console.error('Error parsing matchmaker JSON:', error);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching matchmaker game from Gist:', error);
+    return null;
+  }
+};
+
+const saveMatchmakerGame = async (game: MatchmakerGame | null): Promise<void> => {
+  try {
+    const response = await patchGistFile(
+      GIST_MATCHMAKER_FILENAME,
+      game ? JSON.stringify(game, null, 2) : '',
+      GIST_TOKEN
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.json();
+      console.error('GitHub API error details:', errorBody);
+      throw new Error(`GitHub API responded with ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error saving matchmaker game to Gist:', error);
+    throw error;
+  }
+};
 
 export const useMatchmaker = (currentUser: User | null, isPaused: boolean = false) => {
   const {
