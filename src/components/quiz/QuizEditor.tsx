@@ -10,7 +10,7 @@ import { useQuiz } from '@/hooks/useQuiz';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useToast } from '@/context/ToastContext';
-import { QuizData } from '@/services/quizService';
+import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
 import QuestionsTab from './editor/QuestionsTab';
 import DescriptionsTab from './editor/DescriptionsTab';
