@@ -14,7 +14,7 @@ import {
   WatchlistDialogs,
 } from './components';
 import WatchlistControls from './WatchlistControls';
-import MovieItem from './components/MovieItem';
+import MovieItem from '@/components/movie/MovieItem';
 import { SuggestionItemCard } from '@/common/DashboardCards';
 
 // Styles
@@ -131,7 +131,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     if (currentUser) {
       setIsAdding(true);
       try {
-        await addMovie(searchQuery.trim(), currentUser);
+        await addMovie(searchQuery.trim());
         setSearchQuery('');
         setToast({ message: `"${searchQuery.trim()}" added to watchlist!`, type: 'success' });
       } catch (error) {
@@ -197,7 +197,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           movie={movie}
           memories={movieMemories}
           currentUser={currentUser}
-          onToggle={() => toggleWatched(movie.id, currentUser)}
+          onToggle={() => toggleWatched(movie.id)}
           onDelete={() => handleDeleteMovie(movie)}
           onFixMatch={() => handleFixMatch(movie)}
           onAddMemory={async (note: string) => {
