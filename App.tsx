@@ -53,7 +53,15 @@ const AppInner: React.FC = () => {
   };
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
+  const inactiveTabMeta = useMemo(
+    () => MAIN_TABS.find((item) => item.id !== activeTab) || MAIN_TABS[0],
+    [activeTab]
+  );
   const activeHeroLabel = activeTabMeta?.label || MAIN_TABS[0].label;
+  const activeTabDescription =
+    activeTab === 'queue'
+      ? 'Curate tonight’s lineup, capture memories, and run matchmaker in one place.'
+      : 'Pin future date spots, compare ideas, and build your next city adventure.';
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -71,11 +79,54 @@ const AppInner: React.FC = () => {
           aria-label={activeTabMeta?.label || 'Main workspace'}
         >
           <section className="home-hero" aria-label="Home view selector">
-            <h2 className="home-hero__title" aria-live="polite">
-              <span key={activeTab} className="home-hero__word home-hero__word--animated is-active">
-                {activeHeroLabel}
-              </span>
-            </h2>
+            <div className="home-hero__content">
+              <p className="home-hero__eyebrow">Weekend Control Room</p>
+              <h2 className="home-hero__title" aria-live="polite">
+                <span
+                  key={activeTab}
+                  className="home-hero__word home-hero__word--animated is-active"
+                >
+                  {activeHeroLabel}
+                </span>
+              </h2>
+              <p className="home-hero__subtitle">{activeTabDescription}</p>
+
+              <div className="home-hero__chips" aria-label="Current mode details">
+                <span className="home-chip">Live Mode: {activeTabMeta?.label}</span>
+                <span className="home-chip">
+                  {currentUser ? `Pilot: ${currentUser}` : 'Pilot not selected'}
+                </span>
+              </div>
+            </div>
+
+            <div className="home-hero__tiles" aria-label="Quick switches">
+              {MAIN_TABS.map((tab) => {
+                const isActiveTile = tab.id === activeTab;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`home-tile ${isActiveTile ? 'is-active' : ''}`}
+                    onClick={() => handleTabChange(tab.id)}
+                    aria-pressed={isActiveTile}
+                  >
+                    <span className="home-tile__icon" aria-hidden>
+                      {tab.icon}
+                    </span>
+                    <span className="home-tile__label">{tab.label}</span>
+                    <span className="home-tile__state">{isActiveTile ? 'Active' : 'Open'}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              className="home-hero__switch"
+              onClick={() => handleTabChange(inactiveTabMeta.id)}
+            >
+              Jump to {inactiveTabMeta.label}
+            </button>
           </section>
 
           {MAIN_TABS.map((tab) => {
