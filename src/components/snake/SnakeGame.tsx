@@ -24,7 +24,6 @@ import {
   GridPosition,
   SnakeGameState,
 } from './snakeGameLogic';
-import { useToolHide } from '@/hooks/useToolHide';
 
 const BOARD_WIDTH = 16;
 const BOARD_HEIGHT = 16;
@@ -228,6 +227,24 @@ const useSnakeAudio = () => {
 interface SnakeGameProps {
   mode?: 'floating' | 'embedded';
   onRequestClose?: () => void;
+}
+
+function useLocalToolHide({
+  isEmbedded,
+  onRequestClose,
+  setIsMinimized,
+}: {
+  isEmbedded: boolean;
+  onRequestClose?: () => void;
+  setIsMinimized: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  return useCallback(() => {
+    if (isEmbedded) {
+      onRequestClose?.();
+      return;
+    }
+    setIsMinimized(true);
+  }, [isEmbedded, onRequestClose, setIsMinimized]);
 }
 
 function buildInitialSnakeState(mode: SnakeGameProps['mode']): SnakeGameState {
@@ -746,7 +763,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
     setHasRecordedGameOverScore(true);
   }, [gameState.score, gameState.status, hasRecordedGameOverScore, recordScore]);
 
-  const handleHide = useToolHide({ isEmbedded, onRequestClose, setIsMinimized });
+  const handleHide = useLocalToolHide({ isEmbedded, onRequestClose, setIsMinimized });
   const handleMaximize = () => setIsMinimized(false);
   const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
 

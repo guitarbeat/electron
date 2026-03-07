@@ -2,10 +2,67 @@ import './GelBubbleAvatar.css';
 import React from 'react';
 import { User } from '@/types';
 import ImageWithFallback from './ImageWithFallback';
-import { userImageSources } from '@/config/imageConfig';
-import { useRandomCatImage } from '@/hooks/useRandomCatImage';
 
 type BubbleSize = 'default' | 'compact' | 'tiny';
+
+const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=3';
+const CATAAS_RANDOM = 'https://cataas.com/cat';
+
+const userImageSources: Record<User, string[]> = {
+  Aaron: [
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
+    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
+    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
+  ],
+  Electra: [
+    'https://i.redd.it/vkmos70wqw641.jpg',
+    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
+    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
+  ],
+};
+
+function useRandomCatImageLocal() {
+  const [sources, setSources] = React.useState<string[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [refetchKey, setRefetchKey] = React.useState(0);
+
+  const refetch = React.useCallback(() => {
+    setRefetchKey((key) => key + 1);
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+
+    async function fetchCatUrls() {
+      try {
+        const response = await fetch(CAT_API);
+        if (!response.ok) throw new Error('Cat API error');
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) throw new Error('No images');
+        const urls = data
+          .map((item: { url?: string }) => item.url)
+          .filter((url): url is string => Boolean(url));
+        if (!cancelled) {
+          setSources(urls.length > 0 ? urls : [CATAAS_RANDOM]);
+        }
+      } catch {
+        if (!cancelled) {
+          setSources([CATAAS_RANDOM]);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    fetchCatUrls();
+    return () => {
+      cancelled = true;
+    };
+  }, [refetchKey]);
+
+  return { sources, refetch, isLoading };
+}
 
 interface GelBubbleAvatarProps {
   user: User;
@@ -49,7 +106,11 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   disabled = false,
   animationOffset = false,
 }) => {
-  const { sources: catSources, refetch: refetchCat, isLoading: isCatLoading } = useRandomCatImage();
+  const {
+    sources: catSources,
+    refetch: refetchCat,
+    isLoading: isCatLoading,
+  } = useRandomCatImageLocal();
   const sources =
     catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
   const sizeTokens = SIZES[size];

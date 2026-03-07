@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { GOOGLE_PLACES_API_KEY } from '@/config/googlePlaces';
 import { colors, spacing, radius, typography } from '@/design-system/tokens';
 import type { Place } from '@/types';
 
 const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };
 const DEFAULT_ZOOM = 4;
+const GOOGLE_PLACES_API_KEY =
+  ((import.meta.env || {}) as Record<string, string | undefined>).VITE_GOOGLE_PLACES_API_KEY || '';
 
 interface PlacesMapProps {
   places: Place[];
