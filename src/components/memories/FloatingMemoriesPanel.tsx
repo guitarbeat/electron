@@ -5,9 +5,15 @@ import Textarea from '@/ui/Textarea';
 import { useMovies } from '@/hooks/useMovies';
 import { usePolling } from '@/hooks/usePolling';
 import { useUser } from '@/context/UserContext';
-import { addMemory, deleteMemory, getMemories, toggleMemoryPin } from '@/services/memoryService';
+import {
+  addMemory,
+  deleteMemory,
+  getMemories,
+  toggleMemoryPin,
+  updateMemory,
+} from '@/services/memoryService';
 import { colors, spacing, typography, radius } from '@/design-system/tokens';
-import { sortMemories } from './memoryUtils';
+import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/types';
 
 const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) =>
@@ -27,9 +33,22 @@ const FloatingMemoriesPanel: React.FC = () => {
 
   const [note, setNote] = useState('');
   const [movieQuery, setMovieQuery] = useState('');
+  const [search, setSearch] = useState('');
+  const [showPinnedOnly, setShowPinnedOnly] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingNote, setEditingNote] = useState('');
 
   const sorted = useMemo(() => sortMemories(data || [], 'newest'), [data]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return sorted.filter((memory) => {
+      if (showPinnedOnly && !memory.isPinned) return false;
+      if (!q) return true;
+      return `${memory.movieTitle} ${memory.note} ${memory.author}`.toLowerCase().includes(q);
+    });
+  }, [search, showPinnedOnly, sorted]);
 
   const matchedMovie = useMemo(() => {
     const query = movieQuery.trim().toLowerCase();
@@ -53,10 +72,25 @@ const FloatingMemoriesPanel: React.FC = () => {
         new Date().toISOString()
       );
       setNote('');
+      setMovieQuery('');
       refresh();
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const startEditing = (memory: SharedMemory) => {
+    setEditingId(memory.id);
+    setEditingNote(memory.note);
+  };
+
+  const saveEdit = async (memory: SharedMemory) => {
+    const trimmed = editingNote.trim();
+    if (!trimmed) return;
+    await updateMemory(memory.id, { note: trimmed });
+    setEditingId(null);
+    setEditingNote('');
+    refresh();
   };
 
   return (
@@ -66,7 +100,7 @@ const FloatingMemoriesPanel: React.FC = () => {
       <div>
         <h3 style={{ margin: 0, marginBottom: spacing.xs }}>Memory Wall</h3>
         <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-          Save moments tied to a movie title and pin favorites.
+          Add, edit, pin, and search memories tied to your movies.
         </p>
       </div>
 
@@ -85,7 +119,15 @@ const FloatingMemoriesPanel: React.FC = () => {
           value={movieQuery}
           onChange={(event) => setMovieQuery(event.target.value)}
           placeholder="e.g. The Last Unicorn"
+          list="memory-movie-suggestions"
         />
+        <datalist id="memory-movie-suggestions">
+          {movies.map((movie) => (
+            <option key={movie.id} value={movie.title}>
+              {movie.title}
+            </option>
+          ))}
+        </datalist>
         <Textarea
           label="Memory"
           value={note}
@@ -110,20 +152,38 @@ const FloatingMemoriesPanel: React.FC = () => {
       </div>
 
       <div style={{ display: 'grid', gap: spacing.sm }}>
+        <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+          <Input
+            label="Search memories"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search notes, titles, or authors"
+            style={{ flex: 1, minWidth: 220 }}
+          />
+          <Button
+            size="sm"
+            variant={showPinnedOnly ? 'primary' : 'ghost'}
+            onClick={() => setShowPinnedOnly((current) => !current)}
+            style={{ alignSelf: 'end' }}
+          >
+            {showPinnedOnly ? 'Showing Pinned' : 'Show Pinned Only'}
+          </Button>
+        </div>
+
         <h4 style={{ margin: 0, color: colors.textSecondary }}>
-          Shared Notes {sorted.length > 0 ? `(${sorted.length})` : ''}
+          Shared Notes {filtered.length > 0 ? `(${filtered.length})` : ''}
         </h4>
-        {isLoading && sorted.length === 0 ? (
+        {isLoading && filtered.length === 0 ? (
           <p style={{ margin: 0, color: colors.textSecondary }}>Loading memories...</p>
         ) : error ? (
           <p style={{ margin: 0, color: colors.error }}>
             {error instanceof Error ? error.message : 'Unable to load memories.'}
           </p>
-        ) : sorted.length === 0 ? (
-          <p style={{ margin: 0, color: colors.textSecondary }}>No memories yet.</p>
+        ) : filtered.length === 0 ? (
+          <p style={{ margin: 0, color: colors.textSecondary }}>No memories match your filters.</p>
         ) : (
-          <div style={{ display: 'grid', gap: spacing.sm, maxHeight: 360, overflowY: 'auto' }}>
-            {sorted.map((memory) => (
+          <div style={{ display: 'grid', gap: spacing.sm, maxHeight: 380, overflowY: 'auto' }}>
+            {filtered.map((memory) => (
               <article
                 key={memory.id}
                 style={{
@@ -138,7 +198,18 @@ const FloatingMemoriesPanel: React.FC = () => {
                 <p style={{ margin: 0, fontWeight: typography.fontWeight.semibold }}>
                   {memory.movieTitle}
                 </p>
-                <p style={{ margin: `${spacing.xs} 0`, whiteSpace: 'pre-wrap' }}>{memory.note}</p>
+
+                {editingId === memory.id ? (
+                  <Textarea
+                    label="Edit memory"
+                    value={editingNote}
+                    onChange={(event) => setEditingNote(event.target.value)}
+                    style={{ minHeight: 80, marginTop: spacing.xs }}
+                  />
+                ) : (
+                  <p style={{ margin: `${spacing.xs} 0`, whiteSpace: 'pre-wrap' }}>{memory.note}</p>
+                )}
+
                 <div
                   style={{
                     display: 'flex',
@@ -151,32 +222,56 @@ const FloatingMemoriesPanel: React.FC = () => {
                   }}
                 >
                   <span>
-                    {memory.author} ·{' '}
-                    {new Date(memory.updatedAt || memory.createdAt).toLocaleDateString()}
+                    {memory.author} · {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
                   </span>
-                  <div style={{ display: 'flex', gap: spacing.xs }}>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={async () => {
-                        await toggleMemoryPin(memory.id);
-                        refresh();
-                      }}
-                    >
-                      {memory.isPinned ? 'Unpin' : 'Pin'}
-                    </Button>
-                    {currentUser ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={async () => {
-                          await deleteMemory(memory.id);
-                          refresh();
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    ) : null}
+                  <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+                    {editingId === memory.id ? (
+                      <>
+                        <Button size="sm" variant="secondary" onClick={() => saveEdit(memory)}>
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditingNote('');
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={async () => {
+                            await toggleMemoryPin(memory.id);
+                            refresh();
+                          }}
+                        >
+                          {memory.isPinned ? 'Unpin' : 'Pin'}
+                        </Button>
+                        {currentUser ? (
+                          <>
+                            <Button size="sm" variant="ghost" onClick={() => startEditing(memory)}>
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={async () => {
+                                await deleteMemory(memory.id);
+                                refresh();
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </>
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 </div>
               </article>

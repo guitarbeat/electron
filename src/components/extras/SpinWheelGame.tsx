@@ -2,26 +2,51 @@ import React, { useMemo, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser } from '@/context/UserContext';
-import { colors, spacing, typography } from '@/design-system/tokens';
+import { useToast } from '@/context/ToastContext';
+import { colors, spacing, typography, radius } from '@/design-system/tokens';
+import type { Movie } from '@/types';
 
 const SEGMENT_COLORS = ['#ff7ea8', '#6ad6ff', '#ffd166', '#7ee08c', '#c7a0ff', '#ff9f68'];
+const SPIN_HISTORY_KEY = 'spinWheelHistory';
+const SPIN_HISTORY_MAX = 10;
+
+type SpinMode = 'queue' | 'all';
+
+const readHistory = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(SPIN_HISTORY_KEY);
+    const parsed = raw ? (JSON.parse(raw) as string[]) : [];
+    return Array.isArray(parsed) ? parsed.slice(0, SPIN_HISTORY_MAX) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeHistory = (history: string[]) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SPIN_HISTORY_KEY, JSON.stringify(history.slice(0, SPIN_HISTORY_MAX)));
+};
 
 const SpinWheelGame: React.FC = () => {
   const { currentUser } = useUser();
+  const { showToast } = useToast();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
-  const [history, setHistory] = useState<string[]>([]);
+  const [mode, setMode] = useState<SpinMode>('queue');
+  const [history, setHistory] = useState<string[]>(readHistory);
 
   const candidates = useMemo(() => {
-    const unwatched = movies.filter((movie) => movie.watchedBy.length < 2);
-    return unwatched.length > 0 ? unwatched : movies;
-  }, [movies]);
+    if (mode === 'all') return movies;
+    const queue = movies.filter((movie) => movie.watchedBy.length < 2);
+    return queue.length > 0 ? queue : movies;
+  }, [mode, movies]);
 
   const selectedMovie = useMemo(
-    () => candidates.find((movie) => movie.id === selectedMovieId) || null,
-    [candidates, selectedMovieId]
+    () => movies.find((movie) => movie.id === selectedMovieId) || null,
+    [movies, selectedMovieId]
   );
 
   const gradient = useMemo(() => {
@@ -53,15 +78,73 @@ const SpinWheelGame: React.FC = () => {
     window.setTimeout(() => {
       const winner = candidates[targetIndex];
       setSelectedMovieId(winner.id);
-      setHistory((prev) => [winner.title, ...prev].slice(0, 6));
+
+      const nextHistory = [winner.title, ...history].slice(0, SPIN_HISTORY_MAX);
+      setHistory(nextHistory);
+      writeHistory(nextHistory);
+
       setIsSpinning(false);
+      showToast({
+        message: `Wheel picked "${winner.title}"`,
+        type: 'success',
+        duration: 3000,
+      });
     }, 4200);
   };
 
-  const markWatched = async () => {
+  const toggleWatchedForCurrentUser = async () => {
     if (!selectedMovie || !currentUser) return;
-    if (selectedMovie.watchedBy.includes(currentUser)) return;
     await toggleWatched(selectedMovie.id);
+  };
+
+  const renderMovieMeta = (movie: Movie) => {
+    const statusLabel =
+      movie.watchedBy.length === 2
+        ? 'Watched by both'
+        : movie.watchedBy.length === 1
+          ? `Watched by ${movie.watchedBy[0]}`
+          : 'Unwatched';
+
+    return (
+      <>
+        <p style={{ marginTop: 0, marginBottom: spacing.xs, color: colors.textSecondary }}>
+          Tonight&apos;s pick
+        </p>
+        <h3 className="current-movie-title current-movie-title--result">{movie.title}</h3>
+        <p style={{ marginBottom: spacing.xs, color: colors.textSecondary }}>
+          {movie.year || 'Unknown year'} {movie.genre ? `· ${movie.genre}` : ''}
+        </p>
+        <p style={{ marginTop: 0, marginBottom: spacing.md, color: colors.textSecondary }}>
+          {statusLabel}
+        </p>
+        {movie.posterUrl ? (
+          <img
+            src={movie.posterUrl}
+            alt={`${movie.title} poster`}
+            style={{
+              width: 140,
+              height: 200,
+              objectFit: 'cover',
+              borderRadius: radius.md,
+              margin: `0 auto ${spacing.sm}`,
+              border: `1px solid ${colors.borderSecondary}35`,
+            }}
+          />
+        ) : null}
+        {movie.plot ? (
+          <p
+            style={{
+              marginTop: 0,
+              marginBottom: spacing.md,
+              color: colors.textPrimary,
+              maxWidth: 480,
+            }}
+          >
+            {movie.plot}
+          </p>
+        ) : null}
+      </>
+    );
   };
 
   return (
@@ -98,30 +181,37 @@ const SpinWheelGame: React.FC = () => {
         <Button variant="secondary" size="sm" onClick={() => setSelectedMovieId(null)}>
           Clear Result
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setMode((prev) => (prev === 'queue' ? 'all' : 'queue'))}
+        >
+          Mode: {mode === 'queue' ? 'Queue Only' : 'All Movies'}
+        </Button>
       </div>
+
+      <p
+        style={{
+          marginTop: 0,
+          marginBottom: spacing.sm,
+          textAlign: 'center',
+          color: colors.textSecondary,
+          fontSize: typography.fontSize.sm,
+        }}
+      >
+        {candidates.length} candidate{candidates.length === 1 ? '' : 's'} available
+      </p>
 
       {selectedMovie ? (
         <div
           className="result-display-container"
-          style={{ maxWidth: 540, margin: '0 auto', pointerEvents: 'auto' }}
+          style={{ maxWidth: 560, margin: '0 auto', pointerEvents: 'auto' }}
         >
-          <p style={{ marginTop: 0, marginBottom: spacing.xs, color: colors.textSecondary }}>
-            Tonight&apos;s pick
-          </p>
-          <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
-          <p style={{ marginBottom: spacing.md, color: colors.textSecondary }}>
-            {selectedMovie.year || 'Unknown year'}{' '}
-            {selectedMovie.genre ? `· ${selectedMovie.genre}` : ''}
-          </p>
+          {renderMovieMeta(selectedMovie)}
           {currentUser ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={markWatched}
-              disabled={selectedMovie.watchedBy.includes(currentUser)}
-            >
+            <Button variant="secondary" size="sm" onClick={toggleWatchedForCurrentUser}>
               {selectedMovie.watchedBy.includes(currentUser)
-                ? `Already watched by ${currentUser}`
+                ? `Undo watched for ${currentUser}`
                 : `Mark watched by ${currentUser}`}
             </Button>
           ) : (
@@ -132,7 +222,7 @@ const SpinWheelGame: React.FC = () => {
         </div>
       ) : (
         <p style={{ margin: 0, textAlign: 'center', color: colors.textSecondary }}>
-          {isLoading ? 'Loading movies...' : 'Spin to pick a movie from your queue.'}
+          {isLoading ? 'Loading movies...' : 'Spin to pick a movie from your list.'}
         </p>
       )}
 
