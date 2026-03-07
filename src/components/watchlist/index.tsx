@@ -13,7 +13,6 @@ import {
   WatchlistContent,
   WatchlistDialogs,
 } from './components';
-import WatchlistControls from './WatchlistControls';
 import MovieItem from '@/components/movie/MovieItem';
 import { SuggestionItemCard } from '@/common/DashboardCards';
 
