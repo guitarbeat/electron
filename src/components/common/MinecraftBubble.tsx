@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useToast } from '../../context/ToastContext';
+import { useFloatingBubbleDrag } from '@/hooks/useFloatingBubbleDrag';
 import {
-  clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
   FLOATING_BUBBLE_SIZE,
   FLOATING_BUBBLE_EDGE_MARGIN,
-  FLOATING_DRAG_THRESHOLD,
 } from '../ui/floatingBubbleStyles';
 
 interface MinecraftBubbleProps {
@@ -17,17 +16,7 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
   const serverAddress = import.meta.env.VITE_MINECRAFT_SERVER_ADDRESS || 'localhost';
   const serverPort = import.meta.env.VITE_MINECRAFT_SERVER_PORT || '25565';
 
-  const [position, setPosition] = useState(() => {
-    // Position in bottom right corner
-    const x = window.innerWidth - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 80;
-    const y = window.innerHeight - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 80;
-    return clampFloatingBubblePosition(x, y);
-  });
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number } | null>(null);
 
   const copyToClipboard = useCallback(async (text: string): Promise<boolean> => {
     // Try modern clipboard API first (works on HTTPS/localhost)
@@ -129,75 +118,24 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
     }
   }, [copyToClipboard, serverAddress, serverPort, showToast]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    dragRef.current = {
-      startX: e.clientX - rect.left,
-      startY: e.clientY - rect.top,
-    };
-    setDragStart({ x: e.clientX, y: e.clientY });
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!isDragging || !dragRef.current) return;
-
-      const deltaX = e.clientX - dragStart.x;
-      const deltaY = e.clientY - dragStart.y;
-
-      // Check if we've moved beyond the drag threshold
-      if (
-        Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD ||
-        Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD
-      ) {
-        const newX = e.clientX - dragRef.current.startX;
-        const newY = e.clientY - dragRef.current.startY;
-        setPosition(clampFloatingBubblePosition(newX, newY));
-      }
+  const { position: bubblePosition, isDragging, bubbleProps } = useFloatingBubbleDrag({
+    initialPosition: () => {
+      const x = window.innerWidth - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 80;
+      const y = window.innerHeight - FLOATING_BUBBLE_SIZE - FLOATING_BUBBLE_EDGE_MARGIN - 80;
+      return { x, y };
     },
-    [dragStart, isDragging]
-  );
-
-  const handleMouseUp = useCallback(
-    (e: MouseEvent) => {
-      if (!isDragging || !dragRef.current) return;
-
-      const deltaX = e.clientX - dragStart.x;
-      const deltaY = e.clientY - dragStart.y;
-
-      // If we haven't moved beyond the drag threshold, treat it as a click
-      if (
-        Math.abs(deltaX) <= FLOATING_DRAG_THRESHOLD &&
-        Math.abs(deltaY) <= FLOATING_DRAG_THRESHOLD
-      ) {
-        launchMinecraft();
-      }
-
-      setIsDragging(false);
-      dragRef.current = null;
+    snapToEdge: true,
+    onClick: () => {
+      void launchMinecraft();
     },
-    [dragStart, isDragging, launchMinecraft]
-  );
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [handleMouseMove, handleMouseUp, isDragging]);
+  });
 
   return (
     <>
       <button
         className={`minecraft-bubble ${className}`}
-        style={getFloatingBubbleButtonStyle(position, isDragging)}
-        onMouseDown={handleMouseDown}
+        style={getFloatingBubbleButtonStyle(bubblePosition, isDragging)}
+        {...bubbleProps}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         aria-label={`Launch Minecraft on server ${serverAddress}:${serverPort}`}
@@ -211,8 +149,8 @@ const MinecraftBubble: React.FC<MinecraftBubbleProps> = ({ className = '' }) => 
         <div
           style={{
             position: 'fixed',
-            left: position.x + FLOATING_BUBBLE_SIZE / 2,
-            top: position.y - 10,
+            left: bubblePosition.x + FLOATING_BUBBLE_SIZE / 2,
+            top: bubblePosition.y - 10,
             transform: 'translate(-50%, -100%)',
             background: 'rgba(0, 0, 0, 0.9)',
             color: 'white',
