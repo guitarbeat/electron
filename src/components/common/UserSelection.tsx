@@ -159,41 +159,46 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           </>
         )}
 
-        <div className="user-selection__bubble-row" role="group" aria-label="Select profile">
-          {users.map((profile, index) => {
-            const isActive = currentUser === profile;
-            const isHovered = hoveredAvatar === profile || isActive;
-            const selectionState =
-              !currentUser || !isSelectionAnimating || !selectionAnimatedUser
-                ? 'neutral'
-                : profile === selectionAnimatedUser
-                  ? 'active'
-                  : 'inactive';
+        <div
+          className={`user-selection__bubble-cluster user-selection__bubble-cluster--${variant}`}
+        >
+          <div className="user-selection__bubble-row" role="group" aria-label="Select profile">
+            {users.map((profile, index) => {
+              const isActive = currentUser === profile;
+              const isHovered = hoveredAvatar === profile || isActive;
+              const selectionState =
+                !currentUser || !isSelectionAnimating || !selectionAnimatedUser
+                  ? 'neutral'
+                  : profile === selectionAnimatedUser
+                    ? 'active'
+                    : 'inactive';
 
-            return (
-              <div
-                key={profile}
-                className={`user-selection__bubble-slot${variant === 'inline' ? ' user-selection__bubble-slot--floating' : ''}`}
-              >
-                <GelBubbleAvatar
-                  user={profile}
-                  hasPin={userHasPin(profile)}
-                  isHovered={isHovered}
-                  isSmall={variant === 'panel' && currentUser !== null && currentUser !== profile}
-                  selectionState={selectionState}
-                  isSelectionAnimating={isSelectionAnimating}
-                  size={bubbleSize}
-                  disabled={isDisabled}
-                  onClick={() => selectProfile(profile)}
-                  onMouseEnter={() => setHoveredAvatar(profile)}
-                  onMouseLeave={() => setHoveredAvatar(null)}
-                  onFocus={() => setHoveredAvatar(profile)}
-                  onBlur={() => setHoveredAvatar(null)}
-                  animationOffset={index % 2 === 1}
-                />
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={profile}
+                  className={`user-selection__bubble-slot${variant === 'inline' ? ' user-selection__bubble-slot--floating' : ''}`}
+                >
+                  <GelBubbleAvatar
+                    user={profile}
+                    hasPin={userHasPin(profile)}
+                    isHovered={isHovered}
+                    isSmall={variant === 'panel' && currentUser !== null && currentUser !== profile}
+                    showName={variant === 'panel'}
+                    selectionState={selectionState}
+                    isSelectionAnimating={isSelectionAnimating}
+                    size={bubbleSize}
+                    disabled={isDisabled}
+                    onClick={() => selectProfile(profile)}
+                    onMouseEnter={() => setHoveredAvatar(profile)}
+                    onMouseLeave={() => setHoveredAvatar(null)}
+                    onFocus={() => setHoveredAvatar(profile)}
+                    onBlur={() => setHoveredAvatar(null)}
+                    animationOffset={index % 2 === 1}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {variant === 'panel' &&
