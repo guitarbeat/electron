@@ -364,7 +364,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       {/* Name Label */}
       <span
         style={{
-          fontFamily: "'Orbitron', 'Audiowide', 'Trebuchet MS', sans-serif",
+          fontFamily: 'var(--font-display)',
           fontSize: sizeTokens.name,
           fontWeight: 700,
           color: 'color-mix(in srgb, var(--color-text-primary) 78%, white 22%)',

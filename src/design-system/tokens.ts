@@ -2,7 +2,7 @@
  * Design System Tokens
  *
  * Centralized design tokens for consistent spacing, colors, typography, and motion.
- * Modernized: Inter font stack, improved contrast, surface layering system.
+ * Modernized: cohesive display/interface font stack, improved contrast, surface layering system.
  * Now supports theme switching between Movies and Places modes.
  */
 
@@ -131,13 +131,13 @@ export const colors = {
   gradientCard: 'linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%)',
 } as const;
 
-// * Typography scale (PAPYRUS EVERYWHERE!)
+// * Typography scale
 export const typography = {
   fontFamily: {
-    heading: ['Papyrus', 'Comic Sans MS', 'cursive', 'sans-serif'],
-    body: ['Papyrus', 'Comic Sans MS', 'cursive', 'sans-serif'],
-    sans: ['Papyrus', 'Comic Sans MS', 'cursive', 'sans-serif'],
-    mono: ['Papyrus', 'Comic Sans MS', 'cursive', 'monospace'],
+    heading: ['Outfit', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+    body: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+    sans: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+    mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
   },
   fontSize: {
     xs: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem)',
