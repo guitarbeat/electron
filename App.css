@@ -35,8 +35,8 @@
 :root {
   --theme-transition-duration: 300ms;
   --theme-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
-  --font-display: 'Outfit', 'Inter', sans-serif;
-  --font-interface: 'Space Grotesk', 'Inter', sans-serif;
+  --font-display: var(--font-heading);
+  --font-interface: var(--font-body);
   --gradient-metal-bg: linear-gradient(185deg, #8d5564 0%, #5d3448 48%, #2a1523 100%);
   --gradient-metal-surface: linear-gradient(180deg, #f6dde4 0%, #cc9fae 50%, #8f5c71 100%);
   --gradient-metal-pill: linear-gradient(180deg, #fff2f4 0%, #e9cad3 42%, #bd8799 100%);
