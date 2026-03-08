@@ -24,7 +24,7 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
   }
 };
 
-export const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
+const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
   try {
     const response = await patchGistFile(
       GIST_MEMORIES_FILENAME,

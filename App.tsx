@@ -5,7 +5,6 @@ import { UserProvider, useUser } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
-import { BubbleDismissProvider } from './src/context/BubbleDismissContext';
 import QuizEditor from './src/components/quiz/QuizEditor';
 import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
@@ -247,11 +246,9 @@ const AppInner: React.FC = () => {
 };
 const App: React.FC = () => (
   <UserProvider>
-    <BubbleDismissProvider>
-      <ToastProvider>
-        <AppInner />
-      </ToastProvider>
-    </BubbleDismissProvider>
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   </UserProvider>
 );
 

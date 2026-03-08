@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { colors, spacing, shadows, typography } from '@/design-system/tokens';
 import { getModalOverlayStyle } from './modalPrimitives';
 
-export interface MinigameModalProps {
+interface MinigameModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;

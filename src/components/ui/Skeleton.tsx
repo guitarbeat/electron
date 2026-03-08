@@ -77,29 +77,4 @@ export const MovieCardSkeleton: React.FC = () => (
   </div>
 );
 
-/**
- * Skeleton for suggestion items.
- */
-export const SuggestionSkeleton: React.FC = () => (
-  <div
-    style={{
-      padding: spacing.lg,
-      backgroundColor: 'rgba(27, 40, 69, 0.6)',
-      borderRadius: radius.md,
-      border: `1px solid ${colors.borderSecondary}40`,
-    }}
-  >
-    <div style={{ display: 'flex', gap: spacing.md, alignItems: 'flex-start' }}>
-      <div style={{ flex: 1 }}>
-        <Skeleton variant="text" width="60%" height="1.5em" style={{ marginBottom: spacing.sm }} />
-        <Skeleton variant="text" width="40%" height="0.9em" />
-      </div>
-      <div style={{ display: 'flex', gap: spacing.sm }}>
-        <Skeleton variant="rectangular" width="70px" height="32px" />
-        <Skeleton variant="rectangular" width="70px" height="32px" />
-      </div>
-    </div>
-  </div>
-);
-
 export default Skeleton;

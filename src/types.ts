@@ -1,5 +1,5 @@
 export type User = 'Aaron' | 'Electra';
-export type MainTab = 'home' | 'queue' | 'extras' | 'messages' | 'places';
+export type MainTab = 'queue' | 'places';
 
 export interface Place {
   id: string;
@@ -29,34 +29,6 @@ export interface Movie {
   director?: string;
   category?: string; // e.g. "Humor", "Action", "Drama"
 }
-
-export interface Message {
-  id: string;
-  author: string;
-  content: string;
-  createdAt: string;
-  reactions?: { [emoji: string]: string[] }; // emoji -> array of usernames who reacted
-}
-
-export interface DailySpin {
-  date: string; // ISO date string (YYYY-MM-DD)
-  movieId: string;
-  movieTitle: string;
-  spunBy: User;
-  createdAt: string; // ISO timestamp
-}
-
-export interface SpinEntry {
-  id: string;
-  date: string; // ISO date string (YYYY-MM-DD)
-  movieId: string;
-  movieTitle: string;
-  spunBy: User;
-  createdAt: string; // ISO timestamp
-  updatedAt?: string; // ISO timestamp
-}
-
-export type SpinHistory = SpinEntry[];
 
 export interface MovieSuggestion {
   id: string;
@@ -99,16 +71,5 @@ export interface WatchlistProps {
   isPaused?: boolean;
 }
 
-export type {
-  AgreeDisagreeQuestion,
-  CharacterScores,
-  ImageChoiceQuestion,
-  MultipleChoiceQuestion,
-  QuestionType,
-  QuizAnswer,
-  QuizCharacter,
-  QuizQuestion,
-  QuizResult,
-  XYAxisQuestion,
-} from './components/quiz/types';
+export type { QuizCharacter } from './components/quiz/types';
 export { CHARACTERS } from './components/quiz/types';

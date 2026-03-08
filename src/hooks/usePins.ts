@@ -5,7 +5,7 @@ import { GIST_ID, GIST_TOKEN } from '../config/gistConfig.ts';
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-export interface UserPins {
+interface UserPins {
   Aaron?: string;
   Electra?: string;
 }
