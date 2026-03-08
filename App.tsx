@@ -11,6 +11,9 @@ import QuizEditor from './src/components/quiz/QuizEditor';
 import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
 import Matchmaker from './src/components/matchmaker/Matchmaker';
+import MinecraftBubble from './src/components/common/MinecraftBubble';
+import DraggableFeatureBubble from './src/components/common/DraggableFeatureBubble';
+import SnakeGame from './src/components/snake/SnakeGame';
 import FoodDropGame from './src/components/extras/FoodDropGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
@@ -239,6 +242,26 @@ const AppInner: React.FC = () => {
             />
           ) : null}
           {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
+          <MinecraftBubble />
+          <SnakeGame mode="floating" />
+          <DraggableFeatureBubble
+            title="Food Drop Game"
+            icon="🍔"
+            initialPosition={{ x: 300, y: 200 }}
+            onActivate={() => setShowFoodDrop(true)}
+          />
+          <DraggableFeatureBubble
+            title="Memories"
+            icon="💭"
+            initialPosition={{ x: 500, y: 400 }}
+            onActivate={() => setShowMemories(true)}
+          />
+          <DraggableFeatureBubble
+            title="Spin Wheel"
+            icon="🎡"
+            initialPosition={{ x: 600, y: 200 }}
+            onActivate={() => setShowSpinWheel(true)}
+          />
         </div>
       </div>
     </ThemeProvider>
