@@ -79,6 +79,7 @@ const AppInner: React.FC = () => {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
+        <ChromaticDotField className="app-dot-background" density={0.72} mode="background" />
 
         <header className="app-header">
           <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
@@ -101,7 +102,6 @@ const AppInner: React.FC = () => {
           aria-label={activeTabMeta?.label || 'Main workspace'}
         >
           <section className="home-hero" aria-label="Home view selector">
-            <ChromaticDotField className="home-hero__fx" />
             <div className="home-hero__content">
               <p className="home-hero__eyebrow">Weekend Control Room</p>
               <h2 className="home-hero__title" aria-live="polite">
