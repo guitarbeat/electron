@@ -3,7 +3,7 @@ import Card from './Card';
 import { CheckIcon } from '@/common/icons';
 import { colors, shadows, spacing, typography, radius } from '@/design-system/tokens';
 
-export interface ToastProps {
+interface ToastProps {
   message: string;
   type: 'success' | 'error' | 'info';
   onDismiss?: () => void;

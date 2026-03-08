@@ -6,8 +6,6 @@
 
 export type QuizCharacter = 'Electra' | 'Aaron' | 'Madeleine' | 'Nosferatu/Smeemo';
 
-export type QuestionType = 'multiple-choice' | 'agree-disagree' | 'image-choice' | 'xy-axis';
-
 // Multiple Choice Question
 export interface MultipleChoiceOption {
   text: string;

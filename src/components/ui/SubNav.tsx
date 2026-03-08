@@ -1,14 +1,14 @@
 import React from 'react';
 import { colors, spacing, typography, radius } from '@/design-system/tokens';
 
-export interface SubNavTab {
+interface SubNavTab {
   id: string;
   label: string;
   count?: number;
   icon?: string;
 }
 
-export interface SubNavChip {
+interface SubNavChip {
   id: string;
   label: string;
 }

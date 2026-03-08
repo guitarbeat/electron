@@ -5,7 +5,7 @@ import {
   MAX_AUTHOR_LENGTH,
 } from '@/config/security';
 
-export interface ValidationRule {
+interface ValidationRule {
   required?: boolean;
   maxLength?: number;
   minLength?: number;
@@ -13,16 +13,16 @@ export interface ValidationRule {
   custom?: (value: string) => string | null;
 }
 
-export interface ValidationRules {
+interface ValidationRules {
   [key: string]: ValidationRule;
 }
 
-export interface ValidationResult {
+interface ValidationResult {
   isValid: boolean;
   errors: Record<string, string>;
 }
 
-export const createValidator = (rules: ValidationRules) => {
+const createValidator = (rules: ValidationRules) => {
   return (data: Record<string, string>): ValidationResult => {
     const errors = Object.entries(rules).reduce<Record<string, string>>((acc, [field, rule]) => {
       const value = data[field] || '';
@@ -74,7 +74,7 @@ export const createValidator = (rules: ValidationRules) => {
 };
 
 // Predefined validation rules
-export const commonValidationRules = {
+const commonValidationRules = {
   movieTitle: {
     required: true,
     maxLength: MAX_MOVIE_TITLE_LENGTH,
@@ -100,16 +100,6 @@ export const commonValidationRules = {
     maxLength: 500,
   } as ValidationRule,
 };
-
-// Predefined validators
-export const validateMovieTitle = createValidator({
-  title: commonValidationRules.movieTitle,
-});
-
-export const validateMessage = createValidator({
-  content: commonValidationRules.messageContent,
-  author: commonValidationRules.messageAuthor,
-});
 
 export const validatePlace = createValidator({
   name: commonValidationRules.placeName,

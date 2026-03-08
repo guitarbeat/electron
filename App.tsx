@@ -1,23 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './src/hooks/useAudio';
 import { useQuiz } from './src/hooks/useQuiz';
-import { useUser } from './src/context/UserContext';
-import { UserProvider } from './src/context/UserContext';
+import { UserProvider, useUser } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
-import { BubbleDismissProvider } from './src/context/BubbleDismissContext';
 import QuizEditor from './src/components/quiz/QuizEditor';
 import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
 import Matchmaker from './src/components/matchmaker/Matchmaker';
-import MinecraftBubble from './src/components/common/MinecraftBubble';
-import DraggableFeatureBubble from './src/components/common/DraggableFeatureBubble';
-import SnakeGame from './src/components/snake/SnakeGame';
 import FoodDropGame from './src/components/extras/FoodDropGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
-import ChromaticDotField from './src/components/effects/ChromaticDotField';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
 import { ToastProvider } from './src/context/ToastContext';
@@ -29,6 +23,11 @@ const MAIN_TABS: {
 }[] = [
   {
     id: 'queue',
+    label: 'Watchlist',
+  },
+  {
+    id: 'places',
+    label: 'Places',
     label: 'Movie Nights',
   },
   {
@@ -56,6 +55,11 @@ const AppInner: React.FC = () => {
     document.body.setAttribute('data-theme', theme);
   }, [activeTab]);
 
+  const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
+  const commandDeck = useMemo(
+    () => [
+      {
+        label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
   const commandDeck = useMemo(
     () => [
       {
@@ -64,18 +68,15 @@ const AppInner: React.FC = () => {
         action: () => setShowQuizEditor(true),
       },
       {
-        label: 'Memory Wall',
-        description: 'Open shared memories.',
+        label: 'Memories',
         action: () => setShowMemories(true),
       },
       {
-        label: 'Spin Picker',
-        description: 'Pick from the shortlist.',
+        label: 'Spin Wheel',
         action: () => setShowSpinWheel(true),
       },
       {
         label: 'Food Drop',
-        description: 'Open the extra game.',
         action: () => setShowFoodDrop(true),
       },
     ],
@@ -100,9 +101,48 @@ const AppInner: React.FC = () => {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        <ChromaticDotField className="app-dot-background" density={0.72} mode="background" />
 
         <div className="app-frame">
+          <aside className="control-rail" aria-label="Workspace navigation">
+            <div className="control-rail__panel">
+              <p className="control-rail__eyebrow">Dashboard</p>
+              <h1 className="control-rail__title">Weekend planner</h1>
+            </div>
+
+            <div className="control-rail__panel">
+              <div className="control-rail__section-head">
+                <span>User</span>
+              </div>
+              <UserSelection variant="inline" />
+              {currentUser ? <p className="control-rail__meta">{currentUser}</p> : null}
+            </div>
+          </aside>
+
+          <main id="main-content" className="workspace-stage" tabIndex={-1}>
+            <section className="workspace-header" aria-label="Current workspace overview">
+              <div>
+                <h2 className="workspace-header__title" aria-live="polite">
+                  {activeTabMeta?.label}
+                </h2>
+              </div>
+              <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
+                {MAIN_TABS.map((tab) => {
+                  const isActive = tab.id === activeTab;
+                  return (
+                    <button
+                      key={tab.id}
+                      id={`tab-${tab.id}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls={`tabpanel-${tab.id}`}
+                      className={`workspace-tabs__button${isActive ? ' is-active' : ''}`}
+                      onClick={() => handleTabChange(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             <section className="hero-board" aria-label="Current workspace overview">
               <div className="hero-board__content">
@@ -168,8 +208,7 @@ const AppInner: React.FC = () => {
                         className="command-deck__item"
                         onClick={item.action}
                       >
-                        <strong>{item.label}</strong>
-                        <span>{item.description}</span>
+                        {item.label}
                       </button>
                     ))}
                   </div>
@@ -231,50 +270,25 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <div className="floating-bubbles">
-          {quizData && currentUser ? (
-            <QuizFlow
-              quizData={quizData}
-              currentUser={currentUser}
-              onComplete={handleQuizComplete}
-              onEdit={() => setShowQuizEditor(true)}
-              isCompleted={quizCompleted}
-            />
-          ) : null}
-          {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
-          <MinecraftBubble />
-          <SnakeGame mode="floating" />
-          <DraggableFeatureBubble
-            title="Food Drop Game"
-            icon="🍔"
-            initialPosition={{ x: 300, y: 200 }}
-            onActivate={() => setShowFoodDrop(true)}
+        {quizData && currentUser ? (
+          <QuizFlow
+            quizData={quizData}
+            currentUser={currentUser}
+            onComplete={handleQuizComplete}
+            onEdit={() => setShowQuizEditor(true)}
+            isCompleted={quizCompleted}
           />
-          <DraggableFeatureBubble
-            title="Memories"
-            icon="💭"
-            initialPosition={{ x: 500, y: 400 }}
-            onActivate={() => setShowMemories(true)}
-          />
-          <DraggableFeatureBubble
-            title="Spin Wheel"
-            icon="🎡"
-            initialPosition={{ x: 600, y: 200 }}
-            onActivate={() => setShowSpinWheel(true)}
-          />
-        </div>
+        ) : null}
+        {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
       </div>
     </ThemeProvider>
   );
 };
-
 const App: React.FC = () => (
   <UserProvider>
-    <BubbleDismissProvider>
-      <ToastProvider>
-        <AppInner />
-      </ToastProvider>
-    </BubbleDismissProvider>
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   </UserProvider>
 );
 

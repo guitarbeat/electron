@@ -1,7 +1,7 @@
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { colors, radius, spacing, zIndex } from '@/design-system/tokens';
 
-export const FOCUSABLE_SELECTOR =
+const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export const trapFocusOnTab = (

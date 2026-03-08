@@ -22,9 +22,6 @@ const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 // The filename inside your Gist that contains the movie data.
 const GIST_FILENAME = 'movielist.json';
 
-// The filename for the message board data.
-const GIST_MESSAGES_FILENAME = 'messages.json';
-
 // The filename for the quiz data.
 const GIST_QUIZ_FILENAME = 'quiz.json';
 
@@ -33,12 +30,6 @@ const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
 
 // The filename for shared memory wall data.
 const GIST_MEMORIES_FILENAME = 'memories.json';
-
-// The filename for the daily spin data.
-const GIST_DAILY_SPIN_FILENAME = 'dailyspin.json';
-
-// The filename for the spin history data.
-const GIST_SPIN_HISTORY_FILENAME = 'spinhistory.json';
 
 // The filename for the matchmaker game data.
 const GIST_MATCHMAKER_FILENAME = 'matchmaker.json';
@@ -51,12 +42,9 @@ export {
   GIST_ID,
   GIST_API_URL,
   GIST_FILENAME,
-  GIST_MESSAGES_FILENAME,
   GIST_QUIZ_FILENAME,
   GIST_SUGGESTIONS_FILENAME,
   GIST_MEMORIES_FILENAME,
-  GIST_DAILY_SPIN_FILENAME,
-  GIST_SPIN_HISTORY_FILENAME,
   GIST_MATCHMAKER_FILENAME,
   GIST_PLACES_FILENAME,
 };
