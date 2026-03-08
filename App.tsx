@@ -28,6 +28,11 @@ const MAIN_TABS: {
   {
     id: 'places',
     label: 'Places',
+    label: 'Movie Nights',
+  },
+  {
+    id: 'places',
+    label: 'Date Spots',
   },
 ];
 
@@ -55,6 +60,11 @@ const AppInner: React.FC = () => {
     () => [
       {
         label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
+  const commandDeck = useMemo(
+    () => [
+      {
+        label: quizCompleted ? 'Retune Quiz' : 'Run Quiz',
+        description: quizCompleted ? 'Edit quiz settings.' : 'Start the quiz.',
         action: () => setShowQuizEditor(true),
       },
       {
@@ -133,11 +143,41 @@ const AppInner: React.FC = () => {
                     </button>
                   );
                 })}
+          <main id="main-content" className="workspace-stage" tabIndex={-1}>
+            <section className="hero-board" aria-label="Current workspace overview">
+              <div className="hero-board__content">
+                <h2 className="hero-board__title" aria-live="polite">
+                  <span key={activeTab} className="hero-board__title-word">
+                    {MAIN_TABS.find((t) => t.id === activeTab)?.label}
+                  </span>
+                </h2>
+                <div className="hero-mode-toggle" role="tablist" aria-label="Primary workspaces">
+                  {MAIN_TABS.map((tab) => {
+                    const isActive = tab.id === activeTab;
+                    return (
+                      <button
+                        key={tab.id}
+                        id={`tab-${tab.id}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`tabpanel-${tab.id}`}
+                        className={`hero-mode-toggle__button${isActive ? ' is-active' : ''}`}
+                        onClick={() => handleTabChange(tab.id)}
+                      >
+                        <span className="hero-mode-toggle__label">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </section>
 
             <div className="workspace-grid">
               <section className="workspace-surface" aria-label="Primary workspace">
+                <div style={{ padding: '1rem', marginBottom: '1rem' }}>
+                  <UserSelection variant="inline" />
+                </div>
                 {MAIN_TABS.map((tab) => {
                   const isActivePanel = tab.id === activeTab;
                   return (

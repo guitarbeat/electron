@@ -1,9 +1,6 @@
 import { isValidUrl, sanitizeInput } from '../config/security.ts';
 
-const env = (import.meta.env || {}) as Record<string, string | undefined>;
-const OMDB_PROXY_URL = env.VITE_OMDB_PROXY_URL || '';
-const OMDB_API_KEY = env.VITE_OMDB_API_KEY || '';
-const OMDB_BASE_URL = 'https://www.omdbapi.com';
+const OMDB_BASE_URL = '/api/omdb';
 
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 
@@ -12,32 +9,8 @@ const stripHtml = (value?: string | null): string | undefined => {
   return value.replace(/<[^>]*>?/gm, '');
 };
 
-const toResolvedUrl = (url: string): URL | null => {
-  if (!url) return null;
-  try {
-    return new URL(url);
-  } catch {
-    if (typeof window !== 'undefined' && window.location?.origin) {
-      try {
-        return new URL(url, window.location.origin);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }
-};
-
 const buildOmdbUrl = (params: Record<string, string>): string | null => {
-  const proxyUrl = toResolvedUrl(OMDB_PROXY_URL);
-  const usingProxy = Boolean(proxyUrl);
-  const baseUrl = usingProxy ? proxyUrl : new URL(OMDB_BASE_URL);
-
-  const url = new URL(baseUrl!.toString());
-
-  if (!usingProxy && OMDB_API_KEY) {
-    url.searchParams.set('apikey', OMDB_API_KEY);
-  }
+  const url = new URL(OMDB_BASE_URL, window.location.origin);
 
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.set(key, value);
