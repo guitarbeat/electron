@@ -4,12 +4,11 @@ import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import { useUser } from '@/context/UserContext';
 import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery';
+import { useFloatingBubbleDrag } from '@/hooks/useFloatingBubbleDrag';
 import { colors, spacing, typography } from '@/design-system/tokens';
 import { useBubbleDismiss } from '@/context/BubbleDismissContext';
 import {
   FLOATING_BUBBLE_SIZE,
-  FLOATING_DRAG_THRESHOLD,
-  clampFloatingBubblePosition,
   getFloatingBubbleBadgeStyle,
   getFloatingBubbleButtonStyle,
   getFloatingContainerStyle,
@@ -256,14 +255,6 @@ function gameStatusText(status: SnakeGameState['status']): string {
   if (status === 'paused') return 'Paused';
   if (status === 'game-over') return 'Game Over';
   return 'Playing';
-}
-
-function safeReleasePointerCapture(element: HTMLButtonElement, pointerId: number) {
-  try {
-    element.releasePointerCapture(pointerId);
-  } catch {
-    // Ignore release capture errors
-  }
 }
 
 const SnakeBoard: React.FC<{
@@ -553,20 +544,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasRecordedGameOverScore, setHasRecordedGameOverScore] = useState(false);
   const [shake, setShake] = useState(0);
-  const [bubblePosition, setBubblePosition] = useState(() => {
-    if (typeof window === 'undefined') return { x: 16, y: 16 };
-    const defaultX = 20;
-    const defaultY = window.innerHeight - FLOATING_BUBBLE_SIZE - 86;
-    return { x: defaultX, y: defaultY };
-  });
-  const [isDraggingBubble, setIsDraggingBubble] = useState(false);
-  const dragStateRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    origin: { x: number; y: number };
-  } | null>(null);
-  const didDragRef = useRef(false);
 
   const { leaderboard, recordScore, clearLeaderboard, bestScore } =
     useSnakeLeaderboard(currentUser);
@@ -574,60 +551,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
 
   const isGameVisible = isEmbedded || !isMinimized;
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  const handleBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    dragStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      origin: bubblePosition,
-    };
-    didDragRef.current = false;
-    setIsDraggingBubble(true);
-    setDismissDragging(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleBubblePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const ds = dragStateRef.current;
-    if (!ds || ds.pointerId !== event.pointerId) return;
-    const deltaX = event.clientX - ds.startX;
-    const deltaY = event.clientY - ds.startY;
-    if (
-      !didDragRef.current &&
-      (Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD || Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD)
-    ) {
-      didDragRef.current = true;
-    }
-    if (!didDragRef.current) return;
-    const newX = ds.origin.x + deltaX;
-    const newY = ds.origin.y + deltaY;
-    setBubblePosition(clampFloatingBubblePosition(newX, newY));
-    checkDismissZoneHit(newX, newY, FLOATING_BUBBLE_SIZE);
-  };
-
-  const handleBubblePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const ds = dragStateRef.current;
-    if (!ds || ds.pointerId !== event.pointerId) return;
-    const wasDragged = didDragRef.current;
-    setIsDraggingBubble(false);
-    setDismissDragging(false);
-    dragStateRef.current = null;
-    didDragRef.current = false;
-    if (
-      wasDragged &&
-      checkDismissZoneHit(bubblePosition.x, bubblePosition.y, FLOATING_BUBBLE_SIZE)
-    ) {
-      dismiss('snake');
-      safeReleasePointerCapture(event.currentTarget, event.pointerId);
-      return;
-    }
-    if (!wasDragged) {
-      handleMaximize();
-    }
-    safeReleasePointerCapture(event.currentTarget, event.pointerId);
-  };
 
   useEffect(() => {
     if (isEmbedded) {
@@ -766,6 +689,29 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
   const handleHide = useLocalToolHide({ isEmbedded, onRequestClose, setIsMinimized });
   const handleMaximize = () => setIsMinimized(false);
   const isViewportExpanded = isFullscreen || (!isEmbedded && !isMinimized);
+  const { position: bubblePosition, isDragging: isDraggingBubble, bubbleProps } =
+    useFloatingBubbleDrag({
+      initialPosition: () => {
+        if (typeof window === 'undefined') return { x: 16, y: 16 };
+        return {
+          x: 20,
+          y: window.innerHeight - FLOATING_BUBBLE_SIZE - 86,
+        };
+      },
+      onClick: handleMaximize,
+      onDragStart: () => {
+        setDismissDragging(true);
+      },
+      onDragMove: (position) => {
+        checkDismissZoneHit(position.x, position.y, FLOATING_BUBBLE_SIZE);
+      },
+      onDragEnd: ({ wasDragged, position }) => {
+        setDismissDragging(false);
+        if (wasDragged && checkDismissZoneHit(position.x, position.y, FLOATING_BUBBLE_SIZE)) {
+          dismiss('snake');
+        }
+      },
+    });
 
   const gameStatusLabel = gameStatusText(gameState.status);
 
@@ -774,10 +720,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ mode = 'floating', onRequestClose
     return (
       <button
         type="button"
-        onPointerDown={handleBubblePointerDown}
-        onPointerMove={handleBubblePointerMove}
-        onPointerUp={handleBubblePointerUp}
-        onPointerCancel={handleBubblePointerUp}
+        {...bubbleProps}
         style={{
           ...getFloatingBubbleButtonStyle({
             position: bubblePosition,
