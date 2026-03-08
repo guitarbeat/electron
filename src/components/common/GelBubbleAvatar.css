@@ -48,6 +48,18 @@
   transform-origin: center;
 }
 
+.gel-bubble--disabled {
+  pointer-events: none;
+}
+
+.gel-bubble--inline {
+  gap: 0 !important;
+}
+
+.gel-bubble--small .gel-avatar-shell {
+  filter: saturate(0.86) brightness(0.92);
+}
+
 .gel-avatar-shell {
   overflow: hidden;
 }
@@ -152,6 +164,7 @@
 
 .gel-avatar-name {
   position: relative;
+  white-space: nowrap;
 }
 
 .gel-avatar-name::before {
@@ -170,6 +183,14 @@
     transparent 100%
   );
   opacity: 0.75;
+}
+
+.gel-avatar-name--hidden {
+  visibility: hidden;
+  height: 0;
+  margin: 0;
+  font-size: 0;
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

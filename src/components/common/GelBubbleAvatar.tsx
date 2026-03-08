@@ -69,6 +69,7 @@ interface GelBubbleAvatarProps {
   hasPin: boolean;
   isHovered: boolean;
   isSmall?: boolean;
+  showName?: boolean;
   selectionState?: 'neutral' | 'active' | 'inactive';
   isSelectionAnimating?: boolean;
   size?: BubbleSize;
@@ -95,6 +96,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   hasPin,
   isHovered,
   isSmall = false,
+  showName = true,
   selectionState = 'neutral',
   isSelectionAnimating = false,
   size = 'default',
@@ -118,6 +120,18 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   const haloColor = user === 'Aaron' ? 'var(--color-tertiary)' : 'var(--color-accent)';
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
+  const bubbleClasses = [
+    'gel-bubble',
+    'y2k-avatar-bubble',
+    animationOffset ? 'gel-bubble-offset' : '',
+    `gel-bubble--${selectionState}`,
+    isSelectionAnimating ? 'is-selection-animating' : '',
+    isSmall ? 'gel-bubble--small' : '',
+    disabled ? 'gel-bubble--disabled' : '',
+    size === 'tiny' ? 'gel-bubble--inline' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const onImageClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -139,9 +153,12 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       onBlur={onBlur}
       disabled={disabled}
       aria-label={`Select ${user} as user${hasPin ? ' (PIN protected)' : ''}`}
-      className={`gel-bubble y2k-avatar-bubble ${animationOffset ? 'gel-bubble-offset' : ''} gel-bubble--${selectionState}${isSelectionAnimating ? ' is-selection-animating' : ''}`}
+      className={bubbleClasses}
       style={{
         ['--gel-accent' as string]: accentColor,
+        ['--gel-halo' as string]: haloColor,
+        ['--gel-bubble-size' as string]: sizeTokens.bubble,
+        ['--gel-name-size' as string]: sizeTokens.name,
         ['--gel-base-scale' as string]: isSmall ? 0.62 : 1,
         display: 'flex',
         flexDirection: 'column',
@@ -161,8 +178,8 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
       <div
         style={{
           position: 'relative',
-          width: sizeTokens.bubble,
-          height: sizeTokens.bubble,
+          width: 'var(--gel-bubble-size)',
+          height: 'var(--gel-bubble-size)',
           borderRadius: '50%',
           background: `
             radial-gradient(circle at 28% 22%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.15) 27%, transparent 46%),
@@ -363,9 +380,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
 
       {/* Name Label */}
       <span
+        className={`gel-avatar-name${showName ? '' : ' gel-avatar-name--hidden'}`}
         style={{
           fontFamily: 'var(--font-display)',
-          fontSize: sizeTokens.name,
+          fontSize: 'var(--gel-name-size)',
           fontWeight: 700,
           color: 'color-mix(in srgb, var(--color-text-primary) 78%, white 22%)',
           textTransform: 'uppercase',
@@ -379,7 +397,6 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           transition: 'all 0.3s ease-out',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',
         }}
-        className="gel-avatar-name"
       >
         {user}
       </span>
