@@ -220,3 +220,87 @@ This is stronger than “not currently rendered”; these models have no active 
 
 - No strong evidence of orphaned CSS selectors across the actively imported stylesheets.
 - No evidence that Google Places env wiring is stale: `VITE_GOOGLE_PLACES_API_KEY` is live through [src/hooks/usePlacesAutocomplete.ts](/Users/aaron/Documents/github/electron/src/hooks/usePlacesAutocomplete.ts#L4) and [src/components/places/PlacesMap.tsx](/Users/aaron/Documents/github/electron/src/components/places/PlacesMap.tsx#L8).
+
+## Tool-Assisted Third Pass
+
+This pass used external static-analysis tools in addition to manual verification:
+
+- `knip`
+- `depcheck`
+- `madge --orphans`
+
+`madge` produced many false positives because of the repo's aliasing and top-level app entry arrangement, so its output was treated as hints only. The findings below were added only after manual verification.
+
+### Likely unused package dependencies
+
+These came from `knip`/`depcheck` and were manually checked against imports/config:
+
+1. `@supabase/supabase-js`
+   - Present in [package.json](/Users/aaron/Documents/github/electron/package.json).
+   - Repository-wide search found no runtime imports anywhere in the app or tests.
+   - This aligns with the separate finding that [src/integrations/supabase/types.ts](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L1) is currently unconsumed.
+
+2. `matter-js`
+   - Present in [package.json](/Users/aaron/Documents/github/electron/package.json).
+   - Repository-wide search found no imports anywhere in the repo.
+
+3. `pnpm`
+   - Present as a normal dependency in [package.json](/Users/aaron/Documents/github/electron/package.json), not just as a package manager used externally.
+   - Repository-wide search found no application imports.
+   - The only meaningful references are in docs/lock metadata, which do not justify shipping it as an app dependency.
+
+### Likely unused devDependencies
+
+1. `@types/matter-js`
+   - Tracks the unused `matter-js` package and has no remaining import sites.
+
+2. `eslint-config-airbnb-typescript`
+   - Present in [package.json](/Users/aaron/Documents/github/electron/package.json).
+   - [.eslintrc.cjs](/Users/aaron/Documents/github/electron/.eslintrc.cjs#L1) extends `airbnb` and `airbnb/hooks`, but not `airbnb-typescript`.
+
+3. `playwright`
+   - Present in [package.json](/Users/aaron/Documents/github/electron/package.json).
+   - Repository-wide search found no Playwright tests, config, or runtime usage.
+
+### Additional unused exports found by tooling and manually verified
+
+These were not all captured in the earlier manual passes:
+
+1. [src/components/memories/memoryUtils.ts](/Users/aaron/Documents/github/electron/src/components/memories/memoryUtils.ts)
+   - [MAX_NOTE_LENGTH](/Users/aaron/Documents/github/electron/src/components/memories/memoryUtils.ts#L3) is exported but has no consumer outside the file.
+   - [VISIBLE_COUNT_STEP](/Users/aaron/Documents/github/electron/src/components/memories/memoryUtils.ts#L5) is exported but has no consumer outside the file.
+   - [getMovieFilterKey](/Users/aaron/Documents/github/electron/src/components/memories/memoryUtils.ts#L76) is exported but has no consumer outside the file.
+   - Several other exports in this file are live internally, so this is an export-surface problem, not a dead-file problem.
+
+2. [src/components/quiz/QuestionTemplates.ts](/Users/aaron/Documents/github/electron/src/components/quiz/QuestionTemplates.ts#L135)
+   - [getTemplate](/Users/aaron/Documents/github/electron/src/components/quiz/QuestionTemplates.ts#L135) is exported but repository-wide search found no consumer.
+
+3. [src/components/ui/Skeleton.tsx](/Users/aaron/Documents/github/electron/src/components/ui/Skeleton.tsx#L83)
+   - [SuggestionSkeleton](/Users/aaron/Documents/github/electron/src/components/ui/Skeleton.tsx#L83) is exported but repository-wide search found no consumer.
+
+4. [src/services/metadataService.ts](/Users/aaron/Documents/github/electron/src/services/metadataService.ts#L271)
+   - [searchMovies](/Users/aaron/Documents/github/electron/src/services/metadataService.ts#L271) is exported but repository-wide search found no consumer.
+
+5. [src/services/memoryService.ts](/Users/aaron/Documents/github/electron/src/services/memoryService.ts#L27)
+   - [saveMemories](/Users/aaron/Documents/github/electron/src/services/memoryService.ts#L27) is exported but repository-wide search found no consumer outside the service file itself.
+   - This is likely an internal helper that should stop being exported.
+
+6. [src/design-system/tokens.ts](/Users/aaron/Documents/github/electron/src/design-system/tokens.ts#L264)
+   - [layout](/Users/aaron/Documents/github/electron/src/design-system/tokens.ts#L264) is exported but repository-wide search found no consumer.
+   - The similarly named `.workspace-layout` CSS classes in [src/styles/global.css](/Users/aaron/Documents/github/electron/src/styles/global.css#L2064) are unrelated.
+
+### Additional parked backend / scaffold code
+
+1. [supabase/functions/gemini-proxy/index.ts](/Users/aaron/Documents/github/electron/supabase/functions/gemini-proxy/index.ts#L1)
+   - `knip` flagged this file as unused.
+   - Repository-wide search found no local references to `gemini-proxy`, no calls to a `/functions/v1/...` endpoint, and no documentation links to this function in the app code.
+   - This does not prove the function is undeployed, but it does show the repo’s frontend currently has no direct dependency on it.
+
+2. [supabase/functions/omdb-proxy/deno.json](/Users/aaron/Documents/github/electron/supabase/functions/omdb-proxy/deno.json#L1)
+   - Already noted in the second pass, but tool output reinforces that this folder is inert scaffold with no implementation.
+
+### Tooling false positives worth ignoring
+
+- `knip` flagged [src/hooks/useMovies.ts](/Users/aaron/Documents/github/electron/src/hooks/useMovies.ts), [src/hooks/usePlaces.ts](/Users/aaron/Documents/github/electron/src/hooks/usePlaces.ts), [src/hooks/useSuggestions.ts](/Users/aaron/Documents/github/electron/src/hooks/useSuggestions.ts), [src/hooks/useMatchmaker.ts](/Users/aaron/Documents/github/electron/src/hooks/useMatchmaker.ts), [src/utils/concurrency.ts](/Users/aaron/Documents/github/electron/src/utils/concurrency.ts), and several live UI files.
+- Manual verification showed these are used through alias-based imports or through files that `madge`/`knip` did not resolve correctly in this setup.
+- They should not be removed based on tool output alone.
