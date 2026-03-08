@@ -151,3 +151,72 @@ These were checked and should not be removed based on this audit:
 ## Caveat
 
 This is a static audit, not a runtime trace. If some of this code is intentionally parked for future reintroduction, it is still unused in the current application state and should at least be marked or moved so it stops obscuring the live surface area.
+
+## Second-Pass Findings
+
+This section focuses on areas that are easy to miss in a first unused-export sweep: env drift, stale config constants, dormant type models, and parked scaffolding.
+
+### Stale environment/config entries
+
+1. [.env.example](/Users/aaron/Documents/github/electron/.env.example#L15)
+   - `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are documented as required at lines 15-16.
+   - Repository-wide search found no runtime references to either key in `src/`, `App.tsx`, tests, or Supabase function code.
+
+2. [.env.example](/Users/aaron/Documents/github/electron/.env.example#L19)
+   - `VITE_MINECRAFT_SERVER_ADDRESS` and `VITE_MINECRAFT_SERVER_PORT` are only consumed by the dead [src/components/common/MinecraftBubble.tsx](/Users/aaron/Documents/github/electron/src/components/common/MinecraftBubble.tsx#L16).
+   - Once `MinecraftBubble` is removed, these env vars become stale docs.
+
+3. [.env.example](/Users/aaron/Documents/github/electron/.env.example#L21)
+   - `VITE_MINECRAFT_WEB_INTERFACE_PORT` is documented at line 21.
+   - Repository-wide search found no references anywhere in the repo.
+
+### Missed dead constants in live config
+
+1. [src/config/gistConfig.ts](/Users/aaron/Documents/github/electron/src/config/gistConfig.ts#L26)
+   - `GIST_MESSAGES_FILENAME` is declared at line 26 and re-exported at line 54.
+   - Repository-wide search found no consumer outside `gistConfig.ts`.
+
+2. [src/config/gistConfig.ts](/Users/aaron/Documents/github/electron/src/config/gistConfig.ts#L38)
+   - `GIST_DAILY_SPIN_FILENAME` is declared at line 38 and re-exported at line 58.
+   - Repository-wide search found no consumer outside `gistConfig.ts`.
+
+3. [src/config/gistConfig.ts](/Users/aaron/Documents/github/electron/src/config/gistConfig.ts#L41)
+   - `GIST_SPIN_HISTORY_FILENAME` is declared at line 41 and re-exported at line 59.
+   - Repository-wide search found no consumer outside `gistConfig.ts`.
+
+`GIST_MATCHMAKER_FILENAME` stays live via [src/hooks/useMatchmaker.ts](/Users/aaron/Documents/github/electron/src/hooks/useMatchmaker.ts#L4), so it should not be grouped with the dead constants above.
+
+### Dormant domain models in shared types
+
+These type models are defined in [src/types.ts](/Users/aaron/Documents/github/electron/src/types.ts), but repository-wide search found no consumers outside the type file itself:
+
+1. [Message](/Users/aaron/Documents/github/electron/src/types.ts#L33)
+2. [DailySpin](/Users/aaron/Documents/github/electron/src/types.ts#L41)
+3. [SpinEntry](/Users/aaron/Documents/github/electron/src/types.ts#L49)
+4. [SpinHistory](/Users/aaron/Documents/github/electron/src/types.ts#L59)
+
+This is stronger than “not currently rendered”; these models have no active code paths at all.
+
+### Unconsumed generated Supabase types
+
+1. [src/integrations/supabase/types.ts](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L1)
+   - The file exports a large generated type surface beginning with `Json` and `Database` at lines 1-3.
+   - It also exports helper aliases like [Tables](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L683), [TablesInsert](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L710), [TablesUpdate](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L735), [Enums](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L760), [CompositeTypes](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L777), and [Constants](/Users/aaron/Documents/github/electron/src/integrations/supabase/types.ts#L794).
+   - Repository-wide search found no imports or usages of these exports anywhere else in the repo.
+   - This looks like generated scaffolding that is currently unintegrated into the app.
+
+### Parked Supabase/edge-function scaffolding
+
+1. [supabase/functions/omdb-proxy/deno.json](/Users/aaron/Documents/github/electron/supabase/functions/omdb-proxy/deno.json#L1)
+   - The folder contains only `deno.json`; there is no `index.ts` or other function implementation.
+   - Repository-wide search found no references to `omdb-proxy`.
+   - This is scaffold residue, not executable code.
+
+2. [supabase/config.toml](/Users/aaron/Documents/github/electron/supabase/config.toml#L1)
+   - The file only contains `project_id`.
+   - That is deployment metadata rather than application code, so it is not “dead code”, but it reinforces that the Supabase setup is mostly parked scaffolding in this repo state.
+
+### What the second pass did not find
+
+- No strong evidence of orphaned CSS selectors across the actively imported stylesheets.
+- No evidence that Google Places env wiring is stale: `VITE_GOOGLE_PLACES_API_KEY` is live through [src/hooks/usePlacesAutocomplete.ts](/Users/aaron/Documents/github/electron/src/hooks/usePlacesAutocomplete.ts#L4) and [src/components/places/PlacesMap.tsx](/Users/aaron/Documents/github/electron/src/components/places/PlacesMap.tsx#L8).
