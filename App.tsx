@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './src/hooks/useAudio';
-import { breakpoints, useMediaQuery } from './src/hooks/useMediaQuery';
 import { useQuiz } from './src/hooks/useQuiz';
 import { useUser } from './src/context/UserContext';
 import { UserProvider } from './src/context/UserContext';
@@ -21,20 +20,44 @@ import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPan
 import ChromaticDotField from './src/components/effects/ChromaticDotField';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
-import TabBar from './src/components/ui/TabBar';
 import { ToastProvider } from './src/context/ToastContext';
 import './App.css';
 
-const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
-  { id: 'queue', label: 'Movie Nights', icon: '🎬' },
-  { id: 'places', label: 'Date Spots', icon: '📍' },
+const MAIN_TABS: {
+  id: MainTab;
+  label: string;
+  icon: string;
+  eyebrow: string;
+  headline: string;
+  description: string;
+  detail: string;
+}[] = [
+  {
+    id: 'queue',
+    label: 'Movie Nights',
+    icon: '01',
+    eyebrow: 'Screening Room',
+    headline: 'Plan the next watch night.',
+    description:
+      'Search, shortlist, review suggestions, and keep the watchlist in one place.',
+    detail: 'Watchlist, suggestions, and progress.',
+  },
+  {
+    id: 'places',
+    label: 'Date Spots',
+    icon: '02',
+    eyebrow: 'City Atlas',
+    headline: 'Plan the next outing.',
+    description:
+      'Map future spots, track visits, and keep place planning separate from the watchlist.',
+    detail: 'Map, wishlist, and visited history.',
+  },
 ];
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
-  const isMobile = useMediaQuery(breakpoints.sm);
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
@@ -50,28 +73,75 @@ const AppInner: React.FC = () => {
     document.body.setAttribute('data-theme', theme);
   }, [activeTab]);
 
+  const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
+  const todayLabel = useMemo(() => {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }).format(new Date());
+  }, []);
+
+  const commandDeck = useMemo(
+    () => [
+      {
+        label: quizCompleted ? 'Retune Quiz' : 'Run Quiz',
+        description: quizCompleted
+          ? 'Edit quiz settings.'
+          : 'Start the quiz.',
+        action: () => setShowQuizEditor(true),
+      },
+      {
+        label: 'Memory Wall',
+        description: 'Open shared memories.',
+        action: () => setShowMemories(true),
+      },
+      {
+        label: 'Spin Picker',
+        description: 'Pick from the shortlist.',
+        action: () => setShowSpinWheel(true),
+      },
+      {
+        label: 'Food Drop',
+        description: 'Open the extra game.',
+        action: () => setShowFoodDrop(true),
+      },
+    ],
+    [quizCompleted]
+  );
+
+  const signalCards = useMemo(
+    () => [
+      {
+        label: 'Mode',
+        value: activeTabMeta?.label ?? 'Movie Nights',
+        note: activeTabMeta?.eyebrow ?? 'Screening Room',
+      },
+      {
+        label: 'Pilot',
+        value: currentUser ?? 'Choose a user',
+        note: currentUser ? 'Active persona loaded' : 'Workspace not assigned',
+      },
+      {
+        label: 'Quiz',
+        value: quizCompleted ? 'Completed' : 'Pending',
+        note: quizData ? 'Interactive layer ready' : 'No quiz data detected',
+      },
+    ],
+    [activeTabMeta, currentUser, quizCompleted, quizData]
+  );
+
   const handleTabChange = (tab: MainTab) => {
     if (tab !== activeTab) {
       playSwitch();
+      setActiveTab(tab);
     }
-    setActiveTab(tab);
   };
 
   const handleQuizComplete = () => {
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
   };
-
-  const handleOpenQuizEditor = () => {
-    setShowQuizEditor(true);
-  };
-
-  const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
-  const activeHeroLabel = activeTabMeta?.label || MAIN_TABS[0].label;
-  const activeTabDescription =
-    activeTab === 'queue'
-      ? 'Curate tonight’s lineup, capture memories, and run matchmaker in one place.'
-      : 'Pin future date spots, compare ideas, and build your next city adventure.';
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -81,62 +151,160 @@ const AppInner: React.FC = () => {
         </a>
         <ChromaticDotField className="app-dot-background" density={0.72} mode="background" />
 
-        <header className="app-header">
-          <div className={`app-header-shell${isMobile ? ' is-mobile' : ''}`}>
-            <div className="app-header-inner app-header-inner--minimal">
-              <div className="app-header-profile">
-                <UserSelection variant="inline" />
+        <div className="app-frame">
+          <aside className="control-rail" aria-label="Workspace navigation">
+            <div className="control-rail__panel control-rail__brand">
+              <p className="control-rail__eyebrow">Weekend OS</p>
+              <h1 className="control-rail__title">Shared planning dashboard.</h1>
+              <p className="control-rail__copy">Primary work stays centered. Tools stay secondary.</p>
+            </div>
+
+            <div className="control-rail__panel">
+              <div className="control-rail__section-head">
+                <span>Profiles</span>
+                <span>{todayLabel}</span>
               </div>
+              <UserSelection variant="inline" />
             </div>
 
-            <div className="app-header-nav-row">
-              <TabBar tabs={MAIN_TABS} activeTab={activeTab} onChange={handleTabChange} />
-            </div>
-          </div>
-        </header>
+            <section className="control-rail__panel signal-grid" aria-label="Workspace signals">
+              {signalCards.map((card) => (
+                <article key={card.label} className="signal-card">
+                  <span className="signal-card__label">{card.label}</span>
+                  <strong className="signal-card__value">{card.value}</strong>
+                  <span className="signal-card__note">{card.note}</span>
+                </article>
+              ))}
+            </section>
+          </aside>
 
-        <main
-          id="main-content"
-          className="main-container"
-          tabIndex={-1}
-          aria-label={activeTabMeta?.label || 'Main workspace'}
-        >
-          <section className="home-hero" aria-label="Home view selector">
-            <div className="home-hero__content">
-              <p className="home-hero__eyebrow">Weekend Control Room</p>
-              <h2 className="home-hero__title" aria-live="polite">
-                <span
-                  key={activeTab}
-                  className="home-hero__word home-hero__word--animated is-active"
-                >
-                  {activeHeroLabel}
-                </span>
-              </h2>
-              <p className="home-hero__subtitle">{activeTabDescription}</p>
+          <main id="main-content" className="workspace-stage" tabIndex={-1}>
+            <section className="hero-board" aria-label="Current workspace overview">
+              <div className="hero-board__content">
+                <p className="hero-board__eyebrow">{activeTabMeta?.eyebrow}</p>
+                <h2 className="hero-board__title" aria-live="polite">
+                  <span key={activeTab} className="hero-board__title-word">
+                    {activeTabMeta?.label}
+                  </span>
+                </h2>
+                <div className="hero-mode-toggle" role="tablist" aria-label="Primary workspaces">
+                  {MAIN_TABS.map((tab) => {
+                    const isActive = tab.id === activeTab;
+                    return (
+                      <button
+                        key={tab.id}
+                        id={`tab-${tab.id}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`tabpanel-${tab.id}`}
+                        className={`hero-mode-toggle__button${isActive ? ' is-active' : ''}`}
+                        onClick={() => handleTabChange(tab.id)}
+                      >
+                        <span className="hero-mode-toggle__index">{tab.icon}</span>
+                        <span className="hero-mode-toggle__label">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="hero-board__kicker">{activeTabMeta?.headline}</p>
+                <p className="hero-board__description">{activeTabMeta?.description}</p>
 
-              <div className="home-hero__chips" aria-label="Current mode details">
-                <span className="home-chip">Live Mode: {activeTabMeta?.label}</span>
-                {currentUser ? <span className="home-chip">Pilot: {currentUser}</span> : null}
+                <div className="hero-board__tags" aria-label="Workspace context">
+                  <span className="hero-tag">Active mode: {activeTabMeta?.label}</span>
+                  <span className="hero-tag">Date: {todayLabel}</span>
+                  <span className="hero-tag">
+                    Quiz: {quizCompleted ? 'calibrated' : 'needs setup'}
+                  </span>
+                </div>
               </div>
-            </div>
-          </section>
 
-          {MAIN_TABS.map((tab) => {
-            const isActivePanel = tab.id === activeTab;
-            return (
-              <section
-                key={tab.id}
-                id={`tabpanel-${tab.id}`}
-                role="tabpanel"
-                aria-labelledby={`tab-${tab.id}`}
-                hidden={!isActivePanel}
-                className="tab-panel"
-              >
-                {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
+                <div className="hero-board__accent">
+                <div className="accent-panel accent-panel--primary">
+                  <span className="accent-panel__label">Primary</span>
+                  <strong className="accent-panel__value">Focused workspace</strong>
+                  <p className="accent-panel__copy">The main list or map stays in the center panel.</p>
+                </div>
+                <div className="accent-panel accent-panel--secondary">
+                  <span className="accent-panel__label">Secondary</span>
+                  <strong className="accent-panel__value">Tool dock</strong>
+                  <p className="accent-panel__copy">Extra actions stay available without competing for space.</p>
+                </div>
+              </div>
+            </section>
+
+            <div className="workspace-grid">
+              <section className="workspace-surface" aria-label="Primary workspace">
+                {MAIN_TABS.map((tab) => {
+                  const isActivePanel = tab.id === activeTab;
+                  return (
+                    <section
+                      key={tab.id}
+                      id={`tabpanel-${tab.id}`}
+                      role="tabpanel"
+                      aria-labelledby={`tab-${tab.id}`}
+                      hidden={!isActivePanel}
+                      className="tab-panel"
+                    >
+                      {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
+                    </section>
+                  );
+                })}
               </section>
-            );
-          })}
-        </main>
+
+              <aside className="support-rail" aria-label="Workspace tools and actions">
+                <section className="support-card">
+                  <div className="support-card__head">
+                    <span>Command Deck</span>
+                    <span>Fast actions</span>
+                  </div>
+                  <div className="command-deck">
+                    {commandDeck.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        className="command-deck__item"
+                        onClick={item.action}
+                      >
+                        <strong>{item.label}</strong>
+                        <span>{item.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="support-card">
+                  <div className="support-card__head">
+                    <span>Organization</span>
+                    <span>Why this shell</span>
+                  </div>
+                  <div className="note-stack">
+                    <article className="note-stack__item">
+                      <strong>Primary stage</strong>
+                      <p>The active list or map stays in the center.</p>
+                    </article>
+                    <article className="note-stack__item">
+                      <strong>Separated tools</strong>
+                      <p>Support actions live in the dock and side rail.</p>
+                    </article>
+                    <article className="note-stack__item">
+                      <strong>Clear modes</strong>
+                      <p>Each workspace keeps its own context.</p>
+                    </article>
+                  </div>
+                </section>
+              </aside>
+            </div>
+          </main>
+        </div>
+
+        <div className="tool-dock" aria-label="Quick launch tools">
+          {commandDeck.map((item) => (
+            <button key={item.label} type="button" className="tool-dock__button" onClick={item.action}>
+              {item.label}
+            </button>
+          ))}
+        </div>
 
         <MinigameModal
           isOpen={showQuizEditor}
@@ -196,7 +364,7 @@ const AppInner: React.FC = () => {
               quizData={quizData}
               currentUser={currentUser}
               onComplete={handleQuizComplete}
-              onEdit={handleOpenQuizEditor}
+              onEdit={() => setShowQuizEditor(true)}
               isCompleted={quizCompleted}
             />
           ) : null}

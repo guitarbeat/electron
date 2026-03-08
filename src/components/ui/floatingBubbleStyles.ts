@@ -1,5 +1,6 @@
 export const FLOATING_BUBBLE_SIZE = 60;
 export const FLOATING_BUBBLE_EDGE_MARGIN = 16;
+export const FLOATING_BUBBLE_PEEK_OFFSET = 18;
 export const FLOATING_DRAG_THRESHOLD = 5;
 
 export const clampFloatingBubblePosition = (x: number, y: number) => {
@@ -11,6 +12,21 @@ export const clampFloatingBubblePosition = (x: number, y: number) => {
   return {
     x: Math.max(FLOATING_BUBBLE_EDGE_MARGIN, Math.min(x, maxX)),
     y: Math.max(FLOATING_BUBBLE_EDGE_MARGIN, Math.min(y, maxY)),
+  };
+};
+
+export const snapFloatingBubblePosition = (x: number, y: number) => {
+  if (typeof window === 'undefined') return { x, y };
+
+  const clamped = clampFloatingBubblePosition(x, y);
+  const midpoint = window.innerWidth / 2;
+  const bubbleCenter = clamped.x + FLOATING_BUBBLE_SIZE / 2;
+  const rightEdgeX = window.innerWidth - FLOATING_BUBBLE_SIZE + FLOATING_BUBBLE_PEEK_OFFSET;
+  const leftEdgeX = -FLOATING_BUBBLE_PEEK_OFFSET;
+
+  return {
+    x: bubbleCenter >= midpoint ? rightEdgeX : leftEdgeX,
+    y: clamped.y,
   };
 };
 
@@ -59,11 +75,15 @@ export function getFloatingBubbleButtonStyle(
     color: color || 'white',
     fontSize: fontSize || '20px',
     cursor: isDragging ? 'grabbing' : 'grab',
-    transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease',
+    transition: isDragging
+      ? 'none'
+      : 'left 0.35s cubic-bezier(0.22, 1, 0.36, 1), top 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.2s ease, box-shadow 0.2s ease',
     boxShadow: isDragging ? '0 8px 24px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    userSelect: 'none' as const,
+    touchAction: 'none' as const,
     zIndex: 1000,
     transform: isDragging ? 'scale(0.95)' : 'scale(1)',
   };
