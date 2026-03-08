@@ -3,7 +3,7 @@ import type { Movie } from '@/types';
 import Card from '@/ui/Card';
 import { colors, radius, spacing, typography, shadows } from '@/design-system/tokens';
 
-export interface SwipeCardHandle {
+interface SwipeCardHandle {
   swipe: (direction: 'left' | 'right') => void;
 }
 

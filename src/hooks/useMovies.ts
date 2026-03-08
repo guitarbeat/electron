@@ -102,7 +102,7 @@ const saveMovies = async (movies: Movie[]): Promise<void> => {
 };
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
-export const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
+const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
   if (posterUrl && isValidUrl(posterUrl)) result.posterUrl = posterUrl;

@@ -1,12 +1,11 @@
 import type { Movie, SharedMemory } from '@/types';
 
-export const MAX_NOTE_LENGTH = 280;
+const MAX_NOTE_LENGTH = 280;
 export const INITIAL_VISIBLE_COUNT = 6;
-export const VISIBLE_COUNT_STEP = 6;
+const VISIBLE_COUNT_STEP = 6;
 export const ALL_MOVIES_FILTER = 'all';
 
 export type MemorySortMode = 'newest' | 'oldest';
-export type MemoryMention = '@Aaron' | '@Electra';
 export const MEMORY_MENTION_REGEX = /(@Aaron|@Electra)\b/gi;
 
 interface StickyNoteTheme {
@@ -19,12 +18,12 @@ interface StickyNoteTheme {
   pin: string;
 }
 
-export interface MovieMemorySummary {
+interface MovieMemorySummary {
   count: number;
   latest?: SharedMemory;
 }
 
-export const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
+const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
   {
     background: 'linear-gradient(165deg, #fff4a6 0%, #f9e07a 72%, #efd46a 100%)',
     border: '#d0b45b',
@@ -63,18 +62,15 @@ export const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
   },
 ];
 
-export const STICKY_NOTE_ROTATIONS = [-2.3, 1.8, -1.2, 2.4, -0.7, 1.1, -1.8, 2.7];
+const STICKY_NOTE_ROTATIONS = [-2.3, 1.8, -1.2, 2.4, -0.7, 1.1, -1.8, 2.7];
 
-export const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
+const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
 
-export const getFallbackMovieKey = (movieTitle: string): string =>
+const getFallbackMovieKey = (movieTitle: string): string =>
   `title:${normalizeMovieTitle(movieTitle)}`;
 
-export const getMemoryMovieKey = (memory: SharedMemory): string =>
+const getMemoryMovieKey = (memory: SharedMemory): string =>
   memory.movieId || getFallbackMovieKey(memory.movieTitle);
-
-export const getMovieFilterKey = (movie: Movie): string =>
-  movie.id || getFallbackMovieKey(movie.title);
 
 const getMemorySeed = (memory: SharedMemory): number => {
   const source = `${memory.id}|${memory.movieTitle}|${memory.author}|${memory.createdAt}`;
