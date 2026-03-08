@@ -3,15 +3,8 @@ import { createPortal } from 'react-dom';
 import { User } from '@/types';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import {
-  colors,
-  spacing,
-  typography,
-  zIndex,
-  radius,
-  motion,
-  shadows,
-} from '@/design-system/tokens';
+import { getModalOverlayStyle } from '@/ui/modalPrimitives';
+import { colors, spacing, typography, radius, motion, shadows } from '@/design-system/tokens';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -76,87 +69,98 @@ const PinDialog: React.FC<PinDialogProps> = ({
     }
   }, [isOpen, onCancel]);
 
+  const triggerError = (message: string, reset?: () => void) => {
+    setError(message);
+    setIsShaking(true);
+    reset?.();
+  };
+
+  const validatePinLength = (value: string): boolean => {
+    if (value.length !== PIN_LENGTH) {
+      triggerError(`PIN must be ${PIN_LENGTH} digits`);
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
       if (mode === 'enter') {
-        if (pin.length !== PIN_LENGTH) {
-          setError('PIN must be 4 digits');
-          setIsShaking(true);
+        if (!validatePinLength(pin)) {
           return;
         }
         const success = await onSubmit(pin);
         if (!success) {
-          setError('Incorrect PIN');
-          setIsShaking(true);
-          setPin('');
+          triggerError('Incorrect PIN', () => setPin(''));
         }
-      } else if (mode === 'set') {
+        return;
+      }
+
+      if (mode === 'set') {
         if (step === 'new') {
-          if (newPin.length !== PIN_LENGTH) {
-            setError('PIN must be 4 digits');
-            setIsShaking(true);
+          if (!validatePinLength(newPin)) {
             return;
           }
           setStep('confirm');
           setError('');
-        } else if (step === 'confirm') {
+          return;
+        }
+
+        if (step === 'confirm') {
           if (confirmPin !== newPin) {
-            setError('PINs do not match');
-            setIsShaking(true);
-            setConfirmPin('');
+            triggerError('PINs do not match', () => setConfirmPin(''));
             return;
           }
           const success = await onSubmit(newPin);
           if (!success) {
-            setError('Unable to save PIN. Please try again.');
-            setIsShaking(true);
+            triggerError('Unable to save PIN. Please try again.');
           }
+          return;
         }
-      } else if (mode === 'change') {
-        if (step === 'current') {
-          if (pin.length !== PIN_LENGTH) {
-            setError('PIN must be 4 digits');
-            setIsShaking(true);
-            return;
-          }
-          const success = await onSubmit(pin);
-          if (!success) {
-            setError('Incorrect current PIN');
-            setIsShaking(true);
-            setPin('');
-            return;
-          }
-          setStep('new');
-          setError('');
-        } else if (step === 'new') {
-          if (newPin.length !== PIN_LENGTH) {
-            setError('PIN must be 4 digits');
-            setIsShaking(true);
-            return;
-          }
-          setStep('confirm');
-          setError('');
-        } else if (step === 'confirm') {
-          if (confirmPin !== newPin) {
-            setError('PINs do not match');
-            setIsShaking(true);
-            setConfirmPin('');
-            return;
-          }
-          const success = await onSubmit(pin, newPin);
-          if (!success) {
-            setError('Unable to update PIN. Please try again.');
-            setIsShaking(true);
-          }
+      }
+
+      if (mode !== 'change') {
+        return;
+      }
+
+      if (step === 'current') {
+        if (!validatePinLength(pin)) {
+          return;
         }
+        const success = await onSubmit(pin);
+        if (!success) {
+          triggerError('Incorrect current PIN', () => setPin(''));
+          return;
+        }
+        setStep('new');
+        setError('');
+        return;
+      }
+
+      if (step === 'new') {
+        if (!validatePinLength(newPin)) {
+          return;
+        }
+        setStep('confirm');
+        setError('');
+        return;
+      }
+
+      if (confirmPin !== newPin) {
+        triggerError('PINs do not match', () => setConfirmPin(''));
+        return;
+      }
+
+      const success = await onSubmit(pin, newPin);
+      if (!success) {
+        triggerError('Unable to update PIN. Please try again.');
       }
     } catch (submitError) {
       console.error('PIN submit failed:', submitError);
-      setError('Unable to save PIN. Please try again.');
-      setIsShaking(true);
+      triggerError('Unable to save PIN. Please try again.');
     }
   };
 
@@ -218,23 +222,15 @@ const PinDialog: React.FC<PinDialogProps> = ({
     return setConfirmPin;
   };
 
+  const currentValue = getCurrentValue();
+
   if (!isOpen) return null;
 
   return createPortal(
     <div
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.15)', // Very subtle overlay
+        ...getModalOverlayStyle('rgba(0, 0, 0, 0.15)'), // Very subtle overlay
         backdropFilter: 'none',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: zIndex.modal,
-        padding: spacing.md,
         transition: 'all 0.3s ease',
       }}
       onClick={onCancel}
@@ -300,8 +296,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 }}
               >
                 {Array.from({ length: PIN_LENGTH }).map((_, i) => {
-                  const val = getCurrentValue()[i];
-                  const isActive = getCurrentValue().length === i;
+                  const val = currentValue[i];
+                  const isActive = currentValue.length === i;
                   return (
                     <div
                       key={i}
@@ -389,8 +385,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 type="password"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                maxLength={4}
-                value={getCurrentValue()}
+                maxLength={PIN_LENGTH}
+                value={currentValue}
                 onChange={(e) => handlePinInput(e.target.value, getCurrentSetter())}
                 style={{
                   position: 'absolute',
@@ -432,12 +428,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 variant="primary"
                 size="md" // Smaller button
                 isLoading={isLoading}
-                disabled={getCurrentValue().length !== 4}
+                disabled={currentValue.length !== PIN_LENGTH}
                 style={{
                   width: '100%',
                   fontSize: typography.fontSize.base,
                   borderRadius: radius.lg,
-                  boxShadow: getCurrentValue().length === 4 && !isLoading ? shadows.glow : 'none',
+                  boxShadow:
+                    currentValue.length === PIN_LENGTH && !isLoading ? shadows.glow : 'none',
                 }}
               >
                 {mode === 'enter' ? 'Unlock' : step === 'confirm' ? 'Save' : 'Next'}
