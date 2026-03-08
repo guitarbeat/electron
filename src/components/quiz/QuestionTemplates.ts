@@ -8,7 +8,7 @@ import { QuizQuestion, QuizCharacter } from './types';
 
 export type TemplateType = 'personality' | 'agree-disagree' | 'image-grid' | 'xy-axis' | 'blank';
 
-export interface QuestionTemplate {
+interface QuestionTemplate {
   id: TemplateType;
   name: string;
   description: string;
@@ -131,7 +131,3 @@ export const questionTemplates: QuestionTemplate[] = [
     }),
   },
 ];
-
-export const getTemplate = (id: TemplateType): QuestionTemplate | undefined => {
-  return questionTemplates.find((t) => t.id === id);
-};

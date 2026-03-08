@@ -16,11 +16,8 @@
     "vercel:env": "vercel env pull .env.local"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.97.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "matter-js": "^0.20.0",
-    "pnpm": "^10.30.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
@@ -30,14 +27,12 @@
     ]
   },
   "devDependencies": {
-    "@types/matter-js": "^0.20.2",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -45,7 +40,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.26",
-    "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vercel": "^50.23.2",

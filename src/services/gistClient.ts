@@ -1,10 +1,10 @@
 import { GIST_API_URL } from '../config/gistConfig.ts';
 
-export interface GistFile {
+interface GistFile {
   content?: string;
 }
 
-export interface GistPayload {
+interface GistPayload {
   files: Record<string, GistFile | undefined>;
 }
 
