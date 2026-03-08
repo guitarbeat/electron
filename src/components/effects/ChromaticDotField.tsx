@@ -151,7 +151,10 @@ const ChromaticDotField: React.FC<ChromaticDotFieldProps> = ({
       const centerY = height / 2;
       const scaleBase = Math.min(width / 120, height / 72);
       const radius = Math.max(0.68, scaleBase * 0.82);
-      const pointerRadius = Math.max(120, Math.min(width, height) * (isBackgroundMode ? 0.34 : 0.28));
+      const pointerRadius = Math.max(
+        120,
+        Math.min(width, height) * (isBackgroundMode ? 0.34 : 0.28)
+      );
 
       for (let index = 0; index < points.length; index += 1) {
         const point = points[index];
