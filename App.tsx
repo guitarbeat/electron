@@ -21,23 +21,14 @@ import './App.css';
 const MAIN_TABS: {
   id: MainTab;
   label: string;
-  eyebrow: string;
-  description: string;
-  detail: string;
 }[] = [
   {
     id: 'queue',
     label: 'Watchlist',
-    eyebrow: 'Movies',
-    description: 'Search, shortlist, and track progress.',
-    detail: 'Suggestions and progress',
   },
   {
     id: 'places',
     label: 'Places',
-    eyebrow: 'Outings',
-    description: 'Save places to try and places already visited.',
-    detail: 'Wishlist and visits',
   },
 ];
 
@@ -61,34 +52,22 @@ const AppInner: React.FC = () => {
   }, [activeTab]);
 
   const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
-  const todayLabel = useMemo(() => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
-    }).format(new Date());
-  }, []);
-
   const commandDeck = useMemo(
     () => [
       {
         label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
-        description: quizCompleted ? 'Adjust quiz settings.' : 'Set preferences.',
         action: () => setShowQuizEditor(true),
       },
       {
         label: 'Memories',
-        description: 'Open shared notes and memories.',
         action: () => setShowMemories(true),
       },
       {
         label: 'Spin Wheel',
-        description: 'Pick from the shortlist.',
         action: () => setShowSpinWheel(true),
       },
       {
         label: 'Food Drop',
-        description: 'Open the minigame.',
         action: () => setShowFoodDrop(true),
       },
     ],
@@ -124,7 +103,6 @@ const AppInner: React.FC = () => {
             <div className="control-rail__panel">
               <div className="control-rail__section-head">
                 <span>User</span>
-                <span>{todayLabel}</span>
               </div>
               <UserSelection variant="inline" />
               {currentUser ? <p className="control-rail__meta">{currentUser}</p> : null}
@@ -134,11 +112,9 @@ const AppInner: React.FC = () => {
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             <section className="workspace-header" aria-label="Current workspace overview">
               <div>
-                <p className="workspace-header__eyebrow">{activeTabMeta?.eyebrow}</p>
                 <h2 className="workspace-header__title" aria-live="polite">
                   {activeTabMeta?.label}
                 </h2>
-                <p className="workspace-header__description">{activeTabMeta?.description}</p>
               </div>
               <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
                 {MAIN_TABS.map((tab) => {
@@ -184,7 +160,6 @@ const AppInner: React.FC = () => {
                 <section className="support-card">
                   <div className="support-card__head">
                     <span>Actions</span>
-                    <span>{activeTabMeta?.detail}</span>
                   </div>
                   <div className="command-deck">
                     {commandDeck.map((item) => (
@@ -194,8 +169,7 @@ const AppInner: React.FC = () => {
                         className="command-deck__item"
                         onClick={item.action}
                       >
-                        <strong>{item.label}</strong>
-                        <span>{item.description}</span>
+                        {item.label}
                       </button>
                     ))}
                   </div>
