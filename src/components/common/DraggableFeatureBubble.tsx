@@ -4,6 +4,7 @@ import {
   FLOATING_DRAG_THRESHOLD,
   clampFloatingBubblePosition,
   getFloatingBubbleButtonStyle,
+  snapFloatingBubblePosition,
 } from '@/ui/floatingBubbleStyles';
 
 interface DraggableFeatureBubbleProps {
@@ -15,6 +16,7 @@ interface DraggableFeatureBubbleProps {
 }
 
 interface DragState {
+  pointerId: number;
   startX: number;
   startY: number;
   offsetX: number;
@@ -29,16 +31,20 @@ const DraggableFeatureBubble: React.FC<DraggableFeatureBubbleProps> = ({
   onActivate,
 }) => {
   const { showToast } = useToast();
-  const [position, setPosition] = useState(initialPosition);
+  const [position, setPosition] = useState(() =>
+    clampFloatingBubblePosition(initialPosition.x, initialPosition.y)
+  );
   const [isDragging, setIsDragging] = useState(false);
 
   const dragRef = useRef<DragState | null>(null);
   const hasDraggedRef = useRef(false);
 
-  const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const rect = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
+      pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       offsetX: event.clientX - rect.left,
@@ -46,34 +52,39 @@ const DraggableFeatureBubble: React.FC<DraggableFeatureBubbleProps> = ({
     };
     hasDraggedRef.current = false;
     setIsDragging(true);
+  };
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const drag = dragRef.current;
-      if (!drag) return;
+  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
 
-      const deltaX = moveEvent.clientX - drag.startX;
-      const deltaY = moveEvent.clientY - drag.startY;
-      if (
-        Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD ||
-        Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD
-      ) {
-        hasDraggedRef.current = true;
-      }
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (
+      Math.abs(deltaX) > FLOATING_DRAG_THRESHOLD ||
+      Math.abs(deltaY) > FLOATING_DRAG_THRESHOLD
+    ) {
+      hasDraggedRef.current = true;
+    }
 
-      const x = moveEvent.clientX - drag.offsetX;
-      const y = moveEvent.clientY - drag.offsetY;
-      setPosition(clampFloatingBubblePosition(x, y));
-    };
+    const x = event.clientX - drag.offsetX;
+    const y = event.clientY - drag.offsetY;
+    setPosition(clampFloatingBubblePosition(x, y));
+  };
 
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      dragRef.current = null;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+  const handlePointerEnd = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    setIsDragging(false);
+    dragRef.current = null;
+
+    if (hasDraggedRef.current) {
+      setPosition((currentPosition) =>
+        snapFloatingBubblePosition(currentPosition.x, currentPosition.y)
+      );
+    }
   };
 
   const handleClick = () => {
@@ -92,7 +103,10 @@ const DraggableFeatureBubble: React.FC<DraggableFeatureBubbleProps> = ({
   return (
     <button
       style={getFloatingBubbleButtonStyle(position, isDragging)}
-      onMouseDown={handleMouseDown}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
       onClick={handleClick}
       title={title}
       aria-label={title}
