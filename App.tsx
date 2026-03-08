@@ -3,7 +3,7 @@ import { useAudio } from './src/hooks/useAudio';
 import { useQuiz } from './src/hooks/useQuiz';
 import { UserProvider, useUser } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
-import { MainTab } from './src/types';
+import type { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
 import QuizEditor from './src/components/quiz/QuizEditor';
 import QuizFlow from './src/components/quiz/QuizFlow';
@@ -17,23 +17,9 @@ import MinigameModal from './src/components/ui/MinigameModal';
 import { ToastProvider } from './src/context/ToastContext';
 import './App.css';
 
-const MAIN_TABS: {
-  id: MainTab;
-  label: string;
-}[] = [
-  {
-    id: 'queue',
-    label: 'Watchlist',
-  },
-  {
-    id: 'places',
-    label: 'Places',
-    label: 'Movie Nights',
-  },
-  {
-    id: 'places',
-    label: 'Date Spots',
-  },
+const MAIN_TABS: Array<{ id: MainTab; label: string }> = [
+  { id: 'queue', label: 'Watchlist' },
+  { id: 'places', label: 'Places' },
 ];
 
 const AppInner: React.FC = () => {
@@ -42,29 +28,27 @@ const AppInner: React.FC = () => {
   const { quizData } = useQuiz();
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const [quizCompleted, setQuizCompleted] = useState<boolean>(() => {
-    return localStorage.getItem('quizCompleted') === 'true';
-  });
+  const [quizCompleted, setQuizCompleted] = useState<boolean>(
+    () => localStorage.getItem('quizCompleted') === 'true'
+  );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showFoodDrop, setShowFoodDrop] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
 
   useEffect(() => {
-    const theme = activeTab === 'places' ? 'places' : 'movies';
-    document.body.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
-  const activeTabMeta = useMemo(() => MAIN_TABS.find((item) => item.id === activeTab), [activeTab]);
+  const activeTabMeta = useMemo(
+    () => MAIN_TABS.find((item) => item.id === activeTab) ?? MAIN_TABS[0],
+    [activeTab]
+  );
+
   const commandDeck = useMemo(
     () => [
       {
         label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
-  const commandDeck = useMemo(
-    () => [
-      {
-        label: quizCompleted ? 'Retune Quiz' : 'Run Quiz',
-        description: quizCompleted ? 'Edit quiz settings.' : 'Start the quiz.',
         action: () => setShowQuizEditor(true),
       },
       {
@@ -84,10 +68,9 @@ const AppInner: React.FC = () => {
   );
 
   const handleTabChange = (tab: MainTab) => {
-    if (tab !== activeTab) {
-      playSwitch();
-      setActiveTab(tab);
-    }
+    if (tab === activeTab) return;
+    playSwitch();
+    setActiveTab(tab);
   };
 
   const handleQuizComplete = () => {
@@ -120,11 +103,10 @@ const AppInner: React.FC = () => {
 
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             <section className="workspace-header" aria-label="Current workspace overview">
-              <div>
-                <h2 className="workspace-header__title" aria-live="polite">
-                  {activeTabMeta?.label}
-                </h2>
-              </div>
+              <h2 className="workspace-header__title" aria-live="polite">
+                {activeTabMeta.label}
+              </h2>
+
               <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
                 {MAIN_TABS.map((tab) => {
                   const isActive = tab.id === activeTab;
@@ -143,43 +125,14 @@ const AppInner: React.FC = () => {
                     </button>
                   );
                 })}
-          <main id="main-content" className="workspace-stage" tabIndex={-1}>
-            <section className="hero-board" aria-label="Current workspace overview">
-              <div className="hero-board__content">
-                <h2 className="hero-board__title" aria-live="polite">
-                  <span key={activeTab} className="hero-board__title-word">
-                    {MAIN_TABS.find((t) => t.id === activeTab)?.label}
-                  </span>
-                </h2>
-                <div className="hero-mode-toggle" role="tablist" aria-label="Primary workspaces">
-                  {MAIN_TABS.map((tab) => {
-                    const isActive = tab.id === activeTab;
-                    return (
-                      <button
-                        key={tab.id}
-                        id={`tab-${tab.id}`}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        aria-controls={`tabpanel-${tab.id}`}
-                        className={`hero-mode-toggle__button${isActive ? ' is-active' : ''}`}
-                        onClick={() => handleTabChange(tab.id)}
-                      >
-                        <span className="hero-mode-toggle__label">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
             </section>
 
             <div className="workspace-grid">
               <section className="workspace-surface" aria-label="Primary workspace">
-                <div style={{ padding: '1rem', marginBottom: '1rem' }}>
-                  <UserSelection variant="inline" />
-                </div>
                 {MAIN_TABS.map((tab) => {
                   const isActivePanel = tab.id === activeTab;
+
                   return (
                     <section
                       key={tab.id}
@@ -284,6 +237,7 @@ const AppInner: React.FC = () => {
     </ThemeProvider>
   );
 };
+
 const App: React.FC = () => (
   <UserProvider>
     <ToastProvider>
