@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './src/hooks/useAudio';
 import { useQuiz } from './src/hooks/useQuiz';
-import { useUser } from './src/context/UserContext';
-import { UserProvider } from './src/context/UserContext';
+import { UserProvider, useUser } from './src/context/UserContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
@@ -11,13 +10,9 @@ import QuizEditor from './src/components/quiz/QuizEditor';
 import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
 import Matchmaker from './src/components/matchmaker/Matchmaker';
-import MinecraftBubble from './src/components/common/MinecraftBubble';
-import DraggableFeatureBubble from './src/components/common/DraggableFeatureBubble';
-import SnakeGame from './src/components/snake/SnakeGame';
 import FoodDropGame from './src/components/extras/FoodDropGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
-import ChromaticDotField from './src/components/effects/ChromaticDotField';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
 import { ToastProvider } from './src/context/ToastContext';
@@ -26,31 +21,23 @@ import './App.css';
 const MAIN_TABS: {
   id: MainTab;
   label: string;
-  icon: string;
   eyebrow: string;
-  headline: string;
   description: string;
   detail: string;
 }[] = [
   {
     id: 'queue',
-    label: 'Movie Nights',
-    icon: '01',
-    eyebrow: 'Screening Room',
-    headline: 'Plan the next watch night.',
-    description:
-      'Search, shortlist, review suggestions, and keep the watchlist in one place.',
-    detail: 'Watchlist, suggestions, and progress.',
+    label: 'Watchlist',
+    eyebrow: 'Movies',
+    description: 'Search, shortlist, and track progress.',
+    detail: 'Suggestions and progress',
   },
   {
     id: 'places',
-    label: 'Date Spots',
-    icon: '02',
-    eyebrow: 'City Atlas',
-    headline: 'Plan the next outing.',
-    description:
-      'Map future spots, track visits, and keep place planning separate from the watchlist.',
-    detail: 'Map, wishlist, and visited history.',
+    label: 'Places',
+    eyebrow: 'Outings',
+    description: 'Save places to try and places already visited.',
+    detail: 'Wishlist and visits',
   },
 ];
 
@@ -85,50 +72,27 @@ const AppInner: React.FC = () => {
   const commandDeck = useMemo(
     () => [
       {
-        label: quizCompleted ? 'Retune Quiz' : 'Run Quiz',
-        description: quizCompleted
-          ? 'Edit quiz settings.'
-          : 'Start the quiz.',
+        label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
+        description: quizCompleted ? 'Adjust quiz settings.' : 'Set preferences.',
         action: () => setShowQuizEditor(true),
       },
       {
-        label: 'Memory Wall',
-        description: 'Open shared memories.',
+        label: 'Memories',
+        description: 'Open shared notes and memories.',
         action: () => setShowMemories(true),
       },
       {
-        label: 'Spin Picker',
+        label: 'Spin Wheel',
         description: 'Pick from the shortlist.',
         action: () => setShowSpinWheel(true),
       },
       {
         label: 'Food Drop',
-        description: 'Open the extra game.',
+        description: 'Open the minigame.',
         action: () => setShowFoodDrop(true),
       },
     ],
     [quizCompleted]
-  );
-
-  const signalCards = useMemo(
-    () => [
-      {
-        label: 'Mode',
-        value: activeTabMeta?.label ?? 'Movie Nights',
-        note: activeTabMeta?.eyebrow ?? 'Screening Room',
-      },
-      {
-        label: 'Pilot',
-        value: currentUser ?? 'Choose a user',
-        note: currentUser ? 'Active persona loaded' : 'Workspace not assigned',
-      },
-      {
-        label: 'Quiz',
-        value: quizCompleted ? 'Completed' : 'Pending',
-        note: quizData ? 'Interactive layer ready' : 'No quiz data detected',
-      },
-    ],
-    [activeTabMeta, currentUser, quizCompleted, quizData]
   );
 
   const handleTabChange = (tab: MainTab) => {
@@ -149,87 +113,51 @@ const AppInner: React.FC = () => {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        <ChromaticDotField className="app-dot-background" density={0.72} mode="background" />
 
         <div className="app-frame">
           <aside className="control-rail" aria-label="Workspace navigation">
-            <div className="control-rail__panel control-rail__brand">
-              <p className="control-rail__eyebrow">Weekend OS</p>
-              <h1 className="control-rail__title">Shared planning dashboard.</h1>
-              <p className="control-rail__copy">Primary work stays centered. Tools stay secondary.</p>
+            <div className="control-rail__panel">
+              <p className="control-rail__eyebrow">Dashboard</p>
+              <h1 className="control-rail__title">Weekend planner</h1>
             </div>
 
             <div className="control-rail__panel">
               <div className="control-rail__section-head">
-                <span>Profiles</span>
+                <span>User</span>
                 <span>{todayLabel}</span>
               </div>
               <UserSelection variant="inline" />
+              {currentUser ? <p className="control-rail__meta">{currentUser}</p> : null}
             </div>
-
-            <section className="control-rail__panel signal-grid" aria-label="Workspace signals">
-              {signalCards.map((card) => (
-                <article key={card.label} className="signal-card">
-                  <span className="signal-card__label">{card.label}</span>
-                  <strong className="signal-card__value">{card.value}</strong>
-                  <span className="signal-card__note">{card.note}</span>
-                </article>
-              ))}
-            </section>
           </aside>
 
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
-            <section className="hero-board" aria-label="Current workspace overview">
-              <div className="hero-board__content">
-                <p className="hero-board__eyebrow">{activeTabMeta?.eyebrow}</p>
-                <h2 className="hero-board__title" aria-live="polite">
-                  <span key={activeTab} className="hero-board__title-word">
-                    {activeTabMeta?.label}
-                  </span>
+            <section className="workspace-header" aria-label="Current workspace overview">
+              <div>
+                <p className="workspace-header__eyebrow">{activeTabMeta?.eyebrow}</p>
+                <h2 className="workspace-header__title" aria-live="polite">
+                  {activeTabMeta?.label}
                 </h2>
-                <div className="hero-mode-toggle" role="tablist" aria-label="Primary workspaces">
-                  {MAIN_TABS.map((tab) => {
-                    const isActive = tab.id === activeTab;
-                    return (
-                      <button
-                        key={tab.id}
-                        id={`tab-${tab.id}`}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        aria-controls={`tabpanel-${tab.id}`}
-                        className={`hero-mode-toggle__button${isActive ? ' is-active' : ''}`}
-                        onClick={() => handleTabChange(tab.id)}
-                      >
-                        <span className="hero-mode-toggle__index">{tab.icon}</span>
-                        <span className="hero-mode-toggle__label">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="hero-board__kicker">{activeTabMeta?.headline}</p>
-                <p className="hero-board__description">{activeTabMeta?.description}</p>
-
-                <div className="hero-board__tags" aria-label="Workspace context">
-                  <span className="hero-tag">Active mode: {activeTabMeta?.label}</span>
-                  <span className="hero-tag">Date: {todayLabel}</span>
-                  <span className="hero-tag">
-                    Quiz: {quizCompleted ? 'calibrated' : 'needs setup'}
-                  </span>
-                </div>
+                <p className="workspace-header__description">{activeTabMeta?.description}</p>
               </div>
-
-                <div className="hero-board__accent">
-                <div className="accent-panel accent-panel--primary">
-                  <span className="accent-panel__label">Primary</span>
-                  <strong className="accent-panel__value">Focused workspace</strong>
-                  <p className="accent-panel__copy">The main list or map stays in the center panel.</p>
-                </div>
-                <div className="accent-panel accent-panel--secondary">
-                  <span className="accent-panel__label">Secondary</span>
-                  <strong className="accent-panel__value">Tool dock</strong>
-                  <p className="accent-panel__copy">Extra actions stay available without competing for space.</p>
-                </div>
+              <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
+                {MAIN_TABS.map((tab) => {
+                  const isActive = tab.id === activeTab;
+                  return (
+                    <button
+                      key={tab.id}
+                      id={`tab-${tab.id}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls={`tabpanel-${tab.id}`}
+                      className={`workspace-tabs__button${isActive ? ' is-active' : ''}`}
+                      onClick={() => handleTabChange(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
             </section>
 
@@ -255,8 +183,8 @@ const AppInner: React.FC = () => {
               <aside className="support-rail" aria-label="Workspace tools and actions">
                 <section className="support-card">
                   <div className="support-card__head">
-                    <span>Command Deck</span>
-                    <span>Fast actions</span>
+                    <span>Actions</span>
+                    <span>{activeTabMeta?.detail}</span>
                   </div>
                   <div className="command-deck">
                     {commandDeck.map((item) => (
@@ -272,38 +200,9 @@ const AppInner: React.FC = () => {
                     ))}
                   </div>
                 </section>
-
-                <section className="support-card">
-                  <div className="support-card__head">
-                    <span>Organization</span>
-                    <span>Why this shell</span>
-                  </div>
-                  <div className="note-stack">
-                    <article className="note-stack__item">
-                      <strong>Primary stage</strong>
-                      <p>The active list or map stays in the center.</p>
-                    </article>
-                    <article className="note-stack__item">
-                      <strong>Separated tools</strong>
-                      <p>Support actions live in the dock and side rail.</p>
-                    </article>
-                    <article className="note-stack__item">
-                      <strong>Clear modes</strong>
-                      <p>Each workspace keeps its own context.</p>
-                    </article>
-                  </div>
-                </section>
               </aside>
             </div>
           </main>
-        </div>
-
-        <div className="tool-dock" aria-label="Quick launch tools">
-          {commandDeck.map((item) => (
-            <button key={item.label} type="button" className="tool-dock__button" onClick={item.action}>
-              {item.label}
-            </button>
-          ))}
         </div>
 
         <MinigameModal
@@ -358,43 +257,20 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <div className="floating-bubbles">
-          {quizData && currentUser ? (
-            <QuizFlow
-              quizData={quizData}
-              currentUser={currentUser}
-              onComplete={handleQuizComplete}
-              onEdit={() => setShowQuizEditor(true)}
-              isCompleted={quizCompleted}
-            />
-          ) : null}
-          {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
-          <MinecraftBubble />
-          <SnakeGame mode="floating" />
-          <DraggableFeatureBubble
-            title="Food Drop Game"
-            icon="🍔"
-            initialPosition={{ x: 300, y: 200 }}
-            onActivate={() => setShowFoodDrop(true)}
+        {quizData && currentUser ? (
+          <QuizFlow
+            quizData={quizData}
+            currentUser={currentUser}
+            onComplete={handleQuizComplete}
+            onEdit={() => setShowQuizEditor(true)}
+            isCompleted={quizCompleted}
           />
-          <DraggableFeatureBubble
-            title="Memories"
-            icon="💭"
-            initialPosition={{ x: 500, y: 400 }}
-            onActivate={() => setShowMemories(true)}
-          />
-          <DraggableFeatureBubble
-            title="Spin Wheel"
-            icon="🎡"
-            initialPosition={{ x: 600, y: 200 }}
-            onActivate={() => setShowSpinWheel(true)}
-          />
-        </div>
+        ) : null}
+        {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
       </div>
     </ThemeProvider>
   );
 };
-
 const App: React.FC = () => (
   <UserProvider>
     <BubbleDismissProvider>
