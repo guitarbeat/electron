@@ -327,8 +327,7 @@ body {
   padding: clamp(1rem, 2vw, 1.5rem);
   border-radius: 34px;
   background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--color-accent) 24%, transparent), transparent 42%),
-    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--color-secondary) 18%, transparent), transparent 40%),
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 42%),
     color-mix(in srgb, var(--color-surface-1) 95%, rgba(8, 8, 14, 0.35));
 }
 
@@ -354,9 +353,7 @@ body {
   max-width: 12ch;
   text-wrap: balance;
   text-align: center;
-  text-shadow:
-    0 0 18px color-mix(in srgb, var(--color-accent) 34%, transparent),
-    0 0 30px color-mix(in srgb, var(--color-secondary) 24%, transparent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
 .hero-board__title-word {
@@ -370,11 +367,10 @@ body {
   justify-content: center;
   gap: 0.65rem;
   margin-top: 1rem;
-  padding: 0.5rem;
+  padding: 0.4rem;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 88%, transparent);
-  background: color-mix(in srgb, var(--color-surface-2) 84%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--color-surface-2) 72%, transparent);
 }
 
 .hero-mode-toggle__button {
@@ -396,11 +392,11 @@ body {
 }
 
 .hero-mode-toggle__button.is-active {
-  border-color: color-mix(in srgb, var(--color-accent) 72%, rgba(255, 255, 255, 0.12));
+  border-color: color-mix(in srgb, var(--color-accent) 48%, rgba(255, 255, 255, 0.12));
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 60%),
-    color-mix(in srgb, var(--color-surface-3) 88%, transparent);
-  box-shadow: var(--glow-primary);
+    linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 60%),
+    color-mix(in srgb, var(--color-surface-3) 80%, transparent);
+  box-shadow: 0 10px 18px rgba(8, 8, 16, 0.18);
 }
 
 .hero-mode-toggle__index {
@@ -410,8 +406,8 @@ body {
   width: 1.8rem;
   height: 1.8rem;
   border-radius: 999px;
-  background: var(--gradient-primary);
-  color: #1d1218;
+  background: color-mix(in srgb, var(--color-accent) 24%, var(--color-surface-3));
+  color: var(--color-text-primary);
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -471,7 +467,7 @@ body {
   padding: 1rem;
   border-radius: 24px;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 90%, transparent);
-  background: color-mix(in srgb, var(--color-surface-2) 90%, transparent);
+  background: color-mix(in srgb, var(--color-surface-2) 82%, transparent);
 }
 
 .accent-panel--primary {
