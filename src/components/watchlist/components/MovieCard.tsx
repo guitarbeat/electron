@@ -5,7 +5,6 @@ import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';
 import Button from '@/ui/Button';
-import IconButton from '@/ui/IconButton';
 import WatcherBadge from '@/common/WatcherBadge';
 import { EyeIcon, EyeOffIcon, FilmIcon, MagicWandIcon, TrashIcon } from '@/common/icons';
 import MemoryList from '@/memories/MemoryList';
@@ -300,6 +299,48 @@ interface MovieActionsProps {
   onCloseBottomSheet?: () => void;
 }
 
+interface MovieIconActionButtonProps {
+  title: string;
+  disabled: boolean;
+  color: string;
+  borderColor: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  children: React.ReactNode;
+}
+
+const MovieIconActionButton: React.FC<MovieIconActionButtonProps> = ({
+  title,
+  disabled,
+  color,
+  borderColor,
+  onClick,
+  children,
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    aria-label={title}
+    style={{
+      padding: 0,
+      width: '44px',
+      height: '44px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(0,0,0,0.62)',
+      borderRadius: radius.md,
+      color,
+      border: `1px solid ${borderColor}`,
+      opacity: disabled ? 0.5 : 1,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+    }}
+  >
+    {children}
+  </button>
+);
+
 const MovieActions: React.FC<MovieActionsProps> = ({
   movie,
   currentUser,
@@ -410,57 +451,31 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       {primaryButton}
 
       <div className="movie-secondary-actions">
-        <IconButton
-          type="button"
+        <MovieIconActionButton
           onClick={(event) => {
             event.stopPropagation();
             onFixMatch?.();
           }}
-          variant="ghost"
-          size="sm"
           disabled={isGuest}
-          title="Fix Metadata Match"
-          aria-label={`Fix metadata for "${movie.title}"`}
-          style={{
-            padding: 0,
-            width: '44px',
-            height: '44px',
-            backgroundColor: 'rgba(0,0,0,0.62)',
-            borderRadius: radius.md,
-            color: colors.accent,
-            border: `1px solid ${colors.accent}45`,
-            opacity: isGuest ? 0.5 : 1,
-            cursor: isGuest ? 'not-allowed' : 'pointer',
-          }}
+          title={`Fix metadata for "${movie.title}"`}
+          color={colors.accent}
+          borderColor={`${colors.accent}45`}
         >
           <MagicWandIcon style={{ width: '14px', height: '14px' }} />
-        </IconButton>
+        </MovieIconActionButton>
 
-        <IconButton
-          type="button"
+        <MovieIconActionButton
           onClick={(event) => {
             event.stopPropagation();
             onDelete();
           }}
-          variant="ghost"
-          size="sm"
           disabled={isGuest}
-          title="Delete Movie"
-          aria-label={`Delete "${movie.title}"`}
-          style={{
-            padding: 0,
-            width: '44px',
-            height: '44px',
-            backgroundColor: 'rgba(0,0,0,0.62)',
-            borderRadius: radius.md,
-            color: colors.error,
-            border: `1px solid ${colors.error}45`,
-            opacity: isGuest ? 0.5 : 1,
-            cursor: isGuest ? 'not-allowed' : 'pointer',
-          }}
+          title={`Delete "${movie.title}"`}
+          color={colors.error}
+          borderColor={`${colors.error}45`}
         >
           <TrashIcon style={{ width: '14px', height: '14px' }} />
-        </IconButton>
+        </MovieIconActionButton>
       </div>
     </div>
   );
