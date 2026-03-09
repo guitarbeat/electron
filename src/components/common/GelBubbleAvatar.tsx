@@ -1,7 +1,6 @@
 import './GelBubbleAvatar.css';
 import React from 'react';
 import { User } from '@/types';
-import ImageWithFallback from './ImageWithFallback';
 
 type BubbleSize = 'default' | 'compact' | 'tiny';
 
@@ -19,6 +18,58 @@ const userImageSources: Record<User, string[]> = {
     'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
     'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
   ],
+};
+
+interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  sources: (string | undefined | null)[];
+  fallbackElement?: React.ReactNode;
+}
+
+const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
+  sources,
+  fallbackElement,
+  alt,
+  ...props
+}) => {
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [hasError, setHasError] = React.useState(false);
+
+  const validSources = sources.filter((source): source is string => Boolean(source));
+
+  React.useEffect(() => {
+    setCurrentIndex(0);
+    setHasError(false);
+  }, [sources]);
+
+  const handleError = () => {
+    if (currentIndex < validSources.length - 1) {
+      setCurrentIndex((previousIndex) => previousIndex + 1);
+      return;
+    }
+
+    setHasError(true);
+  };
+
+  if (hasError || validSources.length === 0) {
+    return (
+      <div
+        className={props.className}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255,255,255,0.05)',
+          ...props.style,
+        }}
+      >
+        {fallbackElement || (
+          <span style={{ opacity: 0.5, fontSize: '0.8em' }}>{alt || 'No Image'}</span>
+        )}
+      </div>
+    );
+  }
+
+  return <img {...props} src={validSources[currentIndex]} alt={alt} onError={handleError} />;
 };
 
 function useRandomCatImageLocal() {

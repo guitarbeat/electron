@@ -1,8 +1,13 @@
 import { useState, useCallback, useRef } from 'react';
 import { MatchmakerGame, User } from '@/types';
 import { usePolling } from './usePolling';
-import { GIST_MATCHMAKER_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
-import { fetchGist, getGistFileContent, patchGistFile } from '@/services/gistClient.ts';
+import {
+  fetchGist,
+  getGistFileContent,
+  GIST_MATCHMAKER_FILENAME,
+  GIST_TOKEN,
+  patchGistFile,
+} from '@/services/gistClient.ts';
 
 const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
   try {

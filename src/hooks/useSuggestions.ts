@@ -1,8 +1,13 @@
 import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/hooks/usePolling';
-import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
 import { sanitizeInput } from '@/config/security.ts';
-import { fetchGist, getGistFileContent, patchGistFile } from '@/services/gistClient.ts';
+import {
+  fetchGist,
+  getGistFileContent,
+  GIST_SUGGESTIONS_FILENAME,
+  GIST_TOKEN,
+  patchGistFile,
+} from '@/services/gistClient.ts';
 import { MovieSuggestion, User } from '@/types';
 import { MOCK_SUGGESTIONS } from '@/services/mockData';
 

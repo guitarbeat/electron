@@ -7,8 +7,13 @@
 import { useState, useCallback, useRef } from 'react';
 import { usePolling } from './usePolling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
-import { GIST_TOKEN, GIST_QUIZ_FILENAME } from '@/config/gistConfig.ts';
-import { fetchGist, getGistFileContent, patchGistFile } from '@/services/gistClient.ts';
+import {
+  fetchGist,
+  getGistFileContent,
+  GIST_QUIZ_FILENAME,
+  GIST_TOKEN,
+  patchGistFile,
+} from '@/services/gistClient.ts';
 import {
   quizQuestions as defaultQuestions,
   characterDescriptions as defaultDescriptions,
