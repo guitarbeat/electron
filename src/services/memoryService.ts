@@ -2,13 +2,19 @@ import { GIST_MEMORIES_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
 import { sanitizeInput } from '@/config/security.ts';
 import type { SharedMemory } from '@/types.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
+import { MOCK_MEMORIES } from './mockData';
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
+  if (!GIST_TOKEN) {
+    return MOCK_MEMORIES;
+  }
+
   try {
     const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
 
     if (!response.ok) {
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn('Failed to fetch memories, using mock data');
+      return MOCK_MEMORIES;
     }
 
     const gist = await response.json();
