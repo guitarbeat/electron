@@ -5,6 +5,11 @@ import { GIST_ID, GIST_TOKEN } from '../config/gistConfig.ts';
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+const MOCK_PINS = {
+  Aaron: '',
+  Electra: '',
+};
+
 interface UserPins {
   Aaron?: string;
   Electra?: string;
@@ -28,21 +33,31 @@ const parsePinsContent = (fileContent: string | undefined): UserPins => {
 };
 
 const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserPins> => {
-  const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-    cache,
-    headers: {
-      Authorization: `token ${GIST_TOKEN}`,
-      Accept: 'application/vnd.github.v3+json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch gist: ${response.status}`);
+  if (!GIST_TOKEN || !GIST_ID) {
+    return MOCK_PINS;
   }
 
-  const gist = await response.json();
-  const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content as string | undefined;
-  return parsePinsContent(fileContent);
+  try {
+    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      cache,
+      headers: {
+        Authorization: `token ${GIST_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!response.ok) {
+      console.warn('Failed to fetch pins from gist, using mock data');
+      return MOCK_PINS;
+    }
+
+    const gist = await response.json();
+    const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content as string | undefined;
+    return parsePinsContent(fileContent);
+  } catch (error) {
+    console.warn('Error fetching pins, using mock data:', error);
+    return MOCK_PINS;
+  }
 };
 
 const secureHashPin = async (pin: string, saltInput: string | null = null): Promise<string> => {
