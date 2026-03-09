@@ -1,0 +1,156 @@
+:root {
+  --profile-button-height: 2.75rem;
+}
+
+.user-selection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-selection--inline {
+  width: 100%;
+}
+
+.user-selection--panel {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  gap: 1rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 85%, transparent);
+  background: color-mix(in srgb, var(--color-surface-2) 92%, transparent);
+}
+
+.user-selection__theme-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.user-selection__profiles {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-selection__title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.user-selection__subtitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.user-selection__bubble-cluster {
+  width: 100%;
+}
+
+.user-selection__bubble-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.user-selection__profile-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: var(--profile-button-height);
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.user-selection__profile-button:hover,
+.user-selection__profile-button:focus-visible {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-surface-2) 82%, var(--color-surface-0));
+}
+
+.user-selection__profile-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.user-selection__profile-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.user-selection__profile-button.is-active {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-0));
+}
+
+.user-selection__profile-name {
+  font-weight: 600;
+}
+
+.user-selection__profile-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface-3) 86%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.user-selection__pin-button {
+  appearance: none;
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 85%, transparent);
+  background: var(--color-surface-0);
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.user-selection__pin-button:hover,
+.user-selection__pin-button:focus-visible {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-surface-2) 82%, var(--color-surface-0));
+}
+
+.user-selection__pin-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.user-selection__logged-out {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .user-selection__bubble-row {
+    grid-template-columns: 1fr;
+  }
+}

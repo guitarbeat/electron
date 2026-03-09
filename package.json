@@ -5,41 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.js",
     "build": "vite build",
     "preview": "vite preview",
     "build:dev": "vite build --mode development",
-    "check:case-collisions": "./scripts/check-case-collisions.sh",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "lint": "eslint \"src/**/*.ts\" \"src/**/*.tsx\" --report-unused-disable-directives",
     "format": "prettier --write .",
     "check-types": "tsc --noEmit",
-    "test:snake": "node --test components/snake/snakeGameLogic.test.ts",
-    "test:memories": "node --test components/memories/memoryUtils.test.ts components/memories/memoryComposerAuth.test.ts",
-    "test:security": "node --test config/security.test.ts",
-    "test:quiz": "node --experimental-strip-types --test services/quizService.test.ts",
-    "test:all": "node --experimental-strip-types --test **/*.test.ts",
-    "vercel:env": "vercel env pull .env.local"
+    "test:all": "node --experimental-strip-types --test tests/**/*.test.ts",
+    "check:case-collisions": "./scripts/check-case-collisions.sh"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.97.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "pnpm": "^10.30.3",
+    "express": "^4.21.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/node": "^25.2.3",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -47,10 +37,8 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.26",
-    "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
-    "vercel": "^50.23.2",
     "vite": "^7.3.1"
   }
 }
