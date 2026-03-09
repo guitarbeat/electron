@@ -4,6 +4,7 @@ import { GIST_SUGGESTIONS_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
 import { sanitizeInput } from '@/config/security.ts';
 import { fetchGist, getGistFileContent, patchGistFile } from '@/services/gistClient.ts';
 import { MovieSuggestion, User } from '@/types';
+import { MOCK_SUGGESTIONS } from '@/services/mockData';
 
 const POLLING_INTERVAL = 300000; // 5 minutes
 
@@ -14,11 +15,16 @@ const suggestionsEqual = (prev: MovieSuggestion[] | undefined, next: MovieSugges
 };
 
 const getSuggestions = async (): Promise<MovieSuggestion[]> => {
+  if (!GIST_TOKEN) {
+    return MOCK_SUGGESTIONS;
+  }
+
   try {
     const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
 
     if (!response.ok) {
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn('Failed to fetch suggestions, using mock data');
+      return MOCK_SUGGESTIONS;
     }
 
     const gist = await response.json();

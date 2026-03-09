@@ -11,11 +11,17 @@ import {
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '@/config/security';
 import { concurrentMap } from '@/utils/concurrency';
+import { MOCK_MOVIES } from '@/services/mockData';
 
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
 
 const getMovies = async (): Promise<Movie[]> => {
+  // If no token configured, return mock data for frontend development
+  if (!GIST_TOKEN) {
+    return MOCK_MOVIES;
+  }
+
   try {
     const response = await fetchGist({
       token: GIST_TOKEN,
@@ -30,16 +36,9 @@ const getMovies = async (): Promise<Movie[]> => {
     }
 
     if (!response.ok) {
-      const { status } = response;
-      let msg = await buildGithubApiErrorMessage(response);
-      if (status === 401 || status === 404) {
-        msg +=
-          ' Check that VITE_GIST_TOKEN is valid, has the "gist" scope, and VITE_GIST_ID matches your Gist. Restart the dev server after changing .env.';
-      } else if (status === 403) {
-        msg +=
-          ' Token may lack "gist" scope or the Gist may be inaccessible. Restart dev server after .env changes.';
-      }
-      throw new Error(msg);
+      // If Gist fails, return mock data as fallback
+      console.warn('Failed to fetch from Gist, using mock data');
+      return MOCK_MOVIES;
     }
 
     const gist = await response.json();
