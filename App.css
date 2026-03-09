@@ -95,7 +95,7 @@ body {
   gap: 1rem;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.25rem;
 }
 
 .control-rail,
@@ -126,7 +126,7 @@ body {
 }
 
 .control-rail__panel {
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 1rem;
 }
 
@@ -146,10 +146,11 @@ body {
 
 .control-rail__title {
   margin: 0.25rem 0 0;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-family: var(--font-interface);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .control-rail__meta {
@@ -201,15 +202,17 @@ body {
   align-items: end;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem;
-  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
 }
 
 .workspace-header__title {
   margin: 0;
-  font-size: 2rem;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  font-family: var(--font-interface);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .workspace-tabs {
@@ -242,7 +245,7 @@ body {
 
 .workspace-surface {
   min-height: 70vh;
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 0.9rem;
 }
 
@@ -256,7 +259,7 @@ body {
 }
 
 .support-card {
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 1rem;
 }
 

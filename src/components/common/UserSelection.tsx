@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import type { MainTab, User } from '../../types';
-import GelBubbleAvatar from './GelBubbleAvatar';
 import { usePins } from '../../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
@@ -31,7 +30,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
 }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, verifyUserPin, setUserPin, removeUserPin, isLoading } = usePins();
-  const [hoveredAvatar, setHoveredAvatar] = useState<User | null>(null);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPinSettings, setIsSavingPinSettings] = useState(false);
@@ -40,7 +38,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const [isSelectionAnimating, setIsSelectionAnimating] = useState(false);
   const previousUserRef = useRef<User | null>(currentUser);
   const isMobile = useMediaQuery(breakpoints.sm);
-  const bubbleSize = variant === 'inline' ? 'tiny' : isMobile ? 'compact' : 'default';
   const isDisabled = isLoading || isVerifying;
   const users: User[] = ['Aaron', 'Electra'];
   const selectedNamedUser = currentUser;
@@ -163,9 +160,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           className={`user-selection__bubble-cluster user-selection__bubble-cluster--${variant}`}
         >
           <div className="user-selection__bubble-row" role="group" aria-label="Select profile">
-            {users.map((profile, index) => {
+            {users.map((profile) => {
               const isActive = currentUser === profile;
-              const isHovered = hoveredAvatar === profile || isActive;
               const selectionState =
                 !currentUser || !isSelectionAnimating || !selectionAnimatedUser
                   ? 'neutral'
@@ -174,28 +170,21 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     : 'inactive';
 
               return (
-                <div
+                <button
                   key={profile}
-                  className={`user-selection__bubble-slot${variant === 'inline' ? ' user-selection__bubble-slot--floating' : ''}`}
+                  type="button"
+                  className={`user-selection__profile-button${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
+                  onClick={() => selectProfile(profile)}
+                  disabled={isDisabled}
+                  aria-pressed={isActive}
                 >
-                  <GelBubbleAvatar
-                    user={profile}
-                    hasPin={userHasPin(profile)}
-                    isHovered={isHovered}
-                    isSmall={variant === 'panel' && currentUser !== null && currentUser !== profile}
-                    showName={variant === 'panel'}
-                    selectionState={selectionState}
-                    isSelectionAnimating={isSelectionAnimating}
-                    size={bubbleSize}
-                    disabled={isDisabled}
-                    onClick={() => selectProfile(profile)}
-                    onMouseEnter={() => setHoveredAvatar(profile)}
-                    onMouseLeave={() => setHoveredAvatar(null)}
-                    onFocus={() => setHoveredAvatar(profile)}
-                    onBlur={() => setHoveredAvatar(null)}
-                    animationOffset={index % 2 === 1}
-                  />
-                </div>
+                  <span className="user-selection__profile-name">{profile}</span>
+                  {userHasPin(profile) ? (
+                    <span className="user-selection__profile-badge" aria-hidden="true">
+                      PIN
+                    </span>
+                  ) : null}
+                </button>
               );
             })}
           </div>
