@@ -10,13 +10,14 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
-    "allowJs": true,
+    "baseUrl": ".",
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*", "./src/components/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["supabase/functions"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["supabase/functions", "dist", "node_modules"]
 }

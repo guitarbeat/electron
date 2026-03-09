@@ -1,7 +1,0 @@
-/* Watchlist controls: hide scrollbar on tab strip, keep scroll */
-.watchlist-tabs-scroll {
-  -webkit-overflow-scrolling: touch;
-}
-.watchlist-tabs-scroll::-webkit-scrollbar {
-  display: none;
-}
