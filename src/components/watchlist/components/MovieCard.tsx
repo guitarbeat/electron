@@ -5,7 +5,6 @@ import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';
 import Button from '@/ui/Button';
-import WatcherBadge from '@/common/WatcherBadge';
 import { EyeIcon, EyeOffIcon, FilmIcon, MagicWandIcon, TrashIcon } from '@/common/icons';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
@@ -24,6 +23,56 @@ interface MovieCardProps {
   onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
 }
+
+interface WatcherBadgeProps {
+  user: string;
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'text';
+  showLabel?: boolean;
+  className?: string;
+}
+
+const WatcherBadge: React.FC<WatcherBadgeProps> = ({
+  user,
+  size = 'md',
+  variant = 'default',
+  showLabel = false,
+  className = '',
+}) => {
+  const sizeClasses = {
+    sm: 'text-xs px-2 py-1',
+    md: 'text-sm px-3 py-1',
+    lg: 'text-base px-4 py-2',
+  };
+
+  const avatar = (
+    <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
+      {user.charAt(0).toUpperCase()}
+    </div>
+  );
+
+  if (variant === 'text') {
+    return (
+      <div className={`watcher-badge ${className}`}>
+        <div className="flex items-center space-x-2">
+          {avatar}
+          {showLabel && <span className="text-sm text-gray-700">{user}</span>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`watcher-badge inline-flex items-center rounded-full font-medium ${sizeClasses[size]} ${className}`}
+    >
+      <div className="flex items-center space-x-2">
+        {avatar}
+        {showLabel && <span className="text-sm text-gray-700">{user}</span>}
+      </div>
+    </div>
+  );
+};
 
 const MovieCard: React.FC<MovieCardProps> = ({
   movie,

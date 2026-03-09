@@ -1,4 +1,19 @@
-import { GIST_API_URL } from '../config/gistConfig.ts';
+const env = import.meta.env as ImportMetaEnv & {
+  VITE_GIST_TOKEN?: string;
+  VITE_GIST_ID?: string;
+};
+
+const clean = (value: string) => value.trim().replace(/^["']|["']$/g, '');
+
+export const GIST_TOKEN = clean(env.VITE_GIST_TOKEN || '');
+export const GIST_ID = clean(env.VITE_GIST_ID || '');
+export const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
+export const GIST_FILENAME = 'movielist.json';
+export const GIST_QUIZ_FILENAME = 'quiz.json';
+export const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
+export const GIST_MEMORIES_FILENAME = 'memories.json';
+export const GIST_MATCHMAKER_FILENAME = 'matchmaker.json';
+export const GIST_PLACES_FILENAME = 'places.json';
 
 interface GistFile {
   content?: string;

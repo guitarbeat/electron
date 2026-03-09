@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import { GIST_ID, GIST_TOKEN } from '../config/gistConfig.ts';
+import { GIST_ID, GIST_TOKEN } from '../services/gistClient.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes

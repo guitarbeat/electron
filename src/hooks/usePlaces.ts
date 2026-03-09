@@ -1,8 +1,14 @@
 import { useCallback } from 'react';
 import { Place, User } from '@/types';
 import { usePolling } from './usePolling';
-import { GIST_PLACES_FILENAME, GIST_TOKEN, GIST_ID } from '@/config/gistConfig.ts';
-import { fetchGist, getGistFileContent, patchGistFile } from '@/services/gistClient.ts';
+import {
+  fetchGist,
+  getGistFileContent,
+  GIST_ID,
+  GIST_PLACES_FILENAME,
+  GIST_TOKEN,
+  patchGistFile,
+} from '@/services/gistClient.ts';
 import { validateAndThrow, validatePlace } from '@/utils/validation';
 import { sanitizeInput } from '@/config/security';
 

@@ -1,7 +1,12 @@
-import { GIST_MEMORIES_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
 import { sanitizeInput } from '@/config/security.ts';
 import type { SharedMemory } from '@/types.ts';
-import { fetchGist, getGistFileContent, patchGistFile } from './gistClient.ts';
+import {
+  fetchGist,
+  GIST_MEMORIES_FILENAME,
+  getGistFileContent,
+  GIST_TOKEN,
+  patchGistFile,
+} from './gistClient.ts';
 import { MOCK_MEMORIES } from './mockData';
 
 export const getMemories = async (): Promise<SharedMemory[]> => {

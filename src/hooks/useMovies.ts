@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '@/types';
 import { usePolling } from '@/hooks/usePolling';
-import { GIST_FILENAME, GIST_TOKEN } from '@/config/gistConfig.ts';
 import {
   buildGithubApiErrorMessage,
   fetchGist,
+  GIST_FILENAME,
   getGistFileContent,
+  GIST_TOKEN,
   patchGistFile,
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
