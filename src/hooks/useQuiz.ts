@@ -8,6 +8,8 @@ import { useState, useCallback, useRef } from 'react';
 import { usePolling } from './usePolling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
 import {
+  canReadGist,
+  canWriteGist,
   fetchGist,
   getGistFileContent,
   GIST_QUIZ_FILENAME,
@@ -32,47 +34,136 @@ const defaultQuizData: QuizData = {
   neitherDescription: defaultNeither,
 };
 
-const getQuizData = async (token: string = GIST_TOKEN): Promise<QuizData> => {
-  try {
-    const isDefaultToken = !token || token === 'YOUR_GITHUB_TOKEN';
+const QUIZ_LOCAL_STORAGE_KEY = 'movieList.localQuizData';
 
-    if (isDefaultToken) {
-      return defaultQuizData;
+const cloneQuizData = (data: QuizData): QuizData => JSON.parse(JSON.stringify(data)) as QuizData;
+
+const normalizeQuizData = (value: unknown): QuizData | null => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const candidate = value as Partial<QuizData> & {
+    characterDescriptions?: Partial<Record<QuizCharacter, unknown>>;
+    neitherDescription?: unknown;
+  };
+
+  if (!Array.isArray(candidate.questions)) {
+    return null;
+  }
+
+  const characterDescriptions = {
+    Aaron:
+      typeof candidate.characterDescriptions?.Aaron === 'string'
+        ? candidate.characterDescriptions.Aaron
+        : defaultDescriptions.Aaron,
+    Electra:
+      typeof candidate.characterDescriptions?.Electra === 'string'
+        ? candidate.characterDescriptions.Electra
+        : defaultDescriptions.Electra,
+    Madeleine:
+      typeof candidate.characterDescriptions?.Madeleine === 'string'
+        ? candidate.characterDescriptions.Madeleine
+        : defaultDescriptions.Madeleine,
+    'Nosferatu/Smeemo':
+      typeof candidate.characterDescriptions?.['Nosferatu/Smeemo'] === 'string'
+        ? candidate.characterDescriptions['Nosferatu/Smeemo']
+        : defaultDescriptions['Nosferatu/Smeemo'],
+  } satisfies Record<QuizCharacter, string>;
+  const questions =
+    candidate.questions.length > 0 ? (candidate.questions as QuizQuestion[]) : defaultQuestions;
+
+  return {
+    questions,
+    characterDescriptions,
+    neitherDescription:
+      typeof candidate.neitherDescription === 'string'
+        ? candidate.neitherDescription
+        : defaultNeither,
+  };
+};
+
+const readStoredLocalQuizData = (): QuizData | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(QUIZ_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
     }
 
-    const response = await fetchGist({ token, cache: 'no-cache' });
+    return normalizeQuizData(JSON.parse(raw));
+  } catch (error) {
+    console.warn('Failed to read local quiz fallback, resetting to defaults.', error);
+    return null;
+  }
+};
 
-    if (response.status === 401 || response.status === 404) {
-      return defaultQuizData;
+const getFallbackQuizData = (): QuizData =>
+  readStoredLocalQuizData() ?? cloneQuizData(defaultQuizData);
+
+const saveLocalQuizData = (data: QuizData): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(QUIZ_LOCAL_STORAGE_KEY, JSON.stringify(cloneQuizData(data)));
+  } catch (error) {
+    console.warn('Failed to persist local quiz fallback.', error);
+  }
+};
+
+const getQuizData = async (): Promise<QuizData> => {
+  try {
+    if (!canReadGist) {
+      return getFallbackQuizData();
+    }
+
+    if (!canWriteGist && readStoredLocalQuizData()) {
+      return getFallbackQuizData();
+    }
+
+    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+
+    if (response.status === 401 || response.status === 403 || response.status === 404) {
+      return getFallbackQuizData();
     }
 
     if (!response.ok) {
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`GitHub API responded with ${response.status}. Using quiz fallback data.`);
+      return getFallbackQuizData();
     }
 
     const gist = await response.json();
     const content = getGistFileContent(gist, GIST_QUIZ_FILENAME);
     if (content === null) {
-      return defaultQuizData;
+      if (!canWriteGist) {
+        return getFallbackQuizData();
+      }
+      return cloneQuizData(defaultQuizData);
     }
 
-    const parsedData = JSON.parse(content);
-    if (!parsedData || !Array.isArray(parsedData.questions)) {
-      return defaultQuizData;
+    const parsedData = normalizeQuizData(JSON.parse(content));
+    if (!parsedData) {
+      return cloneQuizData(defaultQuizData);
     }
 
-    return {
-      questions: parsedData.questions.length > 0 ? parsedData.questions : defaultQuestions,
-      characterDescriptions: parsedData.characterDescriptions || defaultDescriptions,
-      neitherDescription: parsedData.neitherDescription || defaultNeither,
-    };
+    return parsedData;
   } catch (error) {
     console.error('Error fetching quiz data from Gist:', error);
-    return defaultQuizData;
+    return getFallbackQuizData();
   }
 };
 
 const saveQuizData = async (data: QuizData): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocalQuizData(data);
+    return;
+  }
+
   try {
     const response = await patchGistFile(
       GIST_QUIZ_FILENAME,

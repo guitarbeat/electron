@@ -1,9 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import { GIST_ID, GIST_TOKEN } from '../services/gistClient.ts';
+import {
+  canReadGist,
+  canWriteGist,
+  fetchGist,
+  getGistFileContent,
+  GIST_TOKEN,
+  patchGistFile,
+} from '../services/gistClient.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const PINS_LOCAL_STORAGE_KEY = 'movieList.localPins';
 
 const MOCK_PINS = {
   Aaron: '',
@@ -14,6 +22,57 @@ interface UserPins {
   Aaron?: string;
   Electra?: string;
 }
+
+const clonePins = (pins: UserPins): UserPins => ({ ...pins });
+
+const isUserPinsRecord = (value: unknown): value is UserPins => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const pins = value as Partial<UserPins>;
+
+  return (
+    (pins.Aaron === undefined || typeof pins.Aaron === 'string') &&
+    (pins.Electra === undefined || typeof pins.Electra === 'string')
+  );
+};
+
+const readStoredLocalPins = (): UserPins | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(PINS_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (isUserPinsRecord(parsed)) {
+      return clonePins(parsed);
+    }
+  } catch (error) {
+    console.warn('Failed to read local PIN fallback, resetting to defaults.', error);
+  }
+
+  return null;
+};
+
+const getFallbackPins = (): UserPins => readStoredLocalPins() ?? clonePins(MOCK_PINS);
+
+const saveLocalPins = (pins: UserPins): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(PINS_LOCAL_STORAGE_KEY, JSON.stringify(clonePins(pins)));
+  } catch (error) {
+    console.warn('Failed to persist local PIN fallback.', error);
+  }
+};
 
 let cachedPins: UserPins | null = null;
 let lastFetchTime = 0;
@@ -33,30 +92,35 @@ const parsePinsContent = (fileContent: string | undefined): UserPins => {
 };
 
 const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserPins> => {
-  if (!GIST_TOKEN || !GIST_ID) {
-    return MOCK_PINS;
+  if (!canReadGist) {
+    return getFallbackPins();
+  }
+
+  if (!canWriteGist && readStoredLocalPins()) {
+    return getFallbackPins();
   }
 
   try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      cache,
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-    });
+    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache });
 
     if (!response.ok) {
-      console.warn('Failed to fetch pins from gist, using mock data');
-      return MOCK_PINS;
+      console.warn(`Failed to fetch pins from gist (${response.status}), using local fallback.`);
+      return getFallbackPins();
     }
 
     const gist = await response.json();
-    const fileContent = gist.files?.[GIST_PINS_FILENAME]?.content as string | undefined;
+    const fileContent = getGistFileContent(gist, GIST_PINS_FILENAME);
+    if (fileContent === null) {
+      if (!canWriteGist) {
+        return getFallbackPins();
+      }
+      return {};
+    }
+
     return parsePinsContent(fileContent);
   } catch (error) {
-    console.warn('Error fetching pins, using mock data:', error);
-    return MOCK_PINS;
+    console.warn('Error fetching pins, using local fallback:', error);
+    return getFallbackPins();
   }
 };
 
@@ -155,25 +219,22 @@ const getPins = async (): Promise<UserPins> => {
 };
 
 const savePins = async (pins: UserPins): Promise<boolean> => {
+  if (!canWriteGist) {
+    saveLocalPins(pins);
+    cachedPins = clonePins(pins);
+    lastFetchTime = Date.now();
+    return true;
+  }
+
   try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        files: {
-          [GIST_PINS_FILENAME]: {
-            content: JSON.stringify(pins, null, 2),
-          },
-        },
-      }),
-    });
+    const response = await patchGistFile(
+      GIST_PINS_FILENAME,
+      JSON.stringify(pins, null, 2),
+      GIST_TOKEN
+    );
 
     if (response.ok) {
-      cachedPins = { ...pins };
+      cachedPins = clonePins(pins);
       lastFetchTime = Date.now();
       return true;
     }
