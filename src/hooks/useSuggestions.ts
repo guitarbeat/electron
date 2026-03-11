@@ -7,7 +7,6 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_SUGGESTIONS_FILENAME,
-  GIST_TOKEN,
   patchGistFile,
 } from '@/services/gistClient.ts';
 import { MovieSuggestion, User } from '@/types';
@@ -94,7 +93,7 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       console.warn(`Failed to fetch suggestions (${response.status}), using local fallback.`);
@@ -126,8 +125,7 @@ const saveSuggestions = async (suggestions: MovieSuggestion[]): Promise<void> =>
   try {
     const response = await patchGistFile(
       GIST_SUGGESTIONS_FILENAME,
-      JSON.stringify(suggestions, null, 2),
-      GIST_TOKEN
+      JSON.stringify(suggestions, null, 2)
     );
 
     if (!response.ok) {
