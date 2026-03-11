@@ -2,6 +2,8 @@ import { useState, useCallback, useRef } from 'react';
 import { MatchmakerGame, User } from '@/types';
 import { usePolling } from './usePolling';
 import {
+  canReadGist,
+  canWriteGist,
   fetchGist,
   getGistFileContent,
   GIST_MATCHMAKER_FILENAME,
@@ -9,17 +11,111 @@ import {
   patchGistFile,
 } from '@/services/gistClient.ts';
 
-const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
+const MATCHMAKER_LOCAL_STORAGE_KEY = 'movieList.localMatchmaker';
+
+const cloneMatchmakerGame = (game: MatchmakerGame): MatchmakerGame => ({
+  ...game,
+  moviePool: [...game.moviePool],
+  aaronLikes: [...game.aaronLikes],
+  electraLikes: [...game.electraLikes],
+  aaronDislikes: [...game.aaronDislikes],
+  electraDislikes: [...game.electraDislikes],
+});
+
+const isUser = (value: unknown): value is User => value === 'Aaron' || value === 'Electra';
+
+const isMatchmakerStatus = (value: unknown): value is MatchmakerGame['status'] =>
+  value === 'active' || value === 'completed';
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+const isMatchmakerGameRecord = (value: unknown): value is MatchmakerGame => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const game = value as Partial<MatchmakerGame>;
+
+  return (
+    typeof game.id === 'string' &&
+    typeof game.createdAt === 'string' &&
+    isUser(game.startedBy) &&
+    isMatchmakerStatus(game.status) &&
+    isStringArray(game.moviePool) &&
+    isStringArray(game.aaronLikes) &&
+    isStringArray(game.electraLikes) &&
+    isStringArray(game.aaronDislikes) &&
+    isStringArray(game.electraDislikes)
+  );
+};
+
+const readStoredLocalMatchmakerGame = (): MatchmakerGame | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   try {
-    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+    const raw = window.localStorage.getItem(MATCHMAKER_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (isMatchmakerGameRecord(parsed)) {
+      return cloneMatchmakerGame(parsed);
+    }
+  } catch (error) {
+    console.warn('Failed to read local matchmaker fallback, resetting to empty state.', error);
+  }
+
+  return null;
+};
+
+const saveLocalMatchmakerGame = (game: MatchmakerGame | null): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    if (game) {
+      window.localStorage.setItem(
+        MATCHMAKER_LOCAL_STORAGE_KEY,
+        JSON.stringify(cloneMatchmakerGame(game))
+      );
+    } else {
+      window.localStorage.removeItem(MATCHMAKER_LOCAL_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.warn('Failed to persist local matchmaker fallback.', error);
+  }
+};
+
+const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
+  if (!canReadGist) {
+    return readStoredLocalMatchmakerGame();
+  }
+
+  if (!canWriteGist && readStoredLocalMatchmakerGame()) {
+    return readStoredLocalMatchmakerGame();
+  }
+
+  try {
+    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
 
     if (!response.ok) {
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(
+        `Failed to fetch matchmaker game (${response.status}), using local fallback state.`
+      );
+      return readStoredLocalMatchmakerGame();
     }
 
     const gist = await response.json();
     const content = getGistFileContent(gist, GIST_MATCHMAKER_FILENAME);
     if (content === null) {
+      if (!canWriteGist) {
+        return readStoredLocalMatchmakerGame();
+      }
       return null;
     }
 
@@ -36,6 +132,11 @@ const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
 };
 
 const saveMatchmakerGame = async (game: MatchmakerGame | null): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocalMatchmakerGame(game);
+    return;
+  }
+
   try {
     const response = await patchGistFile(
       GIST_MATCHMAKER_FILENAME,
