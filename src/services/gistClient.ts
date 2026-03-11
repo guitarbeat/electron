@@ -1,4 +1,4 @@
-const env = import.meta.env as ImportMetaEnv & {
+const env = (import.meta.env ?? {}) as ImportMetaEnv & {
   VITE_GIST_TOKEN?: string;
   VITE_GIST_ID?: string;
 };
