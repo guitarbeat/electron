@@ -35,7 +35,9 @@ app.post('/api/gemini', async (req, res) => {
 
     const contentStr = JSON.stringify(contents);
     if (contentStr.length > MAX_CONTENT_LENGTH) {
-      return res.status(400).json({ error: `Content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` });
+      return res
+        .status(400)
+        .json({ error: `Content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` });
     }
 
     const geminiModel = typeof requestedModel === 'string' ? requestedModel : 'gemini-2.0-flash';
@@ -44,7 +46,11 @@ app.post('/api/gemini', async (req, res) => {
     }
 
     const cappedConfig = generationConfig ? { ...generationConfig } : undefined;
-    if (cappedConfig && typeof cappedConfig.maxOutputTokens === 'number' && cappedConfig.maxOutputTokens > MAX_OUTPUT_TOKENS) {
+    if (
+      cappedConfig &&
+      typeof cappedConfig.maxOutputTokens === 'number' &&
+      cappedConfig.maxOutputTokens > MAX_OUTPUT_TOKENS
+    ) {
       cappedConfig.maxOutputTokens = MAX_OUTPUT_TOKENS;
     }
 
