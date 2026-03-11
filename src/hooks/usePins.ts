@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import { GIST_ID, GIST_TOKEN } from '../services/gistClient.ts';
+import { GIST_ID } from '../services/gistClient.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -33,16 +33,15 @@ const parsePinsContent = (fileContent: string | undefined): UserPins => {
 };
 
 const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserPins> => {
-  if (!GIST_TOKEN || !GIST_ID) {
+  if (!GIST_ID) {
     return MOCK_PINS;
   }
 
   try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    const response = await fetch(`/api/gist`, {
       cache,
       headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
+        Accept: 'application/json',
       },
     });
 
@@ -156,11 +155,10 @@ const getPins = async (): Promise<UserPins> => {
 
 const savePins = async (pins: UserPins): Promise<boolean> => {
   try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    const response = await fetch(`/api/gist`, {
       method: 'PATCH',
       headers: {
-        Authorization: `token ${GIST_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

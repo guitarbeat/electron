@@ -7,7 +7,9 @@ app.use(express.json({ limit: '1mb' }));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, if-none-match',
+  'Access-Control-Expose-Headers': 'ETag',
 };
 
 app.use((req, res, next) => {
@@ -35,7 +37,9 @@ app.post('/api/gemini', async (req, res) => {
 
     const contentStr = JSON.stringify(contents);
     if (contentStr.length > MAX_CONTENT_LENGTH) {
-      return res.status(400).json({ error: `Content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` });
+      return res
+        .status(400)
+        .json({ error: `Content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` });
     }
 
     const geminiModel = typeof requestedModel === 'string' ? requestedModel : 'gemini-2.0-flash';
@@ -44,7 +48,11 @@ app.post('/api/gemini', async (req, res) => {
     }
 
     const cappedConfig = generationConfig ? { ...generationConfig } : undefined;
-    if (cappedConfig && typeof cappedConfig.maxOutputTokens === 'number' && cappedConfig.maxOutputTokens > MAX_OUTPUT_TOKENS) {
+    if (
+      cappedConfig &&
+      typeof cappedConfig.maxOutputTokens === 'number' &&
+      cappedConfig.maxOutputTokens > MAX_OUTPUT_TOKENS
+    ) {
       cappedConfig.maxOutputTokens = MAX_OUTPUT_TOKENS;
     }
 
@@ -101,6 +109,101 @@ app.get('/api/omdb', async (req, res) => {
 });
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+app.get('/api/gist', async (req, res) => {
+  try {
+    const gistId = process.env.VITE_GIST_ID;
+    const token = process.env.VITE_GIST_TOKEN;
+
+    if (!gistId) {
+      return res.status(500).json({ error: 'VITE_GIST_ID is not configured on the server' });
+    }
+
+    const headers = {
+      Accept: 'application/vnd.github.v3+json',
+    };
+
+    if (token) {
+      headers.Authorization = `token ${token}`;
+    }
+
+    const eTag = req.headers['if-none-match'];
+    if (eTag) {
+      headers['If-None-Match'] = eTag;
+    }
+
+    const gistUrl = `https://api.github.com/gists/${gistId}`;
+    const gistResponse = await fetch(gistUrl, { headers });
+
+    // Expose ETag so client can cache properly
+    const resETag = gistResponse.headers.get('ETag');
+    if (resETag) {
+      res.setHeader('ETag', resETag);
+    }
+
+    // Pass along 304 Not Modified
+    if (gistResponse.status === 304) {
+      return res.status(304).send();
+    }
+
+    if (!gistResponse.ok) {
+      return res.status(gistResponse.status).json({ error: 'Upstream GitHub API error' });
+    }
+
+    const data = await gistResponse.json();
+    return res.json(data);
+  } catch (err) {
+    console.error('Gist proxy GET error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.patch('/api/gist', async (req, res) => {
+  try {
+    const gistId = process.env.VITE_GIST_ID;
+    const token = process.env.VITE_GIST_TOKEN;
+
+    if (!gistId) {
+      return res.status(500).json({ error: 'VITE_GIST_ID is not configured on the server' });
+    }
+    if (!token) {
+      return res
+        .status(500)
+        .json({ error: 'VITE_GIST_TOKEN is not configured on the server for writes' });
+    }
+
+    const { files } = req.body;
+    if (!files || typeof files !== 'object') {
+      return res.status(400).json({ error: 'Invalid payload: missing files object' });
+    }
+
+    const headers = {
+      Accept: 'application/vnd.github.v3+json',
+      Authorization: `token ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    const gistUrl = `https://api.github.com/gists/${gistId}`;
+    const gistResponse = await fetch(gistUrl, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ files }),
+    });
+
+    if (!gistResponse.ok) {
+      const errorText = await gistResponse.text();
+      const sanitized = errorText.replace(new RegExp(token, 'g'), '[REDACTED]');
+      console.error('Gist API Error:', gistResponse.status, sanitized);
+      return res.status(gistResponse.status).json({ error: 'Upstream GitHub API error' });
+    }
+
+    const data = await gistResponse.json();
+    return res.json(data);
+  } catch (err) {
+    console.error('Gist proxy PATCH error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`API server running on port ${PORT}`);

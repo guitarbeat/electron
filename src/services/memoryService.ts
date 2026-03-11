@@ -4,18 +4,18 @@ import {
   fetchGist,
   GIST_MEMORIES_FILENAME,
   getGistFileContent,
-  GIST_TOKEN,
   patchGistFile,
+  canReadGist,
 } from './gistClient.ts';
 import { MOCK_MEMORIES } from './mockData';
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
-  if (!GIST_TOKEN) {
+  if (!canReadGist) {
     return MOCK_MEMORIES;
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       console.warn('Failed to fetch memories, using mock data');
@@ -37,11 +37,7 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
 
 const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
   try {
-    const response = await patchGistFile(
-      GIST_MEMORIES_FILENAME,
-      JSON.stringify(memories, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_MEMORIES_FILENAME, JSON.stringify(memories, null, 2));
 
     if (!response.ok) {
       const errorBody = await response.json();

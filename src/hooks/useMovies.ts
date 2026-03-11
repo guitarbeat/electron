@@ -8,7 +8,6 @@ import {
   fetchGist,
   GIST_FILENAME,
   getGistFileContent,
-  GIST_TOKEN,
   patchGistFile,
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
@@ -95,7 +94,6 @@ const getMovies = async (): Promise<Movie[]> => {
 
   try {
     const response = await fetchGist({
-      token: GIST_TOKEN || undefined,
       eTag: lastETag,
       cache: 'no-cache',
     });
@@ -155,11 +153,7 @@ const saveMovies = async (movies: Movie[]): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_FILENAME,
-      JSON.stringify(movies, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_FILENAME, JSON.stringify(movies, null, 2));
 
     if (!response.ok) {
       try {

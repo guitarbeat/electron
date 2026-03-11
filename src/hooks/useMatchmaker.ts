@@ -5,13 +5,12 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_MATCHMAKER_FILENAME,
-  GIST_TOKEN,
   patchGistFile,
 } from '@/services/gistClient.ts';
 
 const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
   try {
-    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       throw new Error(`GitHub API responded with ${response.status}`);
@@ -39,8 +38,7 @@ const saveMatchmakerGame = async (game: MatchmakerGame | null): Promise<void> =>
   try {
     const response = await patchGistFile(
       GIST_MATCHMAKER_FILENAME,
-      game ? JSON.stringify(game, null, 2) : '',
-      GIST_TOKEN
+      game ? JSON.stringify(game, null, 2) : ''
     );
 
     if (!response.ok) {

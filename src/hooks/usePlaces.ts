@@ -7,7 +7,6 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_PLACES_FILENAME,
-  GIST_TOKEN,
   patchGistFile,
 } from '@/services/gistClient.ts';
 import { validateAndThrow, validatePlace } from '@/utils/validation';
@@ -109,7 +108,7 @@ const getPlaces = async (): Promise<Place[]> => {
       return getFallbackPlaces();
     }
 
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
@@ -145,11 +144,7 @@ const savePlaces = async (places: Place[]): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_PLACES_FILENAME,
-      JSON.stringify(places, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_PLACES_FILENAME, JSON.stringify(places, null, 2));
 
     if (!response.ok) {
       const errorBody = await response.json();
