@@ -65,7 +65,8 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   ]);
 
   const remainingMovies = useMemo(() => {
-    return activePoolMovies.filter((m) => !swipedIds.includes(m.id));
+    const swipedSet = new Set(swipedIds);
+    return activePoolMovies.filter((m) => !swipedSet.has(m.id));
   }, [activePoolMovies, swipedIds]);
 
   const matches = useMemo(() => {
