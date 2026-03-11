@@ -5,8 +5,14 @@ const env = (import.meta.env ?? {}) as ImportMetaEnv & {
 
 const clean = (value: string) => value.trim().replace(/^["']|["']$/g, '');
 
+export const isGistReadConfigured = (gistId: string) => clean(gistId).length > 0;
+export const isGistWriteConfigured = (gistId: string, token: string) =>
+  isGistReadConfigured(gistId) && clean(token).length > 0;
+
 export const GIST_TOKEN = clean(env.VITE_GIST_TOKEN || '');
 export const GIST_ID = clean(env.VITE_GIST_ID || '');
+export const canReadGist = isGistReadConfigured(GIST_ID);
+export const canWriteGist = isGistWriteConfigured(GIST_ID, GIST_TOKEN);
 export const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 export const GIST_FILENAME = 'movielist.json';
 export const GIST_QUIZ_FILENAME = 'quiz.json';
