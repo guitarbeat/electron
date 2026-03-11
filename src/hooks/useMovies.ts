@@ -3,6 +3,8 @@ import { Movie, User } from '@/types';
 import { usePolling } from '@/hooks/usePolling';
 import {
   buildGithubApiErrorMessage,
+  canReadGist,
+  canWriteGist,
   fetchGist,
   GIST_FILENAME,
   getGistFileContent,
@@ -16,16 +18,84 @@ import { MOCK_MOVIES } from '@/services/mockData';
 
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
+const MOVIES_LOCAL_STORAGE_KEY = 'movieList.localMovies';
+
+const cloneMovies = (movies: Movie[]): Movie[] =>
+  movies.map((movie) => ({
+    ...movie,
+    watchedBy: [...movie.watchedBy],
+  }));
+
+const isUser = (value: unknown): value is User => value === 'Aaron' || value === 'Electra';
+
+const isMovieRecord = (value: unknown): value is Movie => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const movie = value as Partial<Movie>;
+
+  return (
+    typeof movie.id === 'string' &&
+    typeof movie.title === 'string' &&
+    isUser(movie.addedBy) &&
+    typeof movie.createdAt === 'string' &&
+    Array.isArray(movie.watchedBy) &&
+    movie.watchedBy.every(isUser)
+  );
+};
+
+const readStoredLocalMovies = (): Movie[] | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(MOVIES_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every(isMovieRecord)) {
+      return cloneMovies(parsed);
+    }
+  } catch (error) {
+    console.warn('Failed to read local movie fallback, resetting to defaults.', error);
+  }
+
+  return null;
+};
+
+const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? cloneMovies(MOCK_MOVIES);
+
+const saveLocalMovies = (movies: Movie[]): void => {
+  const nextMovies = cloneMovies(movies);
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(MOVIES_LOCAL_STORAGE_KEY, JSON.stringify(nextMovies));
+    } catch (error) {
+      console.warn('Failed to persist local movie fallback.', error);
+    }
+  }
+
+  cachedMovies = nextMovies;
+  lastETag = null;
+};
 
 const getMovies = async (): Promise<Movie[]> => {
-  // If no token configured, return mock data for frontend development
-  if (!GIST_TOKEN) {
-    return MOCK_MOVIES;
+  if (!canReadGist) {
+    return getFallbackMovies();
+  }
+
+  if (!canWriteGist && readStoredLocalMovies()) {
+    return getFallbackMovies();
   }
 
   try {
     const response = await fetchGist({
-      token: GIST_TOKEN,
+      token: GIST_TOKEN || undefined,
       eTag: lastETag,
       cache: 'no-cache',
     });
@@ -37,14 +107,17 @@ const getMovies = async (): Promise<Movie[]> => {
     }
 
     if (!response.ok) {
-      // If Gist fails, return mock data as fallback
-      console.warn('Failed to fetch from Gist, using mock data');
-      return MOCK_MOVIES;
+      console.warn(`Failed to fetch from Gist (${response.status}), using local movie fallback.`);
+      return getFallbackMovies();
     }
 
     const gist = await response.json();
     const content = getGistFileContent(gist, GIST_FILENAME);
     if (content === null) {
+      if (!canWriteGist) {
+        console.warn(`Gist is missing "${GIST_FILENAME}". Using local movie fallback instead.`);
+        return getFallbackMovies();
+      }
       console.warn(`Gist is missing "${GIST_FILENAME}". Returning an empty movie list.`);
       return [];
     }
@@ -76,6 +149,11 @@ const getMovies = async (): Promise<Movie[]> => {
 };
 
 const saveMovies = async (movies: Movie[]): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocalMovies(movies);
+    return;
+  }
+
   try {
     const response = await patchGistFile(
       GIST_FILENAME,
