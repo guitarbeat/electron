@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createValidator, validateAndThrow, type ValidationRules } from '../src/utils/validation.ts';
+import {
+  createValidator,
+  validateAndThrow,
+  type ValidationRules,
+} from '../src/utils/validation.ts';
 
 test('createValidator - required validation', () => {
   const rules: ValidationRules = {
@@ -74,7 +78,7 @@ test('createValidator - pattern', () => {
 
 test('createValidator - custom', () => {
   const rules: ValidationRules = {
-    age: { custom: (val) => parseInt(val, 10) < 18 ? 'Must be 18 or older' : null },
+    age: { custom: (val) => (parseInt(val, 10) < 18 ? 'Must be 18 or older' : null) },
   };
   const validate = createValidator(rules);
 
@@ -88,7 +92,7 @@ test('createValidator - custom', () => {
 
 test('validateAndThrow - fails', () => {
   const rules: ValidationRules = {
-    name: { required: true }
+    name: { required: true },
   };
   const validate = createValidator(rules);
 
@@ -100,7 +104,7 @@ test('validateAndThrow - fails', () => {
 
 test('validateAndThrow - success', () => {
   const rules: ValidationRules = {
-    name: { required: true }
+    name: { required: true },
   };
   const validate = createValidator(rules);
 
