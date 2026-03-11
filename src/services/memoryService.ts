@@ -1,6 +1,8 @@
 import { sanitizeInput } from '@/config/security.ts';
 import type { SharedMemory } from '@/types.ts';
 import {
+  canReadGist,
+  canWriteGist,
   fetchGist,
   GIST_MEMORIES_FILENAME,
   getGistFileContent,
@@ -9,22 +11,95 @@ import {
 } from './gistClient.ts';
 import { MOCK_MEMORIES } from './mockData';
 
-export const getMemories = async (): Promise<SharedMemory[]> => {
-  if (!GIST_TOKEN) {
-    return MOCK_MEMORIES;
+const MEMORIES_LOCAL_STORAGE_KEY = 'movieList.localMemories';
+
+const cloneMemories = (memories: SharedMemory[]): SharedMemory[] =>
+  memories.map((memory) => ({
+    ...memory,
+  }));
+
+const isSharedMemoryRecord = (value: unknown): value is SharedMemory => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const memory = value as Partial<SharedMemory>;
+
+  return (
+    typeof memory.id === 'string' &&
+    typeof memory.movieTitle === 'string' &&
+    typeof memory.author === 'string' &&
+    typeof memory.note === 'string' &&
+    typeof memory.createdAt === 'string' &&
+    (memory.movieId === undefined || typeof memory.movieId === 'string') &&
+    (memory.updatedAt === undefined || typeof memory.updatedAt === 'string') &&
+    (memory.isPinned === undefined || typeof memory.isPinned === 'boolean')
+  );
+};
+
+const readStoredLocalMemories = (): SharedMemory[] | null => {
+  if (typeof window === 'undefined') {
+    return null;
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+    const raw = window.localStorage.getItem(MEMORIES_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every(isSharedMemoryRecord)) {
+      return cloneMemories(parsed);
+    }
+  } catch (error) {
+    console.warn('Failed to read local memories fallback, resetting to defaults.', error);
+  }
+
+  return null;
+};
+
+const getFallbackMemories = (): SharedMemory[] =>
+  readStoredLocalMemories() ?? cloneMemories(MOCK_MEMORIES);
+
+const saveLocalMemories = (memories: SharedMemory[]): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      MEMORIES_LOCAL_STORAGE_KEY,
+      JSON.stringify(cloneMemories(memories))
+    );
+  } catch (error) {
+    console.warn('Failed to persist local memories fallback.', error);
+  }
+};
+
+export const getMemories = async (): Promise<SharedMemory[]> => {
+  if (!canReadGist) {
+    return getFallbackMemories();
+  }
+
+  if (!canWriteGist && readStoredLocalMemories()) {
+    return getFallbackMemories();
+  }
+
+  try {
+    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
 
     if (!response.ok) {
-      console.warn('Failed to fetch memories, using mock data');
-      return MOCK_MEMORIES;
+      console.warn(`Failed to fetch memories (${response.status}), using local fallback.`);
+      return getFallbackMemories();
     }
 
     const gist = await response.json();
     const content = getGistFileContent(gist, GIST_MEMORIES_FILENAME);
     if (content === null) {
+      if (!canWriteGist) {
+        return getFallbackMemories();
+      }
       return [];
     }
 
@@ -36,6 +111,11 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
 };
 
 const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocalMemories(memories);
+    return;
+  }
+
   try {
     const response = await patchGistFile(
       GIST_MEMORIES_FILENAME,
