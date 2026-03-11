@@ -125,6 +125,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
     }
   };
 
+  const firstMemoryNote = memories[0]?.note;
+  const memoryPreview = firstMemoryNote
+    ? `: "${firstMemoryNote.slice(0, 60)}${firstMemoryNote.length > 60 ? '...' : ''}"`
+    : '';
+
   return (
     <>
       <Card
@@ -253,11 +258,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
                   aria-label={`View memories for "${movie.title}"`}
                 >
                   {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
-                  {memories[0]?.note
-                    ? `: "${memories[0].note.slice(0, 60)}${
-                        memories[0].note.length > 60 ? '...' : ''
-                      }"`
-                    : ''}
+                  {memoryPreview}
                 </button>
               )}
             </div>
