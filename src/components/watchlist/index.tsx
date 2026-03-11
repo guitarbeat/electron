@@ -401,10 +401,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         ),
         content: (
           <div className="watchlist">
-            <header className="watchlist-header">
-              <h1 className="watchlist-title">Watchlist</h1>
-            </header>
-
             {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
               <div
                 className="watchlist-empty-state"
@@ -460,18 +456,86 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             )}
 
             {movieToFix && (
-              <div className="fix-match-dialog-overlay">
-                <div className="fix-match-dialog">
-                  <h2 className="text-lg font-semibold mb-4">Fix Match</h2>
-                  <p className="text-gray-600 mb-6">
-                    Are you sure you want to fix the match for &quot;{movieToFix.title}&quot;?
+              <div
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  background: 'rgba(2, 6, 23, 0.78)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 900,
+                  padding: '1.25rem',
+                }}
+              >
+                <div
+                  style={{
+                    background: 'var(--color-surface-2)',
+                    border: '1px solid var(--color-border-subtle)',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    maxWidth: '420px',
+                    width: '100%',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: '0 0 0.5rem',
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    Fix Details
+                  </h2>
+                  <p
+                    style={{
+                      margin: '0 0 1.25rem',
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Re-fetch metadata for &quot;{movieToFix.title}&quot;?
                   </p>
-                  <div className="flex justify-end space-x-3">
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
                     <button
                       onClick={() => setMovieToFix(null)}
-                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'transparent',
+                        border: '1px solid var(--color-border-subtle)',
+                        borderRadius: '8px',
+                        color: 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                      }}
                     >
                       Cancel
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await manualMetadataUpdate(movieToFix.id, movieToFix.title);
+                        } finally {
+                          setMovieToFix(null);
+                        }
+                      }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'var(--color-accent)',
+                        border: '1px solid var(--color-accent)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Re-fetch
                     </button>
                   </div>
                 </div>
