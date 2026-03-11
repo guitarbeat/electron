@@ -78,7 +78,7 @@ const FoodDropGame: React.FC = () => {
 
         if (Math.random() < difficultyConfig[difficulty].spawnChance) {
           nextFoods.push({
-            id: `food-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: crypto.randomUUID(),
             x: Math.random() * (BOARD_WIDTH - FOOD_SIZE),
             y: -FOOD_SIZE,
             speed: 2 + Math.random() * 2,
