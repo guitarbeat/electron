@@ -101,8 +101,8 @@ const AppInner: React.FC = () => {
         <div className="app-frame">
           <aside className="control-rail" aria-label="Workspace navigation">
             <div className="control-rail__panel">
-              <p className="control-rail__eyebrow">Dashboard</p>
-              <h1 className="control-rail__title">Weekend planner</h1>
+              <p className="control-rail__eyebrow">Aaron & Electra</p>
+              <h1 className="control-rail__title">Weekend<br />Planner</h1>
             </div>
 
             <div className="control-rail__panel">

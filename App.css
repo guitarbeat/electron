@@ -138,7 +138,10 @@ body {
   text-transform: uppercase;
 }
 
-.control-rail__eyebrow,
+.control-rail__eyebrow {
+  color: var(--color-accent);
+}
+
 .control-rail__section-head,
 .support-card__head {
   color: var(--color-text-secondary);
@@ -180,11 +183,17 @@ body {
   cursor: pointer;
   transition:
     border-color 180ms ease,
-    background 180ms ease;
+    background 180ms ease,
+    color 180ms ease;
 }
 
 .command-deck__item:hover,
-.command-deck__item:focus-visible,
+.command-deck__item:focus-visible {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-surface-1) 90%, var(--color-accent) 10%);
+  color: var(--color-accent);
+}
+
 .workspace-tabs__button:hover,
 .workspace-tabs__button:focus-visible {
   border-color: var(--color-accent);
@@ -213,6 +222,7 @@ body {
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  color: var(--color-accent);
 }
 
 .workspace-tabs {
@@ -234,6 +244,7 @@ body {
 .workspace-tabs__button.is-active {
   border-color: var(--color-accent);
   background: var(--color-surface-2);
+  color: var(--color-accent);
 }
 
 .workspace-grid {
@@ -473,6 +484,11 @@ body {
   transition: background 0.15s ease, border-color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+.more-sheet__action-btn:hover {
+  background: var(--color-surface-1);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border-subtle));
 }
 
 .more-sheet__action-btn:active {
