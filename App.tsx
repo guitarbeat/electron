@@ -14,18 +14,21 @@ import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
+import BottomSheet from './src/components/ui/BottomSheet';
 import { ToastProvider } from './src/context/ToastContext';
+import { useMediaQuery, breakpoints } from './src/hooks/useMediaQuery';
 import './App.css';
 
-const MAIN_TABS: Array<{ id: MainTab; label: string }> = [
-  { id: 'queue', label: 'Watchlist' },
-  { id: 'places', label: 'Places' },
+const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
+  { id: 'queue', label: 'Watchlist', icon: '🎬' },
+  { id: 'places', label: 'Places', icon: '📍' },
 ];
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
+  const isMobile = useMediaQuery(breakpoints.sm);
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(
@@ -35,6 +38,7 @@ const AppInner: React.FC = () => {
   const [showFoodDrop, setShowFoodDrop] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
+  const [showMoreSheet, setShowMoreSheet] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
@@ -49,18 +53,22 @@ const AppInner: React.FC = () => {
     () => [
       {
         label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
+        icon: '🧠',
         action: () => setShowQuizEditor(true),
       },
       {
         label: 'Memories',
+        icon: '📸',
         action: () => setShowMemories(true),
       },
       {
         label: 'Spin Wheel',
+        icon: '🎰',
         action: () => setShowSpinWheel(true),
       },
       {
         label: 'Food Drop',
+        icon: '🍔',
         action: () => setShowFoodDrop(true),
       },
     ],
@@ -76,6 +84,11 @@ const AppInner: React.FC = () => {
   const handleQuizComplete = () => {
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
+  };
+
+  const handleMobileAction = (action: () => void) => {
+    setShowMoreSheet(false);
+    setTimeout(action, 150);
   };
 
   return (
@@ -103,29 +116,54 @@ const AppInner: React.FC = () => {
 
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             <section className="workspace-header" aria-label="Current workspace overview">
-              <h2 className="workspace-header__title" aria-live="polite">
-                {activeTabMeta.label}
-              </h2>
-
-              <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
-                {MAIN_TABS.map((tab) => {
-                  const isActive = tab.id === activeTab;
-                  return (
-                    <button
-                      key={tab.id}
-                      id={`tab-${tab.id}`}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      aria-controls={`tabpanel-${tab.id}`}
-                      className={`workspace-tabs__button${isActive ? ' is-active' : ''}`}
-                      onClick={() => handleTabChange(tab.id)}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
+              <div className="workspace-header__left">
+                <h2 className="workspace-header__title" aria-live="polite">
+                  {activeTabMeta.label}
+                </h2>
+                {isMobile && currentUser && (
+                  <button
+                    type="button"
+                    className="mobile-user-chip"
+                    onClick={() => setShowMoreSheet(true)}
+                    aria-label={`Signed in as ${currentUser}. Tap to switch.`}
+                  >
+                    <span className="mobile-user-chip__dot" />
+                    <span className="mobile-user-chip__name">{currentUser}</span>
+                  </button>
+                )}
+                {isMobile && !currentUser && (
+                  <button
+                    type="button"
+                    className="mobile-user-chip mobile-user-chip--empty"
+                    onClick={() => setShowMoreSheet(true)}
+                    aria-label="No user selected. Tap to choose."
+                  >
+                    <span className="mobile-user-chip__name">Pick user</span>
+                  </button>
+                )}
               </div>
+
+              {!isMobile && (
+                <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
+                  {MAIN_TABS.map((tab) => {
+                    const isActive = tab.id === activeTab;
+                    return (
+                      <button
+                        key={tab.id}
+                        id={`tab-${tab.id}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`tabpanel-${tab.id}`}
+                        className={`workspace-tabs__button${isActive ? ' is-active' : ''}`}
+                        onClick={() => handleTabChange(tab.id)}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             <div className="workspace-grid">
@@ -170,6 +208,72 @@ const AppInner: React.FC = () => {
             </div>
           </main>
         </div>
+
+        {isMobile && (
+          <nav className="mobile-bottom-nav" aria-label="Main navigation">
+            {MAIN_TABS.map((tab) => {
+              const isActive = tab.id === activeTab;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`mobile-bottom-nav__item${isActive ? ' is-active' : ''}`}
+                  onClick={() => handleTabChange(tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span className="mobile-bottom-nav__icon" aria-hidden="true">{tab.icon}</span>
+                  <span className="mobile-bottom-nav__label">{tab.label}</span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              className="mobile-bottom-nav__item"
+              onClick={() => setShowMoreSheet(true)}
+              aria-label="More options"
+            >
+              <span className="mobile-bottom-nav__icon" aria-hidden="true">⋯</span>
+              <span className="mobile-bottom-nav__label">More</span>
+            </button>
+          </nav>
+        )}
+
+        <BottomSheet
+          isOpen={showMoreSheet}
+          onClose={() => setShowMoreSheet(false)}
+          title="Menu"
+        >
+          <div className="more-sheet">
+            <div className="more-sheet__section">
+              <p className="more-sheet__section-label">Switch user</p>
+              <UserSelection
+                variant="inline"
+                activeTab={activeTab}
+                onTabChange={(tab) => {
+                  handleTabChange(tab);
+                  setShowMoreSheet(false);
+                }}
+              />
+            </div>
+
+            <div className="more-sheet__section">
+              <p className="more-sheet__section-label">Actions</p>
+              <div className="more-sheet__actions">
+                {commandDeck.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className="more-sheet__action-btn"
+                    onClick={() => handleMobileAction(item.action)}
+                  >
+                    <span className="more-sheet__action-icon" aria-hidden="true">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </BottomSheet>
 
         <MinigameModal
           isOpen={showQuizEditor}
