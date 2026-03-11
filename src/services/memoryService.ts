@@ -144,7 +144,7 @@ export const addMemory = async (
   const memories = await getMemories();
 
   const newMemory: SharedMemory = {
-    id: `memory-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: `memory-${crypto.randomUUID()}`,
     movieId,
     movieTitle: sanitizeInput(movieTitle),
     author: sanitizeInput(author),
