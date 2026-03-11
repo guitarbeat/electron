@@ -98,6 +98,14 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const watchedByBoth = movie.watchedBy.length === 2;
   const hasSharedMemories = memories.length > 0;
 
+  const memoryCountText = `${memories.length} shared memor${memories.length === 1 ? 'y' : 'ies'}`;
+
+  let memoryPreviewText = '';
+  if (memories[0]?.note) {
+    const { note } = memories[0];
+    memoryPreviewText = `: "${note.length > 60 ? `${note.slice(0, 60)}...` : note}"`;
+  }
+
   const handleCardClick = () => {
     if (isMobile) {
       setIsBottomSheetOpen(true);
@@ -163,7 +171,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 className="movie-item-memory-toggle"
                 aria-label={`View memories for "${movie.title}"`}
               >
-                {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
+                {memoryCountText}
               </button>
             )}
 
@@ -252,12 +260,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
                   }}
                   aria-label={`View memories for "${movie.title}"`}
                 >
-                  {memories.length} shared memor{memories.length === 1 ? 'y' : 'ies'}
-                  {memories[0]?.note
-                    ? `: "${memories[0].note.slice(0, 60)}${
-                        memories[0].note.length > 60 ? '...' : ''
-                      }"`
-                    : ''}
+                  {memoryCountText}
+                  {memoryPreviewText}
                 </button>
               )}
             </div>
