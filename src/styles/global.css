@@ -2063,7 +2063,7 @@ body.grabbing * {
 
 .workspace-layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
 }
@@ -2091,7 +2091,7 @@ body.grabbing * {
 
 @media (max-width: 1024px) {
   .workspace-layout {
-    grid-template-columns: 280px minmax(0, 1fr);
+    grid-template-columns: 200px minmax(0, 1fr);
   }
 }
 
