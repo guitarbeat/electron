@@ -3,9 +3,9 @@ import {
   MAX_MOVIE_TITLE_LENGTH,
   MAX_MESSAGE_LENGTH,
   MAX_AUTHOR_LENGTH,
-} from '@/config/security';
+} from '../config/security.ts';
 
-interface ValidationRule {
+export interface ValidationRule {
   required?: boolean;
   maxLength?: number;
   minLength?: number;
@@ -13,16 +13,16 @@ interface ValidationRule {
   custom?: (value: string) => string | null;
 }
 
-interface ValidationRules {
+export interface ValidationRules {
   [key: string]: ValidationRule;
 }
 
-interface ValidationResult {
+export interface ValidationResult {
   isValid: boolean;
   errors: Record<string, string>;
 }
 
-const createValidator = (rules: ValidationRules) => {
+export const createValidator = (rules: ValidationRules) => {
   return (data: Record<string, string>): ValidationResult => {
     const errors = Object.entries(rules).reduce<Record<string, string>>((acc, [field, rule]) => {
       const value = data[field] || '';
