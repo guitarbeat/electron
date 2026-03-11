@@ -2,6 +2,8 @@ import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/hooks/usePolling';
 import { sanitizeInput } from '@/config/security.ts';
 import {
+  canReadGist,
+  canWriteGist,
   fetchGist,
   getGistFileContent,
   GIST_SUGGESTIONS_FILENAME,
@@ -12,6 +14,7 @@ import { MovieSuggestion, User } from '@/types';
 import { MOCK_SUGGESTIONS } from '@/services/mockData';
 
 const POLLING_INTERVAL = 300000; // 5 minutes
+const SUGGESTIONS_LOCAL_STORAGE_KEY = 'movieList.localSuggestions';
 
 const suggestionsEqual = (prev: MovieSuggestion[] | undefined, next: MovieSuggestion[]) => {
   if (!prev) return false;
@@ -19,22 +22,91 @@ const suggestionsEqual = (prev: MovieSuggestion[] | undefined, next: MovieSugges
   return JSON.stringify(prev) === JSON.stringify(next);
 };
 
-const getSuggestions = async (): Promise<MovieSuggestion[]> => {
-  if (!GIST_TOKEN) {
-    return MOCK_SUGGESTIONS;
+const cloneSuggestions = (suggestions: MovieSuggestion[]): MovieSuggestion[] =>
+  suggestions.map((suggestion) => ({ ...suggestion }));
+
+const isSuggestionStatus = (value: unknown): value is MovieSuggestion['status'] =>
+  value === 'pending' || value === 'accepted' || value === 'rejected';
+
+const isSuggestionRecord = (value: unknown): value is MovieSuggestion => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const suggestion = value as Partial<MovieSuggestion>;
+
+  return (
+    typeof suggestion.id === 'string' &&
+    typeof suggestion.title === 'string' &&
+    typeof suggestion.suggestedBy === 'string' &&
+    typeof suggestion.createdAt === 'string' &&
+    isSuggestionStatus(suggestion.status)
+  );
+};
+
+const readStoredLocalSuggestions = (): MovieSuggestion[] | null => {
+  if (typeof window === 'undefined') {
+    return null;
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+    const raw = window.localStorage.getItem(SUGGESTIONS_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every(isSuggestionRecord)) {
+      return cloneSuggestions(parsed);
+    }
+  } catch (error) {
+    console.warn('Failed to read local suggestions fallback, resetting to defaults.', error);
+  }
+
+  return null;
+};
+
+const getFallbackSuggestions = (): MovieSuggestion[] =>
+  readStoredLocalSuggestions() ?? cloneSuggestions(MOCK_SUGGESTIONS);
+
+const saveLocalSuggestions = (suggestions: MovieSuggestion[]): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      SUGGESTIONS_LOCAL_STORAGE_KEY,
+      JSON.stringify(cloneSuggestions(suggestions))
+    );
+  } catch (error) {
+    console.warn('Failed to persist local suggestions fallback.', error);
+  }
+};
+
+const getSuggestions = async (): Promise<MovieSuggestion[]> => {
+  if (!canReadGist) {
+    return getFallbackSuggestions();
+  }
+
+  if (!canWriteGist && readStoredLocalSuggestions()) {
+    return getFallbackSuggestions();
+  }
+
+  try {
+    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
 
     if (!response.ok) {
-      console.warn('Failed to fetch suggestions, using mock data');
-      return MOCK_SUGGESTIONS;
+      console.warn(`Failed to fetch suggestions (${response.status}), using local fallback.`);
+      return getFallbackSuggestions();
     }
 
     const gist = await response.json();
     const content = getGistFileContent(gist, GIST_SUGGESTIONS_FILENAME);
     if (content === null) {
+      if (!canWriteGist) {
+        return getFallbackSuggestions();
+      }
       return [];
     }
 
@@ -46,6 +118,11 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
 };
 
 const saveSuggestions = async (suggestions: MovieSuggestion[]): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocalSuggestions(suggestions);
+    return;
+  }
+
   try {
     const response = await patchGistFile(
       GIST_SUGGESTIONS_FILENAME,

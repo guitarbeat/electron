@@ -2,9 +2,10 @@ import { useCallback } from 'react';
 import { Place, User } from '@/types';
 import { usePolling } from './usePolling';
 import {
+  canReadGist,
+  canWriteGist,
   fetchGist,
   getGistFileContent,
-  GIST_ID,
   GIST_PLACES_FILENAME,
   GIST_TOKEN,
   patchGistFile,
@@ -36,28 +37,95 @@ const mockPlaces: Place[] = [
   },
 ];
 
-const getPlaces = async (): Promise<Place[]> => {
+const PLACES_LOCAL_STORAGE_KEY = 'movieList.localPlaces';
+
+const clonePlaces = (places: Place[]): Place[] =>
+  places.map((place) => ({
+    ...place,
+  }));
+
+const isPlaceRecord = (value: unknown): value is Place => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const place = value as Partial<Place>;
+
+  return (
+    typeof place.id === 'string' &&
+    typeof place.name === 'string' &&
+    typeof place.createdAt === 'string' &&
+    (place.addedBy === undefined || place.addedBy === 'Aaron' || place.addedBy === 'Electra') &&
+    (place.notes === undefined || typeof place.notes === 'string') &&
+    (place.visitedAt === undefined || typeof place.visitedAt === 'string') &&
+    (place.lat === undefined || typeof place.lat === 'number') &&
+    (place.lng === undefined || typeof place.lng === 'number')
+  );
+};
+
+const readStoredLocalPlaces = (): Place[] | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   try {
-    if (!GIST_TOKEN?.trim() || !GIST_ID?.trim()) {
-      console.warn(
-        'GitHub credentials not configured. Using mock places. Set VITE_GIST_TOKEN and VITE_GIST_ID to use real data.'
-      );
-      return mockPlaces;
+    const raw = window.localStorage.getItem(PLACES_LOCAL_STORAGE_KEY);
+    if (!raw) {
+      return null;
     }
 
-    const response = await fetchGist({ token: GIST_TOKEN, cache: 'no-cache' });
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every(isPlaceRecord)) {
+      return clonePlaces(parsed);
+    }
+  } catch (error) {
+    console.warn('Failed to read local places fallback, resetting to defaults.', error);
+  }
+
+  return null;
+};
+
+const getFallbackPlaces = (): Place[] => readStoredLocalPlaces() ?? clonePlaces(mockPlaces);
+
+const saveLocalPlaces = (places: Place[]): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(PLACES_LOCAL_STORAGE_KEY, JSON.stringify(clonePlaces(places)));
+  } catch (error) {
+    console.warn('Failed to persist local places fallback.', error);
+  }
+};
+
+const getPlaces = async (): Promise<Place[]> => {
+  try {
+    if (!canReadGist) {
+      return getFallbackPlaces();
+    }
+
+    if (!canWriteGist && readStoredLocalPlaces()) {
+      return getFallbackPlaces();
+    }
+
+    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        console.warn(`GitHub API returned ${response.status}. Falling back to mock places.`);
-        return mockPlaces;
+        console.warn(`GitHub API returned ${response.status}. Falling back to local places.`);
+        return getFallbackPlaces();
       }
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`GitHub API returned ${response.status}. Falling back to local places.`);
+      return getFallbackPlaces();
     }
 
     const gist = await response.json();
     const content = getGistFileContent(gist, GIST_PLACES_FILENAME);
     if (content === null) {
+      if (!canWriteGist) {
+        return getFallbackPlaces();
+      }
       return [];
     }
 
@@ -65,12 +133,17 @@ const getPlaces = async (): Promise<Place[]> => {
     return Array.isArray(places) ? places : [];
   } catch (error) {
     console.error('Error fetching places from Gist:', error);
-    console.warn('Falling back to mock places');
-    return mockPlaces;
+    console.warn('Falling back to local places');
+    return getFallbackPlaces();
   }
 };
 
 const savePlaces = async (places: Place[]): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocalPlaces(places);
+    return;
+  }
+
   try {
     const response = await patchGistFile(
       GIST_PLACES_FILENAME,
