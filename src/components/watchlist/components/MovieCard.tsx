@@ -34,42 +34,61 @@ interface WatcherBadgeProps {
 
 const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   user,
-  size = 'md',
   variant = 'default',
   showLabel = false,
   className = '',
 }) => {
-  const sizeClasses = {
-    sm: 'text-xs px-2 py-1',
-    md: 'text-sm px-3 py-1',
-    lg: 'text-base px-4 py-2',
-  };
-
+  const isAaron = user === 'Aaron';
   const avatar = (
-    <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
+    <div
+      style={{
+        width: '24px',
+        height: '24px',
+        borderRadius: '50%',
+        background: isAaron
+          ? 'linear-gradient(135deg, #95dcff 0%, #60c5f5 100%)'
+          : 'linear-gradient(135deg, #ff7fc6 0%, #ff5ab0 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '10px',
+        fontWeight: 700,
+        color: '#fff',
+        flexShrink: 0,
+        boxShadow: isAaron
+          ? '0 0 6px rgba(149, 220, 255, 0.5)'
+          : '0 0 6px rgba(255, 127, 198, 0.5)',
+        border: '1px solid rgba(255,255,255,0.25)',
+      }}
+    >
       {user.charAt(0).toUpperCase()}
     </div>
   );
 
   if (variant === 'text') {
     return (
-      <div className={`watcher-badge ${className}`}>
-        <div className="flex items-center space-x-2">
-          {avatar}
-          {showLabel && <span className="text-sm text-gray-700">{user}</span>}
-        </div>
+      <div className={`watcher-badge ${className}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {avatar}
+        {showLabel && (
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+            {user}
+          </span>
+        )}
       </div>
     );
   }
 
   return (
     <div
-      className={`watcher-badge inline-flex items-center rounded-full font-medium ${sizeClasses[size]} ${className}`}
+      className={`watcher-badge ${className}`}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
     >
-      <div className="flex items-center space-x-2">
-        {avatar}
-        {showLabel && <span className="text-sm text-gray-700">{user}</span>}
-      </div>
+      {avatar}
+      {showLabel && (
+        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+          {user}
+        </span>
+      )}
     </div>
   );
 };
