@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useMediaQuery, breakpoints } from '../../../hooks/useMediaQuery';
+import { useMediaQuery, breakpoints } from '../../../hooks';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/memoryUtils';
 import {
   addMemory as addMemoryService,
