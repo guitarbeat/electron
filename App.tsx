@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAudio } from './src/hooks/useAudio';
+import { useAudio } from './src/hooks';
 import { useQuiz } from './src/hooks/useQuiz';
 import { UserProvider, useUser } from './src/context';
 import { ThemeProvider } from './src/context';
@@ -16,7 +16,7 @@ import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
 import BottomSheet from './src/components/ui/BottomSheet';
 import { ToastProvider } from './src/context';
-import { useMediaQuery, breakpoints } from './src/hooks/useMediaQuery';
+import { useMediaQuery, breakpoints } from './src/hooks';
 import './App.css';
 
 const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
