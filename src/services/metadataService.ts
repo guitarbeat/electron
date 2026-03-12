@@ -19,11 +19,21 @@ const buildOmdbUrl = (params: Record<string, string>): string | null => {
   return url.toString();
 };
 
-const fetchWithRetry = async (url: string, retries = 3, backoff = 1000): Promise<Response> => {
+export const shouldRetryResponseStatus = (status: number): boolean =>
+  status === 408 || status === 425 || status === 429 || status >= 500;
+
+export const fetchWithRetry = async (
+  url: string,
+  retries = 3,
+  backoff = 1000
+): Promise<Response> => {
   try {
     const response = await fetch(url);
-    if (!response.ok && retries > 0) {
-      throw new Error(`Fetch failed with status ${response.status}`);
+    if (!response.ok && retries > 0 && shouldRetryResponseStatus(response.status)) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, backoff);
+      });
+      return fetchWithRetry(url, retries - 1, backoff * 2);
     }
     return response;
   } catch (error) {
@@ -86,6 +96,12 @@ interface TvMazeImage {
   original: string;
 }
 
+interface TvMazeCountry {
+  name: string;
+  code: string;
+  timezone: string;
+}
+
 interface TvMazeShow {
   id: number;
   url: string;
@@ -105,15 +121,15 @@ interface TvMazeShow {
   network: {
     id: number;
     name: string;
-    country: { name: string; code: string; timezone: string };
+    country: TvMazeCountry;
   } | null;
   webChannel: {
     id: number;
     name: string;
-    country: { name: string; code: string; timezone: string } | null;
+    country: TvMazeCountry | null;
   } | null;
 
-  dvdCountry: any | null;
+  dvdCountry: TvMazeCountry | null;
   externals: { tvrage: number; thetvdb: number; imdb: string | null };
   image: TvMazeImage | null;
   summary: string | null;
@@ -164,6 +180,10 @@ export const fetchMovieMetadata = async (
       const safeTvMazeId = encodeURIComponent(tvmazeId);
       const tvmazeUrl = `${TVMAZE_BASE_URL}/shows/${safeTvMazeId}`;
       const tvmazeRes = await fetchWithRetry(tvmazeUrl);
+      if (!tvmazeRes.ok) {
+        throw new Error(`TVMaze show lookup failed with status ${tvmazeRes.status}`);
+      }
+
       const show: TvMazeShow = await tvmazeRes.json();
 
       if (show) {
@@ -186,6 +206,10 @@ export const fetchMovieMetadata = async (
       if (omdbByIdUrl) {
         try {
           const omdbRes = await fetchWithRetry(omdbByIdUrl);
+          if (!omdbRes.ok) {
+            throw new Error(`OMDb ID lookup failed with status ${omdbRes.status}`);
+          }
+
           const omdbData: OmdbMovieResponse = await omdbRes.json();
           if (omdbData.Response === 'True') {
             return toMetadataResultFromOmdb(omdbData);
@@ -201,6 +225,10 @@ export const fetchMovieMetadata = async (
     if (omdbByTitleUrl) {
       try {
         const omdbRes = await fetchWithRetry(omdbByTitleUrl);
+        if (!omdbRes.ok) {
+          throw new Error(`OMDb title lookup failed with status ${omdbRes.status}`);
+        }
+
         const omdbData: OmdbMovieResponse = await omdbRes.json();
         if (omdbData.Response === 'True') {
           return toMetadataResultFromOmdb(omdbData);
@@ -216,6 +244,10 @@ export const fetchMovieMetadata = async (
       tvmazeUrl.searchParams.append('q', title);
 
       const tvmazeRes = await fetchWithRetry(tvmazeUrl.toString());
+      if (!tvmazeRes.ok) {
+        throw new Error(`TVMaze search failed with status ${tvmazeRes.status}`);
+      }
+
       const tvmazeData: TvMazeSearchResultItem[] = await tvmazeRes.json();
 
       if (tvmazeData && tvmazeData.length > 0) {
