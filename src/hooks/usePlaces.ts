@@ -7,9 +7,11 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_PLACES_FILENAME,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from '@/services/gistClient.ts';
 import { validateAndThrow, validatePlace } from '@/utils/validation';
 import { sanitizeInput } from '@/config/security';
@@ -64,41 +66,23 @@ const isPlaceRecord = (value: unknown): value is Place => {
   );
 };
 
-const readStoredLocalPlaces = (): Place[] | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(PLACES_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.every(isPlaceRecord)) {
-      return clonePlaces(parsed);
-    }
-  } catch (error) {
-    console.warn('Failed to read local places fallback, resetting to defaults.', error);
-  }
-
-  return null;
-};
+const readStoredLocalPlaces = (): Place[] | null =>
+  readStoredJson({
+    storageKey: PLACES_LOCAL_STORAGE_KEY,
+    validate: (value): value is Place[] => Array.isArray(value) && value.every(isPlaceRecord),
+    clone: clonePlaces,
+    label: 'local places fallback',
+  });
 
 const getFallbackPlaces = (): Place[] => readStoredLocalPlaces() ?? clonePlaces(mockPlaces);
 
 const saveLocalPlaces = (places: Place[]): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(PLACES_LOCAL_STORAGE_KEY, JSON.stringify(clonePlaces(places)));
-  } catch (error) {
-    console.warn('Failed to persist local places fallback.', error);
-  }
-
+  writeStoredJson({
+    storageKey: PLACES_LOCAL_STORAGE_KEY,
+    value: places,
+    clone: clonePlaces,
+    label: 'local places fallback',
+  });
   setLocalOverride('places', true);
 };
 
@@ -108,8 +92,9 @@ const getPlaces = async (): Promise<Place[]> => {
       return getFallbackPlaces();
     }
 
-    if (hasLocalOverride('places') && readStoredLocalPlaces()) {
-      return getFallbackPlaces();
+    const localOverride = readLocalOverride('places', readStoredLocalPlaces);
+    if (localOverride.enabled && localOverride.value) {
+      return localOverride.value;
     }
 
     const response = await fetchGist({ cache: 'no-cache' });

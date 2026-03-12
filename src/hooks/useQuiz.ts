@@ -13,9 +13,11 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_QUIZ_FILENAME,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from '@/services/gistClient.ts';
 import {
   quizQuestions as defaultQuestions,
@@ -84,38 +86,24 @@ const normalizeQuizData = (value: unknown): QuizData | null => {
   };
 };
 
-const readStoredLocalQuizData = (): QuizData | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(QUIZ_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    return normalizeQuizData(JSON.parse(raw));
-  } catch (error) {
-    console.warn('Failed to read local quiz fallback, resetting to defaults.', error);
-    return null;
-  }
-};
+const readStoredLocalQuizData = (): QuizData | null =>
+  readStoredJson({
+    storageKey: QUIZ_LOCAL_STORAGE_KEY,
+    validate: (value): value is QuizData => normalizeQuizData(value) !== null,
+    clone: (value) => normalizeQuizData(value) ?? cloneQuizData(defaultQuizData),
+    label: 'local quiz fallback',
+  });
 
 const getFallbackQuizData = (): QuizData =>
   readStoredLocalQuizData() ?? cloneQuizData(defaultQuizData);
 
 const saveLocalQuizData = (data: QuizData): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(QUIZ_LOCAL_STORAGE_KEY, JSON.stringify(cloneQuizData(data)));
-  } catch (error) {
-    console.warn('Failed to persist local quiz fallback.', error);
-  }
-
+  writeStoredJson({
+    storageKey: QUIZ_LOCAL_STORAGE_KEY,
+    value: data,
+    clone: cloneQuizData,
+    label: 'local quiz fallback',
+  });
   setLocalOverride('quiz', true);
 };
 
@@ -125,8 +113,9 @@ const getQuizData = async (): Promise<QuizData> => {
       return getFallbackQuizData();
     }
 
-    if (hasLocalOverride('quiz') && readStoredLocalQuizData()) {
-      return getFallbackQuizData();
+    const localOverride = readLocalOverride('quiz', readStoredLocalQuizData);
+    if (localOverride.enabled && localOverride.value) {
+      return localOverride.value;
     }
 
     const response = await fetchGist({ cache: 'no-cache' });

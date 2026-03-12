@@ -5,9 +5,11 @@ import {
   canWriteGist,
   fetchGist,
   getGistFileContent,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from '../services/gistClient.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
@@ -39,41 +41,23 @@ const isUserPinsRecord = (value: unknown): value is UserPins => {
   );
 };
 
-const readStoredLocalPins = (): UserPins | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(PINS_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (isUserPinsRecord(parsed)) {
-      return clonePins(parsed);
-    }
-  } catch (error) {
-    console.warn('Failed to read local PIN fallback, resetting to defaults.', error);
-  }
-
-  return null;
-};
+const readStoredLocalPins = (): UserPins | null =>
+  readStoredJson({
+    storageKey: PINS_LOCAL_STORAGE_KEY,
+    validate: isUserPinsRecord,
+    clone: clonePins,
+    label: 'local PIN fallback',
+  });
 
 const getFallbackPins = (): UserPins => readStoredLocalPins() ?? clonePins(MOCK_PINS);
 
 const saveLocalPins = (pins: UserPins): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(PINS_LOCAL_STORAGE_KEY, JSON.stringify(clonePins(pins)));
-  } catch (error) {
-    console.warn('Failed to persist local PIN fallback.', error);
-  }
-
+  writeStoredJson({
+    storageKey: PINS_LOCAL_STORAGE_KEY,
+    value: pins,
+    clone: clonePins,
+    label: 'local PIN fallback',
+  });
   setLocalOverride('pins', true);
 };
 
@@ -99,8 +83,9 @@ const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserP
     return getFallbackPins();
   }
 
-  if (hasLocalOverride('pins') && readStoredLocalPins()) {
-    return getFallbackPins();
+  const localOverride = readLocalOverride('pins', readStoredLocalPins);
+  if (localOverride.enabled && localOverride.value) {
+    return localOverride.value;
   }
 
   try {

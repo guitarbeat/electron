@@ -7,9 +7,11 @@ import {
   fetchGist,
   GIST_FILENAME,
   getGistFileContent,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '@/config/security';
@@ -45,41 +47,23 @@ const isMovieRecord = (value: unknown): value is Movie => {
   );
 };
 
-const readStoredLocalMovies = (): Movie[] | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(MOVIES_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.every(isMovieRecord)) {
-      return cloneMovies(parsed);
-    }
-  } catch (error) {
-    console.warn('Failed to read local movie fallback, resetting to defaults.', error);
-  }
-
-  return null;
-};
+const readStoredLocalMovies = (): Movie[] | null =>
+  readStoredJson({
+    storageKey: MOVIES_LOCAL_STORAGE_KEY,
+    validate: (value): value is Movie[] => Array.isArray(value) && value.every(isMovieRecord),
+    clone: cloneMovies,
+    label: 'local movie fallback',
+  });
 
 const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? cloneMovies(MOCK_MOVIES);
 
 const saveLocalMovies = (movies: Movie[]): void => {
-  const nextMovies = cloneMovies(movies);
-
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.setItem(MOVIES_LOCAL_STORAGE_KEY, JSON.stringify(nextMovies));
-    } catch (error) {
-      console.warn('Failed to persist local movie fallback.', error);
-    }
-  }
-
+  const nextMovies = writeStoredJson({
+    storageKey: MOVIES_LOCAL_STORAGE_KEY,
+    value: movies,
+    clone: cloneMovies,
+    label: 'local movie fallback',
+  });
   cachedMovies = nextMovies;
   lastETag = null;
   setLocalOverride('movies', true);
@@ -90,8 +74,9 @@ const getMovies = async (): Promise<Movie[]> => {
     return getFallbackMovies();
   }
 
-  if (hasLocalOverride('movies') && readStoredLocalMovies()) {
-    return getFallbackMovies();
+  const localOverride = readLocalOverride('movies', readStoredLocalMovies);
+  if (localOverride.enabled && localOverride.value) {
+    return localOverride.value;
   }
 
   try {
