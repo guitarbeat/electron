@@ -72,7 +72,7 @@ export const calculateQuizResults = (
   const sortedCharacters = (Object.keys(scores) as QuizCharacter[]).sort(
     (a, b) => scores[b] - scores[a]
   );
-  const topCharacter = sortedCharacters[0];
+  const [topCharacter] = sortedCharacters;
 
   // Calculate percentages
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);

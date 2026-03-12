@@ -13,8 +13,7 @@ import {
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
-import { validateAndThrow, validatePlace } from '@/utils';
-import { sanitizeInput } from '@/utils';
+import { validateAndThrow, validatePlace, sanitizeInput } from '@/utils';
 
 const mockPlaces: Place[] = [
   {

@@ -33,6 +33,8 @@ const SparkleTap: React.FC<SparkleTapProps> = ({ burstCount = 7 }) => {
     if (typeof window === 'undefined') return undefined;
     if (prefersReducedMotion) return undefined;
 
+    const pointers = pointersRef.current;
+
     const spawnSparkles = (x: number, y: number) => {
       const safeCount = clamp(Math.round(burstCount), 3, 12);
 
@@ -62,7 +64,7 @@ const SparkleTap: React.FC<SparkleTapProps> = ({ burstCount = 7 }) => {
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse') return;
-      pointersRef.current.set(event.pointerId, {
+      pointers.set(event.pointerId, {
         x: event.clientX,
         y: event.clientY,
         timeMs: Date.now(),
@@ -71,8 +73,8 @@ const SparkleTap: React.FC<SparkleTapProps> = ({ burstCount = 7 }) => {
 
     const onPointerUp = (event: PointerEvent) => {
       if (event.pointerType === 'mouse') return;
-      const start = pointersRef.current.get(event.pointerId);
-      pointersRef.current.delete(event.pointerId);
+      const start = pointers.get(event.pointerId);
+      pointers.delete(event.pointerId);
       if (!start) return;
 
       const deltaX = event.clientX - start.x;
@@ -87,7 +89,7 @@ const SparkleTap: React.FC<SparkleTapProps> = ({ burstCount = 7 }) => {
     };
 
     const onPointerCancel = (event: PointerEvent) => {
-      pointersRef.current.delete(event.pointerId);
+      pointers.delete(event.pointerId);
     };
 
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
@@ -98,7 +100,7 @@ const SparkleTap: React.FC<SparkleTapProps> = ({ burstCount = 7 }) => {
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerCancel);
-      pointersRef.current.clear();
+      pointers.clear();
     };
   }, [burstCount, prefersReducedMotion]);
 
@@ -106,4 +108,3 @@ const SparkleTap: React.FC<SparkleTapProps> = ({ burstCount = 7 }) => {
 };
 
 export default SparkleTap;
-

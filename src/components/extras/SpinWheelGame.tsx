@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/useMovies';
-import { useUser } from '@/context';
-import { useToast } from '@/context';
+import { useUser, useToast } from '@/context';
 import { colors, spacing, typography, radius } from '@/design-system/tokens';
 import type { Movie } from '@/types';
 

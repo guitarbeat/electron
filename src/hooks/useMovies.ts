@@ -14,8 +14,7 @@ import {
   writeStoredJson,
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '@/utils';
-import { concurrentMap } from '@/utils';
+import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl, concurrentMap } from '@/utils';
 import { MOCK_MOVIES } from '@/services/mockData';
 
 let cachedMovies: Movie[] = [];

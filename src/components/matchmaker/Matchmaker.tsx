@@ -153,8 +153,8 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   };
 
   const handleSwipe = (direction: 'left' | 'right') => {
-    if (remainingMovies.length > 0) {
-      const activeMovie = remainingMovies[0];
+    const [activeMovie] = remainingMovies;
+    if (activeMovie) {
       swipe(activeMovie.id, direction === 'right');
     }
   };
@@ -445,12 +445,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
           </>
         ) : (
           <div
-        style={{
-          textAlign: 'center',
-          padding: spacing.xl,
-          animation: `fadeIn ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
-        }}
-      >
+            style={{
+              textAlign: 'center',
+              padding: spacing.xl,
+              animation: `fadeIn ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
+            }}
+          >
             <div style={{ fontSize: '4rem', marginBottom: spacing.md }}>🎬</div>
             <h3
               style={{
