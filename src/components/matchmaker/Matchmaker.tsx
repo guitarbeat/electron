@@ -65,12 +65,14 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   ]);
 
   const remainingMovies = useMemo(() => {
-    return activePoolMovies.filter((m) => !swipedIds.includes(m.id));
+    const swipedSet = new Set(swipedIds);
+    return activePoolMovies.filter((m) => !swipedSet.has(m.id));
   }, [activePoolMovies, swipedIds]);
 
   const matches = useMemo(() => {
     if (!game || !movieMap) return [];
-    const intersection = game.aaronLikes.filter((id) => game.electraLikes.includes(id));
+    const electraLikesSet = new Set(game.electraLikes);
+    const intersection = game.aaronLikes.filter((id) => electraLikesSet.has(id));
     return intersection.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
   }, [game, movieMap]);
 
