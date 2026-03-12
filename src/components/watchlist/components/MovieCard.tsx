@@ -188,31 +188,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         title={movie.title}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: spacing.md,
-              marginBottom: spacing.sm,
-            }}
-          >
-            {movie.posterUrl && (
-              <img
-                src={movie.posterUrl}
-                alt=""
-                style={{
-                  width: '60px',
-                  height: '90px',
-                  objectFit: 'cover',
-                  borderRadius: radius.md,
-                  boxShadow: shadows.card,
-                }}
-              />
-            )}
-            <div style={{ flex: 1 }}>
+          <div className="movie-sheet-summary">
+            <MoviePoster movie={movie} className="movie-poster-wrap--sheet" />
+            <div className="movie-sheet-summary__details">
               <MovieDetails movie={movie} />
 
-              <div style={{ display: 'flex', gap: spacing.xs, marginTop: spacing.sm }}>
+              <div className="movie-sheet-watchers">
                 {movie.watchedBy.includes('Aaron') && (
                   <WatcherBadge user="Aaron" variant="text" showLabel />
                 )}
@@ -225,19 +206,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAction(() => setShowMemories(true))}
-                  style={{
-                    marginTop: spacing.sm,
-                    padding: `${spacing.xs} ${spacing.sm}`,
-                    borderRadius: radius.sm,
-                    border: `1px solid ${colors.borderSecondary}40`,
-                    color: '#ffe9c0',
-                    fontSize: typography.fontSize.xs,
-                    fontFamily: typography.fontFamily.heading.join(', '),
-                    background: 'transparent',
-                    textAlign: 'left',
-                    width: '100%',
-                    cursor: 'pointer',
-                  }}
+                  className="movie-sheet-memory-button"
                   aria-label={`View memories for "${movie.title}"`}
                 >
                   {memoryCountText}
