@@ -587,8 +587,8 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 onClick={handlePickRandom}
                 isLoading={isPickingRandom}
                 style={{
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
+                  fontSize: typography.fontSize['2xs'],
+                  textTransform: typography.presets.buttonLabel.textTransform,
                   color: colors.secondary,
                   border: `1px solid ${colors.secondary}50`,
                 }}
@@ -624,12 +624,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 />
                 <div
                   style={{
-                    fontSize: '10px',
+                    fontSize: typography.fontSize['2xs'],
                     color: colors.textTertiary,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    textTransform: 'uppercase',
+                    textTransform: typography.presets.badge.textTransform,
                   }}
                 >
                   {movie.title}

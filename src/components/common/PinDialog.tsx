@@ -267,7 +267,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 marginBottom: '4px',
                 letterSpacing: typography.letterSpacing.wide,
                 fontFamily: typography.fontFamilyValue.heading,
-                textTransform: 'uppercase',
+                textTransform: typography.presets.buttonLabel.textTransform,
               }}
             >
               {getTitle()}

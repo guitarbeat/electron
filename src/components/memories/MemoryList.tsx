@@ -91,6 +91,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
 
   const canManageMemories = Boolean(currentUser);
+  const pinnedCount = sortedMemories.filter((memory) => memory.isPinned).length;
 
   const confirmDeleteMemory = async () => {
     if (!memoryToDelete) return;
@@ -138,7 +139,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
           Latest Memories
         </h4>
         <span style={{ color: '#f7ddba', fontSize: typography.fontSize.xs }}>
-          {sortedMemories.length} pinned
+          {pinnedCount} pinned
         </span>
       </div>
 
@@ -302,7 +303,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                         color: '#6b3f00',
                         background: 'rgba(255, 235, 179, 0.8)',
                         borderRadius: radius.full,
-                        fontSize: '0.62rem',
+                        fontSize: typography.fontSize['2xs'],
                         padding: '1px 8px',
                         border: '1px solid rgba(125, 87, 16, 0.35)',
                       }}
