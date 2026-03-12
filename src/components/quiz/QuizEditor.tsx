@@ -7,8 +7,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
-import { useUndoRedo } from '@/hooks/useUndoRedo';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useUndoRedo } from '@/hooks';
+import { useMediaQuery } from '@/hooks';
 import { useToast } from '@/context';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';

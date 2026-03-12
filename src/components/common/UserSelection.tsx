@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useUser } from '../../context';
 import type { MainTab, User } from '../../types';
 import { usePins } from '../../hooks/usePins';
-import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
+import { useMediaQuery, breakpoints } from '../../hooks';
 import PinDialog from './PinDialog';
 import ThemeToggle from '../ui/ThemeToggle';
 import GelBubbleAvatar from './GelBubbleAvatar';

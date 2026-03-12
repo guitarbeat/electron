@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAudio } from '@/hooks/useAudio';
+import { useAudio } from '@/hooks';
 import { typography } from '@/design-system/tokens';
 import './ui.css';
 
