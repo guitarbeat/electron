@@ -13,6 +13,7 @@ import FoodMergeGame from './src/components/food-merge/FoodMergeGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
 import UserSelection from './src/components/common/UserSelection';
+import SparkleTap from './src/components/effects/SparkleTap';
 import MinigameModal from './src/components/ui/MinigameModal';
 import BottomSheet from './src/components/ui/BottomSheet';
 import { ToastProvider } from './src/context';
@@ -104,11 +105,14 @@ const AppInner: React.FC = () => {
 
         <div className="app-shell__decor" aria-hidden="true">
           <div className="floating-hearts-y2k" />
+          <div className="twinkle-stars twinkle-stars-offset" />
           <span className="app-shell__bubble app-shell__bubble--one">🫧</span>
           <span className="app-shell__bubble app-shell__bubble--two">🐾</span>
           <span className="app-shell__bubble app-shell__bubble--three">😺</span>
           <span className="app-shell__bubble app-shell__bubble--four">{activeTabMeta.icon}</span>
         </div>
+
+        {isMobile ? <SparkleTap /> : null}
 
         <div className="app-frame">
           <aside className="control-rail" aria-label="Workspace navigation">

@@ -1,5 +1,18 @@
 import express from 'express';
 
+// Keep the API proxy usable with the same `.env` file Vite uses in dev.
+// Node's `process.loadEnvFile` is available in modern Node; ignore missing `.env`.
+if (typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile('.env');
+  } catch (error) {
+    const code = error && typeof error === 'object' && 'code' in error ? error.code : null;
+    if (code !== 'ENOENT') {
+      throw error;
+    }
+  }
+}
+
 const app = express();
 const PORT = 3001;
 

@@ -179,12 +179,7 @@ body {
   background-color: transparent;
 }
 
-/* Quiet visual defaults */
-.floating-hearts,
-.twinkle-stars,
-#sparkle-container {
-  display: none !important;
-}
+/* Quirks are part of the vibe; keep effects available by default. */
 
 /* Retro divider -- modernized gradient line */
 .retro-divider {
@@ -341,6 +336,16 @@ body {
   z-index: 9999;
   animation: sparkle-trail var(--sparkle-duration, 0.7s) ease-out forwards;
   transform: translate(-50%, -50%);
+}
+
+.sparkle--y2k {
+  font-family: var(--font-heading, system-ui);
+  line-height: 1;
+  mix-blend-mode: screen;
+  text-shadow:
+    0 0 10px color-mix(in srgb, var(--color-accent) 72%, transparent),
+    0 0 22px color-mix(in srgb, var(--color-secondary) 42%, transparent);
+  will-change: transform, opacity;
 }
 
 @keyframes sparkle-trail {
