@@ -387,13 +387,104 @@
 .movie-poster-fallback {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #95dcff 0%, #ff7fc6 100%);
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--color-accent) 20%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 80%, color-mix(in srgb, var(--color-accent-secondary, #95dcff) 14%, transparent) 0%, transparent 55%),
+    linear-gradient(160deg, #1a0e1c 0%, #0c0917 50%, #12101e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.movie-poster-fallback::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.012) 2px,
+      rgba(255, 255, 255, 0.012) 4px
+    );
+  pointer-events: none;
+}
+
+.movie-poster-fallback::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-accent) 60%, transparent) 30%,
+    color-mix(in srgb, var(--color-accent) 30%, transparent) 70%,
+    transparent 100%
+  );
+}
+
+.movie-poster-fallback__inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 0.75rem;
-  text-align: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+}
+
+.movie-poster-fallback__ornament {
+  font-size: 0.65rem;
+  color: var(--color-accent);
+  opacity: 0.75;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px var(--color-accent));
+}
+
+.movie-poster-fallback__ornament--bottom {
+  opacity: 0.4;
+}
+
+.movie-poster-fallback__title {
+  margin: 0;
+  font-family: 'Outfit', 'Space Grotesk', system-ui, sans-serif;
+  font-size: clamp(0.85rem, 2.5vw, 1.15rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 0 16px color-mix(in srgb, var(--color-accent) 80%, transparent),
+    0 0 36px color-mix(in srgb, var(--color-accent) 40%, transparent),
+    0 2px 6px rgba(0, 0, 0, 0.9);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.movie-poster-fallback__year {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
 }
 
 .movie-title {
@@ -409,9 +500,6 @@
   overflow: hidden;
 }
 
-.movie-title--fallback {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
-}
 
 .movie-item-watchers {
   position: absolute;
