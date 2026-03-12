@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import SwipeCard from './SwipeCard';
 import Button from '@/ui/Button';
 import ConfirmDialog from '@/ui/ConfirmDialog';
+import { shuffleArray } from '@/utils/concurrency';
 import {
   colors,
   spacing,
@@ -145,7 +146,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
       return;
     }
 
-    const shuffled = poolSource.sort(() => 0.5 - Math.random());
+    const shuffled = shuffleArray(poolSource);
     const pool = shuffled.slice(0, 10).map((m) => m.id);
     startNewGame(pool);
     setVibe(selectedVibe);
