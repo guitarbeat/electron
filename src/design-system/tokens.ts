@@ -132,39 +132,143 @@ export const colors = {
 } as const;
 
 // * Typography scale
+const fontFamily = {
+  heading: ['Outfit', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+  body: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+  sans: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+  mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
+} as const;
+
+const fontFamilyValue = {
+  heading: fontFamily.heading.join(', '),
+  body: fontFamily.body.join(', '),
+  sans: fontFamily.sans.join(', '),
+  mono: fontFamily.mono.join(', '),
+} as const;
+
+const fontSize = {
+  '3xs': '0.5625rem',
+  '2xs': '0.625rem',
+  xs: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem)',
+  sm: 'clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem)',
+  base: 'clamp(0.875rem, 0.84rem + 0.2vw, 1rem)',
+  lg: 'clamp(1rem, 0.95rem + 0.3vw, 1.175rem)',
+  xl: 'clamp(1.125rem, 1rem + 0.5vw, 1.375rem)',
+  '2xl': 'clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem)',
+  '3xl': 'clamp(1.625rem, 1.4rem + 1vw, 2.25rem)',
+  '4xl': 'clamp(2rem, 1.7rem + 1.5vw, 3rem)',
+} as const;
+
+const fontWeight = {
+  normal: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  extrabold: 800,
+} as const;
+
+const lineHeight = {
+  none: 1,
+  heading: 1.2,
+  snug: 1.25,
+  tight: 1.3,
+  normal: 1.55,
+  relaxed: 1.75,
+} as const;
+
+const letterSpacing = {
+  none: '0',
+  tight: '-0.02em',
+  normal: '-0.01em',
+  wide: '0.02em',
+  dense: '0.03em',
+  button: '0.04em',
+  wider: '0.05em',
+  eyebrow: '0.08em',
+  widest: '0.14em',
+} as const;
+
 export const typography = {
-  fontFamily: {
-    heading: ['Outfit', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
-    body: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
-    sans: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
-    mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
-  },
-  fontSize: {
-    xs: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem)',
-    sm: 'clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem)',
-    base: 'clamp(0.875rem, 0.84rem + 0.2vw, 1rem)',
-    lg: 'clamp(1rem, 0.95rem + 0.3vw, 1.175rem)',
-    xl: 'clamp(1.125rem, 1rem + 0.5vw, 1.375rem)',
-    '2xl': 'clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem)',
-    '3xl': 'clamp(1.625rem, 1.4rem + 1vw, 2.25rem)',
-    '4xl': 'clamp(2rem, 1.7rem + 1.5vw, 3rem)',
-  },
-  fontWeight: {
-    normal: 400,
-    medium: 500,
-    semibold: 600,
-    bold: 700,
-  },
-  lineHeight: {
-    tight: 1.3,
-    normal: 1.55,
-    relaxed: 1.75,
-  },
-  letterSpacing: {
-    tight: '-0.02em',
-    normal: '-0.01em',
-    wide: '0.02em',
-    wider: '0.05em',
+  fontFamily,
+  fontFamilyValue,
+  fontSize,
+  fontWeight,
+  lineHeight,
+  letterSpacing,
+  presets: {
+    eyebrow: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: '0.72rem',
+      fontWeight: fontWeight.semibold,
+      lineHeight: lineHeight.none,
+      letterSpacing: letterSpacing.eyebrow,
+      textTransform: 'uppercase',
+    },
+    buttonLabel: {
+      fontFamily: fontFamilyValue.heading,
+      fontWeight: fontWeight.semibold,
+      lineHeight: lineHeight.none,
+      letterSpacing: letterSpacing.button,
+      textTransform: 'uppercase',
+    },
+    titleSm: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: '1.25rem',
+      fontWeight: fontWeight.semibold,
+      lineHeight: lineHeight.heading,
+      letterSpacing: letterSpacing.normal,
+    },
+    titleMd: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: '1.5rem',
+      fontWeight: fontWeight.semibold,
+      lineHeight: lineHeight.heading,
+      letterSpacing: letterSpacing.tight,
+    },
+    tabLabel: {
+      fontFamily: fontFamilyValue.heading,
+      fontSize: 'clamp(0.72rem, 1vw + 0.45rem, 0.85rem)',
+      fontWeight: fontWeight.bold,
+      lineHeight: lineHeight.none,
+      letterSpacing: letterSpacing.wider,
+      textTransform: 'uppercase',
+    },
+    badge: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: '0.7rem',
+      fontWeight: fontWeight.extrabold,
+      lineHeight: lineHeight.none,
+      letterSpacing: letterSpacing.wider,
+      textTransform: 'uppercase',
+    },
+    caption: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: fontSize['2xs'],
+      lineHeight: lineHeight.tight,
+    },
+    micro: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: fontSize['3xs'],
+      lineHeight: lineHeight.tight,
+    },
+    bodySm: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: fontSize.sm,
+      lineHeight: lineHeight.normal,
+    },
+    bodyXs: {
+      fontFamily: fontFamilyValue.body,
+      fontSize: fontSize.xs,
+      lineHeight: lineHeight.normal,
+    },
+    posterTitle: {
+      fontFamily: fontFamilyValue.heading,
+      fontSize: 'clamp(0.85rem, 2.5vw, 1.15rem)',
+      fontWeight: fontWeight.extrabold,
+      lineHeight: lineHeight.heading,
+      letterSpacing: '0.06em',
+      textTransform: 'uppercase',
+    },
   },
 } as const;
 

@@ -87,10 +87,10 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             <h2
               style={{
                 margin: 0,
-                fontFamily: typography.fontFamily.heading.join(', '),
+                fontFamily: typography.fontFamilyValue.heading,
                 fontSize: typography.fontSize.lg,
                 color: colors.textPrimary,
-                letterSpacing: '0.03em',
+                letterSpacing: typography.letterSpacing.dense,
               }}
             >
               {title}

@@ -9,4 +9,5 @@ pnpm install
 pnpm run dev
 ```
 
+`pnpm run dev` starts both the Vite client and the API proxy used for OMDb poster metadata.
 The app will be available at http://localhost:5000

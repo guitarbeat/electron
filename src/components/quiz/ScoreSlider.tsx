@@ -97,10 +97,8 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
       >
         <span
           style={{
-            fontSize: '9px',
             color: colors.textTertiary,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            ...typography.presets.eyebrow,
           }}
         >
           Quick:
@@ -113,7 +111,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
             title={`Assign to ${char}`}
             style={{
               padding: '3px 8px',
-              fontSize: '10px',
+              fontSize: typography.fontSize['2xs'],
               fontWeight: typography.fontWeight.bold,
               backgroundColor: `${CHARACTER_COLORS[char]}20`,
               color: CHARACTER_COLORS[char],
@@ -121,6 +119,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
               borderRadius: radius.full,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
+              lineHeight: typography.lineHeight.none,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = `${CHARACTER_COLORS[char]}40`;
@@ -150,12 +149,13 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
               onClick={() => setShowFineTune(!showFineTune)}
               style={{
                 padding: '3px 8px',
-                fontSize: '10px',
+                fontSize: typography.fontSize['2xs'],
                 backgroundColor: 'transparent',
                 color: colors.textSecondary,
                 border: `1px solid ${colors.borderSecondary}30`,
                 borderRadius: radius.full,
                 cursor: 'pointer',
+                lineHeight: typography.lineHeight.none,
               }}
             >
               {showFineTune ? 'Hide fine-tune' : 'Fine-tune'}
@@ -191,8 +191,9 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '10px',
+                    fontSize: typography.fontSize['2xs'],
                     fontWeight: typography.fontWeight.bold,
+                    lineHeight: typography.lineHeight.none,
                     flexShrink: 0,
                   }}
                   title={char}
@@ -311,7 +312,7 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
       >
         <span
           style={{
-            fontSize: '10px',
+            fontSize: typography.fontSize['2xs'],
             color: colors.textTertiary,
           }}
         >
@@ -323,13 +324,14 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
             onClick={clearAll}
             style={{
               padding: '2px 8px',
-              fontSize: '9px',
+              fontSize: typography.fontSize['3xs'],
               backgroundColor: 'transparent',
               color: colors.textTertiary,
               border: `1px solid ${colors.borderSecondary}20`,
               borderRadius: radius.sm,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
+              lineHeight: typography.lineHeight.none,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
@@ -345,13 +347,14 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
             onClick={balanceEvenly}
             style={{
               padding: '2px 8px',
-              fontSize: '9px',
+              fontSize: typography.fontSize['3xs'],
               backgroundColor: 'transparent',
               color: colors.textTertiary,
               border: `1px solid ${colors.borderSecondary}20`,
               borderRadius: radius.sm,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
+              lineHeight: typography.lineHeight.none,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';

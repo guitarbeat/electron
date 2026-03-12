@@ -9,7 +9,7 @@ import QuizEditor from './src/components/quiz/QuizEditor';
 import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
 import Matchmaker from './src/components/matchmaker/Matchmaker';
-import FoodDropGame from './src/components/extras/FoodDropGame';
+import FoodMergeGame from './src/components/food-merge/FoodMergeGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
 import UserSelection from './src/components/common/UserSelection';
@@ -35,7 +35,7 @@ const AppInner: React.FC = () => {
     () => localStorage.getItem('quizCompleted') === 'true'
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [showFoodDrop, setShowFoodDrop] = useState(false);
+  const [showFoodMerge, setShowFoodMerge] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
@@ -67,9 +67,9 @@ const AppInner: React.FC = () => {
         action: () => setShowSpinWheel(true),
       },
       {
-        label: 'Food Drop',
+        label: 'Food Merge',
         icon: '🍔',
-        action: () => setShowFoodDrop(true),
+        action: () => setShowFoodMerge(true),
       },
     ],
     [quizCompleted]
@@ -91,6 +91,10 @@ const AppInner: React.FC = () => {
     setTimeout(action, 150);
   };
 
+  const mobileHeroCopy = currentUser
+    ? `${currentUser} is steering the chaos. Tap a bubble to swap cats or hand off the controls.`
+    : 'Pick a bubble, pull in a fresh cat avatar, and start plotting the weekend.';
+
   return (
     <ThemeProvider activeTab={activeTab}>
       <div className="app-shell bg-main">
@@ -98,11 +102,23 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
+        <div className="app-shell__decor" aria-hidden="true">
+          <div className="floating-hearts-y2k" />
+          <span className="app-shell__bubble app-shell__bubble--one">🫧</span>
+          <span className="app-shell__bubble app-shell__bubble--two">🐾</span>
+          <span className="app-shell__bubble app-shell__bubble--three">😺</span>
+          <span className="app-shell__bubble app-shell__bubble--four">{activeTabMeta.icon}</span>
+        </div>
+
         <div className="app-frame">
           <aside className="control-rail" aria-label="Workspace navigation">
-            <div className="control-rail__panel">
+            <div className="control-rail__panel control-rail__panel--brand">
+              <span className="control-rail__badge">Cat-powered chaos</span>
               <p className="control-rail__eyebrow">Aaron & Electra</p>
               <h1 className="control-rail__title">Weekend<br />Planner</h1>
+              <p className="control-rail__lede">
+                Floating bubbles, oddball avatars, and date-night plotting tools.
+              </p>
             </div>
 
             <div className="control-rail__panel">
@@ -110,22 +126,62 @@ const AppInner: React.FC = () => {
                 <span>User</span>
               </div>
               <UserSelection variant="inline" />
-              {currentUser ? <p className="control-rail__meta">{currentUser}</p> : null}
+              <p className="control-rail__meta">
+                {currentUser
+                  ? `${currentUser} is currently driving the plan.`
+                  : 'Pick a bubble to start causing trouble.'}
+              </p>
             </div>
           </aside>
 
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
+            {isMobile && (
+              <section className="mobile-hero" aria-label="Weekend planner overview">
+                <div className="mobile-hero__bubbles" aria-hidden="true">
+                  <span className="mobile-hero__bubble mobile-hero__bubble--a">{activeTabMeta.icon}</span>
+                  <span className="mobile-hero__bubble mobile-hero__bubble--b">🫧</span>
+                  <span className="mobile-hero__bubble mobile-hero__bubble--c">✨</span>
+                </div>
+                <div className="mobile-hero__content">
+                  <p className="mobile-hero__eyebrow">Aaron & Electra HQ</p>
+                  <h1 className="mobile-hero__title">Weekend Planner</h1>
+                  <p className="mobile-hero__copy">{mobileHeroCopy}</p>
+
+                  <UserSelection variant="inline" className="mobile-hero__selection" />
+
+                  <div className="mobile-command-ribbon" role="group" aria-label="Quick actions">
+                    {commandDeck.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        className="mobile-command-ribbon__item"
+                        onClick={item.action}
+                      >
+                        <span className="mobile-command-ribbon__icon" aria-hidden="true">
+                          {item.icon}
+                        </span>
+                        <span className="mobile-command-ribbon__label">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
             <section className="workspace-header" aria-label="Current workspace overview">
               <div className="workspace-header__left">
                 <h2 className="workspace-header__title" aria-live="polite">
-                  {activeTabMeta.label}
+                  <span className="workspace-header__title-icon" aria-hidden="true">
+                    {activeTabMeta.icon}
+                  </span>
+                  <span>{activeTabMeta.label}</span>
                 </h2>
                 {isMobile && currentUser && (
                   <button
                     type="button"
                     className="mobile-user-chip"
                     onClick={() => setShowMoreSheet(true)}
-                    aria-label={`Signed in as ${currentUser}. Tap to switch.`}
+                    aria-label={`Signed in as ${currentUser}. Tap for profile settings.`}
                   >
                     <span className="mobile-user-chip__dot" />
                     <span className="mobile-user-chip__name">{currentUser}</span>
@@ -136,7 +192,7 @@ const AppInner: React.FC = () => {
                     type="button"
                     className="mobile-user-chip mobile-user-chip--empty"
                     onClick={() => setShowMoreSheet(true)}
-                    aria-label="No user selected. Tap to choose."
+                    aria-label="No user selected. Tap for profile settings."
                   >
                     <span className="mobile-user-chip__name">Pick user</span>
                   </button>
@@ -199,7 +255,10 @@ const AppInner: React.FC = () => {
                         className="command-deck__item"
                         onClick={item.action}
                       >
-                        {item.label}
+                        <span className="command-deck__icon" aria-hidden="true">
+                          {item.icon}
+                        </span>
+                        <span className="command-deck__label">{item.label}</span>
                       </button>
                     ))}
                   </div>
@@ -244,17 +303,18 @@ const AppInner: React.FC = () => {
           title="Menu"
         >
           <div className="more-sheet">
-            <div className="more-sheet__section">
-              <p className="more-sheet__section-label">Switch user</p>
-              <UserSelection
-                variant="inline"
-                activeTab={activeTab}
-                onTabChange={(tab) => {
-                  handleTabChange(tab);
-                  setShowMoreSheet(false);
-                }}
-              />
-            </div>
+            <UserSelection
+              variant="panel"
+              activeTab={activeTab}
+              title="Who's steering?"
+              subtitle="Swap bubbles, refresh the cat pics, or lock down a profile before you dive back in."
+              className="more-sheet__profile-panel"
+              onUserSelected={() => setShowMoreSheet(false)}
+              onTabChange={(tab) => {
+                handleTabChange(tab);
+                setShowMoreSheet(false);
+              }}
+            />
 
             <div className="more-sheet__section">
               <p className="more-sheet__section-label">Actions</p>
@@ -289,15 +349,15 @@ const AppInner: React.FC = () => {
         </MinigameModal>
 
         <MinigameModal
-          isOpen={showFoodDrop}
-          onClose={() => setShowFoodDrop(false)}
-          title="Food Drop"
-          ariaLabel="Food drop game"
+          isOpen={showFoodMerge}
+          onClose={() => setShowFoodMerge(false)}
+          title="Food Merge"
+          ariaLabel="Food merge game"
           maxWidth={620}
           maxHeight={780}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <FoodDropGame />
+            <FoodMergeGame />
           </div>
         </MinigameModal>
 

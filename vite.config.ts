@@ -20,7 +20,7 @@ export default defineConfig({
       '@/common': path.resolve(__dirname, 'src/components/common'),
       '@/effects': path.resolve(__dirname, 'src/components/effects'),
       '@/extras': path.resolve(__dirname, 'src/components/extras'),
-      '@/food-drop': path.resolve(__dirname, 'src/components/food-drop'),
+      '@/food-merge': path.resolve(__dirname, 'src/components/food-merge'),
       '@/layout': path.resolve(__dirname, 'src/components/layout'),
       '@/matchmaker': path.resolve(__dirname, 'src/components/matchmaker'),
       '@/memories': path.resolve(__dirname, 'src/components/memories'),

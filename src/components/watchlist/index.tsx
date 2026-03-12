@@ -487,8 +487,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   <h2
                     style={{
                       margin: '0 0 0.5rem',
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
+                      fontFamily: 'var(--type-title-sm-family)',
+                      fontSize: 'var(--font-size-lg)',
+                      fontWeight: 'var(--font-weight-semibold)',
+                      lineHeight: 'var(--line-height-heading)',
                       color: 'var(--color-text-primary)',
                     }}
                   >
@@ -498,8 +500,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     style={{
                       margin: '0 0 1.25rem',
                       color: 'var(--color-text-secondary)',
-                      fontSize: '0.9rem',
-                      lineHeight: 1.5,
+                      fontFamily: 'var(--type-body-md-family)',
+                      fontSize: 'var(--type-body-md-size)',
+                      lineHeight: 'var(--type-body-md-line-height)',
                     }}
                   >
                     Re-fetch metadata for &quot;{movieToFix.title}&quot;?
@@ -514,7 +517,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                         borderRadius: '8px',
                         color: 'var(--color-text-secondary)',
                         cursor: 'pointer',
-                        fontSize: '0.875rem',
+                        fontFamily: 'var(--type-body-sm-family)',
+                        fontSize: 'var(--type-body-sm-size)',
+                        lineHeight: 'var(--type-body-sm-line-height)',
                       }}
                     >
                       Cancel
@@ -534,8 +539,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                         borderRadius: '8px',
                         color: '#fff',
                         cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: 600,
+                        fontFamily: 'var(--type-button-label-family)',
+                        fontSize: 'var(--type-body-sm-size)',
+                        fontWeight: 'var(--font-weight-semibold)',
+                        lineHeight: 'var(--line-height-none)',
+                        letterSpacing: 'var(--letter-spacing-button)',
+                        textTransform: 'uppercase',
                       }}
                     >
                       Re-fetch

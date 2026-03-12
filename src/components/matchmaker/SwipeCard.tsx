@@ -82,7 +82,7 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, onSwipe,
               border: `2px solid ${overlay.color}`,
               color: overlay.color,
               fontWeight: typography.fontWeight.bold,
-              letterSpacing: '0.08em',
+              letterSpacing: typography.letterSpacing.eyebrow,
               background: 'rgba(0,0,0,0.25)',
             }}
           >

@@ -89,14 +89,10 @@ const SubNav: React.FC<SubNavProps> = ({
                   ? `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentLight} 100%)`
                   : 'rgba(255,255,255,0.05)',
                 color: isActive ? '#1a1a2e' : colors.textSecondary,
-                fontSize: 'clamp(0.72rem, 1vw + 0.45rem, 0.85rem)',
-                fontWeight: 700,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
-                fontFamily: typography.fontFamily.heading.join(', '),
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                ...typography.presets.tabLabel,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -120,15 +116,15 @@ const SubNav: React.FC<SubNavProps> = ({
               {tab.count !== undefined && (
                 <span
                   style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
+                    fontSize: typography.presets.badge.fontSize,
+                    fontWeight: typography.presets.badge.fontWeight,
                     background: isActive ? 'rgba(0,0,0,0.15)' : colors.overlay,
                     color: isActive ? '#1a1a2e' : colors.textPrimary,
                     padding: '3px 6px',
                     borderRadius: radius.full,
                     minWidth: '20px',
                     textAlign: 'center',
-                    lineHeight: 1,
+                    lineHeight: typography.presets.badge.lineHeight,
                   }}
                 >
                   {tab.count}
@@ -154,10 +150,7 @@ const SubNav: React.FC<SubNavProps> = ({
           <span
             style={{
               color: colors.textTertiary,
-              fontSize: typography.fontSize.xs,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              ...typography.presets.eyebrow,
               marginRight: spacing.xs,
             }}
           >
@@ -179,11 +172,12 @@ const SubNav: React.FC<SubNavProps> = ({
                   border: `1px solid ${isActive ? colors.secondary : `${colors.borderSecondary}40`}`,
                   background: isActive ? colors.secondaryMuted : 'rgba(255,255,255,0.04)',
                   color: isActive ? colors.secondary : colors.textTertiary,
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
+                  fontSize: typography.fontSize.xs,
+                  fontWeight: typography.fontWeight.semibold,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  fontFamily: typography.fontFamily.body.join(', '),
+                  fontFamily: typography.fontFamilyValue.body,
+                  lineHeight: typography.lineHeight.snug,
                 }}
               >
                 {chip.label}

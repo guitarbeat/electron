@@ -265,8 +265,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 fontWeight: typography.fontWeight.semibold,
                 color: colors.textPrimary,
                 marginBottom: '4px',
-                letterSpacing: '0.02em',
-                fontFamily: typography.fontFamily.heading.join(', '),
+                letterSpacing: typography.letterSpacing.wide,
+                fontFamily: typography.fontFamilyValue.heading,
                 textTransform: 'uppercase',
               }}
             >
@@ -352,7 +352,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         aria-label="Backspace"
                         style={{
                           height: '48px',
-                          fontSize: '14px',
+                          fontSize: typography.fontSize.base,
                           color: colors.textSecondary,
                         }}
                       >
@@ -368,8 +368,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                       onClick={() => handleNumberClick(num as number)}
                       style={{
                         height: '48px',
-                        fontSize: '18px',
-                        fontWeight: '600',
+                        fontSize: typography.fontSize.xl,
+                        fontWeight: typography.fontWeight.semibold,
                         backgroundColor: 'rgba(255, 255, 255, 0.05)',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                       }}

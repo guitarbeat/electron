@@ -139,7 +139,7 @@ const Toast: React.FC<ToastProps> = ({
               cursor: 'pointer',
               fontSize: typography.fontSize.xs,
               fontWeight: typography.fontWeight.semibold,
-              letterSpacing: '0.02em',
+              letterSpacing: typography.letterSpacing.wide,
               whiteSpace: 'nowrap',
             }}
           >
