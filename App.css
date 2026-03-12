@@ -87,6 +87,11 @@ body {
   pointer-events: none;
 }
 
+.app-shell__decor .twinkle-stars {
+  opacity: 0.35;
+  filter: blur(0.2px);
+}
+
 .app-shell__bubble {
   position: absolute;
   display: grid;
