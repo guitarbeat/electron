@@ -21,8 +21,8 @@ interface UserSelectionProps {
 }
 
 const PROFILE_NOTES: Record<User, string> = {
-  Aaron: 'Cat roulette captain and movie-poster scavenger.',
-  Electra: 'Bubble princess, memory hoarder, and snack tactician.',
+  Aaron: '',
+  Electra: '',
 };
 
 const UserSelection: React.FC<UserSelectionProps> = ({
