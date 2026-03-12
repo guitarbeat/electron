@@ -5,7 +5,7 @@ import { useMediaQuery, breakpoints } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';
 import Button from '@/ui/Button';
-import { EyeIcon, EyeOffIcon, FilmIcon, MagicWandIcon, TrashIcon } from '@/common/icons';
+import { EyeIcon, EyeOffIcon, MagicWandIcon, TrashIcon } from '@/common/icons';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 
@@ -312,15 +312,14 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
         />
       ) : (
         <div className="movie-poster-fallback">
-          <FilmIcon
-            style={{
-              width: '34px',
-              height: '34px',
-              color: 'rgba(255,255,255,0.3)',
-              marginBottom: spacing.sm,
-            }}
-          />
-          <h3 className="movie-title movie-title--fallback">{movie.title}</h3>
+          <div className="movie-poster-fallback__inner">
+            <span className="movie-poster-fallback__ornament" aria-hidden="true">✦</span>
+            <h3 className="movie-poster-fallback__title">{movie.title}</h3>
+            {movie.year && (
+              <span className="movie-poster-fallback__year">{movie.year}</span>
+            )}
+            <span className="movie-poster-fallback__ornament movie-poster-fallback__ornament--bottom" aria-hidden="true">✦</span>
+          </div>
         </div>
       )}
     </div>
