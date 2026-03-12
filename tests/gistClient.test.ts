@@ -11,9 +11,8 @@ test('isGistReadConfigured requires a non-empty gist id', () => {
   assert.equal(isGistReadConfigured('"abc123"'), true);
 });
 
-test('isGistWriteConfigured requires both gist id and token', () => {
-  assert.equal(isGistWriteConfigured('', ''), false);
-  assert.equal(isGistWriteConfigured('abc123', ''), false);
-  assert.equal(isGistWriteConfigured('', 'token'), false);
-  assert.equal(isGistWriteConfigured('abc123', 'token'), true);
+test('isGistWriteConfigured relies on gist id when using the proxy', () => {
+  assert.equal(isGistWriteConfigured(''), false);
+  assert.equal(isGistWriteConfigured('   '), false);
+  assert.equal(isGistWriteConfigured('abc123'), true);
 });

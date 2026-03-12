@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Movie, User } from '@/types';
 import { usePolling } from '@/hooks/usePolling';
 import {
-  buildGithubApiErrorMessage,
   canReadGist,
   canWriteGist,
   fetchGist,
   GIST_FILENAME,
   getGistFileContent,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl } from '@/config/security';
@@ -82,6 +82,7 @@ const saveLocalMovies = (movies: Movie[]): void => {
 
   cachedMovies = nextMovies;
   lastETag = null;
+  setLocalOverride('movies', true);
 };
 
 const getMovies = async (): Promise<Movie[]> => {
@@ -89,13 +90,12 @@ const getMovies = async (): Promise<Movie[]> => {
     return getFallbackMovies();
   }
 
-  if (!canWriteGist && readStoredLocalMovies()) {
+  if (hasLocalOverride('movies') && readStoredLocalMovies()) {
     return getFallbackMovies();
   }
 
   try {
     const response = await fetchGist({
-      token: GIST_TOKEN || undefined,
       eTag: lastETag,
       cache: 'no-cache',
     });
@@ -144,7 +144,7 @@ const getMovies = async (): Promise<Movie[]> => {
     return movies;
   } catch (error) {
     console.error('Error fetching movies from Gist:', error);
-    throw error;
+    return getFallbackMovies();
   }
 };
 
@@ -155,27 +155,20 @@ const saveMovies = async (movies: Movie[]): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_FILENAME,
-      JSON.stringify(movies, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_FILENAME, JSON.stringify(movies, null, 2));
 
     if (!response.ok) {
-      try {
-        const errorBody = await response.json();
-        console.error('GitHub API error details:', errorBody);
-      } catch {
-        console.error('GitHub API error: Unable to parse error body');
-      }
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`Failed to save movies to Gist (${response.status}), using local fallback.`);
+      saveLocalMovies(movies);
+      return;
     }
 
     cachedMovies = movies;
     lastETag = null;
+    setLocalOverride('movies', false);
   } catch (error) {
-    console.error('Error saving movies to Gist:', error);
-    throw error;
+    console.warn('Error saving movies to Gist, using local fallback:', error);
+    saveLocalMovies(movies);
   }
 };
 

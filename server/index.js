@@ -7,7 +7,23 @@ app.use(express.json({ limit: '1mb' }));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, if-none-match',
+  'Access-Control-Expose-Headers': 'ETag',
+};
+
+const cleanEnvValue = (value) =>
+  typeof value === 'string' ? value.trim().replace(/^["']|["']$/g, '') : '';
+
+const readEnv = (...names) => {
+  for (const name of names) {
+    const value = cleanEnvValue(process.env[name]);
+    if (value) {
+      return value;
+    }
+  }
+
+  return '';
 };
 
 app.use((req, res, next) => {
@@ -101,6 +117,94 @@ app.get('/api/omdb', async (req, res) => {
 });
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+app.get('/api/gist', async (req, res) => {
+  try {
+    const gistId = readEnv('GIST_ID', 'VITE_GIST_ID');
+    const token = readEnv('GIST_TOKEN', 'VITE_GIST_TOKEN');
+
+    if (!gistId) {
+      return res.status(500).json({ error: 'GIST_ID is not configured on the server' });
+    }
+
+    const headers = {
+      Accept: 'application/vnd.github.v3+json',
+    };
+
+    if (token) {
+      headers.Authorization = `token ${token}`;
+    }
+
+    const eTag = req.headers['if-none-match'];
+    if (eTag) {
+      headers['If-None-Match'] = eTag;
+    }
+
+    const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, { headers });
+    const responseETag = gistResponse.headers.get('ETag');
+
+    if (responseETag) {
+      res.setHeader('ETag', responseETag);
+    }
+
+    if (gistResponse.status === 304) {
+      return res.status(304).send();
+    }
+
+    if (!gistResponse.ok) {
+      return res.status(gistResponse.status).json({ error: 'Upstream GitHub API error' });
+    }
+
+    const data = await gistResponse.json();
+    return res.json(data);
+  } catch (err) {
+    console.error('Gist proxy GET error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.patch('/api/gist', async (req, res) => {
+  try {
+    const gistId = readEnv('GIST_ID', 'VITE_GIST_ID');
+    const token = readEnv('GIST_TOKEN', 'VITE_GIST_TOKEN');
+
+    if (!gistId) {
+      return res.status(500).json({ error: 'GIST_ID is not configured on the server' });
+    }
+
+    if (!token) {
+      return res.status(500).json({ error: 'GIST_TOKEN is not configured on the server' });
+    }
+
+    const { files } = req.body;
+    if (!files || typeof files !== 'object') {
+      return res.status(400).json({ error: 'Invalid payload: missing files object' });
+    }
+
+    const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method: 'PATCH',
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        Authorization: `token ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ files }),
+    });
+
+    if (!gistResponse.ok) {
+      const errorText = await gistResponse.text();
+      const sanitized = token ? errorText.split(token).join('[REDACTED]') : errorText;
+      console.error('Gist API Error:', gistResponse.status, sanitized);
+      return res.status(gistResponse.status).json({ error: 'Upstream GitHub API error' });
+    }
+
+    const data = await gistResponse.json();
+    return res.json(data);
+  } catch (err) {
+    console.error('Gist proxy PATCH error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`API server running on port ${PORT}`);
