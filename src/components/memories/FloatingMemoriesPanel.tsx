@@ -12,9 +12,9 @@ import {
   toggleMemoryPin,
   updateMemory,
 } from '@/services/memoryService';
-import { colors, spacing, typography, radius } from '@/design-system/tokens';
 import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/types';
+import './FloatingMemoriesPanel.css';
 
 const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) =>
   JSON.stringify(prev) === JSON.stringify(next);
@@ -94,32 +94,23 @@ const FloatingMemoriesPanel: React.FC = () => {
   };
 
   return (
-    <div
-      style={{ padding: spacing.md, color: colors.textPrimary, display: 'grid', gap: spacing.md }}
-    >
-      <div>
-        <h3 style={{ margin: 0, marginBottom: spacing.xs }}>Memory Wall</h3>
-        <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-          Add, edit, pin, and search memories tied to your movies.
+    <div className="memory-lane">
+      <div className="memory-lane__header">
+        <p className="memory-lane__eyebrow">iMessage scrapbook</p>
+        <h3 className="memory-lane__title">Memory Lane</h3>
+        <p className="memory-lane__subtitle">
+          Add, edit, pin, and search little movie-night texts to your future selves.
         </p>
       </div>
 
-      <div
-        style={{
-          border: `1px solid ${colors.borderSecondary}35`,
-          borderRadius: radius.md,
-          padding: spacing.md,
-          background: 'rgba(0,0,0,0.18)',
-          display: 'grid',
-          gap: spacing.sm,
-        }}
-      >
+      <div className="memory-lane__composer">
         <Input
           label="Movie title"
           value={movieQuery}
           onChange={(event) => setMovieQuery(event.target.value)}
           placeholder="e.g. The Last Unicorn"
           list="memory-movie-suggestions"
+          className="memory-lane__input"
         />
         <datalist id="memory-movie-suggestions">
           {movies.map((movie) => (
@@ -133,6 +124,7 @@ const FloatingMemoriesPanel: React.FC = () => {
           value={note}
           onChange={(event) => setNote(event.target.value)}
           placeholder="What made this one special?"
+          className="memory-lane__textarea"
           style={{ minHeight: 90 }}
         />
         {currentUser ? (
@@ -141,23 +133,23 @@ const FloatingMemoriesPanel: React.FC = () => {
             variant="primary"
             size="sm"
             disabled={submitting || !note.trim() || !movieQuery.trim()}
+            className="memory-lane__save"
           >
             {submitting ? 'Saving...' : 'Save Memory'}
           </Button>
         ) : (
-          <p style={{ margin: 0, color: colors.textSecondary, fontSize: typography.fontSize.xs }}>
-            Select Aaron or Electra to add memories.
-          </p>
+          <p className="memory-lane__hint">Select Aaron or Electra to add memories.</p>
         )}
       </div>
 
-      <div style={{ display: 'grid', gap: spacing.sm }}>
-        <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+      <div className="memory-lane__controls">
+        <div className="memory-lane__search-row">
           <Input
             label="Search memories"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search notes, titles, or authors"
+            className="memory-lane__input"
             style={{ flex: 1, minWidth: 220 }}
           />
           <Button
@@ -165,69 +157,65 @@ const FloatingMemoriesPanel: React.FC = () => {
             variant={showPinnedOnly ? 'primary' : 'ghost'}
             onClick={() => setShowPinnedOnly((current) => !current)}
             style={{ alignSelf: 'end' }}
+            className="memory-lane__pin-toggle"
           >
             {showPinnedOnly ? 'Showing Pinned' : 'Show Pinned Only'}
           </Button>
         </div>
 
-        <h4 style={{ margin: 0, color: colors.textSecondary }}>
+        <h4 className="memory-lane__thread-title">
           Shared Notes {filtered.length > 0 ? `(${filtered.length})` : ''}
         </h4>
         {isLoading && filtered.length === 0 ? (
-          <p style={{ margin: 0, color: colors.textSecondary }}>Loading memories...</p>
+          <p className="memory-lane__status">Loading memories...</p>
         ) : error ? (
-          <p style={{ margin: 0, color: colors.error }}>
+          <p className="memory-lane__status memory-lane__status--error">
             {error instanceof Error ? error.message : 'Unable to load memories.'}
           </p>
         ) : filtered.length === 0 ? (
-          <p style={{ margin: 0, color: colors.textSecondary }}>No memories match your filters.</p>
+          <p className="memory-lane__status">No memories match your filters.</p>
         ) : (
-          <div style={{ display: 'grid', gap: spacing.sm, maxHeight: 380, overflowY: 'auto' }}>
+          <div className="memory-lane__thread">
             {filtered.map((memory) => (
               <article
                 key={memory.id}
-                style={{
-                  padding: spacing.sm,
-                  border: `1px solid ${colors.borderSecondary}30`,
-                  borderRadius: radius.sm,
-                  background: memory.isPinned
-                    ? 'rgba(255, 214, 122, 0.14)'
-                    : 'rgba(255,255,255,0.03)',
-                }}
+                className={`memory-lane__message${currentUser === memory.author ? ' memory-lane__message--mine' : ' memory-lane__message--theirs'}`}
               >
-                <p style={{ margin: 0, fontWeight: typography.fontWeight.semibold }}>
-                  {memory.movieTitle}
-                </p>
-
-                {editingId === memory.id ? (
-                  <Textarea
-                    label="Edit memory"
-                    value={editingNote}
-                    onChange={(event) => setEditingNote(event.target.value)}
-                    style={{ minHeight: 80, marginTop: spacing.xs }}
-                  />
-                ) : (
-                  <p style={{ margin: `${spacing.xs} 0`, whiteSpace: 'pre-wrap' }}>{memory.note}</p>
-                )}
-
                 <div
-                  style={{
-                    display: 'flex',
-                    gap: spacing.xs,
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    color: colors.textSecondary,
-                    fontSize: typography.fontSize.xs,
-                  }}
+                  className={`memory-lane__bubble${currentUser === memory.author ? ' memory-lane__bubble--mine' : ' memory-lane__bubble--theirs'}${memory.isPinned ? ' is-pinned' : ''}`}
                 >
-                  <span>
-                    {memory.author} · {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
-                  </span>
-                  <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+                  <div className="memory-lane__bubble-top">
+                    <div className="memory-lane__bubble-copy">
+                      <p className="memory-lane__movie">{memory.movieTitle}</p>
+                      <p className="memory-lane__meta">
+                        {memory.author} ·{' '}
+                        {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
+                      </p>
+                    </div>
+                    {memory.isPinned ? <span className="memory-lane__tag">★ Pinned</span> : null}
+                  </div>
+
+                  {editingId === memory.id ? (
+                    <Textarea
+                      label="Edit memory"
+                      value={editingNote}
+                      onChange={(event) => setEditingNote(event.target.value)}
+                      className="memory-lane__textarea"
+                      style={{ minHeight: 80, marginTop: '0.35rem' }}
+                    />
+                  ) : (
+                    <p className="memory-lane__note">{memory.note}</p>
+                  )}
+
+                  <div className="memory-lane__actions">
                     {editingId === memory.id ? (
                       <>
-                        <Button size="sm" variant="secondary" onClick={() => saveEdit(memory)}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => saveEdit(memory)}
+                          className="memory-lane__action-btn"
+                        >
                           Save
                         </Button>
                         <Button
@@ -237,6 +225,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                             setEditingId(null);
                             setEditingNote('');
                           }}
+                          className="memory-lane__action-btn"
                         >
                           Cancel
                         </Button>
@@ -250,12 +239,18 @@ const FloatingMemoriesPanel: React.FC = () => {
                             await toggleMemoryPin(memory.id);
                             refresh();
                           }}
+                          className="memory-lane__action-btn"
                         >
                           {memory.isPinned ? 'Unpin' : 'Pin'}
                         </Button>
                         {currentUser ? (
                           <>
-                            <Button size="sm" variant="ghost" onClick={() => startEditing(memory)}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditing(memory)}
+                              className="memory-lane__action-btn"
+                            >
                               Edit
                             </Button>
                             <Button
@@ -265,6 +260,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                                 await deleteMemory(memory.id);
                                 refresh();
                               }}
+                              className="memory-lane__action-btn"
                             >
                               Delete
                             </Button>

@@ -133,9 +133,9 @@ export const colors = {
 
 // * Typography scale
 const fontFamily = {
-  heading: ['Outfit', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
-  body: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
-  sans: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+  heading: ['Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
+  body: ['Trebuchet MS', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+  sans: ['Trebuchet MS', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
   mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
 } as const;
 
@@ -213,14 +213,14 @@ export const typography = {
       textTransform: 'uppercase',
     },
     titleSm: {
-      fontFamily: fontFamilyValue.body,
+      fontFamily: fontFamilyValue.heading,
       fontSize: '1.25rem',
       fontWeight: fontWeight.semibold,
       lineHeight: lineHeight.heading,
       letterSpacing: letterSpacing.normal,
     },
     titleMd: {
-      fontFamily: fontFamilyValue.body,
+      fontFamily: fontFamilyValue.heading,
       fontSize: '1.5rem',
       fontWeight: fontWeight.semibold,
       lineHeight: lineHeight.heading,
@@ -235,7 +235,7 @@ export const typography = {
       textTransform: 'uppercase',
     },
     badge: {
-      fontFamily: fontFamilyValue.body,
+      fontFamily: fontFamilyValue.heading,
       fontSize: '0.7rem',
       fontWeight: fontWeight.extrabold,
       lineHeight: lineHeight.none,

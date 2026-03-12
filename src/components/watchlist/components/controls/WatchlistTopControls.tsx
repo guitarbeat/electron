@@ -4,7 +4,7 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import SubNav from '@/ui/SubNav';
 import { ContentTab, SortMode } from '@/types';
-import { colors, radius, spacing, typography } from '@/design-system/tokens';
+import { colors, spacing, typography } from '@/design-system/tokens';
 
 const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🎬' },
@@ -80,11 +80,13 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             display: 'flex',
             alignItems: 'stretch',
             gap: 0,
-            background: colors.surfaceElevated,
-            borderRadius: radius.lg,
-            border: `1px solid ${colors.borderSecondary}35`,
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 28%), rgba(20, 22, 38, 0.72)',
+            borderRadius: '22px',
+            border: `1px solid ${colors.borderSecondary}50`,
             overflow: 'hidden',
             minHeight: '48px',
+            boxShadow: '0 18px 32px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.08)',
             transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           }}
         >
@@ -98,7 +100,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
               flex: 1,
               border: 'none',
               background: 'transparent',
-              paddingLeft: spacing.md,
+              paddingLeft: spacing.lg,
               paddingRight: spacing.sm,
               fontSize: typography.fontSize.sm,
             }}
@@ -114,7 +116,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                 minHeight: '48px',
                 minWidth: '56px',
                 borderRadius: 0,
-                borderLeft: `1px solid ${colors.borderSecondary}40`,
+                borderLeft: `1px solid ${colors.borderSecondary}45`,
+                boxShadow: 'none',
               }}
               title="Add or suggest movie"
               aria-label="Add or suggest movie"
