@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { concurrentMap, shuffleArray } from '../src/utils/concurrency.ts';
+import { concurrentMap, shuffleArray } from '../src/utils/index.ts';
 
 test('shuffleArray returns a shuffled copy without mutating the source', () => {
   const source = [1, 2, 3, 4];

@@ -1,4 +1,4 @@
-import { isValidUrl, sanitizeInput } from '../config/security.ts';
+import { isValidUrl, sanitizeInput } from '../utils/index.ts';
 
 const OMDB_BASE_URL = '/api/omdb';
 

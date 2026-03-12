@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/hooks/usePolling';
-import { sanitizeInput } from '@/config/security.ts';
+import { sanitizeInput } from '@/utils';
 import {
   canReadGist,
   canWriteGist,

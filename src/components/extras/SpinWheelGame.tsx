@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser } from '@/context/UserContext';
@@ -37,6 +37,15 @@ const SpinWheelGame: React.FC = () => {
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [mode, setMode] = useState<SpinMode>('queue');
   const [history, setHistory] = useState<string[]>(readHistory);
+  const spinTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (spinTimeoutRef.current !== null) {
+        window.clearTimeout(spinTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const candidates = useMemo(() => {
     if (mode === 'all') return movies;
@@ -75,7 +84,11 @@ const SpinWheelGame: React.FC = () => {
     setIsSpinning(true);
     setRotation(nextRotation);
 
-    window.setTimeout(() => {
+    if (spinTimeoutRef.current !== null) {
+      window.clearTimeout(spinTimeoutRef.current);
+    }
+
+    spinTimeoutRef.current = window.setTimeout(() => {
       const winner = candidates[targetIndex];
       setSelectedMovieId(winner.id);
 
@@ -89,6 +102,7 @@ const SpinWheelGame: React.FC = () => {
         type: 'success',
         duration: 3000,
       });
+      spinTimeoutRef.current = null;
     }, 4200);
   };
 

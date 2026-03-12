@@ -1,4 +1,4 @@
-import './GelBubbleAvatar.css';
+import '../ui/ui.css';
 import React from 'react';
 import { User } from '@/types';
 
@@ -435,15 +435,15 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'var(--gel-name-size)',
-          fontWeight: 700,
+          fontWeight: 'var(--font-weight-bold)',
           color: 'color-mix(in srgb, var(--color-text-primary) 78%, white 22%)',
-          textTransform: 'uppercase',
+          textTransform: 'var(--type-button-label-transform)',
           textShadow: `
             0 0 8px color-mix(in srgb, ${accentColor} 72%, transparent),
             0 0 20px color-mix(in srgb, ${haloColor} 42%, transparent),
             0 2px 4px rgba(0, 0, 0, 0.5)
           `,
-          letterSpacing: '0.12em',
+          letterSpacing: 'var(--letter-spacing-widest)',
           WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
           transition: 'all 0.3s ease-out',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',

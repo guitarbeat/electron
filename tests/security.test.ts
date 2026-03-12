@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sanitizeInput, isValidUrl } from '../src/config/security.ts';
+import { sanitizeInput, isValidUrl } from '../src/utils/index.ts';
 
 test('sanitizeInput trims and strips control characters', () => {
   const input = '  hello\u0007 world\u0000  ';
