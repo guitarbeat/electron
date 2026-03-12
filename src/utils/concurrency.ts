@@ -21,3 +21,18 @@ export const concurrentMap = async <T, R>(
   await Promise.all(Array.from({ length: Math.min(items.length, concurrency) }, worker));
   return results;
 };
+
+/**
+ * Returns a shuffled copy of the input without mutating the source array.
+ * Accepts an injectable RNG so tests can verify exact ordering.
+ */
+export const shuffleArray = <T>(items: readonly T[], random: () => number = Math.random): T[] => {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  return shuffled;
+};
