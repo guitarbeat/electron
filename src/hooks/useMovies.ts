@@ -371,8 +371,15 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const manualMetadataUpdate = useCallback(
-    async (movie: Movie, metadata: MetadataResult) => {
+    async (movieId: string, searchTerm?: string) => {
       try {
+        const latestMovies = await getMovies();
+        const movie = latestMovies.find((entry) => entry.id === movieId);
+        if (!movie) {
+          return false;
+        }
+
+        const metadata = await fetchMovieMetadata(searchTerm || movie.title);
         await performMutation((latestMovies) =>
           latestMovies.map((m) =>
             m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
