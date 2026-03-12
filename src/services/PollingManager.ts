@@ -129,7 +129,13 @@ class PollingManager {
   private notify(key: string, data: any, error: any) {
     const listeners = this.subscribers.get(key);
     if (listeners) {
-      listeners.forEach((l) => l(data, error));
+      listeners.forEach((listener) => {
+        try {
+          listener(data, error);
+        } catch (listenerError) {
+          console.error(`Polling listener failed for ${key}`, listenerError);
+        }
+      });
     }
   }
 
