@@ -3,7 +3,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { User, Movie } from '@/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
 import { useMovies } from '@/hooks/useMovies';
-import { useToast } from '@/context/ToastContext';
+import { useToast } from '@/context';
 import SwipeCard from './SwipeCard';
 import Button from '@/ui/Button';
 import ConfirmDialog from '@/ui/ConfirmDialog';

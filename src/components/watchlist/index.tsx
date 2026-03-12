@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { useUser } from '@/context/UserContext';
+import { useUser } from '@/context';
 import { useWatchlist } from './hooks/useWatchlist';
 import { Movie, MovieSuggestion, WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';

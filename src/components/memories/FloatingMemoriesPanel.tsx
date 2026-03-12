@@ -4,7 +4,7 @@ import Input from '@/ui/Input';
 import Textarea from '@/ui/Textarea';
 import { useMovies } from '@/hooks/useMovies';
 import { usePolling } from '@/hooks/usePolling';
-import { useUser } from '@/context/UserContext';
+import { useUser } from '@/context';
 import {
   addMemory,
   deleteMemory,

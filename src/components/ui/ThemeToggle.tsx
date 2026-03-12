@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { MainTab } from '@/types';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/context';
 import './ui.css';
 
 interface ThemeToggleProps {
