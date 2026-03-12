@@ -39,67 +39,20 @@ const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   showLabel = false,
   className = '',
 }) => {
-  const isAaron = user === 'Aaron';
-  const avatarSize = {
-    sm: { size: '20px', fontSize: '9px' },
-    md: { size: '24px', fontSize: '10px' },
-    lg: { size: '28px', fontSize: '11px' },
-  }[size];
-  const avatar = (
-    <div
-      style={{
-        width: avatarSize.size,
-        height: avatarSize.size,
-        borderRadius: '50%',
-        background: isAaron
-          ? 'linear-gradient(135deg, #95dcff 0%, #60c5f5 100%)'
-          : 'linear-gradient(135deg, #ff7fc6 0%, #ff5ab0 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: avatarSize.fontSize,
-        fontWeight: 700,
-        color: '#fff',
-        flexShrink: 0,
-        boxShadow: isAaron
-          ? '0 0 6px rgba(149, 220, 255, 0.5)'
-          : '0 0 6px rgba(255, 127, 198, 0.5)',
-        border: '1px solid rgba(255,255,255,0.25)',
-      }}
-    >
-      {user.charAt(0).toUpperCase()}
-    </div>
-  );
-
-  if (variant === 'text') {
-    return (
-      <div
-        className={`watcher-badge ${className}`}
-        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-      >
-        {avatar}
-        {showLabel && (
-          <span
-            style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}
-          >
-            {user}
-          </span>
-        )}
-      </div>
-    );
-  }
+  const badgeClassName = [
+    'watcher-badge',
+    `watcher-badge--${variant}`,
+    `watcher-badge--${size}`,
+    `watcher-badge--${user.toLowerCase()}`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div
-      className={`watcher-badge ${className}`}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-    >
-      {avatar}
-      {showLabel && (
-        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-          {user}
-        </span>
-      )}
+    <div className={badgeClassName}>
+      <div className="watcher-badge__avatar">{user.charAt(0).toUpperCase()}</div>
+      {showLabel && <span className="watcher-badge__label">{user}</span>}
     </div>
   );
 };
