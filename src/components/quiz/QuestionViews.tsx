@@ -396,14 +396,16 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
-    const touch = e.touches[0];
+    const [touch] = Array.from(e.touches);
+    if (!touch) return;
     const pos = calculatePosition(touch.clientX, touch.clientY);
     if (pos) onSelect(pos);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return;
-    const touch = e.touches[0];
+    const [touch] = Array.from(e.touches);
+    if (!touch) return;
     const pos = calculatePosition(touch.clientX, touch.clientY);
     if (pos) onSelect(pos);
   };

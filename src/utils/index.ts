@@ -141,8 +141,8 @@ export const validateAndThrow = (
 ) => {
   const result = validator(data);
   if (!result.isValid) {
-    const firstError = Object.values(result.errors)[0];
-    throw new Error(firstError);
+    const [firstError] = Object.values(result.errors);
+    throw new Error(firstError || 'Validation failed');
   }
   return result;
 };

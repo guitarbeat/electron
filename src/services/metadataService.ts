@@ -251,7 +251,8 @@ export const fetchMovieMetadata = async (
       const tvmazeData: TvMazeSearchResultItem[] = await tvmazeRes.json();
 
       if (tvmazeData && tvmazeData.length > 0) {
-        const { show } = tvmazeData[0];
+        const [firstResult] = tvmazeData;
+        const { show } = firstResult;
         const posterUrl = show.image?.medium || show.image?.original;
         return {
           posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,

@@ -37,8 +37,7 @@ const difficultyConfig: Record<
 const getStoredHighScore = () => {
   if (typeof window === 'undefined') return 0;
   const raw =
-    window.localStorage.getItem(HIGHSCORE_KEY) ??
-    window.localStorage.getItem(LEGACY_HIGHSCORE_KEY);
+    window.localStorage.getItem(HIGHSCORE_KEY) ?? window.localStorage.getItem(LEGACY_HIGHSCORE_KEY);
   const parsed = raw ? Number(raw) : 0;
   return Number.isFinite(parsed) ? parsed : 0;
 };

@@ -19,8 +19,8 @@ export const trapFocusOnTab = (
     return;
   }
 
-  const first = focusableNodes[0];
-  const last = focusableNodes[focusableNodes.length - 1];
+  const [first] = focusableNodes;
+  const last = focusableNodes.at(-1) ?? first;
   const active = document.activeElement as HTMLElement | null;
 
   if (event.shiftKey && active === first) {

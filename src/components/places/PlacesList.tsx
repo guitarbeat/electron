@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { useUser } from '@/context';
+import { useUser, useToast } from '@/context';
 import { usePlaces } from '@/hooks/usePlaces';
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
 import Card from '@/ui/Card';
@@ -11,7 +11,6 @@ import Skeleton from '@/ui/Skeleton';
 import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
 import { colors, spacing, typography, radius } from '@/design-system/tokens';
-import { useToast } from '@/context';
 import type { Place } from '@/types';
 import '../ui/ui.css';
 

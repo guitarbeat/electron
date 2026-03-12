@@ -161,7 +161,7 @@ const verifySecurePin = async (pin: string, storedHash: string): Promise<boolean
     return false;
   }
 
-  const saltHex = parts[2];
+  const [, , saltHex] = parts;
   const computedHashFull = await secureHashPin(pin, saltHex);
   return computedHashFull === storedHash;
 };

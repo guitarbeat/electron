@@ -198,7 +198,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     size={variant === 'panel' ? (isMobile ? 'compact' : 'default') : 'tiny'}
                     onClick={() => selectProfile(profile)}
                     onMouseEnter={() => setHoveredUser(profile)}
-                    onMouseLeave={() => setHoveredUser((value) => (value === profile ? null : value))}
+                    onMouseLeave={() =>
+                      setHoveredUser((value) => (value === profile ? null : value))
+                    }
                     onFocus={() => setFocusedUser(profile)}
                     onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
                     disabled={isDisabled}
@@ -239,7 +241,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   className="user-selection__pin-button"
                   onClick={openPinSettings}
                   disabled={isDisabled || isSavingPinSettings}
-                  aria-label={userHasPin(selectedNamedUser) ? 'Change profile PIN' : 'Set profile PIN'}
+                  aria-label={
+                    userHasPin(selectedNamedUser) ? 'Change profile PIN' : 'Set profile PIN'
+                  }
                 >
                   {userHasPin(selectedNamedUser) ? 'Change PIN' : 'Set PIN'}
                 </button>
@@ -254,7 +258,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 </button>
               </>
             ) : (
-              <p className="user-selection__logged-out">Logged out. Pick a bubble to hop back in.</p>
+              <p className="user-selection__logged-out">
+                Logged out. Pick a bubble to hop back in.
+              </p>
             )}
           </div>
         )}
