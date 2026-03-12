@@ -34,16 +34,22 @@ interface WatcherBadgeProps {
 
 const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   user,
+  size = 'md',
   variant = 'default',
   showLabel = false,
   className = '',
 }) => {
   const isAaron = user === 'Aaron';
+  const avatarSize = {
+    sm: { size: '20px', fontSize: '9px' },
+    md: { size: '24px', fontSize: '10px' },
+    lg: { size: '28px', fontSize: '11px' },
+  }[size];
   const avatar = (
     <div
       style={{
-        width: '24px',
-        height: '24px',
+        width: avatarSize.size,
+        height: avatarSize.size,
         borderRadius: '50%',
         background: isAaron
           ? 'linear-gradient(135deg, #95dcff 0%, #60c5f5 100%)'
@@ -51,7 +57,7 @@ const WatcherBadge: React.FC<WatcherBadgeProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '10px',
+        fontSize: avatarSize.fontSize,
         fontWeight: 700,
         color: '#fff',
         flexShrink: 0,
@@ -67,10 +73,15 @@ const WatcherBadge: React.FC<WatcherBadgeProps> = ({
 
   if (variant === 'text') {
     return (
-      <div className={`watcher-badge ${className}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div
+        className={`watcher-badge ${className}`}
+        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+      >
         {avatar}
         {showLabel && (
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+          <span
+            style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}
+          >
             {user}
           </span>
         )}
@@ -313,12 +324,17 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
       ) : (
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
-            <span className="movie-poster-fallback__ornament" aria-hidden="true">✦</span>
+            <span className="movie-poster-fallback__ornament" aria-hidden="true">
+              ✦
+            </span>
             <h3 className="movie-poster-fallback__title">{movie.title}</h3>
-            {movie.year && (
-              <span className="movie-poster-fallback__year">{movie.year}</span>
-            )}
-            <span className="movie-poster-fallback__ornament movie-poster-fallback__ornament--bottom" aria-hidden="true">✦</span>
+            {movie.year && <span className="movie-poster-fallback__year">{movie.year}</span>}
+            <span
+              className="movie-poster-fallback__ornament movie-poster-fallback__ornament--bottom"
+              aria-hidden="true"
+            >
+              ✦
+            </span>
           </div>
         </div>
       )}
