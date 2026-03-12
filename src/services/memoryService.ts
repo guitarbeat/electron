@@ -6,8 +6,9 @@ import {
   fetchGist,
   GIST_MEMORIES_FILENAME,
   getGistFileContent,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from './gistClient.ts';
 import { MOCK_MEMORIES } from './mockData';
 
@@ -75,6 +76,8 @@ const saveLocalMemories = (memories: SharedMemory[]): void => {
   } catch (error) {
     console.warn('Failed to persist local memories fallback.', error);
   }
+
+  setLocalOverride('memories', true);
 };
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
@@ -82,12 +85,12 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
     return getFallbackMemories();
   }
 
-  if (!canWriteGist && readStoredLocalMemories()) {
+  if (hasLocalOverride('memories') && readStoredLocalMemories()) {
     return getFallbackMemories();
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       console.warn(`Failed to fetch memories (${response.status}), using local fallback.`);
@@ -106,7 +109,7 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
     return JSON.parse(content);
   } catch (error) {
     console.error('Error fetching memories from Gist:', error);
-    throw error;
+    return getFallbackMemories();
   }
 };
 
@@ -117,20 +120,17 @@ const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_MEMORIES_FILENAME,
-      JSON.stringify(memories, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_MEMORIES_FILENAME, JSON.stringify(memories, null, 2));
 
     if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('GitHub API error details:', errorBody);
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`Failed to save memories to Gist (${response.status}), using local fallback.`);
+      saveLocalMemories(memories);
+      return;
     }
+    setLocalOverride('memories', false);
   } catch (error) {
-    console.error('Error saving memories to Gist:', error);
-    throw error;
+    console.warn('Error saving memories to Gist, using local fallback:', error);
+    saveLocalMemories(memories);
   }
 };
 

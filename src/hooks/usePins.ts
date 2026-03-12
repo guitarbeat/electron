@@ -5,8 +5,9 @@ import {
   canWriteGist,
   fetchGist,
   getGistFileContent,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from '../services/gistClient.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
@@ -72,6 +73,8 @@ const saveLocalPins = (pins: UserPins): void => {
   } catch (error) {
     console.warn('Failed to persist local PIN fallback.', error);
   }
+
+  setLocalOverride('pins', true);
 };
 
 let cachedPins: UserPins | null = null;
@@ -96,12 +99,12 @@ const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserP
     return getFallbackPins();
   }
 
-  if (!canWriteGist && readStoredLocalPins()) {
+  if (hasLocalOverride('pins') && readStoredLocalPins()) {
     return getFallbackPins();
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache });
+    const response = await fetchGist({ cache });
 
     if (!response.ok) {
       console.warn(`Failed to fetch pins from gist (${response.status}), using local fallback.`);
@@ -227,21 +230,26 @@ const savePins = async (pins: UserPins): Promise<boolean> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_PINS_FILENAME,
-      JSON.stringify(pins, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_PINS_FILENAME, JSON.stringify(pins, null, 2));
 
     if (response.ok) {
+      setLocalOverride('pins', false);
       cachedPins = clonePins(pins);
       lastFetchTime = Date.now();
       return true;
     }
-    return false;
+
+    console.warn(`Failed to save PINs to Gist (${response.status}), using local fallback.`);
+    saveLocalPins(pins);
+    cachedPins = clonePins(pins);
+    lastFetchTime = Date.now();
+    return true;
   } catch (error) {
-    console.error('Error saving PINs:', error);
-    return false;
+    console.warn('Error saving PINs, using local fallback:', error);
+    saveLocalPins(pins);
+    cachedPins = clonePins(pins);
+    lastFetchTime = Date.now();
+    return true;
   }
 };
 

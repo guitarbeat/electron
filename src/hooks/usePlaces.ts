@@ -7,8 +7,9 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_PLACES_FILENAME,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from '@/services/gistClient.ts';
 import { validateAndThrow, validatePlace } from '@/utils/validation';
 import { sanitizeInput } from '@/config/security';
@@ -97,6 +98,8 @@ const saveLocalPlaces = (places: Place[]): void => {
   } catch (error) {
     console.warn('Failed to persist local places fallback.', error);
   }
+
+  setLocalOverride('places', true);
 };
 
 const getPlaces = async (): Promise<Place[]> => {
@@ -105,11 +108,11 @@ const getPlaces = async (): Promise<Place[]> => {
       return getFallbackPlaces();
     }
 
-    if (!canWriteGist && readStoredLocalPlaces()) {
+    if (hasLocalOverride('places') && readStoredLocalPlaces()) {
       return getFallbackPlaces();
     }
 
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
@@ -145,20 +148,17 @@ const savePlaces = async (places: Place[]): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_PLACES_FILENAME,
-      JSON.stringify(places, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_PLACES_FILENAME, JSON.stringify(places, null, 2));
 
     if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('GitHub API error details:', errorBody);
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`Failed to save places to Gist (${response.status}), using local fallback.`);
+      saveLocalPlaces(places);
+      return;
     }
+    setLocalOverride('places', false);
   } catch (error) {
-    console.error('Error saving places to Gist:', error);
-    throw error;
+    console.warn('Error saving places to Gist, using local fallback:', error);
+    saveLocalPlaces(places);
   }
 };
 

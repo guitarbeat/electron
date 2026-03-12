@@ -7,8 +7,9 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_MATCHMAKER_FILENAME,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from '@/services/gistClient.ts';
 
 const MATCHMAKER_LOCAL_STORAGE_KEY = 'movieList.localMatchmaker';
@@ -89,6 +90,8 @@ const saveLocalMatchmakerGame = (game: MatchmakerGame | null): void => {
   } catch (error) {
     console.warn('Failed to persist local matchmaker fallback.', error);
   }
+
+  setLocalOverride('matchmaker', true);
 };
 
 const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
@@ -96,12 +99,12 @@ const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
     return readStoredLocalMatchmakerGame();
   }
 
-  if (!canWriteGist && readStoredLocalMatchmakerGame()) {
+  if (hasLocalOverride('matchmaker') && readStoredLocalMatchmakerGame()) {
     return readStoredLocalMatchmakerGame();
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       console.warn(
@@ -140,18 +143,18 @@ const saveMatchmakerGame = async (game: MatchmakerGame | null): Promise<void> =>
   try {
     const response = await patchGistFile(
       GIST_MATCHMAKER_FILENAME,
-      game ? JSON.stringify(game, null, 2) : '',
-      GIST_TOKEN
+      game ? JSON.stringify(game, null, 2) : ''
     );
 
     if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('GitHub API error details:', errorBody);
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`Failed to save matchmaker game (${response.status}), using local fallback.`);
+      saveLocalMatchmakerGame(game);
+      return;
     }
+    setLocalOverride('matchmaker', false);
   } catch (error) {
-    console.error('Error saving matchmaker game to Gist:', error);
-    throw error;
+    console.warn('Error saving matchmaker game to Gist, using local fallback:', error);
+    saveLocalMatchmakerGame(game);
   }
 };
 

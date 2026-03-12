@@ -7,8 +7,9 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_SUGGESTIONS_FILENAME,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from '@/services/gistClient.ts';
 import { MovieSuggestion, User } from '@/types';
 import { MOCK_SUGGESTIONS } from '@/services/mockData';
@@ -82,6 +83,8 @@ const saveLocalSuggestions = (suggestions: MovieSuggestion[]): void => {
   } catch (error) {
     console.warn('Failed to persist local suggestions fallback.', error);
   }
+
+  setLocalOverride('suggestions', true);
 };
 
 const getSuggestions = async (): Promise<MovieSuggestion[]> => {
@@ -89,12 +92,12 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
     return getFallbackSuggestions();
   }
 
-  if (!canWriteGist && readStoredLocalSuggestions()) {
+  if (hasLocalOverride('suggestions') && readStoredLocalSuggestions()) {
     return getFallbackSuggestions();
   }
 
   try {
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (!response.ok) {
       console.warn(`Failed to fetch suggestions (${response.status}), using local fallback.`);
@@ -113,7 +116,7 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
     return JSON.parse(content);
   } catch (error) {
     console.error('Error fetching suggestions from Gist:', error);
-    throw error;
+    return getFallbackSuggestions();
   }
 };
 
@@ -126,18 +129,20 @@ const saveSuggestions = async (suggestions: MovieSuggestion[]): Promise<void> =>
   try {
     const response = await patchGistFile(
       GIST_SUGGESTIONS_FILENAME,
-      JSON.stringify(suggestions, null, 2),
-      GIST_TOKEN
+      JSON.stringify(suggestions, null, 2)
     );
 
     if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('GitHub API error details:', errorBody);
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(
+        `Failed to save suggestions to Gist (${response.status}), using local fallback.`
+      );
+      saveLocalSuggestions(suggestions);
+      return;
     }
+    setLocalOverride('suggestions', false);
   } catch (error) {
-    console.error('Error saving suggestions to Gist:', error);
-    throw error;
+    console.warn('Error saving suggestions to Gist, using local fallback:', error);
+    saveLocalSuggestions(suggestions);
   }
 };
 

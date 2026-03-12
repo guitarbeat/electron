@@ -13,8 +13,9 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_QUIZ_FILENAME,
-  GIST_TOKEN,
+  hasLocalOverride,
   patchGistFile,
+  setLocalOverride,
 } from '@/services/gistClient.ts';
 import {
   quizQuestions as defaultQuestions,
@@ -114,6 +115,8 @@ const saveLocalQuizData = (data: QuizData): void => {
   } catch (error) {
     console.warn('Failed to persist local quiz fallback.', error);
   }
+
+  setLocalOverride('quiz', true);
 };
 
 const getQuizData = async (): Promise<QuizData> => {
@@ -122,11 +125,11 @@ const getQuizData = async (): Promise<QuizData> => {
       return getFallbackQuizData();
     }
 
-    if (!canWriteGist && readStoredLocalQuizData()) {
+    if (hasLocalOverride('quiz') && readStoredLocalQuizData()) {
       return getFallbackQuizData();
     }
 
-    const response = await fetchGist({ token: GIST_TOKEN || undefined, cache: 'no-cache' });
+    const response = await fetchGist({ cache: 'no-cache' });
 
     if (response.status === 401 || response.status === 403 || response.status === 404) {
       return getFallbackQuizData();
@@ -165,20 +168,17 @@ const saveQuizData = async (data: QuizData): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(
-      GIST_QUIZ_FILENAME,
-      JSON.stringify(data, null, 2),
-      GIST_TOKEN
-    );
+    const response = await patchGistFile(GIST_QUIZ_FILENAME, JSON.stringify(data, null, 2));
 
     if (!response.ok) {
-      const errorBody = await response.json();
-      console.error('GitHub API error details:', errorBody);
-      throw new Error(`GitHub API responded with ${response.status}`);
+      console.warn(`Failed to save quiz data to Gist (${response.status}), using local fallback.`);
+      saveLocalQuizData(data);
+      return;
     }
+    setLocalOverride('quiz', false);
   } catch (error) {
-    console.error('Error saving quiz data to Gist:', error);
-    throw error;
+    console.warn('Error saving quiz data to Gist, using local fallback:', error);
+    saveLocalQuizData(data);
   }
 };
 
