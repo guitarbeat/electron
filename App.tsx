@@ -21,8 +21,8 @@ import { useMediaQuery, breakpoints } from './src/hooks';
 import './App.css';
 
 const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
-  { id: 'queue', label: 'Watchlist', icon: '🎬' },
-  { id: 'places', label: 'Places', icon: '📍' },
+  { id: 'queue', label: 'Movie Nights', icon: '🎬' },
+  { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
 
 const AppInner: React.FC = () => {

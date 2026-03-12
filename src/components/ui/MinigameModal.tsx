@@ -43,11 +43,14 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   return createPortal(
     <div
       style={{
-        ...getModalOverlayStyle('rgba(0,0,0,0.5)', 'center', 0),
+        ...getModalOverlayStyle('rgba(10, 6, 14, 0.64)', 'center', 0),
         zIndex: 9999,
         width: '100vw',
         height: '100vh',
-        WebkitBackdropFilter: 'blur(4px)',
+        backgroundImage:
+          'radial-gradient(circle at top, rgba(255, 150, 197, 0.14), transparent 30%), radial-gradient(circle at bottom, rgba(149, 220, 255, 0.1), transparent 28%)',
+        WebkitBackdropFilter: 'blur(10px)',
+        backdropFilter: 'blur(10px)',
       }}
       onClick={onClose}
       role="dialog"
@@ -64,10 +67,13 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          background: colors.surface,
-          borderRadius: 0,
-          border: 'none',
-          boxShadow: shadows.cardElevated,
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
+          borderRadius: 28,
+          border: `1px solid ${colors.borderSecondary}55`,
+          boxShadow: `${shadows.cardElevated}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -78,19 +84,22 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: title ? 'space-between' : 'flex-end',
-            padding: `${spacing.sm} ${spacing.md}`,
-            borderBottom: title ? `1px solid ${colors.borderSecondary}25` : 'none',
+            padding: `${spacing.md} ${spacing.lg}`,
+            borderBottom: title ? `1px solid ${colors.borderSecondary}30` : 'none',
             minHeight: 48,
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)',
           }}
         >
           {title && (
             <h2
               style={{
                 margin: 0,
-                fontFamily: typography.fontFamilyValue.heading,
+                fontFamily: 'var(--font-display)',
                 fontSize: typography.fontSize.lg,
-                color: colors.textPrimary,
-                letterSpacing: typography.letterSpacing.dense,
+                color: 'rgba(255, 245, 249, 0.95)',
+                letterSpacing: '0.08em',
+                textShadow: '0 0 18px rgba(255,127,198,0.22)',
               }}
             >
               {title}
@@ -108,13 +117,15 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
               height: 40,
               padding: 0,
               borderRadius: '50%',
-              background: 'rgba(255,255,255,0.08)',
-              color: colors.textSecondary,
-              border: 'none',
+              background:
+                'linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 100%), rgba(41, 26, 37, 0.74)',
+              color: '#fff3f7',
+              border: `1px solid ${colors.borderSecondary}45`,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.26), 0 8px 20px rgba(0,0,0,0.22)',
             }}
           >
             <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">

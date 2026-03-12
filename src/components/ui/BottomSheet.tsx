@@ -106,8 +106,10 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(4px)',
+          backgroundColor: 'rgba(11, 8, 16, 0.68)',
+          backgroundImage:
+            'radial-gradient(circle at top, rgba(255, 150, 197, 0.12), transparent 32%), radial-gradient(circle at bottom, rgba(149, 220, 255, 0.08), transparent 30%)',
+          backdropFilter: 'blur(10px)',
           animation: prefersReducedMotion ? undefined : 'fade-in 0.2s ease-out',
         }}
         aria-hidden="true"
@@ -125,28 +127,35 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
           position: 'relative',
           width: '100%',
           maxWidth: '560px',
-          backgroundColor: colors.surface3,
-          borderRadius: `${radius.lg} ${radius.lg} 0 0`,
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 18%), linear-gradient(180deg, rgba(61, 37, 52, 0.98) 0%, rgba(27, 16, 25, 0.96) 100%)',
+          borderRadius: '28px 28px 0 0',
+          border: `1px solid ${colors.borderSecondary}50`,
+          borderBottom: 'none',
           padding: spacing.lg,
           paddingBottom: `calc(${spacing.lg} + env(safe-area-inset-bottom, 0px))`,
-          boxShadow: shadows.cardElevated,
+          boxShadow: `${shadows.cardElevated}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 32px rgba(255,127,198,0.14)`,
           animation: prefersReducedMotion
             ? undefined
             : 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
           maxHeight: '82vh',
           overflowY: 'auto',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
         }}
       >
         <div
           style={{
             width: '40px',
             height: '4px',
-            backgroundColor: colors.textTertiary,
+            background:
+              'linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.18) 100%)',
             borderRadius: radius.full,
             margin: '0 auto',
             marginBottom: spacing.md,
-            opacity: 0.5,
+            opacity: 0.85,
+            boxShadow: '0 0 18px rgba(255,255,255,0.24)',
           }}
           aria-hidden="true"
         />
@@ -166,11 +175,13 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
             style={{
               fontSize: typography.fontSize.lg,
               fontWeight: typography.fontWeight.bold,
-              color: colors.textPrimary,
+              color: '#fff3f7',
               margin: 0,
               marginBottom: spacing.md,
               textAlign: 'center',
-              fontFamily: typography.fontFamily.heading.join(', '),
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '0.08em',
+              textShadow: '0 0 18px rgba(255,127,198,0.22)',
             }}
           >
             {title}

@@ -26,8 +26,8 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
   --shadow-floating: 0 8px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
-  --font-body: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  --font-heading: 'Outfit', 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: 'Trebuchet MS', 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-heading: 'Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', serif;
   --font-sans: var(--font-body);
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
   --font-size-3xs: 0.5625rem;
@@ -69,12 +69,12 @@
   --type-eyebrow-line-height: var(--line-height-none);
   --type-eyebrow-letter-spacing: var(--letter-spacing-eyebrow);
   --type-eyebrow-transform: uppercase;
-  --type-title-sm-family: var(--font-body);
+  --type-title-sm-family: var(--font-heading);
   --type-title-sm-size: 1.25rem;
   --type-title-sm-weight: var(--font-weight-semibold);
   --type-title-sm-line-height: var(--line-height-heading);
   --type-title-sm-letter-spacing: var(--letter-spacing-normal);
-  --type-title-md-family: var(--font-body);
+  --type-title-md-family: var(--font-heading);
   --type-title-md-size: 1.5rem;
   --type-title-md-weight: var(--font-weight-semibold);
   --type-title-md-line-height: var(--line-height-heading);
@@ -90,7 +90,7 @@
   --type-button-label-line-height: var(--line-height-none);
   --type-button-label-letter-spacing: var(--letter-spacing-button);
   --type-button-label-transform: uppercase;
-  --type-badge-family: var(--font-body);
+  --type-badge-family: var(--font-heading);
   --type-badge-size: 0.7rem;
   --type-badge-weight: var(--font-weight-extrabold);
   --type-badge-line-height: var(--line-height-none);
