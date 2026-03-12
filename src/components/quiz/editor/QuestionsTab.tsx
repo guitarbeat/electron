@@ -992,7 +992,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                         backgroundColor: 'rgba(255,255,255,0.05)',
                         padding: '2px 6px',
                         borderRadius: radius.full,
-                        textTransform: 'uppercase',
+                        textTransform: typography.presets.badge.textTransform,
                         letterSpacing: typography.letterSpacing.wider,
                         fontWeight: typography.fontWeight.bold,
                       }}

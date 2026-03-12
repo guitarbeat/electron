@@ -623,10 +623,10 @@ body {
 .mobile-hero__title {
   margin: -0.2rem 0 0;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 9vw, 2.8rem);
-  font-weight: 700;
+  font-size: clamp(var(--font-size-3xl), 9vw, 2.8rem);
+  font-weight: var(--font-weight-bold);
   line-height: 0.92;
-  letter-spacing: -0.04em;
+  letter-spacing: var(--letter-spacing-display);
 }
 
 .mobile-hero__copy {

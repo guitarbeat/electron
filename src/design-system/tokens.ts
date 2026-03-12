@@ -177,6 +177,7 @@ const lineHeight = {
 } as const;
 
 const letterSpacing = {
+  display: '-0.04em',
   none: '0',
   tight: '-0.02em',
   normal: '-0.01em',
