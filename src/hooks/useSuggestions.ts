@@ -7,9 +7,11 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_SUGGESTIONS_FILENAME,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from '@/services/gistClient.ts';
 import { MovieSuggestion, User } from '@/types';
 import { MOCK_SUGGESTIONS } from '@/services/mockData';
@@ -45,45 +47,25 @@ const isSuggestionRecord = (value: unknown): value is MovieSuggestion => {
   );
 };
 
-const readStoredLocalSuggestions = (): MovieSuggestion[] | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(SUGGESTIONS_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.every(isSuggestionRecord)) {
-      return cloneSuggestions(parsed);
-    }
-  } catch (error) {
-    console.warn('Failed to read local suggestions fallback, resetting to defaults.', error);
-  }
-
-  return null;
-};
+const readStoredLocalSuggestions = (): MovieSuggestion[] | null =>
+  readStoredJson({
+    storageKey: SUGGESTIONS_LOCAL_STORAGE_KEY,
+    validate: (value): value is MovieSuggestion[] =>
+      Array.isArray(value) && value.every(isSuggestionRecord),
+    clone: cloneSuggestions,
+    label: 'local suggestions fallback',
+  });
 
 const getFallbackSuggestions = (): MovieSuggestion[] =>
   readStoredLocalSuggestions() ?? cloneSuggestions(MOCK_SUGGESTIONS);
 
 const saveLocalSuggestions = (suggestions: MovieSuggestion[]): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(
-      SUGGESTIONS_LOCAL_STORAGE_KEY,
-      JSON.stringify(cloneSuggestions(suggestions))
-    );
-  } catch (error) {
-    console.warn('Failed to persist local suggestions fallback.', error);
-  }
-
+  writeStoredJson({
+    storageKey: SUGGESTIONS_LOCAL_STORAGE_KEY,
+    value: suggestions,
+    clone: cloneSuggestions,
+    label: 'local suggestions fallback',
+  });
   setLocalOverride('suggestions', true);
 };
 
@@ -92,8 +74,9 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
     return getFallbackSuggestions();
   }
 
-  if (hasLocalOverride('suggestions') && readStoredLocalSuggestions()) {
-    return getFallbackSuggestions();
+  const localOverride = readLocalOverride('suggestions', readStoredLocalSuggestions);
+  if (localOverride.enabled && localOverride.value) {
+    return localOverride.value;
   }
 
   try {

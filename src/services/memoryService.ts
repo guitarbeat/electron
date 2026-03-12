@@ -6,9 +6,11 @@ import {
   fetchGist,
   GIST_MEMORIES_FILENAME,
   getGistFileContent,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from './gistClient.ts';
 import { MOCK_MEMORIES } from './mockData';
 
@@ -38,45 +40,25 @@ const isSharedMemoryRecord = (value: unknown): value is SharedMemory => {
   );
 };
 
-const readStoredLocalMemories = (): SharedMemory[] | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(MEMORIES_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.every(isSharedMemoryRecord)) {
-      return cloneMemories(parsed);
-    }
-  } catch (error) {
-    console.warn('Failed to read local memories fallback, resetting to defaults.', error);
-  }
-
-  return null;
-};
+const readStoredLocalMemories = (): SharedMemory[] | null =>
+  readStoredJson({
+    storageKey: MEMORIES_LOCAL_STORAGE_KEY,
+    validate: (value): value is SharedMemory[] =>
+      Array.isArray(value) && value.every(isSharedMemoryRecord),
+    clone: cloneMemories,
+    label: 'local memories fallback',
+  });
 
 const getFallbackMemories = (): SharedMemory[] =>
   readStoredLocalMemories() ?? cloneMemories(MOCK_MEMORIES);
 
 const saveLocalMemories = (memories: SharedMemory[]): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(
-      MEMORIES_LOCAL_STORAGE_KEY,
-      JSON.stringify(cloneMemories(memories))
-    );
-  } catch (error) {
-    console.warn('Failed to persist local memories fallback.', error);
-  }
-
+  writeStoredJson({
+    storageKey: MEMORIES_LOCAL_STORAGE_KEY,
+    value: memories,
+    clone: cloneMemories,
+    label: 'local memories fallback',
+  });
   setLocalOverride('memories', true);
 };
 
@@ -85,8 +67,9 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
     return getFallbackMemories();
   }
 
-  if (hasLocalOverride('memories') && readStoredLocalMemories()) {
-    return getFallbackMemories();
+  const localOverride = readLocalOverride('memories', readStoredLocalMemories);
+  if (localOverride.enabled && localOverride.value) {
+    return localOverride.value;
   }
 
   try {

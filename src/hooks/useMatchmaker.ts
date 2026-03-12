@@ -7,9 +7,12 @@ import {
   fetchGist,
   getGistFileContent,
   GIST_MATCHMAKER_FILENAME,
-  hasLocalOverride,
   patchGistFile,
+  readLocalOverride,
+  readStoredJson,
+  removeStoredJson,
   setLocalOverride,
+  writeStoredJson,
 } from '@/services/gistClient.ts';
 
 const MATCHMAKER_LOCAL_STORAGE_KEY = 'movieList.localMatchmaker';
@@ -51,44 +54,24 @@ const isMatchmakerGameRecord = (value: unknown): value is MatchmakerGame => {
   );
 };
 
-const readStoredLocalMatchmakerGame = (): MatchmakerGame | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(MATCHMAKER_LOCAL_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-    if (isMatchmakerGameRecord(parsed)) {
-      return cloneMatchmakerGame(parsed);
-    }
-  } catch (error) {
-    console.warn('Failed to read local matchmaker fallback, resetting to empty state.', error);
-  }
-
-  return null;
-};
+const readStoredLocalMatchmakerGame = (): MatchmakerGame | null =>
+  readStoredJson({
+    storageKey: MATCHMAKER_LOCAL_STORAGE_KEY,
+    validate: isMatchmakerGameRecord,
+    clone: cloneMatchmakerGame,
+    label: 'local matchmaker fallback',
+  });
 
 const saveLocalMatchmakerGame = (game: MatchmakerGame | null): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    if (game) {
-      window.localStorage.setItem(
-        MATCHMAKER_LOCAL_STORAGE_KEY,
-        JSON.stringify(cloneMatchmakerGame(game))
-      );
-    } else {
-      window.localStorage.removeItem(MATCHMAKER_LOCAL_STORAGE_KEY);
-    }
-  } catch (error) {
-    console.warn('Failed to persist local matchmaker fallback.', error);
+  if (game) {
+    writeStoredJson({
+      storageKey: MATCHMAKER_LOCAL_STORAGE_KEY,
+      value: game,
+      clone: cloneMatchmakerGame,
+      label: 'local matchmaker fallback',
+    });
+  } else {
+    removeStoredJson(MATCHMAKER_LOCAL_STORAGE_KEY, 'local matchmaker fallback');
   }
 
   setLocalOverride('matchmaker', true);
@@ -99,8 +82,9 @@ const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
     return readStoredLocalMatchmakerGame();
   }
 
-  if (hasLocalOverride('matchmaker') && readStoredLocalMatchmakerGame()) {
-    return readStoredLocalMatchmakerGame();
+  const localOverride = readLocalOverride('matchmaker', readStoredLocalMatchmakerGame);
+  if (localOverride.enabled) {
+    return localOverride.value;
   }
 
   try {
