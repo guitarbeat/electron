@@ -544,7 +544,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                         fontWeight: 'var(--font-weight-semibold)',
                         lineHeight: 'var(--line-height-none)',
                         letterSpacing: 'var(--letter-spacing-button)',
-                        textTransform: 'uppercase',
+                        textTransform: 'var(--type-button-label-transform)',
                       }}
                     >
                       Re-fetch

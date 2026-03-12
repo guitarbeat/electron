@@ -4,7 +4,7 @@ import {
   createValidator,
   validateAndThrow,
   type ValidationRules,
-} from '../src/utils/validation.ts';
+} from '../src/utils/index.ts';
 
 test('createValidator enforces required fields', () => {
   const rules: ValidationRules = {

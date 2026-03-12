@@ -1,4 +1,4 @@
-import { sanitizeInput } from '@/config/security.ts';
+import { sanitizeInput } from '@/utils';
 import type { SharedMemory } from '@/types.ts';
 import {
   canReadGist,

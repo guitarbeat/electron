@@ -1,4 +1,4 @@
-import './Matchmaker.css';
+import '../ui/ui.css';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { User, Movie } from '@/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import SwipeCard from './SwipeCard';
 import Button from '@/ui/Button';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { shuffleArray } from '@/utils/concurrency';
+import { shuffleArray } from '@/utils';
 import {
   colors,
   spacing,
@@ -338,10 +338,13 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             >
               <div
                 style={{
-                  fontSize: '1.2rem',
+                  fontFamily: typography.fontFamilyValue.heading,
+                  fontSize: typography.fontSize.lg,
                   color: colors.accent,
                   marginBottom: spacing.sm,
-                  fontWeight: 'bold',
+                  fontWeight: typography.fontWeight.bold,
+                  lineHeight: typography.lineHeight.heading,
+                  letterSpacing: typography.letterSpacing.button,
                   textShadow: shadows.textGlow,
                 }}
               >
@@ -442,17 +445,17 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
           </>
         ) : (
           <div
-            style={{
-              textAlign: 'center',
-              padding: spacing.xl,
-              animation: `fadeIn ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
-            }}
-          >
+        style={{
+          textAlign: 'center',
+          padding: spacing.xl,
+          animation: `fadeIn ${motionTokens.duration.slow} ${motionTokens.easing.easeOut}`,
+        }}
+      >
             <div style={{ fontSize: '4rem', marginBottom: spacing.md }}>🎬</div>
             <h3
               style={{
                 color: colors.textPrimary,
-                fontFamily: typography.fontFamily.heading.join(', '),
+                fontFamily: typography.fontFamilyValue.heading,
                 marginBottom: spacing.xs,
               }}
             >

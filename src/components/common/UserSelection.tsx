@@ -6,7 +6,7 @@ import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';
 import PinDialog from './PinDialog';
 import ThemeToggle from '../ui/ThemeToggle';
 import GelBubbleAvatar from './GelBubbleAvatar';
-import './UserSelection.css';
+import '../ui/ui.css';
 
 type UserSelectionVariant = 'inline' | 'panel';
 
