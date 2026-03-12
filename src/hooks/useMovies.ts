@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Movie, User } from '@/types';
+import type { Movie, User } from '@/types';
 import { usePolling } from '@/hooks/usePolling';
 import {
   canReadGist,
@@ -14,37 +14,13 @@ import {
   writeStoredJson,
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
+import { cloneMovies, isMovieRecord, normalizeMovies } from '@/services/movieRecords.ts';
 import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl, concurrentMap } from '@/utils';
 import { MOCK_MOVIES } from '@/services/mockData';
 
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
 const MOVIES_LOCAL_STORAGE_KEY = 'movieList.localMovies';
-
-const cloneMovies = (movies: Movie[]): Movie[] =>
-  movies.map((movie) => ({
-    ...movie,
-    watchedBy: [...movie.watchedBy],
-  }));
-
-const isUser = (value: unknown): value is User => value === 'Aaron' || value === 'Electra';
-
-const isMovieRecord = (value: unknown): value is Movie => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const movie = value as Partial<Movie>;
-
-  return (
-    typeof movie.id === 'string' &&
-    typeof movie.title === 'string' &&
-    isUser(movie.addedBy) &&
-    typeof movie.createdAt === 'string' &&
-    Array.isArray(movie.watchedBy) &&
-    movie.watchedBy.every(isUser)
-  );
-};
 
 const readStoredLocalMovies = (): Movie[] | null =>
   readStoredJson({
@@ -106,14 +82,26 @@ const getMovies = async (): Promise<Movie[]> => {
       return [];
     }
 
-    let movies: Movie[];
+    let parsedMovies: unknown;
     try {
-      movies = JSON.parse(content);
-    } catch (parseError) {
+      parsedMovies = JSON.parse(content);
+    } catch {
       throw new Error(`${GIST_FILENAME} contains invalid JSON.`);
     }
-    if (!Array.isArray(movies)) {
+    if (!Array.isArray(parsedMovies)) {
       throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
+    }
+
+    const movies = normalizeMovies(parsedMovies);
+    if (movies.length !== parsedMovies.length) {
+      console.warn(
+        `Filtered ${parsedMovies.length - movies.length} invalid movie record(s) from ${GIST_FILENAME}.`
+      );
+    }
+
+    if (parsedMovies.length > 0 && movies.length === 0) {
+      console.warn(`No valid movie records found in ${GIST_FILENAME}, using local movie fallback.`);
+      return getFallbackMovies();
     }
 
     const etag = response.headers.get('etag') || response.headers.get('ETag');

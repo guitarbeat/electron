@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User } from '../types';
+import type { User } from '../types.ts';
 import {
   canReadGist,
   canWriteGist,
@@ -11,35 +11,17 @@ import {
   setLocalOverride,
   writeStoredJson,
 } from '../services/gistClient.ts';
+import {
+  clonePins,
+  createSerialTaskRunner,
+  isUserPinsRecord,
+  parsePinsContent,
+  type UserPins,
+} from '../services/pinHelpers.ts';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const PINS_LOCAL_STORAGE_KEY = 'movieList.localPins';
-
-const MOCK_PINS = {
-  Aaron: '',
-  Electra: '',
-};
-
-interface UserPins {
-  Aaron?: string;
-  Electra?: string;
-}
-
-const clonePins = (pins: UserPins): UserPins => ({ ...pins });
-
-const isUserPinsRecord = (value: unknown): value is UserPins => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const pins = value as Partial<UserPins>;
-
-  return (
-    (pins.Aaron === undefined || typeof pins.Aaron === 'string') &&
-    (pins.Electra === undefined || typeof pins.Electra === 'string')
-  );
-};
 
 const readStoredLocalPins = (): UserPins | null =>
   readStoredJson({
@@ -49,7 +31,7 @@ const readStoredLocalPins = (): UserPins | null =>
     label: 'local PIN fallback',
   });
 
-const getFallbackPins = (): UserPins => readStoredLocalPins() ?? clonePins(MOCK_PINS);
+const getFallbackPins = (): UserPins => readStoredLocalPins() ?? {};
 
 const saveLocalPins = (pins: UserPins): void => {
   writeStoredJson({
@@ -64,19 +46,7 @@ const saveLocalPins = (pins: UserPins): void => {
 let cachedPins: UserPins | null = null;
 let lastFetchTime = 0;
 let fetchPromise: Promise<UserPins> | null = null;
-
-const parsePinsContent = (fileContent: string | undefined): UserPins => {
-  if (!fileContent) {
-    return {};
-  }
-
-  try {
-    return JSON.parse(fileContent) as UserPins;
-  } catch (parseError) {
-    console.error('Error parsing PIN file:', parseError);
-    return {};
-  }
-};
+const runPinMutation = createSerialTaskRunner();
 
 const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserPins> => {
   if (!canReadGist) {
@@ -84,8 +54,8 @@ const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserP
   }
 
   const localOverride = readLocalOverride('pins', readStoredLocalPins);
-  if (localOverride.enabled && localOverride.value) {
-    return localOverride.value;
+  if (localOverride.enabled) {
+    return localOverride.value ?? getFallbackPins();
   }
 
   try {
@@ -240,9 +210,11 @@ const savePins = async (pins: UserPins): Promise<boolean> => {
 
 const setPin = async (user: User, pin: string): Promise<boolean> => {
   try {
-    const freshPins = await fetchPinsFromGist('no-cache');
-    freshPins[user] = await secureHashPin(pin);
-    return savePins(freshPins);
+    return runPinMutation(async () => {
+      const freshPins = await fetchPinsFromGist('no-cache');
+      freshPins[user] = await secureHashPin(pin);
+      return savePins(freshPins);
+    });
   } catch (error) {
     console.error('Error setting PIN:', error);
     return false;
@@ -251,9 +223,11 @@ const setPin = async (user: User, pin: string): Promise<boolean> => {
 
 const removePin = async (user: User): Promise<boolean> => {
   try {
-    const freshPins = await fetchPinsFromGist('no-cache');
-    delete freshPins[user];
-    return savePins(freshPins);
+    return runPinMutation(async () => {
+      const freshPins = await fetchPinsFromGist('no-cache');
+      delete freshPins[user];
+      return savePins(freshPins);
+    });
   } catch (error) {
     console.error('Error removing PIN:', error);
     return false;
