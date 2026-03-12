@@ -513,7 +513,7 @@ const XYAxisEditor: React.FC<{
                 </span>
                 <span
                   style={{
-                    fontSize: '10px',
+                    fontSize: typography.fontSize['2xs'],
                     color: colors.textTertiary,
                     marginLeft: 'auto',
                   }}
@@ -823,7 +823,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                 >
                   {template.name}
                 </div>
-                <div style={{ fontSize: '10px', color: colors.textTertiary }}>
+                <div style={{ fontSize: typography.fontSize['2xs'], color: colors.textTertiary }}>
                   {template.description}
                 </div>
               </button>
@@ -975,7 +975,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   >
                     <span
                       style={{
-                        fontSize: '10px',
+                        fontSize: typography.fontSize['2xs'],
                         color: colors.accent,
                         fontWeight: typography.fontWeight.bold,
                         backgroundColor: `${colors.accent}20`,
@@ -987,13 +987,13 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                     </span>
                     <span
                       style={{
-                        fontSize: '9px',
+                        fontSize: typography.fontSize['3xs'],
                         color: colors.textTertiary,
                         backgroundColor: 'rgba(255,255,255,0.05)',
                         padding: '2px 6px',
                         borderRadius: radius.full,
                         textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        letterSpacing: typography.letterSpacing.wider,
                         fontWeight: typography.fontWeight.bold,
                       }}
                     >
@@ -1103,7 +1103,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
 };
 
 const OptionsSummary: React.FC<{ options: MultipleChoiceQuestion['options'] }> = ({ options }) => (
-  <div style={{ fontSize: '11px', color: colors.textTertiary }}>
+  <div style={{ fontSize: typography.presets.eyebrow.fontSize, color: colors.textTertiary }}>
     {options.map((opt, i) => {
       const scoreStr = Object.entries(opt.scores)
         .filter(([, v]) => typeof v === 'number' && v > 0)
@@ -1150,7 +1150,7 @@ const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }
 }) => {
   const levels = ['stronglyDisagree', 'disagree', 'neutral', 'agree', 'stronglyAgree'] as const;
   return (
-    <div style={{ fontSize: '10px', color: colors.textTertiary }}>
+    <div style={{ fontSize: typography.fontSize['2xs'], color: colors.textTertiary }}>
       {levels.map((level) => {
         const scoreStr = Object.entries(scores[level])
           .filter(([, v]) => typeof v === 'number' && v > 0)
@@ -1167,7 +1167,7 @@ const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }
 };
 
 const XYAxisSummary: React.FC<{ question: XYAxisQuestion }> = ({ question }) => (
-  <div style={{ fontSize: '11px', color: colors.textTertiary }}>
+  <div style={{ fontSize: typography.presets.eyebrow.fontSize, color: colors.textTertiary }}>
     <div>
       X: {question.xAxis.leftLabel} ↔ {question.xAxis.rightLabel}
     </div>

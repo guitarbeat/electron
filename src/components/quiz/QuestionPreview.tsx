@@ -39,10 +39,8 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question, previewMode
       >
         <span
           style={{
-            fontSize: '10px',
             color: colors.textTertiary,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            ...typography.presets.eyebrow,
           }}
         >
           Live Preview
@@ -50,7 +48,7 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question, previewMode
         <div
           style={{
             padding: '2px 8px',
-            fontSize: '9px',
+            ...typography.presets.micro,
             backgroundColor: `${colors.accent}20`,
             color: colors.accent,
             borderRadius: radius.full,
@@ -171,8 +169,12 @@ const AgreeDisagreePreview: React.FC = () => {
           justifyContent: 'space-between',
         }}
       >
-        <span style={{ fontSize: '10px', color: colors.textTertiary }}>{labels[0]}</span>
-        <span style={{ fontSize: '10px', color: colors.textTertiary }}>{labels[4]}</span>
+        <span style={{ fontSize: typography.fontSize['2xs'], color: colors.textTertiary }}>
+          {labels[0]}
+        </span>
+        <span style={{ fontSize: typography.fontSize['2xs'], color: colors.textTertiary }}>
+          {labels[4]}
+        </span>
       </div>
     </div>
   );
@@ -211,7 +213,9 @@ const ImageChoicePreview: React.FC<{ question: ImageChoiceQuestion }> = ({ quest
             }}
           />
         ) : (
-          <span style={{ fontSize: '10px', color: colors.textTertiary }}>No image</span>
+          <span style={{ fontSize: typography.fontSize['2xs'], color: colors.textTertiary }}>
+            No image
+          </span>
         )}
       </div>
     ))}
@@ -225,7 +229,7 @@ const XYAxisPreview: React.FC<{ question: XYAxisQuestion }> = ({ question }) => 
       style={{
         textAlign: 'center',
         marginBottom: spacing.xs,
-        fontSize: '9px',
+        fontSize: typography.fontSize['3xs'],
         color: colors.secondary,
         fontWeight: typography.fontWeight.bold,
       }}
@@ -239,7 +243,7 @@ const XYAxisPreview: React.FC<{ question: XYAxisQuestion }> = ({ question }) => 
         style={{
           writingMode: 'vertical-rl',
           transform: 'rotate(180deg)',
-          fontSize: '9px',
+          fontSize: typography.fontSize['3xs'],
           color: colors.secondary,
           fontWeight: typography.fontWeight.bold,
         }}
@@ -301,7 +305,7 @@ const XYAxisPreview: React.FC<{ question: XYAxisQuestion }> = ({ question }) => 
       <div
         style={{
           writingMode: 'vertical-rl',
-          fontSize: '9px',
+          fontSize: typography.fontSize['3xs'],
           color: colors.secondary,
           fontWeight: typography.fontWeight.bold,
         }}
@@ -315,7 +319,7 @@ const XYAxisPreview: React.FC<{ question: XYAxisQuestion }> = ({ question }) => 
       style={{
         textAlign: 'center',
         marginTop: spacing.xs,
-        fontSize: '9px',
+        fontSize: typography.fontSize['3xs'],
         color: colors.secondary,
         fontWeight: typography.fontWeight.bold,
       }}

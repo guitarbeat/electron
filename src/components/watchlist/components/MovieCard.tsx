@@ -649,9 +649,7 @@ const MovieDetails: React.FC<{ movie: Movie; className?: string }> = ({
                 backgroundColor: `${colors.accent}15`,
                 padding: '2px 8px',
                 borderRadius: radius.full,
-                fontSize: '10px',
-                fontWeight: 800,
-                textTransform: 'uppercase',
+                ...typography.presets.badge,
                 border: `1px solid ${colors.accent}30`,
               }}
             >

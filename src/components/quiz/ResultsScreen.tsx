@@ -84,7 +84,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
               marginBottom: spacing.xl,
               marginTop: 0,
               textShadow: `0 2px 6px rgba(0, 0, 0, 0.5), 0 0 20px ${characterColor}80`,
-              letterSpacing: '0.02em',
+              letterSpacing: typography.letterSpacing.wide,
             }}
           >
             {result.character}

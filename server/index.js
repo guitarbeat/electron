@@ -93,9 +93,11 @@ app.post('/api/gemini', async (req, res) => {
 
 app.get('/api/omdb', async (req, res) => {
   try {
-    const apiKey = process.env.OMDB_API_KEY;
+    const apiKey = readEnv('OMDB_API_KEY', 'VITE_OMDB_API_KEY');
     if (!apiKey) {
-      return res.status(500).json({ error: 'OMDB_API_KEY is not configured on the server' });
+      return res.status(500).json({
+        error: 'OMDB_API_KEY or VITE_OMDB_API_KEY is not configured on the server',
+      });
     }
 
     const params = new URLSearchParams(req.query);

@@ -54,7 +54,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             minHeight: '100px',
             WebkitAppearance: 'none', // * Prevent iOS default styling
             textAlign: 'left',
-            letterSpacing: '0.02em',
+            letterSpacing: typography.letterSpacing.wide,
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)',
             ...style,
           }}
