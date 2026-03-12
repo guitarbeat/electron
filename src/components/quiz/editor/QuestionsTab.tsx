@@ -15,7 +15,7 @@ import Button from '../../ui/Button';
 import Input from '../../ui/Input';
 import Textarea from '../../ui/Textarea';
 import ConfirmDialog from '../../ui/ConfirmDialog';
-import { useToast } from '../../../context/ToastContext';
+import { useToast } from '../../../context';
 import { spacing, colors, typography, radius } from '../../../design-system/tokens';
 
 interface QuestionsTabProps {

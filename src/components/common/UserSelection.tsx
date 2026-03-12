@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../context';
 import type { MainTab, User } from '../../types';
 import { usePins } from '../../hooks/usePins';
 import { useMediaQuery, breakpoints } from '../../hooks/useMediaQuery';

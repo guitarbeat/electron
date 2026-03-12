@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useToast } from '@/context/ToastContext';
+import { useToast } from '@/context';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
 import QuestionsTab from './editor/QuestionsTab';

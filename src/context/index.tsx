@@ -1,6 +1,53 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+/**
+ * Consolidated Context Providers
+ * Combines Theme, Toast, and User contexts
+ */
+
+import React, { createContext, useCallback, useContext, useMemo, useState, ReactNode } from 'react';
+import type { MainTab, User } from '@/types';
+import { moviesTheme, placesTheme, spacing } from '@/design-system/tokens';
 import Toast from '@/components/ui/Toast';
-import { spacing } from '@/design-system/tokens';
+
+// ============================================================================
+// Theme Context
+// ============================================================================
+
+interface ThemeContextValue {
+  currentTheme: 'movies' | 'places';
+  themeTokens: typeof moviesTheme | typeof placesTheme;
+}
+
+const ThemeContext = createContext<ThemeContextValue | null>(null);
+
+export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }> = ({
+  children,
+  activeTab,
+}) => {
+  const currentTheme: 'movies' | 'places' = activeTab === 'places' ? 'places' : 'movies';
+  const themeTokens = currentTheme === 'places' ? placesTheme : moviesTheme;
+
+  const value = useMemo(
+    () => ({
+      currentTheme,
+      themeTokens,
+    }),
+    [currentTheme, themeTokens]
+  );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+};
+
+export const useTheme = (): ThemeContextValue => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
+};
+
+// ============================================================================
+// Toast Context
+// ============================================================================
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -116,6 +163,48 @@ export const useToast = (): ToastContextType => {
   const context = useContext(ToastContext);
   if (!context) {
     throw new Error('useToast must be used within a ToastProvider');
+  }
+  return context;
+};
+
+// ============================================================================
+// User Context
+// ============================================================================
+
+interface UserContextType {
+  currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
+}
+
+const UserContext = createContext<UserContextType | undefined>(undefined);
+
+export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    return sessionStorage.getItem('currentUser') as User | null;
+  });
+
+  const value = useMemo(
+    () => ({
+      currentUser,
+      setCurrentUser: (user: User | null) => {
+        if (user) {
+          sessionStorage.setItem('currentUser', user);
+        } else {
+          sessionStorage.removeItem('currentUser');
+        }
+        setCurrentUser(user);
+      },
+    }),
+    [currentUser]
+  );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+};
+
+export const useUser = (): UserContextType => {
+  const context = useContext(UserContext);
+  if (context === undefined) {
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
 };

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAudio } from './src/hooks/useAudio';
 import { useQuiz } from './src/hooks/useQuiz';
-import { UserProvider, useUser } from './src/context/UserContext';
-import { ThemeProvider } from './src/context/ThemeContext';
+import { UserProvider, useUser } from './src/context';
+import { ThemeProvider } from './src/context';
 import type { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
 import QuizEditor from './src/components/quiz/QuizEditor';
@@ -15,7 +15,7 @@ import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPan
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';
 import BottomSheet from './src/components/ui/BottomSheet';
-import { ToastProvider } from './src/context/ToastContext';
+import { ToastProvider } from './src/context';
 import { useMediaQuery, breakpoints } from './src/hooks/useMediaQuery';
 import './App.css';
 
