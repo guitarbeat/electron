@@ -25,6 +25,9 @@ const renderWorkspace = ({
   if (isMobile) {
     return (
       <div className="workspace-layout workspace-layout--mobile">
+        <div className="workspace-layout__mobile-topbar" aria-label="Watchlist controls">
+          {controls}
+        </div>
         <div className="workspace-layout__content">{content}</div>
       </div>
     );
