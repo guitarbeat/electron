@@ -506,8 +506,88 @@
   top: 0.5rem;
   left: 0.5rem;
   display: flex;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   z-index: 3;
+  max-width: calc(100% - 1rem);
+}
+
+.watcher-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  border-radius: 999px;
+}
+
+.watcher-badge--default {
+  padding: 0.2rem;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 12, 20, 0.78) 0%,
+    rgba(10, 12, 20, 0.58) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+
+.watcher-badge--text {
+  padding: 0.22rem 0.62rem 0.22rem 0.24rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.watcher-badge__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.watcher-badge--sm .watcher-badge__avatar {
+  width: 20px;
+  height: 20px;
+  font-size: 0.56rem;
+}
+
+.watcher-badge--md .watcher-badge__avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 0.64rem;
+}
+
+.watcher-badge--lg .watcher-badge__avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 0.7rem;
+}
+
+.watcher-badge--aaron .watcher-badge__avatar {
+  background: linear-gradient(135deg, #95dcff 0%, #60c5f5 100%);
+  box-shadow: 0 0 10px rgba(149, 220, 255, 0.32);
+}
+
+.watcher-badge--electra .watcher-badge__avatar {
+  background: linear-gradient(135deg, #ff7fc6 0%, #ff5ab0 100%);
+  box-shadow: 0 0 10px rgba(255, 127, 198, 0.28);
+}
+
+.watcher-badge__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.86);
+  letter-spacing: 0.01em;
+}
+
+.watcher-badge--text .watcher-badge__label {
+  color: var(--color-text-secondary);
 }
 
 .movie-item-overlay {
@@ -584,12 +664,47 @@
 .movie-item-memory-toggle {
   align-self: flex-start;
   border: 1px solid rgba(255, 248, 210, 0.55);
-  background: rgba(58, 41, 17, 0.55);
+  background: linear-gradient(180deg, rgba(67, 48, 20, 0.68) 0%, rgba(44, 30, 12, 0.72) 100%);
   color: #fff4d6;
   border-radius: 999px;
-  padding: 0.12rem 0.52rem;
+  padding: 0.18rem 0.62rem;
   font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.015em;
   cursor: pointer;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px) saturate(115%);
+  -webkit-backdrop-filter: blur(10px) saturate(115%);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .movie-item-memory-toggle:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 248, 210, 0.78);
+    background: linear-gradient(
+      180deg,
+      rgba(84, 60, 26, 0.76) 0%,
+      rgba(52, 35, 15, 0.8) 100%
+    );
+    box-shadow:
+      0 10px 24px rgba(0, 0, 0, 0.28),
+      0 0 14px rgba(255, 221, 148, 0.12);
+  }
+}
+
+.movie-item-memory-toggle:focus-visible {
+  outline: none;
+  border-color: rgba(255, 248, 210, 0.86);
+  box-shadow:
+    0 0 0 2px rgba(255, 248, 210, 0.22),
+    0 10px 24px rgba(0, 0, 0, 0.28);
 }
 
 .movie-actions {
