@@ -71,5 +71,5 @@ export interface WatchlistProps {
   isPaused?: boolean;
 }
 
-export type { QuizCharacter } from './components/quiz/types';
-export { CHARACTERS } from './components/quiz/types';
+export type { QuizCharacter } from './components/quiz/types.ts';
+export { CHARACTERS } from './components/quiz/types.ts';

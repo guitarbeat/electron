@@ -3,6 +3,7 @@ import { isValidUrl, sanitizeInput } from '../utils/index.ts';
 const OMDB_BASE_URL = '/api/omdb';
 
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
+export const METADATA_REQUEST_TIMEOUT_MS = 5000;
 
 const stripHtml = (value?: string | null): string | undefined => {
   if (!value) return undefined;
@@ -22,26 +23,42 @@ const buildOmdbUrl = (params: Record<string, string>): string | null => {
 export const shouldRetryResponseStatus = (status: number): boolean =>
   status === 408 || status === 425 || status === 429 || status >= 500;
 
+const sleep = async (durationMs: number): Promise<void> => {
+  await new Promise((resolve) => {
+    setTimeout(resolve, durationMs);
+  });
+};
+
+const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 export const fetchWithRetry = async (
   url: string,
   retries = 3,
-  backoff = 1000
+  backoff = 1000,
+  timeoutMs = METADATA_REQUEST_TIMEOUT_MS
 ): Promise<Response> => {
   try {
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, timeoutMs);
     if (!response.ok && retries > 0 && shouldRetryResponseStatus(response.status)) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, backoff);
-      });
-      return fetchWithRetry(url, retries - 1, backoff * 2);
+      await sleep(backoff);
+      return fetchWithRetry(url, retries - 1, backoff * 2, timeoutMs);
     }
     return response;
   } catch (error) {
     if (retries > 0) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, backoff);
-      });
-      return fetchWithRetry(url, retries - 1, backoff * 2);
+      await sleep(backoff);
+      return fetchWithRetry(url, retries - 1, backoff * 2, timeoutMs);
     }
     throw error;
   }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fetchWithRetry, shouldRetryResponseStatus } from '../src/services/metadataService.ts';
 
 const installMockFetch = (
-  implementation: (input: string) => Promise<Response>
+  implementation: (input: string, init?: RequestInit) => Promise<Response>
 ): (() => void) => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = implementation as typeof fetch;
@@ -69,6 +69,66 @@ test('fetchWithRetry retries network failures until success', async () => {
     const response = await fetchWithRetry('https://example.test/network', 3, 0);
     assert.equal(response.status, 200);
     assert.equal(calls, 3);
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('fetchWithRetry retries timed out requests until success', async () => {
+  let calls = 0;
+  const restoreFetch = installMockFetch(async (_input, init) => {
+    calls += 1;
+
+    if (calls === 1) {
+      return new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          'abort',
+          () => {
+            const error = new Error('timed out');
+            error.name = 'AbortError';
+            reject(error);
+          },
+          { once: true }
+        );
+      });
+    }
+
+    return new Response('ok', { status: 200 });
+  });
+
+  try {
+    const response = await fetchWithRetry('https://example.test/timeout-success', 1, 0, 1);
+    assert.equal(response.status, 200);
+    assert.equal(calls, 2);
+  } finally {
+    restoreFetch();
+  }
+});
+
+test('fetchWithRetry throws after exhausting timed out requests', async () => {
+  let calls = 0;
+  const restoreFetch = installMockFetch(async (_input, init) => {
+    calls += 1;
+
+    return new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener(
+        'abort',
+        () => {
+          const error = new Error('timed out');
+          error.name = 'AbortError';
+          reject(error);
+        },
+        { once: true }
+      );
+    });
+  });
+
+  try {
+    await assert.rejects(
+      () => fetchWithRetry('https://example.test/timeout-fail', 0, 0, 1),
+      (error: Error) => error.name === 'AbortError'
+    );
+    assert.equal(calls, 1);
   } finally {
     restoreFetch();
   }
