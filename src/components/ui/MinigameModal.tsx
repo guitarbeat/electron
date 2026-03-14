@@ -14,6 +14,10 @@ interface MinigameModalProps {
   children: React.ReactNode;
   /** Accessible label for the dialog */
   ariaLabel?: string;
+  /** Prevent dismissal while a critical action is active */
+  closeDisabled?: boolean;
+  /** Explain why dismissal is temporarily disabled */
+  closeDisabledLabel?: string;
 }
 
 /**
@@ -28,6 +32,8 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   maxHeight = 720,
   children,
   ariaLabel = 'Dialog',
+  closeDisabled = false,
+  closeDisabledLabel = 'Please wait for the current action to finish.',
 }) => {
   useEffect(() => {
     if (!isOpen) return;
@@ -38,7 +44,25 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !closeDisabled) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [closeDisabled, isOpen, onClose]);
+
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    if (closeDisabled) return;
+    onClose();
+  };
 
   return createPortal(
     <div
@@ -52,7 +76,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         WebkitBackdropFilter: 'blur(10px)',
         backdropFilter: 'blur(10px)',
       }}
-      onClick={onClose}
+      onClick={handleClose}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
@@ -107,8 +131,10 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
           )}
           <button
             type="button"
-            onClick={onClose}
-            aria-label="Close"
+            onClick={handleClose}
+            aria-label={closeDisabled ? closeDisabledLabel : 'Close'}
+            title={closeDisabled ? closeDisabledLabel : 'Close'}
+            disabled={closeDisabled}
             style={{
               position: title ? 'relative' : 'absolute',
               top: title ? undefined : spacing.sm,
@@ -121,7 +147,8 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
                 'linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 100%), rgba(41, 26, 37, 0.74)',
               color: '#fff3f7',
               border: `1px solid ${colors.borderSecondary}45`,
-              cursor: 'pointer',
+              cursor: closeDisabled ? 'not-allowed' : 'pointer',
+              opacity: closeDisabled ? 0.45 : 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

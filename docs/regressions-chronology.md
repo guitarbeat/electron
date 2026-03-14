@@ -16,6 +16,15 @@ Scope: inferred regressions on `HEAD`, ordered by commit date
 - February 2026 shifts toward state, data, and auth regressions: stale fetches, unstable hooks, PIN flow issues, metadata overwrite risk, and install/build failures.
 - March 2026 is the densest recovery period. The shell, profile flow, bubble UI, watchlist actions, fallback behavior, and verification pipeline all show visible regression-and-restore cycles during the Y2K/src-migration phase.
 
+## Current remediation pass
+
+This checklist tracks issues fixed during the March 14, 2026 audit pass.
+
+- [x] Guarded the spin-wheel flow so the modal cannot be dismissed and the wheel mode cannot be changed mid-spin. Related regressions: `20f8e9b`, `9f80407`, `ecee9ad`, `e2df136`.
+- [x] Restored safe watchlist add/suggest submission by preventing the browser form from hard-submitting the page. Related regressions: `6856914`, `f821809`, `121a64d`.
+- [x] Pulled quiz and matchmaker experiences out of the default page flow and back behind intentional launch actions so the main shell stays cohesive. Related regressions: `ecee9ad`, `ec14329`, `0cd049a`.
+- [x] Restored quiz retake/revisit behavior so retakes open as fresh sessions and agree/disagree answers stay in sync when revisiting questions. Related regressions: `baa1636`, `6856914`, `23f0c74`.
+
 ## November 2025
 
 - `2025-11-03` — `12e3108` `Add favicon and fix sparkle character (#1)`

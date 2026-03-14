@@ -11,6 +11,10 @@ const SPIN_HISTORY_MAX = 10;
 
 type SpinMode = 'queue' | 'all';
 
+interface SpinWheelGameProps {
+  onSpinningChange?: (isSpinning: boolean) => void;
+}
+
 const readHistory = (): string[] => {
   if (typeof window === 'undefined') return [];
   try {
@@ -27,7 +31,7 @@ const writeHistory = (history: string[]) => {
   localStorage.setItem(SPIN_HISTORY_KEY, JSON.stringify(history.slice(0, SPIN_HISTORY_MAX)));
 };
 
-const SpinWheelGame: React.FC = () => {
+const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
@@ -45,6 +49,16 @@ const SpinWheelGame: React.FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    onSpinningChange?.(isSpinning);
+  }, [isSpinning, onSpinningChange]);
+
+  useEffect(() => {
+    return () => {
+      onSpinningChange?.(false);
+    };
+  }, [onSpinningChange]);
 
   const candidates = useMemo(() => {
     if (mode === 'all') return movies;
@@ -188,16 +202,27 @@ const SpinWheelGame: React.FC = () => {
           marginBottom: spacing.md,
         }}
       >
-        <Button onClick={handleSpin} variant="primary" size="md" disabled={isSpinning || isLoading}>
+        <Button
+          onClick={handleSpin}
+          variant="primary"
+          size="md"
+          disabled={isSpinning || isLoading || candidates.length === 0}
+        >
           {isSpinning ? 'Spinning...' : 'Spin Wheel'}
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => setSelectedMovieId(null)}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setSelectedMovieId(null)}
+          disabled={isSpinning || !selectedMovieId}
+        >
           Clear Result
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setMode((prev) => (prev === 'queue' ? 'all' : 'queue'))}
+          disabled={isSpinning || candidates.length === 0}
         >
           Mode: {mode === 'queue' ? 'Queue Only' : 'All Movies'}
         </Button>
@@ -214,6 +239,20 @@ const SpinWheelGame: React.FC = () => {
       >
         {candidates.length} candidate{candidates.length === 1 ? '' : 's'} available
       </p>
+
+      {isSpinning ? (
+        <p
+          style={{
+            marginTop: 0,
+            marginBottom: spacing.md,
+            textAlign: 'center',
+            color: colors.textTertiary,
+            fontSize: typography.fontSize.xs,
+          }}
+        >
+          Finish the current spin before changing modes or closing the wheel.
+        </p>
+      ) : null}
 
       {selectedMovie ? (
         <div

@@ -27,7 +27,7 @@ interface WatchlistTopControlsProps {
   tabCounts: Record<ContentTab, number>;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-  onSubmit: (event: React.FormEvent) => Promise<void> | void;
+  onSubmit: () => Promise<void> | void;
   isAdding: boolean;
   isSuggesting: boolean;
   isMobile: boolean;
@@ -48,6 +48,11 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   isMobile,
   suggestionError,
 }) => {
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void onSubmit();
+  };
+
   return (
     <div className="watchlist-top-controls">
       <div
@@ -75,7 +80,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         />
 
         <form
-          onSubmit={onSubmit}
+          onSubmit={handleFormSubmit}
           style={{
             display: 'flex',
             alignItems: 'stretch',
