@@ -125,14 +125,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       if (movie.watchedBy.length === 2) {
         const prevMovie = previousMoviesRef.current?.find((m) => m.id === movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
+          setSuccessMovieId(movie.id);
           setShowConfetti(true);
           setToast({
             message: `🎉 You both watched "${movie.title}"!`,
             type: 'success',
           });
-          setTimeout(() => {
-            setShowConfetti(false);
-          }, 3000);
         }
       }
     });
@@ -494,7 +492,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             )}
 
             {showConfetti && (
-              <Confetti isActive={showConfetti} onComplete={() => setSuccessMovieId(null)} />
+              <Confetti
+                key={successMovieId ?? 'celebration'}
+                isActive={showConfetti}
+                onComplete={() => {
+                  setShowConfetti(false);
+                  setSuccessMovieId(null);
+                }}
+              />
             )}
           </div>
         ),

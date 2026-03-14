@@ -147,15 +147,6 @@ const AppInner: React.FC = () => {
 
         <div className="app-frame">
           <aside className="control-rail" aria-label="Workspace navigation">
-            <div className="control-rail__panel control-rail__panel--brand">
-              <span className="control-rail__badge">Cat-powered chaos</span>
-              <p className="control-rail__eyebrow">Aaron & Electra</p>
-              <h1 className="control-rail__title">Weekend<br />Planner</h1>
-              <p className="control-rail__lede">
-                Floating bubbles, oddball avatars, and date-night plotting tools.
-              </p>
-            </div>
-
             <div className="control-rail__panel">
               <div className="control-rail__section-head">
                 <span>User</span>
@@ -178,7 +169,6 @@ const AppInner: React.FC = () => {
                   <span className="mobile-hero__bubble mobile-hero__bubble--c">✨</span>
                 </div>
                 <div className="mobile-hero__content">
-                  <p className="mobile-hero__eyebrow">Aaron & Electra HQ</p>
                   <h1 className="mobile-hero__title">Weekend Planner</h1>
                   <p className="mobile-hero__copy">{mobileHeroCopy}</p>
 
