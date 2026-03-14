@@ -178,6 +178,7 @@ body {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 28%),
     radial-gradient(circle at 82% 16%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 28%);
+  pointer-events: none;
 }
 
 .support-card__head,
