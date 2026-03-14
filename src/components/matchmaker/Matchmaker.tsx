@@ -81,17 +81,34 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [lastMatchedMovie, setLastMatchedMovie] = useState<Movie | null>(null);
   const lastMatchCount = useRef(matches.length);
+  const matchOverlayTimeoutRef = useRef<number | null>(null);
+  const randomPickTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (matchOverlayTimeoutRef.current !== null) {
+        window.clearTimeout(matchOverlayTimeoutRef.current);
+      }
+      if (randomPickTimeoutRef.current !== null) {
+        window.clearTimeout(randomPickTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (matches.length > lastMatchCount.current && matches.length > 0) {
       const newMatchId = matches[matches.length - 1].id;
       const newMatch = movies?.find((m) => m.id === newMatchId);
       if (newMatch) {
+        if (matchOverlayTimeoutRef.current !== null) {
+          window.clearTimeout(matchOverlayTimeoutRef.current);
+        }
         setLastMatchedMovie(newMatch);
         setShowConfetti(true);
-        setTimeout(() => {
+        matchOverlayTimeoutRef.current = window.setTimeout(() => {
           setShowConfetti(false);
           setLastMatchedMovie(null);
+          matchOverlayTimeoutRef.current = null;
         }, 4000);
       }
     }
@@ -166,19 +183,27 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   };
 
   const handlePickRandom = () => {
-    if (matches.length < 2) return;
+    if (matches.length < 2 || isPickingRandom) return;
+    if (randomPickTimeoutRef.current !== null) {
+      window.clearTimeout(randomPickTimeoutRef.current);
+    }
+    if (matchOverlayTimeoutRef.current !== null) {
+      window.clearTimeout(matchOverlayTimeoutRef.current);
+    }
     setIsPickingRandom(true);
-    setTimeout(() => {
+    randomPickTimeoutRef.current = window.setTimeout(() => {
       const winner = matches[Math.floor(Math.random() * matches.length)];
       setRandomWinner(winner);
       setIsPickingRandom(false);
       setLastMatchedMovie(winner);
       setShowConfetti(true);
-      setTimeout(() => {
+      matchOverlayTimeoutRef.current = window.setTimeout(() => {
         setShowConfetti(false);
         setLastMatchedMovie(null);
         setRandomWinner(null);
+        matchOverlayTimeoutRef.current = null;
       }, 4000);
+      randomPickTimeoutRef.current = null;
     }, 1500);
   };
 

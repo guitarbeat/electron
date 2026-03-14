@@ -164,14 +164,18 @@ const FoodMergeGame: React.FC = () => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+        event.preventDefault();
         directionRef.current = -1;
       }
       if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+        event.preventDefault();
         directionRef.current = 1;
       }
-      if (event.key === ' ' && !running) {
+      if (event.key === ' ' || event.key === 'Spacebar') {
         event.preventDefault();
-        resetGame();
+        if (!running) {
+          resetGame();
+        }
       }
     };
     const onKeyUp = (event: KeyboardEvent) => {
@@ -181,6 +185,7 @@ const FoodMergeGame: React.FC = () => {
         event.key === 'ArrowRight' ||
         event.key.toLowerCase() === 'd'
       ) {
+        event.preventDefault();
         directionRef.current = 0;
       }
     };

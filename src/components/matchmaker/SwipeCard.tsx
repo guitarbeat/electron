@@ -1,4 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { Movie } from '@/types';
 import Card from '@/ui/Card';
 import { colors, radius, spacing, typography, shadows } from '@/design-system/tokens';
@@ -16,6 +23,15 @@ interface SwipeCardProps {
 const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, onSwipe, active }, ref) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
+  const swipeTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (swipeTimeoutRef.current !== null) {
+        window.clearTimeout(swipeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useImperativeHandle(
     ref,
@@ -24,10 +40,11 @@ const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, onSwipe,
         if (!active || isAnimating) return;
         setIsAnimating(true);
         setAnimationDirection(direction);
-        window.setTimeout(() => {
+        swipeTimeoutRef.current = window.setTimeout(() => {
           onSwipe(direction);
           setIsAnimating(false);
           setAnimationDirection(null);
+          swipeTimeoutRef.current = null;
         }, 220);
       },
     }),
