@@ -30,6 +30,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Scoped modal Escape handling to the focused layer and added focus management to minigame overlays so nested dialogs no longer dismiss their parent sheets or modals. Related regressions: `ecee9ad`, `23f0c74`, `6763a52`.
 - [x] Removed the extra watchlist celebration timeout so confetti resets from its own completion path and can replay cleanly across quick successive matches. Related regressions: `02065e9`, `6856914`, `6763a52`.
 - [x] Restored bottom-sheet scroll lock cleanup so closing the mobile sheet preserves any pre-existing body overflow state from other active overlays. Related regressions: `ecee9ad`, `cf6160c`, `6763a52`.
+- [x] Preserved existing `modal-open` body locks across stacked confirm/PIN dialogs so nested dialog cleanup no longer re-enables page scroll underneath another active modal. Related regressions: `ecee9ad`, `a599e85`, `197e096`.
 
 ## November 2025
 
