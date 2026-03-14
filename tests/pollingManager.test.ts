@@ -61,6 +61,45 @@ test('pollingManager clears cache after last unsubscribe', async () => {
   assert.equal(pollingManager.getData(key), undefined);
 });
 
+test('pollingManager notifies listeners when fetch fails', async () => {
+  const key = `pm-error-${Date.now()}`;
+  const expectedError = new Error('Fetch failed');
+  let receivedData: Array<{ id: number }> | undefined;
+  let receivedError: unknown;
+  const originalConsoleError = console.error;
+  const errorCalls: unknown[][] = [];
+
+  console.error = (...args: unknown[]) => {
+    errorCalls.push(args);
+  };
+
+  try {
+    const unsubscribe = pollingManager.subscribe(
+      key,
+      async () => {
+        throw expectedError;
+      },
+      10_000,
+      (data, error) => {
+        receivedData = data;
+        receivedError = error;
+      }
+    );
+
+    await wait(20);
+
+    assert.equal(receivedData, undefined);
+    assert.equal(receivedError, expectedError);
+    assert.equal(pollingManager.getError(key), expectedError);
+    assert.equal(errorCalls.length, 1);
+    assert.ok(String(errorCalls[0]?.[0] ?? '').includes(key));
+
+    unsubscribe();
+  } finally {
+    console.error = originalConsoleError;
+  }
+});
+
 test('pollingManager isolates listener errors', async () => {
   const key = `pm-listener-${Date.now()}`;
 
