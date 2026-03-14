@@ -158,20 +158,24 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);
 
   const performMutation = useCallback(
     async (mutationFn: (latestGame: MatchmakerGame | null) => MatchmakerGame | null) => {
-      if (!currentUser) return;
+      if (!currentUser || isSubmittingRef.current) return;
+
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
+      const previousMutation = mutationLockRef.current;
 
       const mutation = (async () => {
         try {
-          await mutationLockRef.current;
+          await previousMutation;
         } catch (e) {
           // Ignore previous errors
         }
 
-        setIsSubmitting(true);
         try {
           const latestGame = await getMatchmakerGame();
           const updatedGame = mutationFn(latestGame);
@@ -180,7 +184,10 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
         } catch (err) {
           console.error('Matchmaker mutation failed:', err);
         } finally {
-          setIsSubmitting(false);
+          if (mutationLockRef.current === mutation) {
+            isSubmittingRef.current = false;
+            setIsSubmitting(false);
+          }
         }
       })();
 
