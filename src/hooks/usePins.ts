@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { User } from '../types.ts';
+import { usePolling } from './usePolling';
 import {
   canReadGist,
   canWriteGist,
@@ -22,6 +23,7 @@ import {
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const PINS_LOCAL_STORAGE_KEY = 'movieList.localPins';
+const PINS_POLL_INTERVAL = 30000;
 
 const readStoredLocalPins = (): UserPins | null =>
   readStoredJson({
@@ -255,47 +257,29 @@ const verifyPin = async (user: User, pin: string): Promise<boolean> => {
   return false;
 };
 
-export const usePins = () => {
-  const [pins, setPinsState] = useState<UserPins>({});
-  const [isLoading, setIsLoading] = useState(true);
-
-  const syncPins = useCallback(async () => {
-    const latestPins = await getPins();
-    setPinsState(latestPins);
-  }, []);
-
-  const refresh = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await syncPins();
-    } catch (error) {
-      console.error('Error fetching PINs:', error);
-    } finally {
-      setIsLoading(false);
+export const usePins = (isPaused: boolean = false) => {
+  const {
+    data: pins,
+    isLoading,
+    refresh,
+  } = usePolling(
+    getPins,
+    PINS_POLL_INTERVAL,
+    (prev, next) => JSON.stringify(prev) === JSON.stringify(next),
+    {
+      key: 'pins',
+      isPaused,
     }
-  }, [syncPins]);
+  );
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  // Also refresh every 30 seconds to get latest changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refresh();
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, [refresh]);
-
-  const userHasPin = useCallback((user: User): boolean => !!pins[user], [pins]);
+  const userHasPin = useCallback((user: User): boolean => !!pins?.[user], [pins]);
 
   const setUserPin = useCallback(
     async (user: User, pin: string): Promise<boolean> => {
       try {
         const success = await setPin(user, pin);
         if (success) {
-          await syncPins();
+          refresh();
         }
         return success;
       } catch (error) {
@@ -303,7 +287,7 @@ export const usePins = () => {
         return false;
       }
     },
-    [syncPins]
+    [refresh]
   );
 
   const removeUserPin = useCallback(
@@ -311,7 +295,7 @@ export const usePins = () => {
       try {
         const success = await removePin(user);
         if (success) {
-          await syncPins();
+          refresh();
         }
         return success;
       } catch (error) {
@@ -319,7 +303,7 @@ export const usePins = () => {
         return false;
       }
     },
-    [syncPins]
+    [refresh]
   );
 
   const verifyUserPin = useCallback(async (user: User, pin: string): Promise<boolean> => {
@@ -327,7 +311,7 @@ export const usePins = () => {
   }, []);
 
   return {
-    pins,
+    pins: pins ?? {},
     isLoading,
     userHasPin,
     setUserPin,
