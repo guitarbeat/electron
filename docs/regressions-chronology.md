@@ -34,6 +34,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Serialized delayed mobile action-sheet launches so reopening the menu or tapping multiple actions no longer queues stale modal opens after the sheet state changes. Related regressions: `ecee9ad`, `ec14329`, `6763a52`.
 - [x] Cleared matchmaker celebration and random-pick timers when a session ends or restarts so old overlay state cannot leak into the next round. Related regressions: `8e3459c`, `20f8e9b`, `6763a52`.
 - [x] Repaired the shared support-card pseudo-element rule in `App.css` so the shell stylesheet parses cleanly again and build-time CSS minification warnings disappear. Related regressions: `ec14329`, `5a6c778`, `6763a52`.
+- [x] Reset matchmaker match-count tracking between sessions so a fresh round can trigger its celebration overlay on the first new shared pick instead of inheriting the previous round’s count. Related regressions: `8e3459c`, `ec14329`, `6763a52`.
 
 ## November 2025
 
