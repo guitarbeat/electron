@@ -115,60 +115,6 @@ body {
   filter: blur(0.2px);
 }
 
-.app-shell__bubble {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 75%, transparent);
-  background:
-    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.32) 0%, transparent 34%),
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--color-accent) 18%, transparent) 0%,
-      color-mix(in srgb, var(--color-secondary) 14%, transparent) 100%
-    );
-  box-shadow:
-    0 0 32px color-mix(in srgb, var(--color-accent) 18%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.9);
-  font-size: clamp(1.2rem, 2vw, 1.8rem);
-  animation: shell-bubble-float 11s ease-in-out infinite;
-}
-
-.app-shell__bubble--one {
-  top: 8%;
-  left: 3%;
-  width: 88px;
-  height: 88px;
-}
-
-.app-shell__bubble--two {
-  top: 22%;
-  right: 6%;
-  width: 58px;
-  height: 58px;
-  animation-delay: -2s;
-}
-
-.app-shell__bubble--three {
-  bottom: 18%;
-  left: 6%;
-  width: 72px;
-  height: 72px;
-  animation-delay: -5s;
-}
-
-.app-shell__bubble--four {
-  right: 12%;
-  bottom: 9%;
-  width: 96px;
-  height: 96px;
-  animation-delay: -7s;
-}
-
 .skip-link {
   position: absolute;
   top: -120px;
@@ -454,32 +400,6 @@ body {
 }
 
 @media (max-width: 640px) {
-  .app-shell__bubble--one {
-    width: 72px;
-    height: 72px;
-    left: -10px;
-  }
-
-  .app-shell__bubble--two {
-    width: 44px;
-    height: 44px;
-    right: 8px;
-  }
-
-  .app-shell__bubble--three {
-    width: 56px;
-    height: 56px;
-    left: -6px;
-    bottom: 22%;
-  }
-
-  .app-shell__bubble--four {
-    width: 72px;
-    height: 72px;
-    right: -8px;
-    bottom: 14%;
-  }
-
   .app-frame {
     padding: 0.75rem;
     padding-bottom: calc(0.75rem + 64px + env(safe-area-inset-bottom, 0px));
@@ -623,59 +543,6 @@ body {
 
 .mobile-hero__selection {
   margin-top: 0.15rem;
-}
-
-.mobile-hero__bubbles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.mobile-hero__bubble {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
-  background:
-    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.34) 0%, transparent 34%),
-    linear-gradient(
-      150deg,
-      color-mix(in srgb, var(--color-accent) 18%, transparent) 0%,
-      color-mix(in srgb, var(--color-secondary) 16%, transparent) 100%
-    );
-  box-shadow:
-    0 0 24px color-mix(in srgb, var(--color-accent) 12%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  animation: shell-bubble-float 9s ease-in-out infinite;
-}
-
-.mobile-hero__bubble--a {
-  top: 18px;
-  right: 18px;
-  width: 58px;
-  height: 58px;
-  font-size: 1.35rem;
-}
-
-.mobile-hero__bubble--b {
-  top: 96px;
-  right: 72px;
-  width: 34px;
-  height: 34px;
-  font-size: 0.95rem;
-  animation-delay: -3s;
-}
-
-.mobile-hero__bubble--c {
-  bottom: 18px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-  font-size: 1.05rem;
-  animation-delay: -6s;
 }
 
 .mobile-command-ribbon {
@@ -940,8 +807,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-shell__bubble,
-  .mobile-hero__bubble,
   .command-deck__item,
   .workspace-tabs__button,
   .mobile-command-ribbon__item,
