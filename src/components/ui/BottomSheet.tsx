@@ -48,6 +48,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
     }
 
     previousFocusedElement.current = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     const initialFocusTimer = window.setTimeout(() => {
@@ -72,7 +73,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
 
     return () => {
       window.clearTimeout(initialFocusTimer);
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
