@@ -34,6 +34,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [isShaking, setIsShaking] = useState(false);
   const [step, setStep] = useState<'current' | 'new' | 'confirm'>('current');
   const inputRef = useRef<HTMLInputElement>(null);
+  const focusTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,10 +45,16 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setIsShaking(false);
       setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
       document.body.classList.add('modal-open');
-      setTimeout(() => inputRef.current?.focus(), 100);
-    } else {
-      document.body.classList.remove('modal-open');
+      focusTimerRef.current = window.setTimeout(() => inputRef.current?.focus(), 100);
     }
+
+    return () => {
+      document.body.classList.remove('modal-open');
+      if (focusTimerRef.current !== null) {
+        window.clearTimeout(focusTimerRef.current);
+        focusTimerRef.current = null;
+      }
+    };
   }, [isOpen, mode]);
 
   useEffect(() => {
