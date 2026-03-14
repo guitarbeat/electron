@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Place, User } from '@/types';
 import { usePolling } from './usePolling';
 import {
@@ -156,6 +156,29 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     key: 'places',
     isPaused,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+
+  const performMutation = useCallback(
+    async (mutate: (latestPlaces: Place[]) => Place[]) => {
+      if (isSubmittingRef.current) {
+        return false;
+      }
+
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
+      try {
+        const latestPlaces = await getPlaces();
+        await savePlaces(mutate(latestPlaces));
+        refresh();
+        return true;
+      } finally {
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
+      }
+    },
+    [refresh]
+  );
 
   const addPlace = useCallback(
     async (name: string, notes?: string, lat?: number, lng?: number) => {
@@ -174,70 +197,56 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
         ...(typeof lat === 'number' && typeof lng === 'number' && { lat, lng }),
       };
 
-      const latestPlaces = await getPlaces();
-      await savePlaces([...latestPlaces, place]);
-      refresh();
+      await performMutation((latestPlaces) => [...latestPlaces, place]);
     },
-    [currentUser, refresh]
+    [currentUser, performMutation]
   );
 
   const removePlace = useCallback(
     async (id: string) => {
-      const latestPlaces = await getPlaces();
-      const updatedPlaces = latestPlaces.filter((p) => p.id !== id);
-      await savePlaces(updatedPlaces);
-      refresh();
+      await performMutation((latestPlaces) => latestPlaces.filter((p) => p.id !== id));
     },
-    [refresh]
+    [performMutation]
   );
 
   const restorePlace = useCallback(
     async (place: Place) => {
-      const latestPlaces = await getPlaces();
-      await savePlaces([...latestPlaces, place]);
-      refresh();
+      await performMutation((latestPlaces) => [...latestPlaces, place]);
     },
-    [refresh]
+    [performMutation]
   );
 
   const updatePlace = useCallback(
     async (id: string, updates: Partial<Pick<Place, 'name' | 'notes'>>) => {
-      const latestPlaces = await getPlaces();
-      const updatedPlaces = latestPlaces.map((p) => (p.id === id ? { ...p, ...updates } : p));
-      await savePlaces(updatedPlaces);
-      refresh();
+      await performMutation((latestPlaces) =>
+        latestPlaces.map((p) => (p.id === id ? { ...p, ...updates } : p))
+      );
     },
-    [refresh]
+    [performMutation]
   );
 
   const markVisited = useCallback(
     async (id: string) => {
-      const latestPlaces = await getPlaces();
-      const updatedPlaces = latestPlaces.map((p) =>
-        p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p
+      await performMutation((latestPlaces) =>
+        latestPlaces.map((p) => (p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p))
       );
-      await savePlaces(updatedPlaces);
-      refresh();
     },
-    [refresh]
+    [performMutation]
   );
 
   const markUnvisited = useCallback(
     async (id: string) => {
-      const latestPlaces = await getPlaces();
-      const updatedPlaces = latestPlaces.map((p) =>
-        p.id === id ? { ...p, visitedAt: undefined } : p
+      await performMutation((latestPlaces) =>
+        latestPlaces.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p))
       );
-      await savePlaces(updatedPlaces);
-      refresh();
     },
-    [refresh]
+    [performMutation]
   );
 
   return {
     places: places ?? [],
     isLoading,
-    isSubmitting: false,
+    isSubmitting,
     error,
     refresh,
     addPlace,
