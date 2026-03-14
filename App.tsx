@@ -167,21 +167,7 @@ const AppInner: React.FC = () => {
 
         {isMobile ? <SparkleTap /> : null}
 
-        <div className="app-frame">
-          <aside className="control-rail" aria-label="Workspace navigation">
-            <div className="control-rail__panel">
-              <div className="control-rail__section-head">
-                <span>User</span>
-              </div>
-              <UserSelection variant="inline" />
-              <p className="control-rail__meta">
-                {currentUser
-                  ? `${currentUser} is currently driving the plan.`
-                  : 'Pick a bubble to start causing trouble.'}
-              </p>
-            </div>
-          </aside>
-
+          <div className="app-frame">
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             {isMobile && (
               <section className="mobile-hero" aria-label="Weekend planner overview">
@@ -290,6 +276,10 @@ const AppInner: React.FC = () => {
               </section>
 
               <aside className="support-rail" aria-label="Workspace tools and actions">
+                <section className="support-card">
+                  <UserSelection variant="inline" />
+                </section>
+
                 <section className="support-card">
                   <div className="support-card__head">
                     <span>Actions</span>

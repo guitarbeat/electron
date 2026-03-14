@@ -193,30 +193,18 @@ body {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   max-width: 1280px;
   margin: 0 auto;
   padding: 1.25rem;
 }
 
-.control-rail,
 .workspace-stage,
 .support-rail {
   min-width: 0;
 }
 
-.control-rail {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding-top: 1rem;
-}
-
-.control-rail__panel,
 .workspace-header,
 .workspace-surface,
 .support-card {
@@ -234,12 +222,7 @@ body {
   overflow: hidden;
 }
 
-.control-rail__panel {
-  border-radius: 26px;
-  padding: 1rem;
-}
 
-.control-rail__panel::before,
 .workspace-header::before,
 .workspace-surface::before,
 .support-card::before {
@@ -249,33 +232,9 @@ body {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 28%),
     radial-gradient(circle at 82% 16%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 28%);
-  pointer-events: none;
 }
 
-.control-rail__panel--brand {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--color-secondary) 22%, transparent) 0%, transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 32%),
-    var(--gradient-metal-surface);
-}
-
-.control-rail__panel--brand::after {
-  content: '';
-  position: absolute;
-  right: -52px;
-  bottom: -56px;
-  width: 170px;
-  height: 170px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 72%);
-  pointer-events: none;
-}
-
-.control-rail__eyebrow,
 .support-card__head,
-.control-rail__section-head,
 .more-sheet__section-label {
   font-family: var(--type-eyebrow-family);
   font-size: var(--type-eyebrow-size);
@@ -285,71 +244,11 @@ body {
   text-transform: var(--type-eyebrow-transform);
 }
 
-.control-rail__eyebrow {
-  color: var(--color-accent);
-}
 
-.control-rail__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 1.85rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, white 45%, transparent);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.18) 100%),
-    var(--gradient-metal-pill);
-  color: color-mix(in srgb, var(--color-surface-0) 72%, var(--color-accent) 28%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 10px 24px color-mix(in srgb, var(--color-accent) 18%, transparent);
-  font-family: var(--type-badge-family);
-  font-size: var(--type-badge-size);
-  font-weight: var(--type-badge-weight);
-  line-height: var(--type-badge-line-height);
-  letter-spacing: var(--type-badge-letter-spacing);
-  text-transform: var(--type-badge-transform);
-}
-
-.control-rail__section-head,
 .support-card__head {
   color: var(--color-text-secondary);
 }
 
-.control-rail__title {
-  margin: 0.25rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.7rem, 2.2vw, 2.35rem);
-  font-weight: var(--type-title-sm-weight);
-  line-height: 0.92;
-  letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--color-text-primary) 84%, #fff4f6);
-  text-shadow:
-    0 0 10px color-mix(in srgb, var(--color-accent) 28%, transparent),
-    0 2px 18px rgba(255, 255, 255, 0.12);
-}
-
-.control-rail__meta {
-  margin: 0.75rem 0 0;
-  color: var(--color-text-primary);
-  font-family: var(--type-body-md-family);
-  font-size: var(--type-body-md-size);
-  line-height: var(--type-body-md-line-height);
-}
-
-.control-rail__lede {
-  position: relative;
-  z-index: 1;
-  margin: 0.8rem 0 0;
-  max-width: 26ch;
-  color: var(--color-text-secondary);
-  font-family: var(--type-body-sm-family);
-  font-size: var(--type-body-sm-size);
-  line-height: 1.5;
-}
-
-.control-rail__section-head,
 .support-card__head {
   display: flex;
   align-items: center;
@@ -552,9 +451,6 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .control-rail {
-    position: static;
-  }
 }
 
 @media (max-width: 640px) {
@@ -589,7 +485,6 @@ body {
     padding-bottom: calc(0.75rem + 64px + env(safe-area-inset-bottom, 0px));
   }
 
-  .control-rail,
   .support-rail {
     display: none;
   }
@@ -639,7 +534,6 @@ body {
 }
 
 @media (max-width: 720px) {
-  .control-rail__panel,
   .support-card,
   .workspace-surface,
   .workspace-header {

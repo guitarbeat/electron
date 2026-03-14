@@ -1,5 +1,5 @@
 import '../ui/ui.css';
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { User, Movie } from '@/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
 import { useMovies } from '@/hooks/useMovies';
@@ -84,16 +84,30 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   const matchOverlayTimeoutRef = useRef<number | null>(null);
   const randomPickTimeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (matchOverlayTimeoutRef.current !== null) {
-        window.clearTimeout(matchOverlayTimeoutRef.current);
-      }
-      if (randomPickTimeoutRef.current !== null) {
-        window.clearTimeout(randomPickTimeoutRef.current);
-      }
-    };
+  const clearTransientUiState = useCallback(() => {
+    if (matchOverlayTimeoutRef.current !== null) {
+      window.clearTimeout(matchOverlayTimeoutRef.current);
+      matchOverlayTimeoutRef.current = null;
+    }
+    if (randomPickTimeoutRef.current !== null) {
+      window.clearTimeout(randomPickTimeoutRef.current);
+      randomPickTimeoutRef.current = null;
+    }
+    setIsPickingRandom(false);
+    setRandomWinner(null);
+    setShowConfetti(false);
+    setLastMatchedMovie(null);
   }, []);
+
+  useEffect(() => {
+    return clearTransientUiState;
+  }, [clearTransientUiState]);
+
+  useEffect(() => {
+    if (!game) {
+      clearTransientUiState();
+    }
+  }, [clearTransientUiState, game]);
 
   useEffect(() => {
     if (matches.length > lastMatchCount.current && matches.length > 0) {
@@ -139,6 +153,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
   const handleStart = (selectedVibe: string | null = null) => {
     if (!currentUser) return;
+    clearTransientUiState();
 
     let poolSource = [...unwatchedMovies];
     if (selectedVibe === 'Short & Sweet') {
@@ -674,6 +689,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         message="Are you sure you want to end this matchmaker session?"
         confirmText="End Session"
         onConfirm={() => {
+          clearTransientUiState();
           endCurrentGame();
           setShowEndSessionConfirm(false);
         }}
