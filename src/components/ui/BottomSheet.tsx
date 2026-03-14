@@ -9,7 +9,12 @@ import {
   shadows,
   motion,
 } from '@/design-system/tokens';
-import { getModalCloseButtonStyle, getModalOverlayStyle, trapFocusOnTab } from './modalPrimitives';
+import {
+  getModalCloseButtonStyle,
+  getModalOverlayStyle,
+  isFocusWithin,
+  trapFocusOnTab,
+} from './modalPrimitives';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -50,6 +55,10 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
     }, 0);
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocusWithin(sheetRef.current)) {
+        return;
+      }
+
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();

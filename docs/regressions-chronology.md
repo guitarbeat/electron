@@ -27,6 +27,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Stopped minigame keyboard input and delayed swipe/match timers from leaking across page state, which restores safer minigame interaction and unmount behavior. Related regressions: `f9a6694`, `20f8e9b`, `8e3459c`, `6763a52`.
 - [x] Fixed PIN dialog teardown so profile/security modals always release global page state on close and unmount. Related regressions: `a599e85`, `ecee9ad`, `197e096`.
 - [x] Replaced the watchlist metadata repair overlay with the shared dialog flow so “Fix Details” regains Escape handling, focus management, and modal locking. Related regressions: `cf6160c`, `ecee9ad`, `6763a52`.
+- [x] Scoped modal Escape handling to the focused layer and added focus management to minigame overlays so nested dialogs no longer dismiss their parent sheets or modals. Related regressions: `ecee9ad`, `23f0c74`, `6763a52`.
 
 ## November 2025
 
