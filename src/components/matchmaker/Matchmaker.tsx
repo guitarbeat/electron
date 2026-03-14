@@ -97,6 +97,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     setRandomWinner(null);
     setShowConfetti(false);
     setLastMatchedMovie(null);
+    lastMatchCount.current = 0;
   }, []);
 
   useEffect(() => {
