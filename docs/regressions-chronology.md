@@ -37,6 +37,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Reset matchmaker match-count tracking between sessions so a fresh round can trigger its celebration overlay on the first new shared pick instead of inheriting the previous round’s count. Related regressions: `8e3459c`, `ec14329`, `6763a52`.
 - [x] Restored real submission locking in the places hook so add/delete/visited actions actually disable while writes are in flight instead of allowing duplicate taps and overlapping mutations. Related regressions: `e98b0f8`, `6856914`, `6763a52`.
 - [x] Moved PIN state onto the shared polling path so multiple profile pickers stay in sync after PIN changes and no longer start duplicate local refresh intervals. Related regressions: `a599e85`, `02065e9`, `197e096`.
+- [x] Tightened the matchmaker mutation lock so rapid repeat taps cannot queue extra session/swipe writes during the same event turn before the submitting state flips on. Related regressions: `8e3459c`, `20f8e9b`, `6763a52`.
 
 ## November 2025
 
