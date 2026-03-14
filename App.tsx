@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAudio } from './src/hooks';
 import { useQuiz } from './src/hooks/useQuiz';
-import { UserProvider, useUser } from './src/context';
+import { UserProvider, useToast, useUser } from './src/context';
 import { ThemeProvider } from './src/context';
 import type { MainTab } from './src/types';
 import Watchlist from './src/components/watchlist';
@@ -27,6 +27,7 @@ const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
+  const { showToast } = useToast();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
   const isMobile = useMediaQuery(breakpoints.sm);
@@ -39,7 +40,10 @@ const AppInner: React.FC = () => {
   const [showFoodMerge, setShowFoodMerge] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
+  const [showQuizFlow, setShowQuizFlow] = useState(false);
+  const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
@@ -50,12 +54,38 @@ const AppInner: React.FC = () => {
     [activeTab]
   );
 
+  const openQuizExperience = useCallback(() => {
+    if (currentUser) {
+      setShowQuizFlow(true);
+      return;
+    }
+
+    setShowQuizEditor(true);
+  }, [currentUser]);
+
+  const openMatchmaker = useCallback(() => {
+    if (!currentUser) {
+      showToast({
+        message: 'Pick Aaron or Electra before starting Matchmaker.',
+        type: 'info',
+      });
+      return;
+    }
+
+    setShowMatchmaker(true);
+  }, [currentUser, showToast]);
+
   const commandDeck = useMemo(
     () => [
       {
-        label: quizCompleted ? 'Edit Quiz' : 'Start Quiz',
+        label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
         icon: '🧠',
-        action: () => setShowQuizEditor(true),
+        action: openQuizExperience,
+      },
+      {
+        label: 'Matchmaker',
+        icon: '💘',
+        action: openMatchmaker,
       },
       {
         label: 'Memories',
@@ -73,7 +103,7 @@ const AppInner: React.FC = () => {
         action: () => setShowFoodMerge(true),
       },
     ],
-    [quizCompleted]
+    [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
   );
 
   const handleTabChange = (tab: MainTab) => {
@@ -85,6 +115,7 @@ const AppInner: React.FC = () => {
   const handleQuizComplete = () => {
     setQuizCompleted(true);
     localStorage.setItem('quizCompleted', 'true');
+    setShowQuizFlow(false);
   };
 
   const handleMobileAction = (action: () => void) => {
@@ -372,9 +403,11 @@ const AppInner: React.FC = () => {
           ariaLabel="Spin wheel picker"
           maxWidth={680}
           maxHeight={860}
+          closeDisabled={isSpinWheelLocked}
+          closeDisabledLabel="Finish the current spin before closing the wheel."
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <SpinWheelGame />
+            <SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />
           </div>
         </MinigameModal>
 
@@ -391,16 +424,45 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        {quizData && currentUser ? (
-          <QuizFlow
-            quizData={quizData}
-            currentUser={currentUser}
-            onComplete={handleQuizComplete}
-            onEdit={() => setShowQuizEditor(true)}
-            isCompleted={quizCompleted}
-          />
-        ) : null}
-        {currentUser ? <Matchmaker currentUser={currentUser} /> : null}
+        <MinigameModal
+          isOpen={showQuizFlow}
+          onClose={() => setShowQuizFlow(false)}
+          title={quizCompleted ? 'Retake Quiz' : 'Start Quiz'}
+          ariaLabel="Quiz experience"
+          maxWidth={920}
+          maxHeight={900}
+        >
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
+            {quizData && currentUser ? (
+              <QuizFlow
+                key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
+                quizData={quizData}
+                currentUser={currentUser}
+                onComplete={handleQuizComplete}
+                onEdit={() => {
+                  setShowQuizFlow(false);
+                  setShowQuizEditor(true);
+                }}
+                isCompleted={false}
+              />
+            ) : (
+              <p style={{ margin: 0 }}>Pick a profile to take the quiz.</p>
+            )}
+          </div>
+        </MinigameModal>
+
+        <MinigameModal
+          isOpen={showMatchmaker}
+          onClose={() => setShowMatchmaker(false)}
+          title="Matchmaker"
+          ariaLabel="Movie matchmaker"
+          maxWidth={920}
+          maxHeight={900}
+        >
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
+            <Matchmaker currentUser={currentUser} />
+          </div>
+        </MinigameModal>
       </div>
     </ThemeProvider>
   );

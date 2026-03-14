@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   AgreeDisagreeQuestion as AgreeDisagreeQuestionType,
   ImageChoiceQuestion as ImageChoiceQuestionType,
@@ -115,6 +115,10 @@ export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps>
   };
 
   const [sliderValue, setSliderValue] = useState(getNumericValue(selectedValue));
+
+  useEffect(() => {
+    setSliderValue(getNumericValue(selectedValue));
+  }, [selectedValue]);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
