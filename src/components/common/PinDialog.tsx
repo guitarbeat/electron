@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { User } from '@/types';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { getModalOverlayStyle } from '@/ui/modalPrimitives';
+import { getModalOverlayStyle, isFocusWithin } from '@/ui/modalPrimitives';
 import { colors, spacing, typography, radius, motion, shadows } from '@/design-system/tokens';
 
 interface PinDialogProps {
@@ -33,6 +33,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [error, setError] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [step, setStep] = useState<'current' | 'new' | 'confirm'>('current');
+  const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const focusTimerRef = useRef<number | null>(null);
 
@@ -67,7 +68,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && isFocusWithin(dialogRef.current)) {
+          event.preventDefault();
           onCancel();
         }
       };
@@ -246,6 +248,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       aria-labelledby="pin-dialog-title"
     >
       <div
+        ref={dialogRef}
         onClick={(e) => e.stopPropagation()}
         style={{ animation: 'pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >

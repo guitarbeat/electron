@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { colors, spacing, shadows, typography } from '@/design-system/tokens';
-import { getModalOverlayStyle } from './modalPrimitives';
+import { getModalOverlayStyle, isFocusWithin, trapFocusOnTab } from './modalPrimitives';
 
 interface MinigameModalProps {
   isOpen: boolean;
@@ -35,22 +35,50 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   closeDisabled = false,
   closeDisabledLabel = 'Please wait for the current action to finish.',
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusedElement = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      previousFocusedElement.current?.focus?.();
+      return undefined;
+    }
+
+    previousFocusedElement.current = document.activeElement as HTMLElement;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    const initialFocusTimer = window.setTimeout(() => {
+      if (closeDisabled) {
+        dialogRef.current?.focus();
+        return;
+      }
+
+      closeButtonRef.current?.focus();
+    }, 0);
+
     return () => {
+      window.clearTimeout(initialFocusTimer);
       document.body.style.overflow = prev;
     };
-  }, [isOpen]);
+  }, [closeDisabled, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !closeDisabled) {
-        onClose();
+      if (!isFocusWithin(dialogRef.current)) {
+        return;
       }
+
+      if (event.key === 'Escape' && !closeDisabled) {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      trapFocusOnTab(event, dialogRef.current);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -82,6 +110,8 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
       aria-label={ariaLabel}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         style={{
           position: 'relative',
           width: 'min(100vw, 100%)',
@@ -130,6 +160,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             </h2>
           )}
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={handleClose}
             aria-label={closeDisabled ? closeDisabledLabel : 'Close'}

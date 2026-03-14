@@ -35,6 +35,12 @@ export const trapFocusOnTab = (
   }
 };
 
+export const isFocusWithin = (container: HTMLElement | null): boolean => {
+  if (!container) return false;
+  const active = document.activeElement as HTMLElement | null;
+  return active !== null && container.contains(active);
+};
+
 export const getModalOverlayStyle = (
   backgroundColor: string = colors.overlay,
   alignItems: CSSProperties['alignItems'] = 'center',

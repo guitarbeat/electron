@@ -3,7 +3,12 @@ import { createPortal } from 'react-dom';
 import Card from './Card';
 import Button from './Button';
 import { colors, spacing, typography } from '@/design-system/tokens';
-import { getModalCloseButtonStyle, getModalOverlayStyle, trapFocusOnTab } from './modalPrimitives';
+import {
+  getModalCloseButtonStyle,
+  getModalOverlayStyle,
+  isFocusWithin,
+  trapFocusOnTab,
+} from './modalPrimitives';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -48,6 +53,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     }, 0);
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocusWithin(dialogRef.current)) {
+        return;
+      }
+
       if (event.key === 'Escape') {
         event.preventDefault();
         onCancel();
