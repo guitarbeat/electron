@@ -33,6 +33,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Preserved existing `modal-open` body locks across stacked confirm/PIN dialogs so nested dialog cleanup no longer re-enables page scroll underneath another active modal. Related regressions: `ecee9ad`, `a599e85`, `197e096`.
 - [x] Serialized delayed mobile action-sheet launches so reopening the menu or tapping multiple actions no longer queues stale modal opens after the sheet state changes. Related regressions: `ecee9ad`, `ec14329`, `6763a52`.
 - [x] Cleared matchmaker celebration and random-pick timers when a session ends or restarts so old overlay state cannot leak into the next round. Related regressions: `8e3459c`, `20f8e9b`, `6763a52`.
+- [x] Repaired the shared support-card pseudo-element rule in `App.css` so the shell stylesheet parses cleanly again and build-time CSS minification warnings disappear. Related regressions: `ec14329`, `5a6c778`, `6763a52`.
 
 ## November 2025
 
