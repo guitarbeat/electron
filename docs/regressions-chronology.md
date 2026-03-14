@@ -24,6 +24,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Restored safe watchlist add/suggest submission by preventing the browser form from hard-submitting the page. Related regressions: `6856914`, `f821809`, `121a64d`.
 - [x] Pulled quiz and matchmaker experiences out of the default page flow and back behind intentional launch actions so the main shell stays cohesive. Related regressions: `ecee9ad`, `ec14329`, `0cd049a`.
 - [x] Restored quiz retake/revisit behavior so retakes open as fresh sessions and agree/disagree answers stay in sync when revisiting questions. Related regressions: `baa1636`, `6856914`, `23f0c74`.
+- [x] Stopped minigame keyboard input and delayed swipe/match timers from leaking across page state, which restores safer minigame interaction and unmount behavior. Related regressions: `f9a6694`, `20f8e9b`, `8e3459c`, `6763a52`.
 
 ## November 2025
 
