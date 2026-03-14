@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudio } from './src/hooks';
 import { useQuiz } from './src/hooks/useQuiz';
 import { UserProvider, useToast, useUser } from './src/context';
@@ -44,10 +44,26 @@ const AppInner: React.FC = () => {
   const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
+  const mobileActionTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
+
+  useEffect(() => {
+    if (showMoreSheet && mobileActionTimeoutRef.current !== null) {
+      window.clearTimeout(mobileActionTimeoutRef.current);
+      mobileActionTimeoutRef.current = null;
+    }
+  }, [showMoreSheet]);
+
+  useEffect(() => {
+    return () => {
+      if (mobileActionTimeoutRef.current !== null) {
+        window.clearTimeout(mobileActionTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const activeTabMeta = useMemo(
     () => MAIN_TABS.find((item) => item.id === activeTab) ?? MAIN_TABS[0],
@@ -119,8 +135,14 @@ const AppInner: React.FC = () => {
   };
 
   const handleMobileAction = (action: () => void) => {
+    if (mobileActionTimeoutRef.current !== null) {
+      window.clearTimeout(mobileActionTimeoutRef.current);
+    }
     setShowMoreSheet(false);
-    setTimeout(action, 150);
+    mobileActionTimeoutRef.current = window.setTimeout(() => {
+      mobileActionTimeoutRef.current = null;
+      action();
+    }, 150);
   };
 
   const mobileHeroCopy = currentUser

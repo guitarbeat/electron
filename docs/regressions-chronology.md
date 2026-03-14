@@ -31,6 +31,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Removed the extra watchlist celebration timeout so confetti resets from its own completion path and can replay cleanly across quick successive matches. Related regressions: `02065e9`, `6856914`, `6763a52`.
 - [x] Restored bottom-sheet scroll lock cleanup so closing the mobile sheet preserves any pre-existing body overflow state from other active overlays. Related regressions: `ecee9ad`, `cf6160c`, `6763a52`.
 - [x] Preserved existing `modal-open` body locks across stacked confirm/PIN dialogs so nested dialog cleanup no longer re-enables page scroll underneath another active modal. Related regressions: `ecee9ad`, `a599e85`, `197e096`.
+- [x] Serialized delayed mobile action-sheet launches so reopening the menu or tapping multiple actions no longer queues stale modal opens after the sheet state changes. Related regressions: `ecee9ad`, `ec14329`, `6763a52`.
 
 ## November 2025
 
