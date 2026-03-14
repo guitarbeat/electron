@@ -159,10 +159,6 @@ const AppInner: React.FC = () => {
         <div className="app-shell__decor" aria-hidden="true">
           <div className="floating-hearts-y2k" />
           <div className="twinkle-stars twinkle-stars-offset" />
-          <span className="app-shell__bubble app-shell__bubble--one">🫧</span>
-          <span className="app-shell__bubble app-shell__bubble--two">🐾</span>
-          <span className="app-shell__bubble app-shell__bubble--three">😺</span>
-          <span className="app-shell__bubble app-shell__bubble--four">{activeTabMeta.icon}</span>
         </div>
 
         {isMobile ? <SparkleTap /> : null}
@@ -171,11 +167,6 @@ const AppInner: React.FC = () => {
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             {isMobile && (
               <section className="mobile-hero" aria-label="Weekend planner overview">
-                <div className="mobile-hero__bubbles" aria-hidden="true">
-                  <span className="mobile-hero__bubble mobile-hero__bubble--a">{activeTabMeta.icon}</span>
-                  <span className="mobile-hero__bubble mobile-hero__bubble--b">🫧</span>
-                  <span className="mobile-hero__bubble mobile-hero__bubble--c">✨</span>
-                </div>
                 <div className="mobile-hero__content">
                   <h1 className="mobile-hero__title">Weekend Planner</h1>
                   <p className="mobile-hero__copy">{mobileHeroCopy}</p>
