@@ -38,6 +38,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusedElement = useRef<HTMLElement | null>(null);
+  const hadModalOpenClassRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -46,6 +47,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     }
 
     previousFocusedElement.current = document.activeElement as HTMLElement;
+    hadModalOpenClassRef.current = document.body.classList.contains('modal-open');
     document.body.classList.add('modal-open');
 
     const initialFocusTimer = window.setTimeout(() => {
@@ -70,7 +72,9 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
     return () => {
       window.clearTimeout(initialFocusTimer);
-      document.body.classList.remove('modal-open');
+      if (!hadModalOpenClassRef.current) {
+        document.body.classList.remove('modal-open');
+      }
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onCancel]);
