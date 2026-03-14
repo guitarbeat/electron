@@ -26,6 +26,7 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Restored quiz retake/revisit behavior so retakes open as fresh sessions and agree/disagree answers stay in sync when revisiting questions. Related regressions: `baa1636`, `6856914`, `23f0c74`.
 - [x] Stopped minigame keyboard input and delayed swipe/match timers from leaking across page state, which restores safer minigame interaction and unmount behavior. Related regressions: `f9a6694`, `20f8e9b`, `8e3459c`, `6763a52`.
 - [x] Fixed PIN dialog teardown so profile/security modals always release global page state on close and unmount. Related regressions: `a599e85`, `ecee9ad`, `197e096`.
+- [x] Replaced the watchlist metadata repair overlay with the shared dialog flow so “Fix Details” regains Escape handling, focus management, and modal locking. Related regressions: `cf6160c`, `ecee9ad`, `6763a52`.
 
 ## November 2025
 

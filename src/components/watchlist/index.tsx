@@ -100,6 +100,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false);
   const skeletonKeys = isMobile
     ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
     : [
@@ -459,99 +460,37 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             )}
 
             {movieToFix && (
-              <div
-                style={{
-                  position: 'fixed',
-                  inset: 0,
-                  background: 'rgba(2, 6, 23, 0.78)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 900,
-                  padding: '1.25rem',
+              <ConfirmDialog
+                isOpen={!!movieToFix}
+                title="Fix Details"
+                message={`Re-fetch metadata for "${movieToFix.title}"?`}
+                confirmText="Re-fetch"
+                cancelText="Cancel"
+                variant="primary"
+                isLoading={isRefreshingMetadata}
+                onCancel={() => {
+                  if (!isRefreshingMetadata) {
+                    setMovieToFix(null);
+                  }
                 }}
-              >
-                <div
-                  style={{
-                    background: 'var(--color-surface-2)',
-                    border: '1px solid var(--color-border-subtle)',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    maxWidth: '420px',
-                    width: '100%',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
-                  }}
-                >
-                  <h2
-                    style={{
-                      margin: '0 0 0.5rem',
-                      fontFamily: 'var(--type-title-sm-family)',
-                      fontSize: 'var(--font-size-lg)',
-                      fontWeight: 'var(--font-weight-semibold)',
-                      lineHeight: 'var(--line-height-heading)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
-                    Fix Details
-                  </h2>
-                  <p
-                    style={{
-                      margin: '0 0 1.25rem',
-                      color: 'var(--color-text-secondary)',
-                      fontFamily: 'var(--type-body-md-family)',
-                      fontSize: 'var(--type-body-md-size)',
-                      lineHeight: 'var(--type-body-md-line-height)',
-                    }}
-                  >
-                    Re-fetch metadata for &quot;{movieToFix.title}&quot;?
-                  </p>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
-                    <button
-                      onClick={() => setMovieToFix(null)}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: 'transparent',
-                        border: '1px solid var(--color-border-subtle)',
-                        borderRadius: '8px',
-                        color: 'var(--color-text-secondary)',
-                        cursor: 'pointer',
-                        fontFamily: 'var(--type-body-sm-family)',
-                        fontSize: 'var(--type-body-sm-size)',
-                        lineHeight: 'var(--type-body-sm-line-height)',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={async () => {
-                        try {
-                          await manualMetadataUpdate(movieToFix.id, movieToFix.title);
-                        } finally {
-                          setMovieToFix(null);
-                        }
-                      }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: 'var(--color-accent)',
-                        border: '1px solid var(--color-accent)',
-                        borderRadius: '8px',
-                        color: '#fff',
-                        cursor: 'pointer',
-                        fontFamily: 'var(--type-button-label-family)',
-                        fontSize: 'var(--type-body-sm-size)',
-                        fontWeight: 'var(--font-weight-semibold)',
-                        lineHeight: 'var(--line-height-none)',
-                        letterSpacing: 'var(--letter-spacing-button)',
-                        textTransform: 'var(--type-button-label-transform)',
-                      }}
-                    >
-                      Re-fetch
-                    </button>
-                  </div>
-                </div>
-              </div>
+                onConfirm={async () => {
+                  setIsRefreshingMetadata(true);
+                  try {
+                    const refreshed = await manualMetadataUpdate(movieToFix.id, movieToFix.title);
+                    setToast({
+                      message: refreshed
+                        ? `Refreshed metadata for "${movieToFix.title}"`
+                        : `No metadata update found for "${movieToFix.title}"`,
+                      type: refreshed ? 'success' : 'info',
+                    });
+                  } catch (error) {
+                    setToast({ message: 'Failed to refresh metadata', type: 'error' });
+                  } finally {
+                    setIsRefreshingMetadata(false);
+                    setMovieToFix(null);
+                  }
+                }}
+              />
             )}
 
             {showConfetti && (
