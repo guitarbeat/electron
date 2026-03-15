@@ -142,3 +142,29 @@ test('pollingManager isolates listener errors', async () => {
     console.error = originalConsoleError;
   }
 });
+
+test('pollingManager accepts null payloads when allowNull is enabled', async () => {
+  const key = `pm-null-${Date.now()}`;
+  let receivedData: { id: number }[] | null | undefined;
+  let receivedError: unknown;
+
+  const unsubscribe = pollingManager.subscribe(
+    key,
+    async () => null,
+    10_000,
+    (data, error) => {
+      receivedData = data;
+      receivedError = error;
+    },
+    { allowNull: true }
+  );
+
+  await wait(20);
+
+  assert.equal(receivedData, null);
+  assert.equal(receivedError, null);
+  assert.equal(pollingManager.getData(key), null);
+  assert.equal(pollingManager.getError(key), undefined);
+
+  unsubscribe();
+});
