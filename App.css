@@ -363,15 +363,15 @@ body {
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 340px);
+  gap: 1.25rem;
   align-items: start;
 }
 
 .workspace-surface {
   min-height: 70vh;
   border-radius: 32px;
-  padding: 0.9rem;
+  padding: 1rem 1rem;
 }
 
 .tab-panel {
