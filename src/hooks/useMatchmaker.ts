@@ -154,6 +154,7 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
     {
       key: 'matchmaker',
       isPaused,
+      allowNull: true,
     }
   );
 

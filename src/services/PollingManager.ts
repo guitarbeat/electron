@@ -1,4 +1,7 @@
 type Listener<T> = (data: T | undefined, error: any | null) => void;
+interface PollingOptions {
+  allowNull?: boolean;
+}
 
 class PollingManager {
   private subscribers = new Map<string, Set<Listener<any>>>();
@@ -8,8 +11,15 @@ class PollingManager {
   private errors = new Map<string, any>();
   private activeIntervals = new Map<string, number>();
   private inFlight = new Map<string, Promise<void>>();
+  private options = new Map<string, PollingOptions>();
 
-  subscribe<T>(key: string, fetchFn: () => Promise<T>, interval: number, listener: Listener<T>) {
+  subscribe<T>(
+    key: string,
+    fetchFn: () => Promise<T>,
+    interval: number,
+    listener: Listener<T>,
+    options: PollingOptions = {}
+  ) {
     if (!this.subscribers.has(key)) {
       this.subscribers.set(key, new Set());
     }
@@ -18,6 +28,7 @@ class PollingManager {
 
     // Update fetchFn (latest wins)
     this.fetchFns.set(key, fetchFn);
+    this.options.set(key, options);
 
     // If cache exists, emit immediately
     if (this.cache.has(key)) {
@@ -53,6 +64,7 @@ class PollingManager {
         this.errors.delete(key);
         this.fetchFns.delete(key);
         this.inFlight.delete(key);
+        this.options.delete(key);
       }
     }
   }
@@ -87,12 +99,13 @@ class PollingManager {
 
     // Track the current fetch function to detect stale responses
     const currentFetchFn = fetchFn;
+    const allowNull = this.options.get(key)?.allowNull ?? false;
     const request = (async () => {
       try {
         const data = await fetchFn();
 
         // Validation check similar to original hook
-        if (data === undefined || data === null) {
+        if (data === undefined || (!allowNull && data === null)) {
           throw new Error('Fetched data is null or undefined');
         }
 

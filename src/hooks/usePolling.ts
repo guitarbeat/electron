@@ -6,9 +6,9 @@ export const usePolling = <T>(
   fetchFn: () => Promise<T>,
   interval: number | null,
   equalityFn?: (prev: T | undefined, next: T) => boolean,
-  options: { isPaused?: boolean; key?: string } = {}
+  options: { isPaused?: boolean; key?: string; allowNull?: boolean } = {}
 ) => {
-  const { isPaused = false, key } = options;
+  const { isPaused = false, key, allowNull = false } = options;
 
   // Initialize state with cached data if available
   const [data, setData] = useState<T | undefined>(() => {
@@ -63,7 +63,7 @@ export const usePolling = <T>(
       const result = await savedFetchFn.current();
 
       // Validation check: if result is empty/invalid but we expect data, handle it
-      if (result === undefined || result === null) {
+      if (result === undefined || (!allowNull && result === null)) {
         throw new Error('Fetched data is null or undefined');
       }
 
@@ -79,7 +79,7 @@ export const usePolling = <T>(
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [allowNull]);
 
   useEffect(() => {
     if (isPaused) {
@@ -113,7 +113,8 @@ export const usePolling = <T>(
             });
             setIsLoading(false);
           }
-        }
+        },
+        { allowNull }
       );
 
       return unsubscribe;
@@ -125,7 +126,7 @@ export const usePolling = <T>(
     }
 
     return undefined;
-  }, [executeLocal, interval, isPaused, key]);
+  }, [allowNull, executeLocal, interval, isPaused, key]);
 
   const refresh = useCallback(() => {
     if (key) {
