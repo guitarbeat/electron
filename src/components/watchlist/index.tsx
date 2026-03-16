@@ -58,6 +58,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     movieToDelete,
     setMovieToDelete,
     setToast,
+    successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
     setProcessingSuggestionId,
