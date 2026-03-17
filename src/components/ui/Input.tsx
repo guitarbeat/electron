@@ -1,6 +1,5 @@
 import React, { useId } from 'react';
 import { typography } from '@/design-system/tokens';
-import './ui.css';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;

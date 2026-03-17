@@ -1,7 +1,6 @@
 import React from 'react';
 import { useAudio } from '@/hooks';
 import { typography } from '@/design-system/tokens';
-import './ui.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';

@@ -14,7 +14,6 @@ import {
 } from '@/services/memoryService';
 import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/types';
-import './FloatingMemoriesPanel.css';
 
 const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) =>
   JSON.stringify(prev) === JSON.stringify(next);

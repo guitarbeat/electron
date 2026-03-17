@@ -11,7 +11,6 @@ import WatchlistTopControls from './components/controls/WatchlistTopControls';
 import MovieCard from './components/MovieCard';
 
 // Styles
-import './Watchlist.css';
 
 const renderWorkspace = ({
   isMobile,

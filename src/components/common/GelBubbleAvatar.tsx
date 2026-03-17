@@ -1,4 +1,3 @@
-import '../ui/ui.css';
 import React from 'react';
 import { User } from '@/types';
 
