@@ -1,4 +1,3 @@
-import '../ui/ui.css';
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { User, Movie } from '@/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';

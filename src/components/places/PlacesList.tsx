@@ -12,7 +12,6 @@ import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
 import { colors, spacing, typography, radius } from '@/design-system/tokens';
 import type { Place } from '@/types';
-import '../ui/ui.css';
 
 type PlaceFilter = 'want' | 'visited';
 
