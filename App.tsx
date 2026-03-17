@@ -13,7 +13,6 @@ import FoodMergeGame from './src/components/food-merge/FoodMergeGame';
 import SpinWheelGame from './src/components/extras/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
 import UserSelection from './src/components/common/UserSelection';
-import SparkleTap from './src/components/effects/SparkleTap';
 import MinigameModal from './src/components/ui/MinigameModal';
 import BottomSheet from './src/components/ui/BottomSheet';
 import { ToastProvider } from './src/context';
@@ -156,12 +155,6 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
-        <div className="app-shell__decor" aria-hidden="true">
-          <div className="floating-hearts-y2k" />
-          <div className="twinkle-stars twinkle-stars-offset" />
-        </div>
-
-        {isMobile ? <SparkleTap /> : null}
 
           <div className="app-frame">
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
