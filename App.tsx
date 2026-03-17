@@ -5,16 +5,7 @@ import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@
 import type { MainTab } from '@/types';
 import UserSelection from '@/components/common/UserSelection';
 import { useMediaQuery, breakpoints } from '@/hooks';
-import {
-  FloatingMemoriesPanel,
-  FoodMergeGame,
-  Matchmaker,
-  PlacesList,
-  QuizEditor,
-  QuizFlow,
-  SpinWheelGame,
-  Watchlist,
-} from '@/features';
+import { games, memories, matchmaker, places, quiz, watchlist } from '@/features';
 import BottomSheet from '@/ui/BottomSheet';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.css';
@@ -253,7 +244,7 @@ const AppInner: React.FC = () => {
                       hidden={!isActivePanel}
                       className="tab-panel"
                     >
-                      {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
+                      {isActivePanel ? tab.id === 'queue' ? <watchlist.Watchlist /> : <places.PlacesList /> : null}
                     </section>
                   );
                 })}
@@ -365,7 +356,7 @@ const AppInner: React.FC = () => {
           maxHeight={900}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <QuizEditor onClose={() => setShowQuizEditor(false)} />
+            <quiz.QuizEditor onClose={() => setShowQuizEditor(false)} />
           </div>
         </MinigameModal>
 
@@ -378,7 +369,7 @@ const AppInner: React.FC = () => {
           maxHeight={780}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <FoodMergeGame />
+            <games.FoodMergeGame />
           </div>
         </MinigameModal>
 
@@ -393,7 +384,7 @@ const AppInner: React.FC = () => {
           closeDisabledLabel="Finish the current spin before closing the wheel."
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />
+            <games.SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />
           </div>
         </MinigameModal>
 
@@ -406,7 +397,7 @@ const AppInner: React.FC = () => {
           maxHeight={860}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <FloatingMemoriesPanel />
+            <memories.FloatingMemoriesPanel />
           </div>
         </MinigameModal>
 
@@ -420,7 +411,7 @@ const AppInner: React.FC = () => {
         >
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
             {quizData && currentUser ? (
-              <QuizFlow
+              <quiz.QuizFlow
                 key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
                 quizData={quizData}
                 currentUser={currentUser}
@@ -446,7 +437,7 @@ const AppInner: React.FC = () => {
           maxHeight={900}
         >
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
-            <Matchmaker currentUser={currentUser} />
+            <matchmaker.Matchmaker currentUser={currentUser} />
           </div>
         </MinigameModal>
       </div>
