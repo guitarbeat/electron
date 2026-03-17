@@ -2,7 +2,7 @@
  * QuizEditor Component - Refactored Version
  *
  * Full editor UI with drag-drop, preview, templates, undo/redo, and import/export
- * Sub-components extracted to ./editor/
+ * Sub-components merged into quiz/QuizEditor scope.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -11,8 +11,8 @@ import { useUndoRedo, useMediaQuery } from '@/hooks';
 import { useToast } from '@/context';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
-import QuestionsTab from './editor/QuestionsTab';
-import DescriptionsTab from './editor/DescriptionsTab';
+import QuestionsTab from './QuestionsTab';
+import DescriptionsTab from './DescriptionsTab';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { spacing, colors, typography, radius } from '@/design-system/tokens';
