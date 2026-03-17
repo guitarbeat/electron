@@ -1,13 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAudio } from '@/hooks';
+import { useAudio, useMediaQuery, breakpoints } from '@/hooks';
 import { useQuiz } from '@/hooks/useQuiz';
 import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
 import type { MainTab } from '@/types';
-import UserSelection from '@/components/common/UserSelection';
-import { useMediaQuery, breakpoints } from '@/hooks';
-import { games, memories, matchmaker, places, quiz, watchlist } from '@/features';
-import BottomSheet from '@/ui/BottomSheet';
-import MinigameModal from '@/ui/MinigameModal';
+import { common, games, memories, matchmaker, places, quiz, ui, watchlist } from '@/features';
 import './App.css';
 
 const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
@@ -155,7 +151,7 @@ const AppInner: React.FC = () => {
                   <h1 className="mobile-hero__title">Weekend Planner</h1>
                   <p className="mobile-hero__copy">{mobileHeroCopy}</p>
 
-                  <UserSelection variant="inline" className="mobile-hero__selection" />
+                  <common.UserSelection variant="inline" className="mobile-hero__selection" />
 
                   <div className="mobile-command-ribbon" role="group" aria-label="Quick actions">
                     {commandDeck.map((item) => (
@@ -252,7 +248,7 @@ const AppInner: React.FC = () => {
 
               <aside className="support-rail" aria-label="Workspace tools and actions">
                 <section className="support-card">
-                  <UserSelection variant="inline" />
+                  <common.UserSelection variant="inline" />
                 </section>
 
                 <section className="support-card">
@@ -309,13 +305,13 @@ const AppInner: React.FC = () => {
           </nav>
         )}
 
-        <BottomSheet
+        <ui.BottomSheet
           isOpen={showMoreSheet}
           onClose={() => setShowMoreSheet(false)}
           title="Menu"
         >
           <div className="more-sheet">
-            <UserSelection
+            <common.UserSelection
               variant="panel"
               activeTab={activeTab}
               title="Who's steering?"
@@ -347,7 +343,7 @@ const AppInner: React.FC = () => {
           </div>
         </BottomSheet>
 
-        <MinigameModal
+        <ui.MinigameModal
           isOpen={showQuizEditor}
           onClose={() => setShowQuizEditor(false)}
           title="Quiz Editor"
@@ -360,7 +356,7 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <MinigameModal
+        <ui.MinigameModal
           isOpen={showFoodMerge}
           onClose={() => setShowFoodMerge(false)}
           title="Food Merge"
@@ -373,7 +369,7 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <MinigameModal
+        <ui.MinigameModal
           isOpen={showSpinWheel}
           onClose={() => setShowSpinWheel(false)}
           title="Spin Wheel"
@@ -388,7 +384,7 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <MinigameModal
+        <ui.MinigameModal
           isOpen={showMemories}
           onClose={() => setShowMemories(false)}
           title="Memories"
@@ -401,7 +397,7 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <MinigameModal
+        <ui.MinigameModal
           isOpen={showQuizFlow}
           onClose={() => setShowQuizFlow(false)}
           title={quizCompleted ? 'Retake Quiz' : 'Start Quiz'}
@@ -428,7 +424,7 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <MinigameModal
+        <ui.MinigameModal
           isOpen={showMatchmaker}
           onClose={() => setShowMatchmaker(false)}
           title="Matchmaker"
