@@ -91,29 +91,6 @@ body {
     color var(--theme-transition-duration) var(--theme-transition-easing);
 }
 
-@keyframes shell-bubble-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate3d(0, -16px, 0) scale(1.05);
-  }
-}
-
-.app-shell__decor {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.app-shell__decor .twinkle-stars {
-  opacity: 0.35;
-  filter: blur(0.2px);
-}
 
 .skip-link {
   position: absolute;
@@ -155,30 +132,10 @@ body {
 .workspace-surface,
 .support-card {
   border: 1px solid var(--shell-border);
-  background:
-    linear-gradient(110deg, rgba(255, 255, 255, 0.12) 0%, transparent 24%),
-    var(--gradient-card);
-  box-shadow:
-    0 22px 44px rgba(8, 10, 18, 0.28),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-    0 0 34px color-mix(in srgb, var(--color-accent) 14%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--gradient-card);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
-}
-
-
-.workspace-header::before,
-.workspace-surface::before,
-.support-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 28%),
-    radial-gradient(circle at 82% 16%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 28%);
-  pointer-events: none;
 }
 
 .support-card__head,
@@ -235,7 +192,6 @@ body {
   letter-spacing: var(--type-button-label-letter-spacing);
   text-transform: var(--type-button-label-transform);
   cursor: pointer;
-  animation: shell-bubble-float 11s ease-in-out infinite;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -270,11 +226,6 @@ body {
   margin: 0;
 }
 
-.command-deck__item:nth-child(1) { animation-delay: -1s; }
-.command-deck__item:nth-child(2) { animation-delay: -4s; }
-.command-deck__item:nth-child(3) { animation-delay: -7s; }
-.command-deck__item:nth-child(4) { animation-delay: -3.5s; }
-.command-deck__item:nth-child(5) { animation-delay: -6s; }
 
 .workspace-tabs__button:hover,
 .workspace-tabs__button:focus-visible {
@@ -579,7 +530,6 @@ body {
     color-mix(in srgb, var(--color-surface-1) 86%, transparent);
   color: var(--color-text-primary);
   cursor: pointer;
-  animation: shell-bubble-float 11s ease-in-out infinite;
   scroll-snap-align: start;
   text-align: center;
   transition:
@@ -588,8 +538,6 @@ body {
     background 180ms ease;
 }
 
-.mobile-command-ribbon__item:nth-child(odd) { animation-delay: -4s; }
-.mobile-command-ribbon__item:nth-child(even) { animation-delay: -8s; }
 
 .mobile-command-ribbon__item:active,
 .mobile-command-ribbon__item:focus-visible {
@@ -679,9 +627,8 @@ body {
   box-shadow:
     0 -12px 28px rgba(0, 0, 0, 0.22),
     0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
 }
+
 
 .mobile-bottom-nav__item {
   flex: 1;
@@ -780,16 +727,11 @@ body {
   font-weight: var(--font-weight-medium);
   line-height: var(--type-body-sm-line-height);
   cursor: pointer;
-  animation: shell-bubble-float 11s ease-in-out infinite;
   transition: background 0.15s ease, border-color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-.more-sheet__action-btn:nth-child(1) { animation-delay: -2s; }
-.more-sheet__action-btn:nth-child(2) { animation-delay: -5s; }
-.more-sheet__action-btn:nth-child(3) { animation-delay: -3s; }
-.more-sheet__action-btn:nth-child(4) { animation-delay: -7s; }
 
 .more-sheet__action-btn:hover {
   background:

@@ -128,10 +128,7 @@
   background: rgba(15, 23, 42, 0.7);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.25),
-    0 1px 2px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+    0 1px 2px rgba(0, 0, 0, 0.15);
   transition:
     transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.22s ease,
@@ -378,7 +375,6 @@
   right: 0;
   bottom: 0;
   z-index: 200;
-  backdrop-filter: blur(10px);
   border-top: 1px solid color-mix(in srgb, #ffffff 25%, #565f6d 75%);
   background: var(--gradient-metal-surface);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -402,7 +398,6 @@
   left: 0;
   right: 0;
   z-index: 200;
-  backdrop-filter: blur(10px);
   background: color-mix(in srgb, var(--color-surface-0) 88%, transparent);
   border-top: 1px solid var(--color-border-subtle);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -949,9 +944,9 @@
   pointer-events: none;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.15) 70%);
   clip-path: polygon(50% 0%, 62% 37%, 100% 50%, 62% 63%, 50% 100%, 38% 63%, 0% 50%, 38% 37%);
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-  animation: y2k-twinkle 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
 }
+
 
 .gel-avatar-star-left {
   top: 18%;
