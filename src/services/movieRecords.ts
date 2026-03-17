@@ -1,5 +1,5 @@
 import type { Movie, User } from '../types.ts';
-import { isValidUrl, sanitizeInput } from '../utils/index.ts';
+import { isValidUrl, sanitizeInput } from '../utils';
 
 const isUser = (value: unknown): value is User => value === 'Aaron' || value === 'Electra';
 

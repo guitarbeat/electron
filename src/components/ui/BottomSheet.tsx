@@ -8,7 +8,7 @@ import {
   zIndex,
   shadows,
   motion,
-} from '@/design-system/tokens';
+} from '@/design-system';
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,

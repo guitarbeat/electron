@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Card from './Card';
 import Button from './Button';
-import { colors, spacing, typography } from '@/design-system/tokens';
+import { colors, spacing, typography } from '@/design-system';
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,

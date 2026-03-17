@@ -14,7 +14,7 @@ import {
   typography,
   shadows,
   motion as motionTokens,
-} from '@/design-system/tokens';
+} from '@/design-system';
 
 interface MatchmakerProps {
   currentUser: User | null;

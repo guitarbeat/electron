@@ -10,7 +10,7 @@ import ConfirmDialog from '@/ui/ConfirmDialog';
 import Skeleton from '@/ui/Skeleton';
 import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
-import { colors, spacing, typography, radius } from '@/design-system/tokens';
+import { colors, spacing, typography, radius } from '@/design-system';
 import type { Place } from '@/types';
 
 type PlaceFilter = 'want' | 'visited';

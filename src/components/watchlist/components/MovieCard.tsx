@@ -1,6 +1,6 @@
 import React from 'react';
 import { Movie, SharedMemory, User } from '@/types';
-import { spacing, typography, colors, radius, shadows } from '@/design-system/tokens';
+import { spacing, typography, colors, radius, shadows } from '@/design-system';
 import { useMediaQuery, breakpoints } from '@/hooks';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';

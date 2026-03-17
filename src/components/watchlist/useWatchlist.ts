@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useMediaQuery, breakpoints } from '../../../hooks';
-import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '../../memories/memoryUtils';
+import { useMediaQuery, breakpoints } from '../../hooks';
+import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '@/components/memories/memoryUtils';
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
@@ -12,7 +12,7 @@ import { usePolling } from '@/hooks/usePolling';
 import { SortMode, ContentTab, Movie, User, SharedMemory } from '@/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
-import { useToast } from '../../../context';
+import { useToast } from '@/context';
 
 const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 const MEMORY_FILTER_DEFAULT = 'all';

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { colors, spacing, shadows, typography } from '@/design-system/tokens';
+import { colors, spacing, shadows, typography } from '@/design-system';
 import { getModalOverlayStyle, isFocusWithin, trapFocusOnTab } from './modalPrimitives';
 
 interface MinigameModalProps {

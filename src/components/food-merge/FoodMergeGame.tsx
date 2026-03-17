@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useToast } from '@/context';
-import { colors, spacing, typography, radius } from '@/design-system/tokens';
+import { colors, spacing, typography, radius } from '@/design-system';
 
 const BOARD_WIDTH = 320;
 const BOARD_HEIGHT = 420;

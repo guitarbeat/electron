@@ -16,7 +16,7 @@ import Input from '@/ui/Input';
 import Textarea from '@/ui/Textarea';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { useToast } from '@/context';
-import { spacing, colors, typography, radius } from '@/design-system/tokens';
+import { spacing, colors, typography, radius } from '@/design-system';
 
 interface QuestionsTabProps {
   questions: QuizQuestion[];

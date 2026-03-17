@@ -11,7 +11,7 @@ import {
 import ResultsScreen from './ResultsScreen';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { spacing, colors, typography, shadows, radius } from '@/design-system/tokens';
+import { spacing, colors, typography, shadows, radius } from '@/design-system';
 import { calculateQuizResults } from './quizScoring';
 
 interface QuizFlowProps {
