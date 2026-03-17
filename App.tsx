@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAudio, useMediaQuery, breakpoints } from '@/hooks';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
 import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
 import type { MainTab } from '@/types';
@@ -28,6 +27,13 @@ interface MainTabItem {
   icon: string;
 }
 
+const breakpoints = {
+  sm: '(max-width: 640px)',
+  md: '(max-width: 768px)',
+  lg: '(max-width: 1024px)',
+  xl: '(max-width: 1280px)',
+};
+
 interface BuildCommandDeckArgs {
   currentUser: string | null;
   quizCompleted: boolean;
@@ -53,6 +59,89 @@ const MAIN_TABS: MainTabItem[] = [
   { id: 'queue', label: 'Movie Nights', icon: '🎬' },
   { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
+
+const useAudio = () => {
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContextClass && !audioContextRef.current) {
+      audioContextRef.current = new AudioContextClass();
+    }
+  }, []);
+
+  const playTone = useCallback(
+    (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
+      if (!audioContextRef.current) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          audioContextRef.current = new AudioContextClass();
+        } else {
+          return;
+        }
+      }
+
+      const ctx = audioContextRef.current;
+
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    },
+    []
+  );
+
+  const playClick = useCallback(() => {
+    playTone(800, 'sine', 0.05, 0.05);
+  }, [playTone]);
+
+  const playPop = useCallback(() => {
+    playTone(400, 'sine', 0.1, 0.08);
+  }, [playTone]);
+
+  const playSwitch = useCallback(() => {
+    playTone(600, 'triangle', 0.08, 0.04);
+  }, [playTone]);
+
+  const playSuccess = useCallback(() => {
+    playTone(523.25, 'sine', 0.1, 0.1);
+    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.1), 100);
+  }, [playTone]);
+
+  return { playTone, playClick, playPop, playSwitch, playSuccess };
+};
+
+function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const matchMedia = window.matchMedia(query);
+      matchMedia.addEventListener('change', callback);
+      return () => {
+        matchMedia.removeEventListener('change', callback);
+      };
+    },
+    [query]
+  );
+
+  const getSnapshot = () => window.matchMedia(query).matches;
+  const getServerSnapshot = () => false;
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
 
 const buildCommandDeck = ({
   currentUser,

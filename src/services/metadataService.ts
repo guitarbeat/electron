@@ -1,7 +1,21 @@
 import { isValidUrl, sanitizeInput } from '../utils';
 
-const OMDB_BASE_URL = '/api/omdb';
+const env = (import.meta.env ?? {}) as ImportMetaEnv & {
+  VITE_OMDB_API_URL?: string;
+  VITE_OMDB_API_KEY?: string;
+};
 
+const clean = (value: string) => value.trim().replace(/^["']|["']$/g, '');
+const OMDB_API_KEY = clean((env.VITE_OMDB_API_KEY || ''));
+const OMDB_DEFAULT_BASE_URL = import.meta.env.DEV ? 'https://www.omdbapi.com' : '/api/omdb';
+const resolveConfig = (value: string | undefined, fallback: string) => {
+  const cleanedValue = clean(value || '');
+  return cleanedValue.length > 0 ? cleanedValue : fallback;
+};
+
+const OMDB_BASE = resolveConfig(env.VITE_OMDB_API_URL, OMDB_DEFAULT_BASE_URL);
+
+const isAbsoluteUrl = (value: string) => /^[a-z][a-z\d+\-.]*:\/\//i.test(value);
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
 
@@ -11,7 +25,11 @@ const stripHtml = (value?: string | null): string | undefined => {
 };
 
 const buildOmdbUrl = (params: Record<string, string>): string | null => {
-  const url = new URL(OMDB_BASE_URL, window.location.origin);
+  const url = new URL(OMDB_BASE, window.location.origin);
+
+  if (OMDB_API_KEY && isAbsoluteUrl(OMDB_BASE)) {
+    url.searchParams.set('apikey', OMDB_API_KEY);
+  }
 
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.set(key, value);

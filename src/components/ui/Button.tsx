@@ -1,5 +1,4 @@
-import React from 'react';
-import { useAudio } from '@/hooks';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { typography } from '@/design-system';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -9,6 +8,58 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loadingText?: string;
   children: React.ReactNode;
 }
+
+const useAudio = () => {
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContextClass && !audioContextRef.current) {
+      audioContextRef.current = new AudioContextClass();
+    }
+  }, []);
+
+  const playTone = useCallback(
+    (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
+      if (!audioContextRef.current) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          audioContextRef.current = new AudioContextClass();
+        } else {
+          return;
+        }
+      }
+
+      const ctx = audioContextRef.current;
+
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    },
+    []
+  );
+
+  const playClick = useCallback(() => {
+    playTone(800, 'sine', 0.05, 0.05);
+  }, [playTone]);
+
+  return { playClick };
+};
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (

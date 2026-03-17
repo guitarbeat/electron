@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useMediaQuery, breakpoints } from '../../hooks';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '@/components/memories/memoryUtils';
 import {
   addMemory as addMemoryService,
@@ -33,6 +32,31 @@ interface WatchlistToast {
   type: 'success' | 'error' | 'info';
   onUndo?: () => void;
 }
+
+const breakpoints = {
+  sm: '(max-width: 640px)',
+  md: '(max-width: 768px)',
+  lg: '(max-width: 1024px)',
+  xl: '(max-width: 1280px)',
+};
+
+const useMediaQuery = (query: string): boolean => {
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const matchMedia = window.matchMedia(query);
+      matchMedia.addEventListener('change', callback);
+      return () => {
+        matchMedia.removeEventListener('change', callback);
+      };
+    },
+    [query]
+  );
+
+  const getSnapshot = () => window.matchMedia(query).matches;
+  const getServerSnapshot = () => false;
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+};
 
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const isMobile = useMediaQuery(breakpoints.sm);
