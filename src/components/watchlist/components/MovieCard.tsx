@@ -1,13 +1,37 @@
 import React from 'react';
 import { Movie, SharedMemory, User } from '@/types';
 import { spacing, typography, colors, radius, shadows } from '@/design-system';
-import { useMediaQuery, breakpoints } from '@/hooks';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';
 import Button from '@/ui/Button';
 import { EyeIcon, EyeOffIcon, MagicWandIcon, TrashIcon } from '@/common/icons';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
+
+const breakpoints = {
+  sm: '(max-width: 640px)',
+  md: '(max-width: 768px)',
+  lg: '(max-width: 1024px)',
+  xl: '(max-width: 1280px)',
+};
+
+const useMediaQuery = (query: string): boolean => {
+  const subscribe = React.useCallback(
+    (callback: () => void) => {
+      const matchMedia = window.matchMedia(query);
+      matchMedia.addEventListener('change', callback);
+      return () => {
+        matchMedia.removeEventListener('change', callback);
+      };
+    },
+    [query]
+  );
+
+  const getSnapshot = () => window.matchMedia(query).matches;
+  const getServerSnapshot = () => false;
+
+  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+};
 
 interface MovieCardProps {
   movie: Movie;

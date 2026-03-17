@@ -5,9 +5,8 @@
  * Sub-components merged into quiz/QuizEditor scope.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
-import { useUndoRedo, useMediaQuery } from '@/hooks';
 import { useToast } from '@/context';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
@@ -17,6 +16,153 @@ import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { spacing, colors, typography, radius } from '@/design-system';
 import { ArrowLeftIcon } from '@/common/icons';
+
+const breakpoints = {
+  sm: '(max-width: 640px)',
+  md: '(max-width: 768px)',
+  lg: '(max-width: 1024px)',
+  xl: '(max-width: 1280px)',
+};
+
+const useMediaQuery = (query: string): boolean => {
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const matchMedia = window.matchMedia(query);
+      matchMedia.addEventListener('change', callback);
+      return () => {
+        matchMedia.removeEventListener('change', callback);
+      };
+    },
+    [query]
+  );
+
+  const getSnapshot = () => window.matchMedia(query).matches;
+  const getServerSnapshot = () => false;
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+};
+
+interface UseUndoRedoReturn<T> {
+  state: T;
+  setState: (newState: T) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  clear: () => void;
+  reset: (initialState: T) => void;
+}
+
+const MAX_HISTORY_SIZE = 20;
+
+const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
+  const [state, setStateInternal] = useState<T>(initialState);
+  const [past, setPast] = useState<T[]>([]);
+  const [future, setFuture] = useState<T[]>([]);
+  const isUndoRedoRef = useRef(false);
+
+  const setState = useCallback(
+    (newState: T) => {
+      if (isUndoRedoRef.current) {
+        isUndoRedoRef.current = false;
+        setStateInternal(newState);
+        return;
+      }
+
+      setStateInternal((currentState) => {
+        setPast((prevPast) => {
+          const newPast = [...prevPast, currentState];
+          if (newPast.length > MAX_HISTORY_SIZE) {
+            return newPast.slice(newPast.length - MAX_HISTORY_SIZE);
+          }
+          return newPast;
+        });
+        setFuture([]);
+        return newState;
+      });
+    },
+    []
+  );
+
+  const undo = useCallback(() => {
+    setPast((prevPast) => {
+      if (prevPast.length === 0) return prevPast;
+
+      const newPast = [...prevPast];
+      const previousState = newPast.pop()!;
+
+      setFuture((prevFuture) => {
+        setStateInternal((currentState) => {
+          isUndoRedoRef.current = true;
+          return previousState;
+        });
+        return [state, ...prevFuture];
+      });
+
+      return newPast;
+    });
+  }, [state]);
+
+  const redo = useCallback(() => {
+    setFuture((prevFuture) => {
+      if (prevFuture.length === 0) return prevFuture;
+
+      const [nextState, ...newFuture] = prevFuture;
+
+      setPast((prevPast) => {
+        setStateInternal((currentState) => {
+          isUndoRedoRef.current = true;
+          return nextState;
+        });
+        return [...prevPast, state];
+      });
+
+      return newFuture;
+    });
+  }, [state]);
+
+  const clear = useCallback(() => {
+    setPast([]);
+    setFuture([]);
+  }, []);
+
+  const reset = useCallback((newInitialState: T) => {
+    setStateInternal(newInitialState);
+    setPast([]);
+    setFuture([]);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+        if (event.shiftKey) {
+          event.preventDefault();
+          redo();
+        } else {
+          event.preventDefault();
+          undo();
+        }
+      } else if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+        event.preventDefault();
+        redo();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
+  return {
+    state,
+    setState,
+    undo,
+    redo,
+    canUndo: past.length > 0,
+    canRedo: future.length > 0,
+    clear,
+    reset,
+  };
+};
 
 interface QuizEditorProps {
   onClose: () => void;

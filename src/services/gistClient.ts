@@ -1,9 +1,14 @@
 const env = (import.meta.env ?? {}) as ImportMetaEnv & {
   VITE_GIST_ID?: string;
+  VITE_GIST_API_URL?: string;
 };
 
 const clean = (value: string) => value.trim().replace(/^["']|["']$/g, '');
 const LOCAL_OVERRIDE_PREFIX = 'movieList.localOverride.';
+const resolveConfig = (value: string | undefined, fallback: string) => {
+  const cleanedValue = clean(value || '');
+  return cleanedValue.length > 0 ? cleanedValue : fallback;
+};
 
 export const isGistReadConfigured = (gistId: string) => clean(gistId).length > 0;
 // Writes now go through the server-side proxy, so the client only needs the gist id
@@ -13,7 +18,7 @@ export const isGistWriteConfigured = (gistId: string) => isGistReadConfigured(gi
 export const GIST_ID = clean(env.VITE_GIST_ID || '');
 export const canReadGist = isGistReadConfigured(GIST_ID);
 export const canWriteGist = isGistWriteConfigured(GIST_ID);
-export const GIST_API_URL = '/api/gist';
+export const GIST_API_URL = resolveConfig(env.VITE_GIST_API_URL, '/api/gist');
 export const GIST_FILENAME = 'movielist.json';
 export const GIST_QUIZ_FILENAME = 'quiz.json';
 export const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
