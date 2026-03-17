@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { colors, spacing, radius, typography } from '@/design-system/tokens';
+import { colors, spacing, radius, typography } from '@/design-system';
 import type { Place } from '@/types';
 
 const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };

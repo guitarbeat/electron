@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing } from '@/design-system/tokens';
+import { colors, radius, spacing } from '@/design-system';
 
 interface SkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'poster';

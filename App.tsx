@@ -10,7 +10,7 @@ import QuizFlow from './src/components/quiz/QuizFlow';
 import PlacesList from './src/components/places/PlacesList';
 import Matchmaker from './src/components/matchmaker/Matchmaker';
 import FoodMergeGame from './src/components/food-merge/FoodMergeGame';
-import SpinWheelGame from './src/components/extras/SpinWheelGame';
+import SpinWheelGame from './src/components/SpinWheelGame';
 import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
 import UserSelection from './src/components/common/UserSelection';
 import MinigameModal from './src/components/ui/MinigameModal';

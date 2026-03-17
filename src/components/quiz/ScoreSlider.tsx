@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { QuizCharacter } from './types';
-import { spacing, colors, typography, radius } from '@/design-system/tokens';
+import { spacing, colors, typography, radius } from '@/design-system';
 
 interface ScoreSliderProps {
   scores: Partial<Record<QuizCharacter, number>>;

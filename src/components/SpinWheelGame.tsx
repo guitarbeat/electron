@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/context';
-import { colors, spacing, typography, radius } from '@/design-system/tokens';
+import { colors, spacing, typography, radius } from '@/design-system';
 import type { Movie } from '@/types';
 
 const SEGMENT_COLORS = ['#ff7ea8', '#6ad6ff', '#ffd166', '#7ee08c', '#c7a0ff', '#ff9f68'];

@@ -4,7 +4,7 @@ import { User } from '@/types';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { getModalOverlayStyle, isFocusWithin } from '@/ui/modalPrimitives';
-import { colors, spacing, typography, radius, motion, shadows } from '@/design-system/tokens';
+import { colors, spacing, typography, radius, motion, shadows } from '@/design-system';
 
 interface PinDialogProps {
   isOpen: boolean;

@@ -4,7 +4,7 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import SubNav from '@/ui/SubNav';
 import { ContentTab, SortMode } from '@/types';
-import { colors, spacing, typography } from '@/design-system/tokens';
+import { colors, spacing, typography } from '@/design-system';
 
 const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🎬' },

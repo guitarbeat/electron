@@ -3,7 +3,7 @@ import { SharedMemory, User } from '@/types';
 import Button from '@/ui/Button';
 import Textarea from '@/ui/Textarea';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { colors, radius, spacing, typography } from '@/design-system/tokens';
+import { colors, radius, spacing, typography } from '@/design-system';
 import {
   ALL_MOVIES_FILTER,
   INITIAL_VISIBLE_COUNT,

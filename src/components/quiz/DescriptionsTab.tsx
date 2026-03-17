@@ -2,7 +2,7 @@ import React from 'react';
 import { QuizCharacter, CHARACTERS } from '@/types';
 import Card from '@/ui/Card';
 import Textarea from '@/ui/Textarea';
-import { spacing, colors, typography } from '@/design-system/tokens';
+import { spacing, colors, typography } from '@/design-system';
 
 // Descriptions Tab Component
 interface DescriptionsTabProps {

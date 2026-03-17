@@ -5,7 +5,7 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useState, ReactNode } from 'react';
 import type { MainTab, User } from '@/types';
-import { moviesTheme, placesTheme, spacing } from '@/design-system/tokens';
+import { moviesTheme, placesTheme, spacing } from '@/design-system';
 import Toast from '@/components/ui/Toast';
 
 // ============================================================================
