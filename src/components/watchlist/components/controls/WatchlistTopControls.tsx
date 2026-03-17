@@ -87,11 +87,11 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             gap: 0,
             background:
               'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 28%), rgba(20, 22, 38, 0.72)',
-            borderRadius: '22px',
-            border: `1px solid ${colors.borderSecondary}50`,
+            borderRadius: '2px',
+            border: `2px solid ${colors.borderSecondary}70`,
             overflow: 'hidden',
             minHeight: '48px',
-            boxShadow: '0 18px 32px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.4), inset -1px -1px 0 rgba(255,255,255,0.08)',
             transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
           }}
         >

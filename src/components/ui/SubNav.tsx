@@ -81,25 +81,25 @@ const SubNav: React.FC<SubNavProps> = ({
                 paddingRight: tab.count !== undefined ? spacing.sm : spacing.md,
                 paddingTop: spacing.sm,
                 paddingBottom: spacing.sm,
-                borderRadius: radius.lg,
+                borderRadius: '2px',
                 border: isActive
                   ? `2px solid ${colors.accent}`
-                  : `1px solid ${colors.borderSecondary}30`,
+                  : `2px solid rgba(255,255,255,0.18)`,
                 background: isActive
-                  ? `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentLight} 100%)`
-                  : 'rgba(255,255,255,0.05)',
+                  ? `linear-gradient(180deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`
+                  : 'linear-gradient(180deg, rgba(80,40,80,0.7) 0%, rgba(40,20,50,0.9) 100%)',
                 color: isActive ? '#1a1a2e' : colors.textSecondary,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.1s ease',
                 ...typography.presets.tabLabel,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: spacing.sm,
                 boxShadow: isActive
-                  ? '0 0 20px rgba(255,105,180,0.4)'
-                  : '0 1px 3px rgba(0,0,0,0.15)',
+                  ? 'inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(0,0,0,0.4), 0 0 12px rgba(255,105,180,0.35)'
+                  : 'inset 1px 1px 0 rgba(255,255,255,0.25), inset -1px -1px 0 rgba(0,0,0,0.5)',
               }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
@@ -118,13 +118,15 @@ const SubNav: React.FC<SubNavProps> = ({
                   style={{
                     fontSize: typography.presets.badge.fontSize,
                     fontWeight: typography.presets.badge.fontWeight,
-                    background: isActive ? 'rgba(0,0,0,0.15)' : colors.overlay,
+                    background: isActive ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.1)',
                     color: isActive ? '#1a1a2e' : colors.textPrimary,
-                    padding: '3px 6px',
-                    borderRadius: radius.full,
+                    padding: '2px 5px',
+                    borderRadius: '1px',
                     minWidth: '20px',
                     textAlign: 'center',
                     lineHeight: typography.presets.badge.lineHeight,
+                    border: '1px solid rgba(0,0,0,0.3)',
+                    boxShadow: 'inset 1px 1px 0 rgba(255,255,255,0.2), inset -1px -1px 0 rgba(0,0,0,0.3)',
                   }}
                 >
                   {tab.count}
@@ -168,16 +170,21 @@ const SubNav: React.FC<SubNavProps> = ({
                 style={{
                   minHeight: '34px',
                   padding: `0 ${spacing.md}`,
-                  borderRadius: radius.md,
-                  border: `1px solid ${isActive ? colors.secondary : `${colors.borderSecondary}40`}`,
-                  background: isActive ? colors.secondaryMuted : 'rgba(255,255,255,0.04)',
-                  color: isActive ? colors.secondary : colors.textTertiary,
+                  borderRadius: '2px',
+                  border: `2px solid ${isActive ? colors.secondary : 'rgba(255,255,255,0.15)'}`,
+                  background: isActive
+                    ? `linear-gradient(180deg, ${colors.secondaryHover} 0%, ${colors.secondary} 100%)`
+                    : 'linear-gradient(180deg, rgba(60,40,80,0.7) 0%, rgba(30,20,45,0.9) 100%)',
+                  color: isActive ? '#1a1a2e' : colors.textTertiary,
                   fontSize: typography.fontSize.xs,
                   fontWeight: typography.fontWeight.semibold,
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.1s ease',
                   fontFamily: typography.fontFamilyValue.body,
                   lineHeight: typography.lineHeight.snug,
+                  boxShadow: isActive
+                    ? 'inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(0,0,0,0.4)'
+                    : 'inset 1px 1px 0 rgba(255,255,255,0.2), inset -1px -1px 0 rgba(0,0,0,0.5)',
                 }}
               >
                 {chip.label}
