@@ -6,17 +6,17 @@ import {
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
   XYAxisQuestion,
-} from '../types';
-import { questionTemplates, TemplateType } from '../QuestionTemplates';
-import QuestionPreview from '../QuestionPreview';
-import ScoreSlider from '../ScoreSlider';
-import Card from '../../ui/Card';
-import Button from '../../ui/Button';
-import Input from '../../ui/Input';
-import Textarea from '../../ui/Textarea';
-import ConfirmDialog from '../../ui/ConfirmDialog';
-import { useToast } from '../../../context';
-import { spacing, colors, typography, radius } from '../../../design-system/tokens';
+} from './types';
+import { questionTemplates, TemplateType } from './QuestionTemplates';
+import QuestionPreview from './QuestionPreview';
+import ScoreSlider from './ScoreSlider';
+import Card from '@/ui/Card';
+import Button from '@/ui/Button';
+import Input from '@/ui/Input';
+import Textarea from '@/ui/Textarea';
+import ConfirmDialog from '@/ui/ConfirmDialog';
+import { useToast } from '@/context';
+import { spacing, colors, typography, radius } from '@/design-system/tokens';
 
 interface QuestionsTabProps {
   questions: QuizQuestion[];
