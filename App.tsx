@@ -3,13 +3,121 @@ import { useAudio, useMediaQuery, breakpoints } from '@/hooks';
 import { useQuiz } from '@/hooks/useQuiz';
 import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
 import type { MainTab } from '@/types';
-import { common, games, memories, matchmaker, places, quiz, ui, watchlist } from '@/features';
+import BottomSheet from '@/ui/BottomSheet';
+import MinigameModal from '@/ui/MinigameModal';
+import UserSelection from '@/components/common/UserSelection';
+import FoodMergeGame from '@/components/food-merge/FoodMergeGame';
+import SpinWheelGame from '@/components/SpinWheelGame';
+import FloatingMemoriesPanel from '@/components/memories/FloatingMemoriesPanel';
+import Matchmaker from '@/components/matchmaker/Matchmaker';
+import PlacesList from '@/components/places/PlacesList';
+import QuizEditor from '@/components/quiz/QuizEditor';
+import QuizFlow from '@/components/quiz/QuizFlow';
+import Watchlist from '@/components/watchlist';
 import './App.css';
 
-const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
+interface CommandActionItem {
+  label: string;
+  icon: string;
+  action: () => void;
+}
+
+interface MainTabItem {
+  id: MainTab;
+  label: string;
+  icon: string;
+}
+
+interface BuildCommandDeckArgs {
+  currentUser: string | null;
+  quizCompleted: boolean;
+  openQuizExperience: () => void;
+  openMatchmaker: () => void;
+  openMemories: () => void;
+  openSpinWheel: () => void;
+  openFoodMerge: () => void;
+}
+
+interface CommandDeckProps {
+  items: readonly CommandActionItem[];
+  containerClassName: string;
+  buttonClassName?: string;
+  iconClassName: string;
+  labelClassName?: string;
+  containerRole?: 'group' | 'listbox';
+  containerAriaLabel?: string;
+  onItemSelect: (item: CommandActionItem) => void;
+}
+
+const MAIN_TABS: MainTabItem[] = [
   { id: 'queue', label: 'Movie Nights', icon: '🎬' },
   { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
+
+const buildCommandDeck = ({
+  currentUser,
+  quizCompleted,
+  openQuizExperience,
+  openMatchmaker,
+  openMemories,
+  openSpinWheel,
+  openFoodMerge,
+}: BuildCommandDeckArgs): CommandActionItem[] => [
+  {
+    label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
+    icon: '🧠',
+    action: openQuizExperience,
+  },
+  {
+    label: 'Matchmaker',
+    icon: '💘',
+    action: openMatchmaker,
+  },
+  {
+    label: 'Memories',
+    icon: '📸',
+    action: openMemories,
+  },
+  {
+    label: 'Spin Wheel',
+    icon: '🎰',
+    action: openSpinWheel,
+  },
+  {
+    label: 'Food Merge',
+    icon: '🍔',
+    action: openFoodMerge,
+  },
+];
+
+const CommandDeck: React.FC<CommandDeckProps> = ({
+  items,
+  containerClassName,
+  buttonClassName,
+  iconClassName,
+  labelClassName,
+  containerRole,
+  containerAriaLabel,
+  onItemSelect,
+}) => {
+  return (
+    <div className={containerClassName} role={containerRole} aria-label={containerAriaLabel}>
+      {items.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          className={buttonClassName}
+          onClick={() => onItemSelect(item)}
+        >
+          <span className={iconClassName} aria-hidden="true">
+            {item.icon}
+          </span>
+          {labelClassName ? <span className={labelClassName}>{item.label}</span> : <span>{item.label}</span>}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
@@ -78,33 +186,16 @@ const AppInner: React.FC = () => {
   }, [currentUser, showToast]);
 
   const commandDeck = useMemo(
-    () => [
-      {
-        label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
-        icon: '🧠',
-        action: openQuizExperience,
-      },
-      {
-        label: 'Matchmaker',
-        icon: '💘',
-        action: openMatchmaker,
-      },
-      {
-        label: 'Memories',
-        icon: '📸',
-        action: () => setShowMemories(true),
-      },
-      {
-        label: 'Spin Wheel',
-        icon: '🎰',
-        action: () => setShowSpinWheel(true),
-      },
-      {
-        label: 'Food Merge',
-        icon: '🍔',
-        action: () => setShowFoodMerge(true),
-      },
-    ],
+    () =>
+      buildCommandDeck({
+        currentUser,
+        quizCompleted,
+        openQuizExperience,
+        openMatchmaker,
+        openMemories: () => setShowMemories(true),
+        openSpinWheel: () => setShowSpinWheel(true),
+        openFoodMerge: () => setShowFoodMerge(true),
+      }),
     [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
   );
 
@@ -151,23 +242,18 @@ const AppInner: React.FC = () => {
                   <h1 className="mobile-hero__title">Weekend Planner</h1>
                   <p className="mobile-hero__copy">{mobileHeroCopy}</p>
 
-                  <common.UserSelection variant="inline" className="mobile-hero__selection" />
+                  <UserSelection variant="inline" className="mobile-hero__selection" />
 
-                  <div className="mobile-command-ribbon" role="group" aria-label="Quick actions">
-                    {commandDeck.map((item) => (
-                      <button
-                        key={item.label}
-                        type="button"
-                        className="mobile-command-ribbon__item"
-                        onClick={item.action}
-                      >
-                        <span className="mobile-command-ribbon__icon" aria-hidden="true">
-                          {item.icon}
-                        </span>
-                        <span className="mobile-command-ribbon__label">{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <CommandDeck
+                    items={commandDeck}
+                    containerClassName="mobile-command-ribbon"
+                    buttonClassName="mobile-command-ribbon__item"
+                    iconClassName="mobile-command-ribbon__icon"
+                    labelClassName="mobile-command-ribbon__label"
+                    containerRole="group"
+                    containerAriaLabel="Quick actions"
+                    onItemSelect={(item) => item.action()}
+                  />
                 </div>
               </section>
             )}
@@ -240,7 +326,7 @@ const AppInner: React.FC = () => {
                       hidden={!isActivePanel}
                       className="tab-panel"
                     >
-                      {isActivePanel ? tab.id === 'queue' ? <watchlist.Watchlist /> : <places.PlacesList /> : null}
+                      {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
                     </section>
                   );
                 })}
@@ -248,28 +334,21 @@ const AppInner: React.FC = () => {
 
               <aside className="support-rail" aria-label="Workspace tools and actions">
                 <section className="support-card">
-                  <common.UserSelection variant="inline" />
+                  <UserSelection variant="inline" />
                 </section>
 
                 <section className="support-card">
                   <div className="support-card__head">
                     <span>Actions</span>
                   </div>
-                  <div className="command-deck">
-                    {commandDeck.map((item) => (
-                      <button
-                        key={item.label}
-                        type="button"
-                        className="command-deck__item"
-                        onClick={item.action}
-                      >
-                        <span className="command-deck__icon" aria-hidden="true">
-                          {item.icon}
-                        </span>
-                        <span className="command-deck__label">{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <CommandDeck
+                    items={commandDeck}
+                    containerClassName="command-deck"
+                    buttonClassName="command-deck__item"
+                    iconClassName="command-deck__icon"
+                    labelClassName="command-deck__label"
+                    onItemSelect={(item) => item.action()}
+                  />
                 </section>
               </aside>
             </div>
@@ -305,13 +384,13 @@ const AppInner: React.FC = () => {
           </nav>
         )}
 
-        <ui.BottomSheet
+        <BottomSheet
           isOpen={showMoreSheet}
           onClose={() => setShowMoreSheet(false)}
           title="Menu"
         >
           <div className="more-sheet">
-            <common.UserSelection
+            <UserSelection
               variant="panel"
               activeTab={activeTab}
               title="Who's steering?"
@@ -326,24 +405,18 @@ const AppInner: React.FC = () => {
 
             <div className="more-sheet__section">
               <p className="more-sheet__section-label">Actions</p>
-              <div className="more-sheet__actions">
-                {commandDeck.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    className="more-sheet__action-btn"
-                    onClick={() => handleMobileAction(item.action)}
-                  >
-                    <span className="more-sheet__action-icon" aria-hidden="true">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
+            <CommandDeck
+              items={commandDeck}
+              containerClassName="more-sheet__actions"
+              buttonClassName="more-sheet__action-btn"
+              iconClassName="more-sheet__action-icon"
+              onItemSelect={(item) => handleMobileAction(item.action)}
+            />
             </div>
           </div>
         </BottomSheet>
 
-        <ui.MinigameModal
+        <MinigameModal
           isOpen={showQuizEditor}
           onClose={() => setShowQuizEditor(false)}
           title="Quiz Editor"
@@ -352,11 +425,11 @@ const AppInner: React.FC = () => {
           maxHeight={900}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <quiz.QuizEditor onClose={() => setShowQuizEditor(false)} />
+            <QuizEditor onClose={() => setShowQuizEditor(false)} />
           </div>
         </MinigameModal>
 
-        <ui.MinigameModal
+        <MinigameModal
           isOpen={showFoodMerge}
           onClose={() => setShowFoodMerge(false)}
           title="Food Merge"
@@ -365,11 +438,11 @@ const AppInner: React.FC = () => {
           maxHeight={780}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <games.FoodMergeGame />
+            <FoodMergeGame />
           </div>
         </MinigameModal>
 
-        <ui.MinigameModal
+        <MinigameModal
           isOpen={showSpinWheel}
           onClose={() => setShowSpinWheel(false)}
           title="Spin Wheel"
@@ -380,11 +453,11 @@ const AppInner: React.FC = () => {
           closeDisabledLabel="Finish the current spin before closing the wheel."
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <games.SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />
+            <SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />
           </div>
         </MinigameModal>
 
-        <ui.MinigameModal
+        <MinigameModal
           isOpen={showMemories}
           onClose={() => setShowMemories(false)}
           title="Memories"
@@ -393,11 +466,11 @@ const AppInner: React.FC = () => {
           maxHeight={860}
         >
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <memories.FloatingMemoriesPanel />
+            <FloatingMemoriesPanel />
           </div>
         </MinigameModal>
 
-        <ui.MinigameModal
+        <MinigameModal
           isOpen={showQuizFlow}
           onClose={() => setShowQuizFlow(false)}
           title={quizCompleted ? 'Retake Quiz' : 'Start Quiz'}
@@ -407,7 +480,7 @@ const AppInner: React.FC = () => {
         >
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
             {quizData && currentUser ? (
-              <quiz.QuizFlow
+              <QuizFlow
                 key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
                 quizData={quizData}
                 currentUser={currentUser}
@@ -424,7 +497,7 @@ const AppInner: React.FC = () => {
           </div>
         </MinigameModal>
 
-        <ui.MinigameModal
+        <MinigameModal
           isOpen={showMatchmaker}
           onClose={() => setShowMatchmaker(false)}
           title="Matchmaker"
@@ -433,7 +506,7 @@ const AppInner: React.FC = () => {
           maxHeight={900}
         >
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
-            <matchmaker.Matchmaker currentUser={currentUser} />
+            <Matchmaker currentUser={currentUser} />
           </div>
         </MinigameModal>
       </div>
