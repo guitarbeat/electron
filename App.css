@@ -221,7 +221,7 @@ body {
   max-width: 126px;
   aspect-ratio: 1 / 1;
   padding: 0.8rem 0.65rem;
-  border-radius: 999px;
+  border-radius: 4px;
   text-align: center;
   border: 1px solid color-mix(in srgb, white 15%, var(--color-border-subtle));
   background:
@@ -294,7 +294,7 @@ body {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.1rem;
-  border-radius: 28px;
+  border-radius: 4px;
 }
 
 .workspace-header__title {
@@ -316,7 +316,7 @@ body {
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border-radius: 999px;
+  border-radius: 2px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0.08) 100%),
     color-mix(in srgb, var(--color-accent) 18%, transparent);
@@ -335,10 +335,10 @@ body {
 .workspace-tabs__button {
   min-height: 2.5rem;
   padding: 0.55rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, white 15%, var(--color-border-subtle));
+  border-radius: 2px;
+  border: 2px solid color-mix(in srgb, white 20%, var(--color-border-subtle));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%),
     color-mix(in srgb, var(--color-surface-0) 90%, transparent);
   color: var(--color-text-primary);
   font-family: var(--font-display);
@@ -347,18 +347,19 @@ body {
   line-height: var(--type-body-sm-line-height);
   letter-spacing: 0.03em;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.22), inset -1px -1px 0 rgba(0, 0, 0, 0.45);
 }
 
 .workspace-tabs__button.is-active {
   border-color: var(--color-accent);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%),
     var(--gradient-primary);
   color: #24141d;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.58),
-    0 10px 24px color-mix(in srgb, var(--color-accent) 24%, transparent);
+    inset 1px 1px 0 rgba(255, 255, 255, 0.65),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.35),
+    0 4px 12px color-mix(in srgb, var(--color-accent) 30%, transparent);
 }
 
 .workspace-grid {
@@ -370,7 +371,7 @@ body {
 
 .workspace-surface {
   min-height: 70vh;
-  border-radius: 32px;
+  border-radius: 4px;
   padding: 1rem 1rem;
 }
 
@@ -384,7 +385,7 @@ body {
 }
 
 .support-card {
-  border-radius: 28px;
+  border-radius: 4px;
   padding: 1rem;
 }
 
@@ -415,7 +416,7 @@ body {
   }
 
   .mobile-hero {
-    border-radius: 22px;
+    border-radius: 4px;
   }
 
   .mobile-hero__content {
@@ -458,7 +459,7 @@ body {
   .support-card,
   .workspace-surface,
   .workspace-header {
-    border-radius: 22px;
+    border-radius: 4px;
   }
 }
 
@@ -481,7 +482,7 @@ body {
 .mobile-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 4px;
   border: 1px solid var(--shell-border);
   background:
     linear-gradient(
@@ -571,10 +572,10 @@ body {
   aspect-ratio: 1 / 1;
   min-height: auto;
   padding: 0.65rem 0.45rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, white 15%, var(--color-border-subtle));
+  border-radius: 4px;
+  border: 2px solid color-mix(in srgb, white 20%, var(--color-border-subtle));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 100%),
     color-mix(in srgb, var(--color-surface-1) 86%, transparent);
   color: var(--color-text-primary);
   cursor: pointer;
@@ -618,8 +619,8 @@ body {
   align-items: center;
   gap: 0.35rem;
   padding: 0.25rem 0.65rem 0.25rem 0.45rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, white 24%, var(--color-accent));
+  border-radius: 2px;
+  border: 2px solid color-mix(in srgb, white 24%, var(--color-accent));
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 100%),
     var(--gradient-metal-pill);
@@ -768,7 +769,7 @@ body {
   aspect-ratio: 1 / 1;
   justify-self: center;
   padding: 0.65rem 0.5rem;
-  border-radius: 999px;
+  border-radius: 4px;
   border: 1px solid color-mix(in srgb, white 15%, var(--color-border-subtle));
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, transparent 42%),
