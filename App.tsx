@@ -1,22 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAudio } from './src/hooks';
-import { useQuiz } from './src/hooks/useQuiz';
-import { UserProvider, useToast, useUser } from './src/context';
-import { ThemeProvider } from './src/context';
-import type { MainTab } from './src/types';
-import Watchlist from './src/components/watchlist';
-import QuizEditor from './src/components/quiz/QuizEditor';
-import QuizFlow from './src/components/quiz/QuizFlow';
-import PlacesList from './src/components/places/PlacesList';
-import Matchmaker from './src/components/matchmaker/Matchmaker';
-import FoodMergeGame from './src/components/food-merge/FoodMergeGame';
-import SpinWheelGame from './src/components/SpinWheelGame';
-import FloatingMemoriesPanel from './src/components/memories/FloatingMemoriesPanel';
-import UserSelection from './src/components/common/UserSelection';
-import MinigameModal from './src/components/ui/MinigameModal';
-import BottomSheet from './src/components/ui/BottomSheet';
-import { ToastProvider } from './src/context';
-import { useMediaQuery, breakpoints } from './src/hooks';
+import { useAudio } from '@/hooks';
+import { useQuiz } from '@/hooks/useQuiz';
+import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
+import type { MainTab } from '@/types';
+import UserSelection from '@/components/common/UserSelection';
+import { useMediaQuery, breakpoints } from '@/hooks';
+import {
+  FloatingMemoriesPanel,
+  FoodMergeGame,
+  Matchmaker,
+  PlacesList,
+  QuizEditor,
+  QuizFlow,
+  SpinWheelGame,
+  Watchlist,
+} from '@/features';
+import BottomSheet from '@/ui/BottomSheet';
+import MinigameModal from '@/ui/MinigameModal';
 import './App.css';
 
 const MAIN_TABS: Array<{ id: MainTab; label: string; icon: string }> = [
