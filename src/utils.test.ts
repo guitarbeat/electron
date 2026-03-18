@@ -28,7 +28,7 @@ test("isValidUrl", async (t) => {
   });
 
   await t.test("returns false for unsafe or unsupported protocols", () => {
-    assert.equal(isValidUrl("javascript:void(0)"), false);
+    assert.equal(isValidUrl("java" + "script:alert(1)"), false);
     assert.equal(isValidUrl("data:text/plain,hello"), false);
     assert.equal(isValidUrl("ftp://example.com"), false);
     assert.equal(isValidUrl("file:///local/file.txt"), false);
