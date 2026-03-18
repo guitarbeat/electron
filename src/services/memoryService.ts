@@ -1,4 +1,4 @@
-import { sanitizeInput } from '@/utils';
+import { parseJsonContent, sanitizeInput } from '@/utils';
 import type { SharedMemory } from '@/types.ts';
 import {
   canReadGist,
@@ -89,7 +89,7 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
       return [];
     }
 
-    return JSON.parse(content);
+    return parseJsonContent(content, 'memories') as SharedMemory[];
   } catch (error) {
     console.error('Error fetching memories from Gist:', error);
     return getFallbackMemories();

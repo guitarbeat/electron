@@ -1,35 +1,12 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '../../context';
 import type { MainTab, User } from '../../types';
 import { usePins } from '../../hooks/usePins';
+import { USER_OPTIONS } from '@/utils';
 import PinDialog from './PinDialog';
 import ThemeToggle from '../ui/ThemeToggle';
 import GelBubbleAvatar from './GelBubbleAvatar';
-
-const breakpoints = {
-  sm: '(max-width: 640px)',
-  md: '(max-width: 768px)',
-  lg: '(max-width: 1024px)',
-  xl: '(max-width: 1280px)',
-};
-
-const useMediaQuery = (query: string): boolean => {
-  const subscribe = useCallback(
-    (callback: () => void) => {
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener('change', callback);
-      return () => {
-        matchMedia.removeEventListener('change', callback);
-      };
-    },
-    [query]
-  );
-
-  const getSnapshot = () => window.matchMedia(query).matches;
-  const getServerSnapshot = () => false;
-
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-};
 
 type UserSelectionVariant = 'inline' | 'panel';
 
@@ -68,9 +45,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
   const [focusedUser, setFocusedUser] = useState<User | null>(null);
   const previousUserRef = useRef<User | null>(currentUser);
-  const isMobile = useMediaQuery(breakpoints.sm);
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isDisabled = isLoading || isVerifying;
-  const users: User[] = ['Aaron', 'Electra'];
+  const users: User[] = [...USER_OPTIONS];
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
 

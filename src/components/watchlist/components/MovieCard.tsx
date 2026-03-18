@@ -1,37 +1,13 @@
 import React from 'react';
 import { Movie, SharedMemory, User } from '@/types';
 import { spacing, typography, colors, radius, shadows } from '@/design-system';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';
 import Button from '@/ui/Button';
 import { EyeIcon, EyeOffIcon, MagicWandIcon, TrashIcon } from '@/common/icons';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
-
-const breakpoints = {
-  sm: '(max-width: 640px)',
-  md: '(max-width: 768px)',
-  lg: '(max-width: 1024px)',
-  xl: '(max-width: 1280px)',
-};
-
-const useMediaQuery = (query: string): boolean => {
-  const subscribe = React.useCallback(
-    (callback: () => void) => {
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener('change', callback);
-      return () => {
-        matchMedia.removeEventListener('change', callback);
-      };
-    },
-    [query]
-  );
-
-  const getSnapshot = () => window.matchMedia(query).matches;
-  const getServerSnapshot = () => false;
-
-  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-};
 
 interface MovieCardProps {
   movie: Movie;
@@ -98,7 +74,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(false);
   const [showMemories, setShowMemories] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
-  const isMobile = useMediaQuery(breakpoints.sm);
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
 
   const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
@@ -334,6 +310,7 @@ interface MovieIconActionButtonProps {
   disabled: boolean;
   color: string;
   borderColor: string;
+  className?: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
 }
@@ -343,6 +320,7 @@ const MovieIconActionButton: React.FC<MovieIconActionButtonProps> = ({
   disabled,
   color,
   borderColor,
+  className = '',
   onClick,
   children,
 }) => (
@@ -352,20 +330,13 @@ const MovieIconActionButton: React.FC<MovieIconActionButtonProps> = ({
     disabled={disabled}
     title={title}
     aria-label={title}
-    style={{
-      padding: 0,
-      width: '44px',
-      height: '44px',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'rgba(0,0,0,0.62)',
-      borderRadius: radius.md,
-      color,
-      border: `1px solid ${borderColor}`,
-      opacity: disabled ? 0.5 : 1,
-      cursor: disabled ? 'not-allowed' : 'pointer',
-    }}
+    style={
+      {
+        '--movie-action-color': color,
+        '--movie-action-border': borderColor,
+      } as React.CSSProperties
+    }
+    className={`movie-item-icon-action ${disabled ? 'is-disabled' : ''} ${className}`.trim()}
   >
     {children}
   </button>
@@ -427,10 +398,8 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           ? `Mark "${movie.title}" as unwatched`
           : `Mark "${movie.title}" as watched`
       }
-      className="movie-item-primary-action"
+      className={`movie-item-primary-action ${watchedByCurrentUser ? 'movie-item-primary-action--watched' : 'movie-item-primary-action--unwatched'}`}
       style={{
-        backgroundColor: watchedByCurrentUser ? colors.success : 'rgba(0,0,0,0.62)',
-        borderColor: watchedByCurrentUser ? colors.success : 'rgba(255,255,255,0.28)',
         opacity: isGuest ? 0.5 : 1,
         ...(isMobile && {
           width: '100%',
@@ -460,16 +429,15 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         <Button
           type="button"
           onClick={handleFixMatchAction}
-          variant="ghost"
+          variant="secondary"
           disabled={isGuest}
+          className="movie-item-mobile-action"
           style={{
             width: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: spacing.sm,
-            color: colors.accent,
-            borderColor: `${colors.accent}40`,
             opacity: isGuest ? 0.5 : 1,
           }}
         >
@@ -480,16 +448,15 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         <Button
           type="button"
           onClick={handleDeleteAction}
-          variant="ghost"
+          variant="danger"
           disabled={isGuest}
+          className="movie-item-mobile-action"
           style={{
             width: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: spacing.sm,
-            color: colors.error,
-            borderColor: `${colors.error}40`,
             opacity: isGuest ? 0.5 : 1,
           }}
         >
@@ -511,6 +478,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           title={`Fix metadata for "${movie.title}"`}
           color={colors.accent}
           borderColor={`${colors.accent}45`}
+          className="movie-icon-action--fix"
         >
           <MagicWandIcon style={{ width: '14px', height: '14px' }} />
         </MovieIconActionButton>
@@ -521,6 +489,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           title={`Delete "${movie.title}"`}
           color={colors.error}
           borderColor={`${colors.error}45`}
+          className="movie-icon-action--delete"
         >
           <TrashIcon style={{ width: '14px', height: '14px' }} />
         </MovieIconActionButton>

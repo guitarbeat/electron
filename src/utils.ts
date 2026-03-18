@@ -1,3 +1,5 @@
+import type { User } from './types';
+
 /**
  * Consolidated Utilities
  * Combines security, validation, and concurrency helpers
@@ -10,6 +12,29 @@
 export const MAX_MESSAGE_LENGTH = 500;
 export const MAX_AUTHOR_LENGTH = 50;
 export const MAX_MOVIE_TITLE_LENGTH = 200;
+
+export const KNOWN_USERS = ['Aaron', 'Electra'] as const;
+export const USER_OPTIONS: ReadonlyArray<User> = KNOWN_USERS;
+
+export const isUser = (value: unknown): value is User => USER_OPTIONS.includes(value as User);
+
+export const normalizeUser = (value: unknown): User | null => (isUser(value) ? value : null);
+
+export const parseJsonContent = (content: string, context: string): unknown => {
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    throw new Error(`Failed to parse ${context} JSON.`);
+  }
+};
+
+export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
+  try {
+    return JSON.stringify(left) === JSON.stringify(right);
+  } catch {
+    return false;
+  }
+};
 
 /**
  * Sanitizes input string by removing control characters and trimming whitespace.

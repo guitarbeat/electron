@@ -15,7 +15,14 @@ import {
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { cloneMovies, isMovieRecord, normalizeMovies } from '@/services/movieRecords.ts';
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl, concurrentMap } from '@/utils';
+import {
+  areDeeplyEqual,
+  concurrentMap,
+  isValidUrl,
+  MAX_MOVIE_TITLE_LENGTH,
+  parseJsonContent,
+  sanitizeInput,
+} from '@/utils';
 import { MOCK_MOVIES } from '@/services/mockData';
 
 let cachedMovies: Movie[] = [];
@@ -82,12 +89,7 @@ const getMovies = async (): Promise<Movie[]> => {
       return [];
     }
 
-    let parsedMovies: unknown;
-    try {
-      parsedMovies = JSON.parse(content);
-    } catch {
-      throw new Error(`${GIST_FILENAME} contains invalid JSON.`);
-    }
+    const parsedMovies = parseJsonContent(content, GIST_FILENAME);
     if (!Array.isArray(parsedMovies)) {
       throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
     }
@@ -164,7 +166,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     error,
     isLoading,
     refresh,
-  } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+  } = usePolling(getMovies, 10000, areDeeplyEqual, {
     key: 'movies',
     isPaused,
   });

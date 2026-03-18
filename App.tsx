@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
 import type { MainTab } from '@/types';
 import BottomSheet from '@/ui/BottomSheet';
@@ -26,13 +27,6 @@ interface MainTabItem {
   label: string;
   icon: string;
 }
-
-const breakpoints = {
-  sm: '(max-width: 640px)',
-  md: '(max-width: 768px)',
-  lg: '(max-width: 1024px)',
-  xl: '(max-width: 1280px)',
-};
 
 interface BuildCommandDeckArgs {
   currentUser: string | null;
@@ -125,24 +119,6 @@ const useAudio = () => {
   return { playTone, playClick, playPop, playSwitch, playSuccess };
 };
 
-function useMediaQuery(query: string): boolean {
-  const subscribe = useCallback(
-    (callback: () => void) => {
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener('change', callback);
-      return () => {
-        matchMedia.removeEventListener('change', callback);
-      };
-    },
-    [query]
-  );
-
-  const getSnapshot = () => window.matchMedia(query).matches;
-  const getServerSnapshot = () => false;
-
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-}
-
 const buildCommandDeck = ({
   currentUser,
   quizCompleted,
@@ -213,7 +189,7 @@ const AppInner: React.FC = () => {
   const { showToast } = useToast();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
-  const isMobile = useMediaQuery(breakpoints.sm);
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(

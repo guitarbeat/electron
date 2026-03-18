@@ -7,6 +7,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { usePolling } from './usePolling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
+import { areDeeplyEqual, parseJsonContent } from '@/utils';
 import {
   canReadGist,
   canWriteGist,
@@ -138,7 +139,7 @@ const getQuizData = async (): Promise<QuizData> => {
       return cloneQuizData(defaultQuizData);
     }
 
-    const parsedData = normalizeQuizData(JSON.parse(content));
+    const parsedData = normalizeQuizData(parseJsonContent(content, GIST_QUIZ_FILENAME));
     if (!parsedData) {
       return cloneQuizData(defaultQuizData);
     }
@@ -177,7 +178,7 @@ export const useQuiz = (isPaused: boolean = false) => {
     error,
     isLoading,
     refresh,
-  } = usePolling(getQuizData, 5000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+  } = usePolling(getQuizData, 5000, areDeeplyEqual, {
     key: 'quiz',
     isPaused,
   });
