@@ -1,8 +1,6 @@
 import type { Movie, SharedMemory } from '@/types';
 
-const MAX_NOTE_LENGTH = 280;
 export const INITIAL_VISIBLE_COUNT = 6;
-const VISIBLE_COUNT_STEP = 6;
 export const ALL_MOVIES_FILTER = 'all';
 
 export type MemorySortMode = 'newest' | 'oldest';

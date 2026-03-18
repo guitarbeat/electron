@@ -45,9 +45,9 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
         return;
       }
 
-      setStateInternal((currentState) => {
+      setStateInternal((prevState) => {
         setPast((prevPast) => {
-          const newPast = [...prevPast, currentState];
+          const newPast = [...prevPast, prevState];
           if (newPast.length > MAX_HISTORY_SIZE) {
             return newPast.slice(newPast.length - MAX_HISTORY_SIZE);
           }
@@ -68,7 +68,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
       const previousState = newPast.pop()!;
 
       setFuture((prevFuture) => {
-        setStateInternal((currentState) => {
+        setStateInternal(() => {
           isUndoRedoRef.current = true;
           return previousState;
         });
@@ -86,7 +86,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
       const [nextState, ...newFuture] = prevFuture;
 
       setPast((prevPast) => {
-        setStateInternal((currentState) => {
+        setStateInternal(() => {
           isUndoRedoRef.current = true;
           return nextState;
         });

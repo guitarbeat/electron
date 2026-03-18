@@ -70,7 +70,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     showConfetti,
     setShowConfetti,
     previousMoviesRef,
-    movieResultsRef,
 
     // Data returns
     movies,
@@ -80,22 +79,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addMovie,
     toggleWatched,
     deleteMovie,
-    restoreMovie,
     manualMetadataUpdate,
     addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
-    isSuggestionsLoading,
     pendingSuggestions,
     memories,
     addMemory,
-    updateMemory,
-    deleteMemoryRecord,
-    toggleMemoryPin,
     filteredMovies,
     filteredSuggestions,
     tabCounts,
-    isSubmitting,
   } = useWatchlist({ currentUser, isPaused });
 
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -157,7 +150,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     return deduped.slice(0, 6);
   }, [movies, pendingSuggestions, searchQuery]);
 
-  const topSuggestion = searchSuggestions[0] || null;
+
 
   // Event handlers
   const handleAddAction = useCallback(async () => {
@@ -169,7 +162,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         await addMovie(searchQuery.trim());
         setSearchQuery('');
         setToast({ message: `"${searchQuery.trim()}" added to watchlist!`, type: 'success' });
-      } catch (error) {
+      } catch (_error) {
         setToast({ message: 'Failed to add movie', type: 'error' });
       } finally {
         setIsAdding(false);
@@ -181,8 +174,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         await addSuggestion(searchQuery.trim(), 'Anonymous');
         setSearchQuery('');
         setToast({ message: `"${searchQuery.trim()}" suggested for review!`, type: 'success' });
-      } catch (error) {
-        setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
+      } catch (_error) {
+        setSuggestionError(_error instanceof Error ? _error.message : 'Failed to add suggestion');
         setToast({ message: 'Failed to add suggestion', type: 'error' });
       } finally {
         setIsSuggesting(false);
@@ -208,13 +201,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, [filteredMovies, filteredSuggestions, setSearchQuery]);
   const canSurprisePick = filteredMovies.length > 0 || filteredSuggestions.length > 0;
 
-  const handleSuggestionAction = useCallback(
-    async (title: string) => {
-      setSearchQuery(title);
-      await handleAddAction();
-    },
-    [setSearchQuery, handleAddAction]
-  );
+
 
   const handleDeleteMovie = useCallback(
     (movie: Movie) => {
@@ -462,7 +449,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               try {
                 await deleteMovie(movieToDelete.id);
                 setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'info' });
-              } catch (error) {
+              } catch (_error) {
                 setToast({ message: 'Failed to delete movie', type: 'error' });
               } finally {
                 setMovieToDelete(null);
@@ -495,7 +482,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     : `No metadata update found for "${movieToFix.title}"`,
                   type: refreshed ? 'success' : 'info',
                 });
-              } catch (error) {
+              } catch (_error) {
                 setToast({ message: 'Failed to refresh metadata', type: 'error' });
               } finally {
                 setIsRefreshingMetadata(false);

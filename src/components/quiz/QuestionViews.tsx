@@ -115,10 +115,12 @@ export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps>
   };
 
   const [sliderValue, setSliderValue] = useState(getNumericValue(selectedValue));
+  const [prevSelectedValue, setPrevSelectedValue] = useState(selectedValue);
 
-  useEffect(() => {
+  if (selectedValue !== prevSelectedValue) {
     setSliderValue(getNumericValue(selectedValue));
-  }, [selectedValue]);
+    setPrevSelectedValue(selectedValue);
+  }
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);

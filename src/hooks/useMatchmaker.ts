@@ -147,7 +147,7 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
       mutation = (async () => {
         try {
           await previousMutation;
-        } catch (_e) {
+        } catch {
           // Ignore previous errors
         }
 
