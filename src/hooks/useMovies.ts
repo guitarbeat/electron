@@ -36,7 +36,7 @@ const readStoredLocalMovies = (): Movie[] | null =>
 const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? [];
 
 const saveLocalMovies = (movies: Movie[]): void => {
-  const nextMovies = writeStoredJson({
+  writeStoredJson({
     storageKey: MOVIES_LOCAL_STORAGE_KEY,
     value: movies,
     clone: cloneMovies,
@@ -249,7 +249,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       const mutation = (async () => {
         try {
           await mutationLockRef.current;
-        } catch (_e) {
+        } catch {
           // Ignore previous mutation errors so the next mutation can proceed.
         }
 

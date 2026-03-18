@@ -341,22 +341,27 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             animation: 'fadeIn 0.3s ease-out',
           }}
         >
-          {[...Array(30)].map((_, i) => (
+          {useMemo(() => [...Array(30)].map((_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            color: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
+            shape: Math.random() > 0.5 ? '50%' : '0',
+            duration: 2 + Math.random() * 2,
+            delay: Math.random() * 0.5,
+          })), [showConfetti, lastMatchedMovie]).map((c) => (
             <div
-              key={i}
+              key={c.id}
               className="confetti"
               style={{
                 position: 'absolute',
-                left: `${Math.random() * 100}%`,
+                left: c.left,
                 top: `-20px`,
                 width: '10px',
                 height: '10px',
-                backgroundColor: [colors.accent, colors.secondary, colors.success, colors.warning][
-                  i % 4
-                ],
-                borderRadius: Math.random() > 0.5 ? '50%' : '0',
-                animation: `confettiFall ${2 + Math.random() * 2}s linear forwards`,
-                animationDelay: `${Math.random() * 0.5}s`,
+                backgroundColor: c.color,
+                borderRadius: c.shape,
+                animation: `confettiFall ${c.duration}s linear forwards`,
+                animationDelay: `${c.delay}s`,
               }}
             />
           ))}
