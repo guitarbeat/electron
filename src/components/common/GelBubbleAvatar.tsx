@@ -1,7 +1,7 @@
 import React from 'react';
 import { User } from '@/types';
 
-type BubbleSize = 'default' | 'compact' | 'tiny';
+type BubbleSize = 'default' | 'compact' | 'tiny' | 'action';
 
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=3';
 const CATAAS_RANDOM = 'https://cataas.com/cat';
@@ -115,8 +115,10 @@ function useRandomCatImageLocal() {
 }
 
 interface GelBubbleAvatarProps {
-  user: User;
-  hasPin: boolean;
+  user?: User;
+  icon?: string;
+  label?: string;
+  hasPin?: boolean;
   isHovered: boolean;
   isSmall?: boolean;
   showName?: boolean;
@@ -130,44 +132,62 @@ interface GelBubbleAvatarProps {
   onBlur: () => void;
   disabled?: boolean;
   animationOffset?: boolean;
+  accentColor?: string;
+  haloColor?: string;
+  style?: React.CSSProperties;
 }
 
 const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
   default: { bubble: 'clamp(140px, 35vw, 200px)', name: 'clamp(1rem, 4vw, 1.25rem)' },
   compact: { bubble: 'clamp(90px, 22vw, 140px)', name: 'clamp(0.8rem, 3vw, 1rem)' },
   tiny: {
-    bubble: 'var(--inline-profile-bubble-size, clamp(84px, 10vw, 132px))',
-    name: 'var(--inline-profile-name-size, clamp(0.7rem, 0.85vw, 0.92rem))',
+    bubble: 'var(--inline-profile-bubble-size, clamp(64px, 10vw, 92px))',
+    name: 'var(--inline-profile-name-size, clamp(0.65rem, 0.8vw, 0.85rem))',
   },
+  action: { bubble: '54px', name: '0.7rem' },
 };
 
-const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
-  user,
-  hasPin,
-  isHovered,
-  isSmall = false,
-  showName = true,
-  selectionState = 'neutral',
-  isSelectionAnimating = false,
-  size = 'default',
-  onClick,
-  onMouseEnter,
-  onMouseLeave,
-  onFocus,
-  onBlur,
-  disabled = false,
-  animationOffset = false,
-}) => {
+const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps>(
+  (
+    {
+      user,
+      icon,
+      label,
+      hasPin = false,
+      isHovered,
+      isSmall = false,
+      showName = true,
+      selectionState = 'neutral',
+      isSelectionAnimating = false,
+      size = 'default',
+      onClick,
+      onMouseEnter,
+      onMouseLeave,
+      onFocus,
+      onBlur,
+      disabled = false,
+      animationOffset = false,
+      accentColor: customAccent,
+      haloColor: customHalo,
+      style: customStyle,
+    },
+    ref
+  ) => {
   const {
     sources: catSources,
     refetch: refetchCat,
     isLoading: isCatLoading,
   } = useRandomCatImageLocal();
-  const sources =
-    catSources.length > 0 ? [...catSources, ...userImageSources[user]] : userImageSources[user];
+
+  const sources = user
+    ? catSources.length > 0
+      ? [...catSources, ...userImageSources[user]]
+      : userImageSources[user]
+    : [];
+
   const sizeTokens = SIZES[size];
-  const accentColor = user === 'Aaron' ? 'var(--color-accent)' : 'var(--color-secondary)';
-  const haloColor = user === 'Aaron' ? 'var(--color-tertiary)' : 'var(--color-accent)';
+  const accentColor = customAccent || (user === 'Aaron' ? 'var(--color-accent)' : user === 'Electra' ? 'var(--color-secondary)' : 'var(--color-accent)');
+  const haloColor = customHalo || (user === 'Aaron' ? 'var(--color-tertiary)' : user === 'Electra' ? 'var(--color-accent)' : 'var(--color-secondary)');
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
   const shouldPlaceNameInsideBubble = true;
@@ -196,6 +216,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
 
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onClick}
       onMouseEnter={onMouseEnter}
@@ -223,6 +244,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         transition:
           'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         filter: isSmall ? 'grayscale(0.4)' : 'none',
+        ...customStyle,
       }}
     >
       {/* Gel Bubble Container - Outer Ring */}
@@ -336,11 +358,11 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               e.stopPropagation();
-              if (!disabled) refetchCat();
+              if (!disabled && user) refetchCat();
             }
           }}
-          aria-label="Get a new random cat"
-          title="Click for new cat"
+          aria-label={user ? 'Get a new random cat' : undefined}
+          title={user ? 'Click for new cat' : undefined}
           style={{
             width: '72%',
             height: '72%',
@@ -353,23 +375,31 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               inset 0 0 22px rgba(0, 0, 0, 0.24)
             `,
             position: 'relative',
-            cursor: disabled ? 'wait' : 'pointer',
+            cursor: disabled ? 'wait' : (user ? 'pointer' : 'default'),
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: icon ? 'transparent' : 'rgba(255, 255, 255, 0.05)',
           }}
           className="gel-avatar-image-wrap"
         >
-          <ImageWithFallback
-            sources={sources}
-            alt={`${user}'s profile`}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transition: 'opacity 0.25s ease',
-              opacity: isCatLoading ? 0.7 : 1,
-            }}
-          />
-          {isCatLoading && (
+          {icon ? (
+            <span style={{ fontSize: size === 'action' ? '1.5rem' : '2rem' }}>{icon}</span>
+          ) : (
+            <ImageWithFallback
+              sources={sources}
+              alt={user ? `${user}'s profile` : 'Profile'}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'opacity 0.25s ease',
+                opacity: isCatLoading ? 0.7 : 1,
+              }}
+            />
+          )}
+          {isCatLoading && user && (
             <div
               style={{
                 position: 'absolute',
@@ -421,9 +451,10 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
               WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
               transition: 'all 0.3s ease-out',
               pointerEvents: 'none',
+              whiteSpace: 'nowrap',
             }}
           >
-            {user}
+            {label || user}
           </span>
         ) : null}
 
@@ -477,13 +508,14 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
             WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
             transition: 'all 0.3s ease-out',
             transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+            whiteSpace: 'nowrap',
           }}
         >
-          {user}
+          {label || user}
         </span>
       ) : null}
     </button>
   );
-};
+});
 
 export default GelBubbleAvatar;

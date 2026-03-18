@@ -1,7 +1,10 @@
-import React, { useRef } from 'react';
-import { motion, zIndex } from '@/design-system';
+import React, { useState } from 'react';
+import { zIndex, motion } from '@/design-system';
+import GelBubbleAvatar from '../common/GelBubbleAvatar';
+import { User } from '@/types';
 
 interface ActionBubbleProps {
+  currentUser?: User | null;
   position: { x: number; y: number };
   isDragging: boolean;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -12,40 +15,61 @@ interface ActionBubbleProps {
 }
 
 const ActionBubble = React.forwardRef<HTMLButtonElement, ActionBubbleProps>(
-  ({ position, isDragging, onClick, onPointerDown, onPointerMove, onPointerUp, onPointerCancel }, ref) => {
+  (
+    {
+      currentUser,
+      position,
+      isDragging,
+      onClick,
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel,
+    },
+    ref
+  ) => {
+    const [isHovered, setIsHovered] = useState(false);
+
     return (
-      <button
-        ref={ref}
-        type="button"
-        className={`action-bubble${isDragging ? ' is-dragging' : ''}`}
-        onClick={onClick}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        aria-label="Open quick actions"
+      <div
+        className={`action-bubble-container${isDragging ? ' is-dragging' : ''}`}
         style={{
           position: 'fixed',
           top: `${position.y}px`,
           left: `${position.x}px`,
           zIndex: zIndex.overlay + 10,
-          width: '58px',
-          height: '58px',
-          padding: 0,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: isDragging ? 'grabbing' : 'pointer',
           touchAction: 'none',
-          transition: isDragging ? 'none' : `transform ${motion.duration.button} ${motion.easing.spring}, box-shadow ${motion.duration.button} ${motion.easing.ease}`,
+          pointerEvents: 'none',
+          transition: isDragging
+            ? 'none'
+            : `transform ${motion.duration.button} ${motion.easing.spring}`,
+          cursor: isDragging ? 'grabbing' : 'pointer',
         }}
       >
-        <span className="action-bubble__icon" aria-hidden="true" style={{ fontSize: '1.5rem' }}>
-          ⚡
-        </span>
+        <GelBubbleAvatar
+          ref={ref}
+          user={currentUser || undefined}
+          icon={!currentUser ? '⚡' : undefined}
+          size="action"
+          isHovered={isHovered || isDragging}
+          onClick={onClick as any}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onFocus={() => setIsHovered(true)}
+          onBlur={() => setIsHovered(false)}
+          onPointerDown={onPointerDown as any}
+          onPointerMove={onPointerMove as any}
+          onPointerUp={onPointerUp as any}
+          onPointerCancel={onPointerCancel as any}
+          showName={false}
+          aria-label="Open quick actions"
+          style={{
+            transition: isDragging ? 'none' : `all ${motion.duration.button} ${motion.easing.spring}`,
+            pointerEvents: 'auto',
+          }}
+        />
         <span className="sr-only">Actions</span>
-      </button>
+      </div>
     );
   }
 );

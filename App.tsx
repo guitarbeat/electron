@@ -486,6 +486,7 @@ const AppInner: React.FC = () => {
 
           <ActionBubble
             ref={actionBubbleRef}
+            currentUser={currentUser}
             position={actionBubblePosition}
             isDragging={isDraggingActionBubble}
             onClick={handleActionBubbleClick}
@@ -530,14 +531,11 @@ const AppInner: React.FC = () => {
             {isMobile && (
               <section className="mobile-hero" aria-label="electron overview" style={{ padding: `${spacing['2xl']} ${spacing.md} ${spacing.xl}`, textAlign: 'center' }}>
                 <div className="mobile-hero__content">
-                  <UserSelection variant="inline" className="mobile-hero__selection" />
-                  <div style={{ marginTop: spacing.xl }}>
-                    <CommandDeck
-                      items={commandDeckItems}
-                      variant="compact"
-                      onItemSelect={(item) => handleActionDeckSelect(item.action)}
-                    />
-                  </div>
+                  <UserSelection
+                    variant="inline"
+                    className="mobile-hero__selection"
+                    onActionsClick={() => setShowMoreSheet(true)}
+                  />
                 </div>
               </section>
             )}

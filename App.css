@@ -1104,7 +1104,7 @@ body {
   0%,
   100% {
     box-shadow:
-      5px 5px 0px rgba(0, 0, 0, 0.4),
+      5px 5px 0 rgba(0, 0, 0, 0.4),
       0 0 20px rgba(255, 105, 180, 0.5),
       0 0 40px rgba(255, 105, 180, 0.2);
     transform: scale(1);
@@ -1113,7 +1113,7 @@ body {
 
   50% {
     box-shadow:
-      5px 5px 0px rgba(0, 0, 0, 0.4),
+      5px 5px 0 rgba(0, 0, 0, 0.4),
       0 0 35px rgba(255, 105, 180, 0.9),
       0 0 70px rgba(255, 105, 180, 0.4);
     transform: scale(1.01);
@@ -1144,7 +1144,7 @@ body {
 .movie-card:hover {
   transform: translateY(-2px);
   box-shadow:
-    6px 6px 0px rgba(0, 0, 0, 0.4),
+    6px 6px 0 rgba(0, 0, 0, 0.4),
     0 4px 12px rgba(0, 0, 0, 0.3),
     0 0 20px rgba(255, 105, 180, 0.2);
 }
@@ -1788,13 +1788,13 @@ body {
 /* ── Holographic hover effect ── */
 @keyframes holo-shift {
   0% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
   50% {
     background-position: 100% 50%;
   }
   100% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
 }
 
@@ -1991,7 +1991,7 @@ body {
 /* Gradient border animation */
 @keyframes gradient-border {
   0% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
 
   50% {
@@ -1999,7 +1999,7 @@ body {
   }
 
   100% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
 }
 
@@ -2716,7 +2716,7 @@ body.grabbing * {
   width: 100%;
   max-width: 450px;
   box-shadow:
-    5px 5px 0px rgba(0, 0, 0, 0.3),
+    5px 5px 0 rgba(0, 0, 0, 0.3),
     0 0 20px rgba(255, 105, 180, 0.3);
   text-align: center;
   z-index: 51;
@@ -2744,13 +2744,13 @@ body.grabbing * {
   0%,
   100% {
     box-shadow:
-      5px 5px 0px rgba(0, 0, 0, 0.3),
+      5px 5px 0 rgba(0, 0, 0, 0.3),
       0 0 20px rgba(255, 105, 180, 0.3);
   }
 
   50% {
     box-shadow:
-      5px 5px 0px rgba(0, 0, 0, 0.3),
+      5px 5px 0 rgba(0, 0, 0, 0.3),
       0 0 30px rgba(255, 105, 180, 0.5);
   }
 }
