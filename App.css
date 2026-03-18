@@ -5327,6 +5327,7 @@ body.grabbing * {
   width: 100%;
   min-width: 0;
   position: relative;
+  transition: padding-right 0.2s ease;
 }
 
 .movie-item-primary-action {
@@ -5349,6 +5350,7 @@ body.grabbing * {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  font-weight: var(--font-weight-semibold);
 }
 
 .movie-item-primary-action-label--short {
@@ -5440,6 +5442,11 @@ body.grabbing * {
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .movie-item-card:hover .movie-actions,
+  .movie-item-card:focus-within .movie-actions {
+    padding-right: 5.9rem;
+  }
+
   .movie-item-card:hover .movie-secondary-actions,
   .movie-item-card:focus-within .movie-secondary-actions {
     opacity: 1;
