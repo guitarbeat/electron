@@ -212,8 +212,8 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     return sortedMovies.filter((movie) => {
       const inTab =
         contentTab === 'all' ||
-        (contentTab === 'to-watch' && movie.watchedBy.length < 2) ||
-        (contentTab === 'watched' && movie.watchedBy.length === 2);
+        (contentTab === 'queue' && movie.watchedBy.length < 2) ||
+        (contentTab === 'visited' && movie.watchedBy.length === 2);
       if (!inTab) return false;
       if (showMemoriesOnly && !movieMemorySummaries.has(movie.id)) return false;
       if (!normalizedSearch) return true;
@@ -241,8 +241,8 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const tabCounts = useMemo(
     () => ({
       all: sortedMovies.length,
-      'to-watch': sortedMovies.filter((movie) => movie.watchedBy.length < 2).length,
-      watched: sortedMovies.filter((movie) => movie.watchedBy.length === 2).length,
+      queue: sortedMovies.filter((movie) => movie.watchedBy.length < 2).length,
+      visited: sortedMovies.filter((movie) => movie.watchedBy.length === 2).length,
       suggestions: pendingSuggestions.length,
     }),
     [sortedMovies, pendingSuggestions]

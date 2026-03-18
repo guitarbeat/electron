@@ -8,8 +8,8 @@ import { spacing, colors, typography, motion } from '@/design-system';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'to-watch', label: 'Queue' },
-  { id: 'watched', label: 'Watched' },
+  { id: 'queue', label: 'Queue' },
+  { id: 'visited', label: 'Visited' },
   { id: 'suggestions', label: 'Suggestions' },
 ];
 
