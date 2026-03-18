@@ -1,15 +1,21 @@
 import React, { useRef } from 'react';
 import { MainTab } from '@/types';
-import { useTheme } from '@/context';
 
 interface ThemeToggleProps {
   activeTab: MainTab;
   onChange: (tab: MainTab) => void;
   isMobile?: boolean;
+  compact?: boolean;
+  className?: string;
 }
 
-const ThemeToggle: React.FC<ThemeToggleProps> = ({ activeTab, onChange, isMobile = false }) => {
-  const { themeTokens } = useTheme();
+const ThemeToggle: React.FC<ThemeToggleProps> = ({
+  activeTab,
+  onChange,
+  isMobile = false,
+  compact = false,
+  className = '',
+}) => {
   const toggleRef = useRef<HTMLInputElement>(null);
 
   const isPlacesMode = activeTab === 'places';
@@ -27,7 +33,9 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ activeTab, onChange, isMobile
   };
 
   return (
-    <div className={`theme-toggle ${isMobile ? 'theme-toggle--mobile' : ''}`}>
+    <div
+      className={`theme-toggle ${isMobile ? 'theme-toggle--mobile' : ''}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+    >
       <label className="theme-toggle__label" htmlFor="theme-toggle-switch">
         <input
           ref={toggleRef}
@@ -82,8 +90,16 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ activeTab, onChange, isMobile
 
           {/* Labels */}
           <div className="theme-toggle__labels">
-            <div className="theme-toggle__label movies-label">🎬 Movies</div>
-            <div className="theme-toggle__label places-label">📍 Places</div>
+            <div className="theme-toggle__label movies-label" aria-label="Movies mode">
+              <span className="theme-toggle__label-icon" aria-hidden="true">
+                🎬
+              </span>
+            </div>
+            <div className="theme-toggle__label places-label" aria-label="Places mode">
+              <span className="theme-toggle__label-icon" aria-hidden="true">
+                📍
+              </span>
+            </div>
           </div>
         </div>
       </label>

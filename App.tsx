@@ -14,6 +14,7 @@ import PlacesList from '@/components/places/PlacesList';
 import QuizEditor from '@/components/quiz/QuizEditor';
 import QuizFlow from '@/components/quiz/QuizFlow';
 import Watchlist from '@/components/watchlist';
+import ThemeToggle from '@/ui/ThemeToggle';
 import './App.css';
 
 interface CommandActionItem {
@@ -40,13 +41,13 @@ interface BuildCommandDeckArgs {
 
 interface CommandDeckProps {
   items: readonly CommandActionItem[];
-  containerClassName: string;
-  buttonClassName?: string;
-  iconClassName: string;
-  labelClassName?: string;
-  containerRole?: 'group' | 'listbox';
-  containerAriaLabel?: string;
+  variant?: 'default' | 'compact';
   onItemSelect: (item: CommandActionItem) => void;
+}
+
+interface ActionBubblePosition {
+  x: number;
+  y: number;
 }
 
 const MAIN_TABS: MainTabItem[] = [
@@ -119,6 +120,75 @@ const useAudio = () => {
   return { playTone, playClick, playPop, playSwitch, playSuccess };
 };
 
+const ACTION_BUBBLE_SIZE = 58;
+const ACTION_BUBBLE_EDGE_MARGIN = 12;
+const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
+const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
+const ACTION_BUBBLE_MENU_WIDTH = 260;
+
+const clampActionBubblePosition = (x: number, y: number): ActionBubblePosition => {
+  if (typeof window === 'undefined') {
+    return { x, y };
+  }
+
+  const maxX = Math.max(
+    ACTION_BUBBLE_EDGE_MARGIN,
+    window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
+  );
+  const maxY = Math.max(
+    ACTION_BUBBLE_EDGE_MARGIN,
+    window.innerHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
+  );
+
+  return {
+    x: Math.min(Math.max(x, ACTION_BUBBLE_EDGE_MARGIN), maxX),
+    y: Math.min(Math.max(y, ACTION_BUBBLE_EDGE_MARGIN), maxY),
+  };
+};
+
+const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition => {
+  if (typeof window === 'undefined') {
+    return { x: ACTION_BUBBLE_EDGE_MARGIN, y: ACTION_BUBBLE_EDGE_MARGIN };
+  }
+
+  const defaultX = isMobile
+    ? window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
+    : ACTION_BUBBLE_EDGE_MARGIN + 6;
+  const defaultY = window.innerHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN - 6;
+
+  return clampActionBubblePosition(defaultX, defaultY);
+};
+
+const getActionBubbleMenuPosition = (bubblePosition: ActionBubblePosition) => {
+  if (typeof window === 'undefined') {
+    return { left: `${ACTION_BUBBLE_EDGE_MARGIN}px`, top: `${ACTION_BUBBLE_EDGE_MARGIN * 2 + ACTION_BUBBLE_SIZE}px` };
+  }
+
+  const margin = ACTION_BUBBLE_EDGE_MARGIN;
+  const preferredX = bubblePosition.x;
+  const menuMaxX = Math.max(margin, window.innerWidth - ACTION_BUBBLE_MENU_WIDTH - margin);
+  const x = Math.min(
+    Math.max(preferredX - Math.floor((ACTION_BUBBLE_MENU_WIDTH - ACTION_BUBBLE_SIZE) / 2), margin),
+    menuMaxX
+  );
+
+  const spaceBelow = window.innerHeight - (bubblePosition.y + ACTION_BUBBLE_SIZE);
+  const canFitBelow = spaceBelow - 10 >= ACTION_BUBBLE_MENU_GUESS_HEIGHT;
+  const menuY = canFitBelow
+    ? bubblePosition.y + ACTION_BUBBLE_SIZE + 10
+    : bubblePosition.y - ACTION_BUBBLE_MENU_GUESS_HEIGHT - 10;
+
+  const maxY = Math.max(
+    margin,
+    window.innerHeight - ACTION_BUBBLE_MENU_GUESS_HEIGHT - margin
+  );
+
+  return {
+    left: `${x}px`,
+    top: `${Math.min(Math.max(menuY, margin), maxY)}px`,
+  };
+};
+
 const buildCommandDeck = ({
   currentUser,
   quizCompleted,
@@ -157,27 +227,24 @@ const buildCommandDeck = ({
 
 const CommandDeck: React.FC<CommandDeckProps> = ({
   items,
-  containerClassName,
-  buttonClassName,
-  iconClassName,
-  labelClassName,
-  containerRole,
-  containerAriaLabel,
+  variant = 'default',
   onItemSelect,
 }) => {
+  const containerClassName = variant === 'compact' ? 'command-deck command-deck--compact' : 'command-deck';
+
   return (
-    <div className={containerClassName} role={containerRole} aria-label={containerAriaLabel}>
+    <div className={containerClassName}>
       {items.map((item) => (
         <button
           key={item.label}
           type="button"
-          className={buttonClassName}
+          className="command-deck__item"
           onClick={() => onItemSelect(item)}
         >
-          <span className={iconClassName} aria-hidden="true">
+          <span className="command-deck__icon" aria-hidden="true">
             {item.icon}
           </span>
-          {labelClassName ? <span className={labelClassName}>{item.label}</span> : <span>{item.label}</span>}
+          <span className="command-deck__label">{item.label}</span>
         </button>
       ))}
     </div>
@@ -202,8 +269,24 @@ const AppInner: React.FC = () => {
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const [showActionBubbleMenu, setShowActionBubbleMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const mobileActionTimeoutRef = useRef<number | null>(null);
+  const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
+  const actionBubbleMenuRef = useRef<HTMLDivElement | null>(null);
+  const actionBubbleDragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    origin: ActionBubblePosition;
+  } | null>(null);
+  const didActionBubbleDragRef = useRef(false);
+  const hasCustomActionBubblePositionRef = useRef(false);
+
+  const [actionBubblePosition, setActionBubblePosition] = useState<ActionBubblePosition>(() =>
+    getDefaultActionBubblePosition(isMobile)
+  );
+  const [isDraggingActionBubble, setIsDraggingActionBubble] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
@@ -223,6 +306,53 @@ const AppInner: React.FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (showMoreSheet && showActionBubbleMenu) {
+      setShowActionBubbleMenu(false);
+    }
+  }, [showMoreSheet]);
+
+  useEffect(() => {
+    const handleDragResize = () => {
+      setActionBubblePosition((previous) => clampActionBubblePosition(previous.x, previous.y));
+    };
+
+    window.addEventListener('resize', handleDragResize);
+    return () => {
+      window.removeEventListener('resize', handleDragResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!showActionBubbleMenu) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (actionBubbleMenuRef.current?.contains(target) || actionBubbleRef.current?.contains(target)) {
+        return;
+      }
+
+      setShowActionBubbleMenu(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, {
+        capture: true,
+      });
+    };
+  }, [showActionBubbleMenu]);
 
   const activeTabMeta = useMemo(
     () => MAIN_TABS.find((item) => item.id === activeTab) ?? MAIN_TABS[0],
@@ -250,6 +380,17 @@ const AppInner: React.FC = () => {
     setShowMatchmaker(true);
   }, [currentUser, showToast]);
 
+  const handleActionDeckSelect = (action: () => void) => {
+    if (mobileActionTimeoutRef.current !== null) {
+      window.clearTimeout(mobileActionTimeoutRef.current);
+    }
+    setShowMoreSheet(false);
+    mobileActionTimeoutRef.current = window.setTimeout(() => {
+      mobileActionTimeoutRef.current = null;
+      action();
+    }, 150);
+  };
+
   const commandDeck = useMemo(
     () =>
       buildCommandDeck({
@@ -264,6 +405,117 @@ const AppInner: React.FC = () => {
     [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
   );
 
+  const renderActionDeck = useCallback(
+    (variant: CommandDeckProps['variant'] = 'default', closeSheet = false) => (
+      <CommandDeck
+        items={commandDeck}
+        variant={variant}
+        onItemSelect={(item) => {
+          if (closeSheet) {
+            handleActionDeckSelect(item.action);
+          } else {
+            item.action();
+          }
+        }}
+      />
+    ),
+    [commandDeck, handleActionDeckSelect]
+  );
+
+  const actionBubbleMenuStyle = useMemo(
+    () => getActionBubbleMenuPosition(actionBubblePosition),
+    [actionBubblePosition]
+  );
+
+  const renderActionDeckForBubble = useCallback(
+    (variant: CommandDeckProps['variant'] = 'compact') => (
+      <CommandDeck
+        items={commandDeck}
+        variant={variant}
+        onItemSelect={(item) => {
+          setShowActionBubbleMenu(false);
+          handleActionDeckSelect(item.action);
+        }}
+      />
+    ),
+    [commandDeck, handleActionDeckSelect]
+  );
+
+  const handleActionBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
+
+    actionBubbleDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      origin: actionBubblePosition,
+    };
+    didActionBubbleDragRef.current = false;
+    setIsDraggingActionBubble(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleActionBubblePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const dragState = actionBubbleDragRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+
+    if (
+      !didActionBubbleDragRef.current &&
+      (Math.abs(deltaX) > ACTION_BUBBLE_DRAG_THRESHOLD || Math.abs(deltaY) > ACTION_BUBBLE_DRAG_THRESHOLD)
+    ) {
+      didActionBubbleDragRef.current = true;
+    }
+
+    if (!didActionBubbleDragRef.current) {
+      return;
+    }
+
+    setActionBubblePosition((previous) =>
+      clampActionBubblePosition(previous.x + deltaX, previous.y + deltaY)
+    );
+  };
+
+  const handleActionBubbleDragEnd = () => {
+    if (didActionBubbleDragRef.current) {
+      hasCustomActionBubblePositionRef.current = true;
+      setShowActionBubbleMenu(false);
+    }
+    setIsDraggingActionBubble(false);
+    actionBubbleDragRef.current = null;
+    didActionBubbleDragRef.current = false;
+  };
+
+  const finishActionBubbleDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const dragState = actionBubbleDragRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    handleActionBubbleDragEnd();
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch (error) {
+      // Ignore capture errors from canceled pointer interactions.
+    }
+  };
+
+  const handleActionBubbleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (didActionBubbleDragRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    setShowActionBubbleMenu((current) => !current);
+  };
+
   const handleTabChange = (tab: MainTab) => {
     if (tab === activeTab) return;
     playSwitch();
@@ -276,21 +528,6 @@ const AppInner: React.FC = () => {
     setShowQuizFlow(false);
   };
 
-  const handleMobileAction = (action: () => void) => {
-    if (mobileActionTimeoutRef.current !== null) {
-      window.clearTimeout(mobileActionTimeoutRef.current);
-    }
-    setShowMoreSheet(false);
-    mobileActionTimeoutRef.current = window.setTimeout(() => {
-      mobileActionTimeoutRef.current = null;
-      action();
-    }, 150);
-  };
-
-  const mobileHeroCopy = currentUser
-    ? `${currentUser} is steering the chaos. Tap a bubble to swap cats or hand off the controls.`
-    : 'Pick a bubble, pull in a fresh cat avatar, and start plotting the weekend.';
-
   return (
     <ThemeProvider activeTab={activeTab}>
       <div className="app-shell bg-main">
@@ -298,81 +535,74 @@ const AppInner: React.FC = () => {
           Skip to content
         </a>
 
+        <div className="app-frame">
+          <div className="app-frame__profile-login">
+            <button
+              type="button"
+              className={`app-frame__profile-chip${currentUser ? '' : ' app-frame__profile-chip--empty'}`}
+              onClick={() => setShowMoreSheet(true)}
+              aria-label={
+                currentUser
+                  ? `Signed in as ${currentUser}. Tap to manage profile.`
+                  : 'No profile selected. Tap to choose a profile.'
+              }
+            >
+              <span className="app-frame__profile-chip__dot" />
+              {currentUser ? <span className="app-frame__profile-chip__name">{currentUser}</span> : null}
+            </button>
+          </div>
 
-          <div className="app-frame">
+          <button
+            ref={actionBubbleRef}
+            type="button"
+            className={`action-bubble${isDraggingActionBubble ? ' is-dragging' : ''}`}
+            onClick={handleActionBubbleClick}
+            onPointerDown={handleActionBubblePointerDown}
+            onPointerMove={handleActionBubblePointerMove}
+            onPointerUp={finishActionBubbleDrag}
+            onPointerCancel={finishActionBubbleDrag}
+            aria-label="Open quick actions"
+            style={{
+              top: `${actionBubblePosition.y}px`,
+              left: `${actionBubblePosition.x}px`,
+            }}
+          >
+            <span className="action-bubble__icon" aria-hidden="true">
+              ⚡
+            </span>
+            <span className="sr-only">Actions</span>
+          </button>
+          {showActionBubbleMenu ? (
+            <div className="action-bubble-menu" ref={actionBubbleMenuRef} style={actionBubbleMenuStyle}>
+              {renderActionDeckForBubble('compact')}
+            </div>
+          ) : null}
+
           <main id="main-content" className="workspace-stage" tabIndex={-1}>
             {isMobile && (
-              <section className="mobile-hero" aria-label="Weekend planner overview">
+              <section className="mobile-hero" aria-label="electron overview">
                 <div className="mobile-hero__content">
-                  <h1 className="mobile-hero__title">Weekend Planner</h1>
-                  <p className="mobile-hero__copy">{mobileHeroCopy}</p>
-
                   <UserSelection variant="inline" className="mobile-hero__selection" />
-
-                  <CommandDeck
-                    items={commandDeck}
-                    containerClassName="mobile-command-ribbon"
-                    buttonClassName="mobile-command-ribbon__item"
-                    iconClassName="mobile-command-ribbon__icon"
-                    labelClassName="mobile-command-ribbon__label"
-                    containerRole="group"
-                    containerAriaLabel="Quick actions"
-                    onItemSelect={(item) => item.action()}
-                  />
+                  {renderActionDeck('compact')}
                 </div>
               </section>
             )}
 
             <section className="workspace-header" aria-label="Current workspace overview">
               <div className="workspace-header__left">
-                <h2 className="workspace-header__title" aria-live="polite">
-                  <span className="workspace-header__title-icon" aria-hidden="true">
-                    {activeTabMeta.icon}
-                  </span>
-                  <span>{activeTabMeta.label}</span>
-                </h2>
-                {isMobile && currentUser && (
-                  <button
-                    type="button"
-                    className="mobile-user-chip"
-                    onClick={() => setShowMoreSheet(true)}
-                    aria-label={`Signed in as ${currentUser}. Tap for profile settings.`}
-                  >
-                    <span className="mobile-user-chip__dot" />
-                    <span className="mobile-user-chip__name">{currentUser}</span>
-                  </button>
-                )}
-                {isMobile && !currentUser && (
-                  <button
-                    type="button"
-                    className="mobile-user-chip mobile-user-chip--empty"
-                    onClick={() => setShowMoreSheet(true)}
-                    aria-label="No user selected. Tap for profile settings."
-                  >
-                    <span className="mobile-user-chip__name">Pick user</span>
-                  </button>
-                )}
+                {isMobile ? (
+                  <h2 className="workspace-header__title" aria-live="polite">
+                    <span className="workspace-header__title-icon" aria-hidden="true">
+                      {activeTabMeta.icon}
+                    </span>
+                    <span>{activeTabMeta.label}</span>
+                  </h2>
+                ) : null}
               </div>
 
               {!isMobile && (
-                <div className="workspace-tabs" role="tablist" aria-label="Primary workspaces">
-                  {MAIN_TABS.map((tab) => {
-                    const isActive = tab.id === activeTab;
-                    return (
-                      <button
-                        key={tab.id}
-                        id={`tab-${tab.id}`}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        aria-controls={`tabpanel-${tab.id}`}
-                        className={`workspace-tabs__button${isActive ? ' is-active' : ''}`}
-                        onClick={() => handleTabChange(tab.id)}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
+                <div className="workspace-header__controls">
+                  <ThemeToggle activeTab={activeTab} onChange={handleTabChange} compact />
                 </div>
               )}
             </section>
@@ -387,9 +617,9 @@ const AppInner: React.FC = () => {
                       key={tab.id}
                       id={`tabpanel-${tab.id}`}
                       role="tabpanel"
-                      aria-labelledby={`tab-${tab.id}`}
                       hidden={!isActivePanel}
                       className="tab-panel"
+                      aria-label={`${tab.label} panel`}
                     >
                       {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
                     </section>
@@ -397,25 +627,16 @@ const AppInner: React.FC = () => {
                 })}
               </section>
 
-              <aside className="support-rail" aria-label="Workspace tools and actions">
-                <section className="support-card">
-                  <UserSelection variant="inline" />
-                </section>
-
-                <section className="support-card">
-                  <div className="support-card__head">
-                    <span>Actions</span>
-                  </div>
-                  <CommandDeck
-                    items={commandDeck}
-                    containerClassName="command-deck"
-                    buttonClassName="command-deck__item"
-                    iconClassName="command-deck__icon"
-                    labelClassName="command-deck__label"
-                    onItemSelect={(item) => item.action()}
-                  />
-                </section>
-              </aside>
+              {!isMobile && !showMoreSheet ? (
+                <aside className="support-rail" aria-label="Workspace tools and actions">
+                  <section className="support-card">
+                    <div className="support-card__head">
+                      <span>Actions</span>
+                    </div>
+                    {renderActionDeck()}
+                  </section>
+                </aside>
+              ) : null}
             </div>
           </main>
         </div>
@@ -457,26 +678,15 @@ const AppInner: React.FC = () => {
           <div className="more-sheet">
             <UserSelection
               variant="panel"
-              activeTab={activeTab}
               title="Who's steering?"
               subtitle="Swap bubbles, refresh the cat pics, or lock down a profile before you dive back in."
               className="more-sheet__profile-panel"
               onUserSelected={() => setShowMoreSheet(false)}
-              onTabChange={(tab) => {
-                handleTabChange(tab);
-                setShowMoreSheet(false);
-              }}
             />
 
             <div className="more-sheet__section">
               <p className="more-sheet__section-label">Actions</p>
-            <CommandDeck
-              items={commandDeck}
-              containerClassName="more-sheet__actions"
-              buttonClassName="more-sheet__action-btn"
-              iconClassName="more-sheet__action-icon"
-              onItemSelect={(item) => handleMobileAction(item.action)}
-            />
+              {renderActionDeck('compact', true)}
             </div>
           </div>
         </BottomSheet>

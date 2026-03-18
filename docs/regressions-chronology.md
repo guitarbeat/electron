@@ -18,7 +18,7 @@ Scope: inferred regressions on `HEAD`, ordered by commit date
 
 ## Current remediation pass
 
-This checklist tracks issues fixed during the March 14, 2026 audit pass.
+This checklist tracks issues fixed during the March 14–16, 2026 hardening pass.
 
 - [x] Guarded the spin-wheel flow so the modal cannot be dismissed and the wheel mode cannot be changed mid-spin. Related regressions: `20f8e9b`, `9f80407`, `ecee9ad`, `e2df136`.
 - [x] Restored safe watchlist add/suggest submission by preventing the browser form from hard-submitting the page. Related regressions: `6856914`, `f821809`, `121a64d`.
@@ -39,6 +39,10 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
 - [x] Moved PIN state onto the shared polling path so multiple profile pickers stay in sync after PIN changes and no longer start duplicate local refresh intervals. Related regressions: `a599e85`, `02065e9`, `197e096`.
 - [x] Tightened the matchmaker mutation lock so rapid repeat taps cannot queue extra session/swipe writes during the same event turn before the submitting state flips on. Related regressions: `8e3459c`, `20f8e9b`, `6763a52`.
 - [x] Allowed nullable shared polling results for matchmaker so ending a session can publish the valid “no active game” state instead of surfacing it as a fetch error and leaving stale session UI behind. Related regressions: `8e3459c`, `6763a52`, `5963f7f`.
+- [x] Restored watchlist confetti binding and reset behavior so quick successive matches can replay celebration cleanly. Related regressions: `3348d70`.
+- [x] Hardened action-path concurrency and state synchronization in pins, places, and matchmaker so overlapping writes and stale session state no longer leak across modal flows. Related regressions: `049cf75`, `b739b93`, `d0a9543`, `e280cd2`.
+- [x] Isolated modal and sheet lifecycle handling so Escape, body locks, and sheet actions honor nested layers without affecting parent overlays. Related regressions: `65c1368`, `36569f3`, `c007106`, `cf8bcb2`.
+- [x] Strengthened matchmaker polling and fetch-failure recovery so null terminal states and listener errors no longer force stale UI. Related regressions: `2380655`, `8530d39`.
 
 ## November 2025
 
@@ -254,6 +258,70 @@ This checklist tracks issues fixed during the March 14, 2026 audit pass.
   - Regression: the nostalgic visual stack had been flattened or diluted enough to require explicit restoration.
   - Affected paths: `App.css`, `App.tsx`, `src/components/memories/FloatingMemoriesPanel.css`, `src/components/memories/FloatingMemoriesPanel.tsx`, `src/components/ui/BottomSheet.tsx`, `src/components/ui/MinigameModal.tsx`, `src/components/watchlist/components/controls/WatchlistTopControls.tsx`, `src/design-system/tokens.ts`
 
+- `2026-03-14` — `18459ab` `fix: restore modal and quiz interaction flows`
+  - Regression: modal and quiz interaction could desynchronize after prior overlay rewrites.
+  - Affected paths: `App.tsx`, `src/components/extras/SpinWheelGame.tsx`, `src/components/quiz/QuestionViews.tsx`, `src/components/ui/MinigameModal.tsx`, `src/components/watchlist/components/controls/WatchlistTopControls.tsx`
+
+- `2026-03-14` — `8386b61` `fix: harden minigame and matchmaker interactions`
+  - Regression: minigame and matchmaker interactions could overlap and leak transient state.
+  - Affected paths: `src/components/food-merge/FoodMergeGame.tsx`, `src/components/matchmaker/Matchmaker.tsx`, `src/components/matchmaker/SwipeCard.tsx`
+
+- `2026-03-14` — `98178a3` `fix: clean up pin dialog global state`
+  - Regression: pin dialog teardown could leave global state dirty after close/unmount.
+  - Affected paths: `src/components/common/PinDialog.tsx`
+
+- `2026-03-14` — `65c1368` `fix: scope modal escape handling`
+  - Regression: Escape handling and modal closures could dismiss the wrong layer.
+  - Affected paths: `src/components/common/PinDialog.tsx`, `src/components/ui/BottomSheet.tsx`, `src/components/ui/ConfirmDialog.tsx`, `src/components/ui/MinigameModal.tsx`, `src/components/ui/modalPrimitives.ts`
+
+- `2026-03-14` — `8faadd0` `fix: restore shared watchlist metadata dialog`
+  - Regression: watchlist metadata repair behavior could bypass shared dialog handling.
+  - Affected paths: `src/components/watchlist/index.tsx`
+
+- `2026-03-14` — `c007106` `fix: preserve bottom sheet scroll locks`
+  - Regression: sheet state changes could re-enable page scrolling at the wrong time.
+  - Affected paths: `src/components/ui/BottomSheet.tsx`
+
+- `2026-03-14` — `36569f3` `fix: preserve nested modal body locks`
+  - Regression: nested dialogs could unfreeze body scroll while a parent modal was still active.
+  - Affected paths: `src/components/common/PinDialog.tsx`, `src/components/ui/ConfirmDialog.tsx`
+
+- `2026-03-14` — `cf8bcb2` `fix: prevent stale mobile sheet actions`
+  - Regression: stale mobile sheet actions could execute after state changes.
+  - Affected paths: `App.tsx`
+
+- `2026-03-14` — `ae39d63` `fix: repair shell css panel overlay rule`
+  - Regression: shell overlay styling regressed with parser-sensitive CSS.
+  - Affected paths: `App.css`
+
+- `2026-03-14` — `e280cd2` `fix: reset matchmaker match counters`
+  - Regression: match counters carried over rounds and blocked expected celebration behavior.
+  - Affected paths: `src/components/matchmaker/Matchmaker.tsx`
+
+- `2026-03-14` — `d0a9543` `fix: lock places actions during writes`
+  - Regression: places actions could overlap while writes were already in flight.
+  - Affected paths: `src/hooks/usePlaces.ts`
+
+- `2026-03-14` — `b739b93` `fix: share pin polling state`
+  - Regression: pin state diverged across multiple profile pickers due to unshared polling.
+  - Affected paths: `src/hooks/usePins.ts`
+
+- `2026-03-14` — `049cf75` `fix: block overlapping matchmaker mutations`
+  - Regression: rapid tap paths could queue duplicate matchmaker writes.
+  - Affected paths: `src/hooks/useMatchmaker.ts`
+
+- `2026-03-14` — `8530d39` `test: add polling manager fetch failure coverage`
+  - Regression risk: polling fetch failures were under-tested, masking listener breakage.
+  - Affected paths: `tests/pollingManager.test.ts`
+
+- `2026-03-15` — `2380655` `Allow null matchmaker polling`
+  - Regression: matchmaker endpoint terminal-null responses could force errors instead of valid inactive-session state.
+  - Affected paths: `src/hooks/useMatchmaker.ts`, `src/hooks/usePolling.ts`, `src/services/PollingManager.ts`
+
+- `2026-03-16` — `3348d70` `fix: restore watchlist confetti state binding`
+  - Regression: quick successive match completions could fail to replay confetti.
+  - Affected paths: `src/components/watchlist/index.tsx`
+
 ## Patterns behind the regressions
 
 - **Spin-wheel fragility:** November through March repeatedly shows wheel-specific regressions in visibility, persistence, loading, closing guards, TV usability, and badge state.
@@ -330,6 +398,22 @@ This section ties each historical regression to the current tree that carries th
 - `121a64d`: mobile watchlist controls now depend on `src/components/watchlist/index.tsx`, `src/components/watchlist/components/controls/WatchlistTopControls.tsx`, and `src/components/ui/BottomSheet.tsx`.
 - `5963f7f`: listener isolation now lives in `src/services/PollingManager.ts` and `tests/pollingManager.test.ts`.
 - `0cd049a`: the restored nostalgia stack now lives directly in `App.tsx`, `App.css`, `src/components/memories/FloatingMemoriesPanel.tsx`, `src/design-system/tokens.ts`, and `src/styles/global.css`.
+
+- `8530d39`: polling fetch failure coverage is retained in `tests/pollingManager.test.ts`.
+- `18459ab`: modal and quiz interaction recovery is now in `App.tsx`, `src/components/extras/SpinWheelGame.tsx`, `src/components/quiz/QuestionViews.tsx`, and `src/components/ui/MinigameModal.tsx`.
+- `8386b61`: minigame/matchmaker interaction hardening is now in `src/components/food-merge/FoodMergeGame.tsx` and `src/components/matchmaker/Matchmaker.tsx`.
+- `98178a3`: pin dialog global teardown cleanup is now in `src/components/common/PinDialog.tsx`.
+- `65c1368`: scoped modal Escape handling and focus layering are now implemented in `src/components/common/PinDialog.tsx`, `src/components/ui/BottomSheet.tsx`, and `src/components/ui/ConfirmDialog.tsx`.
+- `36569f3`: nested modal body lock protection remains in `src/components/common/PinDialog.tsx` and `src/components/ui/ConfirmDialog.tsx`.
+- `c007106`: bottom-sheet scroll lock behavior remains in `src/components/ui/BottomSheet.tsx`.
+- `cf8bcb2`: stale mobile-sheet action prevention is now in `App.tsx`.
+- `ae39d63`: shell overlay panel styling fix remains in `App.css`.
+- `e280cd2`: matchmaker match counter resets are handled in `src/components/matchmaker/Matchmaker.tsx`.
+- `d0a9543`: places mutation lock behavior is in `src/hooks/usePlaces.ts`.
+- `b739b93`: shared pin polling state now resides in `src/hooks/usePins.ts`.
+- `049cf75`: matchmaker overlapping mutation guard remains in `src/hooks/useMatchmaker.ts`.
+- `2380655`: null terminal matchmaker polling is handled by `src/hooks/useMatchmaker.ts`, `src/hooks/usePolling.ts`, and `src/services/PollingManager.ts`.
+- `3348d70`: watchlist confetti state resets remain in `src/components/watchlist/index.tsx`.
 
 ## Source notes
 

@@ -32,7 +32,20 @@ const normalizePosterUrl = (value: unknown): string | undefined => {
     return undefined;
   }
 
-  return isValidUrl(value) ? value : undefined;
+  const normalized = sanitizeInput(value);
+  if (!normalized || !isValidUrl(normalized)) {
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    if (parsed.protocol === 'http:') {
+      parsed.protocol = 'https:';
+    }
+    return parsed.toString();
+  } catch {
+    return undefined;
+  }
 };
 
 export const cloneMovies = (movies: Movie[]): Movie[] =>

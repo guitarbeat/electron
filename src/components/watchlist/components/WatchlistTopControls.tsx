@@ -4,7 +4,6 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import SubNav from '@/ui/SubNav';
 import { ContentTab, SortMode } from '@/types';
-import { colors, spacing, typography } from '@/design-system';
 
 const MOVIE_TABS: { id: ContentTab; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🎬' },
@@ -28,9 +27,10 @@ interface WatchlistTopControlsProps {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   onSubmit: () => Promise<void> | void;
+  onPickRandom: () => void;
+  canSurprise: boolean;
   isAdding: boolean;
   isSuggesting: boolean;
-  isMobile: boolean;
   suggestionError: string | null;
 }
 
@@ -43,103 +43,75 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   searchQuery,
   setSearchQuery,
   onSubmit,
+  onPickRandom,
+  canSurprise,
   isAdding,
   isSuggesting,
-  isMobile,
   suggestionError,
 }) => {
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void onSubmit();
-  };
-
   return (
     <div className="watchlist-top-controls">
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: isMobile ? spacing.md : spacing.lg,
-        }}
-      >
-        <SubNav
-          ariaLabel="Movies: filter and sort"
-          scrollClassName="watchlist-tabs-scroll"
-          tabs={MOVIE_TABS.map((tab) => ({
-            id: tab.id,
-            label: tab.label,
-            icon: tab.icon,
-            count: tabCounts[tab.id] ?? 0,
-          }))}
-          activeId={contentTab}
-          onSelect={(id) => setContentTab(id as ContentTab)}
-          chips={SORT_OPTIONS}
-          activeChipId={sortMode}
-          onChipSelect={(id) => setSortMode(id as SortMode)}
-          chipLabel="Sort by"
-        />
-
-        <form
-          onSubmit={handleFormSubmit}
-          style={{
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: 0,
-            background:
-              'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 28%), rgba(20, 22, 38, 0.72)',
-            borderRadius: '2px',
-            border: `2px solid ${colors.borderSecondary}70`,
-            overflow: 'hidden',
-            minHeight: '48px',
-            boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.4), inset -1px -1px 0 rgba(255,255,255,0.08)',
-            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-          }}
-        >
-          <Input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search or add a movie…"
-            aria-label="Search or add a movie"
-            style={{
-              minHeight: '48px',
-              flex: 1,
-              border: 'none',
-              background: 'transparent',
-              paddingLeft: spacing.lg,
-              paddingRight: spacing.sm,
-              fontSize: typography.fontSize.sm,
-            }}
+      <div className="watchlist-top-controls__row">
+        <div className="watchlist-top-controls__filters">
+          <SubNav
+            ariaLabel="Movies: filter and sort"
+            scrollClassName="watchlist-tabs-scroll"
+            tabs={MOVIE_TABS.map((tab) => ({
+              id: tab.id,
+              label: tab.label,
+              icon: tab.icon,
+              count: tabCounts[tab.id] ?? 0,
+            }))}
+            activeId={contentTab}
+            onSelect={(id) => setContentTab(id as ContentTab)}
+            chips={SORT_OPTIONS}
+            activeChipId={sortMode}
+            onChipSelect={(id) => setSortMode(id as SortMode)}
+            chipLabel="Sort by"
           />
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          className="watchlist-top-controls__surprise"
+          onClick={onPickRandom}
+          disabled={isAdding || isSuggesting || !canSurprise}
+          title="Surprise me"
+          aria-label="Pick a random movie"
+        >
+          🎲
+        </Button>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onSubmit();
+          }}
+          className="watchlist-top-controls__search-form"
+        >
+          <div className="watchlist-top-controls__search-shell">
+            <Input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search or add a movie…"
+              aria-label="Search or add a movie"
+              className="watchlist-top-controls__search-field"
+            />
+          </div>
           {searchQuery.trim() ? (
             <Button
               type="submit"
               variant="secondary"
               size="sm"
+              className="watchlist-top-controls__search-button"
               disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
-              style={{
-                minHeight: '48px',
-                minWidth: '56px',
-                borderRadius: 0,
-                borderLeft: `1px solid ${colors.borderSecondary}45`,
-                boxShadow: 'none',
-              }}
               title="Add or suggest movie"
               aria-label="Add or suggest movie"
             >
               {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
             </Button>
           ) : (
-            <div
-              style={{
-                padding: `0 ${spacing.md}`,
-                display: 'flex',
-                alignItems: 'center',
-                color: colors.textTertiary,
-                opacity: 0.6,
-              }}
-              aria-hidden
-            >
+            <div className="watchlist-top-controls__search-empty" aria-hidden>
               <PlusIcon style={{ width: 20, height: 20 }} />
             </div>
           )}
@@ -147,13 +119,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       </div>
 
       {suggestionError && (
-        <div
-          style={{
-            color: colors.error,
-            fontSize: typography.fontSize.xs,
-            marginTop: spacing.xs,
-          }}
-        >
+        <div className="watchlist-top-controls__suggestion-error">
           {suggestionError}
         </div>
       )}
