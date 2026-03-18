@@ -20,6 +20,39 @@ interface MatchmakerProps {
   currentUser: User | null;
 }
 
+const MatchmakerConfetti: React.FC = () => {
+  const [items] = useState(() => [...Array(30)].map((_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    color: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
+    shape: Math.random() > 0.5 ? '50%' : '0',
+    duration: 2 + Math.random() * 2,
+    delay: Math.random() * 0.5,
+  })));
+
+  return (
+    <>
+      {items.map((c) => (
+        <div
+          key={c.id}
+          className="confetti"
+          style={{
+            position: 'absolute',
+            left: c.left,
+            top: `-20px`,
+            width: '10px',
+            height: '10px',
+            backgroundColor: c.color,
+            borderRadius: c.shape,
+            animation: `confettiFall ${c.duration}s linear forwards`,
+            animationDelay: `${c.delay}s`,
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
 const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   const { showToast } = useToast();
   const { movies, isLoading: isMoviesLoading } = useMovies(currentUser);
@@ -103,7 +136,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
   useEffect(() => {
     if (!game) {
-      clearTransientUiState();
+      setTimeout(() => clearTransientUiState(), 0);
     }
   }, [clearTransientUiState, game]);
 
@@ -112,43 +145,22 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
       const newMatchId = matches[matches.length - 1].id;
       const newMatch = movies?.find((m) => m.id === newMatchId);
       if (newMatch) {
-        if (matchOverlayTimeoutRef.current !== null) {
-          window.clearTimeout(matchOverlayTimeoutRef.current);
-        }
-        setLastMatchedMovie(newMatch);
-        setShowConfetti(true);
-        matchOverlayTimeoutRef.current = window.setTimeout(() => {
-          setShowConfetti(false);
-          setLastMatchedMovie(null);
-          matchOverlayTimeoutRef.current = null;
-        }, 4000);
+        setTimeout(() => {
+          if (matchOverlayTimeoutRef.current !== null) {
+            window.clearTimeout(matchOverlayTimeoutRef.current);
+          }
+          setLastMatchedMovie(newMatch);
+          setShowConfetti(true);
+          matchOverlayTimeoutRef.current = window.setTimeout(() => {
+            setShowConfetti(false);
+            setLastMatchedMovie(null);
+            matchOverlayTimeoutRef.current = null;
+          }, 4000);
+        }, 0);
       }
     }
     lastMatchCount.current = matches.length;
   }, [matches.length, movies, matches]);
-
-  const [confettiItems, setConfettiItems] = useState<{
-    id: number;
-    left: string;
-    color: string;
-    shape: string;
-    duration: number;
-    delay: number;
-  }[]>([]);
-
-  useEffect(() => {
-    if (showConfetti || lastMatchedMovie) {
-      const items = [...Array(30)].map((_, i) => ({
-        id: i,
-        left: `${Math.random() * 100}%`,
-        color: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
-        shape: Math.random() > 0.5 ? '50%' : '0',
-        duration: 2 + Math.random() * 2,
-        delay: Math.random() * 0.5,
-      }));
-      setConfettiItems(items);
-    }
-  }, [showConfetti, lastMatchedMovie]);
 
   const availableVibes = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -360,23 +372,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             animation: 'fadeIn 0.3s ease-out',
           }}
         >
-          {confettiItems.map((c) => (
-            <div
-              key={c.id}
-              className="confetti"
-              style={{
-                position: 'absolute',
-                left: c.left,
-                top: `-20px`,
-                width: '10px',
-                height: '10px',
-                backgroundColor: c.color,
-                borderRadius: c.shape,
-                animation: `confettiFall ${c.duration}s linear forwards`,
-                animationDelay: `${c.delay}s`,
-              }}
-            />
-          ))}
+          {showConfetti && <MatchmakerConfetti />}
 
           {lastMatchedMovie && (
             <div
