@@ -3335,13 +3335,101 @@ body.grabbing * {
   background: transparent;
   color: #e2e8f0;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  text-transform: none;
+  box-shadow: none;
+  font-weight: var(--font-weight-medium);
   letter-spacing: var(--letter-spacing-none);
 }
 
 .ui-button--ghost:not(:disabled):hover {
   background: rgba(148, 163, 184, 0.1);
   border-color: rgba(148, 163, 184, 0.28);
+}
+
+.ui-button--full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+.ui-button__icon {
+  display: flex;
+  align-items: center;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.ui-button__icon--left {
+  margin-right: 0.5rem;
+}
+
+.ui-button__icon--right {
+  margin-left: 0.5rem;
+}
+
+.ui-button__content {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Toast Animations */
+@keyframes toast-slide-in {
+  0% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Enhanced Card Styles */
+.ui-card--hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 127, 198, 0.25);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(255, 127, 198, 0.1);
+}
+
+.ui-card--glow {
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(255, 127, 198, 0.15);
+}
+
+.ui-card--glow:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 127, 198, 0.25);
+}
+
+/* Fix CSS compatibility warnings */
+.ui-button,
+.ui-input__field {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.line-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ui-card {
