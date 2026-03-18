@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 const GOOGLE_PLACES_API_KEY =
-  ((import.meta.env || {}) as Record<string, string | undefined>).VITE_GOOGLE_PLACES_API_KEY || '';
+  ((import.meta.env || {}) as Record<string, string | undefined>)
+    .VITE_GOOGLE_PLACES_API_KEY || "";
 
 /** Minimal type for Google Places Autocomplete (loaded from script). */
 interface GooglePlaceResult {
@@ -15,13 +16,32 @@ interface GooglePlacesAutocomplete {
 }
 
 declare global {
+  namespace google {
+    namespace maps {
+      interface Map {
+        setCenter(latLng: any): void;
+        fitBounds(bounds: any): void;
+        setZoom(zoom: number): void;
+      }
+      interface Marker {
+        setMap(map: Map | null): void;
+      }
+      interface LatLngBounds {
+        extend(latLng: any): void;
+      }
+    }
+  }
+
   interface Window {
     google?: {
       maps?: {
+        Map?: new (mapDiv: HTMLElement | null, opts?: any) => google.maps.Map;
+        Marker?: new (opts?: any) => google.maps.Marker;
+        LatLngBounds?: new () => google.maps.LatLngBounds;
         places?: {
           Autocomplete: new (
             input: HTMLInputElement,
-            opts?: { types?: string[]; fields?: string[] }
+            opts?: { types?: string[]; fields?: string[] },
           ) => GooglePlacesAutocomplete;
         };
       };
@@ -35,7 +55,7 @@ declare global {
  */
 export function usePlacesAutocomplete(
   inputRef: React.RefObject<HTMLInputElement | null>,
-  onPlaceSelect: (name: string, lat?: number, lng?: number) => void
+  onPlaceSelect: (name: string, lat?: number, lng?: number) => void,
 ): void {
   const autocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
   const onPlaceSelectRef = useRef(onPlaceSelect);
@@ -50,13 +70,13 @@ export function usePlacesAutocomplete(
 
       const { Autocomplete } = window.google.maps.places;
       const autocomplete = new Autocomplete(inputRef.current, {
-        types: ['establishment', 'geocode'],
-        fields: ['formatted_address', 'name', 'geometry'],
+        types: ["establishment", "geocode"],
+        fields: ["formatted_address", "name", "geometry"],
       });
 
-      autocomplete.addListener('place_changed', () => {
+      autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
-        const name = place.name || place.formatted_address || '';
+        const name = place.name || place.formatted_address || "";
         if (!name.trim()) return;
         const loc = place.geometry?.location;
         const lat = loc ? loc.lat() : undefined;
@@ -72,13 +92,15 @@ export function usePlacesAutocomplete(
       return;
     }
 
-    const existing = document.querySelector('script[src*="maps.googleapis.com"]');
+    const existing = document.querySelector(
+      'script[src*="maps.googleapis.com"]',
+    );
     if (existing) {
-      existing.addEventListener('load', initAutocomplete);
-      return () => existing.removeEventListener('load', initAutocomplete);
+      existing.addEventListener("load", initAutocomplete);
+      return () => existing.removeEventListener("load", initAutocomplete);
     }
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_API_KEY}&libraries=places`;
     script.async = true;
     script.defer = true;
