@@ -1,11 +1,13 @@
-const GIST_API_BASE_URL = 'https://api.github.com/gists';
+const GIST_API_BASE_URL = "https://api.github.com/gists";
 const DEFAULT_HEADERS = {
-  Accept: 'application/vnd.github+json',
-  'User-Agent': 'movie-watchlist-proxy',
+  Accept: "application/vnd.github+json",
+  "User-Agent": "movie-watchlist-proxy",
 };
 
-const getGistId = (): string => process.env.GIST_ID || process.env.VITE_GIST_ID || '';
-const getGitHubToken = (): string | undefined => process.env.GITHUB_TOKEN || process.env.VITE_GITHUB_TOKEN;
+const getGistId = (): string =>
+  process.env.GIST_ID || process.env.VITE_GIST_ID || "";
+const getGitHubToken = (): string | undefined =>
+  process.env.GITHUB_TOKEN || process.env.VITE_GITHUB_TOKEN;
 
 const buildHeaders = (ifNoneMatch?: string | null) => {
   const headers: Record<string, string> = { ...DEFAULT_HEADERS };
@@ -15,7 +17,7 @@ const buildHeaders = (ifNoneMatch?: string | null) => {
   }
 
   if (ifNoneMatch) {
-    headers['If-None-Match'] = ifNoneMatch;
+    headers["If-None-Match"] = ifNoneMatch;
   }
 
   return headers;
@@ -25,14 +27,19 @@ const toJsonResponse = (body: string, init: ResponseInit = {}): Response =>
   new Response(body, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...((init.headers as Record<string, string>) || {}),
     },
   });
 
-const notFoundResponse = () => toJsonResponse(JSON.stringify({ error: 'GIST_ID not configured.' }), { status: 500 });
+const notFoundResponse = () =>
+  toJsonResponse(JSON.stringify({ error: "GIST_ID not configured." }), {
+    status: 500,
+  });
 const methodNotAllowedResponse = () =>
-  toJsonResponse(JSON.stringify({ error: 'Method not allowed.' }), { status: 405 });
+  toJsonResponse(JSON.stringify({ error: "Method not allowed." }), {
+    status: 405,
+  });
 
 const handleGet = async (req: Request): Promise<Response> => {
   const gistId = getGistId();
@@ -40,8 +47,8 @@ const handleGet = async (req: Request): Promise<Response> => {
 
   const upstreamUrl = `${GIST_API_BASE_URL}/${encodeURIComponent(gistId)}`;
   const upstreamResponse = await fetch(upstreamUrl, {
-    method: 'GET',
-    headers: buildHeaders(req.headers.get('if-none-match')),
+    method: "GET",
+    headers: buildHeaders(req.headers.get("if-none-match")),
   });
 
   const body = await upstreamResponse.text();
@@ -49,8 +56,9 @@ const handleGet = async (req: Request): Promise<Response> => {
     status: upstreamResponse.status,
     statusText: upstreamResponse.statusText,
     headers: {
-      'Content-Type': upstreamResponse.headers.get('content-type') || 'application/json',
-      'cache-control': 'no-store',
+      "Content-Type":
+        upstreamResponse.headers.get("content-type") || "application/json",
+      "cache-control": "no-store",
     },
   });
 };
@@ -63,9 +71,30 @@ const handlePatch = async (req: Request): Promise<Response> => {
   if (!token) {
     return toJsonResponse(
       JSON.stringify({
-        error: 'Server-side write requires GITHUB_TOKEN.',
+        error: "Server-side write requires GITHUB_TOKEN.",
       }),
-      { status: 401 }
+      { status: 401 },
+    );
+  }
+
+  const apiSecret = process.env.API_SECRET || process.env.VITE_API_SECRET;
+  if (!apiSecret) {
+    return toJsonResponse(
+      JSON.stringify({
+        error: "Server-side write requires API_SECRET.",
+      }),
+      { status: 401 },
+    );
+  }
+
+  const authHeader = req.headers.get("authorization") || "";
+  const clientToken = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (clientToken !== apiSecret) {
+    return toJsonResponse(
+      JSON.stringify({
+        error: "Unauthorized.",
+      }),
+      { status: 401 },
     );
   }
 
@@ -73,20 +102,28 @@ const handlePatch = async (req: Request): Promise<Response> => {
   try {
     payload = await req.json();
   } catch {
-    return toJsonResponse(JSON.stringify({ error: 'Invalid JSON payload.' }), { status: 400 });
+    return toJsonResponse(JSON.stringify({ error: "Invalid JSON payload." }), {
+      status: 400,
+    });
   }
 
-  const hasFiles = payload && typeof payload === 'object' && 'files' in (payload as Record<string, unknown>);
+  const hasFiles =
+    payload &&
+    typeof payload === "object" &&
+    "files" in (payload as Record<string, unknown>);
   if (!hasFiles) {
-    return toJsonResponse(JSON.stringify({ error: 'PATCH payload must include files.' }), { status: 400 });
+    return toJsonResponse(
+      JSON.stringify({ error: "PATCH payload must include files." }),
+      { status: 400 },
+    );
   }
 
   const upstreamUrl = `${GIST_API_BASE_URL}/${encodeURIComponent(gistId)}`;
   const upstreamResponse = await fetch(upstreamUrl, {
-    method: 'PATCH',
+    method: "PATCH",
     headers: {
       ...buildHeaders(),
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
@@ -96,24 +133,27 @@ const handlePatch = async (req: Request): Promise<Response> => {
     status: upstreamResponse.status,
     statusText: upstreamResponse.statusText,
     headers: {
-      'Content-Type': upstreamResponse.headers.get('content-type') || 'application/json',
-      'cache-control': 'no-store',
+      "Content-Type":
+        upstreamResponse.headers.get("content-type") || "application/json",
+      "cache-control": "no-store",
     },
   });
 };
 
 export default async function handler(req: Request): Promise<Response> {
   try {
-    if (req.method === 'GET') {
+    if (req.method === "GET") {
       return await handleGet(req);
     }
-    if (req.method === 'PATCH') {
+    if (req.method === "PATCH") {
       return await handlePatch(req);
     }
 
     return methodNotAllowedResponse();
   } catch (error) {
-    console.error('Error handling /api/gist', error);
-    return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), { status: 500 });
+    console.error("Error handling /api/gist", error);
+    return toJsonResponse(JSON.stringify({ error: "Internal server error." }), {
+      status: 500,
+    });
   }
 }

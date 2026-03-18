@@ -52,6 +52,8 @@ For Netlify/static-hosting without serverless functions, replace `your-backend-h
   - If absent, the app will fall back to localStorage behavior.
 - `VITE_GIST_API_URL`
   - Override `/api/gist` (default).
+- `VITE_API_SECRET`
+  - Client-side secret used to authenticate write requests to the proxy.
 - `VITE_OMDB_API_URL`
   - Override `/api/omdb` (default). For direct OMDb calls, set this to `https://www.omdbapi.com`.
 - `VITE_OMDB_API_KEY`
@@ -62,6 +64,8 @@ For Netlify/static-hosting without serverless functions, replace `your-backend-h
   - Server-side gist ID used by Vercel proxy.
 - `GITHUB_TOKEN`
   - Server-side token used to authenticate write requests to the GitHub Gist API.
+- `API_SECRET`
+  - Server-side secret used by the Vercel proxy to authenticate write requests from the client. Must match `VITE_API_SECRET`.
 - `OMDB_API_URL`
   - Server-side base URL for OMDb proxy when using Vercel.
 - `OMDB_API_KEY`
