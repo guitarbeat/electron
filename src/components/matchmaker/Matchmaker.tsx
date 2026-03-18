@@ -3,7 +3,7 @@ import { User, Movie } from '@/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
 import { useMovies } from '@/hooks/useMovies';
 import { useToast } from '@/context';
-import SwipeCard from './SwipeCard';
+import SwipeCard, { SwipeCardHandle } from './SwipeCard';
 import Button from '@/ui/Button';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { shuffleArray } from '@/utils';
@@ -76,7 +76,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     return intersection.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
   }, [game, movieMap]);
 
-  const cardRef = useRef<any>(null);
+  const cardRef = useRef<SwipeCardHandle>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [lastMatchedMovie, setLastMatchedMovie] = useState<Movie | null>(null);
   const lastMatchCount = useRef(matches.length);

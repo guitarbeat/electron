@@ -2,12 +2,9 @@ import { useCallback } from 'react';
 import type { User } from '../types.ts';
 import { usePolling } from './usePolling';
 import {
-  canReadGist,
   canWriteGist,
-  fetchGist,
-  getGistFileContent,
   patchGistFile,
-  readLocalOverride,
+  readGistJsonFile,
   readStoredJson,
   setLocalOverride,
   writeStoredJson,
@@ -52,33 +49,15 @@ let fetchPromise: Promise<UserPins> | null = null;
 const runPinMutation = createSerialTaskRunner();
 
 const fetchPinsFromGist = async (cache: RequestCache = 'default'): Promise<UserPins> => {
-  if (!canReadGist) {
-    return getFallbackPins();
-  }
-
-  const localOverride = readLocalOverride('pins', readStoredLocalPins);
-  if (localOverride.enabled) {
-    return localOverride.value ?? getFallbackPins();
-  }
-
   try {
-    const response = await fetchGist({ cache });
-
-    if (!response.ok) {
-      console.warn(`Failed to fetch pins from gist (${response.status}), using local fallback.`);
-      return getFallbackPins();
-    }
-
-    const gist = await response.json();
-    const fileContent = getGistFileContent(gist, GIST_PINS_FILENAME);
-    if (fileContent === null) {
-      if (!canWriteGist) {
-        return getFallbackPins();
-      }
-      return {};
-    }
-
-    return parsePinsContent(fileContent);
+    return await readGistJsonFile({
+      scope: 'pins',
+      filename: GIST_PINS_FILENAME,
+      fallback: getFallbackPins,
+      onMissingFileWhenWritable: () => ({}),
+      parse: (content) => parsePinsContent(content),
+      fetchOptions: { cache },
+    });
   } catch (error) {
     console.warn('Error fetching pins, using local fallback:', error);
     return getFallbackPins();

@@ -199,3 +199,46 @@ export const setLocalOverride = (scope: string, enabled: boolean): void => {
     console.warn(`Failed to update local override state for ${scope}.`, error);
   }
 };
+
+interface ReadGistJsonFileArgs<T> {
+  scope: string;
+  filename: string;
+  fallback: () => T;
+  onMissingFileWhenWritable: () => T;
+  parse: (content: string) => T;
+  fetchOptions?: FetchGistOptions;
+}
+
+export const readGistJsonFile = async <T>({
+  scope,
+  filename,
+  fallback,
+  onMissingFileWhenWritable,
+  parse,
+  fetchOptions,
+}: ReadGistJsonFileArgs<T>): Promise<T> => {
+  if (!canReadGist) {
+    return fallback();
+  }
+
+  const localOverride = readLocalOverride(scope, () => fallback());
+  if (localOverride.enabled) {
+    return localOverride.value ?? fallback();
+  }
+
+  const response = await fetchGist({ cache: 'no-cache', ...(fetchOptions ?? {}) });
+  if (!response.ok) {
+    return fallback();
+  }
+
+  const gist = await response.json();
+  const content = getGistFileContent(gist, filename);
+  if (content === null) {
+    if (!canWriteGist) {
+      return fallback();
+    }
+    return onMissingFileWhenWritable();
+  }
+
+  return parse(content);
+};

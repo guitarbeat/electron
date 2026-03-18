@@ -9,13 +9,10 @@ import { usePolling } from './usePolling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
 import { areDeeplyEqual, parseJsonContent } from '@/utils';
 import {
-  canReadGist,
   canWriteGist,
-  fetchGist,
-  getGistFileContent,
   GIST_QUIZ_FILENAME,
   patchGistFile,
-  readLocalOverride,
+  readGistJsonFile,
   readStoredJson,
   setLocalOverride,
   writeStoredJson,
@@ -110,41 +107,15 @@ const saveLocalQuizData = (data: QuizData): void => {
 
 const getQuizData = async (): Promise<QuizData> => {
   try {
-    if (!canReadGist) {
-      return getFallbackQuizData();
-    }
-
-    const localOverride = readLocalOverride('quiz', readStoredLocalQuizData);
-    if (localOverride.enabled && localOverride.value) {
-      return localOverride.value;
-    }
-
-    const response = await fetchGist({ cache: 'no-cache' });
-
-    if (response.status === 401 || response.status === 403 || response.status === 404) {
-      return getFallbackQuizData();
-    }
-
-    if (!response.ok) {
-      console.warn(`GitHub API responded with ${response.status}. Using quiz fallback data.`);
-      return getFallbackQuizData();
-    }
-
-    const gist = await response.json();
-    const content = getGistFileContent(gist, GIST_QUIZ_FILENAME);
-    if (content === null) {
-      if (!canWriteGist) {
-        return getFallbackQuizData();
-      }
-      return cloneQuizData(defaultQuizData);
-    }
-
-    const parsedData = normalizeQuizData(parseJsonContent(content, GIST_QUIZ_FILENAME));
-    if (!parsedData) {
-      return cloneQuizData(defaultQuizData);
-    }
-
-    return parsedData;
+    return await readGistJsonFile({
+      scope: 'quiz',
+      filename: GIST_QUIZ_FILENAME,
+      fallback: getFallbackQuizData,
+      onMissingFileWhenWritable: () => cloneQuizData(defaultQuizData),
+      parse: (content) =>
+        normalizeQuizData(parseJsonContent(content, GIST_QUIZ_FILENAME)) ??
+        cloneQuizData(defaultQuizData),
+    });
   } catch (error) {
     console.error('Error fetching quiz data from Gist:', error);
     return getFallbackQuizData();

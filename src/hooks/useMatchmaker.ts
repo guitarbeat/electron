@@ -2,13 +2,10 @@ import { useState, useCallback, useRef } from 'react';
 import { MatchmakerGame, User } from '@/types';
 import { usePolling } from './usePolling';
 import {
-  canReadGist,
   canWriteGist,
-  fetchGist,
-  getGistFileContent,
   GIST_MATCHMAKER_FILENAME,
   patchGistFile,
-  readLocalOverride,
+  readGistJsonFile,
   readStoredJson,
   removeStoredJson,
   setLocalOverride,
@@ -77,36 +74,17 @@ const saveLocalMatchmakerGame = (game: MatchmakerGame | null): void => {
 };
 
 const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
-  if (!canReadGist) {
-    return readStoredLocalMatchmakerGame();
-  }
-
-  const localOverride = readLocalOverride('matchmaker', readStoredLocalMatchmakerGame);
-  if (localOverride.enabled) {
-    return localOverride.value;
-  }
-
   try {
-    const response = await fetchGist({ cache: 'no-cache' });
-
-    if (!response.ok) {
-      console.warn(
-        `Failed to fetch matchmaker game (${response.status}), using local fallback state.`
-      );
-      return readStoredLocalMatchmakerGame();
-    }
-
-    const gist = await response.json();
-    const content = getGistFileContent(gist, GIST_MATCHMAKER_FILENAME);
-    if (content === null) {
-      if (!canWriteGist) {
-        return readStoredLocalMatchmakerGame();
-      }
-      return null;
-    }
-
-    const parsed = parseJsonContent(content, 'matchmaker');
-    return isMatchmakerGameRecord(parsed) ? parsed : null;
+    return await readGistJsonFile({
+      scope: 'matchmaker',
+      filename: GIST_MATCHMAKER_FILENAME,
+      fallback: () => readStoredLocalMatchmakerGame(),
+      onMissingFileWhenWritable: () => null,
+      parse: (content) => {
+        const parsed = parseJsonContent(content, 'matchmaker');
+        return isMatchmakerGameRecord(parsed) ? parsed : null;
+      },
+    });
   } catch (error) {
     console.error('Error fetching matchmaker game from Gist:', error);
     return null;
