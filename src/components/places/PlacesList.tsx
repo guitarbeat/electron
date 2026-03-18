@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, memo } from 'react';
 import { useUser, useToast } from '@/context';
 import { usePlaces } from '@/hooks/usePlaces';
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
@@ -7,10 +7,10 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import SubNav from '@/ui/SubNav';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import Skeleton from '@/ui/Skeleton';
+import { MovieCardSkeleton } from '@/ui/Skeleton';
 import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
-import { colors, spacing, typography, radius } from '@/design-system';
+import { colors, spacing, typography, radius, motion, shadows } from '@/design-system';
 import type { Place } from '@/types';
 
 type PlaceFilter = 'want' | 'visited';
@@ -43,10 +43,8 @@ const PlacesList: React.FC = () => {
 
   const wantCount = places.filter((p) => !p.visitedAt).length;
   const visitedCount = places.filter((p) => p.visitedAt).length;
-  const filtered =
-    filter === 'want' ? places.filter((p) => !p.visitedAt) : places.filter((p) => p.visitedAt);
-  const hasMappedPlaces =
-    places.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number').length > 0;
+  const filtered = filter === 'want' ? places.filter((p) => !p.visitedAt) : places.filter((p) => p.visitedAt);
+  const hasMappedPlaces = places.some((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
 
   const handleAdd = useCallback(
     async (e: React.FormEvent) => {
@@ -64,11 +62,13 @@ const PlacesList: React.FC = () => {
         setNameInput('');
         setNotesInput('');
         setPendingCoords(null);
+        showToast({ message: `"${name}" added to list!`, type: 'success' });
       } catch (err) {
+        showToast({ message: 'Failed to add place', type: 'error' });
         console.error(err);
       }
     },
-    [nameInput, notesInput, pendingCoords, isSubmitting, addPlace]
+    [nameInput, notesInput, pendingCoords, isSubmitting, addPlace, showToast]
   );
 
   const confirmDelete = useCallback(async () => {
@@ -80,214 +80,238 @@ const PlacesList: React.FC = () => {
       setPlaceToDelete(null);
       showToast({
         message: `Removed "${deleted.name}"`,
-        type: 'success',
+        type: 'info',
         onUndo: async () => {
           try {
             await restorePlace(deleted);
             showToast({ message: `Restored "${deleted.name}"`, type: 'success' });
           } catch {
-            showToast({ message: 'Failed to undo', type: 'error' });
+            showToast({ message: 'Failed to restore', type: 'error' });
           }
         },
-        duration: 6000,
+        duration: 5000,
       });
     } catch (err) {
+      showToast({ message: 'Failed to remove', type: 'error' });
       console.error(err);
     }
   }, [placeToDelete, removePlace, restorePlace, showToast]);
 
-  if (isLoading && places.length === 0) {
-    return (
-      <div className="places-page">
-        <div className="places-loading">
-          <Skeleton variant="text" width="220px" height="1.5rem" />
-          <Skeleton variant="text" width="min(100%, 460px)" height="1rem" />
-          <Card
-            style={{
-              padding: spacing.md,
-              borderRadius: radius.lg,
-              border: `1px solid ${colors.borderSecondary}35`,
-            }}
-          >
-            <Skeleton variant="rectangular" width="100%" height="220px" />
-          </Card>
-          <Card
-            style={{
-              padding: spacing.md,
-              borderRadius: radius.lg,
-              border: `1px solid ${colors.borderSecondary}35`,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: spacing.sm,
-            }}
-          >
-            <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
-            <Skeleton variant="rectangular" width="min(100%, 400px)" height="44px" />
-            <Skeleton variant="rectangular" width="140px" height="36px" />
-          </Card>
-          {[0, 1, 2].map((index) => (
-            <Card
-              key={`places-skeleton-${index}`}
-              style={{
-                padding: spacing.md,
-                borderRadius: radius.lg,
-                border: `1px solid ${colors.borderSecondary}35`,
-              }}
-            >
-              <Skeleton
-                variant="text"
-                width="50%"
-                height="1rem"
-                style={{ marginBottom: spacing.xs }}
-              />
-              <Skeleton variant="text" width="80%" height="0.9rem" />
-            </Card>
-          ))}
-        </div>
+  const renderSkeleton = () => (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.lg }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: spacing.md }}>
+        {[1, 2, 3].map((i) => <MovieCardSkeleton key={i} />)}
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="places-page">
-      <header className="places-header">
-        <h1 className="places-title">Date spots wishlist</h1>
-        <p className="places-subtitle">
+    <div 
+      className="places-container"
+      style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto', 
+        padding: `0 0 ${spacing['3xl']}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.xl,
+        animation: `fade-in ${motion.duration.slow} ${motion.easing.easeOut} both`
+      }}
+    >
+      <header style={{ marginBottom: spacing.md }}>
+        <h1 style={{ ...typography.presets.titleMd, color: colors.textPrimary, marginBottom: spacing.xs }}>
+          Date spot wishlist
+        </h1>
+        <p style={{ ...typography.presets.bodySm, color: colors.textSecondary, maxWidth: '600px' }}>
           Save dream spots for your next outing, then mark the places you explored together.
         </p>
-        <hr className="memory-lane-divider" />
       </header>
 
-      <section className="ui-control-surface places-surface" aria-label="Places map and add form">
-        <div className="places-map-block">
-          <h2 className="places-surface-title">Map</h2>
-          <PlacesMap places={places} />
-          {places.length > 0 && !hasMappedPlaces && (
-            <p className="places-map-hint">
-              Use search results to add coordinates and pin your date spots on the map.
-            </p>
-          )}
-        </div>
-
-        <form onSubmit={handleAdd} className="places-add-form">
-          <div className="ui-control-input-shell places-add-input-shell">
+      <div 
+        className="places-workspace"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: spacing.xl,
+          alignItems: 'start'
+        }}
+      >
+        <Card
+          variant="elevated"
+          style={{
+            padding: spacing.lg,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.md,
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: `1px solid ${colors.borderSubtle}`,
+          }}
+        >
+          <h2 style={{ ...typography.presets.titleSm, margin: 0, fontSize: '1.25rem' }}>Add new spot</h2>
+          <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
             <Input
               ref={nameInputRef}
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               placeholder="Place name or address"
               aria-label="Place name"
-              className="ui-control-input places-add-input"
+              fullWidth
             />
-          </div>
-          <div className="ui-control-input-shell places-add-input-shell">
             <Input
               value={notesInput}
               onChange={(e) => setNotesInput(e.target.value)}
               placeholder="Notes (optional)"
               aria-label="Notes"
-              className="ui-control-input places-add-input"
+              fullWidth
             />
-          </div>
-          <Button
-            type="submit"
-            variant="secondary"
-            disabled={!nameInput.trim() || isSubmitting}
-            className="places-add-button"
-            style={{ fontFamily: typography.fontFamily.body.join(', ') }}
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={!nameInput.trim() || isSubmitting}
+              isLoading={isSubmitting}
+              style={{ alignSelf: 'flex-start', minWidth: '140px' }}
+            >
+              <PlusIcon style={{ width: 16, height: 16 }} />
+              Add spot
+            </Button>
+          </form>
+        </Card>
+
+        <Card
+          variant="default"
+          style={{
+            padding: spacing.md,
+            height: '340px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.sm,
+            border: `1px solid ${colors.borderSubtle}`,
+            overflow: 'hidden'
+          }}
+        >
+          <PlacesMap places={places} />
+          {places.length > 0 && !hasMappedPlaces && (
+            <p style={{ ...typography.presets.caption, color: colors.textTertiary, textAlign: 'center', margin: 0 }}>
+              Use search results to pin spots on the map.
+            </p>
+          )}
+        </Card>
+      </div>
+
+      <div style={{ marginTop: spacing.md }}>
+        <SubNav
+          tabs={[
+            { id: 'want', label: 'Dream spots', count: wantCount },
+            { id: 'visited', label: 'Been together', count: visitedCount },
+          ]}
+          activeTabId={filter}
+          onTabChange={(id) => setFilter(id as PlaceFilter)}
+          variant="underlined"
+        />
+
+        {isLoading && places.length === 0 ? (
+          renderSkeleton()
+        ) : (
+          <div 
+            className="places-grid"
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
+              gap: spacing.lg,
+              marginTop: spacing.md
+            }}
           >
-            <PlusIcon style={{ width: 16, height: 16 }} />
-            Add place
-          </Button>
-        </form>
-      </section>
-
-      <SubNav
-        ariaLabel="Places: filter by list"
-        tabs={[
-          { id: 'want', label: 'Dream spots', count: wantCount },
-          { id: 'visited', label: 'Been together', count: visitedCount },
-        ]}
-        activeId={filter}
-        onSelect={(id) => setFilter(id as PlaceFilter)}
-      />
-
-      <ul className="places-items" aria-live="polite">
-        {filtered.length === 0 && (
-          <li className="places-empty">
-            {filter === 'want'
-              ? 'No date spots yet. Add one above.'
-              : 'No shared spot history yet.'}
-          </li>
-        )}
-
-        {filtered.map((place) => (
-          <li key={place.id}>
-            <Card className="places-item-card">
-              <div className="places-item-top">
-                <div className="places-item-title-wrap">
-                  <span className="places-item-title">{place.name}</span>
-                  {place.visitedAt && (
-                    <span className="places-item-visited">
-                      <CheckIcon style={{ width: 12, height: 12 }} />
-                      Visited
-                    </span>
-                  )}
-                </div>
-
-                <div className="places-item-actions">
-                  {place.visitedAt ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => markUnvisited(place.id)}
-                      disabled={isSubmitting}
-                      className="places-action-btn"
-                      style={{ fontFamily: typography.fontFamily.body.join(', ') }}
-                    >
-                      Mark unvisited
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => markVisited(place.id)}
-                      disabled={isSubmitting}
-                      className="places-action-btn"
-                      style={{ fontFamily: typography.fontFamily.body.join(', ') }}
-                    >
-                      Mark visited
-                    </Button>
-                  )}
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setPlaceToDelete(place)}
-                    disabled={isSubmitting}
-                    className="places-delete-btn"
-                    aria-label={`Delete ${place.name}`}
-                  >
-                    <TrashIcon style={{ width: 16, height: 16 }} />
-                  </Button>
-                </div>
+            {filtered.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing['3xl'], color: colors.textTertiary, ...typography.presets.bodySm }}>
+                {filter === 'want' ? 'No date spots yet. Add one above!' : 'No visited spots yet.'}
               </div>
+            ) : (
+              filtered.map((place, index) => (
+                <Card 
+                  key={place.id}
+                  variant={place.visitedAt ? 'default' : 'elevated'}
+                  style={{ 
+                    padding: spacing.md, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: spacing.sm,
+                    animation: `slide-up ${motion.duration.normal} ${motion.easing.easeOut} ${index * 0.05}s both`,
+                    border: place.visitedAt ? `1px solid ${colors.borderSubtle}` : `1px solid ${colors.accent}20`,
+                    boxShadow: place.visitedAt ? 'none' : shadows.card
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <h3 style={{ ...typography.presets.bodySm, fontWeight: 600, margin: 0 }}>{place.name}</h3>
+                      {place.visitedAt && (
+                        <span style={{ ...typography.presets.caption, color: colors.success, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <CheckIcon style={{ width: 12, height: 12 }} />
+                          Visited
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: spacing.xs }}>
+                      {place.visitedAt ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => markUnvisited(place.id)}
+                          disabled={isSubmitting}
+                          style={{ fontSize: '0.75rem', padding: `2px ${spacing.sm}` }}
+                        >
+                          Mark unvisited
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => markVisited(place.id)}
+                          disabled={isSubmitting}
+                          style={{ fontSize: '0.75rem', padding: `2px ${spacing.sm}` }}
+                        >
+                          Mark visited
+                        </Button>
+                      )}
+                      
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setPlaceToDelete(place)}
+                        disabled={isSubmitting}
+                        aria-label={`Delete ${place.name}`}
+                        style={{ padding: spacing.xs, color: colors.textTertiary }}
+                      >
+                        <TrashIcon style={{ width: 16, height: 16 }} />
+                      </Button>
+                    </div>
+                  </div>
+                  {place.notes && (
+                    <p style={{ ...typography.presets.caption, color: colors.textSecondary, margin: 0, lineBreak: 'anywhere' }}>
+                      {place.notes}
+                    </p>
+                  )}
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
-              {place.notes && <p className="places-item-notes">{place.notes}</p>}
-            </Card>
-          </li>
-        ))}
-      </ul>
-
-      <ConfirmDialog
-        isOpen={!!placeToDelete}
-        title="Remove place"
-        message={placeToDelete ? `Remove "${placeToDelete.name}" from the list?` : ''}
-        onConfirm={confirmDelete}
-        onCancel={() => setPlaceToDelete(null)}
-      />
+      {placeToDelete && (
+        <ConfirmDialog
+          isOpen={!!placeToDelete}
+          title="Remove place"
+          message={`Are you sure you want to remove "${placeToDelete.name}" from your list?`}
+          onConfirm={confirmDelete}
+          onCancel={() => setPlaceToDelete(null)}
+          confirmText="Remove"
+          variant="danger"
+        />
+      )}
     </div>
   );
 };
 
-export default PlacesList;
+export default memo(PlacesList);
+
