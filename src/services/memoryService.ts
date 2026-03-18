@@ -98,7 +98,8 @@ export const addMemory = async (
   movieTitle: string,
   author: string,
   note: string,
-  createdAt?: string
+  createdAt?: string,
+  imageUrl?: string
 ): Promise<SharedMemory> => {
   const memories = await getMemories();
 
@@ -109,6 +110,7 @@ export const addMemory = async (
     author: sanitizeInput(author),
     note: sanitizeInput(note),
     createdAt: createdAt || new Date().toISOString(),
+    imageUrl: imageUrl ? sanitizeInput(imageUrl) : undefined,
   };
 
   memories.unshift(newMemory);
