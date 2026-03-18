@@ -100,7 +100,8 @@ class PollingManager {
     // Track the current fetch function to detect stale responses
     const currentFetchFn = fetchFn;
     const allowNull = this.options.get(key)?.allowNull ?? false;
-    const request = (async () => {
+    let request: Promise<void> | null = null;
+    request = (async () => {
       try {
         const data = await fetchFn();
 

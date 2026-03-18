@@ -142,8 +142,9 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
       isSubmittingRef.current = true;
       setIsSubmitting(true);
       const previousMutation = mutationLockRef.current;
+      let mutation: Promise<void> | null = null;
 
-      const mutation = (async () => {
+      mutation = (async () => {
         try {
           await previousMutation;
         } catch (e) {

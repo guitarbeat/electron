@@ -17,10 +17,8 @@ test('isValidUrl', async (t) => {
 
   await t.test('returns false for empty or missing input', () => {
     assert.equal(isValidUrl(''), false);
-    // @ts-expect-error Testing invalid runtime input
-    assert.equal(isValidUrl(null), false);
-    // @ts-expect-error Testing invalid runtime input
-    assert.equal(isValidUrl(undefined), false);
+    assert.equal(isValidUrl(null as any), false);
+    assert.equal(isValidUrl(undefined as any), false);
   });
 
   await t.test('returns false for malformed URLs', () => {
