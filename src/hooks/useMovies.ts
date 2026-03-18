@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import type { Movie, User } from '@/types';
-import { usePolling } from '@/hooks/usePolling';
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { Movie, User } from "@/types";
+import { usePolling } from "@/hooks/usePolling";
 import {
   canWriteGist,
   GIST_FILENAME,
@@ -10,9 +10,13 @@ import {
   readGistJsonFile,
   setLocalOverride,
   writeStoredJson,
-} from '@/services/gistClient.ts';
-import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
-import { cloneMovies, isMovieRecord, normalizeMovies } from '@/services/movieRecords.ts';
+} from "@/services/gistClient.ts";
+import { fetchMovieMetadata, MetadataResult } from "@/services/metadataService";
+import {
+  cloneMovies,
+  isMovieRecord,
+  normalizeMovies,
+} from "@/services/movieRecords.ts";
 import {
   areDeeplyEqual,
   concurrentMap,
@@ -20,18 +24,19 @@ import {
   MAX_MOVIE_TITLE_LENGTH,
   parseJsonContent,
   sanitizeInput,
-} from '@/utils';
+} from "@/utils";
 
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
-const MOVIES_LOCAL_STORAGE_KEY = 'movieList.localMovies';
+const MOVIES_LOCAL_STORAGE_KEY = "movieList.localMovies";
 
 const readStoredLocalMovies = (): Movie[] | null =>
   readStoredJson({
     storageKey: MOVIES_LOCAL_STORAGE_KEY,
-    validate: (value): value is Movie[] => Array.isArray(value) && value.every(isMovieRecord),
+    validate: (value): value is Movie[] =>
+      Array.isArray(value) && value.every(isMovieRecord),
     clone: cloneMovies,
-    label: 'local movie fallback',
+    label: "local movie fallback",
   });
 
 const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? [];
@@ -41,36 +46,38 @@ const saveLocalMovies = (movies: Movie[]): void => {
     storageKey: MOVIES_LOCAL_STORAGE_KEY,
     value: movies,
     clone: cloneMovies,
-    label: 'local movie fallback',
+    label: "local movie fallback",
   });
   cachedMovies = nextMovies;
   lastETag = null;
-  setLocalOverride('movies', true);
+  setLocalOverride("movies", true);
 };
 
 const getMovies = async (): Promise<Movie[]> => {
   try {
     const movies = await readGistJsonFile({
-      scope: 'movies',
+      scope: "movies",
       filename: GIST_FILENAME,
       fallback: getFallbackMovies,
       onMissingFileWhenWritable: () => [],
       parse: (content) => {
         const parsedMovies = parseJsonContent(content, GIST_FILENAME);
         if (!Array.isArray(parsedMovies)) {
-          throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
+          throw new Error(
+            `${GIST_FILENAME} must be a JSON array of movie objects.`,
+          );
         }
 
         const normalized = normalizeMovies(parsedMovies);
         if (normalized.length !== parsedMovies.length) {
           console.warn(
-            `Filtered ${parsedMovies.length - normalized.length} invalid movie record(s) from ${GIST_FILENAME}.`
+            `Filtered ${parsedMovies.length - normalized.length} invalid movie record(s) from ${GIST_FILENAME}.`,
           );
         }
 
         if (parsedMovies.length > 0 && normalized.length === 0) {
           console.warn(
-            `No valid movie records found in ${GIST_FILENAME}, using local movie fallback.`
+            `No valid movie records found in ${GIST_FILENAME}, using local movie fallback.`,
           );
           return getFallbackMovies();
         }
@@ -79,7 +86,7 @@ const getMovies = async (): Promise<Movie[]> => {
       },
       fetchOptions: {
         eTag: lastETag,
-        cache: 'no-cache',
+        cache: "no-cache",
       },
     });
 
@@ -89,7 +96,7 @@ const getMovies = async (): Promise<Movie[]> => {
     lastETag = null;
     return movies;
   } catch (error) {
-    console.error('Error fetching movies from Gist:', error);
+    console.error("Error fetching movies from Gist:", error);
     return getFallbackMovies();
   }
 };
@@ -97,7 +104,7 @@ const getMovies = async (): Promise<Movie[]> => {
 const getMoviesFromGist = async (): Promise<Movie[] | null> => {
   try {
     return await readGistJsonFile({
-      scope: 'movies',
+      scope: "movies",
       filename: GIST_FILENAME,
       fallback: () => null,
       onMissingFileWhenWritable: () => [],
@@ -119,26 +126,32 @@ const saveMovies = async (movies: Movie[]): Promise<void> => {
   }
 
   try {
-    const response = await patchGistFile(GIST_FILENAME, JSON.stringify(movies, null, 2));
+    const response = await patchGistFile(
+      GIST_FILENAME,
+      JSON.stringify(movies, null, 2),
+    );
 
     if (!response.ok) {
-      console.warn(`Failed to save movies to Gist (${response.status}), using local fallback.`);
+      console.warn(
+        `Failed to save movies to Gist (${response.status}), using local fallback.`,
+      );
       saveLocalMovies(movies);
       return;
     }
 
     cachedMovies = movies;
     lastETag = null;
-    setLocalOverride('movies', false);
+    setLocalOverride("movies", false);
   } catch (error) {
-    console.warn('Error saving movies to Gist, using local fallback:', error);
+    console.warn("Error saving movies to Gist, using local fallback:", error);
     saveLocalMovies(movies);
   }
 };
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
 const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
-  const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
+  const { posterUrl, year, plot, imdbRating, runtime, genre, director } =
+    metadata;
   const result: Partial<Movie> = {};
   if (posterUrl && isValidUrl(posterUrl)) result.posterUrl = posterUrl;
   if (year) result.year = year;
@@ -150,14 +163,17 @@ const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
   return result;
 };
 
-export const useMovies = (currentUser: User | null, isPaused: boolean = false) => {
+export const useMovies = (
+  currentUser: User | null,
+  isPaused: boolean = false,
+) => {
   const {
     data: movies,
     error,
     isLoading,
     refresh,
   } = usePolling(getMovies, 10000, areDeeplyEqual, {
-    key: 'movies',
+    key: "movies",
     isPaused,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -169,7 +185,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     const maybeSyncLocalOverride = async () => {
       if (!canWriteGist) return;
       if (hasAutoSyncedRef.current) return;
-      if (!hasLocalOverride('movies')) return;
+      if (!hasLocalOverride("movies")) return;
 
       const localMovies = readStoredLocalMovies();
       if (!localMovies || localMovies.length === 0) return;
@@ -193,16 +209,19 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           return;
         }
 
-        const response = await patchGistFile(GIST_FILENAME, JSON.stringify(merged, null, 2));
+        const response = await patchGistFile(
+          GIST_FILENAME,
+          JSON.stringify(merged, null, 2),
+        );
         if (!response.ok) return;
 
         cachedMovies = merged;
         lastETag = null;
-        setLocalOverride('movies', false);
+        setLocalOverride("movies", false);
         hasAutoSyncedRef.current = true;
         refresh();
       } catch (error) {
-        console.warn('Failed to sync local movies back to Gist:', error);
+        console.warn("Failed to sync local movies back to Gist:", error);
       }
     };
 
@@ -212,17 +231,64 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   // Effect to seed the initial movies if the Gist is empty
   useEffect(() => {
     const seedMovies = async () => {
-      const hasBeenSeeded = localStorage.getItem('movieListSeeded_gist_refactored');
-      if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
-        const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
-          { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Renfield', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Sinister', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Creep', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Easy A', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [], category: 'Humor' },
-          { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
+      const hasBeenSeeded = localStorage.getItem(
+        "movieListSeeded_gist_refactored",
+      );
+      if (
+        !isLoading &&
+        movies &&
+        movies.length === 0 &&
+        hasBeenSeeded !== "true"
+      ) {
+        const defaultMovies: Omit<Movie, "id" | "createdAt">[] = [
+          {
+            title: "The Last Unicorn",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
+          {
+            title: "Renfield",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
+          {
+            title: "Sinister",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
+          {
+            title: "Creep",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
+          {
+            title: "Easy A",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
+          {
+            title: "The Lego Movie",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
+          {
+            title: "Key and Peele",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Humor",
+          },
+          {
+            title: "Beetlejuice",
+            addedBy: "Aaron",
+            watchedBy: [],
+            category: "Movies",
+          },
         ];
 
         const moviesToSave: Movie[] = defaultMovies.map((movie) => ({
@@ -235,10 +301,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           isSubmittingRef.current = true;
           setIsSubmitting(true);
           await saveMovies(moviesToSave);
-          localStorage.setItem('movieListSeeded_gist_refactored', 'true');
+          localStorage.setItem("movieListSeeded_gist_refactored", "true");
           refresh();
         } catch (err) {
-          console.error('Failed to seed movies:', err);
+          console.error("Failed to seed movies:", err);
         } finally {
           isSubmittingRef.current = false;
           setIsSubmitting(false);
@@ -251,7 +317,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   const performMutation = useCallback(
     async (mutationFn: (latestMovies: Movie[]) => Movie[]) => {
       if (!currentUser) {
-        console.warn('Mutation attempted without user');
+        console.warn("Mutation attempted without user");
         return undefined;
       }
       // Chain mutations to prevent race conditions
@@ -270,7 +336,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           await saveMovies(updatedMovies);
           refresh();
         } catch (err) {
-          console.error('Mutation failed:', err);
+          console.error("Mutation failed:", err);
           throw err;
         } finally {
           setIsSubmitting(false);
@@ -281,7 +347,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       mutationLockRef.current = mutation;
       return mutation;
     },
-    [currentUser, refresh]
+    [currentUser, refresh],
   );
 
   const addMovie = useCallback(
@@ -289,12 +355,12 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       const cleanTitle = sanitizeInput(title);
 
       if (!cleanTitle) {
-        throw new Error('Movie title cannot be empty');
+        throw new Error("Movie title cannot be empty");
       }
 
       if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
         throw new Error(
-          `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`
+          `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`,
         );
       }
 
@@ -314,14 +380,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       try {
         metadata = await fetchMovieMetadata(title.trim());
       } catch (err) {
-        console.error('Failed to fetch metadata, continuing without it:', err);
+        console.error("Failed to fetch metadata, continuing without it:", err);
       }
 
       const newMovie = { ...baseMovie, ...extractSafeMetadata(metadata) };
 
       await performMutation((latestMovies) => [...latestMovies, newMovie]);
     },
-    [currentUser, performMutation]
+    [currentUser, performMutation],
   );
 
   const toggleWatched = useCallback(
@@ -329,31 +395,35 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       await performMutation((latestMovies) =>
         latestMovies.map((movie) => {
           if (movie.id === movieId) {
-            const isWatched = movie.watchedBy.includes(currentUser!);
-            const newWatchedBy = isWatched
-              ? movie.watchedBy.filter((user) => user !== currentUser)
-              : [...movie.watchedBy, currentUser!];
-            return { ...movie, watchedBy: newWatchedBy };
+            const userIndex = movie.watchedBy.indexOf(currentUser!);
+            if (userIndex !== -1) {
+              const newWatchedBy = [...movie.watchedBy];
+              newWatchedBy.splice(userIndex, 1);
+              return { ...movie, watchedBy: newWatchedBy };
+            }
+            return { ...movie, watchedBy: [...movie.watchedBy, currentUser!] };
           }
           return movie;
-        })
+        }),
       );
     },
-    [currentUser, performMutation]
+    [currentUser, performMutation],
   );
 
   const deleteMovie = useCallback(
     async (movieId: string) => {
-      await performMutation((latestMovies) => latestMovies.filter((movie) => movie.id !== movieId));
+      await performMutation((latestMovies) =>
+        latestMovies.filter((movie) => movie.id !== movieId),
+      );
     },
-    [performMutation]
+    [performMutation],
   );
 
   const restoreMovie = useCallback(
     async (movie: Movie) => {
       await performMutation((latestMovies) => [...latestMovies, movie]);
     },
-    [performMutation]
+    [performMutation],
   );
 
   const updateMovieMetadata = useCallback(
@@ -364,18 +434,20 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         if (metadata.posterUrl || metadata.plot || metadata.year) {
           await performMutation((latestMovies) =>
             latestMovies.map((m) =>
-              m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
-            )
+              m.id === movie.id
+                ? { ...m, ...extractSafeMetadata(metadata) }
+                : m,
+            ),
           );
           return true;
         }
         return false;
       } catch (err) {
-        console.error('Failed to manual update metadata:', err);
+        console.error("Failed to manual update metadata:", err);
         return false;
       }
     },
-    [performMutation]
+    [performMutation],
   );
 
   const manualMetadataUpdate = useCallback(
@@ -390,16 +462,16 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         const metadata = await fetchMovieMetadata(searchTerm || movie.title);
         await performMutation((latestMovies) =>
           latestMovies.map((m) =>
-            m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
-          )
+            m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m,
+          ),
         );
         return true;
       } catch (err) {
-        console.error('Failed to manual metadata update:', err);
+        console.error("Failed to manual metadata update:", err);
         return false;
       }
     },
-    [performMutation]
+    [performMutation],
   );
 
   const refreshAllMetadata = useCallback(async () => {
@@ -418,27 +490,31 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         return titlePromises.get(t)!;
       };
 
-      const updatedMovies = await concurrentMap(latestMovies, 20, async (movie) => {
-        try {
-          // No artificial delay needed with concurrency limit
-          const metadata = await getMetadata(movie.title);
-          // Merge mostly to keep existing IDs/User data, but overwrite metadata
-          // Only overwrite if we got data back
-          if (metadata.posterUrl) {
-            return { ...movie, ...extractSafeMetadata(metadata) };
+      const updatedMovies = await concurrentMap(
+        latestMovies,
+        20,
+        async (movie) => {
+          try {
+            // No artificial delay needed with concurrency limit
+            const metadata = await getMetadata(movie.title);
+            // Merge mostly to keep existing IDs/User data, but overwrite metadata
+            // Only overwrite if we got data back
+            if (metadata.posterUrl) {
+              return { ...movie, ...extractSafeMetadata(metadata) };
+            }
+            return movie;
+          } catch (e) {
+            console.error(`Failed to refresh metadata for ${movie.title}`, e);
+            return movie;
           }
-          return movie;
-        } catch (e) {
-          console.error(`Failed to refresh metadata for ${movie.title}`, e);
-          return movie;
-        }
-      });
+        },
+      );
 
       await saveMovies(updatedMovies);
       refresh();
       return true;
     } catch (err) {
-      console.error('Failed to refresh all metadata:', err);
+      console.error("Failed to refresh all metadata:", err);
       throw err;
     } finally {
       isSubmittingRef.current = false;
@@ -447,10 +523,17 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   }, [refresh]);
 
   const autoSyncMetadata = useCallback(async () => {
-    if (hasAutoSyncedRef.current || !movies || movies.length === 0 || isSubmittingRef.current)
+    if (
+      hasAutoSyncedRef.current ||
+      !movies ||
+      movies.length === 0 ||
+      isSubmittingRef.current
+    )
       return;
 
-    const moviesMissingMetadata = movies.filter((m) => !m.posterUrl || !m.plot || !m.year);
+    const moviesMissingMetadata = movies.filter(
+      (m) => !m.posterUrl || !m.plot || !m.year,
+    );
     if (moviesMissingMetadata.length === 0) {
       hasAutoSyncedRef.current = true;
       return;
@@ -487,13 +570,18 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         refresh();
       }
     } catch (err) {
-      console.error('Auto-sync: Failed background metadata update:', err);
+      console.error("Auto-sync: Failed background metadata update:", err);
     }
   }, [movies, refresh]);
 
   // Trigger auto-sync once movies are loaded
   useEffect(() => {
-    if (!isLoading && movies && movies.length > 0 && !hasAutoSyncedRef.current) {
+    if (
+      !isLoading &&
+      movies &&
+      movies.length > 0 &&
+      !hasAutoSyncedRef.current
+    ) {
       autoSyncMetadata();
     }
   }, [isLoading, movies, autoSyncMetadata]);
@@ -520,7 +608,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
             return 0;
           })
         : [],
-    [movies]
+    [movies],
   );
 
   return {
