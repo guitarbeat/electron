@@ -238,15 +238,26 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     });
   }, [pendingSuggestions, contentTab, normalizedSearch, showMemoriesOnly]);
 
-  const tabCounts = useMemo(
-    () => ({
+  const tabCounts = useMemo(() => {
+    const counts = sortedMovies.reduce(
+      (acc, movie) => {
+        if (movie.watchedBy.length < 2) {
+          acc['to-watch'] += 1;
+        } else if (movie.watchedBy.length === 2) {
+          acc.watched += 1;
+        }
+        return acc;
+      },
+      { 'to-watch': 0, watched: 0 }
+    );
+
+    return {
       all: sortedMovies.length,
-      'to-watch': sortedMovies.filter((movie) => movie.watchedBy.length < 2).length,
-      watched: sortedMovies.filter((movie) => movie.watchedBy.length === 2).length,
+      'to-watch': counts['to-watch'],
+      watched: counts.watched,
       suggestions: pendingSuggestions.length,
-    }),
-    [sortedMovies, pendingSuggestions]
-  );
+    };
+  }, [sortedMovies, pendingSuggestions]);
 
   return {
     // State returns
