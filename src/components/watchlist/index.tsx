@@ -5,7 +5,7 @@ import { Movie, WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
-import { spacing, typography, motion } from '@/design-system';
+import { colors, spacing, typography, motion } from '@/design-system';
 
 // Components
 import WatchlistTopControls from './components/WatchlistTopControls';
@@ -190,7 +190,17 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       }}
     >
       {isLoading ? (
-        skeletonKeys.map((key) => <MovieCardSkeleton key={key} />)
+        <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
+          <div className="scanning-overlay" style={{ padding: spacing.xl }}>
+            <div style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite' }}>
+              SCANNING GIST REPOSITORY...
+            </div>
+            <div className="scanning-bar" style={{ maxWidth: '300px', margin: '0 auto' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
+            {skeletonKeys.map((key) => <MovieCardSkeleton key={key} />)}
+          </div>
+        </div>
       ) : contentTab === 'suggestions' ? (
         filteredSuggestions.length > 0 ? (
           filteredSuggestions.map((suggestion, index) => (
