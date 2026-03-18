@@ -221,12 +221,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   // Render functions
   const renderMovieItem = useCallback(
-    (movie: Movie) => {
+    (movie: Movie, index: number) => {
       const movieMemories = memories.filter((m) => m.movieId === movie.id);
 
       return (
         <MovieCard
-          animationDelay={`${Math.min(filteredMovies.findIndex((m) => m.id === movie.id) * 0.05, 0.5)}s`}
+          animationDelay={`${Math.min(index * 0.05, 0.5)}s`}
           key={movie.id}
           movie={movie}
           memories={movieMemories}
@@ -246,7 +246,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     [
       memories,
       currentUser,
-      filteredMovies,
       toggleWatched,
       handleDeleteMovie,
       handleFixMatch,
@@ -429,7 +428,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             ) : (
               <div className="watchlist-content">
                 {filteredMovies.length > 0 ? (
-                  filteredMovies.map((movie) => renderMovieItem(movie))
+                  filteredMovies.map((movie, index) => renderMovieItem(movie, index))
                 ) : (
                   <div className="watchlist-empty-state">
                     <p>No movies found</p>
