@@ -13,7 +13,7 @@ import {
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
-import { validateAndThrow, validatePlace, sanitizeInput } from '@/utils';
+import { areDeeplyEqual, isUser, parseJsonContent, sanitizeInput, validateAndThrow, validatePlace } from '@/utils';
 
 const mockPlaces: Place[] = [
   {
@@ -57,7 +57,7 @@ const isPlaceRecord = (value: unknown): value is Place => {
     typeof place.id === 'string' &&
     typeof place.name === 'string' &&
     typeof place.createdAt === 'string' &&
-    (place.addedBy === undefined || place.addedBy === 'Aaron' || place.addedBy === 'Electra') &&
+    (place.addedBy === undefined || isUser(place.addedBy)) &&
     (place.notes === undefined || typeof place.notes === 'string') &&
     (place.visitedAt === undefined || typeof place.visitedAt === 'string') &&
     (place.lat === undefined || typeof place.lat === 'number') &&
@@ -116,7 +116,7 @@ const getPlaces = async (): Promise<Place[]> => {
       return [];
     }
 
-    const places = JSON.parse(content);
+    const places = parseJsonContent(content, 'places') as Place[];
     return Array.isArray(places) ? places : [];
   } catch (error) {
     console.error('Error fetching places from Gist:', error);
@@ -152,7 +152,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     error,
     isLoading,
     refresh,
-  } = usePolling(getPlaces, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+  } = usePolling(getPlaces, 10000, areDeeplyEqual, {
     key: 'places',
     isPaused,
   });

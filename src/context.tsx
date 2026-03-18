@@ -7,6 +7,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState, React
 import type { MainTab, User } from '@/types';
 import { moviesTheme, placesTheme, spacing } from '@/design-system';
 import Toast from '@/components/ui/Toast';
+import { normalizeUser } from '@/utils';
 
 // ============================================================================
 // Theme Context
@@ -180,19 +181,21 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    return sessionStorage.getItem('currentUser') as User | null;
+    return normalizeUser(sessionStorage.getItem('currentUser'));
   });
 
   const value = useMemo(
     () => ({
       currentUser,
       setCurrentUser: (user: User | null) => {
-        if (user) {
-          sessionStorage.setItem('currentUser', user);
+        const normalizedUser = user ? normalizeUser(user) : null;
+
+        if (normalizedUser) {
+          sessionStorage.setItem('currentUser', normalizedUser);
         } else {
           sessionStorage.removeItem('currentUser');
         }
-        setCurrentUser(user);
+        setCurrentUser(normalizedUser);
       },
     }),
     [currentUser]
