@@ -393,6 +393,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       isLoading={isUpdating}
       loadingText="Updating..."
       disabled={isGuest}
+      aria-pressed={watchedByCurrentUser}
       aria-label={
         watchedByCurrentUser
           ? `Mark "${movie.title}" as unwatched`
@@ -416,7 +417,12 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         <EyeOffIcon style={{ width: '12px' }} />
       )}
       <span className="movie-item-primary-action-label">
-        {watchedByCurrentUser ? 'Watched' : 'Mark Watched'}
+        <span className="movie-item-primary-action-label--long">
+          {watchedByCurrentUser ? 'Watched' : 'Mark watched'}
+        </span>
+        <span className="movie-item-primary-action-label--short" aria-hidden>
+          {watchedByCurrentUser ? 'Unwatch' : 'Watch'}
+        </span>
       </span>
     </Button>
   );
