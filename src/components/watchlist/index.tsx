@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { useUser } from '@/context';
 import { useWatchlist } from './useWatchlist';
-import { Movie, WatchlistProps } from '@/types';
+import { WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
@@ -49,7 +49,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addMovie,
     toggleWatched,
     deleteMovie,
-    manualMetadataUpdate,
     addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
@@ -102,7 +101,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         await addMovie(searchQuery.trim());
         setSearchQuery('');
         setToast({ message: `"${searchQuery.trim()}" added to watchlist!`, type: 'success' });
-      } catch (_error) {
+      } catch {
         setToast({ message: 'Failed to add movie', type: 'error' });
       } finally {
         setIsAdding(false);
@@ -144,21 +143,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     try {
       await deleteMovie(movieToDelete.id);
       setToast({ message: `"${movieToDelete.title}" removed!`, type: 'info' });
-    } catch (_error) {
+    } catch {
       setToast({ message: 'Failed to remove movie', type: 'error' });
     } finally {
       setMovieToDelete(null);
     }
   }, [movieToDelete, deleteMovie, setToast, setMovieToDelete]);
-
-  const handleRefreshMetadata = useCallback(async (movieId: string) => {
-    try {
-      await manualMetadataUpdate(movieId);
-      setToast({ message: 'Refreshed movie data!', type: 'success' });
-    } catch (_error) {
-      setToast({ message: 'Refresh failed', type: 'error' });
-    }
-  }, [manualMetadataUpdate, setToast]);
 
   // Render components
   const renderControls = () => (

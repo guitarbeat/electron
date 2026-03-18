@@ -105,7 +105,6 @@ const mergeIntoBasket = (state: BasketState, incoming: FruitKey[]) => {
         const carryOver = Math.floor(nextCount / 2);
         nextState[level] = nextCount % 2;
         bonus += carryOver * FRUIT_SCORE[FRUIT_LIST[level]] * MERGE_BONUS_MULTIPLIER;
-        carry = 0;
         return;
       }
 
@@ -170,6 +169,11 @@ const FoodMergeGame: React.FC = () => {
   const basketStateRef = useRef<BasketState>(getEmptyBasket());
   const directionRef = useRef<0 | 1 | -1>(0);
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const scoreRef = useRef(score);
+
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
 
   const isGameOver = lives <= 0;
   const speedMultiplier = (1 + score * 0.015) * difficultyConfig[difficulty].speedBoost;
@@ -192,29 +196,84 @@ const FoodMergeGame: React.FC = () => {
     if (!running || isGameOver) return undefined;
 
     const interval = window.setInterval(() => {
-      setBasketX((current) =>
-        clamp(current + directionRef.current * 8, 0, BOARD_WIDTH - BASKET_WIDTH)
-      );
+      setBasketX((currentX) => {
+        const nextX = clamp(currentX + directionRef.current * 8, 0, BOARD_WIDTH - BASKET_WIDTH);
 
-      setFoods((currentFoods) => {
-        const nextFoods = currentFoods
-          .map((food) => ({ ...food, y: food.y + food.speed * speedMultiplier }))
-          .filter((food) => food.y < BOARD_HEIGHT + FOOD_SIZE);
+        setFoods((currentFoods) => {
+          const basketLeft = nextX;
+          const basketRight = nextX + BASKET_WIDTH;
+          const basketTop = BOARD_HEIGHT - 28;
 
-        if (Math.random() < difficultyConfig[difficulty].spawnChance) {
-          const maxIndex = FRUIT_DIFFICULTY_SPAWN_LIMIT[difficulty];
-          const fruit = FRUIT_LIST[Math.floor(Math.random() * maxIndex)];
-          nextFoods.push({
-            id: crypto.randomUUID(),
-            x: Math.random() * (BOARD_WIDTH - FOOD_SIZE),
-            y: -FOOD_SIZE,
-            speed: 2 + Math.random() * 2,
-            fruit,
-            emoji: FRUIT_EMOJIS[fruit],
+          const remaining: FallingFood[] = [];
+          const caught: FruitKey[] = [];
+          let missedCount = 0;
+
+          currentFoods.forEach((food) => {
+            const nextY = food.y + food.speed * speedMultiplier;
+            const foodCenter = food.x + FOOD_SIZE / 2;
+            const foodBottom = nextY + FOOD_SIZE;
+
+            const isCaught =
+              foodBottom >= basketTop && foodCenter >= basketLeft && foodCenter <= basketRight;
+
+            if (isCaught) {
+              caught.push(food.fruit);
+              return;
+            }
+
+            if (nextY > BOARD_HEIGHT - FOOD_SIZE / 2) {
+              missedCount += 1;
+              return;
+            }
+
+            remaining.push({ ...food, y: nextY });
           });
-        }
 
-        return nextFoods;
+          if (caught.length > 0) {
+            const caughtScore = caught.reduce((sum, fruit) => sum + FRUIT_SCORE[fruit], 0);
+            const { nextState, bonus } = mergeIntoBasket(basketStateRef.current, caught);
+            setBasketState(nextState);
+            setScore((current) => current + caughtScore + bonus);
+          }
+
+          if (missedCount > 0) {
+            setLives((current) => {
+              const next = current - missedCount;
+              if (next <= 0) {
+                setRunning(false);
+                setHighScore((currentHigh) => {
+                  const currentScore = scoreRef.current;
+                  const nextHigh = Math.max(currentHigh, currentScore);
+                  if (nextHigh !== currentHigh && typeof window !== 'undefined') {
+                    window.localStorage.setItem(HIGHSCORE_KEY, String(nextHigh));
+                    showToast({ message: `New Food Merge high score: ${nextHigh}`, type: 'success' });
+                  } else {
+                    showToast({ message: `Game over. Score: ${currentScore}`, type: 'info' });
+                  }
+                  return nextHigh;
+                });
+              }
+              return next;
+            });
+          }
+
+          if (Math.random() < difficultyConfig[difficulty].spawnChance) {
+            const maxIndex = FRUIT_DIFFICULTY_SPAWN_LIMIT[difficulty];
+            const fruit = FRUIT_LIST[Math.floor(Math.random() * maxIndex)];
+            remaining.push({
+              id: crypto.randomUUID(),
+              x: Math.random() * (BOARD_WIDTH - FOOD_SIZE),
+              y: -FOOD_SIZE,
+              speed: 2 + Math.random() * 2,
+              fruit,
+              emoji: FRUIT_EMOJIS[fruit],
+            });
+          }
+
+          return remaining;
+        });
+
+        return nextX;
       });
     }, TICK_MS);
 
@@ -222,64 +281,8 @@ const FoodMergeGame: React.FC = () => {
   }, [running, isGameOver, speedMultiplier, difficulty]);
 
   useEffect(() => {
-    if (!running || isGameOver) return;
-
-    const basketLeft = basketX;
-    const basketRight = basketX + BASKET_WIDTH;
-    const basketTop = BOARD_HEIGHT - 28;
-
-    const caught: FruitKey[] = [];
-    let missed = 0;
-
-    setFoods((currentFoods) => {
-      const remaining: FallingFood[] = [];
-      currentFoods.forEach((food) => {
-        const foodCenter = food.x + FOOD_SIZE / 2;
-        const foodBottom = food.y + FOOD_SIZE;
-        const isCaught =
-          foodBottom >= basketTop && foodCenter >= basketLeft && foodCenter <= basketRight;
-
-        if (isCaught) {
-          caught.push(food.fruit);
-          return;
-        }
-
-        if (food.y > BOARD_HEIGHT - FOOD_SIZE / 2) {
-          missed += 1;
-          return;
-        }
-
-        remaining.push(food);
-      });
-      return remaining;
-    });
-
-    if (caught.length > 0) {
-      const caughtScore = caught.reduce((sum, fruit) => sum + FRUIT_SCORE[fruit], 0);
-      const { nextState, bonus } = mergeIntoBasket(basketStateRef.current, caught);
-      setBasketState(nextState);
-      setScore((current) => current + caughtScore + bonus);
-    }
-
-    if (missed > 0) {
-      setLives((current) => current - missed);
-    }
-  }, [basketX, foods, running, isGameOver]);
-
-  useEffect(() => {
     if (!isGameOver) return;
-    setRunning(false);
-    setHighScore((currentHigh) => {
-      const next = Math.max(currentHigh, score);
-      if (next !== currentHigh && typeof window !== 'undefined') {
-        window.localStorage.setItem(HIGHSCORE_KEY, String(next));
-        showToast({ message: `New Food Merge high score: ${next}`, type: 'success' });
-      } else {
-        showToast({ message: `Game over. Score: ${score}`, type: 'info' });
-      }
-      return next;
-    });
-  }, [isGameOver, score, showToast]);
+  }, [isGameOver]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

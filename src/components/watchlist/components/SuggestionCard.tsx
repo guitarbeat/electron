@@ -1,6 +1,6 @@
 import React from 'react';
 import { MovieSuggestion } from '@/types';
-import { spacing, typography, colors, radius, motion } from '@/design-system';
+import { spacing, typography, colors, motion } from '@/design-system';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { CheckIcon, CrossIcon } from '@/common/icons';

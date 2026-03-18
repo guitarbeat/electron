@@ -52,15 +52,15 @@ const ActionBubble = React.forwardRef<HTMLButtonElement, ActionBubbleProps>(
           icon={!currentUser ? '⚡' : undefined}
           size="action"
           isHovered={isHovered || isDragging}
-          onClick={onClick as any}
+          onClick={onClick}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onFocus={() => setIsHovered(true)}
           onBlur={() => setIsHovered(false)}
-          onPointerDown={onPointerDown as any}
-          onPointerMove={onPointerMove as any}
-          onPointerUp={onPointerUp as any}
-          onPointerCancel={onPointerCancel as any}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
           showName={false}
           aria-label="Open quick actions"
           style={{

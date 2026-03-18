@@ -10,7 +10,7 @@ import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import PlacesMap from './PlacesMap';
 import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
-import { colors, spacing, typography, radius, motion, shadows } from '@/design-system';
+import { colors, spacing, typography, motion, shadows } from '@/design-system';
 import type { Place } from '@/types';
 
 type PlaceFilter = 'want' | 'visited';

@@ -228,6 +228,11 @@ const AppInner: React.FC = () => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
+  const openMoreSheet = useCallback(() => {
+    setShowMoreSheet(true);
+    setShowActionBubbleMenu(false);
+  }, []);
+
   useEffect(() => {
     if (showMoreSheet && mobileActionTimeoutRef.current !== null) {
       window.clearTimeout(mobileActionTimeoutRef.current);
@@ -243,11 +248,6 @@ const AppInner: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (showMoreSheet && showActionBubbleMenu) {
-      setShowActionBubbleMenu(false);
-    }
-  }, [showMoreSheet]);
 
   useEffect(() => {
     const handleDragResize = () => {
@@ -410,7 +410,7 @@ const AppInner: React.FC = () => {
     handleActionBubbleDragEnd();
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch (error) {
+    } catch {
       // Ignore capture errors from canceled pointer interactions.
     }
   };
@@ -451,7 +451,7 @@ const AppInner: React.FC = () => {
             <button
               type="button"
               className={`app-frame__profile-chip${currentUser ? '' : ' app-frame__profile-chip--empty'}`}
-              onClick={() => setShowMoreSheet(true)}
+              onClick={openMoreSheet}
               aria-label={
                 currentUser
                   ? `Signed in as ${currentUser}. Tap to manage profile.`
@@ -534,7 +534,7 @@ const AppInner: React.FC = () => {
                   <UserSelection
                     variant="inline"
                     className="mobile-hero__selection"
-                    onActionsClick={() => setShowMoreSheet(true)}
+                    onActionsClick={openMoreSheet}
                   />
                 </div>
               </section>
@@ -629,7 +629,7 @@ const AppInner: React.FC = () => {
             <button
               type="button"
               className="mobile-bottom-nav__item"
-              onClick={() => setShowMoreSheet(true)}
+              onClick={openMoreSheet}
               aria-label="More options"
               style={{
                 flex: 1,

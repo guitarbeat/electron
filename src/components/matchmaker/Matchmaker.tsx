@@ -34,7 +34,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   } = useMatchmaker(currentUser);
 
   const [isPickingRandom, setIsPickingRandom] = useState(false);
-  const [randomWinner, setRandomWinner] = useState<Movie | null>(null);
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
 
   const unwatchedMovies = useMemo(
@@ -93,7 +92,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
       randomPickTimeoutRef.current = null;
     }
     setIsPickingRandom(false);
-    setRandomWinner(null);
     setShowConfetti(false);
     setLastMatchedMovie(null);
     lastMatchCount.current = 0;
@@ -129,6 +127,29 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     lastMatchCount.current = matches.length;
   }, [matches.length, movies, matches]);
 
+  const [confettiItems, setConfettiItems] = useState<{
+    id: number;
+    left: string;
+    color: string;
+    shape: string;
+    duration: number;
+    delay: number;
+  }[]>([]);
+
+  useEffect(() => {
+    if (showConfetti || lastMatchedMovie) {
+      const items = [...Array(30)].map((_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        color: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
+        shape: Math.random() > 0.5 ? '50%' : '0',
+        duration: 2 + Math.random() * 2,
+        delay: Math.random() * 0.5,
+      }));
+      setConfettiItems(items);
+    }
+  }, [showConfetti, lastMatchedMovie]);
+
   const availableVibes = useMemo(() => {
     const counts: Record<string, number> = {};
     unwatchedMovies.forEach((m) => {
@@ -149,7 +170,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
       .map(([vibe]) => vibe);
   }, [unwatchedMovies]);
 
-  const [vibe, setVibe] = useState<string | null>(null);
 
   const handleStart = (selectedVibe: string | null = null) => {
     if (!currentUser) return;
@@ -181,7 +201,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     const shuffled = shuffleArray(poolSource);
     const pool = shuffled.slice(0, 10).map((m) => m.id);
     startNewGame(pool);
-    setVibe(selectedVibe);
   };
 
   const handleSwipe = (direction: 'left' | 'right') => {
@@ -341,14 +360,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             animation: 'fadeIn 0.3s ease-out',
           }}
         >
-          {useMemo(() => [...Array(30)].map((_, i) => ({
-            id: i,
-            left: `${Math.random() * 100}%`,
-            color: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
-            shape: Math.random() > 0.5 ? '50%' : '0',
-            duration: 2 + Math.random() * 2,
-            delay: Math.random() * 0.5,
-          })), [showConfetti, lastMatchedMovie]).map((c) => (
+          {confettiItems.map((c) => (
             <div
               key={c.id}
               className="confetti"
