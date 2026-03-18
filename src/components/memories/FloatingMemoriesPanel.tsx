@@ -15,6 +15,8 @@ import {
 import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/types';
 import { areDeeplyEqual } from '@/utils';
+import PolaroidMemory from './PolaroidMemory';
+import { colors, spacing, radius } from '@/design-system';
 
 const FloatingMemoriesPanel: React.FC = () => {
   const { currentUser } = useUser();
@@ -35,6 +37,8 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'scrapbook'>('list');
+  const [imageUrl, setImageUrl] = useState('');
 
   const sorted = useMemo(() => sortMemories(data || [], 'newest'), [data]);
 
@@ -66,10 +70,12 @@ const FloatingMemoriesPanel: React.FC = () => {
         matchedMovie?.title || trimmedMovie,
         currentUser,
         trimmedNote,
-        new Date().toISOString()
+        new Date().toISOString(),
+        imageUrl.trim() || undefined
       );
       setNote('');
       setMovieQuery('');
+      setImageUrl('');
       refresh();
     } finally {
       setSubmitting(false);
@@ -116,6 +122,13 @@ const FloatingMemoriesPanel: React.FC = () => {
             </option>
           ))}
         </datalist>
+        <Input
+          label="Image URL (optional)"
+          value={imageUrl}
+          onChange={(event) => setImageUrl(event.target.value)}
+          placeholder="https://example.com/photo.jpg"
+          className="memory-lane__input"
+        />
         <Textarea
           label="Memory"
           value={note}
@@ -157,6 +170,26 @@ const FloatingMemoriesPanel: React.FC = () => {
           >
             {showPinnedOnly ? 'Showing Pinned' : 'Show Pinned Only'}
           </Button>
+          <div style={{ display: 'flex', gap: spacing.xs, background: colors.surface2, padding: '4px', borderRadius: radius.md }}>
+            <Button
+              size="sm"
+              variant={viewMode === 'list' ? 'primary' : 'ghost'}
+              onClick={() => setViewMode('list')}
+              style={{ padding: '4px 8px', minWidth: '40px' }}
+              title="List View"
+            >
+              💬
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'scrapbook' ? 'primary' : 'ghost'}
+              onClick={() => setViewMode('scrapbook')}
+              style={{ padding: '4px 8px', minWidth: '40px' }}
+              title="Scrapbook View"
+            >
+              📸
+            </Button>
+          </div>
         </div>
 
         <h4 className="memory-lane__thread-title">
@@ -170,6 +203,34 @@ const FloatingMemoriesPanel: React.FC = () => {
           </p>
         ) : filtered.length === 0 ? (
           <p className="memory-lane__status">No memories match your filters.</p>
+        ) : viewMode === 'scrapbook' ? (
+          <div
+            className="memory-lane__scrapbook"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: '2rem',
+              padding: '2rem 1rem',
+              justifyItems: 'center',
+            }}
+          >
+            {filtered.map((memory) => (
+              <PolaroidMemory
+                key={memory.id}
+                memory={memory}
+                onPin={async () => {
+                  await toggleMemoryPin(memory.id);
+                  refresh();
+                }}
+                onDelete={async () => {
+                  if (window.confirm('Delete this memory forever?')) {
+                    await deleteMemory(memory.id);
+                    refresh();
+                  }
+                }}
+              />
+            ))}
+          </div>
         ) : (
           <div className="memory-lane__thread">
             {filtered.map((memory) => (

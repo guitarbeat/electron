@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import RetroEffects from '@/components/effects/RetroEffects';
+import TabTransition from '@/components/effects/TabTransition';
 import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
@@ -438,6 +439,7 @@ const AppInner: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
+      <TabTransition activeTab={activeTab} />
       <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
         <a href="#main-content" className="skip-link" style={{ position: 'absolute', left: '-9999px' }}>

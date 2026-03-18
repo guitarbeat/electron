@@ -50,6 +50,7 @@ export interface SharedMemory {
   createdAt: string;
   updatedAt?: string;
   isPinned?: boolean;
+  imageUrl?: string;
 }
 
 export interface MatchmakerGame {
