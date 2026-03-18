@@ -44,14 +44,21 @@ const handleGet = async (req: Request): Promise<Response> => {
     headers: buildHeaders(req.headers.get('if-none-match')),
   });
 
-  const body = await upstreamResponse.text();
+  const body = upstreamResponse.status === 304 ? null : await upstreamResponse.text();
+  const responseHeaders: Record<string, string> = {
+    'Content-Type': upstreamResponse.headers.get('content-type') || 'application/json',
+    'cache-control': 'no-store',
+  };
+
+  const etag = upstreamResponse.headers.get('etag');
+  if (etag) {
+    responseHeaders.ETag = etag;
+  }
+
   return new Response(body, {
     status: upstreamResponse.status,
     statusText: upstreamResponse.statusText,
-    headers: {
-      'Content-Type': upstreamResponse.headers.get('content-type') || 'application/json',
-      'cache-control': 'no-store',
-    },
+    headers: responseHeaders,
   });
 };
 
@@ -92,13 +99,20 @@ const handlePatch = async (req: Request): Promise<Response> => {
   });
 
   const body = await upstreamResponse.text();
+  const responseHeaders: Record<string, string> = {
+    'Content-Type': upstreamResponse.headers.get('content-type') || 'application/json',
+    'cache-control': 'no-store',
+  };
+
+  const etag = upstreamResponse.headers.get('etag');
+  if (etag) {
+    responseHeaders.ETag = etag;
+  }
+
   return new Response(body, {
     status: upstreamResponse.status,
     statusText: upstreamResponse.statusText,
-    headers: {
-      'Content-Type': upstreamResponse.headers.get('content-type') || 'application/json',
-      'cache-control': 'no-store',
-    },
+    headers: responseHeaders,
   });
 };
 
