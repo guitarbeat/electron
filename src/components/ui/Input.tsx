@@ -95,7 +95,3 @@ Input.displayName = 'Input';
 
 export default Input;
 
-
-Input.displayName = 'Input';
-
-export default Input;
