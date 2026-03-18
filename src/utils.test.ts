@@ -1,45 +1,46 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { isValidUrl } from './utils.ts';
+import test from "node:test";
+import assert from "node:assert/strict";
+import { isValidUrl } from "./utils.ts";
 
-test('isValidUrl', async (t) => {
-  await t.test('returns true for valid HTTP URLs', () => {
-    assert.equal(isValidUrl('http://example.com'), true);
-    assert.equal(isValidUrl('http://www.example.com'), true);
-    assert.equal(isValidUrl('http://example.com/path?query=1#fragment'), true);
+test("isValidUrl", async (t) => {
+  await t.test("returns true for valid HTTP URLs", () => {
+    assert.equal(isValidUrl("http://example.com"), true);
+    assert.equal(isValidUrl("http://www.example.com"), true);
+    assert.equal(isValidUrl("http://example.com/path?query=1#fragment"), true);
   });
 
-  await t.test('returns true for valid HTTPS URLs', () => {
-    assert.equal(isValidUrl('https://example.com'), true);
-    assert.equal(isValidUrl('https://www.example.com'), true);
-    assert.equal(isValidUrl('https://example.com/path?query=1#fragment'), true);
+  await t.test("returns true for valid HTTPS URLs", () => {
+    assert.equal(isValidUrl("https://example.com"), true);
+    assert.equal(isValidUrl("https://www.example.com"), true);
+    assert.equal(isValidUrl("https://example.com/path?query=1#fragment"), true);
   });
 
-  await t.test('returns false for empty or missing input', () => {
-    assert.equal(isValidUrl(''), false);
-    // @ts-expect-error Testing invalid runtime input
-    assert.equal(isValidUrl(null), false);
-    // @ts-expect-error Testing invalid runtime input
-    assert.equal(isValidUrl(undefined), false);
+  await t.test("returns false for empty or missing input", () => {
+    assert.equal(isValidUrl(""), false);
+    assert.equal(isValidUrl(null as unknown as string), false);
+    assert.equal(isValidUrl(undefined as unknown as string), false);
   });
 
-  await t.test('returns false for malformed URLs', () => {
-    assert.equal(isValidUrl('not-a-url'), false);
-    assert.equal(isValidUrl('http://'), false);
-    assert.equal(isValidUrl('https://'), false);
+  await t.test("returns false for malformed URLs", () => {
+    assert.equal(isValidUrl("not-a-url"), false);
+    assert.equal(isValidUrl("http://"), false);
+    assert.equal(isValidUrl("https://"), false);
   });
 
-  await t.test('returns false for unsafe or unsupported protocols', () => {
-    assert.equal(isValidUrl('javascript:alert(1)'), false);
-    assert.equal(isValidUrl('data:text/html,<h1>Hello</h1>'), false);
-    assert.equal(isValidUrl('ftp://example.com'), false);
-    assert.equal(isValidUrl('file:///etc/passwd'), false);
-    assert.equal(isValidUrl('ws://example.com'), false);
-    assert.equal(isValidUrl('wss://example.com'), false);
+  await t.test("returns false for unsafe or unsupported protocols", () => {
+    assert.equal(isValidUrl("javascript:alert(1)"), false);
+    assert.equal(isValidUrl("data:text/html,<h1>Hello</h1>"), false);
+    assert.equal(isValidUrl("ftp://example.com"), false);
+    assert.equal(isValidUrl("file:///etc/passwd"), false);
+    assert.equal(isValidUrl("ws://example.com"), false);
+    assert.equal(isValidUrl("wss://example.com"), false);
   });
 
-  await t.test('returns false for protocol-relative URLs (missing protocol)', () => {
-    // URL constructor throws for protocol-relative unless base is provided
-    assert.equal(isValidUrl('//example.com'), false);
-  });
+  await t.test(
+    "returns false for protocol-relative URLs (missing protocol)",
+    () => {
+      // URL constructor throws for protocol-relative unless base is provided
+      assert.equal(isValidUrl("//example.com"), false);
+    },
+  );
 });
