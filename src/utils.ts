@@ -24,7 +24,7 @@ export const parseJsonContent = (content: string, context: string): unknown => {
   try {
     return JSON.parse(content);
   } catch (error) {
-    throw new Error(`Failed to parse ${context} JSON.`);
+    throw new Error(`Failed to parse ${context} JSON.`, { cause: error });
   }
 };
 

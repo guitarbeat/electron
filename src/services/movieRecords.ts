@@ -1,4 +1,4 @@
-import type { Movie, User } from '../types.ts';
+import type { Movie } from '../types.ts';
 import { isUser, isValidUrl, sanitizeInput } from '../utils';
 
 const normalizeRequiredString = (value: unknown): string | null => {

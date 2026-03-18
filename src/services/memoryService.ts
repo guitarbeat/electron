@@ -1,12 +1,10 @@
 import { parseJsonContent, sanitizeInput } from '@/utils';
 import type { SharedMemory } from '@/types.ts';
 import {
-  canReadGist,
   canWriteGist,
   GIST_MEMORIES_FILENAME,
   patchGistFile,
   readGistJsonFile,
-  readLocalOverride,
   readStoredJson,
   setLocalOverride,
   writeStoredJson,
