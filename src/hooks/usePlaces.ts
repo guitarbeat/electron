@@ -2,42 +2,15 @@ import { useCallback, useRef, useState } from 'react';
 import { Place, User } from '@/types';
 import { usePolling } from './usePolling';
 import {
-  canReadGist,
   canWriteGist,
-  fetchGist,
-  getGistFileContent,
   GIST_PLACES_FILENAME,
   patchGistFile,
-  readLocalOverride,
+  readGistJsonFile,
   readStoredJson,
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
 import { areDeeplyEqual, isUser, parseJsonContent, sanitizeInput, validateAndThrow, validatePlace } from '@/utils';
-
-const mockPlaces: Place[] = [
-  {
-    id: '1',
-    name: 'Eiffel Tower',
-    notes: 'Must visit before 30',
-    addedBy: 'Aaron',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Great Wall of China',
-    notes: 'Amazing views',
-    addedBy: 'Electra',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Statue of Liberty',
-    notes: 'New York trip',
-    addedBy: 'Aaron',
-    createdAt: new Date().toISOString(),
-  },
-];
 
 const PLACES_LOCAL_STORAGE_KEY = 'movieList.localPlaces';
 
@@ -73,7 +46,7 @@ const readStoredLocalPlaces = (): Place[] | null =>
     label: 'local places fallback',
   });
 
-const getFallbackPlaces = (): Place[] => readStoredLocalPlaces() ?? clonePlaces(mockPlaces);
+const getFallbackPlaces = (): Place[] => readStoredLocalPlaces() ?? [];
 
 const saveLocalPlaces = (places: Place[]): void => {
   writeStoredJson({
@@ -87,37 +60,16 @@ const saveLocalPlaces = (places: Place[]): void => {
 
 const getPlaces = async (): Promise<Place[]> => {
   try {
-    if (!canReadGist) {
-      return getFallbackPlaces();
-    }
-
-    const localOverride = readLocalOverride('places', readStoredLocalPlaces);
-    if (localOverride.enabled && localOverride.value) {
-      return localOverride.value;
-    }
-
-    const response = await fetchGist({ cache: 'no-cache' });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        console.warn(`GitHub API returned ${response.status}. Falling back to local places.`);
-        return getFallbackPlaces();
-      }
-      console.warn(`GitHub API returned ${response.status}. Falling back to local places.`);
-      return getFallbackPlaces();
-    }
-
-    const gist = await response.json();
-    const content = getGistFileContent(gist, GIST_PLACES_FILENAME);
-    if (content === null) {
-      if (!canWriteGist) {
-        return getFallbackPlaces();
-      }
-      return [];
-    }
-
-    const places = parseJsonContent(content, 'places') as Place[];
-    return Array.isArray(places) ? places : [];
+    return await readGistJsonFile({
+      scope: 'places',
+      filename: GIST_PLACES_FILENAME,
+      fallback: getFallbackPlaces,
+      onMissingFileWhenWritable: () => [],
+      parse: (content) => {
+        const places = parseJsonContent(content, 'places') as Place[];
+        return Array.isArray(places) ? places : [];
+      },
+    });
   } catch (error) {
     console.error('Error fetching places from Gist:', error);
     console.warn('Falling back to local places');

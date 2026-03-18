@@ -3,10 +3,9 @@ import type { SharedMemory } from '@/types.ts';
 import {
   canReadGist,
   canWriteGist,
-  fetchGist,
   GIST_MEMORIES_FILENAME,
-  getGistFileContent,
   patchGistFile,
+  readGistJsonFile,
   readLocalOverride,
   readStoredJson,
   setLocalOverride,
@@ -61,33 +60,14 @@ const saveLocalMemories = (memories: SharedMemory[]): void => {
 };
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
-  if (!canReadGist) {
-    return getFallbackMemories();
-  }
-
-  const localOverride = readLocalOverride('memories', readStoredLocalMemories);
-  if (localOverride.enabled && localOverride.value) {
-    return localOverride.value;
-  }
-
   try {
-    const response = await fetchGist({ cache: 'no-cache' });
-
-    if (!response.ok) {
-      console.warn(`Failed to fetch memories (${response.status}), using local fallback.`);
-      return getFallbackMemories();
-    }
-
-    const gist = await response.json();
-    const content = getGistFileContent(gist, GIST_MEMORIES_FILENAME);
-    if (content === null) {
-      if (!canWriteGist) {
-        return getFallbackMemories();
-      }
-      return [];
-    }
-
-    return parseJsonContent(content, 'memories') as SharedMemory[];
+    return await readGistJsonFile({
+      scope: 'memories',
+      filename: GIST_MEMORIES_FILENAME,
+      fallback: getFallbackMemories,
+      onMissingFileWhenWritable: () => [],
+      parse: (content) => parseJsonContent(content, 'memories') as SharedMemory[],
+    });
   } catch (error) {
     console.error('Error fetching memories from Gist:', error);
     return getFallbackMemories();
