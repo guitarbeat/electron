@@ -1,4 +1,4 @@
-type Listener<T> = (data: T | undefined, error: any | null) => void;
+type Listener<T> = (data: T | undefined, error: unknown | null) => void;
 interface PollingOptions {
   allowNull?: boolean;
 }
@@ -7,8 +7,8 @@ class PollingManager {
   private subscribers = new Map<string, Set<Listener<any>>>();
   private intervals = new Map<string, ReturnType<typeof setInterval>>();
   private fetchFns = new Map<string, () => Promise<any>>();
-  private cache = new Map<string, any>();
-  private errors = new Map<string, any>();
+  private cache = new Map<string, unknown>();
+  private errors = new Map<string, unknown>();
   private activeIntervals = new Map<string, number>();
   private inFlight = new Map<string, Promise<void>>();
   private options = new Map<string, PollingOptions>();
@@ -32,7 +32,7 @@ class PollingManager {
 
     // If cache exists, emit immediately
     if (this.cache.has(key)) {
-      listener(this.cache.get(key), null);
+      listener(this.cache.get(key) as T, null);
     } else if (this.errors.has(key)) {
       listener(undefined, this.errors.get(key));
     }

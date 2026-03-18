@@ -17,8 +17,8 @@ test('isValidUrl', async (t) => {
 
   await t.test('returns false for empty or missing input', () => {
     assert.equal(isValidUrl(''), false);
-    assert.equal(isValidUrl(null as any), false);
-    assert.equal(isValidUrl(undefined as any), false);
+    assert.equal(isValidUrl(null as unknown as string), false);
+    assert.equal(isValidUrl(undefined as unknown as string), false);
   });
 
   await t.test('returns false for malformed URLs', () => {

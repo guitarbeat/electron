@@ -2,12 +2,10 @@ import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/hooks/usePolling';
 import { areDeeplyEqual, parseJsonContent, sanitizeInput } from '@/utils';
 import {
-  canReadGist,
   canWriteGist,
   GIST_SUGGESTIONS_FILENAME,
   patchGistFile,
   readGistJsonFile,
-  readLocalOverride,
   readStoredJson,
   setLocalOverride,
   writeStoredJson,

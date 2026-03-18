@@ -22,8 +22,7 @@ import {
   sanitizeInput,
 } from '@/utils';
 
-let cachedMovies: Movie[] = [];
-let lastETag: string | null = null;
+
 const MOVIES_LOCAL_STORAGE_KEY = 'movieList.localMovies';
 
 const readStoredLocalMovies = (): Movie[] | null =>
@@ -43,8 +42,6 @@ const saveLocalMovies = (movies: Movie[]): void => {
     clone: cloneMovies,
     label: 'local movie fallback',
   });
-  cachedMovies = nextMovies;
-  lastETag = null;
   setLocalOverride('movies', true);
 };
 
@@ -78,15 +75,12 @@ const getMovies = async (): Promise<Movie[]> => {
         return normalized;
       },
       fetchOptions: {
-        eTag: lastETag,
         cache: 'no-cache',
       },
     });
 
     // Best-effort ETag tracking for polling efficiency.
     // When the helper falls back, we clear ETag so the next fetch isn't pinned to a stale value.
-    cachedMovies = movies;
-    lastETag = null;
     return movies;
   } catch (error) {
     console.error('Error fetching movies from Gist:', error);
@@ -127,8 +121,7 @@ const saveMovies = async (movies: Movie[]): Promise<void> => {
       return;
     }
 
-    cachedMovies = movies;
-    lastETag = null;
+
     setLocalOverride('movies', false);
   } catch (error) {
     console.warn('Error saving movies to Gist, using local fallback:', error);
@@ -196,8 +189,6 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         const response = await patchGistFile(GIST_FILENAME, JSON.stringify(merged, null, 2));
         if (!response.ok) return;
 
-        cachedMovies = merged;
-        lastETag = null;
         setLocalOverride('movies', false);
         hasAutoSyncedRef.current = true;
         refresh();
@@ -258,7 +249,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       const mutation = (async () => {
         try {
           await mutationLockRef.current;
-        } catch (e) {
+        } catch (_e) {
           // Ignore previous mutation errors so the next mutation can proceed.
         }
 
