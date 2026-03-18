@@ -11,7 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "check-types": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test src/**/*.test.ts"
   },
   "dependencies": {
     "react": "^19.2.4",
