@@ -4,7 +4,7 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import SubNav from '@/ui/SubNav';
 import { ContentTab, SortMode } from '@/types';
-import { spacing } from '@/design-system';
+import { spacing, colors, typography, motion } from '@/design-system';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -51,83 +51,106 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   suggestionError,
 }) => {
   return (
-    <div className="watchlist-top-controls" style={{ marginBottom: spacing.xl }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-        <SubNav
-          tabs={MOVIE_TABS.map((tab) => ({
-            id: tab.id,
-            label: tab.label,
-            count: tabCounts[tab.id] ?? 0,
-          }))}
-          activeTabId={contentTab}
-          onTabChange={(id) => setContentTab(id as ContentTab)}
-          chips={SORT_OPTIONS}
-          activeChipId={sortMode}
-          onChipChange={(id) => setSortMode(id as SortMode)}
-          variant="underlined"
-        />
+    <div 
+      className="watchlist-top-controls" 
+      style={{ 
+        marginBottom: spacing.xl,
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: spacing.lg,
+        animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
+      }}
+    >
+      <SubNav
+        tabs={MOVIE_TABS.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          count: tabCounts[tab.id] ?? 0,
+        }))}
+        activeTabId={contentTab}
+        onTabChange={(id) => setContentTab(id as ContentTab)}
+        chips={SORT_OPTIONS}
+        activeChipId={sortMode}
+        onChipChange={(id) => setSortMode(id as SortMode)}
+        variant="underlined"
+      />
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: spacing.sm,
-            width: '100%',
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spacing.sm,
+          width: '100%',
+        }}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onSubmit();
+          }}
+          style={{ 
+            flex: 1, 
+            display: 'flex', 
+            gap: spacing.xs,
+            alignItems: 'stretch',
           }}
         >
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void onSubmit();
-            }}
-            style={{ flex: 1, display: 'flex', gap: spacing.xs }}
-          >
-            <div style={{ flex: 1 }}>
-              <Input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search or add a movie…"
-                aria-label="Search or add a movie"
-                fullWidth
-              />
-            </div>
-            {searchQuery.trim() && (
-              <Button
-                type="submit"
-                variant="secondary"
-                size="md"
-                disabled={isAdding || isSuggesting}
-                isLoading={isAdding || isSuggesting}
-                title="Add or suggest movie"
-                aria-label="Add or suggest movie"
-                style={{ minWidth: '44px' }}
-              >
-                {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-              </Button>
-            )}
-          </form>
+          <div style={{ flex: 1 }}>
+            <Input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search or add a movie…"
+              aria-label="Search or add a movie"
+              fullWidth
+            />
+          </div>
+          {searchQuery.trim() && (
+            <Button
+              type="submit"
+              variant="secondary"
+              size="md"
+              disabled={isAdding || isSuggesting}
+              isLoading={isAdding || isSuggesting}
+              title="Add or suggest movie"
+              aria-label="Add or suggest movie"
+              style={{ minWidth: '44px' }}
+            >
+              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+            </Button>
+          )}
+        </form>
 
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onPickRandom}
-            disabled={isAdding || isSuggesting || !canSurprise}
-            title="Surprise me"
-            aria-label="Pick a random movie"
-            style={{ fontSize: '1.25rem', padding: '0.5rem' }}
-          >
-            🎲
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onPickRandom}
+          disabled={isAdding || isSuggesting || !canSurprise}
+          title="Surprise me"
+          aria-label="Pick a random movie"
+          style={{ 
+            fontSize: '1.25rem', 
+            padding: spacing.xs,
+            borderRadius: '50%',
+            aspectRatio: '1/1',
+            minWidth: '44px',
+          }}
+        >
+          🎲
+        </Button>
       </div>
 
       {suggestionError && (
         <div
+          role="alert"
           style={{
-            marginTop: spacing.sm,
-            color: '#f87171',
-            fontSize: '0.8125rem',
+            marginTop: -spacing.xs,
+            color: colors.error,
+            fontSize: typography.fontSize.xs,
             textAlign: 'center',
+            background: `${colors.error}10`,
+            padding: `${spacing.xs} ${spacing.sm}`,
+            borderRadius: '4px',
+            border: `1px solid ${colors.error}30`,
           }}
         >
           {suggestionError}
@@ -138,4 +161,5 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
 };
 
 export default WatchlistTopControls;
+
 

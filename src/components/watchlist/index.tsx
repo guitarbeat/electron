@@ -1,48 +1,16 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { useUser } from '@/context';
 import { useWatchlist } from './useWatchlist';
-import { Movie, MovieSuggestion, WatchlistProps } from '@/types';
+import { Movie, WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
+import { spacing, typography, motion } from '@/design-system';
 
 // Components
 import WatchlistTopControls from './components/WatchlistTopControls';
 import MovieCard from './components/MovieCard';
-
-// Styles
-
-const renderWorkspace = ({
-  isMobile,
-  controls,
-  content,
-}: {
-  isMobile: boolean;
-  controls: React.ReactNode;
-  content: React.ReactNode;
-}) => {
-  if (isMobile) {
-    return (
-      <div className="workspace-layout workspace-layout--mobile">
-        <div className="workspace-layout__mobile-topbar" aria-label="Watchlist controls">
-          {controls}
-        </div>
-        <div className="workspace-layout__content">{content}</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="workspace-layout">
-      <aside className="workspace-layout__controls" aria-label="Watchlist controls">
-        {controls}
-      </aside>
-      <section className="workspace-layout__content" aria-label="Watchlist content">
-        {content}
-      </section>
-    </div>
-  );
-};
+import SuggestionCard from './components/SuggestionCard';
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
@@ -57,14 +25,17 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     movieToDelete,
     setMovieToDelete,
     setToast,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setProcessingSuggestionId,
     contentTab,
     setContentTab,
     sortMode,
     setSortMode,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     movieToFix,
     setMovieToFix,
     showConfetti,
@@ -74,8 +45,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     // Data returns
     movies,
     isLoading,
-    moviesError,
-    refreshMovies,
+    // refreshMovies,
     addMovie,
     toggleWatched,
     deleteMovie,
@@ -83,9 +53,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
-    pendingSuggestions,
-    memories,
-    addMemory,
+    // pendingSuggestions, // Already used through filteredSuggestions
+    // memories,
+    // addMemory,
     filteredMovies,
     filteredSuggestions,
     tabCounts,
@@ -93,19 +63,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false);
+  
   const skeletonKeys = isMobile
     ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
-    : [
-        'desktop-1',
-        'desktop-2',
-        'desktop-3',
-        'desktop-4',
-        'desktop-5',
-        'desktop-6',
-        'desktop-7',
-        'desktop-8',
-      ];
+    : ['desktop-1', 'desktop-2', 'desktop-3', 'desktop-4', 'desktop-5', 'desktop-6', 'desktop-7', 'desktop-8'];
 
   // Handle confetti when both users watch a movie
   useEffect(() => {
@@ -129,28 +90,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     });
 
     previousMoviesRef.current = movies;
-  }, [movies, setShowConfetti, setToast]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Search suggestions logic
-  const searchSuggestions = useMemo(() => {
-    if (!searchQuery || searchQuery.length < 2) return [];
-
-    const query = searchQuery.toLowerCase();
-    const movieMatches = movies
-      .filter((m) => m.title.toLowerCase().includes(query))
-      .map((m) => m.title)
-      .slice(0, 3);
-
-    const suggestionMatches = pendingSuggestions
-      .filter((s) => s.title.toLowerCase().includes(query))
-      .map((s) => s.title)
-      .slice(0, 3);
-
-    const deduped = Array.from(new Set([...movieMatches, ...suggestionMatches]));
-    return deduped.slice(0, 6);
-  }, [movies, pendingSuggestions, searchQuery]);
-
-
+  }, [movies, setShowConfetti, setToast, setSuccessMovieId, previousMoviesRef]);
 
   // Event handlers
   const handleAddAction = useCallback(async () => {
@@ -188,9 +128,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     const suggestionTitles = filteredSuggestions.map((suggestion) => suggestion.title);
     const pool = Array.from(new Set([...movieTitles, ...suggestionTitles])).filter(Boolean);
 
-    if (pool.length === 0) {
-      return;
-    }
+    if (pool.length === 0) return;
 
     const randomIndex = Math.floor(Math.random() * pool.length);
     const randomTitle = pool[randomIndex];
@@ -199,312 +137,128 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       setSearchQuery(randomTitle);
     }
   }, [filteredMovies, filteredSuggestions, setSearchQuery]);
-  const canSurprisePick = filteredMovies.length > 0 || filteredSuggestions.length > 0;
 
+  const confirmDelete = useCallback(async () => {
+    if (!movieToDelete) return;
 
-
-  const handleDeleteMovie = useCallback(
-    (movie: Movie) => {
-      setMovieToDelete(movie);
-    },
-    [setMovieToDelete]
-  );
-
-  const handleFixMatch = useCallback(
-    (movie: Movie) => {
-      setMovieToFix(movie);
-    },
-    [setMovieToFix]
-  );
-
-  const handleAddMemory = useCallback(
-    async (movie: Movie, memory: { note: string; createdAt?: string }) => {
-      await addMemory(movie.id, movie.title, currentUser || 'Unknown', memory.note);
-    },
-    [addMemory, currentUser]
-  );
-
-  // Render functions
-  const renderMovieItem = useCallback(
-    (movie: Movie) => {
-      const movieMemories = memories.filter((m) => m.movieId === movie.id);
-
-      return (
-        <MovieCard
-          animationDelay={`${Math.min(filteredMovies.findIndex((m) => m.id === movie.id) * 0.05, 0.5)}s`}
-          key={movie.id}
-          movie={movie}
-          memories={movieMemories}
-          currentUser={currentUser}
-          onToggle={() => toggleWatched(movie.id)}
-          onDelete={() => handleDeleteMovie(movie)}
-          onFixMatch={() => handleFixMatch(movie)}
-          onAddMemory={async (note: string) => {
-            await handleAddMemory(movie, {
-              note,
-              createdAt: new Date().toISOString(),
-            });
-          }}
-        />
-      );
-    },
-    [
-      memories,
-      currentUser,
-      filteredMovies,
-      toggleWatched,
-      handleDeleteMovie,
-      handleFixMatch,
-      handleAddMemory,
-    ]
-  );
-
-  const renderSuggestionItem = useCallback(
-    (suggestion: MovieSuggestion) => {
-      const isProcessing = processingSuggestionId === suggestion.id;
-
-      return (
-        <article key={suggestion.id} className="suggestion-item-card">
-          <h3 className="suggestion-item-card__title">{suggestion.title}</h3>
-          <p className="suggestion-item-card__meta">
-            Suggested by {suggestion.suggestedBy} on{' '}
-            {new Date(suggestion.createdAt).toLocaleDateString()}
-          </p>
-          {suggestion.reason ? (
-            <p className="suggestion-item-card__reason">{suggestion.reason}</p>
-          ) : null}
-
-          {currentUser ? (
-            <div className="suggestion-item-card__actions">
-              <button
-                type="button"
-                className="suggestion-item-card__button is-accept"
-                disabled={isProcessing}
-                onClick={async () => {
-                  if (!currentUser) return;
-                  setProcessingSuggestionId(suggestion.id);
-                  try {
-                    await addMovie(suggestion.title);
-                    await acceptSuggestion(suggestion.id, currentUser);
-                    setToast({ message: `Added "${suggestion.title}"`, type: 'success' });
-                  } finally {
-                    setProcessingSuggestionId(null);
-                  }
-                }}
-              >
-                {isProcessing ? 'Adding…' : 'Accept'}
-              </button>
-              <button
-                type="button"
-                className="suggestion-item-card__button is-reject"
-                disabled={isProcessing}
-                onClick={async () => {
-                  if (!currentUser) return;
-                  setProcessingSuggestionId(suggestion.id);
-                  try {
-                    await rejectSuggestion(suggestion.id, currentUser);
-                    setToast({ message: `Rejected "${suggestion.title}"`, type: 'info' });
-                  } finally {
-                    setProcessingSuggestionId(null);
-                  }
-                }}
-              >
-                Reject
-              </button>
-            </div>
-          ) : null}
-        </article>
-      );
-    },
-    [
-      acceptSuggestion,
-      addMovie,
-      currentUser,
-      processingSuggestionId,
-      rejectSuggestion,
-      setProcessingSuggestionId,
-      setToast,
-    ]
-  );
-
-  const getEmptyStateMessage = useCallback(() => {
-    if (contentTab === 'suggestions') {
-      return 'No movie suggestions yet. Be the first to suggest something!';
+    try {
+      await deleteMovie(movieToDelete.id);
+      setToast({ message: `"${movieToDelete.title}" removed!`, type: 'info' });
+    } catch (_error) {
+      setToast({ message: 'Failed to remove movie', type: 'error' });
+    } finally {
+      setMovieToDelete(null);
     }
+  }, [movieToDelete, deleteMovie, setToast, setMovieToDelete]);
 
-    if (searchQuery) {
-      return `No movies found matching "${searchQuery}"`;
+  const handleRefreshMetadata = useCallback(async (movieId: string) => {
+    try {
+      await manualMetadataUpdate(movieId);
+      setToast({ message: 'Refreshed movie data!', type: 'success' });
+    } catch (_error) {
+      setToast({ message: 'Refresh failed', type: 'error' });
     }
+  }, [manualMetadataUpdate, setToast]);
 
-    switch (contentTab) {
-      case 'to-watch':
-        return 'No movies in your queue. Add some movies to get started!';
-      case 'watched':
-        return 'No watched movies yet. Start watching and mark them as complete!';
-      default:
-        return 'No movies in your watchlist. Add your first movie to get started!';
-    }
-  }, [contentTab, searchQuery]);
+  // Render components
+  const renderControls = () => (
+    <WatchlistTopControls
+      contentTab={contentTab}
+      setContentTab={setContentTab}
+      sortMode={sortMode}
+      setSortMode={setSortMode}
+      tabCounts={tabCounts}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      onSubmit={handleAddAction}
+      onPickRandom={handleRandomMoviePick}
+      canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
+      isAdding={isAdding}
+      isSuggesting={isSuggesting}
+      suggestionError={suggestionError}
+    />
+  );
 
-  const moviesErrorMessage =
-    moviesError instanceof Error
-      ? moviesError.message
-      : typeof moviesError === 'string'
-        ? moviesError
-        : 'Unable to load movies right now.';
-
-  if (moviesError) {
-    return renderWorkspace({
-      isMobile,
-      controls: (
-        <WatchlistTopControls
-          contentTab={contentTab}
-          setContentTab={setContentTab}
-          sortMode={sortMode}
-          setSortMode={setSortMode}
-          tabCounts={tabCounts}
-          onPickRandom={handleRandomMoviePick}
-          canSurprise={canSurprisePick}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSubmit={handleAddAction}
-          isAdding={isAdding}
-          isSuggesting={isSuggesting}
-          suggestionError={suggestionError}
-        />
-      ),
-      content: (
-        <div className="watchlist-error">
-          <h2>Error loading movies</h2>
-          <p>{moviesErrorMessage}</p>
-          <button onClick={refreshMovies}>Try again</button>
-        </div>
-      ),
-    });
-  }
-
-  return renderWorkspace({
-    isMobile,
-    controls: (
-      <WatchlistTopControls
-        contentTab={contentTab}
-        setContentTab={setContentTab}
-        sortMode={sortMode}
-        setSortMode={setSortMode}
-        tabCounts={tabCounts}
-        onPickRandom={handleRandomMoviePick}
-        canSurprise={canSurprisePick}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSubmit={handleAddAction}
-        isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        suggestionError={suggestionError}
-      />
-    ),
-    content: (
-      <div className="watchlist">
-        {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
-          <div
-            className="watchlist-empty-state"
-            style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}
-          >
-            <p>{getEmptyStateMessage()}</p>
-          </div>
-        ) : isLoading ? (
-          <div className="watchlist-content">
-            {skeletonKeys.map((key) => (
-              <MovieCardSkeleton key={key} />
-            ))}
-          </div>
-        ) : contentTab === 'suggestions' ? (
-          <div className="watchlist-content">
-            {filteredSuggestions.length > 0 ? (
-              filteredSuggestions.map((suggestion) => renderSuggestionItem(suggestion))
-            ) : (
-              <div className="watchlist-empty-state">
-                <p>No suggestions available</p>
-              </div>
-            )}
-          </div>
+  const renderContent = () => (
+    <div 
+      className="watchlist-content"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+        gap: spacing.lg,
+        animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
+      }}
+    >
+      {isLoading ? (
+        skeletonKeys.map((key) => <MovieCardSkeleton key={key} />)
+      ) : contentTab === 'suggestions' ? (
+        filteredSuggestions.length > 0 ? (
+          filteredSuggestions.map((suggestion, index) => (
+            <SuggestionCard
+              key={suggestion.id}
+              suggestion={suggestion}
+              onAccept={() => acceptSuggestion(suggestion.id, currentUser || 'Aaron')}
+              onReject={() => rejectSuggestion(suggestion.id, currentUser || 'Aaron')}
+              isProcessing={processingSuggestionId === suggestion.id}
+              animationDelay={`${index * 0.05}s`}
+            />
+          ))
         ) : (
-          <div className="watchlist-content">
-            {filteredMovies.length > 0 ? (
-              filteredMovies.map((movie) => renderMovieItem(movie))
-            ) : (
-              <div className="watchlist-empty-state">
-                <p>No movies found</p>
-              </div>
-            )}
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing['2xl'], color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}>
+            No pending suggestions
           </div>
-        )}
-
-        {movieToDelete && (
-          <ConfirmDialog
-            isOpen={!!movieToDelete}
-            onCancel={() => setMovieToDelete(null)}
-            title="Delete Movie"
-            message={`Are you sure you want to delete "${movieToDelete.title}"?`}
-            onConfirm={async () => {
-              try {
-                await deleteMovie(movieToDelete.id);
-                setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'info' });
-              } catch (_error) {
-                setToast({ message: 'Failed to delete movie', type: 'error' });
-              } finally {
-                setMovieToDelete(null);
-              }
-            }}
+        )
+      ) : filteredMovies.length > 0 ? (
+        filteredMovies.map((movie, index) => (
+          <MovieCard
+            key={movie.id}
+            movie={movie}
+            currentUser={currentUser}
+            onToggle={() => toggleWatched(movie.id)}
+            onDelete={() => setMovieToDelete(movie)}
+            onFixMatch={() => setMovieToFix(movie)}
+            animationDelay={`${index * 0.05}s`}
           />
-        )}
+        )
+      )) : (
+        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing['2xl'], color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}>
+          {searchQuery ? 'No matching movies found' : 'Your watchlist is empty'}
+        </div>
+      )}
+    </div>
+  );
 
-        {movieToFix && (
-          <ConfirmDialog
-            isOpen={!!movieToFix}
-            title="Fix Details"
-            message={`Re-fetch metadata for "${movieToFix.title}"?`}
-            confirmText="Re-fetch"
-            cancelText="Cancel"
-            variant="primary"
-            isLoading={isRefreshingMetadata}
-            onCancel={() => {
-              if (!isRefreshingMetadata) {
-                setMovieToFix(null);
-              }
-            }}
-            onConfirm={async () => {
-              setIsRefreshingMetadata(true);
-              try {
-                const refreshed = await manualMetadataUpdate(movieToFix.id, movieToFix.title);
-                setToast({
-                  message: refreshed
-                    ? `Refreshed metadata for "${movieToFix.title}"`
-                    : `No metadata update found for "${movieToFix.title}"`,
-                  type: refreshed ? 'success' : 'info',
-                });
-              } catch (_error) {
-                setToast({ message: 'Failed to refresh metadata', type: 'error' });
-              } finally {
-                setIsRefreshingMetadata(false);
-                setMovieToFix(null);
-              }
-            }}
-          />
-        )}
+  return (
+    <div className="watchlist-container" style={{ position: 'relative' }}>
+      <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
 
-        {showConfetti && (
-          <Confetti
-            key={successMovieId ?? 'celebration'}
-            isActive={showConfetti}
-            onComplete={() => {
-              setShowConfetti(false);
-              setSuccessMovieId(null);
-            }}
-          />
-        )}
-      </div>
-    ),
-  });
+      {!isMobile ? (
+        <div className="workspace-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 320px) 1fr', gap: spacing.xl }}>
+          <aside style={{ position: 'sticky', top: spacing.xl, height: 'fit-content' }}>
+            {renderControls()}
+          </aside>
+          <section>{renderContent()}</section>
+        </div>
+      ) : (
+        <div className="workspace-layout--mobile">
+          <div style={{ marginBottom: spacing.lg }}>{renderControls()}</div>
+          <div>{renderContent()}</div>
+        </div>
+      )}
+
+      {movieToDelete && (
+        <ConfirmDialog
+          isOpen={!!movieToDelete}
+          title="Remove Movie"
+          message={`Are you sure you want to remove "${movieToDelete.title}"?`}
+          onConfirm={confirmDelete}
+          onCancel={() => setMovieToDelete(null)}
+          confirmText="Remove"
+          variant="danger"
+        />
+      )}
+    </div>
+  );
 };
 
 export default memo(Watchlist);
