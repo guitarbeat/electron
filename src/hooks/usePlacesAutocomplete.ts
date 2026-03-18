@@ -39,7 +39,9 @@ export function usePlacesAutocomplete(
 ): void {
   const autocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
   const onPlaceSelectRef = useRef(onPlaceSelect);
-  onPlaceSelectRef.current = onPlaceSelect;
+  useEffect(() => {
+    onPlaceSelectRef.current = onPlaceSelect;
+  }, [onPlaceSelect]);
 
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !inputRef.current) return;

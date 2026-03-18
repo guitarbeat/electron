@@ -192,7 +192,6 @@ export const concurrentMap = async <T, R>(
   const iterator = items.entries();
   const worker = async () => {
     for (const [index, item] of iterator) {
-      // eslint-disable-next-line no-await-in-loop
       results[index] = await fn(item);
     }
   };
