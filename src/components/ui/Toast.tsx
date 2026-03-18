@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Card from './Card';
 import { CheckIcon } from '@/common/icons';
-import { colors, shadows, spacing, typography, radius } from '@/design-system';
+import { colors, shadows, spacing, typography, radius, motion } from '@/design-system';
+import { useAudio } from '@/hooks/useAudio';
 
 interface ToastProps {
   message: string;
@@ -42,26 +43,28 @@ const Toast: React.FC<ToastProps> = ({
   duration = 3500,
   actionLabel,
   onAction,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   position = 'top-right',
   persistent = false,
 }) => {
+  const { playSuccess, playError, playPop } = useAudio();
   const [isExiting, setIsExiting] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Entrance animation
-    const enterTimer = setTimeout(() => setIsVisible(true), 50);
-    
+    // Play sound based on type
+    if (type === 'success') playSuccess();
+    else if (type === 'error') playError();
+    else playPop();
+
     if (duration > 0 && !persistent) {
       const exitTimer = setTimeout(() => setIsExiting(true), Math.max(0, duration - 250));
       const dismissTimer = setTimeout(() => onDismiss?.(), duration);
       return () => {
-        clearTimeout(enterTimer);
         clearTimeout(exitTimer);
         clearTimeout(dismissTimer);
       };
     }
-  }, [duration, onDismiss, persistent]);
+  }, [duration, onDismiss, persistent, playError, playPop, playSuccess, type]);
 
   const handleDismiss = () => {
     setIsExiting(true);
@@ -78,7 +81,7 @@ const Toast: React.FC<ToastProps> = ({
             style={{
               color: styles.iconColor,
               flexShrink: 0,
-              filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))',
+              filter: `drop-shadow(0 0 4px ${colors.success}60)`,
             }}
           />
         );
@@ -95,6 +98,7 @@ const Toast: React.FC<ToastProps> = ({
       variant="elevated"
       role={type === 'error' ? 'alert' : 'status'}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
+      className={`toast-notification toast--${type}`}
       style={{
         width: 'min(680px, calc(100vw - 1.5rem))',
         padding: spacing.md,
@@ -102,6 +106,8 @@ const Toast: React.FC<ToastProps> = ({
         borderColor: styles.borderColor,
         borderWidth: '2px',
         boxShadow: styles.shadow,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         animation: isExiting
           ? 'toast-slide-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards'
           : 'toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
@@ -125,6 +131,7 @@ const Toast: React.FC<ToastProps> = ({
             overflowWrap: 'break-word',
             flex: '1 1 auto',
             minWidth: 0,
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
           }}
         >
           {message}
@@ -149,7 +156,10 @@ const Toast: React.FC<ToastProps> = ({
               fontWeight: typography.fontWeight.semibold,
               letterSpacing: typography.letterSpacing.wide,
               whiteSpace: 'nowrap',
+              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
           >
             {actionLabel}
           </button>
@@ -163,13 +173,16 @@ const Toast: React.FC<ToastProps> = ({
             style={{
               background: 'none',
               border: 'none',
-              color: colors.textSecondary,
+              color: isExiting ? 'transparent' : colors.textSecondary,
               cursor: 'pointer',
               padding: spacing.xs,
               fontSize: '1.05rem',
               lineHeight: 1,
               borderRadius: radius.sm,
+              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = colors.textPrimary)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = colors.textSecondary)}
           >
             ✕
           </button>
@@ -180,3 +193,4 @@ const Toast: React.FC<ToastProps> = ({
 };
 
 export default Toast;
+

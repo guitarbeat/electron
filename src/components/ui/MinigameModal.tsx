@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { colors, spacing, shadows, typography } from '@/design-system';
+import { colors, spacing, shadows, typography, radius, zIndex, motion } from '@/design-system';
 import { getModalOverlayStyle, isFocusWithin, trapFocusOnTab } from './modalPrimitives';
+import { useAudio } from '@/hooks/useAudio';
 
 interface MinigameModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   closeDisabled = false,
   closeDisabledLabel = 'Please wait for the current action to finish.',
 }) => {
+  const { playPop } = useAudio();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusedElement = useRef<HTMLElement | null>(null);
@@ -89,6 +91,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
 
   const handleClose = () => {
     if (closeDisabled) return;
+    playPop();
     onClose();
   };
 
@@ -96,7 +99,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
     <div
       style={{
         ...getModalOverlayStyle('rgba(10, 6, 14, 0.64)', 'center', 0),
-        zIndex: 9999,
+        zIndex: zIndex.modal + 100, // Higher than other modals
         width: '100vw',
         height: '100vh',
         backgroundImage:
@@ -112,6 +115,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
       <div
         ref={dialogRef}
         tabIndex={-1}
+        className="minigame-modal-surface"
         style={{
           position: 'relative',
           width: 'min(100vw, 100%)',
@@ -123,14 +127,24 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
           overflow: 'hidden',
           background:
             'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
-          borderRadius: 28,
+          borderRadius: radius.xl,
           border: `1px solid ${colors.borderSecondary}55`,
-          boxShadow: `${shadows.cardElevated}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
+          boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
+          animation: `minigame-modal-pop ${motion.duration.normal} ${motion.easing.spring} both`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        <style>
+          {`
+            @keyframes minigame-modal-pop {
+              from { transform: scale(0.95); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+          `}
+        </style>
+
         {/* Header: optional title + close */}
         <div
           style={{
@@ -149,11 +163,11 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             <h2
               style={{
                 margin: 0,
-                fontFamily: 'var(--font-display)',
+                fontFamily: typography.fontFamilyValue.heading,
                 fontSize: typography.fontSize.lg,
                 color: 'rgba(255, 245, 249, 0.95)',
-                letterSpacing: '0.08em',
-                textShadow: '0 0 18px rgba(255,127,198,0.22)',
+                letterSpacing: typography.letterSpacing.eyebrow,
+                textShadow: shadows.textGlow,
               }}
             >
               {title}
@@ -173,7 +187,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
               width: 40,
               height: 40,
               padding: 0,
-              borderRadius: '50%',
+              borderRadius: radius.full,
               background:
                 'linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 100%), rgba(41, 26, 37, 0.74)',
               color: '#fff3f7',
@@ -183,7 +197,30 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.26), 0 8px 20px rgba(0,0,0,0.22)',
+              boxShadow: shadows.button,
+              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+            }}
+            onMouseEnter={(e) => {
+              if (!closeDisabled) {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.borderColor = colors.accent;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!closeDisabled) {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.borderColor = `${colors.borderSecondary}45`;
+              }
+            }}
+            onMouseDown={(e) => {
+              if (!closeDisabled) {
+                e.currentTarget.style.transform = 'scale(0.95)';
+              }
+            }}
+            onMouseUp={(e) => {
+              if (!closeDisabled) {
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }
             }}
           >
             <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,3 +254,4 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
 };
 
 export default MinigameModal;
+

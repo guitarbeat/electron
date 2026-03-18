@@ -64,9 +64,20 @@ export const useAudio = () => {
   }, [playTone]);
 
   const playSuccess = useCallback(() => {
-    playTone(523.25, 'sine', 0.1, 0.1);
-    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.1), 100);
+    playTone(523.25, 'sine', 0.1, 0.08);
+    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.08), 100);
   }, [playTone]);
 
-  return { playTone, playClick, playPop, playSwitch, playSuccess };
+  const playError = useCallback(() => {
+    playTone(220, 'square', 0.15, 0.06);
+    setTimeout(() => playTone(146.83, 'square', 0.25, 0.06), 150);
+  }, [playTone]);
+
+  const playWarning = useCallback(() => {
+    playTone(293.66, 'triangle', 0.1, 0.06);
+    setTimeout(() => playTone(293.66, 'triangle', 0.1, 0.06), 150);
+  }, [playTone]);
+
+  return { playTone, playClick, playPop, playSwitch, playSuccess, playError, playWarning };
 };
+
