@@ -12,6 +12,7 @@ type UserSelectionVariant = 'inline' | 'panel';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
+  onActionsClick?: () => void;
   activeTab?: MainTab;
   onTabChange?: (tab: MainTab) => void;
   variant?: UserSelectionVariant;
@@ -27,6 +28,7 @@ const PROFILE_NOTES: Record<User, string> = {
 
 const UserSelection: React.FC<UserSelectionProps> = ({
   onUserSelected,
+  onActionsClick,
   activeTab = 'queue',
   onTabChange,
   variant = 'inline',
@@ -44,6 +46,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const [isSelectionAnimating, setIsSelectionAnimating] = useState(false);
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
   const [focusedUser, setFocusedUser] = useState<User | null>(null);
+  const [isActionsHovered, setIsActionsHovered] = useState(false);
+  const [isActionsFocused, setIsActionsFocused] = useState(false);
   const previousUserRef = useRef<User | null>(currentUser);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isDisabled = isLoading || isVerifying;
@@ -232,6 +236,26 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 </div>
               );
             })}
+
+            {variant === 'inline' && onActionsClick && (
+              <div className="user-selection__profile-card user-selection__profile-card--actions">
+                <GelBubbleAvatar
+                  icon="⚡"
+                  label="Actions"
+                  isHovered={isActionsHovered || isActionsFocused}
+                  showName={showBubbleName}
+                  size="tiny"
+                  onClick={onActionsClick}
+                  onMouseEnter={() => setIsActionsHovered(true)}
+                  onMouseLeave={() => setIsActionsHovered(false)}
+                  onFocus={() => setIsActionsFocused(true)}
+                  onBlur={() => setIsActionsFocused(false)}
+                  disabled={isDisabled}
+                  accentColor="var(--color-accent)"
+                  haloColor="var(--color-secondary)"
+                />
+              </div>
+            )}
           </div>
         </div>
 
