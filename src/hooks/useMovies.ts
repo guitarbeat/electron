@@ -205,35 +205,8 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     const seedMovies = async () => {
       const hasBeenSeeded = localStorage.getItem('movieListSeeded_gist_refactored');
       if (!isLoading && movies && movies.length === 0 && hasBeenSeeded !== 'true') {
-        const defaultMovies: Omit<Movie, 'id' | 'createdAt'>[] = [
-          { title: 'The Last Unicorn', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Renfield', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Sinister', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Creep', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Easy A', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'The Lego Movie', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-          { title: 'Key and Peele', addedBy: 'Aaron', watchedBy: [], category: 'Humor' },
-          { title: 'Beetlejuice', addedBy: 'Aaron', watchedBy: [], category: 'Movies' },
-        ];
-
-        const moviesToSave: Movie[] = defaultMovies.map((movie) => ({
-          ...movie,
-          id: crypto.randomUUID(),
-          createdAt: new Date().toISOString(),
-        }));
-
-        try {
-          isSubmittingRef.current = true;
-          setIsSubmitting(true);
-          await saveMovies(moviesToSave);
-          localStorage.setItem('movieListSeeded_gist_refactored', 'true');
-          refresh();
-        } catch (err) {
-          console.error('Failed to seed movies:', err);
-        } finally {
-          isSubmittingRef.current = false;
-          setIsSubmitting(false);
-        }
+        // Gist is not empty, skip seeding
+        localStorage.setItem('movieListSeeded_gist_refactored', 'true');
       }
     };
     seedMovies();
