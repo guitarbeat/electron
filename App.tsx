@@ -50,7 +50,7 @@ interface CommandDeckProps {
 }
 
 const MAIN_TABS: MainTabItem[] = [
-  { id: 'queue', label: 'Movie Nights', icon: '🎬' },
+  { id: 'queue', label: 'Watchlist', icon: '🎬' },
   { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
 
