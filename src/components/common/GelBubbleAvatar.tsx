@@ -71,16 +71,23 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   return <img {...props} src={validSources[currentIndex]} alt={alt} onError={handleError} />;
 };
 
-function useRandomCatImageLocal() {
+function useRandomCatImageLocal(enabled: boolean) {
   const [sources, setSources] = React.useState<string[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(enabled);
   const [refetchKey, setRefetchKey] = React.useState(0);
 
   const refetch = React.useCallback(() => {
+    if (!enabled) return;
     setRefetchKey((key) => key + 1);
-  }, []);
+  }, [enabled]);
 
   React.useEffect(() => {
+    if (!enabled) {
+      setSources([]);
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setIsLoading(true);
 
@@ -109,7 +116,7 @@ function useRandomCatImageLocal() {
     return () => {
       cancelled = true;
     };
-  }, [refetchKey]);
+  }, [enabled, refetchKey]);
 
   return { sources, refetch, isLoading };
 }
@@ -164,11 +171,12 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     },
     ref
   ) => {
+  const shouldFetchCatImages = Boolean(user);
   const {
     sources: catSources,
     refetch: refetchCat,
     isLoading: isCatLoading,
-  } = useRandomCatImageLocal();
+  } = useRandomCatImageLocal(shouldFetchCatImages);
 
   const sources = user
     ? catSources.length > 0
@@ -208,6 +216,10 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   let opacityValue = 1;
   if (isSmall) opacityValue = 0.5;
   else if (disabled) opacityValue = 0.7;
+  const resolvedAriaLabel =
+    buttonProps['aria-label'] ??
+    label ??
+    (user ? `Select ${user}${hasPin ? ' (PIN protected)' : ''}` : 'Avatar action');
 
   return (
     <button
@@ -215,7 +227,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       type="button"
       disabled={disabled}
       {...buttonProps}
-      aria-label={buttonProps['aria-label'] || `Select ${user} as user${hasPin ? ' (PIN protected)' : ''}`}
+      aria-label={resolvedAriaLabel}
       className={bubbleClasses}
       style={{
         ['--gel-accent' as string]: accentColor,
