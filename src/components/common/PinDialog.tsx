@@ -4,7 +4,7 @@ import { User } from '@/types';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { getModalOverlayStyle, isFocusWithin } from '@/ui/modalPrimitives';
-import { colors, spacing, typography, radius, motion, shadows } from '@/design-system';
+import { colors, spacing, typography, radius, shadows } from '@/design-system';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -32,7 +32,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
   const [isShaking, setIsShaking] = useState(false);
-  const [step, setStep] = useState<'current' | 'new' | 'confirm'>('current');
+  const [step, setStep] = useState<'current' | 'new' | 'confirm'>(
+    mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current'
+  );
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const focusTimerRef = useRef<number | null>(null);
@@ -40,12 +42,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setPin('');
-      setNewPin('');
-      setConfirmPin('');
-      setError('');
-      setIsShaking(false);
-      setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
       hadModalOpenClassRef.current = document.body.classList.contains('modal-open');
       document.body.classList.add('modal-open');
       focusTimerRef.current = window.setTimeout(() => inputRef.current?.focus(), 100);

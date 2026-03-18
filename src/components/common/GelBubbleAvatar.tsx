@@ -114,7 +114,7 @@ function useRandomCatImageLocal() {
   return { sources, refetch, isLoading };
 }
 
-interface GelBubbleAvatarProps {
+interface GelBubbleAvatarProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   user?: User;
   icon?: string;
   label?: string;
@@ -125,16 +125,9 @@ interface GelBubbleAvatarProps {
   selectionState?: 'neutral' | 'active' | 'inactive';
   isSelectionAnimating?: boolean;
   size?: BubbleSize;
-  onClick: () => void;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  onFocus: () => void;
-  onBlur: () => void;
-  disabled?: boolean;
   animationOffset?: boolean;
   accentColor?: string;
   haloColor?: string;
-  style?: React.CSSProperties;
 }
 
 const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
@@ -160,16 +153,12 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       selectionState = 'neutral',
       isSelectionAnimating = false,
       size = 'default',
-      onClick,
-      onMouseEnter,
-      onMouseLeave,
-      onFocus,
-      onBlur,
-      disabled = false,
       animationOffset = false,
       accentColor: customAccent,
       haloColor: customHalo,
       style: customStyle,
+      disabled,
+      ...buttonProps
     },
     ref
   ) => {
@@ -218,13 +207,9 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     <button
       ref={ref}
       type="button"
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onFocus={onFocus}
-      onBlur={onBlur}
       disabled={disabled}
-      aria-label={`Select ${user} as user${hasPin ? ' (PIN protected)' : ''}`}
+      {...buttonProps}
+      aria-label={buttonProps['aria-label'] || `Select ${user} as user${hasPin ? ' (PIN protected)' : ''}`}
       className={bubbleClasses}
       style={{
         ['--gel-accent' as string]: accentColor,

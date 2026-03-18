@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing, motion, shadows } from '@/design-system';
+import { colors, radius, spacing, shadows } from '@/design-system';
 
 interface SkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'poster';

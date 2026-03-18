@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '../../context';
 import type { MainTab, User } from '../../types';
@@ -293,14 +293,16 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         )}
       </div>
 
-      <PinDialog
-        isOpen={!!pendingUser}
-        user={pendingUser || 'Aaron'}
-        onCancel={() => setPendingUser(null)}
-        onSubmit={handlePinSubmit}
-        mode="enter"
-        isLoading={isVerifying}
-      />
+      {pendingUser && (
+        <PinDialog
+          isOpen={!!pendingUser}
+          user={pendingUser}
+          onCancel={() => setPendingUser(null)}
+          onSubmit={handlePinSubmit}
+          mode="enter"
+          isLoading={isVerifying}
+        />
+      )}
 
       {pinSettingsUser && (
         <PinDialog

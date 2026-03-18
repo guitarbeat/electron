@@ -6,24 +6,23 @@ interface RetroEffectsProps {
   cursorTrailEnabled: boolean;
 }
 
+// CRT Overlay
+const CrtOverlay = () => (
+  <div className="crt-overlay" aria-hidden="true">
+    <div className="crt-scanlines" />
+    <div className="crt-flicker" />
+    <div className="crt-vignette" />
+  </div>
+);
+
 const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnabled }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
-  const [stars, setStars] = useState<{ id: number; x: number; y: number; opacity: number }[]>([]);
+  const [stars, setStars] = useState<{ id: number; x: number; y: number; opacity: number; scale: number }[]>([]);
   const nextIdRef = useRef(0);
-
-  // CRT Overlay
-  const CrtOverlay = () => (
-    <div className="crt-overlay" aria-hidden="true">
-      <div className="crt-scanlines" />
-      <div className="crt-flicker" />
-      <div className="crt-vignette" />
-    </div>
-  );
 
   // Cursor Trail logic
   useEffect(() => {
     if (!cursorTrailEnabled || isMobile) {
-      setStars([]);
       return;
     }
 
@@ -33,6 +32,7 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnab
         x: e.clientX,
         y: e.clientY,
         opacity: 1,
+        scale: 0.5 + Math.random(),
       };
 
       setStars((prev) => [...prev.slice(-15), newStar]);
@@ -51,14 +51,14 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnab
       {crtEnabled && <CrtOverlay />}
       {cursorTrailEnabled && !isMobile && (
         <div className="cursor-trail-container" aria-hidden="true">
-          {stars.map((star) => (
+          {stars.filter(() => cursorTrailEnabled && !isMobile).map((star) => (
             <div
               key={star.id}
               className="cursor-trail-star"
               style={{
                 left: star.x,
                 top: star.y,
-                transform: `translate(-50%, -50%) scale(${0.5 + Math.random()})`,
+                transform: `translate(-50%, -50%) scale(${star.scale})`,
               }}
             >
               ✦
