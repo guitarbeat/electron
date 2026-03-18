@@ -1,14 +1,14 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { useUser } from '@/context';
-import { useWatchlist } from './useWatchlist';
-import { Movie, MovieSuggestion, WatchlistProps } from '@/types';
-import ConfirmDialog from '@/ui/ConfirmDialog';
-import Confetti from '@/effects/Confetti';
-import { MovieCardSkeleton } from '@/ui/Skeleton';
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useUser } from "@/context";
+import { useWatchlist } from "./useWatchlist";
+import { Movie, MovieSuggestion, WatchlistProps } from "@/types";
+import ConfirmDialog from "@/ui/ConfirmDialog";
+import Confetti from "@/effects/Confetti";
+import { MovieCardSkeleton } from "@/ui/Skeleton";
 
 // Components
-import WatchlistTopControls from './components/WatchlistTopControls';
-import MovieCard from './components/MovieCard';
+import WatchlistTopControls from "./components/WatchlistTopControls";
+import MovieCard from "./components/MovieCard";
 
 // Styles
 
@@ -24,7 +24,10 @@ const renderWorkspace = ({
   if (isMobile) {
     return (
       <div className="workspace-layout workspace-layout--mobile">
-        <div className="workspace-layout__mobile-topbar" aria-label="Watchlist controls">
+        <div
+          className="workspace-layout__mobile-topbar"
+          aria-label="Watchlist controls"
+        >
           {controls}
         </div>
         <div className="workspace-layout__content">{content}</div>
@@ -34,10 +37,16 @@ const renderWorkspace = ({
 
   return (
     <div className="workspace-layout">
-      <aside className="workspace-layout__controls" aria-label="Watchlist controls">
+      <aside
+        className="workspace-layout__controls"
+        aria-label="Watchlist controls"
+      >
         {controls}
       </aside>
-      <section className="workspace-layout__content" aria-label="Watchlist content">
+      <section
+        className="workspace-layout__content"
+        aria-label="Watchlist content"
+      >
         {content}
       </section>
     </div>
@@ -102,16 +111,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false);
   const skeletonKeys = isMobile
-    ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
+    ? ["mobile-1", "mobile-2", "mobile-3", "mobile-4"]
     : [
-        'desktop-1',
-        'desktop-2',
-        'desktop-3',
-        'desktop-4',
-        'desktop-5',
-        'desktop-6',
-        'desktop-7',
-        'desktop-8',
+        "desktop-1",
+        "desktop-2",
+        "desktop-3",
+        "desktop-4",
+        "desktop-5",
+        "desktop-6",
+        "desktop-7",
+        "desktop-8",
       ];
 
   // Handle confetti when both users watch a movie
@@ -123,13 +132,15 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find((m) => m.id === movie.id);
+        const prevMovie = previousMoviesRef.current?.find(
+          (m) => m.id === movie.id,
+        );
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setShowConfetti(true);
           setToast({
             message: `🎉 You both watched "${movie.title}"!`,
-            type: 'success',
+            type: "success",
           });
         }
       }
@@ -143,17 +154,23 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     if (!searchQuery || searchQuery.length < 2) return [];
 
     const query = searchQuery.toLowerCase();
-    const movieMatches = movies
-      .filter((m) => m.title.toLowerCase().includes(query))
-      .map((m) => m.title)
-      .slice(0, 3);
+    const movieMatches = movies.reduce<string[]>((acc, m) => {
+      if (acc.length < 3 && m.title.toLowerCase().includes(query)) {
+        acc.push(m.title);
+      }
+      return acc;
+    }, []);
 
-    const suggestionMatches = pendingSuggestions
-      .filter((s) => s.title.toLowerCase().includes(query))
-      .map((s) => s.title)
-      .slice(0, 3);
+    const suggestionMatches = pendingSuggestions.reduce<string[]>((acc, s) => {
+      if (acc.length < 3 && s.title.toLowerCase().includes(query)) {
+        acc.push(s.title);
+      }
+      return acc;
+    }, []);
 
-    const deduped = Array.from(new Set([...movieMatches, ...suggestionMatches]));
+    const deduped = Array.from(
+      new Set([...movieMatches, ...suggestionMatches]),
+    );
     return deduped.slice(0, 6);
   }, [movies, pendingSuggestions, searchQuery]);
 
@@ -167,10 +184,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       setIsAdding(true);
       try {
         await addMovie(searchQuery.trim());
-        setSearchQuery('');
-        setToast({ message: `"${searchQuery.trim()}" added to watchlist!`, type: 'success' });
+        setSearchQuery("");
+        setToast({
+          message: `"${searchQuery.trim()}" added to watchlist!`,
+          type: "success",
+        });
       } catch (error) {
-        setToast({ message: 'Failed to add movie', type: 'error' });
+        setToast({ message: "Failed to add movie", type: "error" });
       } finally {
         setIsAdding(false);
       }
@@ -178,45 +198,63 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       setIsSuggesting(true);
       setSuggestionError(null);
       try {
-        await addSuggestion(searchQuery.trim(), 'Anonymous');
-        setSearchQuery('');
-        setToast({ message: `"${searchQuery.trim()}" suggested for review!`, type: 'success' });
+        await addSuggestion(searchQuery.trim(), "Anonymous");
+        setSearchQuery("");
+        setToast({
+          message: `"${searchQuery.trim()}" suggested for review!`,
+          type: "success",
+        });
       } catch (error) {
-        setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
-        setToast({ message: 'Failed to add suggestion', type: 'error' });
+        setSuggestionError(
+          error instanceof Error ? error.message : "Failed to add suggestion",
+        );
+        setToast({ message: "Failed to add suggestion", type: "error" });
       } finally {
         setIsSuggesting(false);
       }
     }
-  }, [searchQuery, currentUser, addMovie, addSuggestion, setIsAdding, setSearchQuery, setToast]);
+  }, [
+    searchQuery,
+    currentUser,
+    addMovie,
+    addSuggestion,
+    setIsAdding,
+    setSearchQuery,
+    setToast,
+  ]);
 
   const handleSuggestionAction = useCallback(
     async (title: string) => {
       setSearchQuery(title);
       await handleAddAction();
     },
-    [setSearchQuery, handleAddAction]
+    [setSearchQuery, handleAddAction],
   );
 
   const handleDeleteMovie = useCallback(
     (movie: Movie) => {
       setMovieToDelete(movie);
     },
-    [setMovieToDelete]
+    [setMovieToDelete],
   );
 
   const handleFixMatch = useCallback(
     (movie: Movie) => {
       setMovieToFix(movie);
     },
-    [setMovieToFix]
+    [setMovieToFix],
   );
 
   const handleAddMemory = useCallback(
     async (movie: Movie, memory: { note: string; createdAt?: string }) => {
-      await addMemory(movie.id, movie.title, currentUser || 'Unknown', memory.note);
+      await addMemory(
+        movie.id,
+        movie.title,
+        currentUser || "Unknown",
+        memory.note,
+      );
     },
-    [addMemory, currentUser]
+    [addMemory, currentUser],
   );
 
   // Render functions
@@ -251,7 +289,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       handleDeleteMovie,
       handleFixMatch,
       handleAddMemory,
-    ]
+    ],
   );
 
   const renderSuggestionItem = useCallback(
@@ -262,7 +300,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         <article key={suggestion.id} className="suggestion-item-card">
           <h3 className="suggestion-item-card__title">{suggestion.title}</h3>
           <p className="suggestion-item-card__meta">
-            Suggested by {suggestion.suggestedBy} on{' '}
+            Suggested by {suggestion.suggestedBy} on{" "}
             {new Date(suggestion.createdAt).toLocaleDateString()}
           </p>
           {suggestion.reason ? (
@@ -281,13 +319,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   try {
                     await addMovie(suggestion.title);
                     await acceptSuggestion(suggestion.id, currentUser);
-                    setToast({ message: `Added "${suggestion.title}"`, type: 'success' });
+                    setToast({
+                      message: `Added "${suggestion.title}"`,
+                      type: "success",
+                    });
                   } finally {
                     setProcessingSuggestionId(null);
                   }
                 }}
               >
-                {isProcessing ? 'Adding…' : 'Accept'}
+                {isProcessing ? "Adding…" : "Accept"}
               </button>
               <button
                 type="button"
@@ -298,7 +339,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   setProcessingSuggestionId(suggestion.id);
                   try {
                     await rejectSuggestion(suggestion.id, currentUser);
-                    setToast({ message: `Rejected "${suggestion.title}"`, type: 'info' });
+                    setToast({
+                      message: `Rejected "${suggestion.title}"`,
+                      type: "info",
+                    });
                   } finally {
                     setProcessingSuggestionId(null);
                   }
@@ -319,12 +363,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       rejectSuggestion,
       setProcessingSuggestionId,
       setToast,
-    ]
+    ],
   );
 
   const getEmptyStateMessage = useCallback(() => {
-    if (contentTab === 'suggestions') {
-      return 'No movie suggestions yet. Be the first to suggest something!';
+    if (contentTab === "suggestions") {
+      return "No movie suggestions yet. Be the first to suggest something!";
     }
 
     if (searchQuery) {
@@ -332,21 +376,21 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
 
     switch (contentTab) {
-      case 'to-watch':
-        return 'No movies in your queue. Add some movies to get started!';
-      case 'watched':
-        return 'No watched movies yet. Start watching and mark them as complete!';
+      case "to-watch":
+        return "No movies in your queue. Add some movies to get started!";
+      case "watched":
+        return "No watched movies yet. Start watching and mark them as complete!";
       default:
-        return 'No movies in your watchlist. Add your first movie to get started!';
+        return "No movies in your watchlist. Add your first movie to get started!";
     }
   }, [contentTab, searchQuery]);
 
   const moviesErrorMessage =
     moviesError instanceof Error
       ? moviesError.message
-      : typeof moviesError === 'string'
+      : typeof moviesError === "string"
         ? moviesError
-        : 'Unable to load movies right now.';
+        : "Unable to load movies right now.";
 
   if (moviesError) {
     return (
@@ -403,10 +447,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         ),
         content: (
           <div className="watchlist">
-            {!isLoading && filteredMovies.length === 0 && filteredSuggestions.length === 0 ? (
+            {!isLoading &&
+            filteredMovies.length === 0 &&
+            filteredSuggestions.length === 0 ? (
               <div
                 className="watchlist-empty-state"
-                style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}
+                style={{
+                  padding: "2rem",
+                  textAlign: "center",
+                  color: "var(--text-secondary)",
+                }}
               >
                 <p>{getEmptyStateMessage()}</p>
               </div>
@@ -416,10 +466,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   <MovieCardSkeleton key={key} />
                 ))}
               </div>
-            ) : contentTab === 'suggestions' ? (
+            ) : contentTab === "suggestions" ? (
               <div className="watchlist-content">
                 {filteredSuggestions.length > 0 ? (
-                  filteredSuggestions.map((suggestion) => renderSuggestionItem(suggestion))
+                  filteredSuggestions.map((suggestion) =>
+                    renderSuggestionItem(suggestion),
+                  )
                 ) : (
                   <div className="watchlist-empty-state">
                     <p>No suggestions available</p>
@@ -447,9 +499,15 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 onConfirm={async () => {
                   try {
                     await deleteMovie(movieToDelete.id);
-                    setToast({ message: `Deleted "${movieToDelete.title}"`, type: 'info' });
+                    setToast({
+                      message: `Deleted "${movieToDelete.title}"`,
+                      type: "info",
+                    });
                   } catch (error) {
-                    setToast({ message: 'Failed to delete movie', type: 'error' });
+                    setToast({
+                      message: "Failed to delete movie",
+                      type: "error",
+                    });
                   } finally {
                     setMovieToDelete(null);
                   }
@@ -474,15 +532,21 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 onConfirm={async () => {
                   setIsRefreshingMetadata(true);
                   try {
-                    const refreshed = await manualMetadataUpdate(movieToFix.id, movieToFix.title);
+                    const refreshed = await manualMetadataUpdate(
+                      movieToFix.id,
+                      movieToFix.title,
+                    );
                     setToast({
                       message: refreshed
                         ? `Refreshed metadata for "${movieToFix.title}"`
                         : `No metadata update found for "${movieToFix.title}"`,
-                      type: refreshed ? 'success' : 'info',
+                      type: refreshed ? "success" : "info",
                     });
                   } catch (error) {
-                    setToast({ message: 'Failed to refresh metadata', type: 'error' });
+                    setToast({
+                      message: "Failed to refresh metadata",
+                      type: "error",
+                    });
                   } finally {
                     setIsRefreshingMetadata(false);
                     setMovieToFix(null);
@@ -493,7 +557,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
             {showConfetti && (
               <Confetti
-                key={successMovieId ?? 'celebration'}
+                key={successMovieId ?? "celebration"}
                 isActive={showConfetti}
                 onComplete={() => {
                   setShowConfetti(false);
