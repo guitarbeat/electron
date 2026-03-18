@@ -12,7 +12,6 @@ import {
   setLocalOverride,
   writeStoredJson,
 } from './gistClient.ts';
-import { MOCK_MEMORIES } from './mockData';
 
 const MEMORIES_LOCAL_STORAGE_KEY = 'movieList.localMemories';
 
@@ -49,8 +48,7 @@ const readStoredLocalMemories = (): SharedMemory[] | null =>
     label: 'local memories fallback',
   });
 
-const getFallbackMemories = (): SharedMemory[] =>
-  readStoredLocalMemories() ?? cloneMemories(MOCK_MEMORIES);
+const getFallbackMemories = (): SharedMemory[] => readStoredLocalMemories() ?? [];
 
 const saveLocalMemories = (memories: SharedMemory[]): void => {
   writeStoredJson({

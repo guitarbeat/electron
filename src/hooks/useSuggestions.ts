@@ -14,7 +14,6 @@ import {
   writeStoredJson,
 } from '@/services/gistClient.ts';
 import { MovieSuggestion, User } from '@/types';
-import { MOCK_SUGGESTIONS } from '@/services/mockData';
 
 const POLLING_INTERVAL = 300000; // 5 minutes
 const SUGGESTIONS_LOCAL_STORAGE_KEY = 'movieList.localSuggestions';
@@ -50,8 +49,7 @@ const readStoredLocalSuggestions = (): MovieSuggestion[] | null =>
     label: 'local suggestions fallback',
   });
 
-const getFallbackSuggestions = (): MovieSuggestion[] =>
-  readStoredLocalSuggestions() ?? cloneSuggestions(MOCK_SUGGESTIONS);
+const getFallbackSuggestions = (): MovieSuggestion[] => readStoredLocalSuggestions() ?? [];
 
 const saveLocalSuggestions = (suggestions: MovieSuggestion[]): void => {
   writeStoredJson({
