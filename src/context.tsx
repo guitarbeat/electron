@@ -179,20 +179,29 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const normalizeUser = (value: string | null): User | null => {
+    if (value === 'Aaron' || value === 'Electra') {
+      return value;
+    }
+    return null;
+  };
+
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    return sessionStorage.getItem('currentUser') as User | null;
+    return normalizeUser(sessionStorage.getItem('currentUser'));
   });
 
   const value = useMemo(
     () => ({
       currentUser,
       setCurrentUser: (user: User | null) => {
-        if (user) {
-          sessionStorage.setItem('currentUser', user);
+        const normalizedUser = user ? normalizeUser(user) : null;
+
+        if (normalizedUser) {
+          sessionStorage.setItem('currentUser', normalizedUser);
         } else {
           sessionStorage.removeItem('currentUser');
         }
-        setCurrentUser(user);
+        setCurrentUser(normalizedUser);
       },
     }),
     [currentUser]
