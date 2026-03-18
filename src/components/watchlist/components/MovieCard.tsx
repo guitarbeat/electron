@@ -354,6 +354,8 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onCloseBottomSheet,
 }) => {
   const isGuest = !currentUser;
+  const primaryActionLabel = watchedByCurrentUser ? 'Unwatch' : 'Mark watched';
+  const primaryActionLabelShort = watchedByCurrentUser ? 'Unwatch' : 'Watch';
 
   const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -382,6 +384,15 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
     handleAction(onDelete);
+  };
+
+  const mobileActionStyle: React.CSSProperties = {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    opacity: isGuest ? 0.5 : 1,
   };
 
   const primaryButton = (
@@ -418,10 +429,10 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       )}
       <span className="movie-item-primary-action-label">
         <span className="movie-item-primary-action-label--long">
-          {watchedByCurrentUser ? 'Watched' : 'Mark watched'}
+          {primaryActionLabel}
         </span>
         <span className="movie-item-primary-action-label--short" aria-hidden>
-          {watchedByCurrentUser ? 'Unwatch' : 'Watch'}
+          {primaryActionLabelShort}
         </span>
       </span>
     </Button>
@@ -438,14 +449,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           variant="secondary"
           disabled={isGuest}
           className="movie-item-mobile-action"
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: spacing.sm,
-            opacity: isGuest ? 0.5 : 1,
-          }}
+          style={mobileActionStyle}
         >
           <MagicWandIcon />
           Fix Details
@@ -457,14 +461,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           variant="danger"
           disabled={isGuest}
           className="movie-item-mobile-action"
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: spacing.sm,
-            opacity: isGuest ? 0.5 : 1,
-          }}
+          style={mobileActionStyle}
         >
           <TrashIcon />
           Remove from Watchlist
