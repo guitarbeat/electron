@@ -206,6 +206,7 @@ interface ReadGistJsonFileArgs<T> {
   fallback: () => T;
   onMissingFileWhenWritable: () => T;
   parse: (content: string) => T;
+  fetchOptions?: FetchGistOptions;
 }
 
 export const readGistJsonFile = async <T>({
@@ -214,6 +215,7 @@ export const readGistJsonFile = async <T>({
   fallback,
   onMissingFileWhenWritable,
   parse,
+  fetchOptions,
 }: ReadGistJsonFileArgs<T>): Promise<T> => {
   if (!canReadGist) {
     return fallback();
@@ -224,7 +226,7 @@ export const readGistJsonFile = async <T>({
     return localOverride.value ?? fallback();
   }
 
-  const response = await fetchGist({ cache: 'no-cache' });
+  const response = await fetchGist({ cache: 'no-cache', ...(fetchOptions ?? {}) });
   if (!response.ok) {
     return fallback();
   }
