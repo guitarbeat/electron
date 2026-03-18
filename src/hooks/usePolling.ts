@@ -17,7 +17,7 @@ export const usePolling = <T>(
     return undefined;
   });
 
-  const [error, setError] = useState<any>(() => {
+  const [error, setError] = useState<Error | null>(() => {
     if (key) {
       const cachedError = pollingManager.getError(key);
       if (cachedError) return cachedError;
@@ -70,7 +70,7 @@ export const usePolling = <T>(
       });
     } catch (e) {
       console.error('Polling execution failed:', e);
-      setError(e);
+      setError(e instanceof Error ? e : new Error(String(e)));
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +90,7 @@ export const usePolling = <T>(
         interval,
         (newData, newError) => {
           if (newError) {
-            setError(newError);
+            setError(newError instanceof Error ? newError : new Error(String(newError)));
             setIsLoading(false);
           } else {
             setError(null);
@@ -127,7 +127,7 @@ export const usePolling = <T>(
       setError(null);
       pollingManager.refresh(key).catch((error) => {
         console.error('Polling refresh failed:', error);
-        setError(error);
+        setError(error instanceof Error ? error : new Error(String(error)));
         setIsLoading(false);
       });
     } else {
