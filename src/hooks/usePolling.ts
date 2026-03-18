@@ -1,4 +1,3 @@
-// FIX: Implemented the usePolling custom hook to resolve compilation errors.
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { pollingManager } from '@/services/PollingManager';
 
@@ -10,7 +9,6 @@ export const usePolling = <T>(
 ) => {
   const { isPaused = false, key, allowNull = false } = options;
 
-  // Initialize state with cached data if available
   const [data, setData] = useState<T | undefined>(() => {
     if (key) {
       const cached = pollingManager.getData(key);
@@ -36,7 +34,6 @@ export const usePolling = <T>(
     return true;
   });
 
-  // ⚡ Bolt Optimization: Use a ref for data to keep 'execute' stable.
   const dataRef = useRef(data);
   useEffect(() => {
     dataRef.current = data;
@@ -54,7 +51,6 @@ export const usePolling = <T>(
   }, [equalityFn]);
 
   const executeLocal = useCallback(async (isInitialLoad: boolean) => {
-    // Only show loading if we don't have data yet
     if (isInitialLoad && !dataRef.current) {
       setIsLoading(true);
     }
@@ -62,7 +58,6 @@ export const usePolling = <T>(
     try {
       const result = await savedFetchFn.current();
 
-      // Validation check: if result is empty/invalid but we expect data, handle it
       if (result === undefined || (!allowNull && result === null)) {
         throw new Error('Fetched data is null or undefined');
       }
@@ -87,8 +82,6 @@ export const usePolling = <T>(
     }
 
     if (key && interval !== null) {
-      // Use shared polling manager
-      // Pass a proxy function to ensure we always call the latest fetchFn
       const proxyFetch = () => savedFetchFn.current();
 
       const unsubscribe = pollingManager.subscribe(
@@ -119,7 +112,7 @@ export const usePolling = <T>(
 
       return unsubscribe;
     }
-    executeLocal(true); // initial fetch
+    executeLocal(true);
     if (interval !== null) {
       const intervalId = setInterval(() => executeLocal(false), interval);
       return () => clearInterval(intervalId);

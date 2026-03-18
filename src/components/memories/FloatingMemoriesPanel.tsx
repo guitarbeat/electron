@@ -14,9 +14,7 @@ import {
 } from '@/services/memoryService';
 import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/types';
-
-const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) =>
-  JSON.stringify(prev) === JSON.stringify(next);
+import { areDeeplyEqual } from '@/utils';
 
 const FloatingMemoriesPanel: React.FC = () => {
   const { currentUser } = useUser();
@@ -24,7 +22,7 @@ const FloatingMemoriesPanel: React.FC = () => {
   const { data, isLoading, error, refresh } = usePolling<SharedMemory[]>(
     getMemories,
     30000,
-    memoriesEqual,
+    areDeeplyEqual,
     {
       key: 'memories',
     }
@@ -132,7 +130,7 @@ const FloatingMemoriesPanel: React.FC = () => {
             variant="primary"
             size="sm"
             disabled={submitting || !note.trim() || !movieQuery.trim()}
-            className="memory-lane__save"
+            className="memory-lane__action-btn memory-lane__save memory-lane__action-btn--save"
           >
             {submitting ? 'Saving...' : 'Save Memory'}
           </Button>
@@ -155,7 +153,6 @@ const FloatingMemoriesPanel: React.FC = () => {
             size="sm"
             variant={showPinnedOnly ? 'primary' : 'ghost'}
             onClick={() => setShowPinnedOnly((current) => !current)}
-            style={{ alignSelf: 'end' }}
             className="memory-lane__pin-toggle"
           >
             {showPinnedOnly ? 'Showing Pinned' : 'Show Pinned Only'}
@@ -213,7 +210,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                           size="sm"
                           variant="secondary"
                           onClick={() => saveEdit(memory)}
-                          className="memory-lane__action-btn"
+                          className="memory-lane__action-btn memory-lane__action-btn--save"
                         >
                           Save
                         </Button>
@@ -224,7 +221,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                             setEditingId(null);
                             setEditingNote('');
                           }}
-                          className="memory-lane__action-btn"
+                          className="memory-lane__action-btn memory-lane__action-btn--cancel"
                         >
                           Cancel
                         </Button>
@@ -238,7 +235,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                             await toggleMemoryPin(memory.id);
                             refresh();
                           }}
-                          className="memory-lane__action-btn"
+                          className="memory-lane__action-btn memory-lane__action-btn--pin"
                         >
                           {memory.isPinned ? 'Unpin' : 'Pin'}
                         </Button>
@@ -248,18 +245,18 @@ const FloatingMemoriesPanel: React.FC = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => startEditing(memory)}
-                              className="memory-lane__action-btn"
+                              className="memory-lane__action-btn memory-lane__action-btn--edit"
                             >
                               Edit
                             </Button>
                             <Button
                               size="sm"
-                              variant="ghost"
+                              variant="danger"
                               onClick={async () => {
                                 await deleteMemory(memory.id);
                                 refresh();
                               }}
-                              className="memory-lane__action-btn"
+                              className="memory-lane__action-btn memory-lane__action-btn--delete"
                             >
                               Delete
                             </Button>

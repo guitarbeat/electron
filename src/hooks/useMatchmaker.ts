@@ -14,6 +14,7 @@ import {
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
+import { areDeeplyEqual, isUser, parseJsonContent } from '@/utils';
 
 const MATCHMAKER_LOCAL_STORAGE_KEY = 'movieList.localMatchmaker';
 
@@ -25,8 +26,6 @@ const cloneMatchmakerGame = (game: MatchmakerGame): MatchmakerGame => ({
   aaronDislikes: [...game.aaronDislikes],
   electraDislikes: [...game.electraDislikes],
 });
-
-const isUser = (value: unknown): value is User => value === 'Aaron' || value === 'Electra';
 
 const isMatchmakerStatus = (value: unknown): value is MatchmakerGame['status'] =>
   value === 'active' || value === 'completed';
@@ -106,12 +105,8 @@ const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
       return null;
     }
 
-    try {
-      return JSON.parse(content);
-    } catch (error) {
-      console.error('Error parsing matchmaker JSON:', error);
-      return null;
-    }
+    const parsed = parseJsonContent(content, 'matchmaker');
+    return isMatchmakerGameRecord(parsed) ? parsed : null;
   } catch (error) {
     console.error('Error fetching matchmaker game from Gist:', error);
     return null;
@@ -150,7 +145,7 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
   } = usePolling(
     getMatchmakerGame,
     5000,
-    (prev, next) => JSON.stringify(prev) === JSON.stringify(next),
+    areDeeplyEqual,
     {
       key: 'matchmaker',
       isPaused,

@@ -38,6 +38,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
+  const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('queue');
   const [history, setHistory] = useState<string[]>(readHistory);
   const spinTimeoutRef = useRef<number | null>(null);
@@ -120,8 +121,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   };
 
   const toggleWatchedForCurrentUser = async () => {
-    if (!selectedMovie || !currentUser) return;
-    await toggleWatched(selectedMovie.id);
+    if (!selectedMovie || !currentUser || isTogglingWatched) return;
+    setIsTogglingWatched(true);
+    try {
+      await toggleWatched(selectedMovie.id);
+    } finally {
+      setIsTogglingWatched(false);
+    }
   };
 
   const renderMovieMeta = (movie: Movie) => {
@@ -194,19 +200,14 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
       </div>
 
       <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: spacing.sm,
-          flexWrap: 'wrap',
-          marginBottom: spacing.md,
-        }}
+        className="spin-wheel-actions"
       >
         <Button
           onClick={handleSpin}
           variant="primary"
           size="md"
           disabled={isSpinning || isLoading || candidates.length === 0}
+          className="spin-wheel-action"
         >
           {isSpinning ? 'Spinning...' : 'Spin Wheel'}
         </Button>
@@ -215,6 +216,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           size="sm"
           onClick={() => setSelectedMovieId(null)}
           disabled={isSpinning || !selectedMovieId}
+          className="spin-wheel-action"
         >
           Clear Result
         </Button>
@@ -223,6 +225,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           size="sm"
           onClick={() => setMode((prev) => (prev === 'queue' ? 'all' : 'queue'))}
           disabled={isSpinning || candidates.length === 0}
+          className="spin-wheel-action spin-wheel-action--mode"
         >
           Mode: {mode === 'queue' ? 'Queue Only' : 'All Movies'}
         </Button>
@@ -261,7 +264,18 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         >
           {renderMovieMeta(selectedMovie)}
           {currentUser ? (
-            <Button variant="secondary" size="sm" onClick={toggleWatchedForCurrentUser}>
+            <Button
+              variant={selectedMovie.watchedBy.includes(currentUser) ? 'danger' : 'primary'}
+              size="sm"
+              isLoading={isTogglingWatched}
+              disabled={isTogglingWatched}
+              onClick={toggleWatchedForCurrentUser}
+              className={`spin-result-action ${
+                selectedMovie.watchedBy.includes(currentUser)
+                  ? 'spin-result-action--undo'
+                  : 'spin-result-action--mark'
+              }`}
+            >
               {selectedMovie.watchedBy.includes(currentUser)
                 ? `Undo watched for ${currentUser}`
                 : `Mark watched by ${currentUser}`}

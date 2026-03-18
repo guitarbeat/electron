@@ -1,4 +1,4 @@
-import { sanitizeInput } from '@/utils';
+import { parseJsonContent, sanitizeInput } from '@/utils';
 import type { SharedMemory } from '@/types.ts';
 import {
   canReadGist,
@@ -12,7 +12,6 @@ import {
   setLocalOverride,
   writeStoredJson,
 } from './gistClient.ts';
-import { MOCK_MEMORIES } from './mockData';
 
 const MEMORIES_LOCAL_STORAGE_KEY = 'movieList.localMemories';
 
@@ -49,8 +48,7 @@ const readStoredLocalMemories = (): SharedMemory[] | null =>
     label: 'local memories fallback',
   });
 
-const getFallbackMemories = (): SharedMemory[] =>
-  readStoredLocalMemories() ?? cloneMemories(MOCK_MEMORIES);
+const getFallbackMemories = (): SharedMemory[] => readStoredLocalMemories() ?? [];
 
 const saveLocalMemories = (memories: SharedMemory[]): void => {
   writeStoredJson({
@@ -89,7 +87,7 @@ export const getMemories = async (): Promise<SharedMemory[]> => {
       return [];
     }
 
-    return JSON.parse(content);
+    return parseJsonContent(content, 'memories') as SharedMemory[];
   } catch (error) {
     console.error('Error fetching memories from Gist:', error);
     return getFallbackMemories();

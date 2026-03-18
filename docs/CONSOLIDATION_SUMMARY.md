@@ -3,13 +3,19 @@
 Date: March 12, 2026
 
 ## Overview
-Successfully consolidated utility, style, and context files to reduce file sprawl and improve maintainability.
-This pass also covered a UI cleanup for action controls to keep behavior stable while unifying presentation.
+This document started as a consolidation log from March 12, 2026. The repo has since evolved and some file
+paths/scripts referenced below no longer match the current `main` branch layout.
+
+## Current repo state (as of March 18, 2026)
+- Utilities are consolidated primarily in `src/utils.ts` (not `src/utils/index.ts`).
+- Context providers are consolidated in `src/context.tsx` (not `src/context/index.tsx`).
+- UI styles referenced during consolidation are now primarily centralized in `App.css` (not `src/components/ui/ui.css`).
+- This repo’s `package.json` currently includes scripts: `dev`, `build`, `preview`, and `check-types`.
 
 ## Round 1: Utilities & CSS
 
 ### 1. Utility Files Consolidated
-Merged three separate utility modules into a single `src/utils/index.ts`:
+Merged three separate utility modules into a single utilities surface. In the current repo, that surface is `src/utils.ts`:
 - `src/config/security.ts` (deleted)
 - `src/utils/validation.ts` (deleted)
 - `src/utils/concurrency.ts` (deleted)
@@ -20,7 +26,7 @@ The new consolidated file includes:
 - Concurrency utilities (concurrentMap, shuffleArray)
 
 ### 2. CSS Files Consolidated
-Merged component-specific CSS into `src/components/ui/ui.css`:
+Merged component-specific CSS into the shared app stylesheet (currently `App.css`):
 - `src/components/common/GelBubbleAvatar.css` (deleted)
 - `src/components/common/UserSelection.css` (deleted)
 - `src/components/matchmaker/Matchmaker.css` (deleted)
@@ -49,7 +55,7 @@ Behavior still comes from the existing `commandDeck` map in `App.tsx`, with only
 ## Round 2: Context Providers
 
 ### 4. Context Files Consolidated
-Merged three separate context providers into a single `src/context/index.tsx`:
+Merged three separate context providers into a single consolidated context module (currently `src/context.tsx`):
 - `src/context/UserContext.tsx` (deleted)
 - `src/context/ThemeContext.tsx` (deleted)
 - `src/context/ToastContext.tsx` (deleted)
@@ -64,7 +70,6 @@ Updated all imports across the codebase:
 - Components: Matchmaker, GelBubbleAvatar, UserSelection, SpinWheelGame, PlacesList, QuizEditor, ThemeToggle, FloatingMemoriesPanel, FoodMergeGame
 - Hooks: useMovies, usePlaces, useSuggestions, useWatchlist
 - Services: memoryService, metadataService
-- Tests: security.test.ts, validation.test.ts, concurrency.test.ts
 - App.tsx root component
 
 ## Results
@@ -97,17 +102,17 @@ Updated all imports across the codebase:
 9. Action UI cleanup was completed without changing feature behavior
 
 ## Verification
-✅ TypeScript compilation: Passed
-✅ All tests: 26/26 passing
-✅ Production build: Successful
-✅ No runtime errors
+✅ TypeScript compilation: `npm run check-types` (Passed)
+✅ Production build: `npm run build` (Successful)
 
 ## Next Steps
 Following the repo simplification plan, next phases could include:
 - Phase 2: Consolidate watchlist/movie surface
 - Phase 3: Simplify shared layer further
 - Phase 4: Service/hook rationalization
-- Consider consolidating small service files (mockData.ts could be merged)
+- `src/services/mockData.ts`: movie mock data has been removed to avoid “test movies” appearing when the Gist is unreachable.
+  - Remaining exports are limited to `MOCK_MEMORIES` and `MOCK_SUGGESTIONS`.
+  - Consider removing or further isolating these remaining mocks if we want *zero* demo data in offline mode.
 
 ## Notes
 - All functionality preserved
@@ -118,7 +123,7 @@ Following the repo simplification plan, next phases could include:
 
 ## Unused Code Audit (Consolidated)
 
-Status: resolved on `codex/minimalist-shell`.
+Status: historical note (the specific branch reference may not exist in this repo anymore).
 
 This section merges the previously standalone unused-code audit findings and outcomes after cleanup.
 
@@ -191,10 +196,7 @@ This section merges the previously standalone unused-code audit findings and out
 
 ### Verification
 
-- `npm run lint`: clean
+- `npm run check-types`: passes
 - `npm run build`: passes
-- `npm run test:all`: passes
-- `npx --yes knip`: clean
-- `npx --yes depcheck`: no issues
 
 If another audit is needed later, start from the current branch state rather than earlier findings.

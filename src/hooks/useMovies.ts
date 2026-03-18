@@ -7,6 +7,7 @@ import {
   fetchGist,
   GIST_FILENAME,
   getGistFileContent,
+  hasLocalOverride,
   patchGistFile,
   readLocalOverride,
   readStoredJson,
@@ -15,8 +16,14 @@ import {
 } from '@/services/gistClient.ts';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { cloneMovies, isMovieRecord, normalizeMovies } from '@/services/movieRecords.ts';
-import { sanitizeInput, MAX_MOVIE_TITLE_LENGTH, isValidUrl, concurrentMap } from '@/utils';
-import { MOCK_MOVIES } from '@/services/mockData';
+import {
+  areDeeplyEqual,
+  concurrentMap,
+  isValidUrl,
+  MAX_MOVIE_TITLE_LENGTH,
+  parseJsonContent,
+  sanitizeInput,
+} from '@/utils';
 
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
@@ -30,7 +37,7 @@ const readStoredLocalMovies = (): Movie[] | null =>
     label: 'local movie fallback',
   });
 
-const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? cloneMovies(MOCK_MOVIES);
+const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? [];
 
 const saveLocalMovies = (movies: Movie[]): void => {
   const nextMovies = writeStoredJson({
@@ -82,12 +89,7 @@ const getMovies = async (): Promise<Movie[]> => {
       return [];
     }
 
-    let parsedMovies: unknown;
-    try {
-      parsedMovies = JSON.parse(content);
-    } catch {
-      throw new Error(`${GIST_FILENAME} contains invalid JSON.`);
-    }
+    const parsedMovies = parseJsonContent(content, GIST_FILENAME);
     if (!Array.isArray(parsedMovies)) {
       throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
     }
@@ -118,6 +120,21 @@ const getMovies = async (): Promise<Movie[]> => {
     console.error('Error fetching movies from Gist:', error);
     return getFallbackMovies();
   }
+};
+
+const getMoviesFromGist = async (): Promise<Movie[] | null> => {
+  if (!canReadGist) return null;
+
+  const response = await fetchGist({ cache: 'no-cache' });
+  if (!response.ok) return null;
+
+  const gist = await response.json();
+  const content = getGistFileContent(gist, GIST_FILENAME);
+  if (content === null) return [];
+
+  const parsedMovies = parseJsonContent(content, GIST_FILENAME);
+  if (!Array.isArray(parsedMovies)) return null;
+  return normalizeMovies(parsedMovies);
 };
 
 const saveMovies = async (movies: Movie[]): Promise<void> => {
@@ -164,7 +181,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     error,
     isLoading,
     refresh,
-  } = usePolling(getMovies, 10000, (prev, next) => JSON.stringify(prev) === JSON.stringify(next), {
+  } = usePolling(getMovies, 10000, areDeeplyEqual, {
     key: 'movies',
     isPaused,
   });
@@ -172,6 +189,50 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);
   const hasAutoSyncedRef = useRef(false);
+
+  useEffect(() => {
+    const maybeSyncLocalOverride = async () => {
+      if (!canWriteGist) return;
+      if (hasAutoSyncedRef.current) return;
+      if (!hasLocalOverride('movies')) return;
+
+      const localMovies = readStoredLocalMovies();
+      if (!localMovies || localMovies.length === 0) return;
+
+      try {
+        const gistMovies = await getMoviesFromGist();
+        if (gistMovies === null) return;
+
+        const gistById = new Map(gistMovies.map((movie) => [movie.id, movie]));
+        const merged = [...gistMovies];
+        for (const movie of localMovies) {
+          if (!gistById.has(movie.id)) {
+            gistById.set(movie.id, movie);
+            merged.push(movie);
+          }
+        }
+
+        // Only auto-sync when we are strictly adding missing movies.
+        if (merged.length <= gistMovies.length) {
+          hasAutoSyncedRef.current = true;
+          return;
+        }
+
+        const response = await patchGistFile(GIST_FILENAME, JSON.stringify(merged, null, 2));
+        if (!response.ok) return;
+
+        cachedMovies = merged;
+        lastETag = null;
+        setLocalOverride('movies', false);
+        hasAutoSyncedRef.current = true;
+        refresh();
+      } catch (error) {
+        console.warn('Failed to sync local movies back to Gist:', error);
+      }
+    };
+
+    void maybeSyncLocalOverride();
+  }, [refresh]);
 
   // Effect to seed the initial movies if the Gist is empty
   useEffect(() => {
@@ -447,12 +508,13 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       });
 
       if (syncOccurred) {
-        await performMutation(() => updatedMovies);
+        await saveMovies(updatedMovies);
+        refresh();
       }
     } catch (err) {
       console.error('Auto-sync: Failed background metadata update:', err);
     }
-  }, [movies, performMutation]);
+  }, [movies, refresh]);
 
   // Trigger auto-sync once movies are loaded
   useEffect(() => {

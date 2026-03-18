@@ -19,6 +19,7 @@ import {
   parsePinsContent,
   type UserPins,
 } from '../services/pinHelpers.ts';
+import { areDeeplyEqual } from '../utils';
 
 const GIST_PINS_FILENAME = 'pins.json';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -265,7 +266,7 @@ export const usePins = (isPaused: boolean = false) => {
   } = usePolling(
     getPins,
     PINS_POLL_INTERVAL,
-    (prev, next) => JSON.stringify(prev) === JSON.stringify(next),
+    areDeeplyEqual,
     {
       key: 'pins',
       isPaused,
