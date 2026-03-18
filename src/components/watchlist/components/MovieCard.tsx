@@ -384,15 +384,39 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 }) => {
   const isGuest = !currentUser;
 
+  const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   const handleAction = (action?: () => void) => {
     action?.();
     onCloseBottomSheet?.();
   };
 
+  const handlePrimaryAction = (event: React.MouseEvent<HTMLButtonElement>) => {
+    stopActionPropagation(event);
+    if (isMobile && onCloseBottomSheet) {
+      handleAction(onToggle);
+    } else {
+      onToggle();
+    }
+  };
+
+  const handleFixMatchAction = (event: React.MouseEvent<HTMLButtonElement>) => {
+    stopActionPropagation(event);
+    handleAction(onFixMatch);
+  };
+
+  const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
+    stopActionPropagation(event);
+    handleAction(onDelete);
+  };
+
   const primaryButton = (
     <Button
       type="button"
-      onClick={() => (isMobile && onCloseBottomSheet ? handleAction(onToggle) : onToggle())}
+      onClick={handlePrimaryAction}
       variant={watchedByCurrentUser ? 'primary' : 'secondary'}
       size={isMobile ? 'md' : 'sm'}
       isLoading={isUpdating}
@@ -435,7 +459,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
         <Button
           type="button"
-          onClick={() => handleAction(onFixMatch)}
+          onClick={handleFixMatchAction}
           variant="ghost"
           disabled={isGuest}
           style={{
@@ -455,7 +479,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
         <Button
           type="button"
-          onClick={() => handleAction(onDelete)}
+          onClick={handleDeleteAction}
           variant="ghost"
           disabled={isGuest}
           style={{
@@ -482,10 +506,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
       <div className="movie-secondary-actions">
         <MovieIconActionButton
-          onClick={(event) => {
-            event.stopPropagation();
-            onFixMatch?.();
-          }}
+          onClick={handleFixMatchAction}
           disabled={isGuest}
           title={`Fix metadata for "${movie.title}"`}
           color={colors.accent}
@@ -495,10 +516,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         </MovieIconActionButton>
 
         <MovieIconActionButton
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete();
-          }}
+          onClick={handleDeleteAction}
           disabled={isGuest}
           title={`Delete "${movie.title}"`}
           color={colors.error}

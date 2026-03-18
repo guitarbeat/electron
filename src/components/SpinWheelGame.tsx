@@ -38,6 +38,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
+  const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('queue');
   const [history, setHistory] = useState<string[]>(readHistory);
   const spinTimeoutRef = useRef<number | null>(null);
@@ -120,8 +121,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   };
 
   const toggleWatchedForCurrentUser = async () => {
-    if (!selectedMovie || !currentUser) return;
-    await toggleWatched(selectedMovie.id);
+    if (!selectedMovie || !currentUser || isTogglingWatched) return;
+    setIsTogglingWatched(true);
+    try {
+      await toggleWatched(selectedMovie.id);
+    } finally {
+      setIsTogglingWatched(false);
+    }
   };
 
   const renderMovieMeta = (movie: Movie) => {
@@ -261,7 +267,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         >
           {renderMovieMeta(selectedMovie)}
           {currentUser ? (
-            <Button variant="secondary" size="sm" onClick={toggleWatchedForCurrentUser}>
+            <Button
+              variant="secondary"
+              size="sm"
+              isLoading={isTogglingWatched}
+              disabled={isTogglingWatched}
+              onClick={toggleWatchedForCurrentUser}
+            >
               {selectedMovie.watchedBy.includes(currentUser)
                 ? `Undo watched for ${currentUser}`
                 : `Mark watched by ${currentUser}`}
