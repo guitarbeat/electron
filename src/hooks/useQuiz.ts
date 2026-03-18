@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { usePolling } from './usePolling';
+import { usePolling } from '@/services/polling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
 import { areDeeplyEqual, parseJsonContent } from '@/utils';
 import {

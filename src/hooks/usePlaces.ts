@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { Place, User } from '@/types';
-import { usePolling } from './usePolling';
+import { usePolling } from '@/services/polling';
 import {
   canWriteGist,
   GIST_PLACES_FILENAME,

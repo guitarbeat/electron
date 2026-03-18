@@ -20,7 +20,6 @@ const BASKET_WIDTH = 72;
 const FOOD_SIZE = 20;
 const TICK_MS = 32;
 const HIGHSCORE_KEY = 'foodMergeHighScore';
-const LEGACY_HIGHSCORE_KEY = 'foodDropHighScore';
 
 type Difficulty = 'easy' | 'normal' | 'hard';
 type FruitKey = 'apple' | 'blueberry' | 'dragonfruit' | 'grape' | 'honeydew' | 'lemon' | 'orange' | 'peach' | 'pear' | 'pineapple' | 'watermelon';
@@ -153,8 +152,7 @@ const difficultyConfig: Record<
 
 const getStoredHighScore = () => {
   if (typeof window === 'undefined') return 0;
-  const raw =
-    window.localStorage.getItem(HIGHSCORE_KEY) ?? window.localStorage.getItem(LEGACY_HIGHSCORE_KEY);
+  const raw = window.localStorage.getItem(HIGHSCORE_KEY);
   const parsed = raw ? Number(raw) : 0;
   return Number.isFinite(parsed) ? parsed : 0;
 };
@@ -176,14 +174,6 @@ const FoodMergeGame: React.FC = () => {
   const isGameOver = lives <= 0;
   const speedMultiplier = (1 + score * 0.015) * difficultyConfig[difficulty].speedBoost;
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const nextHighScore = window.localStorage.getItem(HIGHSCORE_KEY);
-    const legacyHighScore = window.localStorage.getItem(LEGACY_HIGHSCORE_KEY);
-    if (nextHighScore === null && legacyHighScore !== null) {
-      window.localStorage.setItem(HIGHSCORE_KEY, legacyHighScore);
-    }
-  }, []);
 
   const resetGame = () => {
     setBasketX(BOARD_WIDTH / 2 - BASKET_WIDTH / 2);

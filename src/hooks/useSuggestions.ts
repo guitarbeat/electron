@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { usePolling } from '@/hooks/usePolling';
+import { usePolling } from '@/services/polling';
 import { areDeeplyEqual, parseJsonContent, sanitizeInput } from '@/utils';
 import {
   canWriteGist,

@@ -3,7 +3,7 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import Textarea from '@/ui/Textarea';
 import { useMovies } from '@/hooks/useMovies';
-import { usePolling } from '@/hooks/usePolling';
+import { usePolling } from '@/services/polling';
 import { useUser } from '@/context';
 import {
   addMemory,

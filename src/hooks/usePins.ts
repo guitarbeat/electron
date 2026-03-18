@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { User } from '../types.ts';
-import { usePolling } from './usePolling';
+import { usePolling } from '@/services/polling';
 import {
   canWriteGist,
   patchGistFile,
