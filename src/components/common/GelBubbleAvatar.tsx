@@ -170,6 +170,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
   const haloColor = user === 'Aaron' ? 'var(--color-tertiary)' : 'var(--color-accent)';
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
+  const shouldPlaceNameInsideBubble = true;
   const bubbleClasses = [
     'gel-bubble',
     'y2k-avatar-bubble',
@@ -213,7 +214,7 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '16px',
+        gap: shouldPlaceNameInsideBubble ? 0 : '16px',
         background: 'transparent',
         border: 'none',
         cursor: disabled ? 'wait' : 'pointer',
@@ -396,6 +397,36 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
           )}
         </div>
 
+        {showName && shouldPlaceNameInsideBubble ? (
+          <span
+            className="gel-avatar-name gel-avatar-name--inside"
+            style={{
+              position: 'absolute',
+              left: '50%',
+              bottom: '6%',
+              transform: isHovered
+                ? 'translate(-50%, 0) scale(1.05)'
+                : 'translate(-50%, 0) scale(1)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--gel-name-size)',
+              fontWeight: 'var(--font-weight-bold)',
+              color: 'color-mix(in srgb, var(--color-text-primary) 78%, white 22%)',
+              textTransform: 'var(--type-button-label-transform)',
+              textShadow: `
+                0 0 8px color-mix(in srgb, ${accentColor} 72%, transparent),
+                0 0 20px color-mix(in srgb, ${haloColor} 42%, transparent),
+                0 2px 4px rgba(0, 0, 0, 0.5)
+              `,
+              letterSpacing: 'var(--letter-spacing-widest)',
+              WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
+              transition: 'all 0.3s ease-out',
+              pointerEvents: 'none',
+            }}
+          >
+            {user}
+          </span>
+        ) : null}
+
         {/* Lock Badge */}
         {hasPin && (
           <div
@@ -428,28 +459,29 @@ const GelBubbleAvatar: React.FC<GelBubbleAvatarProps> = ({
         )}
       </div>
 
-      {/* Name Label */}
-      <span
-        className={`gel-avatar-name${showName ? '' : ' gel-avatar-name--hidden'}`}
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'var(--gel-name-size)',
-          fontWeight: 'var(--font-weight-bold)',
-          color: 'color-mix(in srgb, var(--color-text-primary) 78%, white 22%)',
-          textTransform: 'var(--type-button-label-transform)',
-          textShadow: `
-            0 0 8px color-mix(in srgb, ${accentColor} 72%, transparent),
-            0 0 20px color-mix(in srgb, ${haloColor} 42%, transparent),
-            0 2px 4px rgba(0, 0, 0, 0.5)
-          `,
-          letterSpacing: 'var(--letter-spacing-widest)',
-          WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
-          transition: 'all 0.3s ease-out',
-          transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-        }}
-      >
-        {user}
-      </span>
+      {!shouldPlaceNameInsideBubble ? (
+        <span
+          className={`gel-avatar-name${showName ? '' : ' gel-avatar-name--hidden'}`}
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--gel-name-size)',
+            fontWeight: 'var(--font-weight-bold)',
+            color: 'color-mix(in srgb, var(--color-text-primary) 78%, white 22%)',
+            textTransform: 'var(--type-button-label-transform)',
+            textShadow: `
+              0 0 8px color-mix(in srgb, ${accentColor} 72%, transparent),
+              0 0 20px color-mix(in srgb, ${haloColor} 42%, transparent),
+              0 2px 4px rgba(0, 0, 0, 0.5)
+            `,
+            letterSpacing: 'var(--letter-spacing-widest)',
+            WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
+            transition: 'all 0.3s ease-out',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+          }}
+        >
+          {user}
+        </span>
+      ) : null}
     </button>
   );
 };

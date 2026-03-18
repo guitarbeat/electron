@@ -50,6 +50,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const users: User[] = [...USER_OPTIONS];
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
+  const showBubbleName = variant !== 'inline';
 
   useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {
@@ -192,7 +193,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     user={profile}
                     hasPin={hasPin}
                     isHovered={isHovered}
-                    showName
+                    showName={showBubbleName}
                     selectionState={selectionState}
                     isSelectionAnimating={isSelectionAnimating}
                     size={variant === 'panel' ? (isMobile ? 'compact' : 'default') : 'tiny'}
@@ -207,25 +208,27 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     animationOffset={profile === 'Electra'}
                   />
 
-                  <div className="user-selection__profile-caption">
-                    <div className="user-selection__profile-meta">
-                      <span
-                        className={`user-selection__meta-pill${isActive ? ' user-selection__meta-pill--active' : ''}`}
-                      >
-                        {isActive ? 'Active' : 'Tap to switch'}
-                      </span>
-                      {hasPin ? (
-                        <span className="user-selection__meta-pill" aria-hidden="true">
-                          PIN
-                        </span>
-                      ) : null}
+                  {variant === 'panel' ? (
+                    <div className="user-selection__profile-caption">
+                      <div className="user-selection__profile-meta">
+                        {isActive ? (
+                          <span className="user-selection__meta-pill user-selection__meta-pill--active">
+                            Active
+                          </span>
+                        ) : null}
+                        {hasPin ? (
+                          <span className="user-selection__meta-pill" aria-hidden="true">
+                            PIN
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="user-selection__profile-note">
+                        {isActive
+                          ? `${profile} is steering the plan right now.`
+                          : PROFILE_NOTES[profile]}
+                      </p>
                     </div>
-                    <p className="user-selection__profile-note">
-                      {isActive
-                        ? `${profile} is steering the plan right now.`
-                        : PROFILE_NOTES[profile]}
-                    </p>
-                  </div>
+                  ) : null}
                 </div>
               );
             })}

@@ -140,7 +140,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
           <div className="movie-item-overlay">
             <div>
-              {movie.posterUrl && <h3 className="movie-item-title">{movie.title}</h3>}
+              <h3 className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}>
+                {movie.title}
+              </h3>
               <MovieMetadata movie={movie} />
             </div>
 
@@ -234,14 +236,23 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
+  const [hasImageError, setHasImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasImageError(false);
+  }, [movie.posterUrl]);
+
+  const shouldShowPoster = Boolean(movie.posterUrl) && !hasImageError;
+
   return (
     <div className={`movie-poster-wrap ${className}`}>
-      {movie.posterUrl ? (
+      {shouldShowPoster ? (
         <img
           src={movie.posterUrl}
           alt={`${movie.title} poster`}
           loading="lazy"
           className="movie-poster"
+          onError={() => setHasImageError(true)}
         />
       ) : (
         <div className="movie-poster-fallback">

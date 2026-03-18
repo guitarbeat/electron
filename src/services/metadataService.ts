@@ -24,10 +24,28 @@ const stripHtml = (value?: string | null): string | undefined => {
   return value.replace(/<[^>]*>?/gm, '');
 };
 
+const normalizePosterUrl = (value?: string | null): string | undefined => {
+  if (!value) return undefined;
+  const cleanValue = sanitizeInput(value);
+  if (!cleanValue || !isValidUrl(cleanValue)) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(cleanValue);
+    if (parsedUrl.protocol === 'http:') {
+      parsedUrl.protocol = 'https:';
+    }
+    return parsedUrl.toString();
+  } catch {
+    return undefined;
+  }
+};
+
 const buildOmdbUrl = (params: Record<string, string>): string | null => {
   const url = new URL(OMDB_BASE, window.location.origin);
 
-  if (OMDB_API_KEY && isAbsoluteUrl(OMDB_BASE)) {
+  if (OMDB_API_KEY && !url.searchParams.has('apikey')) {
     url.searchParams.set('apikey', OMDB_API_KEY);
   }
 
@@ -191,7 +209,7 @@ export interface MetadataResult {
 }
 
 const toMetadataResultFromOmdb = (omdbData: OmdbMovieResponse): MetadataResult => ({
-  posterUrl: omdbData.Poster !== 'N/A' && isValidUrl(omdbData.Poster) ? omdbData.Poster : undefined,
+  posterUrl: normalizePosterUrl(omdbData.Poster),
   year: omdbData.Year !== 'N/A' ? omdbData.Year : undefined,
   plot: omdbData.Plot !== 'N/A' ? sanitizeInput(omdbData.Plot) : undefined,
   imdbRating: omdbData.imdbRating !== 'N/A' ? omdbData.imdbRating : undefined,
@@ -222,9 +240,9 @@ export const fetchMovieMetadata = async (
       const show: TvMazeShow = await tvmazeRes.json();
 
       if (show) {
-        const posterUrl = show.image?.medium || show.image?.original;
+        const posterUrl = normalizePosterUrl(show.image?.medium || show.image?.original);
         return {
-          posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
+          posterUrl,
           year: show.premiered ? show.premiered.split('-')[0] : undefined,
           plot: sanitizeInput(stripHtml(show.summary) || ''),
           imdbRating: show.rating?.average?.toString(),
@@ -288,9 +306,9 @@ export const fetchMovieMetadata = async (
       if (tvmazeData && tvmazeData.length > 0) {
         const [firstResult] = tvmazeData;
         const { show } = firstResult;
-        const posterUrl = show.image?.medium || show.image?.original;
+        const posterUrl = normalizePosterUrl(show.image?.medium || show.image?.original);
         return {
-          posterUrl: posterUrl && isValidUrl(posterUrl) ? posterUrl : undefined,
+          posterUrl,
           year: show.premiered ? show.premiered.split('-')[0] : undefined,
           plot: sanitizeInput(stripHtml(show.summary) || ''),
           imdbRating: show.rating?.average?.toString(),
