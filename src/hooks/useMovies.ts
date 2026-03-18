@@ -7,6 +7,7 @@ import {
   fetchGist,
   GIST_FILENAME,
   getGistFileContent,
+  hasLocalOverride,
   patchGistFile,
   readLocalOverride,
   readStoredJson,
@@ -23,7 +24,6 @@ import {
   parseJsonContent,
   sanitizeInput,
 } from '@/utils';
-import { MOCK_MOVIES } from '@/services/mockData';
 
 let cachedMovies: Movie[] = [];
 let lastETag: string | null = null;
@@ -37,7 +37,7 @@ const readStoredLocalMovies = (): Movie[] | null =>
     label: 'local movie fallback',
   });
 
-const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? cloneMovies(MOCK_MOVIES);
+const getFallbackMovies = (): Movie[] => readStoredLocalMovies() ?? [];
 
 const saveLocalMovies = (movies: Movie[]): void => {
   const nextMovies = writeStoredJson({
@@ -122,6 +122,21 @@ const getMovies = async (): Promise<Movie[]> => {
   }
 };
 
+const getMoviesFromGist = async (): Promise<Movie[] | null> => {
+  if (!canReadGist) return null;
+
+  const response = await fetchGist({ cache: 'no-cache' });
+  if (!response.ok) return null;
+
+  const gist = await response.json();
+  const content = getGistFileContent(gist, GIST_FILENAME);
+  if (content === null) return [];
+
+  const parsedMovies = parseJsonContent(content, GIST_FILENAME);
+  if (!Array.isArray(parsedMovies)) return null;
+  return normalizeMovies(parsedMovies);
+};
+
 const saveMovies = async (movies: Movie[]): Promise<void> => {
   if (!canWriteGist) {
     saveLocalMovies(movies);
@@ -174,6 +189,50 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);
   const hasAutoSyncedRef = useRef(false);
+
+  useEffect(() => {
+    const maybeSyncLocalOverride = async () => {
+      if (!canWriteGist) return;
+      if (hasAutoSyncedRef.current) return;
+      if (!hasLocalOverride('movies')) return;
+
+      const localMovies = readStoredLocalMovies();
+      if (!localMovies || localMovies.length === 0) return;
+
+      try {
+        const gistMovies = await getMoviesFromGist();
+        if (gistMovies === null) return;
+
+        const gistById = new Map(gistMovies.map((movie) => [movie.id, movie]));
+        const merged = [...gistMovies];
+        for (const movie of localMovies) {
+          if (!gistById.has(movie.id)) {
+            gistById.set(movie.id, movie);
+            merged.push(movie);
+          }
+        }
+
+        // Only auto-sync when we are strictly adding missing movies.
+        if (merged.length <= gistMovies.length) {
+          hasAutoSyncedRef.current = true;
+          return;
+        }
+
+        const response = await patchGistFile(GIST_FILENAME, JSON.stringify(merged, null, 2));
+        if (!response.ok) return;
+
+        cachedMovies = merged;
+        lastETag = null;
+        setLocalOverride('movies', false);
+        hasAutoSyncedRef.current = true;
+        refresh();
+      } catch (error) {
+        console.warn('Failed to sync local movies back to Gist:', error);
+      }
+    };
+
+    void maybeSyncLocalOverride();
+  }, [refresh]);
 
   // Effect to seed the initial movies if the Gist is empty
   useEffect(() => {
