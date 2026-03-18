@@ -192,7 +192,7 @@ const ImageChoiceEditor: React.FC<{
 
     if (file.size > 500 * 1024) {
       showToast({
-        message: 'Image too large. Please use an image under 500KB for Gist storage.',
+        message: 'Image too large. Please use an image under 500KB.',
         type: 'error',
       });
       return;
