@@ -278,11 +278,8 @@ const FoodMergeGame: React.FC = () => {
     }, TICK_MS);
 
     return () => window.clearInterval(interval);
-  }, [running, isGameOver, speedMultiplier, difficulty]);
+  }, [running, isGameOver, speedMultiplier, difficulty, showToast]);
 
-  useEffect(() => {
-    if (!isGameOver) return;
-  }, [isGameOver]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

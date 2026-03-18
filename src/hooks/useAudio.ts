@@ -19,7 +19,7 @@ export const useAudio = () => {
   const playTone = useCallback(
     (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
       if (!audioContextRef.current) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (AudioContextClass) {
           audioContextRef.current = new AudioContextClass();
         } else {
