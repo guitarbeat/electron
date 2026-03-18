@@ -1,11 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { colors, spacing, radius, typography } from '@/design-system';
-import type { Place } from '@/types';
+import React, { useEffect, useRef } from "react";
+import { colors, spacing, radius, typography } from "@/design-system";
+import type { Place } from "@/types";
 
 const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };
 const DEFAULT_ZOOM = 4;
 const GOOGLE_PLACES_API_KEY =
-  ((import.meta.env || {}) as Record<string, string | undefined>).VITE_GOOGLE_PLACES_API_KEY || '';
+  ((import.meta.env || {}) as Record<string, string | undefined>)
+    .VITE_GOOGLE_PLACES_API_KEY || "";
 
 interface PlacesMapProps {
   places: Place[];
@@ -21,18 +22,21 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
 
   const mapRef = useRef<any>(null);
 
-  const markersRef = useRef<any[]>([]);
+  interface GoogleMarker {
+    setMap(map: any): void;
+  }
+  const markersRef = useRef<GoogleMarker[]>([]);
 
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
 
     const placesWithCoords = places.filter(
       (p): p is Place & { lat: number; lng: number } =>
-        typeof p.lat === 'number' && typeof p.lng === 'number'
+        typeof p.lat === "number" && typeof p.lng === "number",
     );
 
     const updateMarkersAndBounds = (map: any) => {
-      markersRef.current.forEach((m: any) => m.setMap(null));
+      markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
@@ -51,7 +55,10 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       });
 
       if (placesWithCoords.length === 1) {
-        map.setCenter({ lat: placesWithCoords[0].lat, lng: placesWithCoords[0].lng });
+        map.setCenter({
+          lat: placesWithCoords[0].lat,
+          lng: placesWithCoords[0].lng,
+        });
         map.setZoom(12);
       } else {
         map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
@@ -66,8 +73,16 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
         center: DEFAULT_CENTER,
         zoom: DEFAULT_ZOOM,
         styles: [
-          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-          { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
+          {
+            featureType: "transit",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }],
+          },
         ],
         zoomControl: true,
         mapTypeControl: false,
@@ -89,13 +104,15 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       return;
     }
 
-    const existing = document.querySelector('script[src*="maps.googleapis.com"]');
+    const existing = document.querySelector(
+      'script[src*="maps.googleapis.com"]',
+    );
     if (existing) {
-      existing.addEventListener('load', initMap);
-      return () => existing.removeEventListener('load', initMap);
+      existing.addEventListener("load", initMap);
+      return () => existing.removeEventListener("load", initMap);
     }
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_API_KEY}&libraries=places`;
     script.async = true;
     script.defer = true;
@@ -131,10 +148,10 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
     <div
       ref={containerRef}
       style={{
-        width: '100%',
+        width: "100%",
         height: 280,
         borderRadius: radius.lg,
-        overflow: 'hidden',
+        overflow: "hidden",
         border: `1px solid ${colors.borderSecondary}35`,
         background: colors.surface,
         ...style,
