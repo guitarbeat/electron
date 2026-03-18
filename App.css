@@ -5326,6 +5326,7 @@ body.grabbing * {
   gap: 0.35rem;
   width: 100%;
   min-width: 0;
+  position: relative;
 }
 
 .movie-item-primary-action {
@@ -5348,6 +5349,20 @@ body.grabbing * {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+}
+
+.movie-item-primary-action-label--short {
+  display: none;
+}
+
+@media (max-width: 420px) {
+  .movie-item-primary-action-label--long {
+    display: none;
+  }
+
+  .movie-item-primary-action-label--short {
+    display: inline;
+  }
 }
 
 .movie-item-primary-action svg {
@@ -5399,12 +5414,26 @@ body.grabbing * {
 }
 
 .movie-secondary-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
   display: flex;
-  flex: 0 0 auto;
+  align-items: center;
   gap: 0.3rem;
+  padding-right: 0.25rem;
+  padding-left: 0.45rem;
   opacity: 0;
   pointer-events: none;
   transform: translateX(6px);
+  background: linear-gradient(
+    270deg,
+    rgba(6, 10, 18, 0.92) 0%,
+    rgba(6, 10, 18, 0.62) 52%,
+    rgba(6, 10, 18, 0) 100%
+  );
+  border-top-right-radius: 0.85rem;
+  border-bottom-right-radius: 0.85rem;
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
@@ -5422,6 +5451,19 @@ body.grabbing * {
 .movie-item-card:focus-within .movie-secondary-actions,
 .movie-item-card:hover .movie-secondary-actions {
   opacity: 1;
+}
+
+/* Touch/tablet: no hover, keep actions tappable without overlapping primary. */
+@media (hover: none) and (pointer: coarse) {
+  .movie-actions {
+    padding-right: 5.9rem;
+  }
+
+  .movie-secondary-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
 }
 
 .movie-memory-panel {
