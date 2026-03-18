@@ -12,12 +12,12 @@ export const usePolling = <T>(
   const [data, setData] = useState<T | undefined>(() => {
     if (key) {
       const cached = pollingManager.getData(key);
-      if (cached !== undefined) return cached;
+      if (cached !== undefined) return cached as T;
     }
     return undefined;
   });
 
-  const [error, setError] = useState<any>(() => {
+  const [error, setError] = useState<unknown>(() => {
     if (key) {
       const cachedError = pollingManager.getError(key);
       if (cachedError) return cachedError;
