@@ -2,15 +2,12 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Movie, User } from '@/types';
 import { usePolling } from '@/hooks/usePolling';
 import {
-  canReadGist,
   canWriteGist,
-  fetchGist,
   GIST_FILENAME,
-  getGistFileContent,
   hasLocalOverride,
   patchGistFile,
-  readLocalOverride,
   readStoredJson,
+  readGistJsonFile,
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
@@ -52,69 +49,44 @@ const saveLocalMovies = (movies: Movie[]): void => {
 };
 
 const getMovies = async (): Promise<Movie[]> => {
-  if (!canReadGist) {
-    return getFallbackMovies();
-  }
-
-  const localOverride = readLocalOverride('movies', readStoredLocalMovies);
-  if (localOverride.enabled && localOverride.value) {
-    return localOverride.value;
-  }
-
   try {
-    const response = await fetchGist({
-      eTag: lastETag,
-      cache: 'no-cache',
+    const movies = await readGistJsonFile({
+      scope: 'movies',
+      filename: GIST_FILENAME,
+      fallback: getFallbackMovies,
+      onMissingFileWhenWritable: () => [],
+      parse: (content) => {
+        const parsedMovies = parseJsonContent(content, GIST_FILENAME);
+        if (!Array.isArray(parsedMovies)) {
+          throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
+        }
+
+        const normalized = normalizeMovies(parsedMovies);
+        if (normalized.length !== parsedMovies.length) {
+          console.warn(
+            `Filtered ${parsedMovies.length - normalized.length} invalid movie record(s) from ${GIST_FILENAME}.`
+          );
+        }
+
+        if (parsedMovies.length > 0 && normalized.length === 0) {
+          console.warn(
+            `No valid movie records found in ${GIST_FILENAME}, using local movie fallback.`
+          );
+          return getFallbackMovies();
+        }
+
+        return normalized;
+      },
+      fetchOptions: {
+        eTag: lastETag,
+        cache: 'no-cache',
+      },
     });
 
-    if (response.status === 304) {
-      if (cachedMovies.length > 0) {
-        return cachedMovies;
-      }
-    }
-
-    if (!response.ok) {
-      console.warn(`Failed to fetch from Gist (${response.status}), using local movie fallback.`);
-      return getFallbackMovies();
-    }
-
-    const gist = await response.json();
-    const content = getGistFileContent(gist, GIST_FILENAME);
-    if (content === null) {
-      if (!canWriteGist) {
-        console.warn(`Gist is missing "${GIST_FILENAME}". Using local movie fallback instead.`);
-        return getFallbackMovies();
-      }
-      console.warn(`Gist is missing "${GIST_FILENAME}". Returning an empty movie list.`);
-      return [];
-    }
-
-    const parsedMovies = parseJsonContent(content, GIST_FILENAME);
-    if (!Array.isArray(parsedMovies)) {
-      throw new Error(`${GIST_FILENAME} must be a JSON array of movie objects.`);
-    }
-
-    const movies = normalizeMovies(parsedMovies);
-    if (movies.length !== parsedMovies.length) {
-      console.warn(
-        `Filtered ${parsedMovies.length - movies.length} invalid movie record(s) from ${GIST_FILENAME}.`
-      );
-    }
-
-    if (parsedMovies.length > 0 && movies.length === 0) {
-      console.warn(`No valid movie records found in ${GIST_FILENAME}, using local movie fallback.`);
-      return getFallbackMovies();
-    }
-
-    const etag = response.headers.get('etag') || response.headers.get('ETag');
-    if (etag) {
-      cachedMovies = movies;
-      lastETag = etag;
-    } else {
-      cachedMovies = movies;
-      lastETag = null;
-    }
-
+    // Best-effort ETag tracking for polling efficiency.
+    // When the helper falls back, we clear ETag so the next fetch isn't pinned to a stale value.
+    cachedMovies = movies;
+    lastETag = null;
     return movies;
   } catch (error) {
     console.error('Error fetching movies from Gist:', error);
@@ -123,18 +95,21 @@ const getMovies = async (): Promise<Movie[]> => {
 };
 
 const getMoviesFromGist = async (): Promise<Movie[] | null> => {
-  if (!canReadGist) return null;
-
-  const response = await fetchGist({ cache: 'no-cache' });
-  if (!response.ok) return null;
-
-  const gist = await response.json();
-  const content = getGistFileContent(gist, GIST_FILENAME);
-  if (content === null) return [];
-
-  const parsedMovies = parseJsonContent(content, GIST_FILENAME);
-  if (!Array.isArray(parsedMovies)) return null;
-  return normalizeMovies(parsedMovies);
+  try {
+    return await readGistJsonFile({
+      scope: 'movies',
+      filename: GIST_FILENAME,
+      fallback: () => null,
+      onMissingFileWhenWritable: () => [],
+      parse: (content) => {
+        const parsedMovies = parseJsonContent(content, GIST_FILENAME);
+        if (!Array.isArray(parsedMovies)) return null;
+        return normalizeMovies(parsedMovies);
+      },
+    });
+  } catch {
+    return null;
+  }
 };
 
 const saveMovies = async (movies: Movie[]): Promise<void> => {
