@@ -6,7 +6,7 @@ A collaborative movie-night application designed for two people. Built with **Re
 
 Born as an AI Studio prototype in October 2025, this project has evolved into a personal shared environment. It combines a movie watchlist with social layers like message boards, minigames (Food Merge, Spin Wheel), and shared memory walls.
 
-The project emphasizes **nostalgia**, **personality**, and **expressive UI** while maintaining a disciplined storage model using **GitHub Gist** for data persistence.
+The project emphasizes **nostalgia**, **personality**, and **expressive UI** while maintaining a disciplined storage model using **localStorage** by default (with optional GitHub Gist sync for multi-device persistence).
 
 ## 🚀 Quick Start
 
@@ -42,6 +42,6 @@ For more detailed information, please refer to the following guides in the `docs
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: Vanilla CSS with custom design tokens for Y2K/Retro-futurist theme.
-- **Persistence**: GitHub Gist with a server-side proxy for secure data storage.
+- **Persistence**: localStorage by default, with optional GitHub Gist sync for shared/multi-device storage.
 - **APIs**: OMDb (movie metadata), Google Places (map components).
-- **Backend/Proxy**: Node.js server for handling API requests and Gist authentication.
+- **Backend/Proxy**: Optional Node.js server for handling API requests (movie metadata, optional Gist sync).
