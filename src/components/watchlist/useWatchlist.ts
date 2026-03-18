@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '@/components/memories/memoryUtils';
 import {
   addMemory as addMemoryService,
@@ -12,16 +13,11 @@ import { SortMode, ContentTab, Movie, User, SharedMemory } from '@/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/context';
+import { areDeeplyEqual } from '@/utils';
 
 const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
 const MEMORY_FILTER_DEFAULT = 'all';
 const POLLING_INTERVAL = 30000;
-const memoriesEqual = (prev: SharedMemory[] | undefined, next: SharedMemory[]) => {
-  if (!prev) return false;
-  if (prev.length !== next.length) return false;
-  return JSON.stringify(prev) === JSON.stringify(next);
-};
-
 interface UseWatchlistProps {
   currentUser: User | null;
   isPaused: boolean;
@@ -33,33 +29,8 @@ interface WatchlistToast {
   onUndo?: () => void;
 }
 
-const breakpoints = {
-  sm: '(max-width: 640px)',
-  md: '(max-width: 768px)',
-  lg: '(max-width: 1024px)',
-  xl: '(max-width: 1280px)',
-};
-
-const useMediaQuery = (query: string): boolean => {
-  const subscribe = useCallback(
-    (callback: () => void) => {
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener('change', callback);
-      return () => {
-        matchMedia.removeEventListener('change', callback);
-      };
-    },
-    [query]
-  );
-
-  const getSnapshot = () => window.matchMedia(query).matches;
-  const getServerSnapshot = () => false;
-
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-};
-
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
-  const isMobile = useMediaQuery(breakpoints.sm);
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { showToast } = useToast();
 
   // State (from useWatchlistState)
@@ -153,7 +124,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isLoading: isMemoriesLoading,
     error: memoriesError,
     refresh: refreshMemories,
-  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, memoriesEqual, {
+  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, areDeeplyEqual, {
     key: 'memories',
     isPaused,
   });

@@ -5,8 +5,9 @@
  * Sub-components merged into quiz/QuizEditor scope.
  */
 
-import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useToast } from '@/context';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
@@ -16,31 +17,6 @@ import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { spacing, colors, typography, radius } from '@/design-system';
 import { ArrowLeftIcon } from '@/common/icons';
-
-const breakpoints = {
-  sm: '(max-width: 640px)',
-  md: '(max-width: 768px)',
-  lg: '(max-width: 1024px)',
-  xl: '(max-width: 1280px)',
-};
-
-const useMediaQuery = (query: string): boolean => {
-  const subscribe = useCallback(
-    (callback: () => void) => {
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener('change', callback);
-      return () => {
-        matchMedia.removeEventListener('change', callback);
-      };
-    },
-    [query]
-  );
-
-  const getSnapshot = () => window.matchMedia(query).matches;
-  const getServerSnapshot = () => false;
-
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-};
 
 interface UseUndoRedoReturn<T> {
   state: T;
@@ -171,7 +147,7 @@ interface QuizEditorProps {
 const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   const { quizData, isLoading, isSaving, saveAllData, refresh } = useQuiz();
   const { showToast } = useToast();
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery(mediaBreakpoints.md);
 
   // Use undo/redo for local state
   const {

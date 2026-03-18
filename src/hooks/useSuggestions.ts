@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/hooks/usePolling';
-import { sanitizeInput } from '@/utils';
+import { areDeeplyEqual, parseJsonContent, sanitizeInput } from '@/utils';
 import {
   canReadGist,
   canWriteGist,
@@ -18,12 +18,6 @@ import { MOCK_SUGGESTIONS } from '@/services/mockData';
 
 const POLLING_INTERVAL = 300000; // 5 minutes
 const SUGGESTIONS_LOCAL_STORAGE_KEY = 'movieList.localSuggestions';
-
-const suggestionsEqual = (prev: MovieSuggestion[] | undefined, next: MovieSuggestion[]) => {
-  if (!prev) return false;
-  if (prev.length !== next.length) return false;
-  return JSON.stringify(prev) === JSON.stringify(next);
-};
 
 const cloneSuggestions = (suggestions: MovieSuggestion[]): MovieSuggestion[] =>
   suggestions.map((suggestion) => ({ ...suggestion }));
@@ -96,7 +90,7 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
       return [];
     }
 
-    return JSON.parse(content);
+    return parseJsonContent(content, 'suggestions') as MovieSuggestion[];
   } catch (error) {
     console.error('Error fetching suggestions from Gist:', error);
     return getFallbackSuggestions();
@@ -157,7 +151,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
     isLoading,
     error,
     refresh,
-  } = usePolling<MovieSuggestion[]>(getSuggestions, POLLING_INTERVAL, suggestionsEqual, {
+  } = usePolling<MovieSuggestion[]>(getSuggestions, POLLING_INTERVAL, areDeeplyEqual, {
     key: 'suggestions',
     isPaused,
   });
