@@ -33,7 +33,7 @@ class PollingManager {
       this.subscribers.set(key, new Set());
     }
     const listeners = this.subscribers.get(key)!;
-    listeners.add(listener);
+    listeners.add(listener as Listener<unknown>);
 
     // Update fetchFn (latest wins)
     this.fetchFns.set(key, fetchFn);
@@ -67,7 +67,7 @@ class PollingManager {
   unsubscribe<T>(key: string, listener: Listener<T>) {
     const listeners = this.subscribers.get(key);
     if (listeners) {
-      listeners.delete(listener);
+      listeners.delete(listener as Listener<unknown>);
       if (listeners.size === 0) {
         this.stopPolling(key);
         this.subscribers.delete(key);

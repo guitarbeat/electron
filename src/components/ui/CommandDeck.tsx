@@ -21,6 +21,13 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
 }) => {
   const isCompact = variant === 'compact';
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const actionPalette = [
+    colors.accent,
+    colors.secondary,
+    colors.tertiary,
+    colors.warning,
+    colors.success,
+  ];
 
   return (
     <div
@@ -34,8 +41,11 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
         padding: isCompact ? `${spacing.md} 0` : 0,
       }}
     >
-      {items.map((item, index) =>
-        isCompact ? (
+      {items.map((item, index) => {
+        const accentColor = actionPalette[index % actionPalette.length];
+        const haloColor = actionPalette[(index + 2) % actionPalette.length];
+
+        return isCompact ? (
           <div key={item.label} className="command-deck__bubble-item">
             <GelBubbleAvatar
               icon={item.icon}
@@ -47,8 +57,8 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
               onMouseLeave={() => setHoveredIndex(null)}
               onFocus={() => setHoveredIndex(index)}
               onBlur={() => setHoveredIndex(null)}
-              accentColor={index % 2 === 0 ? 'var(--color-accent)' : 'var(--color-secondary)'}
-              haloColor={index % 2 === 0 ? 'var(--color-tertiary)' : 'var(--color-accent)'}
+              accentColor={accentColor}
+              haloColor={haloColor}
             />
           </div>
         ) : (
@@ -63,31 +73,32 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
               alignItems: 'center',
               gap: spacing.sm,
               padding: `${spacing.sm} ${spacing.md}`,
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: `1px solid ${colors.borderSubtle}`,
+              background: `linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 44%), ${accentColor}14`,
+              border: `1px solid ${accentColor}52`,
               borderRadius: radius.md,
               color: colors.textPrimary,
               cursor: 'pointer',
               textAlign: 'left',
               transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-              boxShadow: shadows.button,
+              boxShadow: `${shadows.button}, 0 0 0 1px ${accentColor}20`,
               width: '100%',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-              e.currentTarget.style.borderColor = colors.accent;
+              e.currentTarget.style.background = `linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, transparent 42%), ${accentColor}30`;
+              e.currentTarget.style.borderColor = accentColor;
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = shadows.buttonHover;
+              e.currentTarget.style.boxShadow = `${shadows.buttonHover}, 0 0 18px ${accentColor}45`;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-              e.currentTarget.style.borderColor = colors.borderSubtle;
+              e.currentTarget.style.background = `linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 44%), ${accentColor}14`;
+              e.currentTarget.style.borderColor = `${accentColor}52`;
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = shadows.button;
+              e.currentTarget.style.boxShadow = `${shadows.button}, 0 0 0 1px ${accentColor}20`;
             }}
             onMouseDown={(e) => {
+              e.currentTarget.style.background = `linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 46%), ${accentColor}3d`;
               e.currentTarget.style.transform = 'translateY(1px)';
-              e.currentTarget.style.boxShadow = shadows.buttonActive;
+              e.currentTarget.style.boxShadow = `${shadows.buttonActive}, 0 0 12px ${accentColor}40`;
             }}
           >
             <span
@@ -115,8 +126,8 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
               {item.label}
             </span>
           </button>
-        )
-      )}
+        );
+      })}
     </div>
   );
 };

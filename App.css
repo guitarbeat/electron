@@ -13,6 +13,8 @@
   --font-interface: var(--font-body);
   --shell-max-width: 1480px;
   --shell-border: color-mix(in srgb, var(--color-border-subtle) 80%, transparent);
+  --color-quaternary: #8ef0ff;
+  --color-quinary: #ffd37f;
   --gradient-metal-bg: linear-gradient(185deg, #8d5564 0%, #5d3448 48%, #2a1523 100%);
   --gradient-metal-surface: linear-gradient(180deg, #f6dde4 0%, #cc9fae 50%, #8f5c71 100%);
   --gradient-metal-pill: linear-gradient(180deg, #fff2f4 0%, #e9cad3 42%, #bd8799 100%);
@@ -31,6 +33,8 @@ body[data-theme='movies'] {
   --color-secondary-muted: #ffd9a040;
   --color-tertiary: #e1b9c9;
   --color-tertiary-hover: #eac9d5;
+  --color-quaternary: #8ef0ff;
+  --color-quinary: #c8b3ff;
   --color-background: #190f18;
   --color-surface: rgba(53, 27, 40, 0.7);
   --color-surface-elevated: rgba(74, 38, 53, 0.84);
@@ -60,6 +64,8 @@ body[data-theme='places'] {
   --color-secondary-muted: #ffd8bf40;
   --color-tertiary: #f1be95;
   --color-tertiary-hover: #f6ceb0;
+  --color-quaternary: #9ff4cf;
+  --color-quinary: #ffd66e;
   --color-background: #1f1311;
   --color-surface: rgba(58, 35, 30, 0.7);
   --color-surface-elevated: rgba(79, 49, 41, 0.84);
@@ -81,9 +87,10 @@ body[data-theme='places'] {
 
 body {
   background-image:
-    radial-gradient(circle at 16% 18%, var(--y2k-metal-glint-a) 0%, transparent 38%),
-    radial-gradient(circle at 85% 76%, var(--y2k-metal-glint-b) 0%, transparent 36%),
-    radial-gradient(circle at 50% 108%, rgba(255, 149, 180, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 16% 18%, color-mix(in srgb, var(--color-accent) 30%, transparent) 0%, transparent 40%),
+    radial-gradient(circle at 85% 76%, color-mix(in srgb, var(--color-secondary) 26%, transparent) 0%, transparent 36%),
+    radial-gradient(circle at 50% 108%, color-mix(in srgb, var(--color-tertiary) 20%, transparent) 0%, transparent 44%),
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--color-quaternary) 18%, transparent) 0%, transparent 34%),
     var(--gradient-metal-bg);
   transition:
     background-color var(--theme-transition-duration) var(--theme-transition-easing),
@@ -185,8 +192,11 @@ body {
 .workspace-header,
 .workspace-surface,
 .support-card {
-  border: 1px solid var(--shell-border);
-  background: var(--gradient-card);
+  border: 1px solid color-mix(in srgb, var(--shell-border) 76%, var(--color-accent) 24%);
+  background:
+    radial-gradient(circle at 10% -6%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 38%),
+    radial-gradient(circle at 96% 105%, color-mix(in srgb, var(--color-quaternary) 12%, transparent) 0%, transparent 34%),
+    var(--gradient-card);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
@@ -348,7 +358,14 @@ body {
   border: 2px solid color-mix(in srgb, var(--color-accent) 40%, var(--color-border-subtle));
   background:
     radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.36) 0%, transparent 34%),
-    linear-gradient(160deg, color-mix(in srgb, var(--color-surface-2) 84%, var(--color-accent)) 0%, var(--color-surface-2) 100%);
+    conic-gradient(
+      from 220deg at 50% 50%,
+      color-mix(in srgb, var(--color-accent) 42%, var(--color-surface-2) 58%) 0deg,
+      color-mix(in srgb, var(--color-secondary) 38%, var(--color-surface-2) 62%) 115deg,
+      color-mix(in srgb, var(--color-tertiary) 32%, var(--color-surface-2) 68%) 230deg,
+      color-mix(in srgb, var(--color-quaternary) 34%, var(--color-surface-2) 66%) 320deg,
+      color-mix(in srgb, var(--color-accent) 42%, var(--color-surface-2) 58%) 360deg
+    );
   color: var(--color-text-primary);
   cursor: pointer;
   padding: 0;
@@ -407,6 +424,8 @@ body {
   border-radius: 10px;
   border: 1px solid var(--color-border-subtle);
   background:
+    radial-gradient(circle at 12% 14%, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, transparent 38%),
+    radial-gradient(circle at 92% 82%, color-mix(in srgb, var(--color-secondary) 12%, transparent) 0%, transparent 40%),
     linear-gradient(180deg, rgba(17, 24, 39, 0.94) 0%, rgba(16, 26, 44, 0.92) 100%);
   backdrop-filter: blur(12px);
   box-shadow:
@@ -438,10 +457,10 @@ body {
 }
 
 .workspace-header {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: 0.7rem;
   padding: 1rem 1.1rem;
   border-radius: 4px;
 }
@@ -450,7 +469,36 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  justify-content: flex-end;
+  justify-content: center;
+  width: 100%;
+}
+
+.workspace-header__controls--toggle {
+  justify-content: center;
+}
+
+.workspace-header__toggle {
+  width: 100%;
+  padding: 0;
+}
+
+.workspace-header__active {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--type-eyebrow-family);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  line-height: var(--type-eyebrow-line-height);
+  letter-spacing: var(--type-eyebrow-letter-spacing);
+  text-transform: var(--type-eyebrow-transform);
+  color: color-mix(in srgb, var(--color-text-secondary) 78%, var(--color-secondary) 22%);
+}
+
+.workspace-header__active-icon {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .workspace-header__title {
@@ -540,29 +588,16 @@ body {
   }
 
   .workspace-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.55rem;
     padding: 0.75rem 0.9rem;
   }
 
-  .workspace-header__left {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
+  .workspace-header__controls {
+    width: 100%;
   }
 
-  .workspace-header__title {
-    font-size: var(--type-title-sm-size);
-  }
-
-  .workspace-header__title-icon {
-    width: 1.8rem;
-    height: 1.8rem;
-    font-size: 1rem;
+  .workspace-header__active {
+    font-size: var(--font-size-xs);
   }
 
   .workspace-surface {
@@ -676,11 +711,29 @@ body {
 
 .mobile-bottom-nav__item.is-active {
   color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  background:
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, var(--color-accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--color-secondary) 14%, transparent) 56%,
+      color-mix(in srgb, var(--color-quaternary) 10%, transparent) 100%
+    );
 }
 
 .mobile-bottom-nav__item.is-active .mobile-bottom-nav__icon {
   transform: translateY(-1px) scale(1.08);
+}
+
+.mobile-bottom-nav__item:nth-child(1).is-active {
+  color: var(--color-accent);
+}
+
+.mobile-bottom-nav__item:nth-child(2).is-active {
+  color: var(--color-secondary);
+}
+
+.mobile-bottom-nav__item:nth-child(3).is-active {
+  color: var(--color-tertiary);
 }
 
 .mobile-bottom-nav__item:active {
@@ -751,6 +804,8 @@ body {
   --color-accent-hover: #ff9bd3;
   --color-secondary: #95dcff;
   --color-tertiary: #a78af2;
+  --color-quaternary: #8ef0ff;
+  --color-quinary: #ffd37f;
   --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-error: #f87171;
@@ -866,9 +921,11 @@ body {
 body {
   background-color: var(--color-surface-0);
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(255, 127, 198, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(149, 220, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(167, 138, 242, 0.04) 0%, transparent 60%);
+    radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--color-accent) 16%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 56% 52%, color-mix(in srgb, var(--color-tertiary) 10%, transparent) 0%, transparent 60%),
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--color-quaternary) 9%, transparent) 0%, transparent 38%),
+    radial-gradient(circle at 12% 82%, color-mix(in srgb, var(--color-quinary) 8%, transparent) 0%, transparent 42%);
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-attachment: fixed;

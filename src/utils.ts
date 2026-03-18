@@ -36,6 +36,11 @@ export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
   }
 };
 
+export const executeAction = (action?: () => void, onComplete?: () => void): void => {
+  action?.();
+  onComplete?.();
+};
+
 /**
  * Sanitizes input string by removing control characters and trimming whitespace.
  * This helps prevent injection attacks and storage of malformed data.

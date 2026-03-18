@@ -1,6 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isValidUrl } from './utils.ts';
+import { executeAction, isValidUrl } from './utils.ts';
+
+test('executeAction', async (t) => {
+  await t.test('runs action and completion in order', () => {
+    const calls: string[] = [];
+
+    executeAction(
+      () => {
+        calls.push('action');
+      },
+      () => {
+        calls.push('complete');
+      }
+    );
+
+    assert.deepEqual(calls, ['action', 'complete']);
+  });
+
+  await t.test('still runs completion when action is missing', () => {
+    const calls: string[] = [];
+
+    executeAction(undefined, () => {
+      calls.push('complete');
+    });
+
+    assert.deepEqual(calls, ['complete']);
+  });
+});
 
 test('isValidUrl', async (t) => {
   await t.test('returns true for valid HTTP URLs', () => {

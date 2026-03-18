@@ -128,16 +128,17 @@ interface GelBubbleAvatarProps extends React.ButtonHTMLAttributes<HTMLButtonElem
   animationOffset?: boolean;
   accentColor?: string;
   haloColor?: string;
+  enableImageRefresh?: boolean;
 }
 
 const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
   default: { bubble: 'clamp(140px, 35vw, 200px)', name: 'clamp(1rem, 4vw, 1.25rem)' },
   compact: { bubble: 'clamp(90px, 22vw, 140px)', name: 'clamp(0.8rem, 3vw, 1rem)' },
   tiny: {
-    bubble: 'var(--inline-profile-bubble-size, clamp(64px, 10vw, 92px))',
+    bubble: 'var(--inline-profile-bubble-size, clamp(72px, 11vw, 98px))',
     name: 'var(--inline-profile-name-size, clamp(0.65rem, 0.8vw, 0.85rem))',
   },
-  action: { bubble: '54px', name: '0.7rem' },
+  action: { bubble: '58px', name: '0.7rem' },
 };
 
 const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps>(
@@ -156,6 +157,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       animationOffset = false,
       accentColor: customAccent,
       haloColor: customHalo,
+      enableImageRefresh = false,
       style: customStyle,
       disabled,
       ...buttonProps
@@ -179,6 +181,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   const haloColor = customHalo || (user === 'Aaron' ? 'var(--color-tertiary)' : user === 'Electra' ? 'var(--color-accent)' : 'var(--color-secondary)');
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
+  const canRefreshImage = Boolean(enableImageRefresh && user && !disabled);
   const shouldPlaceNameInsideBubble = true;
   const bubbleClasses = [
     'gel-bubble',
@@ -194,9 +197,12 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     .join(' ');
 
   const onImageClick = (e: React.MouseEvent) => {
+    if (!canRefreshImage) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
-    if (!disabled) refetchCat();
+    refetchCat();
   };
 
   let opacityValue = 1;
@@ -229,6 +235,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         transition:
           'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         filter: isSmall ? 'grayscale(0.4)' : 'none',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
         ...customStyle,
       }}
     >
@@ -336,18 +344,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
 
         {/* Profile Image Container - click image for new cat */}
         <div
-          role="button"
-          tabIndex={0}
-          onClick={onImageClick}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!disabled && user) refetchCat();
-            }
-          }}
-          aria-label={user ? 'Get a new random cat' : undefined}
-          title={user ? 'Click for new cat' : undefined}
+          onClick={canRefreshImage ? onImageClick : undefined}
+          title={canRefreshImage ? 'Click for new cat' : undefined}
           style={{
             width: '72%',
             height: '72%',
@@ -360,7 +358,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               inset 0 0 22px rgba(0, 0, 0, 0.24)
             `,
             position: 'relative',
-            cursor: disabled ? 'wait' : (user ? 'pointer' : 'default'),
+            cursor: disabled ? 'wait' : 'inherit',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             display: 'flex',
             alignItems: 'center',

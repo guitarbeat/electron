@@ -12,6 +12,40 @@ interface PlacesMapProps {
   style?: React.CSSProperties;
 }
 
+type LatLng = { lat: number; lng: number };
+
+interface GoogleMarkerInstance {
+  setMap: (map: GoogleMapInstance | null) => void;
+}
+
+interface GoogleLatLngBoundsInstance {
+  extend: (position: LatLng) => void;
+}
+
+interface GoogleMapInstance {
+  setCenter: (position: LatLng) => void;
+  setZoom: (zoom: number) => void;
+  fitBounds: (
+    bounds: GoogleLatLngBoundsInstance,
+    padding?: number | { top: number; right: number; bottom: number; left: number }
+  ) => void;
+}
+
+interface GoogleMapsApi {
+  maps: {
+    Map: new (container: HTMLElement, options: Record<string, unknown>) => GoogleMapInstance;
+    Marker: new (options: { position: LatLng; map: GoogleMapInstance; title?: string }) => GoogleMarkerInstance;
+    LatLngBounds: new () => GoogleLatLngBoundsInstance;
+  };
+}
+
+type WindowWithGoogle = Window & { google?: GoogleMapsApi };
+
+const getGoogleApi = (): GoogleMapsApi | null => {
+  const candidate = (window as WindowWithGoogle).google;
+  return candidate?.maps ? candidate : null;
+};
+
 /**
  * Renders a Google Map with markers for places that have lat/lng.
  * Uses the same API key as Places autocomplete; script may already be loaded.
@@ -19,9 +53,9 @@ interface PlacesMapProps {
 const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const mapRef = useRef<GoogleMapInstance | null>(null);
 
-  const markersRef = useRef<google.maps.Marker[]>([]);
+  const markersRef = useRef<GoogleMarkerInstance[]>([]);
 
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
@@ -31,17 +65,18 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
         typeof p.lat === 'number' && typeof p.lng === 'number'
     );
 
-    const updateMarkersAndBounds = (map: google.maps.Map) => {
+    const updateMarkersAndBounds = (map: GoogleMapInstance) => {
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
 
-      const { google } = window as unknown as { google: typeof google };
-      const bounds = new google.maps.LatLngBounds();
+      const googleApi = getGoogleApi();
+      if (!googleApi) return;
+      const bounds = new googleApi.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
         const position = { lat: place.lat, lng: place.lng };
-        const marker = new google.maps.Marker({
+        const marker = new googleApi.maps.Marker({
           position,
           map,
           title: place.name,
@@ -59,10 +94,10 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
     };
 
     const initMap = () => {
-      const { google } = window as unknown as { google: typeof google };
-      if (!containerRef.current || !google?.maps) return;
+      const googleApi = getGoogleApi();
+      if (!containerRef.current || !googleApi) return;
 
-      const map = new google.maps.Map(containerRef.current, {
+      const map = new googleApi.maps.Map(containerRef.current, {
         center: DEFAULT_CENTER,
         zoom: DEFAULT_ZOOM,
         styles: [
@@ -80,7 +115,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       updateMarkersAndBounds(map);
     };
 
-    if ((window as unknown as { google?: { maps?: { Map?: unknown } } }).google?.maps?.Map) {
+    if (getGoogleApi()?.maps.Map) {
       if (mapRef.current) {
         updateMarkersAndBounds(mapRef.current);
       } else {
