@@ -1,64 +1,71 @@
 import React from 'react';
-import { colors, spacing, typography, radius } from '@/design-system';
+import { colors, radius, spacing, typography, motion } from '@/design-system';
+import { useAudio } from '@/hooks/useAudio';
 
 interface SubNavTab {
   id: string;
   label: string;
   count?: number;
-  icon?: string;
-}
-
-interface SubNavChip {
-  id: string;
-  label: string;
 }
 
 interface SubNavProps {
-  /** Main tab row */
   tabs: SubNavTab[];
-  activeId: string;
-  onSelect: (id: string) => void;
-  /** Optional secondary row (e.g. "Sort by" chips) */
-  chips?: SubNavChip[];
+  activeTabId: string;
+  onTabChange: (id: string) => void;
+  variant?: 'pills' | 'underlined';
+  chips?: { id: string; label: string; count?: number }[];
   activeChipId?: string;
-  onChipSelect?: (id: string) => void;
-  chipLabel?: string;
-  /** Accessibility */
-  ariaLabel?: string;
-  /** Optional class for scroll container (e.g. hide scrollbar) */
-  scrollClassName?: string;
+  onChipChange?: (id: string) => void;
+  className?: string;
 }
 
 const SubNav: React.FC<SubNavProps> = ({
   tabs,
-  activeId,
-  onSelect,
+  activeTabId,
+  onTabChange,
+  variant = 'underlined',
   chips,
   activeChipId,
-  onChipSelect,
-  chipLabel = 'Sort by',
-  ariaLabel = 'Sub-navigation',
-  scrollClassName,
+  onChipChange,
+  className = '',
 }) => {
+  const { playSwitch } = useAudio();
+
+  const handleTabClick = (id: string) => {
+    if (id !== activeTabId) {
+      playSwitch();
+      onTabChange(id);
+    }
+  };
+
+  const handleChipClick = (id: string) => {
+    if (id !== activeChipId) {
+      playSwitch();
+      onChipChange?.(id);
+    }
+  };
+
   return (
-    <nav
-      aria-label={ariaLabel}
+    <div
+      className={`ui-subnav ui-subnav--${variant} ${className}`}
       style={{
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.md,
+        width: '100%',
+        marginBottom: spacing.lg,
       }}
     >
-      {/* Main tabs: clearer hierarchy (icon + label) | count badge */}
       <div
-        className={scrollClassName}
+        className="ui-subnav-tabs"
+        role="tablist"
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
-          gap: spacing.md,
-          alignItems: 'stretch',
-          minHeight: '44px',
-          padding: spacing.xs,
+          alignItems: 'center',
+          gap: variant === 'pills' ? spacing.sm : '0',
+          borderBottom:
+            variant === 'underlined' ? `1px solid ${colors.borderSubtle}` : 'none',
+          paddingBottom: variant === 'underlined' ? '0' : spacing.xs,
           overflowX: 'auto',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -66,134 +73,117 @@ const SubNav: React.FC<SubNavProps> = ({
         }}
       >
         {tabs.map((tab) => {
-          const isActive = activeId === tab.id;
+          const isActive = tab.id === activeTabId;
           return (
             <button
               key={tab.id}
-              type="button"
-              onClick={() => onSelect(tab.id)}
-              aria-pressed={isActive}
-              aria-label={tab.count !== undefined ? `${tab.label}, ${tab.count} items` : tab.label}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => handleTabClick(tab.id)}
               style={{
-                flex: '0 1 auto',
-                minHeight: '44px',
-                paddingLeft: spacing.md,
-                paddingRight: tab.count !== undefined ? spacing.sm : spacing.md,
-                paddingTop: spacing.sm,
-                paddingBottom: spacing.sm,
-                borderRadius: '2px',
-                border: isActive
-                  ? `2px solid ${colors.accent}`
-                  : `2px solid rgba(255,255,255,0.18)`,
-                background: isActive
-                  ? `linear-gradient(180deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`
-                  : 'linear-gradient(180deg, rgba(80,40,80,0.7) 0%, rgba(40,20,50,0.9) 100%)',
-                color: isActive ? '#1a1a2e' : colors.textSecondary,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.1s ease',
-                ...typography.presets.tabLabel,
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: spacing.sm,
-                boxShadow: isActive
-                  ? 'inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(0,0,0,0.4), 0 0 12px rgba(255,105,180,0.35)'
-                  : 'inset 1px 1px 0 rgba(255,255,255,0.25), inset -1px -1px 0 rgba(0,0,0,0.5)',
+                gap: spacing.xs,
+                padding: `${spacing.sm} ${spacing.md}`,
+                backgroundColor:
+                  variant === 'pills' && isActive ? colors.accent : 'transparent',
+                color: isActive ? colors.textPrimary : colors.textTertiary,
+                border: 'none',
+                borderRadius: variant === 'pills' ? radius.full : '0',
+                ...typography.presets.tabLabel,
+                cursor: 'pointer',
+                transition: `all ${motion.duration.fast} ${motion.easing.ease}`,
+                whiteSpace: 'nowrap',
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
-                {tab.icon && (
-                  <span
-                    style={{ fontSize: '1.1em', lineHeight: 1, opacity: isActive ? 1 : 0.9 }}
-                    aria-hidden
-                  >
-                    {tab.icon}
-                  </span>
-                )}
-                <span>{tab.label}</span>
-              </span>
+              {tab.label}
               {tab.count !== undefined && (
                 <span
                   style={{
-                    fontSize: typography.presets.badge.fontSize,
-                    fontWeight: typography.presets.badge.fontWeight,
-                    background: isActive ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.1)',
-                    color: isActive ? '#1a1a2e' : colors.textPrimary,
-                    padding: '2px 5px',
-                    borderRadius: '1px',
-                    minWidth: '20px',
-                    textAlign: 'center',
-                    lineHeight: typography.presets.badge.lineHeight,
-                    border: '1px solid rgba(0,0,0,0.3)',
-                    boxShadow: 'inset 1px 1px 0 rgba(255,255,255,0.2), inset -1px -1px 0 rgba(0,0,0,0.3)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '1.25rem',
+                    height: '1.25rem',
+                    padding: '0 0.35rem',
+                    backgroundColor: isActive
+                      ? variant === 'pills'
+                        ? 'rgba(0,0,0,0.15)'
+                        : `${colors.accent}25`
+                      : 'rgba(255,255,255,0.08)',
+                    borderRadius: radius.full,
+                    fontSize: '0.65rem',
+                    fontWeight: typography.fontWeight.bold,
+                    color: isActive ? colors.accent : colors.textTertiary,
+                    transition: 'inherit',
                   }}
                 >
                   {tab.count}
                 </span>
+              )}
+              {variant === 'underlined' && isActive && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-1px',
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    backgroundColor: colors.accent,
+                    boxShadow: `0 0 10px ${colors.accent}`,
+                  }}
+                />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Optional chips row (e.g. Sort by) */}
-      {chips && chips.length > 0 && onChipSelect && (
+      {chips && chips.length > 0 && (
         <div
-          role="group"
-          aria-label={chipLabel}
+          className="ui-subnav-chips"
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
-            gap: spacing.sm,
             alignItems: 'center',
+            gap: spacing.xs,
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            paddingBottom: spacing.xs,
           }}
         >
-          <span
-            style={{
-              color: colors.textTertiary,
-              ...typography.presets.eyebrow,
-              marginRight: spacing.xs,
-            }}
-          >
-            {chipLabel}
-          </span>
           {chips.map((chip) => {
-            const isActive = activeChipId === chip.id;
+            const isActive = chip.id === activeChipId;
             return (
               <button
                 key={chip.id}
-                type="button"
-                onClick={() => onChipSelect(chip.id)}
-                aria-pressed={isActive}
-                aria-label={`${chipLabel} ${chip.label}`}
+                onClick={() => handleChipClick(chip.id)}
                 style={{
-                  minHeight: '34px',
-                  padding: `0 ${spacing.md}`,
-                  borderRadius: '2px',
-                  border: `2px solid ${isActive ? colors.secondary : 'rgba(255,255,255,0.15)'}`,
-                  background: isActive
-                    ? `linear-gradient(180deg, ${colors.secondaryHover} 0%, ${colors.secondary} 100%)`
-                    : 'linear-gradient(180deg, rgba(60,40,80,0.7) 0%, rgba(30,20,45,0.9) 100%)',
-                  color: isActive ? '#1a1a2e' : colors.textTertiary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.xs,
+                  padding: `${spacing.xs} ${spacing.sm}`,
+                  backgroundColor: isActive ? `${colors.accent}20` : 'rgba(255,255,255,0.04)',
+                  color: isActive ? colors.accent : colors.textTertiary,
+                  border: `1px solid ${isActive ? colors.accent : colors.borderSubtle}`,
+                  borderRadius: radius.full,
                   fontSize: typography.fontSize.xs,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontWeight: typography.fontWeight.medium,
                   cursor: 'pointer',
-                  transition: 'all 0.1s ease',
-                  fontFamily: typography.fontFamilyValue.body,
-                  lineHeight: typography.lineHeight.snug,
-                  boxShadow: isActive
-                    ? 'inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(0,0,0,0.4)'
-                    : 'inset 1px 1px 0 rgba(255,255,255,0.2), inset -1px -1px 0 rgba(0,0,0,0.5)',
+                  transition: `all ${motion.duration.fast} ${motion.easing.ease}`,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {chip.label}
+                {chip.count !== undefined && (
+                  <span style={{ opacity: 0.6, fontSize: '0.9em' }}>({chip.count})</span>
+                )}
               </button>
             );
           })}
         </div>
       )}
-    </nav>
+    </div>
   );
 };
 
