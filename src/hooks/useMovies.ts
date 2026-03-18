@@ -447,12 +447,13 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       });
 
       if (syncOccurred) {
-        await performMutation(() => updatedMovies);
+        await saveMovies(updatedMovies);
+        refresh();
       }
     } catch (err) {
       console.error('Auto-sync: Failed background metadata update:', err);
     }
-  }, [movies, performMutation]);
+  }, [movies, refresh]);
 
   // Trigger auto-sync once movies are loaded
   useEffect(() => {
