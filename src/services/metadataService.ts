@@ -15,7 +15,7 @@ const resolveConfig = (value: string | undefined, fallback: string) => {
 
 const OMDB_BASE = resolveConfig(env.VITE_OMDB_API_URL, OMDB_DEFAULT_BASE_URL);
 
-const isAbsoluteUrl = (value: string) => /^[a-z][a-z\d+\-.]*:\/\//i.test(value);
+
 const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
 
@@ -108,12 +108,7 @@ interface OmdbSearchResultItem {
   Poster: string;
 }
 
-interface OmdbSearchResponse {
-  Search?: OmdbSearchResultItem[];
-  totalResults?: string;
-  Response: 'True' | 'False';
-  Error?: string;
-}
+
 
 interface OmdbMovieResponse {
   Title: string;
