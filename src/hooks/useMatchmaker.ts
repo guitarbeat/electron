@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { MatchmakerGame, User } from '@/types';
-import { usePolling } from './usePolling';
+import { usePolling } from '@/services/polling';
 import {
   canWriteGist,
   GIST_MATCHMAKER_FILENAME,

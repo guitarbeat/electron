@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Movie, User } from '@/types';
-import { usePolling } from '@/hooks/usePolling';
+import { usePolling } from '@/services/polling';
 import {
   canWriteGist,
   GIST_FILENAME,

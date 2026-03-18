@@ -8,7 +8,7 @@ import {
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
 } from '@/services/memoryService';
-import { usePolling } from '@/hooks/usePolling';
+import { usePolling } from '@/services/polling';
 import { SortMode, ContentTab, Movie, User, SharedMemory } from '@/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
