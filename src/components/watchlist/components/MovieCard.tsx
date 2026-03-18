@@ -2,6 +2,7 @@ import React from 'react';
 import { Movie, SharedMemory, User } from '@/types';
 import { spacing, typography, colors, radius } from '@/design-system';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import { executeAction } from '@/utils';
 import Card from '@/ui/Card';
 import BottomSheet from '@/ui/BottomSheet';
 import Button from '@/ui/Button';
@@ -92,9 +93,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
     }
   };
 
-  const handleAction = (action: () => void) => {
-    action();
-    setIsBottomSheetOpen(false);
+  const runBottomSheetAction = (action: () => void) => {
+    executeAction(action, () => setIsBottomSheetOpen(false));
   };
 
   const handleToggleMemories = (event?: React.MouseEvent) => {
@@ -208,7 +208,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               {hasSharedMemories && (
                 <button
                   type="button"
-                  onClick={() => handleAction(() => setShowMemories(true))}
+                  onClick={() => runBottomSheetAction(() => setShowMemories(true))}
                   className="movie-sheet-memory-button"
                   aria-label={`View memories for "${movie.title}"`}
                 >
@@ -226,8 +226,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
             isUpdating={isUpdating}
             isMobile={isMobile}
             onToggle={handleToggle}
-            onDelete={() => handleAction(onDelete)}
-            onFixMatch={onFixMatch ? () => handleAction(onFixMatch) : undefined}
+            onDelete={() => runBottomSheetAction(onDelete)}
+            onFixMatch={onFixMatch ? () => runBottomSheetAction(onFixMatch) : undefined}
             onCloseBottomSheet={() => setIsBottomSheetOpen(false)}
           />
         </div>
@@ -374,28 +374,27 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     event.stopPropagation();
   };
 
-  const handleAction = (action?: () => void) => {
-    action?.();
-    onCloseBottomSheet?.();
+  const runAction = (action?: () => void) => {
+    executeAction(action, onCloseBottomSheet);
   };
 
   const handlePrimaryAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
     if (isMobile && onCloseBottomSheet) {
-      handleAction(onToggle);
-    } else {
-      onToggle();
+      runAction(onToggle);
+      return;
     }
+    executeAction(onToggle);
   };
 
   const handleFixMatchAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
-    handleAction(onFixMatch);
+    runAction(onFixMatch);
   };
 
   const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
-    handleAction(onDelete);
+    runAction(onDelete);
   };
 
   const mobileActionStyle: React.CSSProperties = {

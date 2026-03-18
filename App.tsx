@@ -21,6 +21,7 @@ import ActionBubble from '@/ui/ActionBubble';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { useAudio } from '@/hooks/useAudio';
 import { colors, spacing, typography, zIndex, motion, shadows, radius } from '@/design-system';
+import { executeAction } from '@/utils';
 import './App.css';
 
 interface MainTabItem {
@@ -55,7 +56,7 @@ const MAIN_TABS: MainTabItem[] = [
 
 const ACTION_BUBLE_SIZE = 58;
 const ACTION_BUBBLE_EDGE_MARGIN = 12;
-const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
+const ACTION_BUBBLE_DRAG_THRESHOLD = 10;
 const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
 const ACTION_BUBBLE_MENU_WIDTH = 260;
 
@@ -202,6 +203,7 @@ const AppInner: React.FC = () => {
     origin: ActionBubblePosition;
   } | null>(null);
   const didActionBubbleDragRef = useRef(false);
+  const suppressActionBubbleClickRef = useRef(false);
   const hasCustomActionBubblePositionRef = useRef(false);
 
   const [actionBubblePosition, setActionBubblePosition] = useState<ActionBubblePosition>(() =>
@@ -316,16 +318,35 @@ const AppInner: React.FC = () => {
     setShowMatchmaker(true);
   }, [currentUser, showToast]);
 
-  const handleActionDeckSelect = (action: () => void) => {
+  const runDelayedCommandAction = useCallback((action: () => void) => {
     if (mobileActionTimeoutRef.current !== null) {
       window.clearTimeout(mobileActionTimeoutRef.current);
     }
     setShowMoreSheet(false);
     mobileActionTimeoutRef.current = window.setTimeout(() => {
       mobileActionTimeoutRef.current = null;
-      action();
+      executeAction(action);
     }, 150);
-  };
+  }, []);
+
+  const handleInlineDeckItemSelect = useCallback((item: CommandActionItem) => {
+    executeAction(item.action);
+  }, []);
+
+  const handleDelayedDeckItemSelect = useCallback(
+    (item: CommandActionItem) => {
+      runDelayedCommandAction(item.action);
+    },
+    [runDelayedCommandAction]
+  );
+
+  const handleBubbleDeckItemSelect = useCallback(
+    (item: CommandActionItem) => {
+      setShowActionBubbleMenu(false);
+      runDelayedCommandAction(item.action);
+    },
+    [runDelayedCommandAction]
+  );
 
   const commandDeckItems = useMemo(
     () =>
@@ -362,6 +383,7 @@ const AppInner: React.FC = () => {
       origin: actionBubblePosition,
     };
     didActionBubbleDragRef.current = false;
+    suppressActionBubbleClickRef.current = false;
     setIsDraggingActionBubble(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -386,8 +408,8 @@ const AppInner: React.FC = () => {
       return;
     }
 
-    setActionBubblePosition((previous) =>
-      clampActionBubblePosition(previous.x + deltaX, previous.y + deltaY)
+    setActionBubblePosition(() =>
+      clampActionBubblePosition(dragState.origin.x + deltaX, dragState.origin.y + deltaY)
     );
   };
 
@@ -395,6 +417,7 @@ const AppInner: React.FC = () => {
     if (didActionBubbleDragRef.current) {
       hasCustomActionBubblePositionRef.current = true;
       setShowActionBubbleMenu(false);
+      suppressActionBubbleClickRef.current = true;
     }
     setIsDraggingActionBubble(false);
     actionBubbleDragRef.current = null;
@@ -416,9 +439,10 @@ const AppInner: React.FC = () => {
   };
 
   const handleActionBubbleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (didActionBubbleDragRef.current) {
+    if (didActionBubbleDragRef.current || suppressActionBubbleClickRef.current) {
       event.preventDefault();
       event.stopPropagation();
+      suppressActionBubbleClickRef.current = false;
       return;
     }
 
@@ -519,10 +543,7 @@ const AppInner: React.FC = () => {
               <CommandDeck
                 items={commandDeckItems}
                 variant="compact"
-                onItemSelect={(item) => {
-                  setShowActionBubbleMenu(false);
-                  handleActionDeckSelect(item.action);
-                }}
+                onItemSelect={handleBubbleDeckItemSelect}
               />
             </div>
           )}
@@ -540,23 +561,20 @@ const AppInner: React.FC = () => {
               </section>
             )}
 
-            <section className="workspace-header" aria-label="Current workspace overview" style={{ padding: isMobile ? spacing.md : `${spacing.xl} ${spacing.xl} ${spacing.md}` }}>
-              <div className="workspace-header__left">
-                {isMobile ? (
-                  <h2 className="workspace-header__title" aria-live="polite" style={{ ...typography.presets.titleMd, display: 'flex', alignItems: 'center', gap: spacing.sm, margin: 0 }}>
-                    <span className="workspace-header__title-icon" aria-hidden="true">
-                      {activeTabMeta.icon}
-                    </span>
-                    <span>{activeTabMeta.label}</span>
-                  </h2>
-                ) : null}
+            <section className="workspace-header workspace-header--toggle" aria-label="Workspace mode selector" style={{ padding: isMobile ? spacing.md : `${spacing.xl} ${spacing.xl} ${spacing.lg}` }}>
+              <div className="workspace-header__controls workspace-header__controls--toggle">
+                <ThemeToggle
+                  activeTab={activeTab}
+                  onChange={handleTabChange}
+                  className="workspace-header__toggle"
+                />
               </div>
-
-              {!isMobile && (
-                <div className="workspace-header__controls" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: spacing.md }}>
-                  <ThemeToggle activeTab={activeTab} onChange={handleTabChange} compact />
-                </div>
-              )}
+              <p className="workspace-header__active" aria-live="polite">
+                <span className="workspace-header__active-icon" aria-hidden="true">
+                  {activeTabMeta.icon}
+                </span>
+                <span>{activeTabMeta.label} Mode</span>
+              </p>
             </section>
 
             <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
@@ -587,7 +605,7 @@ const AppInner: React.FC = () => {
                     </div>
                     <CommandDeck
                       items={commandDeckItems}
-                      onItemSelect={(item) => item.action()}
+                      onItemSelect={handleInlineDeckItemSelect}
                     />
                   </section>
                 </aside>
@@ -597,7 +615,7 @@ const AppInner: React.FC = () => {
         </div>
 
         {isMobile && (
-          <nav className="mobile-bottom-nav" aria-label="Main navigation" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: zIndex.overlay, display: 'flex', background: colors.surface3, borderTop: `1px solid ${colors.borderSubtle}`, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <nav className="mobile-bottom-nav" aria-label="Main navigation">
             {MAIN_TABS.map((tab) => {
               const isActive = tab.id === activeTab;
               return (
@@ -607,19 +625,6 @@ const AppInner: React.FC = () => {
                   className={`mobile-bottom-nav__item${isActive ? ' is-active' : ''}`}
                   onClick={() => handleTabChange(tab.id)}
                   aria-current={isActive ? 'page' : undefined}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: spacing.xs,
-                    padding: spacing.sm,
-                    background: 'none',
-                    border: 'none',
-                    color: isActive ? colors.accent : colors.textTertiary,
-                    transition: `color ${motion.duration.fast} ${motion.easing.ease}`,
-                  }}
                 >
                   <span className="mobile-bottom-nav__icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>{tab.icon}</span>
                   <span className="mobile-bottom-nav__label" style={typography.presets.caption}>{tab.label}</span>
@@ -631,18 +636,6 @@ const AppInner: React.FC = () => {
               className="mobile-bottom-nav__item"
               onClick={openMoreSheet}
               aria-label="More options"
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: spacing.xs,
-                padding: spacing.sm,
-                background: 'none',
-                border: 'none',
-                color: colors.textTertiary,
-              }}
             >
               <span className="mobile-bottom-nav__icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>⋯</span>
               <span className="mobile-bottom-nav__label" style={typography.presets.caption}>More</span>
@@ -669,7 +662,7 @@ const AppInner: React.FC = () => {
               <CommandDeck
                 items={commandDeckItems}
                 variant="compact"
-                onItemSelect={(item) => handleActionDeckSelect(item.action)}
+                onItemSelect={handleDelayedDeckItemSelect}
               />
             </div>
           </div>
@@ -791,4 +784,3 @@ const App: React.FC = () => (
 );
 
 export default App;
-

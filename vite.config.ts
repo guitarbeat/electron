@@ -32,13 +32,16 @@ export default defineConfig(({ mode }) => {
                   const url = new URL(req.url, `http://${req.headers.host}`);
 
                   // Read request body for POST/PATCH
-                  let body: Buffer | null = null;
+                  let body: ArrayBuffer | undefined;
                   if (req.method !== 'GET' && req.method !== 'HEAD') {
-                    body = await new Promise((resolve) => {
+                    const rawBody = await new Promise<Buffer>((resolve) => {
                       const chunks: Buffer[] = [];
                       req.on('data', chunk => chunks.push(chunk));
                       req.on('end', () => resolve(Buffer.concat(chunks)));
                     });
+                    const bodyBytes = new Uint8Array(rawBody.byteLength);
+                    bodyBytes.set(rawBody);
+                    body = bodyBytes.buffer;
                   }
 
                   const headers = new Headers();

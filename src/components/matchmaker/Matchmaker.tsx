@@ -239,14 +239,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     setIsPickingRandom(true);
     randomPickTimeoutRef.current = window.setTimeout(() => {
       const winner = matches[Math.floor(Math.random() * matches.length)];
-      setRandomWinner(winner);
       setIsPickingRandom(false);
       setLastMatchedMovie(winner);
       setShowConfetti(true);
       matchOverlayTimeoutRef.current = window.setTimeout(() => {
         setShowConfetti(false);
         setLastMatchedMovie(null);
-        setRandomWinner(null);
         matchOverlayTimeoutRef.current = null;
       }, 4000);
       randomPickTimeoutRef.current = null;
