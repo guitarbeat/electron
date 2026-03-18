@@ -5157,8 +5157,8 @@ body.grabbing * {
 
 .movie-item-icon-action {
   margin: 0;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5325,11 +5325,13 @@ body.grabbing * {
   align-items: center;
   gap: 0.35rem;
   width: 100%;
+  min-width: 0;
 }
 
 .movie-item-primary-action {
   min-height: 44px;
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--type-eyebrow-size);
   letter-spacing: var(--letter-spacing-wide);
   text-transform: none;
@@ -5343,6 +5345,7 @@ body.grabbing * {
 .movie-item-primary-action .movie-item-primary-action-label {
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .movie-item-primary-action svg {
@@ -5376,10 +5379,11 @@ body.grabbing * {
 
 .movie-secondary-actions {
   display: flex;
-  gap: 0.35rem;
-  opacity: 0.82;
-  pointer-events: auto;
-  transform: translateX(0);
+  flex: 0 0 auto;
+  gap: 0.3rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
@@ -5389,6 +5393,7 @@ body.grabbing * {
   .movie-item-card:hover .movie-secondary-actions,
   .movie-item-card:focus-within .movie-secondary-actions {
     opacity: 1;
+    pointer-events: auto;
     transform: translateX(0);
   }
 }
