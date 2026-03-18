@@ -117,6 +117,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
     <>
       <Card
         variant={watchedByBoth ? 'elevated' : 'default'}
+        glow={watchedByBoth || isHighlighted}
         className={`movie-item-card slide-up ${
           watchedByBoth ? 'movie-item-card--watched' : ''
         } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}

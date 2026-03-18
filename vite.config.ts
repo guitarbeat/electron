@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => {
                   const response = await handler(request);
 
                   res.statusCode = response.status;
-                  response.headers.forEach((value, key) => {
+                  response.headers.forEach((value: string, key: string) => {
                     res.setHeader(key, value);
                   });
 

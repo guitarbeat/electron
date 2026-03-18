@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import RetroEffects from '@/components/effects/RetroEffects';
 import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { UserProvider, useToast, useUser, ThemeProvider, ToastProvider } from '@/context';
@@ -35,6 +36,10 @@ interface BuildCommandDeckArgs {
   openMemories: () => void;
   openSpinWheel: () => void;
   openFoodMerge: () => void;
+  crtEnabled: boolean;
+  toggleCrt: () => void;
+  cursorTrailEnabled: boolean;
+  toggleCursorTrail: () => void;
 }
 
 interface ActionBubblePosition {
@@ -124,6 +129,10 @@ const buildCommandDeck = ({
   openMemories,
   openSpinWheel,
   openFoodMerge,
+  crtEnabled,
+  toggleCrt,
+  cursorTrailEnabled,
+  toggleCursorTrail,
 }: BuildCommandDeckArgs): CommandActionItem[] => [
   {
     label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
@@ -149,6 +158,16 @@ const buildCommandDeck = ({
     label: 'Food Merge',
     icon: '🍔',
     action: openFoodMerge,
+  },
+  {
+    label: crtEnabled ? 'Disable CRT' : 'Enable CRT',
+    icon: crtEnabled ? '📺' : '📟',
+    action: toggleCrt,
+  },
+  {
+    label: cursorTrailEnabled ? 'Disable Trail' : 'Enable Trail',
+    icon: cursorTrailEnabled ? '✨' : '💫',
+    action: toggleCursorTrail,
   },
 ];
 
@@ -188,6 +207,21 @@ const AppInner: React.FC = () => {
     getDefaultActionBubblePosition(isMobile)
   );
   const [isDraggingActionBubble, setIsDraggingActionBubble] = useState(false);
+
+  const [crtEnabled, setCrtEnabled] = useState<boolean>(
+    () => localStorage.getItem('crtEnabled') === 'true'
+  );
+  const [cursorTrailEnabled, setCursorTrailEnabled] = useState<boolean>(
+    () => localStorage.getItem('cursorTrailEnabled') === 'true'
+  );
+
+  useEffect(() => {
+    localStorage.setItem('crtEnabled', String(crtEnabled));
+  }, [crtEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('cursorTrailEnabled', String(cursorTrailEnabled));
+  }, [cursorTrailEnabled]);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
@@ -302,8 +336,12 @@ const AppInner: React.FC = () => {
         openMemories: () => setShowMemories(true),
         openSpinWheel: () => setShowSpinWheel(true),
         openFoodMerge: () => setShowFoodMerge(true),
+        crtEnabled,
+        toggleCrt: () => setCrtEnabled((prev) => !prev),
+        cursorTrailEnabled,
+        toggleCursorTrail: () => setCursorTrailEnabled((prev) => !prev),
       }),
-    [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
+    [currentUser, openMatchmaker, openQuizExperience, quizCompleted, crtEnabled, cursorTrailEnabled]
   );
 
   const actionBubbleMenuStyle = useMemo(
@@ -400,6 +438,7 @@ const AppInner: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
+      <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
         <a href="#main-content" className="skip-link" style={{ position: 'absolute', left: '-9999px' }}>
           Skip to content
