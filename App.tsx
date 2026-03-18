@@ -15,13 +15,11 @@ import QuizEditor from '@/components/quiz/QuizEditor';
 import QuizFlow from '@/components/quiz/QuizFlow';
 import Watchlist from '@/components/watchlist';
 import ThemeToggle from '@/ui/ThemeToggle';
+import ActionBubble from '@/ui/ActionBubble';
+import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
+import { useAudio } from '@/hooks/useAudio';
+import { colors, spacing, typography, zIndex, motion, shadows, radius } from '@/design-system';
 import './App.css';
-
-interface CommandActionItem {
-  label: string;
-  icon: string;
-  action: () => void;
-}
 
 interface MainTabItem {
   id: MainTab;
@@ -39,12 +37,6 @@ interface BuildCommandDeckArgs {
   openFoodMerge: () => void;
 }
 
-interface CommandDeckProps {
-  items: readonly CommandActionItem[];
-  variant?: 'default' | 'compact';
-  onItemSelect: (item: CommandActionItem) => void;
-}
-
 interface ActionBubblePosition {
   x: number;
   y: number;
@@ -55,72 +47,7 @@ const MAIN_TABS: MainTabItem[] = [
   { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
 
-const useAudio = () => {
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  useEffect(() => {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (AudioContextClass && !audioContextRef.current) {
-      audioContextRef.current = new AudioContextClass();
-    }
-  }, []);
-
-  const playTone = useCallback(
-    (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
-      if (!audioContextRef.current) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioContextClass) {
-          audioContextRef.current = new AudioContextClass();
-        } else {
-          return;
-        }
-      }
-
-      const ctx = audioContextRef.current;
-
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-
-      gain.gain.setValueAtTime(volume, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    },
-    []
-  );
-
-  const playClick = useCallback(() => {
-    playTone(800, 'sine', 0.05, 0.05);
-  }, [playTone]);
-
-  const playPop = useCallback(() => {
-    playTone(400, 'sine', 0.1, 0.08);
-  }, [playTone]);
-
-  const playSwitch = useCallback(() => {
-    playTone(600, 'triangle', 0.08, 0.04);
-  }, [playTone]);
-
-  const playSuccess = useCallback(() => {
-    playTone(523.25, 'sine', 0.1, 0.1);
-    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.1), 100);
-  }, [playTone]);
-
-  return { playTone, playClick, playPop, playSwitch, playSuccess };
-};
-
-const ACTION_BUBBLE_SIZE = 58;
+const ACTION_BUBLE_SIZE = 58;
 const ACTION_BUBBLE_EDGE_MARGIN = 12;
 const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
 const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
@@ -133,11 +60,11 @@ const clampActionBubblePosition = (x: number, y: number): ActionBubblePosition =
 
   const maxX = Math.max(
     ACTION_BUBBLE_EDGE_MARGIN,
-    window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
+    window.innerWidth - ACTION_BUBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
   );
   const maxY = Math.max(
     ACTION_BUBBLE_EDGE_MARGIN,
-    window.innerHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
+    window.innerHeight - ACTION_BUBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
   );
 
   return {
@@ -152,30 +79,30 @@ const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition
   }
 
   const defaultX = isMobile
-    ? window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
+    ? window.innerWidth - ACTION_BUBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
     : ACTION_BUBBLE_EDGE_MARGIN + 6;
-  const defaultY = window.innerHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN - 6;
+  const defaultY = window.innerHeight - ACTION_BUBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN - 6;
 
   return clampActionBubblePosition(defaultX, defaultY);
 };
 
 const getActionBubbleMenuPosition = (bubblePosition: ActionBubblePosition) => {
   if (typeof window === 'undefined') {
-    return { left: `${ACTION_BUBBLE_EDGE_MARGIN}px`, top: `${ACTION_BUBBLE_EDGE_MARGIN * 2 + ACTION_BUBBLE_SIZE}px` };
+    return { left: `${ACTION_BUBBLE_EDGE_MARGIN}px`, top: `${ACTION_BUBBLE_EDGE_MARGIN * 2 + ACTION_BUBLE_SIZE}px` };
   }
 
   const margin = ACTION_BUBBLE_EDGE_MARGIN;
   const preferredX = bubblePosition.x;
   const menuMaxX = Math.max(margin, window.innerWidth - ACTION_BUBBLE_MENU_WIDTH - margin);
   const x = Math.min(
-    Math.max(preferredX - Math.floor((ACTION_BUBBLE_MENU_WIDTH - ACTION_BUBBLE_SIZE) / 2), margin),
+    Math.max(preferredX - Math.floor((ACTION_BUBBLE_MENU_WIDTH - ACTION_BUBLE_SIZE) / 2), margin),
     menuMaxX
   );
 
-  const spaceBelow = window.innerHeight - (bubblePosition.y + ACTION_BUBBLE_SIZE);
+  const spaceBelow = window.innerHeight - (bubblePosition.y + ACTION_BUBLE_SIZE);
   const canFitBelow = spaceBelow - 10 >= ACTION_BUBBLE_MENU_GUESS_HEIGHT;
   const menuY = canFitBelow
-    ? bubblePosition.y + ACTION_BUBBLE_SIZE + 10
+    ? bubblePosition.y + ACTION_BUBLE_SIZE + 10
     : bubblePosition.y - ACTION_BUBBLE_MENU_GUESS_HEIGHT - 10;
 
   const maxY = Math.max(
@@ -224,32 +151,6 @@ const buildCommandDeck = ({
     action: openFoodMerge,
   },
 ];
-
-const CommandDeck: React.FC<CommandDeckProps> = ({
-  items,
-  variant = 'default',
-  onItemSelect,
-}) => {
-  const containerClassName = variant === 'compact' ? 'command-deck command-deck--compact' : 'command-deck';
-
-  return (
-    <div className={containerClassName}>
-      {items.map((item) => (
-        <button
-          key={item.label}
-          type="button"
-          className="command-deck__item"
-          onClick={() => onItemSelect(item)}
-        >
-          <span className="command-deck__icon" aria-hidden="true">
-            {item.icon}
-          </span>
-          <span className="command-deck__label">{item.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
@@ -391,7 +292,7 @@ const AppInner: React.FC = () => {
     }, 150);
   };
 
-  const commandDeck = useMemo(
+  const commandDeckItems = useMemo(
     () =>
       buildCommandDeck({
         currentUser,
@@ -405,40 +306,9 @@ const AppInner: React.FC = () => {
     [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
   );
 
-  const renderActionDeck = useCallback(
-    (variant: CommandDeckProps['variant'] = 'default', closeSheet = false) => (
-      <CommandDeck
-        items={commandDeck}
-        variant={variant}
-        onItemSelect={(item) => {
-          if (closeSheet) {
-            handleActionDeckSelect(item.action);
-          } else {
-            item.action();
-          }
-        }}
-      />
-    ),
-    [commandDeck, handleActionDeckSelect]
-  );
-
   const actionBubbleMenuStyle = useMemo(
     () => getActionBubbleMenuPosition(actionBubblePosition),
     [actionBubblePosition]
-  );
-
-  const renderActionDeckForBubble = useCallback(
-    (variant: CommandDeckProps['variant'] = 'compact') => (
-      <CommandDeck
-        items={commandDeck}
-        variant={variant}
-        onItemSelect={(item) => {
-          setShowActionBubbleMenu(false);
-          handleActionDeckSelect(item.action);
-        }}
-      />
-    ),
-    [commandDeck, handleActionDeckSelect]
   );
 
   const handleActionBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -530,13 +400,13 @@ const AppInner: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
-      <div className="app-shell bg-main">
-        <a href="#main-content" className="skip-link">
+      <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
+        <a href="#main-content" className="skip-link" style={{ position: 'absolute', left: '-9999px' }}>
           Skip to content
         </a>
 
-        <div className="app-frame">
-          <div className="app-frame__profile-login">
+        <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
+          <div className="app-frame__profile-login" style={{ position: 'fixed', top: spacing.md, left: spacing.md, zIndex: zIndex.elevated }}>
             <button
               type="button"
               className={`app-frame__profile-chip${currentUser ? '' : ' app-frame__profile-chip--empty'}`}
@@ -546,52 +416,95 @@ const AppInner: React.FC = () => {
                   ? `Signed in as ${currentUser}. Tap to manage profile.`
                   : 'No profile selected. Tap to choose a profile.'
               }
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.sm,
+                padding: `${spacing.xs} ${spacing.md}`,
+                background: colors.surface1,
+                border: `1px solid ${colors.borderSubtle}`,
+                borderRadius: radius.full,
+                color: colors.textPrimary,
+                cursor: 'pointer',
+                boxShadow: shadows.card,
+                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.surface2;
+                e.currentTarget.style.borderColor = colors.accent;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.surface1;
+                e.currentTarget.style.borderColor = colors.borderSubtle;
+              }}
             >
-              <span className="app-frame__profile-chip__dot" />
-              {currentUser ? <span className="app-frame__profile-chip__name">{currentUser}</span> : null}
+              <span className="app-frame__profile-chip__dot" style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: currentUser ? colors.success : colors.textTertiary }} />
+              {currentUser ? <span className="app-frame__profile-chip__name" style={{ ...typography.presets.eyebrow, textTransform: 'none' }}>{currentUser}</span> : <span style={typography.presets.micro}>Select Profile</span>}
             </button>
           </div>
 
-          <button
+          <ActionBubble
             ref={actionBubbleRef}
-            type="button"
-            className={`action-bubble${isDraggingActionBubble ? ' is-dragging' : ''}`}
+            position={actionBubblePosition}
+            isDragging={isDraggingActionBubble}
             onClick={handleActionBubbleClick}
             onPointerDown={handleActionBubblePointerDown}
             onPointerMove={handleActionBubblePointerMove}
             onPointerUp={finishActionBubbleDrag}
             onPointerCancel={finishActionBubbleDrag}
-            aria-label="Open quick actions"
-            style={{
-              top: `${actionBubblePosition.y}px`,
-              left: `${actionBubblePosition.x}px`,
-            }}
-          >
-            <span className="action-bubble__icon" aria-hidden="true">
-              ⚡
-            </span>
-            <span className="sr-only">Actions</span>
-          </button>
-          {showActionBubbleMenu ? (
-            <div className="action-bubble-menu" ref={actionBubbleMenuRef} style={actionBubbleMenuStyle}>
-              {renderActionDeckForBubble('compact')}
-            </div>
-          ) : null}
+          />
 
-          <main id="main-content" className="workspace-stage" tabIndex={-1}>
+          {showActionBubbleMenu && (
+            <div 
+              className="action-bubble-menu" 
+              ref={actionBubbleMenuRef} 
+              style={{
+                ...actionBubbleMenuStyle,
+                position: 'fixed',
+                zIndex: zIndex.modal,
+                width: ACTION_BUBBLE_MENU_WIDTH,
+                maxHeight: ACTION_BUBBLE_MENU_GUESS_HEIGHT,
+                padding: spacing.md,
+                background: colors.surface3,
+                borderRadius: radius.lg,
+                border: `1px solid ${colors.borderSecondary}40`,
+                boxShadow: shadows.floating,
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                animation: `fade-in ${motion.duration.fast} ${motion.easing.easeOut}`,
+              }}
+            >
+              <CommandDeck
+                items={commandDeckItems}
+                variant="compact"
+                onItemSelect={(item) => {
+                  setShowActionBubbleMenu(false);
+                  handleActionDeckSelect(item.action);
+                }}
+              />
+            </div>
+          )}
+
+          <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none', padding: isMobile ? `0 0 80px 0` : 0 }}>
             {isMobile && (
-              <section className="mobile-hero" aria-label="electron overview">
+              <section className="mobile-hero" aria-label="electron overview" style={{ padding: `${spacing['2xl']} ${spacing.md} ${spacing.xl}`, textAlign: 'center' }}>
                 <div className="mobile-hero__content">
                   <UserSelection variant="inline" className="mobile-hero__selection" />
-                  {renderActionDeck('compact')}
+                  <div style={{ marginTop: spacing.xl }}>
+                    <CommandDeck
+                      items={commandDeckItems}
+                      variant="compact"
+                      onItemSelect={(item) => handleActionDeckSelect(item.action)}
+                    />
+                  </div>
                 </div>
               </section>
             )}
 
-            <section className="workspace-header" aria-label="Current workspace overview">
+            <section className="workspace-header" aria-label="Current workspace overview" style={{ padding: isMobile ? spacing.md : `${spacing.xl} ${spacing.xl} ${spacing.md}` }}>
               <div className="workspace-header__left">
                 {isMobile ? (
-                  <h2 className="workspace-header__title" aria-live="polite">
+                  <h2 className="workspace-header__title" aria-live="polite" style={{ ...typography.presets.titleMd, display: 'flex', alignItems: 'center', gap: spacing.sm, margin: 0 }}>
                     <span className="workspace-header__title-icon" aria-hidden="true">
                       {activeTabMeta.icon}
                     </span>
@@ -601,17 +514,16 @@ const AppInner: React.FC = () => {
               </div>
 
               {!isMobile && (
-                <div className="workspace-header__controls">
+                <div className="workspace-header__controls" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: spacing.md }}>
                   <ThemeToggle activeTab={activeTab} onChange={handleTabChange} compact />
                 </div>
               )}
             </section>
 
-            <div className="workspace-grid">
-              <section className="workspace-surface" aria-label="Primary workspace">
+            <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
+              <section className="workspace-surface" aria-label="Primary workspace" style={{ minWidth: 0 }}>
                 {MAIN_TABS.map((tab) => {
                   const isActivePanel = tab.id === activeTab;
-
                   return (
                     <section
                       key={tab.id}
@@ -620,6 +532,7 @@ const AppInner: React.FC = () => {
                       hidden={!isActivePanel}
                       className="tab-panel"
                       aria-label={`${tab.label} panel`}
+                      style={{ display: isActivePanel ? 'block' : 'none' }}
                     >
                       {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
                     </section>
@@ -629,11 +542,14 @@ const AppInner: React.FC = () => {
 
               {!isMobile && !showMoreSheet ? (
                 <aside className="support-rail" aria-label="Workspace tools and actions">
-                  <section className="support-card">
-                    <div className="support-card__head">
-                      <span>Actions</span>
+                  <section className="support-card" style={{ padding: spacing.lg, background: colors.surface1, borderRadius: radius.card, border: `1px solid ${colors.borderSubtle}` }}>
+                    <div className="support-card__head" style={{ ...typography.presets.eyebrow, color: colors.textSecondary, marginBottom: spacing.md }}>
+                      <span>Quick Actions</span>
                     </div>
-                    {renderActionDeck()}
+                    <CommandDeck
+                      items={commandDeckItems}
+                      onItemSelect={(item) => item.action()}
+                    />
                   </section>
                 </aside>
               ) : null}
@@ -642,7 +558,7 @@ const AppInner: React.FC = () => {
         </div>
 
         {isMobile && (
-          <nav className="mobile-bottom-nav" aria-label="Main navigation">
+          <nav className="mobile-bottom-nav" aria-label="Main navigation" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: zIndex.overlay, display: 'flex', background: colors.surface3, borderTop: `1px solid ${colors.borderSubtle}`, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
             {MAIN_TABS.map((tab) => {
               const isActive = tab.id === activeTab;
               return (
@@ -652,9 +568,22 @@ const AppInner: React.FC = () => {
                   className={`mobile-bottom-nav__item${isActive ? ' is-active' : ''}`}
                   onClick={() => handleTabChange(tab.id)}
                   aria-current={isActive ? 'page' : undefined}
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: spacing.xs,
+                    padding: spacing.sm,
+                    background: 'none',
+                    border: 'none',
+                    color: isActive ? colors.accent : colors.textTertiary,
+                    transition: `color ${motion.duration.fast} ${motion.easing.ease}`,
+                  }}
                 >
-                  <span className="mobile-bottom-nav__icon" aria-hidden="true">{tab.icon}</span>
-                  <span className="mobile-bottom-nav__label">{tab.label}</span>
+                  <span className="mobile-bottom-nav__icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>{tab.icon}</span>
+                  <span className="mobile-bottom-nav__label" style={typography.presets.caption}>{tab.label}</span>
                 </button>
               );
             })}
@@ -663,9 +592,21 @@ const AppInner: React.FC = () => {
               className="mobile-bottom-nav__item"
               onClick={() => setShowMoreSheet(true)}
               aria-label="More options"
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing.xs,
+                padding: spacing.sm,
+                background: 'none',
+                border: 'none',
+                color: colors.textTertiary,
+              }}
             >
-              <span className="mobile-bottom-nav__icon" aria-hidden="true">⋯</span>
-              <span className="mobile-bottom-nav__label">More</span>
+              <span className="mobile-bottom-nav__icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>⋯</span>
+              <span className="mobile-bottom-nav__label" style={typography.presets.caption}>More</span>
             </button>
           </nav>
         )}
@@ -673,20 +614,24 @@ const AppInner: React.FC = () => {
         <BottomSheet
           isOpen={showMoreSheet}
           onClose={() => setShowMoreSheet(false)}
-          title="Menu"
+          title="Profile & Settings"
         >
-          <div className="more-sheet">
+          <div className="more-sheet" style={{ padding: `0 ${spacing.sm}` }}>
             <UserSelection
               variant="panel"
               title="Who's steering?"
-              subtitle="Swap bubbles, refresh the cat pics, or lock down a profile before you dive back in."
+              subtitle="Swap profiles or manage your settings here."
               className="more-sheet__profile-panel"
               onUserSelected={() => setShowMoreSheet(false)}
             />
 
-            <div className="more-sheet__section">
-              <p className="more-sheet__section-label">Actions</p>
-              {renderActionDeck('compact', true)}
+            <div className="more-sheet__section" style={{ marginTop: spacing.xl, paddingTop: spacing.xl, borderTop: `1px solid ${colors.borderSubtle}` }}>
+              <p className="more-sheet__section-label" style={{ ...typography.presets.eyebrow, color: colors.textSecondary, marginBottom: spacing.md }}>Actions</p>
+              <CommandDeck
+                items={commandDeckItems}
+                variant="compact"
+                onItemSelect={(item) => handleActionDeckSelect(item.action)}
+              />
             </div>
           </div>
         </BottomSheet>
@@ -753,7 +698,7 @@ const AppInner: React.FC = () => {
           maxWidth={920}
           maxHeight={900}
         >
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: spacing.lg }}>
             {quizData && currentUser ? (
               <QuizFlow
                 key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
@@ -767,7 +712,7 @@ const AppInner: React.FC = () => {
                 isCompleted={false}
               />
             ) : (
-              <p style={{ margin: 0 }}>Pick a profile to take the quiz.</p>
+              <p style={{ margin: 0, color: colors.textSecondary }}>Pick a profile to take the quiz.</p>
             )}
           </div>
         </MinigameModal>
@@ -780,10 +725,19 @@ const AppInner: React.FC = () => {
           maxWidth={920}
           maxHeight={900}
         >
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: spacing.lg }}>
             <Matchmaker currentUser={currentUser} />
           </div>
         </MinigameModal>
+        
+        <style>
+          {`
+            @keyframes fade-in {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}
+        </style>
       </div>
     </ThemeProvider>
   );
@@ -798,3 +752,4 @@ const App: React.FC = () => (
 );
 
 export default App;
+

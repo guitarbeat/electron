@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing } from '@/design-system';
+import { colors, radius, spacing, motion, shadows } from '@/design-system';
 
 interface SkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'poster';
@@ -28,7 +28,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
     circular: {
       width: width || '40px',
       height: height || '40px',
-      borderRadius: '50%',
+      borderRadius: radius.full,
     },
     rectangular: {
       width: width || '100%',
@@ -47,13 +47,25 @@ const Skeleton: React.FC<SkeletonProps> = ({
     <div
       className={`skeleton ${className}`}
       style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        boxShadow: `inset 0 0 20px ${colors.accent}10`,
+        backgroundColor: colors.surfaceElevated,
+        backgroundImage: `linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent)`,
+        backgroundSize: '200% 100%',
+        boxShadow: `inset 0 0 20px ${colors.accent}05`,
+        animation: `skeleton-shimmer 2s infinite linear`,
         ...variantStyles[variant],
         ...style,
       }}
       aria-hidden="true"
-    />
+    >
+      <style>
+        {`
+          @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}
+      </style>
+    </div>
   );
 };
 
@@ -65,8 +77,9 @@ export const MovieCardSkeleton: React.FC = () => (
     style={{
       borderRadius: radius.card,
       overflow: 'hidden',
-      backgroundColor: colors.surfaceElevated,
-      border: `1px solid ${colors.border}`,
+      backgroundColor: colors.surface1,
+      border: `1px solid ${colors.borderSubtle}`,
+      boxShadow: shadows.card,
     }}
   >
     <Skeleton variant="poster" width="100%" height="auto" style={{ aspectRatio: '2/3' }} />
@@ -78,3 +91,4 @@ export const MovieCardSkeleton: React.FC = () => (
 );
 
 export default Skeleton;
+

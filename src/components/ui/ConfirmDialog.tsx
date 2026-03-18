@@ -2,13 +2,14 @@ import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Card from './Card';
 import Button from './Button';
-import { colors, spacing, typography } from '@/design-system';
+import { colors, spacing, typography, zIndex, motion, shadows } from '@/design-system';
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
 } from './modalPrimitives';
+import { useAudio } from '@/hooks/useAudio';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   variant = 'danger',
   isLoading = false,
 }) => {
+  const { playPop, playClick } = useAudio();
   const titleId = useId();
   const messageId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -81,24 +83,70 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   if (!isOpen) return null;
 
+  const handleConfirm = () => {
+    playClick();
+    onConfirm();
+  };
+
+  const handleCancel = () => {
+    playPop();
+    onCancel();
+  };
+
   return createPortal(
-    <div style={getModalOverlayStyle()} role="none presentation">
+    <div
+      style={{
+        ...getModalOverlayStyle(),
+        zIndex: zIndex.modal + 50,
+        animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut} both`,
+      }}
+      role="none presentation"
+    >
+      <style>
+        {`
+          @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes confirm-dialog-pop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+        `}
+      </style>
       <div
         ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={messageId}
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          animation: `confirm-dialog-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+        }}
       >
         <Card
           variant="elevated"
-          style={{ width: '100%', maxWidth: '420px', padding: spacing.xl, position: 'relative' }}
+          style={{
+            padding: spacing.xl,
+            position: 'relative',
+            border: `1px solid ${variant === 'danger' ? colors.error : colors.accent}40`,
+            boxShadow: shadows.floating,
+          }}
         >
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             aria-label="Close dialog"
-            style={{ ...getModalCloseButtonStyle(), width: '30px', height: '30px' }}
+            style={{
+              ...getModalCloseButtonStyle(),
+              width: '32px',
+              height: '32px',
+              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.surface3)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.surface2)}
           >
             ✕
           </button>
@@ -111,6 +159,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               fontWeight: typography.fontWeight.bold,
               color: colors.textPrimary,
               marginBottom: spacing.md,
+              fontFamily: typography.fontFamilyValue.heading,
+              letterSpacing: typography.letterSpacing.tight,
             }}
           >
             {title}
@@ -127,13 +177,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {message}
           </p>
           <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'flex-end' }}>
-            <Button variant="ghost" onClick={onCancel} disabled={isLoading}>
+            <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
               {cancelText}
             </Button>
             <Button
               ref={confirmButtonRef}
               variant={variant}
-              onClick={onConfirm}
+              onClick={handleConfirm}
               isLoading={isLoading}
             >
               {confirmText}
@@ -147,3 +197,4 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 };
 
 export default ConfirmDialog;
+

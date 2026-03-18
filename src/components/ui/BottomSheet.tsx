@@ -15,6 +15,7 @@ import {
   isFocusWithin,
   trapFocusOnTab,
 } from './modalPrimitives';
+import { useAudio } from '@/hooks/useAudio';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface BottomSheetProps {
 }
 
 const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
+  const { playPop } = useAudio();
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const startY = useRef<number>(0);
@@ -95,11 +97,16 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
 
   const handleTouchEnd = () => {
     if (currentY.current > 100) {
-      onClose();
+      handleClose();
     } else if (sheetRef.current) {
       sheetRef.current.style.transform = 'translateY(0)';
     }
     currentY.current = 0;
+  };
+
+  const handleClose = () => {
+    playPop();
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -112,7 +119,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
       }}
     >
       <div
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: 'absolute',
           inset: 0,
@@ -124,6 +131,19 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
         }}
         aria-hidden="true"
       />
+
+      <style>
+        {`
+          @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slide-up {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+          }
+        `}
+      </style>
 
       <div
         ref={sheetRef}
@@ -139,12 +159,12 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
           maxWidth: '560px',
           background:
             'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 18%), linear-gradient(180deg, rgba(61, 37, 52, 0.98) 0%, rgba(27, 16, 25, 0.96) 100%)',
-          borderRadius: '28px 28px 0 0',
+          borderRadius: `${radius.xl} ${radius.xl} 0 0`,
           border: `1px solid ${colors.borderSecondary}50`,
           borderBottom: 'none',
           padding: spacing.lg,
           paddingBottom: `calc(${spacing.lg} + env(safe-area-inset-bottom, 0px))`,
-          boxShadow: `${shadows.cardElevated}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 32px rgba(255,127,198,0.14)`,
+          boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 32px rgba(255,127,198,0.14)`,
           animation: prefersReducedMotion
             ? undefined
             : 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -154,6 +174,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
           backdropFilter: 'blur(18px)',
           WebkitBackdropFilter: 'blur(18px)',
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div
           style={{
@@ -165,7 +186,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
             margin: '0 auto',
             marginBottom: spacing.md,
             opacity: 0.85,
-            boxShadow: '0 0 18px rgba(255,255,255,0.24)',
+            boxShadow: shadows.glowStrong,
           }}
           aria-hidden="true"
         />
@@ -173,9 +194,17 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
         <button
           ref={closeButtonRef}
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close panel"
-          style={{ ...getModalCloseButtonStyle(), fontSize: '1rem' }}
+          style={{
+            ...getModalCloseButtonStyle(),
+            fontSize: '1rem',
+            width: '32px',
+            height: '32px',
+            transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.surface3)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.surface2)}
         >
           ✕
         </button>
@@ -189,9 +218,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
               margin: 0,
               marginBottom: spacing.md,
               textAlign: 'center',
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '0.08em',
-              textShadow: '0 0 18px rgba(255,127,198,0.22)',
+              fontFamily: typography.fontFamilyValue.heading,
+              letterSpacing: typography.letterSpacing.eyebrow,
+              textShadow: shadows.textGlow,
             }}
           >
             {title}
@@ -206,3 +235,4 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
 };
 
 export default BottomSheet;
+
