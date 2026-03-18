@@ -10,6 +10,8 @@ interface ToastProps {
   duration?: number;
   actionLabel?: string;
   onAction?: () => void;
+  position?: 'top-right' | 'top-center' | 'bottom-right';
+  persistent?: boolean;
 }
 
 const TOAST_STYLES = {
@@ -40,20 +42,26 @@ const Toast: React.FC<ToastProps> = ({
   duration = 3500,
   actionLabel,
   onAction,
+  position = 'top-right',
+  persistent = false,
 }) => {
   const [isExiting, setIsExiting] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (duration > 0) {
+    // Entrance animation
+    const enterTimer = setTimeout(() => setIsVisible(true), 50);
+    
+    if (duration > 0 && !persistent) {
       const exitTimer = setTimeout(() => setIsExiting(true), Math.max(0, duration - 250));
       const dismissTimer = setTimeout(() => onDismiss?.(), duration);
       return () => {
+        clearTimeout(enterTimer);
         clearTimeout(exitTimer);
         clearTimeout(dismissTimer);
       };
     }
-    return undefined;
-  }, [duration, onDismiss]);
+  }, [duration, onDismiss, persistent]);
 
   const handleDismiss = () => {
     setIsExiting(true);

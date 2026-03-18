@@ -5,6 +5,8 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   variant?: 'default' | 'elevated' | 'outlined' | 'interactive';
   onClick?: (e?: React.MouseEvent<HTMLDivElement>) => void;
+  hover?: boolean;
+  glow?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -12,6 +14,8 @@ const Card: React.FC<CardProps> = ({
   className = '',
   variant = 'default',
   onClick,
+  hover = false,
+  glow = false,
   style,
   role,
   tabIndex,
@@ -22,7 +26,9 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      className={`ui-card ui-card--${isInteractive && variant === 'default' ? 'interactive' : variant} ${className}`.trim()}
+      className={`ui-card ui-card--${isInteractive && variant === 'default' ? 'interactive' : variant} ${
+        hover ? 'ui-card--hover' : ''
+      } ${glow ? 'ui-card--glow' : ''} ${className}`.trim()}
       role={isInteractive ? role || 'button' : role}
       tabIndex={isInteractive ? (tabIndex ?? 0) : tabIndex}
       style={{

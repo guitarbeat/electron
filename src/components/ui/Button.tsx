@@ -7,6 +7,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   loadingText?: string;
   children: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
 const useAudio = () => {
@@ -70,6 +73,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       loadingText = 'Loading...',
       disabled,
       children,
+      leftIcon,
+      rightIcon,
+      fullWidth = false,
       className = '',
       style,
       type = 'button',
@@ -86,7 +92,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={buttonType}
-        className={`ui-button ui-button--${variant} ui-button--${size} ripple-effect ${className}`}
+        className={`ui-button ui-button--${variant} ui-button--${size} ripple-effect ${
+          isDisabled ? 'ui-button--disabled' : ''
+        } ${fullWidth ? 'ui-button--full-width' : ''} ${className}`}
         disabled={isDisabled}
         onClick={(event) => {
           if (!isDisabled) {
@@ -120,7 +128,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {loadingText ? <span>{loadingText}</span> : <span className="sr-only">Loading</span>}
           </>
         ) : (
-          children
+          <>
+            {leftIcon && <span className="ui-button__icon ui-button__icon--left">{leftIcon}</span>}
+            <span className="ui-button__content">{children}</span>
+            {rightIcon && <span className="ui-button__icon ui-button__icon--right">{rightIcon}</span>}
+          </>
         )}
       </button>
     );
