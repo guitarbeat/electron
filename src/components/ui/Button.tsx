@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { typography } from '@/design-system';
+import React, { useCallback, useEffect, useRef } from "react";
+import { typography } from "@/design-system";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   loadingText?: string;
   children: React.ReactNode;
@@ -13,16 +13,23 @@ const useAudio = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext || (window as any).webkitAudioContext;
     if (AudioContextClass && !audioContextRef.current) {
       audioContextRef.current = new AudioContextClass();
     }
   }, []);
 
   const playTone = useCallback(
-    (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
+    (
+      frequency: number,
+      type: OscillatorType,
+      duration: number,
+      volume: number = 0.1,
+    ) => {
       if (!audioContextRef.current) {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContextClass =
+          window.AudioContext || (window as any).webkitAudioContext;
         if (AudioContextClass) {
           audioContextRef.current = new AudioContextClass();
         } else {
@@ -32,7 +39,7 @@ const useAudio = () => {
 
       const ctx = audioContextRef.current;
 
-      if (ctx.state === 'suspended') {
+      if (ctx.state === "suspended") {
         ctx.resume();
       }
 
@@ -51,11 +58,11 @@ const useAudio = () => {
       osc.start();
       osc.stop(ctx.currentTime + duration);
     },
-    []
+    [],
   );
 
   const playClick = useCallback(() => {
-    playTone(800, 'sine', 0.05, 0.05);
+    playTone(800, "sine", 0.05, 0.05);
   }, [playTone]);
 
   return { playClick };
@@ -64,23 +71,29 @@ const useAudio = () => {
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      variant = 'primary',
-      size = 'md',
+      variant = "primary",
+      size = "md",
       isLoading = false,
-      loadingText = 'Loading...',
+      loadingText = "Loading...",
       disabled,
       children,
-      className = '',
+      className = "",
       style,
-      type = 'button',
+      type = "button",
       onClick,
       ...props
     },
-    ref
+    ref,
   ) => {
     const { playClick } = useAudio();
     const isDisabled = disabled || isLoading;
-    const buttonType = type === 'submit' ? 'submit' : type === 'reset' ? 'reset' : 'button';
+
+    let buttonType: "button" | "submit" | "reset" = "button";
+    if (type === "submit") {
+      buttonType = "submit";
+    } else if (type === "reset") {
+      buttonType = "reset";
+    }
 
     return (
       <button
@@ -95,7 +108,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           onClick?.(event);
         }}
         style={{
-          fontFamily: typography.fontFamily.heading.join(', '),
+          fontFamily: typography.fontFamily.heading.join(", "),
           ...style,
         }}
         {...props}
@@ -104,29 +117,40 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <>
             <svg
               className="animate-spin"
-              style={{ width: '1em', height: '1em' }}
+              style={{ width: "1em", height: "1em" }}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               aria-hidden
             >
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                opacity="0.25"
+              />
               <path
                 fill="currentColor"
                 opacity="0.75"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            {loadingText ? <span>{loadingText}</span> : <span className="sr-only">Loading</span>}
+            {loadingText ? (
+              <span>{loadingText}</span>
+            ) : (
+              <span className="sr-only">Loading</span>
+            )}
           </>
         ) : (
           children
         )}
       </button>
     );
-  }
+  },
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 export default Button;
