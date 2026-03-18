@@ -107,6 +107,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
     setIsUpdating(true);
     try {
       await onToggle();
+    } catch (error) {
+      console.error('Failed to toggle watched status', error);
     } finally {
       setIsUpdating(false);
       setIsBottomSheetOpen(false);

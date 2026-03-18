@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useId, useRef } from 'react';
 import { MainTab } from '@/types';
 
 interface ThemeToggleProps {
@@ -17,6 +17,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className = '',
 }) => {
   const toggleRef = useRef<HTMLInputElement>(null);
+  const toggleId = useId();
 
   const isPlacesMode = activeTab === 'places';
 
@@ -36,10 +37,10 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <div
       className={`theme-toggle ${isMobile ? 'theme-toggle--mobile' : ''}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
     >
-      <label className="theme-toggle__label" htmlFor="theme-toggle-switch">
+      <label className="theme-toggle__label" htmlFor={toggleId}>
         <input
           ref={toggleRef}
-          id="theme-toggle-switch"
+          id={toggleId}
           type="checkbox"
           checked={isPlacesMode}
           onChange={handleToggle}

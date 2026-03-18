@@ -135,9 +135,11 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   }, [clearTransientUiState]);
 
   useEffect(() => {
-    if (!game) {
-      setTimeout(() => clearTransientUiState(), 0);
-    }
+    if (game) return;
+    const timer = window.setTimeout(() => {
+      clearTransientUiState();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [clearTransientUiState, game]);
 
   useEffect(() => {
