@@ -4,10 +4,9 @@ import { areDeeplyEqual, parseJsonContent, sanitizeInput } from '@/utils';
 import {
   canReadGist,
   canWriteGist,
-  fetchGist,
-  getGistFileContent,
   GIST_SUGGESTIONS_FILENAME,
   patchGistFile,
+  readGistJsonFile,
   readLocalOverride,
   readStoredJson,
   setLocalOverride,
@@ -62,33 +61,14 @@ const saveLocalSuggestions = (suggestions: MovieSuggestion[]): void => {
 };
 
 const getSuggestions = async (): Promise<MovieSuggestion[]> => {
-  if (!canReadGist) {
-    return getFallbackSuggestions();
-  }
-
-  const localOverride = readLocalOverride('suggestions', readStoredLocalSuggestions);
-  if (localOverride.enabled && localOverride.value) {
-    return localOverride.value;
-  }
-
   try {
-    const response = await fetchGist({ cache: 'no-cache' });
-
-    if (!response.ok) {
-      console.warn(`Failed to fetch suggestions (${response.status}), using local fallback.`);
-      return getFallbackSuggestions();
-    }
-
-    const gist = await response.json();
-    const content = getGistFileContent(gist, GIST_SUGGESTIONS_FILENAME);
-    if (content === null) {
-      if (!canWriteGist) {
-        return getFallbackSuggestions();
-      }
-      return [];
-    }
-
-    return parseJsonContent(content, 'suggestions') as MovieSuggestion[];
+    return await readGistJsonFile({
+      scope: 'suggestions',
+      filename: GIST_SUGGESTIONS_FILENAME,
+      fallback: getFallbackSuggestions,
+      onMissingFileWhenWritable: () => [],
+      parse: (content) => parseJsonContent(content, 'suggestions') as MovieSuggestion[],
+    });
   } catch (error) {
     console.error('Error fetching suggestions from Gist:', error);
     return getFallbackSuggestions();
