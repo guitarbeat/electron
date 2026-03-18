@@ -19,9 +19,9 @@ interface PlacesMapProps {
 const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
 
-  const markersRef = useRef<any[]>([]);
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
   useEffect(() => {
     if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
@@ -31,13 +31,13 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
         typeof p.lat === 'number' && typeof p.lng === 'number'
     );
 
-    const updateMarkersAndBounds = (map: any) => {
-      markersRef.current.forEach((m: any) => m.setMap(null));
+    const updateMarkersAndBounds = (map: google.maps.Map) => {
+      markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
 
-      const { google } = window as any;
+      const { google } = window as unknown as { google: typeof google };
       const bounds = new google.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
         const position = { lat: place.lat, lng: place.lng };
@@ -59,7 +59,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
     };
 
     const initMap = () => {
-      const { google } = window as any;
+      const { google } = window as unknown as { google: typeof google };
       if (!containerRef.current || !google?.maps) return;
 
       const map = new google.maps.Map(containerRef.current, {
@@ -80,7 +80,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       updateMarkersAndBounds(map);
     };
 
-    if ((window as any).google?.maps?.Map) {
+    if ((window as unknown as { google?: { maps?: { Map?: unknown } } }).google?.maps?.Map) {
       if (mapRef.current) {
         updateMarkersAndBounds(mapRef.current);
       } else {

@@ -10,9 +10,9 @@ interface PollingOptions {
  * and usePolling hook in a single cohesive module.
  */
 class PollingManager {
-  private subscribers = new Map<string, Set<Listener<any>>>();
+  private subscribers = new Map<string, Set<Listener<unknown>>>();
   private intervals = new Map<string, ReturnType<typeof setInterval>>();
-  private fetchFns = new Map<string, () => Promise<any>>();
+  private fetchFns = new Map<string, () => Promise<unknown>>();
   private cache = new Map<string, unknown>();
   private errors = new Map<string, unknown>();
   private activeIntervals = new Map<string, number>();
@@ -164,12 +164,12 @@ class PollingManager {
   /**
    * Notify all subscribers of data or error updates
    */
-  private notify(key: string, data: any, error: any) {
+  private notify(key: string, data: unknown, error: unknown) {
     const listeners = this.subscribers.get(key);
     if (listeners) {
       listeners.forEach((listener) => {
         try {
-          listener(data, error);
+          (listener as Listener<unknown>)(data, error);
         } catch (listenerError) {
           console.error(`Polling listener failed for ${key}`, listenerError);
         }

@@ -10,7 +10,7 @@ export const useAudio = () => {
     // Only initialize on the client side
     if (typeof window === 'undefined') return;
     
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AudioContextClass && !audioContextRef.current) {
       audioContextRef.current = new AudioContextClass();
     }

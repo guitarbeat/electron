@@ -100,13 +100,6 @@ export const fetchWithRetry = async (
   }
 };
 
-interface OmdbSearchResultItem {
-  Title: string;
-  Year: string;
-  imdbID: string;
-  Type: string;
-  Poster: string;
-}
 
 
 
