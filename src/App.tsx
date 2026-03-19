@@ -39,9 +39,9 @@ const MAIN_TABS: MainTabItem[] = [
   { id: 'places', label: 'Date Spots', icon: '📍' },
 ];
 
-const ACTION_BUBLE_SIZE = 58;
+const ACTION_BUBLE_SIZE = 64;
 const ACTION_BUBBLE_EDGE_MARGIN = 12;
-const ACTION_BUBBLE_DRAG_THRESHOLD = 10;
+const ACTION_BUBBLE_DRAG_THRESHOLD = 16;
 const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
 const ACTION_BUBBLE_MENU_WIDTH = 260;
 
@@ -63,6 +63,16 @@ const clampActionBubblePosition = (x: number, y: number): ActionBubblePosition =
     x: Math.min(Math.max(x, ACTION_BUBBLE_EDGE_MARGIN), maxX),
     y: Math.min(Math.max(y, ACTION_BUBBLE_EDGE_MARGIN), maxY),
   };
+};
+
+const snapActionBubbleToEdge = (position: ActionBubblePosition): ActionBubblePosition => {
+  if (typeof window === 'undefined') return position;
+  const midX = window.innerWidth / 2;
+  const snappedX =
+    position.x + ACTION_BUBLE_SIZE / 2 < midX
+      ? ACTION_BUBBLE_EDGE_MARGIN
+      : window.innerWidth - ACTION_BUBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN;
+  return clampActionBubblePosition(snappedX, position.y);
 };
 
 const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition => {
@@ -327,7 +337,6 @@ const AppInner: React.FC = () => {
     };
     didActionBubbleDragRef.current = false;
     suppressActionBubbleClickRef.current = false;
-    setIsDraggingActionBubble(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -345,6 +354,7 @@ const AppInner: React.FC = () => {
       (Math.abs(deltaX) > ACTION_BUBBLE_DRAG_THRESHOLD || Math.abs(deltaY) > ACTION_BUBBLE_DRAG_THRESHOLD)
     ) {
       didActionBubbleDragRef.current = true;
+      setIsDraggingActionBubble(true);
     }
 
     if (!didActionBubbleDragRef.current) {
@@ -361,6 +371,7 @@ const AppInner: React.FC = () => {
       hasCustomActionBubblePositionRef.current = true;
       setShowActionBubbleMenu(false);
       suppressActionBubbleClickRef.current = true;
+      setActionBubblePosition((prev) => snapActionBubbleToEdge(prev));
     }
     setIsDraggingActionBubble(false);
     actionBubbleDragRef.current = null;
