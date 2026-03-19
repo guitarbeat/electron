@@ -4,7 +4,7 @@ import { usePlaces } from '@/hooks/usePlaces';
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import Input from '@/ui/Input';
+import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';

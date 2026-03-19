@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlusIcon, Spinner } from '@/common/icons';
 import Button from '@/ui/Button';
-import Input from '@/ui/Input';
+import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import { ContentTab, SortMode } from '@/types';
 import { spacing, colors, typography, motion } from '@/design-system';
