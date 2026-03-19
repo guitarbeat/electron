@@ -42,7 +42,7 @@ const ActionBubble = React.forwardRef<HTMLButtonElement, ActionBubbleProps>(
           pointerEvents: 'none',
           transition: isDragging
             ? 'none'
-            : `transform ${motion.duration.button} ${motion.easing.spring}`,
+            : `top 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), transform ${motion.duration.button} ${motion.easing.spring}`,
           cursor: isDragging ? 'grabbing' : 'pointer',
         }}
       >

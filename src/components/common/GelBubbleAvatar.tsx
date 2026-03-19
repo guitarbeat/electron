@@ -145,7 +145,7 @@ const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
     bubble: 'var(--inline-profile-bubble-size, clamp(72px, 11vw, 98px))',
     name: 'var(--inline-profile-name-size, clamp(0.65rem, 0.8vw, 0.85rem))',
   },
-  action: { bubble: '58px', name: '0.7rem' },
+  action: { bubble: '64px', name: '0.7rem' },
 };
 
 const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps>(
