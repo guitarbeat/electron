@@ -17,6 +17,7 @@ import QuizFlow from '@/components/quiz/QuizFlow';
 import Watchlist from '@/components/watchlist';
 import ThemeToggle from '@/ui/ThemeToggle';
 import ActionBubble from '@/ui/ActionBubble';
+import ActionFanMenu from '@/ui/ActionFanMenu';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { useAudio } from '@/hooks/useAudio';
 import { colors, spacing, typography, zIndex, motion, shadows, radius } from '@/design-system';
@@ -471,31 +472,14 @@ const AppInner: React.FC = () => {
           />
 
           {showActionBubbleMenu && (
-            <div 
-              className="action-bubble-menu" 
-              ref={actionBubbleMenuRef} 
-              style={{
-                ...actionBubbleMenuStyle,
-                position: 'fixed',
-                zIndex: zIndex.modal,
-                width: ACTION_BUBBLE_MENU_WIDTH,
-                maxHeight: ACTION_BUBBLE_MENU_GUESS_HEIGHT,
-                padding: spacing.md,
-                background: colors.surface3,
-                borderRadius: radius.lg,
-                border: `1px solid ${colors.borderSecondary}40`,
-                boxShadow: shadows.floating,
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                animation: `fade-in ${motion.duration.fast} ${motion.easing.easeOut}`,
-              }}
-            >
-              <CommandDeck
-                items={commandDeckItems}
-                variant="compact"
-                onItemSelect={handleBubbleDeckItemSelect}
-              />
-            </div>
+            <ActionFanMenu
+              items={commandDeckItems}
+              anchorX={actionBubblePosition.x}
+              anchorY={actionBubblePosition.y}
+              anchorSize={ACTION_BUBLE_SIZE}
+              onItemSelect={handleBubbleDeckItemSelect}
+              onClose={() => setShowActionBubbleMenu(false)}
+            />
           )}
 
           <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none', padding: isMobile ? `0 0 80px 0` : 0 }}>
