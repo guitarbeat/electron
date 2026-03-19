@@ -517,7 +517,6 @@ const AppInner: React.FC = () => {
                   activeTab={activeTab}
                   onChange={handleTabChange}
                   className="workspace-header__toggle"
-                  label={`${activeTabMeta.label} Mode`}
                 />
               </div>
             </section>

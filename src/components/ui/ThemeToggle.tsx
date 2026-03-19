@@ -16,7 +16,6 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   isMobile = false,
   compact = false,
   className = '',
-  label,
 }) => {
   const toggleRef = useRef<HTMLInputElement>(null);
   const toggleId = useId();
@@ -49,66 +48,23 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
           onKeyDown={handleKeyDown}
           aria-label={`Switch to ${isPlacesMode ? 'Movies' : 'Places'} mode`}
         />
-        <div className="theme-toggle__slider">
-          {/* Movies Mode Elements */}
-          <div className="theme-toggle__movies">
-            <div className="theme-toggle__film-reel">
-              <div className="theme-toggle__film-reel-center" />
-              <div className="theme-toggle__film-reel-spokes" />
-            </div>
-            <div className="theme-toggle__film-strip">
-              <div className="theme-toggle__film-frame" />
-              <div className="theme-toggle__film-frame" />
-              <div className="theme-toggle__film-frame" />
-            </div>
-            <div className="theme-toggle__popcorn">
-              <div className="theme-toggle__popcorn-kernel" />
-              <div className="theme-toggle__popcorn-kernel" />
-              <div className="theme-toggle__popcorn-kernel" />
-            </div>
+        <div className="theme-toggle__track">
+          <div className="theme-toggle__thumb" aria-hidden="true">
+            <div className="theme-toggle__thumb-shine" />
+            <div className="theme-toggle__thumb-inner-glow" />
           </div>
 
-          {/* Places Mode Elements */}
-          <div className="theme-toggle__places">
-            <div className="theme-toggle__map-pin">
-              <div className="theme-toggle__pin-head" />
-              <div className="theme-toggle__pin-point" />
-            </div>
-            <div className="theme-toggle__cloud cloud1">
-              <div className="theme-toggle__cloud-part" />
-              <div className="theme-toggle__cloud-part" />
-            </div>
-            <div className="theme-toggle__cloud cloud2">
-              <div className="theme-toggle__cloud-part" />
-              <div className="theme-toggle__cloud-part" />
-            </div>
-            <div className="theme-toggle__stars">
-              <div className="theme-toggle__star star1" />
-              <div className="theme-toggle__star star2" />
-              <div className="theme-toggle__star star3" />
-              <div className="theme-toggle__star star4" />
-              <div className="theme-toggle__star star5" />
-            </div>
+          <div className="theme-toggle__option theme-toggle__option--movies" aria-hidden="true">
+            <span className="theme-toggle__option-icon">🎬</span>
+            <span className="theme-toggle__option-text">Movies</span>
           </div>
 
-          {/* Labels */}
-          <div className="theme-toggle__labels">
-            <div className="theme-toggle__label movies-label" aria-label="Movies mode">
-              <span className="theme-toggle__label-icon" aria-hidden="true">
-                🎬
-              </span>
-            </div>
-            {label && (
-              <div className="theme-toggle__center-label" aria-live="polite">
-                <span className="theme-toggle__center-label-text">{label}</span>
-              </div>
-            )}
-            <div className="theme-toggle__label places-label" aria-label="Places mode">
-              <span className="theme-toggle__label-icon" aria-hidden="true">
-                📍
-              </span>
-            </div>
+          <div className="theme-toggle__option theme-toggle__option--places" aria-hidden="true">
+            <span className="theme-toggle__option-icon">📍</span>
+            <span className="theme-toggle__option-text">Places</span>
           </div>
+
+          <div className="theme-toggle__track-shimmer" aria-hidden="true" />
         </div>
       </label>
     </div>
