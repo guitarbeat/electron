@@ -29,20 +29,6 @@ interface MainTabItem {
   icon: string;
 }
 
-interface BuildCommandDeckArgs {
-  currentUser: string | null;
-  quizCompleted: boolean;
-  openQuizExperience: () => void;
-  openMatchmaker: () => void;
-  openMemories: () => void;
-  openSpinWheel: () => void;
-  openFoodMerge: () => void;
-  crtEnabled: boolean;
-  toggleCrt: () => void;
-  cursorTrailEnabled: boolean;
-  toggleCursorTrail: () => void;
-}
-
 interface ActionBubblePosition {
   x: number;
   y: number;
@@ -122,55 +108,6 @@ const getActionBubbleMenuPosition = (bubblePosition: ActionBubblePosition) => {
   };
 };
 
-const buildCommandDeck = ({
-  currentUser,
-  quizCompleted,
-  openQuizExperience,
-  openMatchmaker,
-  openMemories,
-  openSpinWheel,
-  openFoodMerge,
-  crtEnabled,
-  toggleCrt,
-  cursorTrailEnabled,
-  toggleCursorTrail,
-}: BuildCommandDeckArgs): CommandActionItem[] => [
-  {
-    label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
-    icon: '🧠',
-    action: openQuizExperience,
-  },
-  {
-    label: 'Matchmaker',
-    icon: '💘',
-    action: openMatchmaker,
-  },
-  {
-    label: 'Memories',
-    icon: '📸',
-    action: openMemories,
-  },
-  {
-    label: 'Spin Wheel',
-    icon: '🎰',
-    action: openSpinWheel,
-  },
-  {
-    label: 'Food Merge',
-    icon: '🍔',
-    action: openFoodMerge,
-  },
-  {
-    label: crtEnabled ? 'Disable CRT' : 'Enable CRT',
-    icon: crtEnabled ? '📺' : '📟',
-    action: toggleCrt,
-  },
-  {
-    label: cursorTrailEnabled ? 'Disable Trail' : 'Enable Trail',
-    icon: cursorTrailEnabled ? '✨' : '💫',
-    action: toggleCursorTrail,
-  },
-];
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
@@ -348,20 +285,27 @@ const AppInner: React.FC = () => {
   );
 
   const commandDeckItems = useMemo(
-    () =>
-      buildCommandDeck({
-        currentUser,
-        quizCompleted,
-        openQuizExperience,
-        openMatchmaker,
-        openMemories: () => setShowMemories(true),
-        openSpinWheel: () => setShowSpinWheel(true),
-        openFoodMerge: () => setShowFoodMerge(true),
-        crtEnabled,
-        toggleCrt: () => setCrtEnabled((prev) => !prev),
-        cursorTrailEnabled,
-        toggleCursorTrail: () => setCursorTrailEnabled((prev) => !prev),
-      }),
+    (): CommandActionItem[] => [
+      {
+        label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
+        icon: '🧠',
+        action: openQuizExperience,
+      },
+      { label: 'Matchmaker', icon: '💘', action: openMatchmaker },
+      { label: 'Memories', icon: '📸', action: () => setShowMemories(true) },
+      { label: 'Spin Wheel', icon: '🎰', action: () => setShowSpinWheel(true) },
+      { label: 'Food Merge', icon: '🍔', action: () => setShowFoodMerge(true) },
+      {
+        label: crtEnabled ? 'Disable CRT' : 'Enable CRT',
+        icon: crtEnabled ? '📺' : '📟',
+        action: () => setCrtEnabled((prev) => !prev),
+      },
+      {
+        label: cursorTrailEnabled ? 'Disable Trail' : 'Enable Trail',
+        icon: cursorTrailEnabled ? '✨' : '💫',
+        action: () => setCursorTrailEnabled((prev) => !prev),
+      },
+    ],
     [currentUser, openMatchmaker, openQuizExperience, quizCompleted, crtEnabled, cursorTrailEnabled]
   );
 
