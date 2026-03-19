@@ -275,9 +275,6 @@ const AppInner: React.FC = () => {
     }, 150);
   }, []);
 
-  const handleInlineDeckItemSelect = useCallback((item: CommandActionItem) => {
-    executeAction(item.action);
-  }, []);
 
   const handleDelayedDeckItemSelect = useCallback(
     (item: CommandActionItem) => {
@@ -530,7 +527,7 @@ const AppInner: React.FC = () => {
               </p>
             </section>
 
-            <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
+            <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
               <section className="workspace-surface" aria-label="Primary workspace" style={{ minWidth: 0 }}>
                 {MAIN_TABS.map((tab) => {
                   const isActivePanel = tab.id === activeTab;
@@ -549,20 +546,6 @@ const AppInner: React.FC = () => {
                   );
                 })}
               </section>
-
-              {!isMobile && !showMoreSheet ? (
-                <aside className="support-rail" aria-label="Workspace tools and actions">
-                  <section className="support-card" style={{ padding: spacing.lg, background: colors.surface1, borderRadius: radius.card, border: `1px solid ${colors.borderSubtle}` }}>
-                    <div className="support-card__head" style={{ ...typography.presets.eyebrow, color: colors.textSecondary, marginBottom: spacing.md }}>
-                      <span>Quick Actions</span>
-                    </div>
-                    <CommandDeck
-                      items={commandDeckItems}
-                      onItemSelect={handleInlineDeckItemSelect}
-                    />
-                  </section>
-                </aside>
-              ) : null}
             </div>
           </main>
         </div>
