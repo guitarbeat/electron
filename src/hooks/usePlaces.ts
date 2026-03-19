@@ -2,22 +2,16 @@ import { useCallback, useRef, useState } from 'react';
 import { Place, User } from '@/types';
 import { usePolling } from '@/services/polling';
 import {
-  canWriteGist,
   GIST_PLACES_FILENAME,
-  patchGistFile,
   readGistJsonFile,
   readStoredJson,
+  saveGistJson,
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
-import { areDeeplyEqual, isUser, parseJsonContent, sanitizeInput, validateAndThrow, validatePlace } from '@/utils';
+import { areDeeplyEqual, isUser, parseJsonContent, sanitizeInput, shallowCloneArray, validateAndThrow, validatePlace } from '@/utils';
 
 const PLACES_LOCAL_STORAGE_KEY = 'movieList.localPlaces';
-
-const clonePlaces = (places: Place[]): Place[] =>
-  places.map((place) => ({
-    ...place,
-  }));
 
 const isPlaceRecord = (value: unknown): value is Place => {
   if (!value || typeof value !== 'object') {
@@ -42,7 +36,7 @@ const readStoredLocalPlaces = (): Place[] | null =>
   readStoredJson({
     storageKey: PLACES_LOCAL_STORAGE_KEY,
     validate: (value): value is Place[] => Array.isArray(value) && value.every(isPlaceRecord),
-    clone: clonePlaces,
+    clone: shallowCloneArray,
     label: 'local places fallback',
   });
 
@@ -52,7 +46,7 @@ const saveLocalPlaces = (places: Place[]): void => {
   writeStoredJson({
     storageKey: PLACES_LOCAL_STORAGE_KEY,
     value: places,
-    clone: clonePlaces,
+    clone: shallowCloneArray,
     label: 'local places fallback',
   });
   setLocalOverride('places', true);
@@ -77,26 +71,8 @@ const getPlaces = async (): Promise<Place[]> => {
   }
 };
 
-const savePlaces = async (places: Place[]): Promise<void> => {
-  if (!canWriteGist) {
-    saveLocalPlaces(places);
-    return;
-  }
-
-  try {
-    const response = await patchGistFile(GIST_PLACES_FILENAME, JSON.stringify(places, null, 2));
-
-    if (!response.ok) {
-      console.warn(`Failed to save places to Gist (${response.status}), using local fallback.`);
-      saveLocalPlaces(places);
-      return;
-    }
-    setLocalOverride('places', false);
-  } catch (error) {
-    console.warn('Error saving places to Gist, using local fallback:', error);
-    saveLocalPlaces(places);
-  }
-};
+const savePlaces = (places: Place[]): Promise<void> =>
+  saveGistJson(GIST_PLACES_FILENAME, 'places', places, saveLocalPlaces);
 
 export const usePlaces = (currentUser: User | null, isPaused: boolean = false) => {
   const {

@@ -8,6 +8,7 @@ import {
   patchGistFile,
   readStoredJson,
   readGistJsonFile,
+  saveGistJson,
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
@@ -106,28 +107,8 @@ const getMoviesFromGist = async (): Promise<Movie[] | null> => {
   }
 };
 
-const saveMovies = async (movies: Movie[]): Promise<void> => {
-  if (!canWriteGist) {
-    saveLocalMovies(movies);
-    return;
-  }
-
-  try {
-    const response = await patchGistFile(GIST_FILENAME, JSON.stringify(movies, null, 2));
-
-    if (!response.ok) {
-      console.warn(`Failed to save movies to Gist (${response.status}), using local fallback.`);
-      saveLocalMovies(movies);
-      return;
-    }
-
-
-    setLocalOverride('movies', false);
-  } catch (error) {
-    console.warn('Error saving movies to Gist, using local fallback:', error);
-    saveLocalMovies(movies);
-  }
-};
+const saveMovies = (movies: Movie[]): Promise<void> =>
+  saveGistJson(GIST_FILENAME, 'movies', movies, saveLocalMovies);
 
 // Helper to extract only safe metadata fields to prevent overwriting critical fields like id
 const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {

@@ -205,6 +205,24 @@ export const concurrentMap = async <T, R>(
 };
 
 /**
+ * Clamps a number between a min and max value.
+ */
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
+/**
+ * Returns a random number between min (inclusive) and max (exclusive).
+ */
+export const randomBetween = (min: number, max: number): number =>
+  min + Math.random() * (max - min);
+
+/**
+ * Returns a shallow clone of an array of objects.
+ */
+export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
+  arr.map((item) => ({ ...item }));
+
+/**
  * Returns a shuffled copy of the input without mutating the source array.
  * Accepts an injectable RNG so tests can verify exact ordering.
  */
