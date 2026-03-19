@@ -517,14 +517,9 @@ const AppInner: React.FC = () => {
                   activeTab={activeTab}
                   onChange={handleTabChange}
                   className="workspace-header__toggle"
+                  label={`${activeTabMeta.label} Mode`}
                 />
               </div>
-              <p className="workspace-header__active" aria-live="polite">
-                <span className="workspace-header__active-icon" aria-hidden="true">
-                  {activeTabMeta.icon}
-                </span>
-                <span>{activeTabMeta.label} Mode</span>
-              </p>
             </section>
 
             <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
