@@ -7,6 +7,7 @@ interface ThemeToggleProps {
   isMobile?: boolean;
   compact?: boolean;
   className?: string;
+  label?: string;
 }
 
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
@@ -15,6 +16,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   isMobile = false,
   compact = false,
   className = '',
+  label,
 }) => {
   const toggleRef = useRef<HTMLInputElement>(null);
   const toggleId = useId();
@@ -96,6 +98,11 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
                 🎬
               </span>
             </div>
+            {label && (
+              <div className="theme-toggle__center-label" aria-live="polite">
+                <span className="theme-toggle__center-label-text">{label}</span>
+              </div>
+            )}
             <div className="theme-toggle__label places-label" aria-label="Places mode">
               <span className="theme-toggle__label-icon" aria-hidden="true">
                 📍
