@@ -422,40 +422,23 @@ const AppInner: React.FC = () => {
         </a>
 
         <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
-          <div className="app-frame__profile-login" style={{ position: 'fixed', top: spacing.md, left: spacing.md, zIndex: zIndex.elevated }}>
+          <div className="profile-login-anchor">
             <button
               type="button"
-              className={`app-frame__profile-chip${currentUser ? '' : ' app-frame__profile-chip--empty'}`}
+              className={`profile-chip${currentUser ? ' profile-chip--active' : ' profile-chip--guest'}`}
               onClick={openMoreSheet}
               aria-label={
                 currentUser
                   ? `Signed in as ${currentUser}. Tap to manage profile.`
                   : 'No profile selected. Tap to choose a profile.'
               }
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: spacing.sm,
-                padding: `${spacing.xs} ${spacing.md}`,
-                background: colors.surface1,
-                border: `1px solid ${colors.borderSubtle}`,
-                borderRadius: radius.full,
-                color: colors.textPrimary,
-                cursor: 'pointer',
-                boxShadow: shadows.card,
-                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = colors.surface2;
-                e.currentTarget.style.borderColor = colors.accent;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = colors.surface1;
-                e.currentTarget.style.borderColor = colors.borderSubtle;
-              }}
             >
-              <span className="app-frame__profile-chip__dot" style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: currentUser ? colors.success : colors.textTertiary }} />
-              {currentUser ? <span className="app-frame__profile-chip__name" style={{ ...typography.presets.eyebrow, textTransform: 'none' }}>{currentUser}</span> : <span style={typography.presets.micro}>Select Profile</span>}
+              <span className="profile-chip__avatar" aria-hidden="true">
+                {currentUser ? currentUser[0] : '✦'}
+              </span>
+              <span className="profile-chip__label">
+                {currentUser ?? 'Select Profile'}
+              </span>
             </button>
           </div>
 
@@ -566,7 +549,7 @@ const AppInner: React.FC = () => {
             <UserSelection
               variant="panel"
               title="Who's steering?"
-              subtitle="Swap profiles or manage your settings here."
+              subtitle="Pick your seat."
               className="more-sheet__profile-panel"
               onUserSelected={() => setShowMoreSheet(false)}
             />

@@ -130,58 +130,302 @@ body {
   padding: 1.25rem;
 }
 
-.app-frame__profile-login {
-  display: flex;
-  justify-content: flex-end;
+/* ==============================
+   Profile Login Anchor
+   ============================== */
+
+.profile-login-anchor {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 600;
 }
 
-.app-frame__profile-chip {
+/* ==============================
+   Profile Chip Button
+   ============================== */
+
+.profile-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.65rem;
+  gap: 0.45rem;
+  padding: 0.28rem 0.75rem 0.28rem 0.28rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, white 24%, var(--color-accent));
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.08) 100%),
-    var(--gradient-metal-pill);
-  color: color-mix(in srgb, var(--color-surface-0) 72%, var(--color-accent) 28%);
-  font-family: var(--font-display);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-none);
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-  white-space: nowrap;
-}
-
-.app-frame__profile-chip:active {
-  background: var(--color-surface-2);
-  transform: translateY(-1px);
-}
-
-.app-frame__profile-chip--empty {
-  border-color: var(--color-border-subtle);
-  color: var(--color-text-secondary);
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 45%, rgba(255, 255, 255, 0.14));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 48%),
-    color-mix(in srgb, var(--color-surface-0) 88%, transparent);
-  padding-inline: 0.55rem;
+    linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.08) 100%),
+    rgba(8, 5, 18, 0.78);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 2px 12px rgba(0, 0, 0, 0.4),
+    0 0 14px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-text-primary);
+  font-family: var(--type-eyebrow-family, 'Share Tech Mono', monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.app-frame__profile-chip__dot {
-  width: 7px;
-  height: 7px;
+.profile-chip:hover {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 4px 18px rgba(0, 0, 0, 0.45),
+    0 0 24px color-mix(in srgb, var(--color-accent) 38%, transparent);
+  transform: scale(1.04) translateY(-1px);
+}
+
+.profile-chip:active {
+  transform: scale(0.97);
+}
+
+.profile-chip__avatar {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 900;
   flex-shrink: 0;
+  background: conic-gradient(
+    from 120deg,
+    var(--color-accent) 0deg,
+    var(--color-secondary) 120deg,
+    var(--color-tertiary, var(--color-accent)) 240deg,
+    var(--color-accent) 360deg
+  );
+  color: #1a0828;
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--color-accent) 50%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
-.app-frame__profile-chip__name {
+.profile-chip--guest .profile-chip__avatar {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.55);
+  box-shadow: none;
+  animation: chip-guest-pulse 2.4s ease-in-out infinite;
+  font-size: 0.85rem;
+}
+
+@keyframes chip-guest-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+}
+
+.profile-chip__label {
   line-height: 1;
+}
+
+/* ==============================
+   User Selection Panel (Profile Sheet)
+   ============================== */
+
+.user-selection--panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.user-selection__profiles {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.user-selection__title {
+  font-family: var(--type-display-family, 'Cinzel Decorative', serif);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  text-align: center;
+  text-shadow:
+    0 0 22px color-mix(in srgb, var(--color-accent) 55%, transparent),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+.user-selection__subtitle {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0;
+  text-transform: uppercase;
+  font-family: var(--type-eyebrow-family, monospace);
+}
+
+.user-selection__bubble-cluster--panel {
+  display: flex;
+  justify-content: center;
+}
+
+.user-selection__bubble-row--panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.user-selection__profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: filter 0.25s ease;
+}
+
+.user-selection__profile-card.is-active {
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 52%, transparent));
+}
+
+.user-selection__profile-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.user-selection__profile-meta {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.user-selection__meta-pill {
+  font-family: var(--type-eyebrow-family, monospace);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--color-text-tertiary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-selection__meta-pill--active {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 38%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+.user-selection__profile-note {
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0;
+  max-width: 110px;
+  line-height: 1.4;
+  font-family: var(--type-eyebrow-family, monospace);
+}
+
+.user-selection__account-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.user-selection__pin-button {
+  padding: 0.38rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 32%, rgba(255, 255, 255, 0.1));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%),
+    color-mix(in srgb, var(--color-accent) 8%, rgba(10, 5, 20, 0.6));
+  color: color-mix(in srgb, var(--color-accent) 85%, white 15%);
+  font-family: var(--type-eyebrow-family, monospace);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 10px color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.user-selection__pin-button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 100%),
+    color-mix(in srgb, var(--color-accent) 18%, rgba(10, 5, 20, 0.6));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 16px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  transform: scale(1.04) translateY(-1px);
+}
+
+.user-selection__pin-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.user-selection__pin-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.user-selection__logout-button {
+  border-color: color-mix(in srgb, #ff6b6b 28%, rgba(255, 255, 255, 0.08));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%),
+    rgba(255, 80, 80, 0.06);
+  color: #ff9898;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 10px rgba(255, 80, 80, 0.1);
+}
+
+.user-selection__logout-button:hover:not(:disabled) {
+  border-color: #ff6b6b;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%),
+    rgba(255, 80, 80, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 16px rgba(255, 80, 80, 0.28);
+  color: #ffb3b3;
+}
+
+.user-selection__logged-out {
+  font-family: var(--type-eyebrow-family, monospace);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0;
+}
+
+.user-selection__theme-toggle {
+  display: flex;
+  justify-content: center;
+}
+
+/* Legacy app-frame aliases (kept for safety) */
+.app-frame__profile-login {
+  display: none;
 }
 
 .workspace-stage,
