@@ -9,11 +9,10 @@ import { usePolling } from '@/services/polling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
 import { areDeeplyEqual, parseJsonContent } from '@/utils';
 import {
-  canWriteGist,
   GIST_QUIZ_FILENAME,
-  patchGistFile,
   readGistJsonFile,
   readStoredJson,
+  saveGistJson,
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
@@ -122,26 +121,8 @@ const getQuizData = async (): Promise<QuizData> => {
   }
 };
 
-const saveQuizData = async (data: QuizData): Promise<void> => {
-  if (!canWriteGist) {
-    saveLocalQuizData(data);
-    return;
-  }
-
-  try {
-    const response = await patchGistFile(GIST_QUIZ_FILENAME, JSON.stringify(data, null, 2));
-
-    if (!response.ok) {
-      console.warn(`Failed to save quiz data to Gist (${response.status}), using local fallback.`);
-      saveLocalQuizData(data);
-      return;
-    }
-    setLocalOverride('quiz', false);
-  } catch (error) {
-    console.warn('Error saving quiz data to Gist, using local fallback:', error);
-    saveLocalQuizData(data);
-  }
-};
+const saveQuizData = (data: QuizData): Promise<void> =>
+  saveGistJson(GIST_QUIZ_FILENAME, 'quiz', data, saveLocalQuizData);
 
 export const useQuiz = (isPaused: boolean = false) => {
   const {

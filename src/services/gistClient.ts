@@ -209,6 +209,35 @@ interface ReadGistJsonFileArgs<T> {
   fetchOptions?: FetchGistOptions;
 }
 
+/**
+ * Saves data to a Gist file, falling back to local storage on failure.
+ * Encapsulates the repeated try/catch/fallback pattern used across hooks.
+ */
+export const saveGistJson = async <T>(
+  filename: string,
+  scope: string,
+  data: T,
+  saveLocal: (data: T) => void
+): Promise<void> => {
+  if (!canWriteGist) {
+    saveLocal(data);
+    return;
+  }
+
+  try {
+    const response = await patchGistFile(filename, JSON.stringify(data, null, 2));
+    if (!response.ok) {
+      console.warn(`Failed to save ${scope} to Gist (${response.status}), using local fallback.`);
+      saveLocal(data);
+      return;
+    }
+    setLocalOverride(scope, false);
+  } catch (error) {
+    console.warn(`Error saving ${scope} to Gist, using local fallback:`, error);
+    saveLocal(data);
+  }
+};
+
 export const readGistJsonFile = async <T>({
   scope,
   filename,

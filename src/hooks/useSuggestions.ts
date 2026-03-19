@@ -1,12 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/services/polling';
-import { areDeeplyEqual, parseJsonContent, sanitizeInput } from '@/utils';
+import { areDeeplyEqual, parseJsonContent, sanitizeInput, shallowCloneArray } from '@/utils';
 import {
-  canWriteGist,
   GIST_SUGGESTIONS_FILENAME,
-  patchGistFile,
   readGistJsonFile,
   readStoredJson,
+  saveGistJson,
   setLocalOverride,
   writeStoredJson,
 } from '@/services/gistClient.ts';
@@ -14,9 +13,6 @@ import { MovieSuggestion, User } from '@/types';
 
 const POLLING_INTERVAL = 300000; // 5 minutes
 const SUGGESTIONS_LOCAL_STORAGE_KEY = 'movieList.localSuggestions';
-
-const cloneSuggestions = (suggestions: MovieSuggestion[]): MovieSuggestion[] =>
-  suggestions.map((suggestion) => ({ ...suggestion }));
 
 const isSuggestionStatus = (value: unknown): value is MovieSuggestion['status'] =>
   value === 'pending' || value === 'accepted' || value === 'rejected';
@@ -42,7 +38,7 @@ const readStoredLocalSuggestions = (): MovieSuggestion[] | null =>
     storageKey: SUGGESTIONS_LOCAL_STORAGE_KEY,
     validate: (value): value is MovieSuggestion[] =>
       Array.isArray(value) && value.every(isSuggestionRecord),
-    clone: cloneSuggestions,
+    clone: shallowCloneArray,
     label: 'local suggestions fallback',
   });
 
@@ -52,7 +48,7 @@ const saveLocalSuggestions = (suggestions: MovieSuggestion[]): void => {
   writeStoredJson({
     storageKey: SUGGESTIONS_LOCAL_STORAGE_KEY,
     value: suggestions,
-    clone: cloneSuggestions,
+    clone: shallowCloneArray,
     label: 'local suggestions fallback',
   });
   setLocalOverride('suggestions', true);
@@ -73,31 +69,8 @@ const getSuggestions = async (): Promise<MovieSuggestion[]> => {
   }
 };
 
-const saveSuggestions = async (suggestions: MovieSuggestion[]): Promise<void> => {
-  if (!canWriteGist) {
-    saveLocalSuggestions(suggestions);
-    return;
-  }
-
-  try {
-    const response = await patchGistFile(
-      GIST_SUGGESTIONS_FILENAME,
-      JSON.stringify(suggestions, null, 2)
-    );
-
-    if (!response.ok) {
-      console.warn(
-        `Failed to save suggestions to Gist (${response.status}), using local fallback.`
-      );
-      saveLocalSuggestions(suggestions);
-      return;
-    }
-    setLocalOverride('suggestions', false);
-  } catch (error) {
-    console.warn('Error saving suggestions to Gist, using local fallback:', error);
-    saveLocalSuggestions(suggestions);
-  }
-};
+const saveSuggestions = (suggestions: MovieSuggestion[]): Promise<void> =>
+  saveGistJson(GIST_SUGGESTIONS_FILENAME, 'suggestions', suggestions, saveLocalSuggestions);
 
 const addSuggestionService = async (
   title: string,

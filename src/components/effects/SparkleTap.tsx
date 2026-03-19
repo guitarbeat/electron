@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { clamp, randomBetween } from '@/utils';
 
 const SPARKLE_GLYPHS = ['✦', '✧', '✺', '✹'];
-
-function clamp(number: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, number));
-}
-
-function randomBetween(min: number, max: number) {
-  return min + Math.random() * (max - min);
-}
 
 interface SparkleTapProps {
   burstCount?: number;
