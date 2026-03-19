@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Button from '@/ui/Button';
-import Input from '@/ui/Input';
-import Textarea from '@/ui/Textarea';
+import { Input, Textarea } from '@/ui/FormFields';
 import { useMovies } from '@/hooks/useMovies';
 import { usePolling } from '@/services/polling';
 import { useUser } from '@/context';
