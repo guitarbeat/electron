@@ -46,11 +46,16 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
         const haloColor = actionPalette[(index + 2) % actionPalette.length];
 
         return isCompact ? (
-          <div key={item.label} className="command-deck__bubble-item">
+          <div
+            key={item.label}
+            className="command-deck__bubble-item"
+            style={{ '--item-index': index } as React.CSSProperties}
+          >
             <GelBubbleAvatar
               icon={item.icon}
               label={item.label}
               size="tiny"
+              showName={false}
               isHovered={hoveredIndex === index}
               onClick={() => onItemSelect(item)}
               onMouseEnter={() => setHoveredIndex(index)}
@@ -60,6 +65,7 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
               accentColor={accentColor}
               haloColor={haloColor}
             />
+            <span className="command-deck__bubble-label" aria-hidden="true">{item.label}</span>
           </div>
         ) : (
           <button
