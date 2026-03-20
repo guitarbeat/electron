@@ -1,4 +1,4 @@
-import type { User } from './types';
+import type { User } from "./types";
 
 /**
  * Consolidated Utilities
@@ -13,12 +13,14 @@ export const MAX_MESSAGE_LENGTH = 500;
 export const MAX_AUTHOR_LENGTH = 50;
 export const MAX_MOVIE_TITLE_LENGTH = 200;
 
-export const KNOWN_USERS = ['Aaron', 'Electra'] as const;
+export const KNOWN_USERS = ["Aaron", "Electra"] as const;
 export const USER_OPTIONS: ReadonlyArray<User> = KNOWN_USERS;
 
-export const isUser = (value: unknown): value is User => USER_OPTIONS.includes(value as User);
+export const isUser = (value: unknown): value is User =>
+  USER_OPTIONS.includes(value as User);
 
-export const normalizeUser = (value: unknown): User | null => (isUser(value) ? value : null);
+export const normalizeUser = (value: unknown): User | null =>
+  isUser(value) ? value : null;
 
 export const parseJsonContent = (content: string, context: string): unknown => {
   try {
@@ -46,9 +48,9 @@ export const executeAction = (action?: () => void, onComplete?: () => void): voi
  * This helps prevent injection attacks and storage of malformed data.
  */
 export const sanitizeInput = (input: string): string => {
-  if (!input) return '';
+  if (!input) return "";
   // eslint-disable-next-line no-control-regex
-  return input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '').trim();
+  return input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
 };
 
 /**
@@ -59,7 +61,7 @@ export const isValidUrl = (url: string): boolean => {
   if (!url) return false;
   try {
     const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol);
+    return ["http:", "https:"].includes(parsed.protocol);
   } catch {
     return false;
   }
@@ -88,42 +90,46 @@ export interface ValidationResult {
 
 export const createValidator = (rules: ValidationRules) => {
   return (data: Record<string, string>): ValidationResult => {
-    const errors = Object.entries(rules).reduce<Record<string, string>>((acc, [field, rule]) => {
-      const value = data[field] || '';
-      const trimmedValue = value.trim();
+    const errors = Object.entries(rules).reduce<Record<string, string>>(
+      (acc, [field, rule]) => {
+        const value = data[field] || "";
+        const trimmedValue = value.trim();
 
-      if (rule.required && !trimmedValue) {
-        acc[field] = `${field} is required`;
-        return acc;
-      }
-
-      if (!trimmedValue && !rule.required) {
-        return acc;
-      }
-
-      const cleanValue = sanitizeInput(value);
-
-      if (rule.maxLength && cleanValue.length > rule.maxLength) {
-        acc[field] = `${field} exceeds maximum length of ${rule.maxLength} characters`;
-      }
-
-      if (rule.minLength && cleanValue.length < rule.minLength) {
-        acc[field] = `${field} must be at least ${rule.minLength} characters`;
-      }
-
-      if (rule.pattern && !rule.pattern.test(cleanValue)) {
-        acc[field] = `${field} format is invalid`;
-      }
-
-      if (rule.custom) {
-        const customError = rule.custom(cleanValue);
-        if (customError) {
-          acc[field] = customError;
+        if (rule.required && !trimmedValue) {
+          acc[field] = `${field} is required`;
+          return acc;
         }
-      }
 
-      return acc;
-    }, {});
+        if (!trimmedValue && !rule.required) {
+          return acc;
+        }
+
+        const cleanValue = sanitizeInput(value);
+
+        if (rule.maxLength && cleanValue.length > rule.maxLength) {
+          acc[field] =
+            `${field} exceeds maximum length of ${rule.maxLength} characters`;
+        }
+
+        if (rule.minLength && cleanValue.length < rule.minLength) {
+          acc[field] = `${field} must be at least ${rule.minLength} characters`;
+        }
+
+        if (rule.pattern && !rule.pattern.test(cleanValue)) {
+          acc[field] = `${field} format is invalid`;
+        }
+
+        if (rule.custom) {
+          const customError = rule.custom(cleanValue);
+          if (customError) {
+            acc[field] = customError;
+          }
+        }
+
+        return acc;
+      },
+      {},
+    );
 
     return {
       isValid: Object.keys(errors).length === 0,
@@ -167,12 +173,12 @@ export const validatePlace = createValidator({
 
 export const validateAndThrow = (
   validator: (data: Record<string, string>) => ValidationResult,
-  data: Record<string, string>
+  data: Record<string, string>,
 ) => {
   const result = validator(data);
   if (!result.isValid) {
     const [firstError] = Object.values(result.errors);
-    throw new Error(firstError || 'Validation failed');
+    throw new Error(firstError || "Validation failed");
   }
   return result;
 };
@@ -191,7 +197,7 @@ export const validateAndThrow = (
 export const concurrentMap = async <T, R>(
   items: T[],
   concurrency: number,
-  fn: (item: T) => Promise<R>
+  fn: (item: T) => Promise<R>,
 ): Promise<R[]> => {
   const results = new Array(items.length);
   const iterator = items.entries();
@@ -200,7 +206,9 @@ export const concurrentMap = async <T, R>(
       results[index] = await fn(item);
     }
   };
-  await Promise.all(Array.from({ length: Math.min(items.length, concurrency) }, worker));
+  await Promise.all(
+    Array.from({ length: Math.min(items.length, concurrency) }, worker),
+  );
   return results;
 };
 
@@ -226,13 +234,30 @@ export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
  * Returns a shuffled copy of the input without mutating the source array.
  * Accepts an injectable RNG so tests can verify exact ordering.
  */
-export const shuffleArray = <T>(items: readonly T[], random: () => number = Math.random): T[] => {
+export const shuffleArray = <T>(
+  items: readonly T[],
+  random: () => number = Math.random,
+): T[] => {
   const shuffled = [...items];
 
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
   }
 
   return shuffled;
+};
+
+/**
+ * Builds a secure Google Maps script URL with URL-encoded parameters.
+ * Mitigates XSS vulnerabilities when injecting environment variables into the DOM.
+ */
+export const buildGoogleMapsUrl = (
+  apiKey: string,
+  libraries: string[],
+): string => {
+  return `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=${libraries.join(",")}`;
 };
