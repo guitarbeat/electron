@@ -89,7 +89,7 @@ const getMovies = async (): Promise<Movie[]> => {
   }
 };
 
-const getMoviesFromGist = async (): Promise<Movie[] | null> => {
+const getRemoteMoviesFromGist = async (): Promise<Movie[] | null> => {
   try {
     return await readGistJsonFile({
       scope: 'movies',
@@ -101,6 +101,7 @@ const getMoviesFromGist = async (): Promise<Movie[] | null> => {
         if (!Array.isArray(parsedMovies)) return null;
         return normalizeMovies(parsedMovies);
       },
+      skipLocalOverride: true,
     });
   } catch {
     return null;
@@ -138,48 +139,90 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   const isSubmittingRef = useRef(false);
   const mutationLockRef = useRef<Promise<void> | null>(null);
   const hasAutoSyncedRef = useRef(false);
+  const movieRecoverySyncInFlightRef = useRef(false);
+  const [movieRecoveryRetryToken, setMovieRecoveryRetryToken] = useState(0);
 
   useEffect(() => {
-    const maybeSyncLocalOverride = async () => {
-      if (!canWriteGist) return;
-      if (hasAutoSyncedRef.current) return;
-      if (!hasLocalOverride('movies')) return;
+    if (!canWriteGist || isSubmitting || !hasLocalOverride('movies')) {
+      return;
+    }
 
-      const localMovies = readStoredLocalMovies();
-      if (!localMovies || localMovies.length === 0) return;
+    if (movieRecoverySyncInFlightRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+    let retryTimeoutId: number | null = null;
+
+    const clearRetryTimeout = () => {
+      if (retryTimeoutId !== null) {
+        window.clearTimeout(retryTimeoutId);
+        retryTimeoutId = null;
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (cancelled || retryTimeoutId !== null) {
+        return;
+      }
+
+      retryTimeoutId = window.setTimeout(() => {
+        retryTimeoutId = null;
+        setMovieRecoveryRetryToken((value) => value + 1);
+      }, 15000);
+    };
+
+    const maybeSyncLocalOverride = async () => {
+      movieRecoverySyncInFlightRef.current = true;
 
       try {
-        const gistMovies = await getMoviesFromGist();
-        if (gistMovies === null) return;
-
-        const gistById = new Map(gistMovies.map((movie) => [movie.id, movie]));
-        const merged = [...gistMovies];
-        for (const movie of localMovies) {
-          if (!gistById.has(movie.id)) {
-            gistById.set(movie.id, movie);
-            merged.push(movie);
-          }
-        }
-
-        // Only auto-sync when we are strictly adding missing movies.
-        if (merged.length <= gistMovies.length) {
-          hasAutoSyncedRef.current = true;
+        const localMovies = readStoredLocalMovies();
+        if (localMovies === null) {
+          scheduleRetry();
           return;
         }
 
-        const response = await patchGistFile(GIST_FILENAME, JSON.stringify(merged, null, 2));
-        if (!response.ok) return;
+        const gistMovies = await getRemoteMoviesFromGist();
+        if (cancelled) return;
+        if (gistMovies === null) {
+          scheduleRetry();
+          return;
+        }
+
+        if (areDeeplyEqual(gistMovies, localMovies)) {
+          setLocalOverride('movies', false);
+          clearRetryTimeout();
+          refresh();
+          return;
+        }
+
+        const response = await patchGistFile(GIST_FILENAME, JSON.stringify(localMovies, null, 2));
+        if (cancelled) return;
+        if (!response.ok) {
+          scheduleRetry();
+          return;
+        }
 
         setLocalOverride('movies', false);
-        hasAutoSyncedRef.current = true;
+        clearRetryTimeout();
         refresh();
       } catch (error) {
+        if (!cancelled) {
+          scheduleRetry();
+        }
         console.warn('Failed to sync local movies back to Gist:', error);
+      } finally {
+        movieRecoverySyncInFlightRef.current = false;
       }
     };
 
     void maybeSyncLocalOverride();
-  }, [refresh]);
+
+    return () => {
+      cancelled = true;
+      clearRetryTimeout();
+    };
+  }, [isSubmitting, movieRecoveryRetryToken, refresh]);
 
   // Effect to seed the initial movies if the Gist is empty
   useEffect(() => {
@@ -369,7 +412,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           const metadata = await getMetadata(movie.title);
           // Merge mostly to keep existing IDs/User data, but overwrite metadata
           // Only overwrite if we got data back
-          if (metadata.posterUrl) {
+          if (metadata.posterUrl || metadata.plot || metadata.year) {
             return { ...movie, ...extractSafeMetadata(metadata) };
           }
           return movie;

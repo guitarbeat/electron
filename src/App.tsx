@@ -20,7 +20,7 @@ import ActionBubble from '@/ui/ActionBubble';
 import ActionFanMenu from '@/ui/ActionFanMenu';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { useAudio } from '@/hooks/useAudio';
-import { colors, spacing, typography, zIndex, motion, shadows, radius } from '@/design-system';
+import { colors, spacing, typography } from '@/design-system';
 import { executeAction } from '@/utils';
 import './App.css';
 
@@ -43,8 +43,6 @@ const MAIN_TABS: MainTabItem[] = [
 const ACTION_BUBLE_SIZE = 64;
 const ACTION_BUBBLE_EDGE_MARGIN = 12;
 const ACTION_BUBBLE_DRAG_THRESHOLD = 16;
-const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
-const ACTION_BUBBLE_MENU_WIDTH = 260;
 
 const clampActionBubblePosition = (x: number, y: number): ActionBubblePosition => {
   if (typeof window === 'undefined') {
@@ -88,37 +86,6 @@ const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition
 
   return clampActionBubblePosition(defaultX, defaultY);
 };
-
-const getActionBubbleMenuPosition = (bubblePosition: ActionBubblePosition) => {
-  if (typeof window === 'undefined') {
-    return { left: `${ACTION_BUBBLE_EDGE_MARGIN}px`, top: `${ACTION_BUBBLE_EDGE_MARGIN * 2 + ACTION_BUBLE_SIZE}px` };
-  }
-
-  const margin = ACTION_BUBBLE_EDGE_MARGIN;
-  const preferredX = bubblePosition.x;
-  const menuMaxX = Math.max(margin, window.innerWidth - ACTION_BUBBLE_MENU_WIDTH - margin);
-  const x = Math.min(
-    Math.max(preferredX - Math.floor((ACTION_BUBBLE_MENU_WIDTH - ACTION_BUBLE_SIZE) / 2), margin),
-    menuMaxX
-  );
-
-  const spaceBelow = window.innerHeight - (bubblePosition.y + ACTION_BUBLE_SIZE);
-  const canFitBelow = spaceBelow - 10 >= ACTION_BUBBLE_MENU_GUESS_HEIGHT;
-  const menuY = canFitBelow
-    ? bubblePosition.y + ACTION_BUBLE_SIZE + 10
-    : bubblePosition.y - ACTION_BUBBLE_MENU_GUESS_HEIGHT - 10;
-
-  const maxY = Math.max(
-    margin,
-    window.innerHeight - ACTION_BUBBLE_MENU_GUESS_HEIGHT - margin
-  );
-
-  return {
-    left: `${x}px`,
-    top: `${Math.min(Math.max(menuY, margin), maxY)}px`,
-  };
-};
-
 
 const AppInner: React.FC = () => {
   const { currentUser } = useUser();
@@ -239,11 +206,6 @@ const AppInner: React.FC = () => {
     };
   }, [showActionBubbleMenu]);
 
-  const activeTabMeta = useMemo(
-    () => MAIN_TABS.find((item) => item.id === activeTab) ?? MAIN_TABS[0],
-    [activeTab]
-  );
-
   const openQuizExperience = useCallback(() => {
     if (currentUser) {
       setShowQuizFlow(true);
@@ -315,11 +277,6 @@ const AppInner: React.FC = () => {
       },
     ],
     [currentUser, openMatchmaker, openQuizExperience, quizCompleted, crtEnabled, cursorTrailEnabled]
-  );
-
-  const actionBubbleMenuStyle = useMemo(
-    () => getActionBubbleMenuPosition(actionBubblePosition),
-    [actionBubblePosition]
   );
 
   const handleActionBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
