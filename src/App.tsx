@@ -375,7 +375,7 @@ const AppInner: React.FC = () => {
     <ThemeProvider activeTab={activeTab}>
       <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
-        <a href="#main-content" className="skip-link" style={{ position: 'absolute', left: '-9999px' }}>
+        <a href="#main-content" className="skip-link">
           Skip to content
         </a>
 

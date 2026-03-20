@@ -95,7 +95,7 @@ export default async function handler(req: Request): Promise<Response> {
             return forbiddenResponse('Origin not allowed.');
           }
         }
-      } catch (e) {
+      } catch {
         return forbiddenResponse('Invalid origin.');
       }
     } else if (secFetchSite === null && process.env.NODE_ENV === 'production') {
