@@ -326,7 +326,7 @@ export const usePolling = <T>(
   }, [allowNull, executeLocal, interval, isPaused, key]);
 
   const refresh = useCallback(() => {
-    if (key) {
+    if (key && interval !== null) {
       setIsLoading(true);
       setError(null);
       pollingManager.refresh(key).catch((error) => {
@@ -337,7 +337,7 @@ export const usePolling = <T>(
     } else {
       executeLocal(true);
     }
-  }, [executeLocal, key]);
+  }, [executeLocal, interval, key]);
 
   return { data, error, isLoading, refresh };
 };
