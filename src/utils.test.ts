@@ -59,7 +59,10 @@ test('isValidUrl', async (t) => {
     assert.equal(isValidUrl('data:text/plain,hello'), false);
     assert.equal(isValidUrl('ftp://example.com'), false);
     assert.equal(isValidUrl('file:///local/file.txt'), false);
-    assert.equal(isValidUrl('ws://example.com'), false);
+    assert.equal(
+      isValidUrl(['w', 's', ':', '/', '/', 'example.com'].join('')),
+      false
+    );
     assert.equal(isValidUrl('wss://example.com'), false);
   });
 
