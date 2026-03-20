@@ -157,21 +157,21 @@ Each modal is scrollable internally and sized per feature.
   - Cursor trail
 - Animations are used for panel transitions, card entrances, and quick-action surfaces
 
-## Layout Summary Diagram
+## Compact Diagram
 
-```text
-App Shell
-├─ Fixed profile chip (top-left)
-├─ Draggable action bubble (floating)
-├─ Workspace header
-│  ├─ Theme toggle (Watchlist <-> Date Spots)
-│  └─ Active mode label
-├─ Workspace grid
-│  ├─ Primary panel
-│  │  ├─ Watchlist panel
-│  │  └─ Date Spots panel
-│  └─ Support rail (desktop only)
-├─ Mobile bottom nav (mobile only)
-├─ Bottom sheet (Profile & Settings)
-└─ Modal stack (quiz, games, memories, matchmaker)
+```mermaid
+flowchart TD
+  App["App shell"]
+  App --> Profile["Profile chip"]
+  App --> Bubble["Floating action bubble"]
+  App --> Header["Workspace header"]
+  Header --> Toggle["Theme toggle"]
+  Header --> Active["Active mode label"]
+  App --> Grid["Workspace grid"]
+  Grid --> Watch["Watchlist panel"]
+  Grid --> Places["Date Spots panel"]
+  Grid --> Rail["Support rail (desktop)"]
+  App --> Mobile["Mobile bottom nav"]
+  App --> Sheet["Profile & Settings sheet"]
+  App --> Modal["Modal stack"]
 ```
