@@ -6548,3 +6548,293 @@ body.grabbing * {
 .memory-lane__scrapbook > div:hover {
   box-shadow: 0 12px 24px rgba(0,0,0,0.3), 0 0 20px rgba(255, 255, 255, 0.1) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLACE CARDS  —  poster-style cards parallel to MovieCard
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.places-grid__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-tertiary);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Outer card shell — same dimensions as movie-item-card */
+.place-item-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 240px;
+  justify-self: center;
+  width: 100%;
+  will-change: transform, box-shadow;
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow  0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.place-item-card:hover {
+  transform: translateY(-3px) scale(1.018);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.42),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 38%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+/* Visited state — subtle golden glow */
+.place-item-card--visited {
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    0 0 0 1px color-mix(in srgb, var(--color-success, #34d399) 35%, transparent);
+}
+
+.place-item-card--visited:hover {
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.38),
+    0 0 0 1px color-mix(in srgb, var(--color-success, #34d399) 55%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-success, #34d399) 18%, transparent);
+}
+
+/* Portrait poster container — same 2:3 ratio as movie posters */
+.place-item-poster-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: inherit;
+  overflow: hidden;
+  background: #111;
+}
+
+/* Gradient cover art (generated per-place) */
+.place-item-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+}
+
+/* Central emoji icon */
+.place-item-cover__icon {
+  font-size: 3.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.55));
+  user-select: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* Corner sparkle ornaments */
+.place-item-cover__sparkle {
+  position: absolute;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  user-select: none;
+  pointer-events: none;
+}
+
+.place-item-cover__sparkle--tl {
+  top: 0.55rem;
+  left: 0.6rem;
+}
+
+.place-item-cover__sparkle--br {
+  bottom: 3.5rem;
+  right: 0.6rem;
+}
+
+/* Map pin indicator (top-left, shows if place has coordinates) */
+.place-item-cover__pin {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.6rem;
+  font-size: 0.85rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Visited badge — top-left pill */
+.place-item-visited-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-success, #34d399) 85%, transparent);
+  color: #052;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Bottom gradient overlay — same pattern as movie-item-overlay */
+.place-item-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.8rem 0.7rem 0.75rem;
+  gap: 0.5rem;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.93) 0%,
+    rgba(0, 0, 0, 0.62) 38%,
+    rgba(0, 0, 0, 0.18) 62%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.place-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.place-item-title {
+  margin: 0;
+  font-family: var(--type-display-family, Georgia, serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.28;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.place-item-notes {
+  margin: 0;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Action row — mirrors movie-actions */
+.place-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  pointer-events: all;
+}
+
+/* Primary action button (been here / unmark) */
+.place-item-action-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.place-item-action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.place-item-action-btn--visit {
+  background: color-mix(in srgb, var(--color-accent) 70%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 80%, transparent);
+}
+
+.place-item-action-btn--visit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 88%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.place-item-action-btn--unmark {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.place-item-action-btn--unmark:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.place-item-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Delete button — small icon-only */
+.place-item-delete-btn {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  background: rgba(200, 30, 30, 0.2);
+  color: rgba(255, 130, 130, 0.9);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+  pointer-events: all;
+}
+
+.place-item-delete-btn:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.42);
+  border-color: rgba(255, 80, 80, 0.6);
+  transform: translateY(-1px);
+}
+
+.place-item-delete-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive: tighter grid on very small screens */
+@media (max-width: 480px) {
+  .places-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 0.7rem;
+  }
+
+  .place-item-card {
+    max-width: none;
+  }
+}
