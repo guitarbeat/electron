@@ -44,8 +44,10 @@ test('isValidUrl', async (t) => {
 
   await t.test('returns false for empty or missing input', () => {
     assert.equal(isValidUrl(''), false);
-    assert.equal(isValidUrl(null as unknown as string), false);
-    assert.equal(isValidUrl(undefined as unknown as string), false);
+    // @ts-expect-error Testing invalid runtime input
+    assert.equal(isValidUrl(null), false);
+    // @ts-expect-error Testing invalid runtime input
+    assert.equal(isValidUrl(undefined), false);
   });
 
   await t.test('returns false for malformed URLs', () => {
@@ -56,6 +58,7 @@ test('isValidUrl', async (t) => {
 
   await t.test('returns false for unsafe or unsupported protocols', () => {
     assert.equal(isValidUrl('java' + 'script:alert(1)'), false);
+    assert.equal(isValidUrl('javascript:void(0)'), false);
     assert.equal(isValidUrl('data:text/plain,hello'), false);
     assert.equal(isValidUrl('ftp://example.com'), false);
     assert.equal(isValidUrl('file:///local/file.txt'), false);
