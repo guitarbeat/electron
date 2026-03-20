@@ -1,30 +1,34 @@
 const env = (import.meta.env ?? {}) as ImportMetaEnv & {
   VITE_GIST_ID?: string;
   VITE_GIST_API_URL?: string;
+  VITE_API_SECRET?: string;
 };
 
-const clean = (value: string) => value.trim().replace(/^["']|["']$/g, '');
-const LOCAL_OVERRIDE_PREFIX = 'movieList.localOverride.';
+const clean = (value: string) => value.trim().replace(/^["']|["']$/g, "");
+const LOCAL_OVERRIDE_PREFIX = "movieList.localOverride.";
 const resolveConfig = (value: string | undefined, fallback: string) => {
-  const cleanedValue = clean(value || '');
+  const cleanedValue = clean(value || "");
   return cleanedValue.length > 0 ? cleanedValue : fallback;
 };
 
-export const isGistReadConfigured = (gistId: string) => clean(gistId).length > 0;
+export const isGistReadConfigured = (gistId: string) =>
+  clean(gistId).length > 0;
 // Writes now go through the server-side proxy, so the client only needs the gist id
 // to attempt a write. If the proxy cannot write, callers should fall back locally.
-export const isGistWriteConfigured = (gistId: string) => isGistReadConfigured(gistId);
+export const isGistWriteConfigured = (gistId: string) =>
+  isGistReadConfigured(gistId);
 
-export const GIST_ID = clean(env.VITE_GIST_ID || '');
+export const GIST_ID = clean(env.VITE_GIST_ID || "");
 export const canReadGist = isGistReadConfigured(GIST_ID);
 export const canWriteGist = isGistWriteConfigured(GIST_ID);
-export const GIST_API_URL = resolveConfig(env.VITE_GIST_API_URL, '/api/gist');
-export const GIST_FILENAME = 'movielist.json';
-export const GIST_QUIZ_FILENAME = 'quiz.json';
-export const GIST_SUGGESTIONS_FILENAME = 'suggestions.json';
-export const GIST_MEMORIES_FILENAME = 'memories.json';
-export const GIST_MATCHMAKER_FILENAME = 'matchmaker.json';
-export const GIST_PLACES_FILENAME = 'places.json';
+export const GIST_API_URL = resolveConfig(env.VITE_GIST_API_URL, "/api/gist");
+export const API_SECRET = clean(env.VITE_API_SECRET || "");
+export const GIST_FILENAME = "movielist.json";
+export const GIST_QUIZ_FILENAME = "quiz.json";
+export const GIST_SUGGESTIONS_FILENAME = "suggestions.json";
+export const GIST_MEMORIES_FILENAME = "memories.json";
+export const GIST_MATCHMAKER_FILENAME = "matchmaker.json";
+export const GIST_PLACES_FILENAME = "places.json";
 
 interface GistFile {
   content?: string;
@@ -55,36 +59,50 @@ interface StoredJsonWriteOptions<T> {
 
 const buildHeaders = (eTag?: string | null): Record<string, string> => {
   const headers: Record<string, string> = {
-    Accept: 'application/json',
+    Accept: "application/json",
   };
 
   if (eTag) {
-    headers['If-None-Match'] = eTag;
+    headers["If-None-Match"] = eTag;
   }
 
   return headers;
 };
 
-export const fetchGist = async (options: FetchGistOptions = {}): Promise<Response> =>
+export const fetchGist = async (
+  options: FetchGistOptions = {},
+): Promise<Response> =>
   fetch(GIST_API_URL, {
     headers: buildHeaders(options.eTag),
-    cache: options.cache ?? 'no-cache',
+    cache: options.cache ?? "no-cache",
   });
 
-export const patchGistFile = async (filename: string, content: string): Promise<Response> =>
-  fetch(GIST_API_URL, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+export const patchGistFile = async (
+  filename: string,
+  content: string,
+): Promise<Response> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (API_SECRET) {
+    headers.Authorization = `Bearer ${API_SECRET}`;
+  }
+
+  return fetch(GIST_API_URL, {
+    method: "PATCH",
+    headers,
     body: JSON.stringify({
       files: {
         [filename]: { content },
       },
     }),
   });
+};
 
-export const getGistFileContent = (gist: GistPayload, filename: string): string | null => {
+export const getGistFileContent = (
+  gist: GistPayload,
+  filename: string,
+): string | null => {
   const file = gist.files?.[filename];
   if (!file || !file.content) {
     return null;
@@ -92,7 +110,9 @@ export const getGistFileContent = (gist: GistPayload, filename: string): string 
   return file.content;
 };
 
-export const buildGithubApiErrorMessage = async (response: Response): Promise<string> => {
+export const buildGithubApiErrorMessage = async (
+  response: Response,
+): Promise<string> => {
   let message = `API responded with ${response.status}.`;
   try {
     const errorBody = await response.clone().json();
@@ -105,7 +125,8 @@ export const buildGithubApiErrorMessage = async (response: Response): Promise<st
   return message;
 };
 
-const getLocalOverrideKey = (scope: string) => `${LOCAL_OVERRIDE_PREFIX}${scope}`;
+const getLocalOverrideKey = (scope: string) =>
+  `${LOCAL_OVERRIDE_PREFIX}${scope}`;
 
 export const readStoredJson = <T>({
   storageKey,
@@ -113,7 +134,7 @@ export const readStoredJson = <T>({
   clone,
   label,
 }: StoredJsonReadOptions<T>): T | null => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
@@ -142,7 +163,7 @@ export const writeStoredJson = <T>({
 }: StoredJsonWriteOptions<T>): T => {
   const nextValue = clone(value);
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(nextValue));
     } catch (error) {
@@ -154,7 +175,7 @@ export const writeStoredJson = <T>({
 };
 
 export const removeStoredJson = (storageKey: string, label: string): void => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -166,16 +187,16 @@ export const removeStoredJson = (storageKey: string, label: string): void => {
 };
 
 export const hasLocalOverride = (scope: string): boolean => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return false;
   }
 
-  return window.localStorage.getItem(getLocalOverrideKey(scope)) === 'true';
+  return window.localStorage.getItem(getLocalOverrideKey(scope)) === "true";
 };
 
 export const readLocalOverride = <T>(
   scope: string,
-  readStored: () => T | null
+  readStored: () => T | null,
 ): { enabled: boolean; value: T | null } => {
   if (!hasLocalOverride(scope)) {
     return { enabled: false, value: null };
@@ -185,13 +206,13 @@ export const readLocalOverride = <T>(
 };
 
 export const setLocalOverride = (scope: string, enabled: boolean): void => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
   try {
     if (enabled) {
-      window.localStorage.setItem(getLocalOverrideKey(scope), 'true');
+      window.localStorage.setItem(getLocalOverrideKey(scope), "true");
     } else {
       window.localStorage.removeItem(getLocalOverrideKey(scope));
     }
