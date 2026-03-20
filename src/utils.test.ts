@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl } from './utils.ts';
+import { executeAction, isValidUrl, sanitizeInput } from './utils.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -72,5 +72,35 @@ test('isValidUrl', async (t) => {
   await t.test('returns false for protocol-relative URLs (missing protocol)', () => {
     // URL constructor throws for protocol-relative unless base is provided
     assert.equal(isValidUrl('/' + '/example.com'), false);
+  });
+});
+
+test('sanitizeInput', async (t) => {
+  await t.test('returns empty string for empty inputs', () => {
+    assert.equal(sanitizeInput(''), '');
+    assert.equal(sanitizeInput(null as unknown as string), '');
+    assert.equal(sanitizeInput(undefined as unknown as string), '');
+  });
+
+  await t.test('trims leading and trailing whitespace', () => {
+    assert.equal(sanitizeInput('  hello world  '), 'hello world');
+    assert.equal(sanitizeInput('\t\n hello \t\n'), 'hello');
+  });
+
+  await t.test('removes control characters', () => {
+    assert.equal(sanitizeInput('hello\x00world'), 'helloworld');
+    assert.equal(sanitizeInput('test\x0B\x0Cdata'), 'testdata');
+    assert.equal(sanitizeInput('abc\x1Fdef\x7Fghi'), 'abcdefghi');
+  });
+
+  await t.test('handles normal characters without modification other than trimming', () => {
+    assert.equal(
+      sanitizeInput('regular string with numbers 123 and symbols !@#'),
+      'regular string with numbers 123 and symbols !@#'
+    );
+  });
+
+  await t.test('returns empty string when input is only control characters and whitespace', () => {
+    assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
   });
 });
