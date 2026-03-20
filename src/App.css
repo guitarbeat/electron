@@ -740,15 +740,22 @@ body {
    Action Fan Menu
    ============================== */
 
-.action-fan-backdrop {
+.action-fan-menu {
   position: fixed;
   inset: 0;
   z-index: 648;
+  pointer-events: none;
+}
+
+.action-fan-backdrop {
+  position: absolute;
+  inset: 0;
   background: rgba(4, 2, 14, 0.58);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   cursor: pointer;
   animation: fan-backdrop-in 0.22s ease both;
+  pointer-events: auto;
 }
 
 @keyframes fan-backdrop-in {
@@ -757,7 +764,8 @@ body {
 }
 
 .action-fan-item {
-  z-index: 649;
+  position: absolute;
+  z-index: 1;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
@@ -768,6 +776,7 @@ body {
   background: transparent;
   padding: 0;
   touch-action: manipulation;
+  pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
   outline: none;
   animation: fan-item-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;

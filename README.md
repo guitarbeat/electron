@@ -40,7 +40,7 @@ For more detailed information, please refer to the following guides in the `docs
 
 ## 🧩 Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
+- **Frontend**: React 19, TypeScript, Vite
 - **Styling**: Vanilla CSS with custom design tokens for Y2K/Retro-futurist theme.
 - **Persistence**: localStorage by default, with optional GitHub Gist sync for shared/multi-device storage.
 - **APIs**: OMDb (movie metadata), Google Places (map components).
