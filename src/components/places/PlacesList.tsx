@@ -9,8 +9,9 @@ import SubNav from '@/ui/SubNav';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import PlacesMap from './PlacesMap';
-import { PlusIcon, TrashIcon, CheckIcon } from '@/common/icons';
-import { colors, spacing, typography, motion, shadows } from '@/design-system';
+import PlaceCard from './PlaceCard';
+import { PlusIcon } from '@/common/icons';
+import { colors, spacing, typography, motion } from '@/design-system';
 import type { Place } from '@/types';
 
 type PlaceFilter = 'want' | 'visited';
@@ -212,86 +213,22 @@ const PlacesList: React.FC = () => {
         {isLoading && places.length === 0 ? (
           renderSkeleton()
         ) : (
-          <div 
-            className="places-grid"
-            style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-              gap: spacing.lg,
-              marginTop: spacing.md
-            }}
-          >
+          <div className="places-grid">
             {filtered.length === 0 ? (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing['3xl'], color: colors.textTertiary, ...typography.presets.bodySm }}>
-                {filter === 'want' ? 'No date spots yet. Add one above!' : 'No visited spots yet.'}
+              <div className="places-grid__empty">
+                {filter === 'want' ? 'No date spots yet — add one above!' : 'No visited spots yet.'}
               </div>
             ) : (
               filtered.map((place, index) => (
-                <Card 
+                <PlaceCard
                   key={place.id}
-                  variant={place.visitedAt ? 'default' : 'elevated'}
-                  style={{ 
-                    padding: spacing.md, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: spacing.sm,
-                    animation: `slide-up ${motion.duration.normal} ${motion.easing.easeOut} ${index * 0.05}s both`,
-                    border: place.visitedAt ? `1px solid ${colors.borderSubtle}` : `1px solid ${colors.accent}20`,
-                    boxShadow: place.visitedAt ? 'none' : shadows.card
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <h3 style={{ ...typography.presets.bodySm, fontWeight: 600, margin: 0 }}>{place.name}</h3>
-                      {place.visitedAt && (
-                        <span style={{ ...typography.presets.caption, color: colors.success, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <CheckIcon style={{ width: 12, height: 12 }} />
-                          Visited
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div style={{ display: 'flex', gap: spacing.xs }}>
-                      {place.visitedAt ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => markUnvisited(place.id)}
-                          disabled={isSubmitting}
-                          style={{ fontSize: '0.75rem', padding: `2px ${spacing.sm}` }}
-                        >
-                          Mark unvisited
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => markVisited(place.id)}
-                          disabled={isSubmitting}
-                          style={{ fontSize: '0.75rem', padding: `2px ${spacing.sm}` }}
-                        >
-                          Mark visited
-                        </Button>
-                      )}
-                      
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setPlaceToDelete(place)}
-                        disabled={isSubmitting}
-                        aria-label={`Delete ${place.name}`}
-                        style={{ padding: spacing.xs, color: colors.textTertiary }}
-                      >
-                        <TrashIcon style={{ width: 16, height: 16 }} />
-                      </Button>
-                    </div>
-                  </div>
-                  {place.notes && (
-                    <p style={{ ...typography.presets.caption, color: colors.textSecondary, margin: 0, lineBreak: 'anywhere' }}>
-                      {place.notes}
-                    </p>
-                  )}
-                </Card>
+                  place={place}
+                  isSubmitting={isSubmitting}
+                  onMarkVisited={markVisited}
+                  onMarkUnvisited={markUnvisited}
+                  onDelete={(p) => setPlaceToDelete(p)}
+                  animationIndex={index}
+                />
               ))
             )}
           </div>
