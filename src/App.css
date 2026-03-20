@@ -1412,6 +1412,66 @@ body {
   }
 }
 
+/* Narrow phones (~320–360px): header toggle + More must share one row */
+@media (max-width: 380px) {
+  .app-frame {
+    padding: 0.65rem;
+  }
+
+  .workspace-header {
+    padding: 0.65rem 0.55rem;
+  }
+
+  .workspace-header__controls--toggle {
+    gap: 0.45rem;
+  }
+
+  .workspace-header__toggle {
+    min-width: 0;
+  }
+
+  .workspace-header__toggle.theme-toggle--compact .theme-toggle__track {
+    width: 100%;
+    max-width: min(168px, calc(100vw - 6.5rem));
+    height: 44px;
+    border-radius: 22px;
+  }
+
+  .workspace-header__toggle.theme-toggle--compact .theme-toggle__thumb {
+    border-radius: 20px;
+  }
+
+  .workspace-header__toggle.theme-toggle--compact .theme-toggle__option-icon {
+    font-size: 0.95rem;
+  }
+
+  .workspace-header__toggle.theme-toggle--compact .theme-toggle__option-text {
+    font-size: 0.52rem;
+    letter-spacing: 0.08em;
+  }
+
+  .workspace-header__more {
+    position: relative;
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.4rem 0.45rem;
+    gap: 0;
+  }
+
+  .workspace-header__more-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
 @media (max-width: 720px) {
   .support-card,
   .workspace-surface,

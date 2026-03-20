@@ -28,7 +28,6 @@ import './App.css';
 interface MainTabItem {
   id: MainTab;
   label: string;
-  icon: string;
 }
 
 interface ActionBubblePosition {
@@ -37,8 +36,8 @@ interface ActionBubblePosition {
 }
 
 const MAIN_TABS: MainTabItem[] = [
-  { id: 'queue', label: 'Watchlist', icon: '🎬' },
-  { id: 'places', label: 'Date Spots', icon: '📍' },
+  { id: 'queue', label: 'Watchlist' },
+  { id: 'places', label: 'Date Spots' },
 ];
 
 const ACTION_BUBLE_SIZE = 64;
@@ -459,7 +458,7 @@ const AppInner: React.FC = () => {
                     aria-label="Open more options"
                   >
                     <span aria-hidden="true">⋯</span>
-                    <span>More</span>
+                    <span className="workspace-header__more-label">More</span>
                   </button>
                 )}
               </div>
