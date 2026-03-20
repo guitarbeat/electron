@@ -1355,7 +1355,6 @@ body {
 @media (max-width: 640px) {
   .app-frame {
     padding: 0.75rem;
-    padding-bottom: calc(0.75rem + 64px + env(safe-area-inset-bottom, 0px));
   }
 
   .support-rail {
@@ -1381,6 +1380,16 @@ body {
 
   .workspace-header__controls {
     width: 100%;
+  }
+
+  .workspace-header__controls--toggle {
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .workspace-header__toggle {
+    width: auto;
+    flex: 1;
   }
 
   .workspace-header__active {
@@ -1456,90 +1465,33 @@ body {
   margin-top: 0.15rem;
 }
 
-.mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 400;
-  display: flex;
-  align-items: stretch;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, transparent 26%),
-    color-mix(in srgb, var(--color-surface-2) 92%, transparent);
-  border-top: 1px solid var(--shell-border);
-  height: calc(64px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow:
-    0 -12px 28px rgba(0, 0, 0, 0.22),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-}
-
-
-.mobile-bottom-nav__item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.workspace-header__more {
+  min-width: 72px;
+  min-height: 46px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 0.5rem 0;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease,
-    transform 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.mobile-bottom-nav__item.is-active {
-  color: var(--color-accent);
+  gap: 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--shell-border) 80%, var(--color-accent) 20%);
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
   background:
-    linear-gradient(
-      150deg,
-      color-mix(in srgb, var(--color-accent) 20%, transparent) 0%,
-      color-mix(in srgb, var(--color-secondary) 14%, transparent) 56%,
-      color-mix(in srgb, var(--color-quaternary) 10%, transparent) 100%
-    );
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 100%),
+    color-mix(in srgb, var(--color-surface-1) 84%, transparent);
+  color: var(--color-text-primary);
+  font-family: var(--type-tab-label-family);
+  font-size: var(--type-tab-label-size);
+  font-weight: var(--type-tab-label-weight);
+  line-height: var(--type-tab-label-line-height);
+  letter-spacing: var(--type-tab-label-letter-spacing);
+  text-transform: var(--type-tab-label-transform);
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.mobile-bottom-nav__item.is-active .mobile-bottom-nav__icon {
-  transform: translateY(-1px) scale(1.08);
-}
-
-.mobile-bottom-nav__item:nth-child(1).is-active {
-  color: var(--color-accent);
-}
-
-.mobile-bottom-nav__item:nth-child(2).is-active {
-  color: var(--color-secondary);
-}
-
-.mobile-bottom-nav__item:nth-child(3).is-active {
-  color: var(--color-tertiary);
-}
-
-.mobile-bottom-nav__item:active {
-  opacity: 0.7;
-}
-
-.mobile-bottom-nav__icon {
-  font-size: 1.35rem;
-  line-height: 1;
-  transition: transform 0.15s ease;
-}
-
-.mobile-bottom-nav__label {
-  font-family: var(--font-display);
-  font-size: var(--type-eyebrow-size);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: var(--letter-spacing-wide);
-  text-transform: var(--type-button-label-transform);
-  line-height: var(--line-height-none);
+.workspace-header__more:active {
+  transform: translateY(1px);
+  opacity: 0.82;
 }
 
 .more-sheet {
@@ -1565,7 +1517,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .command-deck__item,
-  .mobile-bottom-nav__item {
+  .workspace-header__more {
     animation: none;
     transition: none;
   }

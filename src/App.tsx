@@ -430,7 +430,7 @@ const AppInner: React.FC = () => {
             />
           )}
 
-          <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none', padding: isMobile ? `0 0 80px 0` : 0 }}>
+          <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none' }}>
             {isMobile && (
               <section className="mobile-hero" aria-label="electron overview" style={{ padding: `${spacing['2xl']} ${spacing.md} ${spacing.xl}`, textAlign: 'center' }}>
                 <div className="mobile-hero__content">
@@ -448,8 +448,20 @@ const AppInner: React.FC = () => {
                 <ThemeToggle
                   activeTab={activeTab}
                   onChange={handleTabChange}
+                  compact={isMobile}
                   className="workspace-header__toggle"
                 />
+                {isMobile && (
+                  <button
+                    type="button"
+                    className="workspace-header__more"
+                    onClick={openMoreSheet}
+                    aria-label="Open more options"
+                  >
+                    <span aria-hidden="true">⋯</span>
+                    <span>More</span>
+                  </button>
+                )}
               </div>
             </section>
 
@@ -475,35 +487,6 @@ const AppInner: React.FC = () => {
             </div>
           </main>
         </div>
-
-        {isMobile && (
-          <nav className="mobile-bottom-nav" aria-label="Main navigation">
-            {MAIN_TABS.map((tab) => {
-              const isActive = tab.id === activeTab;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`mobile-bottom-nav__item${isActive ? ' is-active' : ''}`}
-                  onClick={() => handleTabChange(tab.id)}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <span className="mobile-bottom-nav__icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>{tab.icon}</span>
-                  <span className="mobile-bottom-nav__label" style={typography.presets.caption}>{tab.label}</span>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              className="mobile-bottom-nav__item"
-              onClick={openMoreSheet}
-              aria-label="More options"
-            >
-              <span className="mobile-bottom-nav__icon" aria-hidden="true" style={{ fontSize: '1.25rem' }}>⋯</span>
-              <span className="mobile-bottom-nav__label" style={typography.presets.caption}>More</span>
-            </button>
-          </nav>
-        )}
 
         <BottomSheet
           isOpen={showMoreSheet}
