@@ -11,7 +11,7 @@ import CollectionEmptyState from '@/ui/CollectionEmptyState';
 import CollectionGrid from '@/ui/CollectionGrid';
 import WorkspacePanels from '@/ui/WorkspacePanels';
 import PlacesMap from './PlacesMap';
-import PlaceCard from './components/PlaceCard';
+import PlaceCard from './PlaceCard';
 import PlacesTopControls from './components/PlacesTopControls';
 import { colors, spacing, typography, motion } from '@/design-system';
 import type { Place } from '@/types';
@@ -207,10 +207,10 @@ const PlacesList: React.FC = () => {
                   key={place.id}
                   place={place}
                   isSubmitting={isSubmitting}
-                  animationDelay={`${index * 0.05}s`}
-                  onMarkVisited={() => markVisited(place.id)}
-                  onMarkUnvisited={() => markUnvisited(place.id)}
-                  onDelete={() => setPlaceToDelete(place)}
+                  animationIndex={index}
+                  onMarkVisited={markVisited}
+                  onMarkUnvisited={markUnvisited}
+                  onDelete={setPlaceToDelete}
                 />
               ))
             )}
