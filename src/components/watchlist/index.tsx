@@ -5,6 +5,9 @@ import { WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
+import CollectionEmptyState from '@/ui/CollectionEmptyState';
+import CollectionGrid from '@/ui/CollectionGrid';
+import WorkspacePanels from '@/ui/WorkspacePanels';
 import { colors, spacing, typography, motion } from '@/design-system';
 
 // Components
@@ -170,12 +173,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   );
 
   const renderContent = () => (
-    <div 
+    <CollectionGrid
       className="watchlist-content"
+      minColumnWidth={isMobile ? '150px' : '160px'}
       style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-        gap: spacing.lg,
         animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
@@ -204,9 +205,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             />
           ))
         ) : (
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing['2xl'], color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}>
+          <CollectionEmptyState
+            padding={spacing['2xl']}
+            style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+          >
             No pending suggestions
-          </div>
+          </CollectionEmptyState>
         )
       ) : filteredMovies.length > 0 ? (
         filteredMovies.map((movie, index) => (
@@ -221,30 +225,29 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           />
         )
       )) : (
-        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing['2xl'], color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}>
+        <CollectionEmptyState
+          padding={spacing['2xl']}
+          style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+        >
           {searchQuery ? 'No matching movies found' : 'Your watchlist is empty'}
-        </div>
+        </CollectionEmptyState>
       )}
-    </div>
+    </CollectionGrid>
   );
 
   return (
     <div className="watchlist-container" style={{ position: 'relative' }}>
       <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
 
-      {!isMobile ? (
-        <div className="workspace-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 320px) 1fr', gap: spacing.xl }}>
-          <aside style={{ position: 'sticky', top: spacing.xl, height: 'fit-content' }}>
-            {renderControls()}
-          </aside>
-          <section>{renderContent()}</section>
-        </div>
-      ) : (
-        <div className="workspace-layout--mobile">
-          <div style={{ marginBottom: spacing.lg }}>{renderControls()}</div>
-          <div>{renderContent()}</div>
-        </div>
-      )}
+      <WorkspacePanels
+        isMobile={isMobile}
+        first={renderControls()}
+        second={renderContent()}
+        firstAs="aside"
+        secondAs="section"
+        stickyFirst
+        mobileGap={spacing.lg}
+      />
 
       {movieToDelete && (
         <ConfirmDialog
