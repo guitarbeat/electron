@@ -65,6 +65,27 @@ export const MagicWandIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
+export const QuickActionsIcon: React.FC<IconProps> = ({
+  className = 'w-6 h-6',
+  style,
+  size,
+}) => (
+  <svg
+    className={className}
+    style={getIconStyles(size, style)}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M13.5 1.75 6.65 12.2h4.48L9.8 22.25l7.56-11.55h-4.73L13.5 1.75Z"
+      fill="currentColor"
+    />
+    <circle cx="18.15" cy="5.35" r="1.1" fill="rgba(255, 255, 255, 0.96)" />
+    <circle cx="6.1" cy="18" r="0.8" fill="rgba(255, 255, 255, 0.7)" />
+  </svg>
+);
+
 export const FilmIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     {path('M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0V1m10 3V1m0 3l1 1v16a2 2 0 01-2 2H6a2 2 0 01-2-2V5l1-1z')}

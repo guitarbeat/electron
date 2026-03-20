@@ -256,37 +256,47 @@ body {
 .profile-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.28rem 0.75rem 0.28rem 0.28rem;
+  gap: 0.58rem;
+  padding: 0.34rem 0.6rem 0.34rem 0.3rem;
   border-radius: 999px;
   cursor: pointer;
-  border: 1.5px solid color-mix(in srgb, var(--color-accent) 45%, rgba(255, 255, 255, 0.14));
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 48%, rgba(255, 255, 255, 0.16));
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.08) 100%),
-    rgba(8, 5, 18, 0.78);
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 1px,
+      rgba(255, 255, 255, 0) 1px,
+      rgba(255, 255, 255, 0) 4px
+    ),
+    radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--color-secondary) 24%, transparent) 0%, transparent 34%),
+    radial-gradient(circle at 82% 84%, color-mix(in srgb, var(--color-accent) 22%, transparent) 0%, transparent 36%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 46%, rgba(0, 0, 0, 0.12) 100%),
+    rgba(9, 5, 19, 0.82);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-    0 2px 12px rgba(0, 0, 0, 0.4),
-    0 0 14px color-mix(in srgb, var(--color-accent) 18%, transparent);
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 0 3px color-mix(in srgb, var(--color-quaternary) 10%, transparent),
+    0 6px 16px rgba(0, 0, 0, 0.36),
+    0 0 18px color-mix(in srgb, var(--color-accent) 20%, transparent);
   color: var(--color-text-primary);
   font-family: var(--type-eyebrow-family, 'Share Tech Mono', monospace);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  min-width: 0;
   white-space: nowrap;
   transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
 }
 
 .profile-chip:hover {
   border-color: var(--color-accent);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-    0 4px 18px rgba(0, 0, 0, 0.45),
-    0 0 24px color-mix(in srgb, var(--color-accent) 38%, transparent);
-  transform: scale(1.04) translateY(-1px);
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 0 0 3px color-mix(in srgb, var(--color-quaternary) 16%, transparent),
+    0 10px 22px rgba(0, 0, 0, 0.42),
+    0 0 26px color-mix(in srgb, var(--color-accent) 34%, transparent);
+  transform: scale(1.03) translateY(-1px);
 }
 
 .profile-chip:active {
@@ -294,13 +304,13 @@ body {
 }
 
 .profile-chip__avatar {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 900;
   flex-shrink: 0;
   background: conic-gradient(
@@ -319,11 +329,14 @@ body {
 }
 
 .profile-chip--guest .profile-chip__avatar {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.55);
-  box-shadow: none;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.24) 0%, transparent 36%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.18) 0%, rgba(38, 19, 56, 0.94) 100%);
+  color: color-mix(in srgb, var(--color-secondary) 60%, white 40%);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--color-quaternary) 24%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
   animation: chip-guest-pulse 2.4s ease-in-out infinite;
-  font-size: 0.85rem;
 }
 
 @keyframes chip-guest-pulse {
@@ -331,8 +344,58 @@ body {
   50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent); }
 }
 
+.profile-chip__avatar-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.profile-chip__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 0.08rem;
+}
+
+.profile-chip__eyebrow {
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-tertiary) 88%, var(--color-secondary) 12%);
+  line-height: 1;
+}
+
 .profile-chip__label {
   line-height: 1;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-chip__signal {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 0.05rem;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, var(--color-quaternary) 55%, transparent 100%);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--color-quaternary) 48%, transparent),
+    0 0 18px color-mix(in srgb, var(--color-accent) 26%, transparent);
+  animation: profile-chip-signal 2.8s ease-in-out infinite;
+}
+
+@keyframes profile-chip-signal {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.82;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
 }
 
 /* ==============================
@@ -343,12 +406,29 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding: 0.9rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 24%, rgba(255, 255, 255, 0.08));
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 1px,
+      rgba(255, 255, 255, 0) 1px,
+      rgba(255, 255, 255, 0) 4px
+    ),
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--color-accent) 20%, transparent) 0%, transparent 34%),
+    radial-gradient(circle at 88% 100%, color-mix(in srgb, var(--color-quaternary) 16%, transparent) 0%, transparent 30%),
+    linear-gradient(158deg, rgba(22, 12, 37, 0.94) 0%, rgba(13, 18, 36, 0.9) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 14px 32px rgba(0, 0, 0, 0.26);
 }
 
 .user-selection__profiles {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
 .user-selection__title {
@@ -375,9 +455,57 @@ body {
   font-family: var(--type-eyebrow-family, monospace);
 }
 
+.user-selection__panel-status {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 18%, rgba(255, 255, 255, 0.08));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 44%),
+    color-mix(in srgb, var(--color-surface-0) 84%, rgba(18, 10, 34, 0.9));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 18px color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+.user-selection__panel-status-pill {
+  font-family: var(--type-eyebrow-family, monospace);
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--color-secondary) 70%, white 30%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 100%),
+    color-mix(in srgb, var(--color-secondary) 12%, rgba(14, 20, 34, 0.92));
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 28%, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+}
+
+.user-selection__panel-status-copy {
+  margin: 0;
+  max-width: 28rem;
+  text-align: center;
+  color: color-mix(in srgb, var(--color-text-secondary) 88%, white 12%);
+  font-family: var(--type-eyebrow-family, monospace);
+  font-size: 0.67rem;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+}
+
 .user-selection__bubble-cluster--panel {
   display: flex;
   justify-content: center;
+  padding: 0.95rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, rgba(255, 255, 255, 0.08));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+    color-mix(in srgb, var(--color-surface-0) 86%, rgba(18, 12, 32, 0.92));
 }
 
 .user-selection__bubble-row--panel {
@@ -385,7 +513,7 @@ body {
   flex-direction: row;
   justify-content: center;
   align-items: flex-start;
-  gap: 2rem;
+  gap: 1.15rem;
   flex-wrap: wrap;
 }
 
@@ -395,11 +523,49 @@ body {
   align-items: center;
   gap: 0.6rem;
   cursor: pointer;
-  transition: filter 0.25s ease;
+  transition: transform 0.22s ease, filter 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+}
+
+.user-selection__profile-card--panel {
+  min-width: 188px;
+  padding: 0.8rem 0.75rem 0.85rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 78%, rgba(255, 255, 255, 0.08));
+  background:
+    radial-gradient(circle at 20% 14%, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, transparent 28%),
+    radial-gradient(circle at 82% 88%, color-mix(in srgb, var(--color-quaternary) 12%, transparent) 0%, transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 42%),
+    rgba(14, 10, 27, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 12px 26px rgba(0, 0, 0, 0.16);
+}
+
+.user-selection__profile-card--panel:hover,
+.user-selection__profile-card--panel:focus-within {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-secondary) 28%, rgba(255, 255, 255, 0.1));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 16px 32px rgba(0, 0, 0, 0.2),
+    0 0 20px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
 .user-selection__profile-card.is-active {
-  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--color-accent) 52%, transparent));
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--color-accent) 44%, transparent));
+}
+
+.user-selection__profile-card--panel.is-active {
+  border-color: color-mix(in srgb, var(--color-accent) 34%, rgba(255, 255, 255, 0.1));
+  background:
+    radial-gradient(circle at 22% 12%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0%, transparent 30%),
+    radial-gradient(circle at 80% 88%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 42%),
+    color-mix(in srgb, var(--color-surface-1) 84%, rgba(18, 12, 32, 0.94));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 18px 36px rgba(0, 0, 0, 0.22),
+    0 0 24px color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
 .user-selection__profile-caption {
@@ -418,15 +584,22 @@ body {
 
 .user-selection__meta-pill {
   font-family: var(--type-eyebrow-family, monospace);
-  font-size: 0.5rem;
+  font-size: 0.48rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 2px 8px;
+  padding: 0.26rem 0.55rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.06);
   color: var(--color-text-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-selection__meta-pill--persona {
+  color: color-mix(in srgb, var(--color-secondary) 72%, white 28%);
+  border-color: color-mix(in srgb, var(--color-secondary) 24%, rgba(255, 255, 255, 0.08));
 }
 
 .user-selection__meta-pill--active {
@@ -436,13 +609,19 @@ body {
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 28%, transparent);
 }
 
+.user-selection__meta-pill--pin {
+  color: color-mix(in srgb, #ffd7ef 74%, white 26%);
+  border-color: color-mix(in srgb, var(--color-accent) 24%, rgba(255, 255, 255, 0.08));
+}
+
 .user-selection__profile-note {
-  font-size: 0.62rem;
-  color: var(--color-text-tertiary);
+  font-size: 0.64rem;
+  color: color-mix(in srgb, var(--color-text-secondary) 82%, white 18%);
   text-align: center;
   margin: 0;
-  max-width: 110px;
-  line-height: 1.4;
+  max-width: 15rem;
+  line-height: 1.55;
+  letter-spacing: 0.03em;
   font-family: var(--type-eyebrow-family, monospace);
 }
 
@@ -452,16 +631,17 @@ body {
   gap: 0.5rem;
   justify-content: center;
   flex-wrap: wrap;
-  padding-top: 0.25rem;
+  padding-top: 0.4rem;
 }
 
 .user-selection__pin-button {
-  padding: 0.38rem 1.1rem;
+  padding: 0.48rem 1.2rem;
   border-radius: 999px;
-  border: 1.5px solid color-mix(in srgb, var(--color-accent) 32%, rgba(255, 255, 255, 0.1));
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 36%, rgba(255, 255, 255, 0.1));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%),
-    color-mix(in srgb, var(--color-accent) 8%, rgba(10, 5, 20, 0.6));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 100%),
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 34%),
+    color-mix(in srgb, var(--color-accent) 10%, rgba(10, 5, 20, 0.68));
   color: color-mix(in srgb, var(--color-accent) 85%, white 15%);
   font-family: var(--type-eyebrow-family, monospace);
   font-size: 0.62rem;
@@ -471,8 +651,9 @@ body {
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 10px color-mix(in srgb, var(--color-accent) 12%, transparent);
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 0 3px color-mix(in srgb, var(--color-secondary) 8%, transparent),
+    0 0 12px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
 .user-selection__pin-button:hover:not(:disabled) {
@@ -4920,11 +5101,13 @@ body.grabbing * {
 .gel-avatar-star-left {
   top: 18%;
   left: 9%;
+  animation: y2k-twinkle 3.1s ease-in-out infinite;
 }
 
 .gel-avatar-star-right {
   top: 22%;
   right: 10%;
+  animation: y2k-twinkle 2.6s ease-in-out infinite;
   animation-delay: 0.45s;
 }
 

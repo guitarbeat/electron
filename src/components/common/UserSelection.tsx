@@ -7,6 +7,7 @@ import { USER_OPTIONS } from '@/utils';
 import PinDialog from './PinDialog';
 import ThemeToggle from '../ui/ThemeToggle';
 import GelBubbleAvatar from './GelBubbleAvatar';
+import { QuickActionsIcon } from './icons';
 
 type UserSelectionVariant = 'inline' | 'panel';
 
@@ -22,8 +23,13 @@ interface UserSelectionProps {
 }
 
 const PROFILE_NOTES: Record<User, string> = {
-  Aaron: '',
-  Electra: '',
+  Aaron: 'Neon thrillers, fast picks, and impulsive rewatches.',
+  Electra: 'Soft-focus chaos, sharp instincts, and midnight romance.',
+};
+
+const PROFILE_TAGS: Record<User, string> = {
+  Aaron: 'Action Lead',
+  Electra: 'Vibe Pilot',
 };
 
 const UserSelection: React.FC<UserSelectionProps> = ({
@@ -55,6 +61,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
   const showBubbleName = variant !== 'inline';
+  const panelStatusTitle = selectedNamedUser ? 'Seat active' : 'Guest mode';
+  const panelStatusCopy = selectedNamedUser
+    ? `${selectedNamedUser} is driving the board right now. Swap seats, manage the PIN, or log out below.`
+    : 'Pick a profile to personalize the watchlist, unlock saved preferences, and start the shared games.';
 
   useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {
@@ -166,6 +176,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           <>
             <h3 className="user-selection__title">{title}</h3>
             <p className="user-selection__subtitle">{subtitle}</p>
+            <div className="user-selection__panel-status" role="status" aria-live="polite">
+              <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
+              <p className="user-selection__panel-status-copy">{panelStatusCopy}</p>
+            </div>
           </>
         )}
 
@@ -191,7 +205,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
               return (
                 <div
                   key={profile}
-                  className={`user-selection__profile-card${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
+                  className={`user-selection__profile-card${variant === 'panel' ? ' user-selection__profile-card--panel' : ''}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
                 >
                   <GelBubbleAvatar
                     user={profile}
@@ -210,19 +224,23 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
                     disabled={isDisabled}
                     animationOffset={profile === 'Electra'}
+                    aria-pressed={isActive}
                   />
 
                   {variant === 'panel' ? (
                     <div className="user-selection__profile-caption">
                       <div className="user-selection__profile-meta">
+                        <span className="user-selection__meta-pill user-selection__meta-pill--persona">
+                          {PROFILE_TAGS[profile]}
+                        </span>
                         {isActive ? (
                           <span className="user-selection__meta-pill user-selection__meta-pill--active">
                             Active
                           </span>
                         ) : null}
                         {hasPin ? (
-                          <span className="user-selection__meta-pill" aria-hidden="true">
-                            PIN
+                          <span className="user-selection__meta-pill user-selection__meta-pill--pin" aria-hidden="true">
+                            PIN Locked
                           </span>
                         ) : null}
                       </div>
@@ -240,7 +258,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             {variant === 'inline' && onActionsClick && (
               <div className="user-selection__profile-card user-selection__profile-card--actions">
                 <GelBubbleAvatar
-                  icon="⚡"
+                  icon={<QuickActionsIcon />}
                   label="Actions"
                   isHovered={isActionsHovered || isActionsFocused}
                   showName={showBubbleName}
