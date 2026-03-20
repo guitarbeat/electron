@@ -12,7 +12,7 @@ import CollectionGrid from '@/ui/CollectionGrid';
 import WorkspacePanels from '@/ui/WorkspacePanels';
 import PlacesMap from './PlacesMap';
 import PlaceCard from './PlaceCard';
-import PlacesTopControls from './components/PlacesTopControls';
+import PlacesTopControls from './PlacesTopControls';
 import { colors, spacing, typography, motion } from '@/design-system';
 import type { Place } from '@/types';
 
