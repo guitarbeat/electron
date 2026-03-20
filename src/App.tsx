@@ -19,6 +19,7 @@ import ThemeToggle from '@/ui/ThemeToggle';
 import ActionBubble from '@/ui/ActionBubble';
 import ActionFanMenu from '@/ui/ActionFanMenu';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
+import { QuickActionsIcon } from '@/components/common/icons';
 import { useAudio } from '@/hooks/useAudio';
 import { colors, spacing, typography } from '@/design-system';
 import { executeAction } from '@/utils';
@@ -391,11 +392,17 @@ const AppInner: React.FC = () => {
               }
             >
               <span className="profile-chip__avatar" aria-hidden="true">
-                {currentUser ? currentUser[0] : '✦'}
+                {currentUser ? currentUser[0] : <QuickActionsIcon className="profile-chip__avatar-icon" />}
               </span>
-              <span className="profile-chip__label">
-                {currentUser ?? 'Select Profile'}
+              <span className="profile-chip__content">
+                <span className="profile-chip__eyebrow">
+                  {currentUser ? 'Seat Active' : 'Choose Profile'}
+                </span>
+                <span className="profile-chip__label">
+                  {currentUser ?? 'Guest Mode'}
+                </span>
               </span>
+              <span className="profile-chip__signal" aria-hidden="true" />
             </button>
           </div>
 
