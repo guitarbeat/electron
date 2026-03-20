@@ -615,15 +615,6 @@ const AppInner: React.FC = () => {
             <Matchmaker currentUser={currentUser} />
           </div>
         </MinigameModal>
-        
-        <style>
-          {`
-            @keyframes fade-in {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-          `}
-        </style>
       </div>
     </ThemeProvider>
   );
