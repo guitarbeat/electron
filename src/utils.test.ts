@@ -78,8 +78,10 @@ test('isValidUrl', async (t) => {
 test('sanitizeInput', async (t) => {
   await t.test('returns empty string for empty inputs', () => {
     assert.equal(sanitizeInput(''), '');
-    assert.equal(sanitizeInput(null as unknown as string), '');
-    assert.equal(sanitizeInput(undefined as unknown as string), '');
+    // @ts-expect-error Testing invalid runtime input
+    assert.equal(sanitizeInput(null), '');
+    // @ts-expect-error Testing invalid runtime input
+    assert.equal(sanitizeInput(undefined), '');
   });
 
   await t.test('trims leading and trailing whitespace', () => {
@@ -93,14 +95,14 @@ test('sanitizeInput', async (t) => {
     assert.equal(sanitizeInput('abc\x1Fdef\x7Fghi'), 'abcdefghi');
   });
 
-  await t.test('handles normal characters without modification other than trimming', () => {
+  await t.test('keeps normal characters aside from trimming', () => {
     assert.equal(
       sanitizeInput('regular string with numbers 123 and symbols !@#'),
       'regular string with numbers 123 and symbols !@#'
     );
   });
 
-  await t.test('returns empty string when input is only control characters and whitespace', () => {
+  await t.test('returns empty string for control characters and whitespace only', () => {
     assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
   });
 });
