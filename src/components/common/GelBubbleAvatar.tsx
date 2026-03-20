@@ -123,7 +123,7 @@ function useRandomCatImageLocal(enabled: boolean) {
 
 interface GelBubbleAvatarProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   user?: User;
-  icon?: string;
+  icon?: React.ReactNode;
   label?: string;
   hasPin?: boolean;
   isHovered: boolean;
@@ -166,11 +166,13 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       haloColor: customHalo,
       enableImageRefresh = false,
       style: customStyle,
+      className: externalClassName,
       disabled,
       ...buttonProps
     },
     ref
   ) => {
+  const isActionBubble = size === 'action';
   const shouldFetchCatImages = Boolean(user);
   const {
     sources: catSources,
@@ -185,8 +187,22 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     : [];
 
   const sizeTokens = SIZES[size];
-  const accentColor = customAccent || (user === 'Aaron' ? 'var(--color-accent)' : user === 'Electra' ? 'var(--color-secondary)' : 'var(--color-accent)');
-  const haloColor = customHalo || (user === 'Aaron' ? 'var(--color-tertiary)' : user === 'Electra' ? 'var(--color-accent)' : 'var(--color-secondary)');
+  const accentColor =
+    customAccent ||
+    (user === 'Aaron'
+      ? 'var(--color-accent)'
+      : user === 'Electra'
+        ? 'var(--color-secondary)'
+        : 'var(--color-accent)');
+  const haloColor =
+    customHalo ||
+    (isActionBubble
+      ? 'var(--color-quaternary)'
+      : user === 'Aaron'
+        ? 'var(--color-tertiary)'
+        : user === 'Electra'
+          ? 'var(--color-accent)'
+          : 'var(--color-secondary)');
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
   const canRefreshImage = Boolean(enableImageRefresh && user && !disabled);
@@ -199,10 +215,94 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     isSelectionAnimating ? 'is-selection-animating' : '',
     isSmall ? 'gel-bubble--small' : '',
     disabled ? 'gel-bubble--disabled' : '',
+    isActionBubble ? 'gel-bubble--action' : '',
     size === 'tiny' ? 'gel-bubble--inline' : '',
+    externalClassName || '',
   ]
     .filter(Boolean)
     .join(' ');
+
+  const shellBackground = isActionBubble
+    ? `
+        radial-gradient(circle at 24% 18%, rgba(255,255,255,0.86) 0%, rgba(255,255,255,0.24) 18%, transparent 34%),
+        radial-gradient(circle at 74% 80%, color-mix(in srgb, ${accentColor} 18%, transparent) 0%, transparent 34%),
+        radial-gradient(circle at 50% 54%, rgba(255,255,255,0.08) 0%, transparent 56%),
+        conic-gradient(from 198deg at 50% 50%,
+          color-mix(in srgb, white 76%, ${haloColor} 24%) 0deg,
+          color-mix(in srgb, ${accentColor} 34%, rgba(83, 37, 59, 0.94) 66%) 98deg,
+          rgba(30, 12, 42, 0.98) 188deg,
+          color-mix(in srgb, ${haloColor} 32%, rgba(18, 30, 52, 0.96) 68%) 274deg,
+          color-mix(in srgb, white 76%, ${haloColor} 24%) 360deg
+        ),
+        linear-gradient(145deg,
+          rgba(255, 241, 233, 0.88) 0%,
+          rgba(236, 196, 220, 0.5) 22%,
+          rgba(82, 36, 58, 0.96) 58%,
+          rgba(20, 10, 31, 0.98) 100%
+        )
+      `
+    : `
+        radial-gradient(circle at 28% 22%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.15) 27%, transparent 46%),
+        radial-gradient(circle at 74% 78%, rgba(255,255,255,0.2) 0%, transparent 34%),
+        conic-gradient(from 205deg at 50% 50%,
+          color-mix(in srgb, ${accentColor} 54%, white 46%) 0deg,
+          color-mix(in srgb, ${haloColor} 42%, var(--color-surface-1) 58%) 115deg,
+          color-mix(in srgb, var(--color-secondary) 52%, white 48%) 230deg,
+          color-mix(in srgb, ${accentColor} 54%, white 46%) 360deg
+        ),
+        linear-gradient(135deg,
+          color-mix(in srgb, ${accentColor} 48%, var(--color-surface-2) 52%) 0%,
+          color-mix(in srgb, var(--color-tertiary) 40%, var(--color-surface-3) 60%) 50%,
+          color-mix(in srgb, ${haloColor} 52%, var(--color-surface-2) 48%) 100%
+        )
+      `;
+
+  const shellBoxShadow = isActionBubble
+    ? `
+        inset 0 -18px 38px rgba(18, 8, 29, 0.82),
+        inset 0 14px 22px rgba(255, 255, 255, 0.32),
+        inset 0 0 18px color-mix(in srgb, ${accentColor} 22%, transparent),
+        0 0 0 2px color-mix(in srgb, ${haloColor} 16%, transparent),
+        0 18px 34px rgba(5, 0, 18, 0.44),
+        0 0 ${isHovered ? '34px' : '24px'} color-mix(in srgb, ${accentColor} ${isHovered ? '40%' : '24%'}, transparent),
+        0 0 ${isHovered ? '56px' : '38px'} color-mix(in srgb, ${haloColor} ${isHovered ? '34%' : '18%'}, transparent)
+      `
+    : `
+        inset 0 -15px 40px color-mix(in srgb, var(--color-surface-0) 65%, ${haloColor} 35%),
+        inset 0 15px 30px rgba(255, 255, 255, 0.2),
+        inset 0 0 20px color-mix(in srgb, ${accentColor} 36%, transparent),
+        0 0 ${isHovered ? '50px' : '35px'} color-mix(in srgb, ${accentColor} ${accentGlowOpacity}, transparent),
+        0 0 ${isHovered ? '80px' : '60px'} color-mix(in srgb, ${haloColor} ${haloGlowOpacity}, transparent)
+      `;
+
+  const shellBorder = isActionBubble
+    ? `1.5px solid color-mix(in srgb, rgba(255, 255, 255, 0.84) 50%, ${haloColor} 50%)`
+    : `2px solid color-mix(in srgb, ${haloColor} 45%, var(--color-border-subtle) 55%)`;
+
+  const shellTransform = isActionBubble
+    ? isHovered
+      ? 'translateY(-2px) scale(1.08) rotate(-2deg)'
+      : 'translateY(0) scale(1)'
+    : isHovered
+      ? 'scale(1.07) rotate(-1.2deg)'
+      : 'scale(1)';
+
+  const imageWrapBackground = icon
+    ? isActionBubble
+      ? `
+          radial-gradient(circle at 34% 28%, rgba(255,255,255,0.24) 0%, transparent 34%),
+          radial-gradient(circle at 70% 72%, color-mix(in srgb, ${accentColor} 18%, transparent) 0%, transparent 40%),
+          linear-gradient(180deg, rgba(255, 244, 252, 0.22) 0%, rgba(45, 22, 58, 0.9) 100%),
+          radial-gradient(circle at 50% 50%, color-mix(in srgb, ${haloColor} 18%, rgba(11, 13, 30, 0.96)) 0%, rgba(11, 13, 30, 0.98) 72%)
+        `
+      : 'transparent'
+    : 'rgba(255, 255, 255, 0.05)';
+  const bubbleFilter = [
+    isSmall ? 'grayscale(0.4)' : '',
+    isActionBubble ? 'drop-shadow(0 10px 18px rgba(12, 4, 28, 0.28))' : '',
+  ]
+    .filter(Boolean)
+    .join(' ') || 'none';
 
   const onImageClick = (e: React.MouseEvent) => {
     if (!canRefreshImage) {
@@ -246,7 +346,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         opacity: opacityValue,
         transition:
           'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        filter: isSmall ? 'grayscale(0.4)' : 'none',
+        filter: bubbleFilter,
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         ...customStyle,
@@ -259,33 +359,13 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           width: 'var(--gel-bubble-size)',
           height: 'var(--gel-bubble-size)',
           borderRadius: '50%',
-          background: `
-            radial-gradient(circle at 28% 22%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.15) 27%, transparent 46%),
-            radial-gradient(circle at 74% 78%, rgba(255,255,255,0.2) 0%, transparent 34%),
-            conic-gradient(from 205deg at 50% 50%,
-              color-mix(in srgb, ${accentColor} 54%, white 46%) 0deg,
-              color-mix(in srgb, ${haloColor} 42%, var(--color-surface-1) 58%) 115deg,
-              color-mix(in srgb, var(--color-secondary) 52%, white 48%) 230deg,
-              color-mix(in srgb, ${accentColor} 54%, white 46%) 360deg
-            ),
-            linear-gradient(135deg,
-              color-mix(in srgb, ${accentColor} 48%, var(--color-surface-2) 52%) 0%,
-              color-mix(in srgb, var(--color-tertiary) 40%, var(--color-surface-3) 60%) 50%,
-              color-mix(in srgb, ${haloColor} 52%, var(--color-surface-2) 48%) 100%
-            )
-          `,
-          boxShadow: `
-            inset 0 -15px 40px color-mix(in srgb, var(--color-surface-0) 65%, ${haloColor} 35%),
-            inset 0 15px 30px rgba(255, 255, 255, 0.2),
-            inset 0 0 20px color-mix(in srgb, ${accentColor} 36%, transparent),
-            0 0 ${isHovered ? '50px' : '35px'} color-mix(in srgb, ${accentColor} ${accentGlowOpacity}, transparent),
-            0 0 ${isHovered ? '80px' : '60px'} color-mix(in srgb, ${haloColor} ${haloGlowOpacity}, transparent)
-          `,
-          border: `2px solid color-mix(in srgb, ${haloColor} 45%, var(--color-border-subtle) 55%)`,
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-          transition: 'all 0.3s ease-out',
-          transform: isHovered ? 'scale(1.07) rotate(-1.2deg)' : 'scale(1)',
+          background: shellBackground,
+          boxShadow: shellBoxShadow,
+          border: shellBorder,
+          backdropFilter: isActionBubble ? 'blur(8px)' : 'blur(4px)',
+          WebkitBackdropFilter: isActionBubble ? 'blur(8px)' : 'blur(4px)',
+          transition: 'transform 0.28s ease-out, box-shadow 0.28s ease-out, border-color 0.28s ease-out',
+          transform: shellTransform,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -296,6 +376,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         <div className="gel-avatar-sweep" aria-hidden />
         <div className="gel-avatar-star gel-avatar-star-left" aria-hidden />
         <div className="gel-avatar-star gel-avatar-star-right" aria-hidden />
+        {isActionBubble && <div className="gel-avatar-action-orbit" aria-hidden />}
+        {isActionBubble && <div className="gel-avatar-action-lens" aria-hidden />}
 
         {/* Outer Ring Pulse on Hover */}
         {isHovered && (
@@ -359,28 +441,42 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           onClick={canRefreshImage ? onImageClick : undefined}
           title={canRefreshImage ? 'Click for new cat' : undefined}
           style={{
-            width: '72%',
-            height: '72%',
+            width: isActionBubble ? '68%' : '72%',
+            height: isActionBubble ? '68%' : '72%',
             borderRadius: '50%',
             overflow: 'hidden',
-            border: `2px solid color-mix(in srgb, ${accentColor} 52%, white 48%)`,
-            boxShadow: `
-              0 0 0 1px color-mix(in srgb, white 44%, transparent),
-              0 0 15px color-mix(in srgb, ${accentColor} 44%, transparent),
-              inset 0 0 22px rgba(0, 0, 0, 0.24)
-            `,
+            border: isActionBubble
+              ? `1.5px solid color-mix(in srgb, ${accentColor} 44%, white 56%)`
+              : `2px solid color-mix(in srgb, ${accentColor} 52%, white 48%)`,
+            boxShadow: isActionBubble
+              ? `
+                  0 0 0 1px color-mix(in srgb, white 55%, transparent),
+                  0 0 18px color-mix(in srgb, ${accentColor} 38%, transparent),
+                  inset 0 0 28px rgba(0, 0, 0, 0.34),
+                  inset 0 10px 18px rgba(255, 255, 255, 0.08)
+                `
+              : `
+                  0 0 0 1px color-mix(in srgb, white 44%, transparent),
+                  0 0 15px color-mix(in srgb, ${accentColor} 44%, transparent),
+                  inset 0 0 22px rgba(0, 0, 0, 0.24)
+                `,
             position: 'relative',
             cursor: disabled ? 'wait' : 'inherit',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: icon ? 'transparent' : 'rgba(255, 255, 255, 0.05)',
+            background: imageWrapBackground,
           }}
-          className="gel-avatar-image-wrap"
+          className={`gel-avatar-image-wrap${isActionBubble ? ' gel-avatar-image-wrap--action' : ''}`}
         >
           {icon ? (
-            <span style={{ fontSize: size === 'action' ? '1.5rem' : '2rem' }}>{icon}</span>
+            <span
+              className={`gel-avatar-icon${isActionBubble ? ' gel-avatar-icon--action' : ''}`}
+              style={{ fontSize: size === 'action' ? '1.5rem' : '2rem' }}
+            >
+              {icon}
+            </span>
           ) : (
             <ImageWithFallback
               sources={sources}
