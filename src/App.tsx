@@ -417,6 +417,7 @@ const AppInner: React.FC = () => {
               anchorX={actionBubblePosition.x}
               anchorY={actionBubblePosition.y}
               anchorSize={ACTION_BUBLE_SIZE}
+              menuRef={actionBubbleMenuRef}
               onItemSelect={handleBubbleDeckItemSelect}
               onClose={() => setShowActionBubbleMenu(false)}
             />
