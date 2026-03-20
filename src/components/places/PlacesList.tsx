@@ -2,15 +2,17 @@ import React, { useState, useCallback, useRef, memo } from 'react';
 import { useUser, useToast } from '@/context';
 import { usePlaces } from '@/hooks/usePlaces';
 import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
+import CollectionEmptyState from '@/ui/CollectionEmptyState';
+import CollectionGrid from '@/ui/CollectionGrid';
+import WorkspacePanels from '@/ui/WorkspacePanels';
 import PlacesMap from './PlacesMap';
-import PlaceCard from './PlaceCard';
-import { PlusIcon } from '@/common/icons';
+import PlaceCard from './components/PlaceCard';
+import PlacesTopControls from './components/PlacesTopControls';
 import { colors, spacing, typography, motion } from '@/design-system';
 import type { Place } from '@/types';
 
@@ -19,6 +21,7 @@ type PlaceFilter = 'want' | 'visited';
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
   const { showToast } = useToast();
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const {
     places,
     isLoading,
@@ -99,11 +102,9 @@ const PlacesList: React.FC = () => {
   }, [placeToDelete, removePlace, restorePlace, showToast]);
 
   const renderSkeleton = () => (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.lg }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: spacing.md }}>
-        {[1, 2, 3].map((i) => <MovieCardSkeleton key={i} />)}
-      </div>
-    </div>
+    <CollectionGrid minColumnWidth="280px" gap={spacing.md}>
+      {[1, 2, 3].map((i) => <MovieCardSkeleton key={i} />)}
+    </CollectionGrid>
   );
 
   return (
@@ -128,76 +129,44 @@ const PlacesList: React.FC = () => {
         </p>
       </header>
 
-      <div 
+      <WorkspacePanels
+        isMobile={isMobile}
         className="places-workspace"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: spacing.xl,
-          alignItems: 'start'
-        }}
-      >
-        <Card
-          variant="elevated"
-          style={{
-            padding: spacing.lg,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.md,
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: `1px solid ${colors.borderSubtle}`,
-          }}
-        >
-          <h2 style={{ ...typography.presets.titleSm, margin: 0, fontSize: '1.25rem' }}>Add new spot</h2>
-          <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-            <Input
-              ref={nameInputRef}
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              placeholder="Place name or address"
-              aria-label="Place name"
-              fullWidth
-            />
-            <Input
-              value={notesInput}
-              onChange={(e) => setNotesInput(e.target.value)}
-              placeholder="Notes (optional)"
-              aria-label="Notes"
-              fullWidth
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={!nameInput.trim() || isSubmitting}
-              isLoading={isSubmitting}
-              style={{ alignSelf: 'flex-start', minWidth: '140px' }}
-            >
-              <PlusIcon style={{ width: 16, height: 16 }} />
-              Add spot
-            </Button>
-          </form>
-        </Card>
-
-        <Card
-          variant="default"
-          style={{
-            padding: spacing.md,
-            height: '340px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.sm,
-            border: `1px solid ${colors.borderSubtle}`,
-            overflow: 'hidden'
-          }}
-        >
-          <PlacesMap places={places} />
-          {places.length > 0 && !hasMappedPlaces && (
-            <p style={{ ...typography.presets.caption, color: colors.textTertiary, textAlign: 'center', margin: 0 }}>
-              Use search results to pin spots on the map.
-            </p>
-          )}
-        </Card>
-      </div>
+        mobileClassName="places-workspace"
+        desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
+        first={
+          <PlacesTopControls
+            nameInput={nameInput}
+            notesInput={notesInput}
+            nameInputRef={nameInputRef}
+            isSubmitting={isSubmitting}
+            onNameChange={setNameInput}
+            onNotesChange={setNotesInput}
+            onSubmit={handleAdd}
+          />
+        }
+        second={
+          <Card
+            variant="default"
+            style={{
+              padding: spacing.md,
+              height: '340px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.sm,
+              border: `1px solid ${colors.borderSubtle}`,
+              overflow: 'hidden',
+            }}
+          >
+            <PlacesMap places={places} />
+            {places.length > 0 && !hasMappedPlaces && (
+              <p style={{ ...typography.presets.caption, color: colors.textTertiary, textAlign: 'center', margin: 0 }}>
+                Use search results to pin spots on the map.
+              </p>
+            )}
+          </Card>
+        }
+      />
 
       <div style={{ marginTop: spacing.md }}>
         <SubNav
@@ -213,25 +182,32 @@ const PlacesList: React.FC = () => {
         {isLoading && places.length === 0 ? (
           renderSkeleton()
         ) : (
-          <div className="places-grid">
+          <CollectionGrid
+            className="places-grid"
+            minColumnWidth="300px"
+            style={{ 
+              gap: spacing.lg,
+              marginTop: spacing.md
+            }}
+          >
             {filtered.length === 0 ? (
-              <div className="places-grid__empty">
-                {filter === 'want' ? 'No date spots yet — add one above!' : 'No visited spots yet.'}
-              </div>
+              <CollectionEmptyState style={{ color: colors.textTertiary, ...typography.presets.bodySm }}>
+                {filter === 'want' ? 'No date spots yet. Add one above!' : 'No visited spots yet.'}
+              </CollectionEmptyState>
             ) : (
               filtered.map((place, index) => (
                 <PlaceCard
                   key={place.id}
                   place={place}
                   isSubmitting={isSubmitting}
-                  onMarkVisited={markVisited}
-                  onMarkUnvisited={markUnvisited}
-                  onDelete={(p) => setPlaceToDelete(p)}
-                  animationIndex={index}
+                  animationDelay={`${index * 0.05}s`}
+                  onMarkVisited={() => markVisited(place.id)}
+                  onMarkUnvisited={() => markUnvisited(place.id)}
+                  onDelete={() => setPlaceToDelete(place)}
                 />
               ))
             )}
-          </div>
+          </CollectionGrid>
         )}
       </div>
 
@@ -251,4 +227,3 @@ const PlacesList: React.FC = () => {
 };
 
 export default memo(PlacesList);
-
