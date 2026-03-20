@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '../../context';
-import type { MainTab, User } from '../../types';
+import type { User } from '../../types';
 import { usePins } from '../../hooks/usePins';
 import { USER_OPTIONS } from '@/utils';
 import PinDialog from './PinDialog';
-import ThemeToggle from '../ui/ThemeToggle';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
 
@@ -14,8 +13,6 @@ type UserSelectionVariant = 'inline' | 'panel';
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
   onActionsClick?: () => void;
-  activeTab?: MainTab;
-  onTabChange?: (tab: MainTab) => void;
   variant?: UserSelectionVariant;
   title?: string;
   subtitle?: string;
@@ -35,8 +32,6 @@ const PROFILE_TAGS: Record<User, string> = {
 const UserSelection: React.FC<UserSelectionProps> = ({
   onUserSelected,
   onActionsClick,
-  activeTab = 'queue',
-  onTabChange,
   variant = 'inline',
   title = "Who's watching?",
   subtitle = 'Choose a profile to personalize your feed.',
@@ -164,13 +159,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     <div
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
-      {/* Theme Toggle Section (optional label handled by parent sheet title) */}
-      {onTabChange && variant === 'panel' && (
-        <div className="user-selection__theme-toggle">
-          <ThemeToggle activeTab={activeTab} onChange={onTabChange} isMobile={isMobile} />
-        </div>
-      )}
-
       <div className="user-selection__profiles">
         {variant === 'panel' && (
           <>
