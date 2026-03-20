@@ -317,11 +317,13 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       await performMutation((latestMovies) =>
         latestMovies.map((movie) => {
           if (movie.id === movieId) {
-            const isWatched = movie.watchedBy.includes(currentUser!);
-            const newWatchedBy = isWatched
-              ? movie.watchedBy.filter((user) => user !== currentUser)
-              : [...movie.watchedBy, currentUser!];
-            return { ...movie, watchedBy: newWatchedBy };
+            const userIndex = movie.watchedBy.indexOf(currentUser!);
+            if (userIndex !== -1) {
+              const nextWatchedBy = [...movie.watchedBy];
+              nextWatchedBy.splice(userIndex, 1);
+              return { ...movie, watchedBy: nextWatchedBy };
+            }
+            return { ...movie, watchedBy: [...movie.watchedBy, currentUser!] };
           }
           return movie;
         })
