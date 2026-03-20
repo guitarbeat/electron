@@ -85,6 +85,14 @@ test("parsePinsContent", async (t) => {
     assert.deepEqual(parsePinsContent(jsonStr), expected);
   });
 
+  await t.test("normalizes valid JSON arrays into empty user pin slots", () => {
+    const jsonStr = JSON.stringify(["Aaron", "hash1"]);
+    assert.deepEqual(parsePinsContent(jsonStr), {
+      Aaron: undefined,
+      Electra: undefined,
+    });
+  });
+
   await t.test("handles invalid JSON gracefully", () => {
     // Suppress console.error during test
     const originalConsoleError = console.error;
