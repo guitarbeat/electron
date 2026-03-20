@@ -348,12 +348,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     async (movie: Movie, searchTerm?: string) => {
       try {
         const metadata = await fetchMovieMetadata(searchTerm || movie.title);
-        // Only update if we actually found something useful
-        if (metadata.posterUrl || metadata.plot || metadata.year) {
+        const safeMetadata = extractSafeMetadata(metadata);
+        if (Object.keys(safeMetadata).length > 0) {
           await performMutation((latestMovies) =>
-            latestMovies.map((m) =>
-              m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
-            )
+            latestMovies.map((m) => (m.id === movie.id ? { ...m, ...safeMetadata } : m))
           );
           return true;
         }
@@ -376,10 +374,12 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         }
 
         const metadata = await fetchMovieMetadata(searchTerm || movie.title);
+        const safeMetadata = extractSafeMetadata(metadata);
+        if (Object.keys(safeMetadata).length === 0) {
+          return false;
+        }
         await performMutation((latestMovies) =>
-          latestMovies.map((m) =>
-            m.id === movie.id ? { ...m, ...extractSafeMetadata(metadata) } : m
-          )
+          latestMovies.map((m) => (m.id === movie.id ? { ...m, ...safeMetadata } : m))
         );
         return true;
       } catch (err) {
@@ -399,21 +399,13 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       const latestMovies = await getMovies();
       // Fetch metadata for all movies in parallel (with some concurrency limit)
 
-      // Deduplicate concurrent requests
-      const titlePromises = new Map<string, Promise<MetadataResult>>();
-      const getMetadata = (t: string) => {
-        if (!titlePromises.has(t)) titlePromises.set(t, fetchMovieMetadata(t));
-        return titlePromises.get(t)!;
-      };
-
       const updatedMovies = await concurrentMap(latestMovies, 20, async (movie) => {
         try {
-          // No artificial delay needed with concurrency limit
-          const metadata = await getMetadata(movie.title);
-          // Merge mostly to keep existing IDs/User data, but overwrite metadata
-          // Only overwrite if we got data back
-          if (metadata.posterUrl || metadata.plot || metadata.year) {
-            return { ...movie, ...extractSafeMetadata(metadata) };
+          // Each record is refreshed independently so duplicate titles do not share lookup results.
+          const metadata = await fetchMovieMetadata(movie.title);
+          const safeMetadata = extractSafeMetadata(metadata);
+          if (Object.keys(safeMetadata).length > 0) {
+            return { ...movie, ...safeMetadata };
           }
           return movie;
         } catch (e) {
@@ -459,9 +451,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           try {
             // No random delay needed with concurrency limit
             const metadata = await fetchMovieMetadata(movie.title);
-            if (metadata.posterUrl || metadata.plot || metadata.year) {
+            const safeMetadata = extractSafeMetadata(metadata);
+            if (Object.keys(safeMetadata).length > 0) {
               syncOccurred = true;
-              return { ...movie, ...extractSafeMetadata(metadata) };
+              return { ...movie, ...safeMetadata };
             }
           } catch (e) {
             console.warn(`Auto-sync failed for ${movie.title}:`, e);
