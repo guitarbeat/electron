@@ -207,6 +207,7 @@ interface ReadGistJsonFileArgs<T> {
   onMissingFileWhenWritable: () => T;
   parse: (content: string) => T;
   fetchOptions?: FetchGistOptions;
+  skipLocalOverride?: boolean;
 }
 
 /**
@@ -245,14 +246,17 @@ export const readGistJsonFile = async <T>({
   onMissingFileWhenWritable,
   parse,
   fetchOptions,
+  skipLocalOverride = false,
 }: ReadGistJsonFileArgs<T>): Promise<T> => {
   if (!canReadGist) {
     return fallback();
   }
 
-  const localOverride = readLocalOverride(scope, () => fallback());
-  if (localOverride.enabled) {
-    return localOverride.value ?? fallback();
+  if (!skipLocalOverride) {
+    const localOverride = readLocalOverride(scope, () => fallback());
+    if (localOverride.enabled) {
+      return localOverride.value ?? fallback();
+    }
   }
 
   const response = await fetchGist({ cache: 'no-cache', ...(fetchOptions ?? {}) });
