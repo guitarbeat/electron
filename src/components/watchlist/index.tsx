@@ -1,17 +1,283 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { useUser } from '@/context';
 import { useWatchlist } from './useWatchlist';
-import { WatchlistProps } from '@/types';
+import { ContentTab, MovieSuggestion, SortMode, WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
+import Card from '@/ui/Card';
+import Button from '@/ui/Button';
+import { Input } from '@/ui/FormFields';
+import SubNav from '@/ui/SubNav';
+import { CheckIcon, CrossIcon, PlusIcon, Spinner } from '@/common/icons';
 import { colors, spacing, typography, motion } from '@/design-system';
-
-// Components
-import WatchlistTopControls from './components/WatchlistTopControls';
 import MovieCard from './components/MovieCard';
-import SuggestionCard from './components/SuggestionCard';
+
+const MOVIE_TABS: { id: ContentTab; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'queue', label: 'Queue' },
+  { id: 'watched', label: 'Watched' },
+  { id: 'suggestions', label: 'Suggestions' },
+];
+
+const SORT_OPTIONS: { id: SortMode; label: string }[] = [
+  { id: 'recent', label: 'Recent' },
+  { id: 'title', label: 'A-Z' },
+  { id: 'year', label: 'Year' },
+];
+
+interface WatchlistTopControlsProps {
+  contentTab: ContentTab;
+  setContentTab: (tab: ContentTab) => void;
+  sortMode: SortMode;
+  setSortMode: (mode: SortMode) => void;
+  tabCounts: Record<ContentTab, number>;
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+  onSubmit: () => Promise<void> | void;
+  onPickRandom: () => void;
+  canSurprise: boolean;
+  isAdding: boolean;
+  isSuggesting: boolean;
+  suggestionError: string | null;
+}
+
+const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
+  contentTab,
+  setContentTab,
+  sortMode,
+  setSortMode,
+  tabCounts,
+  searchQuery,
+  setSearchQuery,
+  onSubmit,
+  onPickRandom,
+  canSurprise,
+  isAdding,
+  isSuggesting,
+  suggestionError,
+}) => {
+  return (
+    <div
+      className="watchlist-top-controls"
+      style={{
+        marginBottom: spacing.xl,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.lg,
+        animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
+      }}
+    >
+      <SubNav
+        tabs={MOVIE_TABS.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          count: tabCounts[tab.id] ?? 0,
+        }))}
+        activeTabId={contentTab}
+        onTabChange={(id) => setContentTab(id as ContentTab)}
+        chips={SORT_OPTIONS}
+        activeChipId={sortMode}
+        onChipChange={(id) => setSortMode(id as SortMode)}
+        variant="underlined"
+      />
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spacing.sm,
+          width: '100%',
+        }}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onSubmit();
+          }}
+          style={{
+            flex: 1,
+            display: 'flex',
+            gap: spacing.xs,
+            alignItems: 'stretch',
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <Input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search or add a movie..."
+              aria-label="Search or add a movie"
+              fullWidth
+            />
+          </div>
+          {searchQuery.trim() && (
+            <Button
+              type="submit"
+              variant="secondary"
+              size="md"
+              disabled={isAdding || isSuggesting}
+              isLoading={isAdding || isSuggesting}
+              title="Add or suggest movie"
+              aria-label="Add or suggest movie"
+              style={{ minWidth: '44px' }}
+            >
+              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+            </Button>
+          )}
+        </form>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onPickRandom}
+          disabled={isAdding || isSuggesting || !canSurprise}
+          title="Surprise me"
+          aria-label="Pick a random movie"
+          style={{
+            fontSize: '1.25rem',
+            padding: spacing.xs,
+            borderRadius: '50%',
+            aspectRatio: '1/1',
+            minWidth: '44px',
+          }}
+        >
+          🎲
+        </Button>
+      </div>
+
+      {suggestionError && (
+        <div
+          role="alert"
+          style={{
+            marginTop: -spacing.xs,
+            color: colors.error,
+            fontSize: typography.fontSize.xs,
+            textAlign: 'center',
+            background: `${colors.error}10`,
+            padding: `${spacing.xs} ${spacing.sm}`,
+            borderRadius: '4px',
+            border: `1px solid ${colors.error}30`,
+          }}
+        >
+          {suggestionError}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface SuggestionCardProps {
+  suggestion: MovieSuggestion;
+  onAccept: () => void;
+  onReject: () => void;
+  isProcessing?: boolean;
+  animationDelay?: string;
+}
+
+const SuggestionCard: React.FC<SuggestionCardProps> = ({
+  suggestion,
+  onAccept,
+  onReject,
+  isProcessing = false,
+  animationDelay = '0s',
+}) => {
+  return (
+    <Card
+      variant="default"
+      style={{
+        padding: spacing.md,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.sm,
+        animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut} ${animationDelay} both`,
+        position: 'relative',
+        overflow: 'hidden',
+        border: `1px dashed ${colors.border}`,
+        background: 'rgba(255, 255, 255, 0.02)',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+        <div style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
+          Suggestion from {suggestion.suggestedBy}
+        </div>
+        <h3
+          style={{
+            margin: 0,
+            ...typography.presets.bodySm,
+            fontWeight: typography.fontWeight.semibold,
+            color: colors.textPrimary,
+          }}
+        >
+          {suggestion.title}
+        </h3>
+        {suggestion.reason && (
+          <p
+            style={{
+              margin: 0,
+              ...typography.presets.caption,
+              color: colors.textSecondary,
+              fontStyle: 'italic',
+              lineHeight: 1.4,
+              marginTop: spacing.xs,
+            }}
+          >
+            "{suggestion.reason}"
+          </p>
+        )}
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          gap: spacing.xs,
+          marginTop: 'auto',
+          paddingTop: spacing.xs,
+        }}
+      >
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onAccept}
+          isLoading={isProcessing}
+          disabled={isProcessing}
+          fullWidth
+          style={{ gap: spacing.xs }}
+        >
+          <CheckIcon style={{ width: 14, height: 14 }} />
+          Accept
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onReject}
+          disabled={isProcessing}
+          fullWidth
+          style={{ gap: spacing.xs, color: colors.error }}
+        >
+          <CrossIcon style={{ width: 14, height: 14 }} />
+          Reject
+        </Button>
+      </div>
+
+      {isProcessing && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(1px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1,
+          }}
+        />
+      )}
+    </Card>
+  );
+};
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
