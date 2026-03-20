@@ -168,14 +168,24 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     [refreshMemories]
   );
 
-  const unwatchedMovies = useMemo(
-    () => (movies ? movies.filter((movie) => movie.watchedBy.length < 2) : []),
-    [movies]
-  );
-  const watchedMovies = useMemo(
-    () => (movies ? movies.filter((movie) => movie.watchedBy.length === 2) : []),
-    [movies]
-  );
+  const [unwatchedMovies, watchedMovies] = useMemo(() => {
+    if (!movies) {
+      return [[], []] as [Movie[], Movie[]];
+    }
+
+    const unwatched: Movie[] = [];
+    const watched: Movie[] = [];
+
+    movies.forEach((movie) => {
+      if (movie.watchedBy.length < 2) {
+        unwatched.push(movie);
+      } else {
+        watched.push(movie);
+      }
+    });
+
+    return [unwatched, watched];
+  }, [movies]);
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
@@ -212,7 +222,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     return sortedMovies.filter((movie) => {
       const inTab =
         contentTab === 'all' ||
-        (contentTab === 'to-watch' && movie.watchedBy.length < 2) ||
+        (contentTab === 'queue' && movie.watchedBy.length < 2) ||
         (contentTab === 'watched' && movie.watchedBy.length === 2);
       if (!inTab) return false;
       if (showMemoriesOnly && !movieMemorySummaries.has(movie.id)) return false;
@@ -238,15 +248,27 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     });
   }, [pendingSuggestions, contentTab, normalizedSearch, showMemoriesOnly]);
 
-  const tabCounts = useMemo(
-    () => ({
+  const tabCounts = useMemo(() => {
+    const counts = sortedMovies.reduce(
+      (acc, movie) => {
+        if (movie.watchedBy.length < 2) {
+          acc.queue += 1;
+        } else if (movie.watchedBy.length === 2) {
+          acc.watched += 1;
+        }
+
+        return acc;
+      },
+      { queue: 0, watched: 0 }
+    );
+
+    return {
       all: sortedMovies.length,
-      'to-watch': sortedMovies.filter((movie) => movie.watchedBy.length < 2).length,
-      watched: sortedMovies.filter((movie) => movie.watchedBy.length === 2).length,
+      queue: counts.queue,
+      watched: counts.watched,
       suggestions: pendingSuggestions.length,
-    }),
-    [sortedMovies, pendingSuggestions]
-  );
+    };
+  }, [sortedMovies, pendingSuggestions]);
 
   return {
     // State returns

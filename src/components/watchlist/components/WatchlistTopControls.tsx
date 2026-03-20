@@ -8,7 +8,7 @@ import { spacing, colors, typography, motion } from '@/design-system';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'to-watch', label: 'Queue' },
+  { id: 'queue', label: 'Queue' },
   { id: 'watched', label: 'Watched' },
   { id: 'suggestions', label: 'Suggestions' },
 ];
@@ -161,5 +161,4 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
 };
 
 export default WatchlistTopControls;
-
 

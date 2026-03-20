@@ -108,7 +108,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     return intersection.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
   }, [game, movieMap]);
 
-  const cardRef = useRef<SwipeCardHandle | null>(null);
+  const cardRef = useRef<SwipeCardHandle>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [lastMatchedMovie, setLastMatchedMovie] = useState<Movie | null>(null);
   const lastMatchCount = useRef(matches.length);

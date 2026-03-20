@@ -65,7 +65,7 @@ export interface MatchmakerGame {
   startedBy: User;
 }
 
-export type ContentTab = 'all' | 'to-watch' | 'watched' | 'suggestions';
+export type ContentTab = 'all' | 'queue' | 'watched' | 'suggestions';
 export type SortMode = 'recent' | 'title' | 'year';
 
 export interface WatchlistProps {

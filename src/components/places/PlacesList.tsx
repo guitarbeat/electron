@@ -16,7 +16,7 @@ import PlacesTopControls from './components/PlacesTopControls';
 import { colors, spacing, typography, motion } from '@/design-system';
 import type { Place } from '@/types';
 
-type PlaceFilter = 'want' | 'visited';
+type PlaceFilter = 'all' | 'queue' | 'visited';
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
@@ -33,7 +33,7 @@ const PlacesList: React.FC = () => {
     markUnvisited,
   } = usePlaces(currentUser);
 
-  const [filter, setFilter] = useState<PlaceFilter>('want');
+  const [filter, setFilter] = useState<PlaceFilter>('queue');
   const [nameInput, setNameInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -45,9 +45,15 @@ const PlacesList: React.FC = () => {
     setPendingCoords(typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null);
   });
 
-  const wantCount = places.filter((p) => !p.visitedAt).length;
+  const queueCount = places.filter((p) => !p.visitedAt).length;
   const visitedCount = places.filter((p) => p.visitedAt).length;
-  const filtered = filter === 'want' ? places.filter((p) => !p.visitedAt) : places.filter((p) => p.visitedAt);
+  const allCount = places.length;
+  const filtered =
+    filter === 'all'
+      ? places
+      : filter === 'queue'
+        ? places.filter((p) => !p.visitedAt)
+        : places.filter((p) => p.visitedAt);
   const hasMappedPlaces = places.some((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
 
   const handleAdd = useCallback(
@@ -171,8 +177,9 @@ const PlacesList: React.FC = () => {
       <div style={{ marginTop: spacing.md }}>
         <SubNav
           tabs={[
-            { id: 'want', label: 'Dream spots', count: wantCount },
-            { id: 'visited', label: 'Been together', count: visitedCount },
+            { id: 'all', label: 'All', count: allCount },
+            { id: 'queue', label: 'Queue', count: queueCount },
+            { id: 'visited', label: 'Visited', count: visitedCount },
           ]}
           activeTabId={filter}
           onTabChange={(id) => setFilter(id as PlaceFilter)}
@@ -192,7 +199,7 @@ const PlacesList: React.FC = () => {
           >
             {filtered.length === 0 ? (
               <CollectionEmptyState style={{ color: colors.textTertiary, ...typography.presets.bodySm }}>
-                {filter === 'want' ? 'No date spots yet. Add one above!' : 'No visited spots yet.'}
+                {filter === 'visited' ? 'No visited spots yet.' : 'No date spots yet. Add one above!'}
               </CollectionEmptyState>
             ) : (
               filtered.map((place, index) => (
