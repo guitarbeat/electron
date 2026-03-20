@@ -5,9 +5,7 @@ import { WatchlistProps } from '@/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
-import CollectionEmptyState from '@/ui/CollectionEmptyState';
-import CollectionGrid from '@/ui/CollectionGrid';
-import WorkspacePanels from '@/ui/WorkspacePanels';
+import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import { colors, spacing, typography, motion } from '@/design-system';
 
 // Components

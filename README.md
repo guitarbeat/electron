@@ -37,6 +37,7 @@ For more detailed information, please refer to the following guides in the `docs
 - [**Deployment Guide**](docs/DEPLOYMENT.md): Detailed instructions for hosting on Vercel, Netlify, and managing environment variables.
 - [**Project History**](docs/HISTORY.md): A narrative "Stroll Through Memory Lane" and a chronological log of project milestones and regressions.
 - [**Repo Maintenance**](docs/MAINTENANCE.md): The repository simplification plan, consolidation summary, and file count status.
+- [**Site Layout**](docs/SITE_LAYOUT.md): App-shell and workspace structure, navigation model, and panel architecture.
 
 ## 🧩 Tech Stack
 
