@@ -4,7 +4,6 @@ import { MainTab } from '@/types';
 interface ThemeToggleProps {
   activeTab: MainTab;
   onChange: (tab: MainTab) => void;
-  isMobile?: boolean;
   compact?: boolean;
   className?: string;
   label?: string;
@@ -13,7 +12,6 @@ interface ThemeToggleProps {
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
   activeTab,
   onChange,
-  isMobile = false,
   compact = false,
   className = '',
 }) => {
@@ -36,7 +34,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   return (
     <div
-      className={`theme-toggle ${isMobile ? 'theme-toggle--mobile' : ''}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`theme-toggle${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
     >
       <label className="theme-toggle__label" htmlFor={toggleId}>
         <input

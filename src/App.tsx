@@ -17,7 +17,6 @@ import QuizFlow from '@/components/quiz/QuizFlow';
 import Watchlist from '@/components/watchlist';
 import ThemeToggle from '@/ui/ThemeToggle';
 import ActionBubble from '@/ui/ActionBubble';
-import ActionFanMenu from '@/ui/ActionFanMenu';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { QuickActionsIcon } from '@/components/common/icons';
 import { useAudio } from '@/hooks/useAudio';
@@ -33,6 +32,20 @@ interface MainTabItem {
 interface ActionBubblePosition {
   x: number;
   y: number;
+}
+
+interface AppModalConfig {
+  key: string;
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  ariaLabel: string;
+  maxWidth: number;
+  maxHeight: number;
+  closeDisabled?: boolean;
+  closeDisabledLabel?: string;
+  content: React.ReactNode;
+  contentStyle?: React.CSSProperties;
 }
 
 const MAIN_TABS: MainTabItem[] = [
@@ -105,11 +118,9 @@ const AppInner: React.FC = () => {
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
-  const [showActionBubbleMenu, setShowActionBubbleMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const mobileActionTimeoutRef = useRef<number | null>(null);
   const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
-  const actionBubbleMenuRef = useRef<HTMLDivElement | null>(null);
   const actionBubbleDragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -118,7 +129,6 @@ const AppInner: React.FC = () => {
   } | null>(null);
   const didActionBubbleDragRef = useRef(false);
   const suppressActionBubbleClickRef = useRef(false);
-  const hasCustomActionBubblePositionRef = useRef(false);
 
   const [actionBubblePosition, setActionBubblePosition] = useState<ActionBubblePosition>(() =>
     getDefaultActionBubblePosition(isMobile)
@@ -146,7 +156,6 @@ const AppInner: React.FC = () => {
 
   const openMoreSheet = useCallback(() => {
     setShowMoreSheet(true);
-    setShowActionBubbleMenu(false);
   }, []);
 
   useEffect(() => {
@@ -175,36 +184,6 @@ const AppInner: React.FC = () => {
       window.removeEventListener('resize', handleDragResize);
     };
   }, []);
-
-  useEffect(() => {
-    if (!showActionBubbleMenu) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (actionBubbleMenuRef.current?.contains(target) || actionBubbleRef.current?.contains(target)) {
-        return;
-      }
-
-      setShowActionBubbleMenu(false);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown, {
-      capture: true,
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown, {
-        capture: true,
-      });
-    };
-  }, [showActionBubbleMenu]);
 
   const openQuizExperience = useCallback(() => {
     if (currentUser) {
@@ -241,14 +220,6 @@ const AppInner: React.FC = () => {
 
   const handleDelayedDeckItemSelect = useCallback(
     (item: CommandActionItem) => {
-      runDelayedCommandAction(item.action);
-    },
-    [runDelayedCommandAction]
-  );
-
-  const handleBubbleDeckItemSelect = useCallback(
-    (item: CommandActionItem) => {
-      setShowActionBubbleMenu(false);
       runDelayedCommandAction(item.action);
     },
     [runDelayedCommandAction]
@@ -323,8 +294,6 @@ const AppInner: React.FC = () => {
 
   const handleActionBubbleDragEnd = () => {
     if (didActionBubbleDragRef.current) {
-      hasCustomActionBubblePositionRef.current = true;
-      setShowActionBubbleMenu(false);
       suppressActionBubbleClickRef.current = true;
       setActionBubblePosition((prev) => snapActionBubbleToEdge(prev));
     }
@@ -355,7 +324,7 @@ const AppInner: React.FC = () => {
       return;
     }
 
-    setShowActionBubbleMenu((current) => !current);
+    openMoreSheet();
   };
 
   const handleTabChange = (tab: MainTab) => {
@@ -369,6 +338,87 @@ const AppInner: React.FC = () => {
     localStorage.setItem('quizCompleted', 'true');
     setShowQuizFlow(false);
   };
+
+  const minigameModals: AppModalConfig[] = [
+    {
+      key: 'quiz-editor',
+      isOpen: showQuizEditor,
+      onClose: () => setShowQuizEditor(false),
+      title: 'Quiz Editor',
+      ariaLabel: 'Quiz editor',
+      maxWidth: 1200,
+      maxHeight: 900,
+      content: <QuizEditor onClose={() => setShowQuizEditor(false)} />,
+    },
+    {
+      key: 'food-merge',
+      isOpen: showFoodMerge,
+      onClose: () => setShowFoodMerge(false),
+      title: 'Food Merge',
+      ariaLabel: 'Food merge game',
+      maxWidth: 620,
+      maxHeight: 780,
+      content: <FoodMergeGame />,
+    },
+    {
+      key: 'spin-wheel',
+      isOpen: showSpinWheel,
+      onClose: () => setShowSpinWheel(false),
+      title: 'Spin Wheel',
+      ariaLabel: 'Spin wheel picker',
+      maxWidth: 680,
+      maxHeight: 860,
+      closeDisabled: isSpinWheelLocked,
+      closeDisabledLabel: 'Finish the current spin before closing the wheel.',
+      content: <SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />,
+    },
+    {
+      key: 'memories',
+      isOpen: showMemories,
+      onClose: () => setShowMemories(false),
+      title: 'Memories',
+      ariaLabel: 'Memories panel',
+      maxWidth: 760,
+      maxHeight: 860,
+      content: <FloatingMemoriesPanel />,
+    },
+    {
+      key: 'quiz-flow',
+      isOpen: showQuizFlow,
+      onClose: () => setShowQuizFlow(false),
+      title: quizCompleted ? 'Retake Quiz' : 'Start Quiz',
+      ariaLabel: 'Quiz experience',
+      maxWidth: 920,
+      maxHeight: 900,
+      contentStyle: { flex: 1, overflowY: 'auto', padding: spacing.lg },
+      content: quizData && currentUser ? (
+        <QuizFlow
+          key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
+          quizData={quizData}
+          currentUser={currentUser}
+          onComplete={handleQuizComplete}
+          onEdit={() => {
+            setShowQuizFlow(false);
+            setShowQuizEditor(true);
+          }}
+          isCompleted={false}
+        />
+      ) : (
+        <p style={{ margin: 0, color: colors.textSecondary }}>Pick a profile to take the quiz.</p>
+      ),
+    },
+    {
+      key: 'matchmaker',
+      isOpen: showMatchmaker,
+      onClose: () => setShowMatchmaker(false),
+      title: 'Matchmaker',
+      ariaLabel: 'Movie matchmaker',
+      maxWidth: 920,
+      maxHeight: 900,
+      contentStyle: { flex: 1, overflowY: 'auto', padding: spacing.lg },
+      content: <Matchmaker currentUser={currentUser} />,
+    },
+  ];
 
   return (
     <ThemeProvider activeTab={activeTab}>
@@ -417,18 +467,6 @@ const AppInner: React.FC = () => {
             onPointerCancel={finishActionBubbleDrag}
           />
 
-          {showActionBubbleMenu && (
-            <ActionFanMenu
-              items={commandDeckItems}
-              anchorX={actionBubblePosition.x}
-              anchorY={actionBubblePosition.y}
-              anchorSize={ACTION_BUBLE_SIZE}
-              menuRef={actionBubbleMenuRef}
-              onItemSelect={handleBubbleDeckItemSelect}
-              onClose={() => setShowActionBubbleMenu(false)}
-            />
-          )}
-
           <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none' }}>
             {isMobile && (
               <section className="mobile-hero" aria-label="electron overview" style={{ padding: `${spacing['2xl']} ${spacing.md} ${spacing.xl}`, textAlign: 'center' }}>
@@ -436,7 +474,6 @@ const AppInner: React.FC = () => {
                   <UserSelection
                     variant="inline"
                     className="mobile-hero__selection"
-                    onActionsClick={openMoreSheet}
                   />
                 </div>
               </section>
@@ -512,99 +549,23 @@ const AppInner: React.FC = () => {
           </div>
         </BottomSheet>
 
-        <MinigameModal
-          isOpen={showQuizEditor}
-          onClose={() => setShowQuizEditor(false)}
-          title="Quiz Editor"
-          ariaLabel="Quiz editor"
-          maxWidth={1200}
-          maxHeight={900}
-        >
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <QuizEditor onClose={() => setShowQuizEditor(false)} />
-          </div>
-        </MinigameModal>
-
-        <MinigameModal
-          isOpen={showFoodMerge}
-          onClose={() => setShowFoodMerge(false)}
-          title="Food Merge"
-          ariaLabel="Food merge game"
-          maxWidth={620}
-          maxHeight={780}
-        >
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <FoodMergeGame />
-          </div>
-        </MinigameModal>
-
-        <MinigameModal
-          isOpen={showSpinWheel}
-          onClose={() => setShowSpinWheel(false)}
-          title="Spin Wheel"
-          ariaLabel="Spin wheel picker"
-          maxWidth={680}
-          maxHeight={860}
-          closeDisabled={isSpinWheelLocked}
-          closeDisabledLabel="Finish the current spin before closing the wheel."
-        >
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />
-          </div>
-        </MinigameModal>
-
-        <MinigameModal
-          isOpen={showMemories}
-          onClose={() => setShowMemories(false)}
-          title="Memories"
-          ariaLabel="Memories panel"
-          maxWidth={760}
-          maxHeight={860}
-        >
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <FloatingMemoriesPanel />
-          </div>
-        </MinigameModal>
-
-        <MinigameModal
-          isOpen={showQuizFlow}
-          onClose={() => setShowQuizFlow(false)}
-          title={quizCompleted ? 'Retake Quiz' : 'Start Quiz'}
-          ariaLabel="Quiz experience"
-          maxWidth={920}
-          maxHeight={900}
-        >
-          <div style={{ flex: 1, overflowY: 'auto', padding: spacing.lg }}>
-            {quizData && currentUser ? (
-              <QuizFlow
-                key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
-                quizData={quizData}
-                currentUser={currentUser}
-                onComplete={handleQuizComplete}
-                onEdit={() => {
-                  setShowQuizFlow(false);
-                  setShowQuizEditor(true);
-                }}
-                isCompleted={false}
-              />
-            ) : (
-              <p style={{ margin: 0, color: colors.textSecondary }}>Pick a profile to take the quiz.</p>
-            )}
-          </div>
-        </MinigameModal>
-
-        <MinigameModal
-          isOpen={showMatchmaker}
-          onClose={() => setShowMatchmaker(false)}
-          title="Matchmaker"
-          ariaLabel="Movie matchmaker"
-          maxWidth={920}
-          maxHeight={900}
-        >
-          <div style={{ flex: 1, overflowY: 'auto', padding: spacing.lg }}>
-            <Matchmaker currentUser={currentUser} />
-          </div>
-        </MinigameModal>
+        {minigameModals.map((modal) => (
+          <MinigameModal
+            key={modal.key}
+            isOpen={modal.isOpen}
+            onClose={modal.onClose}
+            title={modal.title}
+            ariaLabel={modal.ariaLabel}
+            maxWidth={modal.maxWidth}
+            maxHeight={modal.maxHeight}
+            closeDisabled={modal.closeDisabled}
+            closeDisabledLabel={modal.closeDisabledLabel}
+          >
+            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
+              {modal.content}
+            </div>
+          </MinigameModal>
+        ))}
       </div>
     </ThemeProvider>
   );
