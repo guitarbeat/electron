@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import FrameEffect from '@/components/effects/FrameEffect';
 import LoadingSequence from '@/components/effects/LoadingSequence';
-import Moire from '@/components/effects/Moire';
 import RetroEffects from '@/components/effects/RetroEffects';
 import {
   ACTION_BUBBLE_DRAG_THRESHOLD,
@@ -311,7 +309,6 @@ const App: React.FC = () => {
   const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
   const workspaceMeta = getWorkspaceMeta(activeTab);
   const shouldShowLoadingSequence = showLoadingSequence && !prefersReducedMotion;
-  const isMoireVisible = !showLoadingSequence && !prefersReducedMotion;
   const summaryFacts = [
     currentUser ? `${currentUser} active` : 'Guest mode',
     'Shared state secured',
@@ -351,12 +348,9 @@ const App: React.FC = () => {
     return (
       <ThemeProvider activeTab={activeTab}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-        <FrameEffect>
-          <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
-            {!prefersReducedMotion ? <Moire isVisible /> : null}
-            <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
-          </div>
-        </FrameEffect>
+        <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
+          <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
+        </div>
       </ThemeProvider>
     );
   }
@@ -383,15 +377,13 @@ const App: React.FC = () => {
         <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
       ) : null}
       <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-      <FrameEffect>
-        <div
-          className="app-shell bg-main"
-          style={{ minHeight: '100vh', backgroundColor: colors.background }}
-        >
-          {!prefersReducedMotion ? <Moire isVisible={isMoireVisible} /> : null}
-          <a href="#main-content" className="skip-link">
-            Skip to content
-          </a>
+      <div
+        className="app-shell bg-main"
+        style={{ minHeight: '100vh', backgroundColor: colors.background }}
+      >
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
 
           <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
             <button
@@ -540,23 +532,22 @@ const App: React.FC = () => {
             </main>
           </div>
 
-          {featureModals.map((modal) => (
-            <MinigameModal
-              key={modal.key}
-              isOpen={modal.isOpen}
-              onClose={modal.onClose}
-              title={modal.title}
-              ariaLabel={modal.ariaLabel}
-              maxWidth={modal.maxWidth}
-              maxHeight={modal.maxHeight}
-              closeDisabled={modal.closeDisabled}
-              closeDisabledLabel={modal.closeDisabledLabel}
-            >
-              <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>{modal.content}</div>
-            </MinigameModal>
-          ))}
-        </div>
-      </FrameEffect>
+        {featureModals.map((modal) => (
+          <MinigameModal
+            key={modal.key}
+            isOpen={modal.isOpen}
+            onClose={modal.onClose}
+            title={modal.title}
+            ariaLabel={modal.ariaLabel}
+            maxWidth={modal.maxWidth}
+            maxHeight={modal.maxHeight}
+            closeDisabled={modal.closeDisabled}
+            closeDisabledLabel={modal.closeDisabledLabel}
+          >
+            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>{modal.content}</div>
+          </MinigameModal>
+        ))}
+      </div>
     </ThemeProvider>
   );
 };
