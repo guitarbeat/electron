@@ -28,22 +28,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const focusTimerRef = useRef<number | null>(null);
-  
-  const { dialogRef } = useModal({ 
-    isOpen, 
-    onClose: onCancel, 
-    initialFocusRef: inputRef 
-  });
-
-  // Form validation with FormManager
-  const [formManager] = useState(() => new FormManager(
-    { pin: '', newPin: '', confirmPin: '' },
-    { 
-      pin: validators.pin(4),
-      newPin: validators.pin(4),
-      confirmPin: validators.pin(4)
-    }
-  ));
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [pin, setPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [error, setError] = useState('');
 
   const [step, setStep] = useState<'current' | 'new' | 'confirm'>(() =>
     mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current'
@@ -51,13 +40,14 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
-    if (isOpen && !formManager.getField('pin').isDirty) {
+    if (isOpen) {
       focusTimerRef.current = window.setTimeout(() => inputRef.current?.focus(), 100);
 
       // Reset form state only when opening
-      formManager.setValue('pin', '');
-      formManager.setValue('newPin', '');
-      formManager.setValue('confirmPin', '');
+      setPin('');
+      setNewPin('');
+      setConfirmPin('');
+      setError('');
       setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
     }
 
@@ -67,7 +57,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
         focusTimerRef.current = null;
       }
     };
-  }, [isOpen, mode, formManager]);
+  }, [isOpen, mode]);
 
   useEffect(() => {
     if (isShaking) {
