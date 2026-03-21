@@ -1,4 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
+import SpinWheelGame from '@/components/SpinWheelGame';
+import Matchmaker from '@/components/matchmaker/Matchmaker';
 import QuizEditor from '@/components/quiz/QuizEditor';
 import QuizFlow from '@/components/quiz/QuizFlow';
 import type { QuizData } from '@/hooks/useQuiz';
@@ -25,26 +27,38 @@ const paddedScrollContentStyle: CSSProperties = {
   padding: spacing.lg,
 };
 
-export interface BuildQuizModalsParams {
+export interface BuildFeatureModalsParams {
   showQuizEditor: boolean;
   showQuizFlow: boolean;
+  showSpinWheel: boolean;
+  showMatchmaker: boolean;
   quizCompleted: boolean;
+  isSpinWheelLocked: boolean;
   quizData: QuizData | null | undefined;
   currentUser: User | null;
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizFlow: (open: boolean) => void;
+  setShowSpinWheel: (open: boolean) => void;
+  setShowMatchmaker: (open: boolean) => void;
+  setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
 }
 
-export function buildQuizModals(params: BuildQuizModalsParams): AppModalConfig[] {
+export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
   const {
     showQuizEditor,
     showQuizFlow,
+    showSpinWheel,
+    showMatchmaker,
     quizCompleted,
+    isSpinWheelLocked,
     quizData,
     currentUser,
     setShowQuizEditor,
     setShowQuizFlow,
+    setShowSpinWheel,
+    setShowMatchmaker,
+    setIsSpinWheelLocked,
     onQuizComplete,
   } = params;
 
@@ -58,6 +72,18 @@ export function buildQuizModals(params: BuildQuizModalsParams): AppModalConfig[]
       maxWidth: 1200,
       maxHeight: 900,
       content: <QuizEditor onClose={() => setShowQuizEditor(false)} />,
+    },
+    {
+      key: 'spin-wheel',
+      isOpen: showSpinWheel,
+      onClose: () => setShowSpinWheel(false),
+      title: 'Spin Wheel',
+      ariaLabel: 'Spin wheel picker',
+      maxWidth: 680,
+      maxHeight: 860,
+      closeDisabled: isSpinWheelLocked,
+      closeDisabledLabel: 'Finish the current spin before closing the wheel.',
+      content: <SpinWheelGame onSpinningChange={setIsSpinWheelLocked} />,
     },
     {
       key: 'quiz-flow',
@@ -84,6 +110,17 @@ export function buildQuizModals(params: BuildQuizModalsParams): AppModalConfig[]
         ) : (
           <p style={{ margin: 0, color: colors.textSecondary }}>Pick a profile to take the quiz.</p>
         ),
+    },
+    {
+      key: 'matchmaker',
+      isOpen: showMatchmaker,
+      onClose: () => setShowMatchmaker(false),
+      title: 'Matchmaker',
+      ariaLabel: 'Movie matchmaker',
+      maxWidth: 920,
+      maxHeight: 900,
+      contentStyle: paddedScrollContentStyle,
+      content: <Matchmaker currentUser={currentUser} />,
     },
   ];
 }
