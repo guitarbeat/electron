@@ -402,7 +402,7 @@ const App: React.FC = () => {
                 <div className="duo-status-shell__grid">
                   <UserSelection
                     variant="panel"
-                    title="Choose a profile"
+                    title="Profiles"
                     className="duo-status-shell__selection"
                   />
 

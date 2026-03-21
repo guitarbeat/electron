@@ -211,22 +211,20 @@ const MemoryList: React.FC<MemoryListProps> = ({
       )}
 
       {isLoading && memories.length === 0 && (
-        <p style={{ margin: 0, color: colors.textSecondary }}>Loading notes...</p>
+        <p style={{ margin: 0, color: colors.textSecondary }}>Loading</p>
       )}
 
       {memoriesError && memories.length === 0 && (
-        <p style={{ margin: 0, color: colors.error, fontSize: typography.fontSize.sm }}>
-          Couldn&apos;t load notes right now. Try again in a few seconds.
-        </p>
+        <p style={{ margin: 0, color: colors.error, fontSize: typography.fontSize.sm }}>Unavailable</p>
       )}
 
       {!isLoading && !memoriesError && visibleMemories.length === 0 && (
         <p style={{ margin: 0, color: '#f6e4cb' }}>
           {isSingleMovieContext
-            ? 'No notes yet.'
+            ? 'No notes'
             : activeMovieFilter === ALL_MOVIES_FILTER
-              ? 'No notes yet.'
-              : 'No matching notes.'}
+              ? 'No notes'
+              : 'No matches'}
         </p>
       )}
 

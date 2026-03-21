@@ -220,7 +220,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
               }}
               aria-label="Continue to movie watchlist"
             >
-              Continue to Watchlist →
+              Watchlist
             </Button>
 
             <Button
@@ -233,7 +233,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
               }}
               aria-label="Retake the quiz"
             >
-              Retake Quiz
+              Retake
             </Button>
           </div>
         </div>

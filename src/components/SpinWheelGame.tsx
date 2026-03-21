@@ -142,21 +142,15 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         ? `Watched by ${selectedMovie.watchedBy[0]}`
         : 'Unwatched';
 
-  const emptyStateMessage = !currentUser
-    ? 'Select Aaron or Electra to load the wheel.'
+  const wheelStateLabel = !currentUser
+    ? 'Unavailable'
     : isLoading
-      ? 'Loading movies...'
-      : movies.length === 0
-        ? 'Add movies to spin the wheel.'
-        : null;
-
-  const triggerLabel = isSpinning
-    ? '...'
-    : !currentUser
-      ? 'Pick'
+      ? 'Loading'
       : candidates.length === 0
-        ? 'Wait'
-        : 'Spin';
+        ? 'Empty'
+        : isSpinning
+          ? 'Spinning'
+          : 'Ready';
 
   return (
     <div className="spin-wheel-shell" style={{ padding: spacing.md, color: colors.textPrimary }}>
@@ -174,7 +168,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         <div className="spin-wheel-summary__item">
           <span className="spin-wheel-summary__label">State</span>
           <strong className="spin-wheel-summary__value">
-            {isSpinning ? 'Locked In' : selectedMovie ? 'Winner Ready' : 'Idle'}
+            {isSpinning ? 'Spinning' : selectedMovie ? 'Picked' : wheelStateLabel}
           </strong>
         </div>
       </div>
@@ -254,16 +248,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               className="spin-wheel-trigger"
               onClick={handleSpin}
               disabled={isSpinning || isLoading || candidates.length === 0}
-              aria-label={
-                isSpinning
-                  ? 'Spinning'
-                  : emptyStateMessage ?? 'Spin the wheel'
-              }
+              aria-label={wheelStateLabel === 'Ready' ? 'Spin the wheel' : wheelStateLabel}
             >
-              <span className="spin-wheel-trigger__label">{triggerLabel}</span>
-              <span className="spin-wheel-trigger__subtext">
-                {isSpinning ? 'Locked' : emptyStateMessage ? 'Load' : 'Launch'}
-              </span>
+              <span className="spin-wheel-trigger__label">Spin</span>
+              <span className="spin-wheel-trigger__subtext">{wheelStateLabel}</span>
             </button>
           </div>
         </div>
@@ -300,20 +288,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             </div>
           ) : (
             <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
-              <p className="spin-wheel-panel__eyebrow">
-                {isSpinning ? 'Spinning Now' : currentUser ? 'Wheel Loaded' : 'Pick A Profile'}
-              </p>
-              <h3 className="spin-wheel-panel__title">
-                {emptyStateMessage ? 'Wheel Offline' : 'Movie Night Roulette'}
-              </h3>
-              <p className="spin-wheel-panel__copy">
-                {emptyStateMessage ??
-                  `The wheel is loaded with ${candidates.length} ${
-                    mode === 'queue' ? 'queue' : 'total'
-                  } titles. Tap the center button and let it decide.`}
-              </p>
+              <p className="spin-wheel-panel__eyebrow">{wheelStateLabel}</p>
+              <h3 className="spin-wheel-panel__title">Wheel</h3>
 
-              {previewMovies.length > 0 ? (
+              {wheelStateLabel === 'Ready' && previewMovies.length > 0 ? (
                 <div className="spin-wheel-preview-strip" aria-label="Candidate preview">
                   {previewMovies.map((movie) => (
                     <div key={movie.id} className="spin-wheel-preview-strip__item">
