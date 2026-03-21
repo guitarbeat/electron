@@ -15,8 +15,7 @@ import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
-import ThemeToggle from '@/ui/ThemeToggle';
-import { CheckIcon, CrossIcon, EyeIcon, EyeOffIcon, MagicWandIcon, PlusIcon, Spinner, TrashIcon } from '@/common/icons';
+import { CheckIcon, CrossIcon, EyeIcon, EyeOffIcon, PlusIcon, Spinner, TrashIcon } from '@/common/icons';
 import { colors, motion, radius, spacing, typography } from '@/design-system';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
@@ -46,6 +45,8 @@ interface WatchlistTopControlsProps {
   isAdding: boolean;
   isSuggesting: boolean;
   suggestionError: string | null;
+  memoryCount: number;
+  memoryMovieCount: number;
 }
 
 const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
@@ -62,18 +63,34 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   isAdding,
   isSuggesting,
   suggestionError,
+  memoryCount,
+  memoryMovieCount,
 }) => {
   return (
-    <div
-      className="watchlist-top-controls"
+    <section
+      className="workspace-control-panel ui-control-surface watchlist-top-controls"
       style={{
-        marginBottom: spacing.xl,
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.lg,
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
+      <div className="workspace-control-panel__header">
+        <p className="workspace-control-panel__eyebrow">Movie Night Queue</p>
+        <h2 className="workspace-control-panel__title">Plan the next watch</h2>
+        <p className="workspace-control-panel__copy">
+          Add picks fast, review suggestions, and keep shared memories attached to the movies that earned them.
+        </p>
+      </div>
+
+      <div className="workspace-control-panel__meta" aria-label="Watchlist overview">
+        <span className="workspace-control-panel__pill">{tabCounts.queue} queued</span>
+        <span className="workspace-control-panel__pill">
+          {memoryCount} memor{memoryCount === 1 ? 'y' : 'ies'} on {memoryMovieCount} title{memoryMovieCount === 1 ? '' : 's'}
+        </span>
+      </div>
+
       <SubNav
         tabs={MOVIE_TABS.map((tab) => ({
           id: tab.id,
@@ -169,7 +186,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           {suggestionError}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
@@ -289,7 +306,6 @@ interface MovieCardProps {
   currentUser: User | null;
   onToggle: () => void | Promise<void>;
   onDelete: () => void;
-  onFixMatch?: () => void;
   animationDelay: string;
   memories?: SharedMemory[];
   onAddMemory?: (note: string) => Promise<void>;
@@ -337,7 +353,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   currentUser,
   onToggle,
   onDelete,
-  onFixMatch,
   animationDelay,
   memories = [],
   onAddMemory,
@@ -442,7 +457,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
               isMobile={isMobile}
               onToggle={handleToggle}
               onDelete={onDelete}
-              onFixMatch={onFixMatch}
             />
           </div>
         </div>
@@ -503,7 +517,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
             isMobile={isMobile}
             onToggle={handleToggle}
             onDelete={() => runBottomSheetAction(onDelete)}
-            onFixMatch={onFixMatch ? () => runBottomSheetAction(onFixMatch) : undefined}
             onCloseBottomSheet={() => setIsBottomSheetOpen(false)}
           />
         </div>
@@ -589,7 +602,6 @@ interface MovieActionsProps {
   isMobile: boolean;
   onToggle: () => void;
   onDelete: () => void;
-  onFixMatch?: () => void;
   onCloseBottomSheet?: () => void;
 }
 
@@ -638,7 +650,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   isMobile,
   onToggle,
   onDelete,
-  onFixMatch,
   onCloseBottomSheet,
 }) => {
   const isGuest = !currentUser;
@@ -661,11 +672,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       return;
     }
     executeAction(onToggle);
-  };
-
-  const handleFixMatchAction = (event: React.MouseEvent<HTMLButtonElement>) => {
-    stopActionPropagation(event);
-    runAction(onFixMatch);
   };
 
   const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -732,18 +738,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
         <Button
           type="button"
-          onClick={handleFixMatchAction}
-          variant="secondary"
-          disabled={isGuest}
-          className="movie-item-mobile-action"
-          style={mobileActionStyle}
-        >
-          <MagicWandIcon />
-          Fix Details
-        </Button>
-
-        <Button
-          type="button"
           onClick={handleDeleteAction}
           variant="danger"
           disabled={isGuest}
@@ -762,17 +756,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       {primaryButton}
 
       <div className="movie-secondary-actions">
-        <MovieIconActionButton
-          onClick={handleFixMatchAction}
-          disabled={isGuest}
-          title={`Fix metadata for "${movie.title}"`}
-          color={colors.accent}
-          borderColor={`${colors.accent}45`}
-          className="movie-icon-action--fix"
-        >
-          <MagicWandIcon style={{ width: '14px', height: '14px' }} />
-        </MovieIconActionButton>
-
         <MovieIconActionButton
           onClick={handleDeleteAction}
           disabled={isGuest}
@@ -976,7 +959,7 @@ const MovieDetails: React.FC<{ movie: Movie; className?: string }> = ({
   );
 };
 
-const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTabChange, isMobile: propIsMobile }) => {
+const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
 
   const {
@@ -999,9 +982,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTa
     setContentTab,
     sortMode,
     setSortMode,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    movieToFix,
-    setMovieToFix,
     showConfetti,
     setShowConfetti,
     previousMoviesRef,
@@ -1016,9 +996,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTa
     addSuggestion,
     acceptSuggestion,
     rejectSuggestion,
-    // pendingSuggestions, // Already used through filteredSuggestions
-    // memories,
-    // addMemory,
+    memories,
+    addMemory,
+    updateMemory,
+    deleteMemoryRecord,
+    toggleMemoryPin,
     filteredMovies,
     filteredSuggestions,
     tabCounts,
@@ -1030,6 +1012,27 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTa
   const skeletonKeys = isMobile
     ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
     : ['desktop-1', 'desktop-2', 'desktop-3', 'desktop-4', 'desktop-5', 'desktop-6', 'desktop-7', 'desktop-8'];
+
+  const movieMemories = React.useMemo(() => {
+    const memoriesByMovieId = new Map<string, SharedMemory[]>();
+
+    movies.forEach((movie) => {
+      const normalizedTitle = movie.title.trim().toLowerCase();
+      const relatedMemories = memories.filter((memory) => {
+        if (memory.movieId === movie.id) {
+          return true;
+        }
+
+        return !memory.movieId && memory.movieTitle.trim().toLowerCase() === normalizedTitle;
+      });
+
+      if (relatedMemories.length > 0) {
+        memoriesByMovieId.set(movie.id, relatedMemories);
+      }
+    });
+
+    return memoriesByMovieId;
+  }, [memories, movies]);
 
   // Handle confetti when both users watch a movie
   useEffect(() => {
@@ -1117,13 +1120,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTa
   // Render components
   const renderControls = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-      {activeTab && onTabChange && (
-        <ThemeToggle
-          activeTab={activeTab}
-          onChange={onTabChange}
-          compact={propIsMobile || isMobile}
-        />
-      )}
       <WatchlistTopControls
         contentTab={contentTab}
         setContentTab={setContentTab}
@@ -1138,6 +1134,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTa
         isAdding={isAdding}
         isSuggesting={isSuggesting}
         suggestionError={suggestionError}
+        memoryCount={memories.length}
+        memoryMovieCount={movieMemories.size}
       />
     </div>
   );
@@ -1190,8 +1188,24 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTa
             currentUser={currentUser}
             onToggle={() => toggleWatched(movie.id)}
             onDelete={() => setMovieToDelete(movie)}
-            onFixMatch={() => setMovieToFix(movie)}
             animationDelay={`${index * 0.05}s`}
+            memories={movieMemories.get(movie.id) ?? []}
+            onAddMemory={
+              currentUser
+                ? async (note) => {
+                    await addMemory(movie.id, movie.title, currentUser, note);
+                  }
+                : undefined
+            }
+            onUpdateMemory={async (memoryId, note) => {
+              await updateMemory(memoryId, { note });
+            }}
+            onDeleteMemory={async (memoryId) => {
+              await deleteMemoryRecord(memoryId);
+            }}
+            onTogglePin={async (memoryId) => {
+              await toggleMemoryPin(memoryId);
+            }}
           />
         )
       )) : (

@@ -101,5 +101,26 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+              return 'react-vendor';
+            }
+
+            if (id.includes('node_modules/ogl')) {
+              return 'graphics-vendor';
+            }
+
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+
+            return undefined;
+          },
+        },
+      },
+    },
   };
 });

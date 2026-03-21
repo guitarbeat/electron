@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { ALL_MOVIES_FILTER, buildMovieMemorySummaries } from '@/components/memories/memoryUtils';
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
@@ -15,8 +14,6 @@ import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/context';
 import { areDeeplyEqual } from '@/utils';
 
-const MEMORY_FILTER_STORAGE_KEY = 'queueMemoryFilter';
-const MEMORY_FILTER_DEFAULT = 'all';
 const POLLING_INTERVAL = 30000;
 interface UseWatchlistProps {
   currentUser: User | null;
@@ -34,7 +31,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const { showToast } = useToast();
 
   // State (from useWatchlistState)
-  const [newMovieTitle, setNewMovieTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
@@ -42,47 +38,10 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
-  const [movieToFix, setMovieToFix] = useState<Movie | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [activeMemoryFilter, setActiveMemoryFilter] = useState(ALL_MOVIES_FILTER);
-  const [showMemoriesOnly, setShowMemoriesOnly] = useState(false);
-  const [isMemoryWallCollapsed, setIsMemoryWallCollapsed] = useState(isMobile);
-  const [highlightMovieId, setHighlightMovieId] = useState<string | null>(null);
 
   // Refs
   const previousMoviesRef = useRef<Movie[] | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const memorySectionRef = useRef<HTMLDivElement | null>(null);
-  const movieResultsRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setIsMemoryWallCollapsed(isMobile);
-  }, [isMobile]);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const urlFilter = searchParams.get('memoryFilter');
-    const savedFilter = localStorage.getItem(MEMORY_FILTER_STORAGE_KEY);
-    const initialFilter = urlFilter || savedFilter || MEMORY_FILTER_DEFAULT;
-    setActiveMemoryFilter(initialFilter);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(MEMORY_FILTER_STORAGE_KEY, activeMemoryFilter);
-    const url = new URL(window.location.href);
-    if (activeMemoryFilter === ALL_MOVIES_FILTER) {
-      url.searchParams.delete('memoryFilter');
-    } else {
-      url.searchParams.set('memoryFilter', activeMemoryFilter);
-    }
-    window.history.replaceState({}, '', url.toString());
-  }, [activeMemoryFilter]);
-
-  useEffect(() => {
-    if (activeMemoryFilter !== MEMORY_FILTER_DEFAULT) {
-      setIsMemoryWallCollapsed(false);
-    }
-  }, [activeMemoryFilter]);
 
   const setToast = useCallback(
     (toast: WatchlistToast | null) => {
@@ -103,12 +62,10 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isLoading,
     isSubmitting,
     error: moviesError,
-    refresh: refreshMovies,
     addMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,
-    manualMetadataUpdate,
   } = useMovies(currentUser, isPaused);
 
   const {
@@ -189,11 +146,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
-  const movieMemorySummaries = useMemo(
-    () => buildMovieMemorySummaries(movies || [], memories),
-    [movies, memories]
-  );
-
   let memoryErrorMessage: string | null = null;
   if (memoriesError instanceof Error) {
     memoryErrorMessage = memoriesError.message;
@@ -225,18 +177,14 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
         (contentTab === 'queue' && movie.watchedBy.length < 2) ||
         (contentTab === 'watched' && movie.watchedBy.length === 2);
       if (!inTab) return false;
-      if (showMemoriesOnly && !movieMemorySummaries.has(movie.id)) return false;
       if (!normalizedSearch) return true;
       return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [sortedMovies, contentTab, normalizedSearch, showMemoriesOnly, movieMemorySummaries]);
+  }, [sortedMovies, contentTab, normalizedSearch]);
 
   const filteredSuggestions = useMemo(() => {
-    if (showMemoriesOnly) {
-      return [];
-    }
     if (contentTab !== 'all' && contentTab !== 'suggestions') {
       return [];
     }
@@ -246,7 +194,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [pendingSuggestions, contentTab, normalizedSearch, showMemoriesOnly]);
+  }, [pendingSuggestions, contentTab, normalizedSearch]);
 
   const tabCounts = useMemo(() => {
     const counts = sortedMovies.reduce(
@@ -273,8 +221,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   return {
     // State returns
     isMobile,
-    newMovieTitle,
-    setNewMovieTitle,
     isAdding,
     setIsAdding,
     movieToDelete,
@@ -290,22 +236,9 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     setSearchQuery,
     sortMode,
     setSortMode,
-    movieToFix,
-    setMovieToFix,
     showConfetti,
     setShowConfetti,
-    activeMemoryFilter,
-    setActiveMemoryFilter,
-    showMemoriesOnly,
-    setShowMemoriesOnly,
-    isMemoryWallCollapsed,
-    setIsMemoryWallCollapsed,
-    highlightMovieId,
-    setHighlightMovieId,
     previousMoviesRef,
-    inputRef,
-    memorySectionRef,
-    movieResultsRef,
 
     // Data returns
     movies,
@@ -316,8 +249,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     toggleWatched,
     deleteMovie,
     restoreMovie,
-    refreshMovies,
-    manualMetadataUpdate,
     pendingSuggestions,
     addSuggestion,
     acceptSuggestion,
@@ -332,7 +263,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     memoriesError: memoryErrorMessage,
     unwatchedMovies,
     watchedMovies,
-    movieMemorySummaries,
     filteredMovies,
     filteredSuggestions,
     tabCounts,

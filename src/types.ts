@@ -88,8 +88,6 @@ export type PlaceSortMode = 'recent' | 'name';
 
 export interface WatchlistProps {
   isPaused?: boolean;
-  activeTab?: MainTab;
-  onTabChange?: (tab: MainTab) => void;
   isMobile?: boolean;
 }
 
