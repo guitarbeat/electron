@@ -2,20 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useMediaQuery, mediaBreakpoints } from '@/hooks/useMediaQuery';
 
 interface RetroEffectsProps {
-  crtEnabled: boolean;
   cursorTrailEnabled: boolean;
 }
 
-// CRT Overlay
-const CrtOverlay = () => (
-  <div className="crt-overlay" aria-hidden="true">
-    <div className="crt-scanlines" />
-    <div className="crt-flicker" />
-    <div className="crt-vignette" />
-  </div>
-);
-
-const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnabled }) => {
+const RetroEffects: React.FC<RetroEffectsProps> = ({ cursorTrailEnabled }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const [trailParticles, setTrailParticles] = useState<
     { id: number; x: number; y: number; opacity: number; scale: number }[]
@@ -50,7 +40,6 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnab
 
   return (
     <>
-      {crtEnabled && <CrtOverlay />}
       {cursorTrailEnabled && !isMobile && (
         <div className="cursor-trail-container" aria-hidden="true">
           {trailParticles.map((particle) => (

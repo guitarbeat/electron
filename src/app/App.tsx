@@ -67,7 +67,6 @@ const App: React.FC = () => {
 
     return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
-  const [crtEnabled] = useState<boolean>(() => localStorage.getItem('crtEnabled') === 'true');
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
@@ -351,7 +350,7 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
-        <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
+        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
         <FrameEffect>
           <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
             {!prefersReducedMotion ? <Moire isVisible /> : null}
@@ -383,7 +382,7 @@ const App: React.FC = () => {
       {shouldShowLoadingSequence ? (
         <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
       ) : null}
-      <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
+      <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       <FrameEffect>
         <div
           className="app-shell bg-main"
