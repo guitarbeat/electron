@@ -96,15 +96,6 @@ export const PlusIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>{path('M12 6v6m0 0v6m0-6h6m-6 0H6')}</StrokeIcon>
 );
 
-export const ShareIcon: React.FC<IconProps> = (props) => (
-  <StrokeIcon {...props}>
-    {path('M8.75 12a3.25 3.25 0 110-6.5 3.25 3.25 0 010 6.5z')}
-    {path('M15.25 18.5a3.25 3.25 0 110-6.5 3.25 3.25 0 010 6.5z')}
-    {path('M14.5 8.25l-4 2.5')}
-    {path('M10.5 13.25l4 2.5')}
-  </StrokeIcon>
-);
-
 export const ArrowLeftIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>{path('M10 19l-7-7m0 0l7-7m-7 7h18')}</StrokeIcon>
 );

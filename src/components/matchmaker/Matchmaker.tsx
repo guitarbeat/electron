@@ -363,8 +363,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     const filteredMovies = filterMoviesByVibe(unwatchedMovies, selectedVibe);
 
     if (filteredMovies.length < 3) {
+      const vibeLabel = selectedVibe ? `${selectedVibe} ` : '';
       showToast({
-        message: 'Need 3 titles',
+        message: `Not enough ${vibeLabel}movies in your queue. Add at least 3 to start.`,
         type: 'info',
       });
       return;
@@ -417,7 +418,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   if (isGameLoading || isMoviesLoading) {
     return (
       <div style={{ color: colors.textSecondary, padding: spacing.lg, textAlign: 'center' }}>
-        Loading
+        Syncing Matchmaker...
       </div>
     );
   }
@@ -657,11 +658,15 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 marginBottom: spacing.xs,
               }}
             >
-              {isSessionComplete ? 'Complete' : 'Waiting'}
+              {isSessionComplete ? 'Session Complete!' : 'All Caught Up!'}
             </h3>
-            {isSessionComplete && matches.length === 0 ? (
-              <p style={{ color: colors.textSecondary, fontSize: typography.fontSize.sm }}>No match</p>
-            ) : null}
+            <p style={{ color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
+              {isSessionComplete
+                ? matches.length > 0
+                  ? 'Both players finished. Review your mutual picks below or let Matchmaker choose one.'
+                  : 'Both players finished this round without a mutual pick. Reset to try another batch.'
+                : `Waiting for ${currentUser === 'Aaron' ? 'Electra' : 'Aaron'} to finish their swipes.`}
+            </p>
           </div>
         )}
       </div>
@@ -719,7 +724,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
               }}
               onClick={undo}
               disabled={isSubmitting}
-              title="Undo"
+              title="Undo last swipe"
             >
               ↺
             </Button>
@@ -794,7 +799,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                   border: `1px solid ${colors.secondary}50`,
                 }}
               >
-                {isPickingRandom ? 'Picking' : matches.length === 1 ? 'Highlight' : 'Pick'}
+                {isPickingRandom ? 'Choosing...' : matches.length === 1 ? 'Highlight Match' : 'Pick for Us'}
               </Button>
             )}
           </div>
@@ -865,7 +870,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
       <ConfirmDialog
         isOpen={showEndSessionConfirm}
-        title="Reset"
+        title="Reset Matchmaker"
         message="Are you sure you want to reset this matchmaker session?"
         confirmText="Reset Session"
         onConfirm={() => {

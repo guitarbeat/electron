@@ -251,7 +251,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
                     }}
                   >
                     {watchedMovieOptions.length === 0 ? (
-                      <option value="">No watched titles</option>
+                      <option value="">No shared watches yet</option>
                     ) : (
                       watchedMovieOptions.map((movie) => (
                         <option key={movie.id} value={movie.id}>

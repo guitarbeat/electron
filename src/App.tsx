@@ -26,7 +26,7 @@ import Card from '@/ui/Card';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import ThemeToggle from '@/ui/ThemeToggle';
-import './App.css';
+import './App.scss';
 
 const getViewportSize = () => {
   if (typeof window === 'undefined') {
@@ -402,7 +402,7 @@ const App: React.FC = () => {
                 <div className="duo-status-shell__grid">
                   <UserSelection
                     variant="panel"
-                    title="Profiles"
+                    title="Choose a profile"
                     className="duo-status-shell__selection"
                   />
 

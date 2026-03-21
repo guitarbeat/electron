@@ -206,7 +206,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
               }}
             >
-              Unavailable
+              Couldn&apos;t load messages right now. Try again in a few seconds.
             </p>
           </div>
         ) : null}
@@ -248,7 +248,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 color: '#000000',
               }}
             >
-              No messages
+              No messages yet
             </p>
           </div>
         ) : null}

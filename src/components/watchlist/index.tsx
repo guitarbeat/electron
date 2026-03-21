@@ -1,9 +1,4 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
-import {
-  buildSharedSuggestionUrl,
-  clearCurrentSharedSuggestionParams,
-  parseSharedSuggestionIntent,
-} from '@/app/sharedSuggestion';
 import { useUser } from '@/context';
 import { useWatchlist } from './useWatchlist';
 import { ContentTab, Movie, MovieSuggestion, SharedMemory, SortMode, User, WatchlistProps } from '@/types';
@@ -16,23 +11,18 @@ import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/Coll
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import BottomSheet from '@/ui/BottomSheet';
-import { Input } from '@/ui/FormFields';
+import { Input, Textarea } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
-import SharedSuggestionPrompt from './SharedSuggestionPrompt';
 import {
   CheckIcon,
   CrossIcon,
   EyeIcon,
   EyeOffIcon,
-  PlusIcon,
-  ShareIcon,
-  Spinner,
   TrashIcon,
 } from '@/common/icons';
 import { colors, motion, radius, spacing, typography } from '@/design-system';
-import { trackMetric } from '@/services/analyticsService';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -48,64 +38,148 @@ const SORT_OPTIONS: { id: SortMode; label: string }[] = [
 ];
 
 const MAX_MOVIE_NOTE_LENGTH = 280;
+const MAX_RECOMMENDATION_REASON_LENGTH = 280;
 
-const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
+interface RecommendationComposerProps {
+  currentUser: User | null;
+  movieTitle: string;
+  guestName: string;
+  reason: string;
+  error: string | null;
+  isSubmitting: boolean;
+  onGuestNameChange: (value: string) => void;
+  onReasonChange: (value: string) => void;
+  onSubmit: () => Promise<void> | void;
+  onCancel: () => void;
+}
 
-const copyTextToClipboard = async (value: string): Promise<void> => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
+const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
+  currentUser,
+  movieTitle,
+  guestName,
+  reason,
+  error,
+  isSubmitting,
+  onGuestNameChange,
+  onReasonChange,
+  onSubmit,
+  onCancel,
+}) => {
+  const remainingChars = MAX_RECOMMENDATION_REASON_LENGTH - reason.length;
 
-  const fallbackField = document.createElement('textarea');
-  fallbackField.value = value;
-  fallbackField.setAttribute('readonly', 'true');
-  fallbackField.style.position = 'fixed';
-  fallbackField.style.opacity = '0';
-  fallbackField.style.pointerEvents = 'none';
+  return (
+    <Card
+      variant="default"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.md,
+        padding: spacing.lg,
+        border: `1px solid ${colors.borderSecondary}`,
+        background:
+          'radial-gradient(circle at top right, rgba(255, 127, 198, 0.18), transparent 54%), linear-gradient(180deg, rgba(26, 18, 43, 0.94), rgba(11, 18, 34, 0.96))',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+        <p style={{ margin: 0, ...typography.presets.eyebrow, color: colors.accentLight }}>
+          Recommendation
+        </p>
+        <h3
+          style={{
+            margin: 0,
+            color: colors.textPrimary,
+            fontFamily: typography.fontFamily.heading.join(', '),
+            fontSize: typography.fontSize.lg,
+            lineHeight: typography.lineHeight.snug,
+          }}
+        >
+          {movieTitle}
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+            lineHeight: typography.lineHeight.normal,
+          }}
+        >
+          {currentUser
+            ? `Send this to Suggestions as ${currentUser}.`
+            : 'Add a name if you want the duo to know who pitched it.'}
+        </p>
+      </div>
 
-  document.body.appendChild(fallbackField);
-  fallbackField.focus();
-  fallbackField.select();
+      {!currentUser && (
+        <Input
+          label="Your Name"
+          value={guestName}
+          onChange={(event) => onGuestNameChange(event.target.value)}
+          placeholder="Anonymous"
+          maxLength={50}
+        />
+      )}
 
-  const didCopy = document.execCommand('copy');
-  document.body.removeChild(fallbackField);
+      <Textarea
+        label="Why This One? (Optional)"
+        value={reason}
+        onChange={(event) =>
+          onReasonChange(event.target.value.slice(0, MAX_RECOMMENDATION_REASON_LENGTH))
+        }
+        placeholder="A quick reason, vibe, or inside joke."
+        maxLength={MAX_RECOMMENDATION_REASON_LENGTH}
+        rows={3}
+        style={{ minHeight: '88px' }}
+      />
 
-  if (!didCopy) {
-    throw new Error('Clipboard unavailable');
-  }
-};
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: spacing.sm,
+          flexWrap: 'wrap',
+        }}
+      >
+        <span
+          style={{
+            color: colors.textSecondary,
+            fontSize: typography.fontSize.xs,
+          }}
+        >
+          {remainingChars} characters left
+        </span>
 
-const shareSuggestionLink = async (
-  title: string,
-  suggestedBy: string,
-  url: string
-): Promise<'native' | 'copy'> => {
-  const shareData = {
-    title: `Movie night pick: ${title}`,
-    text:
-      suggestedBy === 'Someone'
-        ? `Save "${title}" into the watchlist suggestions.`
-        : `${suggestedBy} wants to save "${title}" into the watchlist.`,
-    url,
-  };
+        <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+          <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="button" variant="primary" size="sm" onClick={() => void onSubmit()} isLoading={isSubmitting}>
+            Send recommendation
+          </Button>
+        </div>
+      </div>
 
-  if (typeof navigator.share === 'function') {
-    try {
-      await navigator.share(shareData);
-      return 'native';
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw error;
-      }
-    }
-  }
-
-  await copyTextToClipboard(url);
-  return 'copy';
+      {error && (
+        <div
+          role="alert"
+          style={{
+            color: colors.error,
+            fontSize: typography.fontSize.xs,
+            background: `${colors.error}10`,
+            border: `1px solid ${colors.error}30`,
+            borderRadius: radius.md,
+            padding: `${spacing.xs} ${spacing.sm}`,
+          }}
+        >
+          {error}
+        </div>
+      )}
+    </Card>
+  );
 };
 
 interface WatchlistTopControlsProps {
+  currentUser: User | null;
   contentTab: ContentTab;
   setContentTab: (tab: ContentTab) => void;
   sortMode: SortMode;
@@ -114,18 +188,25 @@ interface WatchlistTopControlsProps {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   onSubmit: () => Promise<void> | void;
+  onRecommend: () => void;
+  onSubmitRecommendation: () => Promise<void> | void;
+  onCancelRecommendation: () => void;
+  recommendationGuestName: string;
+  setRecommendationGuestName: (value: string) => void;
+  recommendationReason: string;
+  setRecommendationReason: (value: string) => void;
+  showRecommendationComposer: boolean;
   onPickRandom: () => void;
   canSurprise: boolean;
   isAdding: boolean;
-  isSuggesting: boolean;
-  isSharing: boolean;
+  isSubmittingRecommendation: boolean;
   suggestionError: string | null;
   memoryCount: number;
   memoryMovieCount: number;
-  onShare: () => Promise<void> | void;
 }
 
 const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
+  currentUser,
   contentTab,
   setContentTab,
   sortMode,
@@ -134,16 +215,24 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   searchQuery,
   setSearchQuery,
   onSubmit,
+  onRecommend,
+  onSubmitRecommendation,
+  onCancelRecommendation,
+  recommendationGuestName,
+  setRecommendationGuestName,
+  recommendationReason,
+  setRecommendationReason,
+  showRecommendationComposer,
   onPickRandom,
   canSurprise,
   isAdding,
-  isSuggesting,
-  isSharing,
+  isSubmittingRecommendation,
   suggestionError,
   memoryCount,
   memoryMovieCount,
-  onShare,
 }) => {
+  const hasSearchQuery = Boolean(searchQuery.trim());
+
   return (
     <section
       className="workspace-control-panel ui-control-surface watchlist-top-controls"
@@ -156,7 +245,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
     >
       <div className="workspace-control-panel__header">
         <p className="workspace-control-panel__eyebrow">Movies</p>
-        <h2 className="workspace-control-panel__title">Watchlist</h2>
+        <h2 className="workspace-control-panel__title">Plan the next movie</h2>
       </div>
 
       <div className="workspace-control-panel__meta" aria-label="Watchlist overview">
@@ -198,9 +287,10 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             display: 'flex',
             gap: spacing.xs,
             alignItems: 'stretch',
+            flexWrap: 'wrap',
           }}
         >
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
             <Input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
@@ -209,34 +299,33 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
               fullWidth
             />
           </div>
-          {searchQuery.trim() && (
-            <>
-              <Button
-                type="submit"
-                variant="secondary"
-                size="md"
-                disabled={isAdding || isSuggesting || isSharing}
-                isLoading={isAdding || isSuggesting}
-                title="Add movie"
-                aria-label="Add or suggest movie"
-                style={{ minWidth: '44px' }}
-              >
-                {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-              </Button>
+          {hasSearchQuery && (
+            <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+              {currentUser ? (
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  size="sm"
+                  disabled={isAdding || isSubmittingRecommendation}
+                  isLoading={isAdding}
+                  title="Add movie"
+                  aria-label="Add movie"
+                >
+                  Add
+                </Button>
+              ) : null}
               <Button
                 type="button"
-                variant="ghost"
-                size="md"
-                onClick={() => void onShare()}
-                disabled={isAdding || isSuggesting || isSharing}
-                isLoading={isSharing}
-                title="Share movie suggestion link"
-                aria-label="Share movie suggestion link"
-                style={{ minWidth: '44px' }}
+                variant={currentUser ? 'ghost' : 'secondary'}
+                size="sm"
+                onClick={onRecommend}
+                disabled={isAdding || isSubmittingRecommendation}
+                title="Recommend movie"
+                aria-label="Recommend movie"
               >
-                {isSharing ? <Spinner /> : <ShareIcon size={16} />}
+                Recommend
               </Button>
-            </>
+            </div>
           )}
         </form>
 
@@ -244,8 +333,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           type="button"
           variant="ghost"
           onClick={onPickRandom}
-          disabled={isAdding || isSuggesting || !canSurprise}
-          title="Random movie"
+          disabled={isAdding || isSubmittingRecommendation || !canSurprise}
+          title="Surprise me"
           aria-label="Pick a random movie"
           style={{
             fontSize: '1.25rem',
@@ -259,22 +348,19 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         </Button>
       </div>
 
-      {suggestionError && (
-        <div
-          role="alert"
-          style={{
-            marginTop: -spacing.xs,
-            color: colors.error,
-            fontSize: typography.fontSize.xs,
-            textAlign: 'center',
-            background: `${colors.error}10`,
-            padding: `${spacing.xs} ${spacing.sm}`,
-            borderRadius: '4px',
-            border: `1px solid ${colors.error}30`,
-          }}
-        >
-          {suggestionError}
-        </div>
+      {showRecommendationComposer && hasSearchQuery && (
+        <RecommendationComposer
+          currentUser={currentUser}
+          movieTitle={searchQuery.trim()}
+          guestName={recommendationGuestName}
+          reason={recommendationReason}
+          error={suggestionError}
+          isSubmitting={isSubmittingRecommendation}
+          onGuestNameChange={setRecommendationGuestName}
+          onReasonChange={setRecommendationReason}
+          onSubmit={onSubmitRecommendation}
+          onCancel={onCancelRecommendation}
+        />
       )}
     </section>
   );
@@ -284,6 +370,8 @@ interface SuggestionCardProps {
   suggestion: MovieSuggestion;
   onAccept: () => void;
   onReject: () => void;
+  canRespond?: boolean;
+  disableActions?: boolean;
   isProcessing?: boolean;
   animationDelay?: string;
 }
@@ -292,9 +380,13 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   suggestion,
   onAccept,
   onReject,
+  canRespond = true,
+  disableActions = false,
   isProcessing = false,
   animationDelay = '0s',
 }) => {
+  const actionsDisabled = isProcessing || disableActions;
+
   return (
     <Card
       variant="default"
@@ -353,7 +445,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           size="sm"
           onClick={onAccept}
           isLoading={isProcessing}
-          disabled={isProcessing}
+          disabled={actionsDisabled}
           fullWidth
           style={{ gap: spacing.xs }}
         >
@@ -364,7 +456,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           variant="ghost"
           size="sm"
           onClick={onReject}
-          disabled={isProcessing}
+          disabled={actionsDisabled}
           fullWidth
           style={{ gap: spacing.xs, color: colors.error }}
         >
@@ -372,6 +464,19 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           Reject
         </Button>
       </div>
+
+      {!canRespond && (
+        <p
+          style={{
+            margin: 0,
+            ...typography.presets.caption,
+            color: colors.textSecondary,
+            textAlign: 'center',
+          }}
+        >
+          Pick a profile to review suggestions.
+        </p>
+      )}
 
       {isProcessing && (
         <div
@@ -1054,7 +1159,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
             padding: spacing.sm,
           }}
         >
-          No notes
+          No notes on this movie yet. Leave the first one above.
         </p>
       )}
     </div>
@@ -1127,9 +1232,6 @@ const MovieDetails: React.FC<{ movie: Movie; className?: string }> = ({
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-  const [sharedSuggestion, setSharedSuggestion] = useState(() =>
-    typeof window === 'undefined' ? null : parseSharedSuggestionIntent(window.location.search)
-  );
 
   const {
     // State returns
@@ -1145,8 +1247,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setProcessingSuggestionId,
+    isSubmittingRecommendation,
     contentTab,
     setContentTab,
     sortMode,
@@ -1162,10 +1263,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addMovie,
     toggleWatched,
     deleteMovie,
-    pendingSuggestions,
-    addSuggestion,
-    acceptSuggestion,
-    rejectSuggestion,
+    submitRecommendation,
+    acceptSuggestionToWatchlist,
+    rejectPendingSuggestion,
     memories,
     addMemory,
     updateMemory,
@@ -1176,10 +1276,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     tabCounts,
   } = useWatchlist({ currentUser, isPaused });
 
-  const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [isSharing, setIsSharing] = useState(false);
-  const [isSavingSharedSuggestion, setIsSavingSharedSuggestion] = useState(false);
+  const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] = useState(false);
+  const [recommendationGuestName, setRecommendationGuestName] = useState('');
+  const [recommendationReason, setRecommendationReason] = useState('');
   
   const skeletonKeys = isMobile
     ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
@@ -1206,19 +1306,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     return memoriesByMovieId;
   }, [memories, movies]);
 
-  const isSharedSuggestionAlreadySaved = React.useMemo(() => {
-    if (!sharedSuggestion) {
-      return false;
-    }
-
-    const normalizedTitle = normalizeMovieTitle(sharedSuggestion.title);
-
-    return (
-      movies.some((movie) => normalizeMovieTitle(movie.title) === normalizedTitle) ||
-      pendingSuggestions.some((suggestion) => normalizeMovieTitle(suggestion.title) === normalizedTitle)
-    );
-  }, [movies, pendingSuggestions, sharedSuggestion]);
-
   // Handle confetti when both users watch a movie
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -1243,36 +1330,59 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     previousMoviesRef.current = movies;
   }, [movies, setShowConfetti, setToast, setSuccessMovieId, previousMoviesRef]);
 
-  // Event handlers
-  const handleAddAction = useCallback(async () => {
-    if (!searchQuery.trim()) return;
+  const resetRecommendationComposer = useCallback(() => {
+    setIsRecommendationComposerOpen(false);
+    setRecommendationGuestName('');
+    setRecommendationReason('');
+    setSuggestionError(null);
+  }, []);
 
-    if (currentUser) {
-      setIsAdding(true);
-      try {
-        await addMovie(searchQuery.trim());
-        setSearchQuery('');
-        setToast({ message: `"${searchQuery.trim()}" added to watchlist!`, type: 'success' });
-      } catch {
-        setToast({ message: 'Failed to add movie', type: 'error' });
-      } finally {
-        setIsAdding(false);
-      }
-    } else {
-      setIsSuggesting(true);
-      setSuggestionError(null);
-      try {
-        await addSuggestion(searchQuery.trim(), 'Anonymous');
-        setSearchQuery('');
-        setToast({ message: `"${searchQuery.trim()}" suggested for review!`, type: 'success' });
-      } catch (_error) {
-        setSuggestionError(_error instanceof Error ? _error.message : 'Failed to add suggestion');
-        setToast({ message: 'Failed to add suggestion', type: 'error' });
-      } finally {
-        setIsSuggesting(false);
-      }
+  const handleRecommendationGuestNameChange = useCallback((value: string) => {
+    setSuggestionError(null);
+    setRecommendationGuestName(value);
+  }, []);
+
+  const handleRecommendationReasonChange = useCallback((value: string) => {
+    setSuggestionError(null);
+    setRecommendationReason(value);
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      resetRecommendationComposer();
     }
-  }, [searchQuery, currentUser, addMovie, addSuggestion, setIsAdding, setSearchQuery, setToast]);
+  }, [resetRecommendationComposer, searchQuery]);
+
+  // Event handlers
+  const openRecommendationComposer = useCallback(() => {
+    if (!searchQuery.trim()) {
+      return;
+    }
+
+    setSuggestionError(null);
+    setIsRecommendationComposerOpen(true);
+  }, [searchQuery]);
+
+  const handleAddAction = useCallback(async () => {
+    const title = searchQuery.trim();
+    if (!title) return;
+
+    if (!currentUser) {
+      openRecommendationComposer();
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await addMovie(title);
+      setSearchQuery('');
+      setToast({ message: `"${title}" added to watchlist!`, type: 'success' });
+    } catch {
+      setToast({ message: 'Failed to add movie', type: 'error' });
+    } finally {
+      setIsAdding(false);
+    }
+  }, [searchQuery, currentUser, openRecommendationComposer, addMovie, setIsAdding, setSearchQuery, setToast]);
 
   const handleRandomMoviePick = useCallback(() => {
     const movieTitles = filteredMovies.map((movie) => movie.title);
@@ -1289,89 +1399,64 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   }, [filteredMovies, filteredSuggestions, setSearchQuery]);
 
-  const dismissSharedSuggestion = useCallback(() => {
-    clearCurrentSharedSuggestionParams();
-    setSharedSuggestion(null);
-  }, []);
-
-  const handleShareAction = useCallback(async () => {
+  const handleSubmitRecommendation = useCallback(async () => {
     const title = searchQuery.trim();
-
-    if (!title || typeof window === 'undefined') {
+    if (!title) {
       return;
     }
 
-    setIsSharing(true);
+    setSuggestionError(null);
 
     try {
-      const shareUrl = buildSharedSuggestionUrl(window.location.href, {
+      await submitRecommendation({
         title,
-        suggestedBy: currentUser ?? 'Someone',
+        suggestedBy: recommendationGuestName,
+        reason: recommendationReason,
       });
-      const shareMethod = await shareSuggestionLink(title, currentUser ?? 'Someone', shareUrl);
-
-      trackMetric('watchlist_share_clicked');
-      setToast({
-        message:
-          shareMethod === 'native'
-            ? `Share sheet opened for "${title}".`
-            : `Share link copied for "${title}".`,
-        type: 'success',
-      });
+      resetRecommendationComposer();
+      setToast({ message: `"${title}" suggested for review!`, type: 'success' });
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return;
-      }
-
-      setToast({ message: 'Failed to share movie link', type: 'error' });
-    } finally {
-      setIsSharing(false);
-    }
-  }, [currentUser, searchQuery, setToast]);
-
-  const handleSaveSharedSuggestion = useCallback(async () => {
-    if (!sharedSuggestion) {
-      return;
-    }
-
-    if (isSharedSuggestionAlreadySaved) {
-      setToast({
-        message: `"${sharedSuggestion.title}" is already in your watchlist flow.`,
-        type: 'info',
-      });
-      dismissSharedSuggestion();
-      return;
-    }
-
-    setIsSavingSharedSuggestion(true);
-
-    try {
-      await addSuggestion(sharedSuggestion.title, sharedSuggestion.suggestedBy);
-      trackMetric('shared_suggestion_saved');
-      setContentTab('suggestions');
-      setSearchQuery(sharedSuggestion.title);
-      setToast({
-        message: `"${sharedSuggestion.title}" saved to suggestions.`,
-        type: 'success',
-      });
-      dismissSharedSuggestion();
-    } catch (error) {
-      setToast({
-        message: error instanceof Error ? error.message : 'Failed to save shared suggestion',
-        type: 'error',
-      });
-    } finally {
-      setIsSavingSharedSuggestion(false);
+      setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
+      setToast({ message: 'Failed to add suggestion', type: 'error' });
     }
   }, [
-    addSuggestion,
-    dismissSharedSuggestion,
-    isSharedSuggestionAlreadySaved,
-    setContentTab,
-    setSearchQuery,
+    recommendationGuestName,
+    recommendationReason,
+    resetRecommendationComposer,
+    searchQuery,
     setToast,
-    sharedSuggestion,
+    submitRecommendation,
   ]);
+
+  const handleAcceptSuggestion = useCallback(
+    async (suggestion: MovieSuggestion) => {
+      try {
+        await acceptSuggestionToWatchlist(suggestion.id);
+        setToast({ message: `"${suggestion.title}" added to watchlist!`, type: 'success' });
+      } catch (error) {
+        setToast({
+          message: error instanceof Error ? error.message : 'Failed to accept suggestion',
+          type: 'error',
+        });
+      }
+    },
+    [acceptSuggestionToWatchlist, setToast]
+  );
+
+  const handleRejectSuggestion = useCallback(
+    async (suggestion: MovieSuggestion) => {
+      try {
+        await rejectPendingSuggestion(suggestion.id);
+        setToast({ message: `"${suggestion.title}" rejected.`, type: 'info' });
+      } catch (error) {
+        setToast({
+          message: error instanceof Error ? error.message : 'Failed to reject suggestion',
+          type: 'error',
+        });
+      }
+    },
+    [rejectPendingSuggestion, setToast]
+  );
 
   const confirmDelete = useCallback(async () => {
     if (!movieToDelete) return;
@@ -1389,16 +1474,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   // Render components
   const renderControls = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-      {sharedSuggestion && (
-        <SharedSuggestionPrompt
-          intent={sharedSuggestion}
-          isSaving={isSavingSharedSuggestion}
-          isAlreadySaved={isSharedSuggestionAlreadySaved}
-          onSave={() => void handleSaveSharedSuggestion()}
-          onDismiss={dismissSharedSuggestion}
-        />
-      )}
       <WatchlistTopControls
+        currentUser={currentUser}
         contentTab={contentTab}
         setContentTab={setContentTab}
         sortMode={sortMode}
@@ -1407,15 +1484,21 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onSubmit={handleAddAction}
+        onRecommend={openRecommendationComposer}
+        onSubmitRecommendation={handleSubmitRecommendation}
+        onCancelRecommendation={resetRecommendationComposer}
+        recommendationGuestName={recommendationGuestName}
+        setRecommendationGuestName={handleRecommendationGuestNameChange}
+        recommendationReason={recommendationReason}
+        setRecommendationReason={handleRecommendationReasonChange}
+        showRecommendationComposer={isRecommendationComposerOpen}
         onPickRandom={handleRandomMoviePick}
         canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
         isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        isSharing={isSharing}
+        isSubmittingRecommendation={isSubmittingRecommendation}
         suggestionError={suggestionError}
         memoryCount={memories.length}
         memoryMovieCount={movieMemories.size}
-        onShare={handleShareAction}
       />
     </div>
   );
@@ -1446,8 +1529,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             <SuggestionCard
               key={suggestion.id}
               suggestion={suggestion}
-              onAccept={() => acceptSuggestion(suggestion.id, currentUser || 'Aaron')}
-              onReject={() => rejectSuggestion(suggestion.id, currentUser || 'Aaron')}
+              onAccept={() => void handleAcceptSuggestion(suggestion)}
+              onReject={() => void handleRejectSuggestion(suggestion)}
+              canRespond={Boolean(currentUser)}
+              disableActions={Boolean(processingSuggestionId) || !currentUser}
               isProcessing={processingSuggestionId === suggestion.id}
               animationDelay={`${index * 0.05}s`}
             />
@@ -1493,7 +1578,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           padding={spacing['2xl']}
           style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
         >
-          {searchQuery ? 'No matches' : 'Watchlist empty'}
+          {searchQuery ? 'No matching movies found' : 'Your watchlist is empty'}
         </CollectionEmptyState>
       )}
     </CollectionGrid>

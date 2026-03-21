@@ -71,7 +71,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
     >
       <div className="workspace-control-panel__header">
         <p className="workspace-control-panel__eyebrow">Dates</p>
-        <h2 className="workspace-control-panel__title">Date Ideas</h2>
+        <h2 className="workspace-control-panel__title">Plan the next date</h2>
       </div>
 
       <div className="workspace-control-panel__meta" aria-label="Date spots overview">
@@ -122,7 +122,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
               size="md"
               disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
-              title="Add place"
+              title="Add or suggest place"
               aria-label="Add or suggest place"
               style={{ minWidth: '44px' }}
             >
@@ -136,7 +136,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
           variant="ghost"
           onClick={onPickRandom}
           disabled={isAdding || isSuggesting || !canSurprise}
-          title="Random place"
+          title="Surprise me"
           aria-label="Pick a random place"
           style={{
             minWidth: '44px',
@@ -523,12 +523,12 @@ const PlacesList: React.FC<PlacesListProps> = () => {
           ) : (
             <CollectionEmptyState>
               {searchQuery.trim()
-                ? 'No matches'
+                ? 'No places found matching your search'
                 : contentTab === 'visited'
-                  ? 'No visited places'
+                  ? 'No visited places yet'
                   : contentTab === 'queue'
-                    ? 'Queue empty'
-                    : 'No places'}
+                    ? 'No places in queue'
+                    : 'No places added yet'}
             </CollectionEmptyState>
           )}
         </CollectionGrid>

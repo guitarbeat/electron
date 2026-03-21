@@ -26,11 +26,11 @@ export const useMessages = () => {
       const trimmedContent = sanitizeInput(content);
 
       if (!currentUser) {
-        throw new Error('Profile required');
+        throw new Error('Choose Aaron or Electra to send a message.');
       }
 
       if (!trimmedContent) {
-        throw new Error('Message required');
+        throw new Error('Please enter a message.');
       }
 
       setIsSubmitting(true);
@@ -48,11 +48,11 @@ export const useMessages = () => {
   const deleteMessage = useCallback(
     async (message: Message) => {
       if (!currentUser) {
-        throw new Error('Profile required');
+        throw new Error('Choose Aaron or Electra to delete a message.');
       }
 
       if (message.author !== currentUser) {
-        throw new Error('Unavailable');
+        throw new Error('You can only delete your own messages.');
       }
 
       setIsSubmitting(true);
