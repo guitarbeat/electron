@@ -13,7 +13,6 @@ import FloatingMemoriesPanel from '@/components/memories/FloatingMemoriesPanel';
 import Matchmaker from '@/components/matchmaker/Matchmaker';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
-import ThemeToggle from '@/ui/ThemeToggle';
 import ActionBubble from '@/ui/ActionBubble';
 import ActionFanMenu from '@/ui/ActionFanMenu';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
@@ -84,7 +83,7 @@ const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition
   return clampActionBubblePosition(defaultX, defaultY);
 };
 
-const AppInner: React.FC = () => {
+const App: React.FC = () => {
   const { currentUser, setCurrentUser } = useUser();
   const { showToast } = useToast();
   const { playSwitch } = useAudio();
@@ -100,8 +99,8 @@ const AppInner: React.FC = () => {
   const [showMemories, setShowMemories] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showMatchmaker, setShowMatchmaker] = useState(false);
-  const [showActionFanMenu, setShowActionFanMenu] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const [showActionFanMenu, setShowActionFanMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const mobileActionTimeoutRef = useRef<number | null>(null);
   const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
@@ -139,8 +138,13 @@ const AppInner: React.FC = () => {
   }, [activeTab]);
 
   const openMoreSheet = useCallback(() => {
-    setShowMoreSheet(true);
-  }, []);
+    // On mobile, show ActionFanMenu instead of BottomSheet
+    if (isMobile) {
+      setShowActionFanMenu(true);
+    } else {
+      setShowMoreSheet(true);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (showMoreSheet && mobileActionTimeoutRef.current !== null) {
@@ -324,6 +328,7 @@ const AppInner: React.FC = () => {
       return;
     }
 
+    // Show the ActionFanMenu instead of the more sheet
     setShowActionFanMenu(true);
   };
 
@@ -397,9 +402,9 @@ const AppInner: React.FC = () => {
           {showActionFanMenu && (
             <ActionFanMenu
               items={commandDeckItems}
-              anchorX={actionBubblePosition.x + 32} // Center of bubble
-              anchorY={actionBubblePosition.y + 32}
-              anchorSize={64}
+              anchorX={actionBubblePosition.x}
+              anchorY={actionBubblePosition.y}
+              anchorSize={ACTION_BUBLE_SIZE}
               onItemSelect={(item) => {
                 item.action();
                 setShowActionFanMenu(false);
@@ -420,28 +425,7 @@ const AppInner: React.FC = () => {
               </section>
             )}
 
-            <section className="workspace-header workspace-header--toggle" aria-label="Workspace mode selector" style={{ padding: isMobile ? spacing.md : `${spacing.xl} ${spacing.xl} ${spacing.lg}` }}>
-              <div className="workspace-header__controls workspace-header__controls--toggle">
-                <ThemeToggle
-                  activeTab={activeTab}
-                  onChange={handleTabChange}
-                  compact={isMobile}
-                  className="workspace-header__toggle"
-                />
-                {isMobile && (
-                  <button
-                    type="button"
-                    className="workspace-header__more"
-                    onClick={openMoreSheet}
-                    aria-label="Open more options"
-                  >
-                    <span aria-hidden="true">⋯</span>
-                    <span className="workspace-header__more-label">More</span>
-                  </button>
-                )}
-              </div>
-            </section>
-
+            
             <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
               <section className="workspace-surface" aria-label="Primary workspace" style={{ minWidth: 0 }}>
                 {MAIN_TABS.map((tab) => {
@@ -456,7 +440,7 @@ const AppInner: React.FC = () => {
                       aria-label={`${tab.label} panel`}
                       style={{ display: isActivePanel ? 'block' : 'none' }}
                     >
-                      {isActivePanel ? tab.id === 'queue' ? <Watchlist /> : <PlacesList /> : null}
+                      {isActivePanel ? tab.id === 'queue' ? <Watchlist activeTab={activeTab} onTabChange={handleTabChange} isMobile={isMobile} /> : <PlacesList activeTab={activeTab} onTabChange={handleTabChange} isMobile={isMobile} /> : null}
                     </section>
                   );
                 })}
@@ -512,12 +496,12 @@ const AppInner: React.FC = () => {
   );
 };
 
-const App: React.FC = () => (
+const AppWithProviders: React.FC = () => (
   <UserProvider>
     <ToastProvider>
-      <AppInner />
+      <App />
     </ToastProvider>
   </UserProvider>
 );
 
-export default App;
+export default AppWithProviders;

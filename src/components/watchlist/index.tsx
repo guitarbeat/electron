@@ -15,6 +15,7 @@ import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
+import ThemeToggle from '@/ui/ThemeToggle';
 import { CheckIcon, CrossIcon, EyeIcon, EyeOffIcon, MagicWandIcon, PlusIcon, Spinner, TrashIcon } from '@/common/icons';
 import { colors, motion, radius, spacing, typography } from '@/design-system';
 
@@ -975,7 +976,7 @@ const MovieDetails: React.FC<{ movie: Movie; className?: string }> = ({
   );
 };
 
-const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
+const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, activeTab, onTabChange, isMobile: propIsMobile }) => {
   const { currentUser } = useUser();
 
   const {
@@ -1115,21 +1116,30 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   // Render components
   const renderControls = () => (
-    <WatchlistTopControls
-      contentTab={contentTab}
-      setContentTab={setContentTab}
-      sortMode={sortMode}
-      setSortMode={setSortMode}
-      tabCounts={tabCounts}
-      searchQuery={searchQuery}
-      setSearchQuery={setSearchQuery}
-      onSubmit={handleAddAction}
-      onPickRandom={handleRandomMoviePick}
-      canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
-      isAdding={isAdding}
-      isSuggesting={isSuggesting}
-      suggestionError={suggestionError}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+      {activeTab && onTabChange && (
+        <ThemeToggle
+          activeTab={activeTab}
+          onChange={onTabChange}
+          compact={propIsMobile || isMobile}
+        />
+      )}
+      <WatchlistTopControls
+        contentTab={contentTab}
+        setContentTab={setContentTab}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        tabCounts={tabCounts}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleAddAction}
+        onPickRandom={handleRandomMoviePick}
+        canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+      />
+    </div>
   );
 
   const renderContent = () => (

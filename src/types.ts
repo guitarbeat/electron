@@ -70,6 +70,9 @@ export type SortMode = 'recent' | 'title' | 'year';
 
 export interface WatchlistProps {
   isPaused?: boolean;
+  activeTab?: MainTab;
+  onTabChange?: (tab: MainTab) => void;
+  isMobile?: boolean;
 }
 
 export type { QuizCharacter } from './components/quiz/types.ts';
