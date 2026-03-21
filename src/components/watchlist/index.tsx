@@ -357,10 +357,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           }}
           style={{
             flex: 1,
-            display: 'flex',
-            gap: spacing.xs,
-            alignItems: 'stretch',
-            flexWrap: 'wrap',
+            minWidth: 0,
           }}
         >
           <div className="watchlist-top-controls__search-shell" style={{ flex: '1 1 220px', minWidth: 0 }}>
@@ -1574,7 +1571,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const renderContent = () => (
     <CollectionGrid
       className="watchlist-content"
-      minColumnWidth={isMobile ? '150px' : '160px'}
+      minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
       style={{
         animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
@@ -1657,7 +1654,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
 
       <WorkspacePanels
-        isMobile={isMobile}
         first={renderControls()}
         second={renderContent()}
         firstAs="aside"

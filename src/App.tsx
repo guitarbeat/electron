@@ -505,11 +505,11 @@ const App: React.FC = () => {
                 aria-label="Primary workspace"
                 style={{ minWidth: 0 }}
               >
-                {activeTab === 'queue' ? (
-                  <Watchlist isMobile={isMobile} />
-                ) : (
-                  <PlacesList isMobile={isMobile} />
-                )}
+	                {activeTab === 'queue' ? (
+	                  <Watchlist isMobile={isMobile} />
+	                ) : (
+	                  <PlacesList />
+	                )}
               </section>
             </main>
           </div>
