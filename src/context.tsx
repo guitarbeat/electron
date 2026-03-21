@@ -4,11 +4,20 @@
  * Combines Theme, Toast, and User contexts
  */
 
-import React, { createContext, useCallback, useContext, useMemo, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  ReactNode,
+} from 'react';
 import type { MainTab, User } from '@/types';
 import { moviesTheme, placesTheme, spacing } from '@/design-system';
 import Toast from '@/components/ui/Toast';
-import { normalizeUser } from '@/utils';
+import { sessionInvalidationEvent } from '@/services/stateClient';
+import type { SessionState } from '@/services/stateTypes';
 
 // ============================================================================
 // Theme Context
@@ -174,32 +183,139 @@ export const useToast = (): ToastContextType => {
 // ============================================================================
 
 interface UserContextType {
+  hasAccess: boolean;
+  pinProtectedUsers: User[];
+  isSessionLoading: boolean;
   currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
+  setCurrentUser: (user: User | null) => Promise<boolean>;
+  unlockApp: (secret: string) => Promise<boolean>;
+  refreshSession: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    return normalizeUser(sessionStorage.getItem('currentUser'));
-  });
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [pinProtectedUsers, setPinProtectedUsers] = useState<User[]>([]);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
+
+  const applySessionState = useCallback((nextState: SessionState) => {
+    setHasAccess(nextState.hasAccess);
+    setCurrentUserState(nextState.currentUser);
+    setPinProtectedUsers(nextState.pinProtectedUsers);
+  }, []);
+
+  const refreshSession = useCallback(async () => {
+    setIsSessionLoading(true);
+    try {
+      const response = await fetch('/api/session', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        setHasAccess(false);
+        setCurrentUserState(null);
+        setPinProtectedUsers([]);
+        return;
+      }
+
+      const session = (await response.json()) as SessionState;
+      applySessionState(session);
+    } finally {
+      setIsSessionLoading(false);
+    }
+  }, [applySessionState]);
+
+  useEffect(() => {
+    void refreshSession();
+  }, [refreshSession]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleSessionInvalid = () => {
+      void refreshSession();
+    };
+
+    window.addEventListener(sessionInvalidationEvent, handleSessionInvalid);
+    return () =>
+      window.removeEventListener(sessionInvalidationEvent, handleSessionInvalid);
+  }, [refreshSession]);
 
   const value = useMemo(
     () => ({
+      hasAccess,
+      pinProtectedUsers,
+      isSessionLoading,
       currentUser,
-      setCurrentUser: (user: User | null) => {
-        const normalizedUser = user ? normalizeUser(user) : null;
+      setCurrentUser: async (user: User | null) => {
+        const response = await fetch('/api/session/profile', {
+          method: user ? 'POST' : 'DELETE',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: user
+            ? {
+                'Content-Type': 'application/json',
+              }
+            : undefined,
+          body: user ? JSON.stringify({ user }) : undefined,
+        });
 
-        if (normalizedUser) {
-          sessionStorage.setItem('currentUser', normalizedUser);
-        } else {
-          sessionStorage.removeItem('currentUser');
+        if (response.status === 401 || response.status === 403) {
+          await refreshSession();
+          return false;
         }
-        setCurrentUser(normalizedUser);
+
+        if (!response.ok) {
+          throw new Error('Failed to update profile session.');
+        }
+
+        const session = (await response.json()) as SessionState;
+        applySessionState(session);
+        return true;
       },
+      unlockApp: async (secret: string) => {
+        setIsSessionLoading(true);
+        try {
+          const response = await fetch('/api/session/access', {
+            method: 'POST',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ secret }),
+          });
+
+          if (response.status === 401 || response.status === 403) {
+            return false;
+          }
+
+          if (!response.ok) {
+            throw new Error('Failed to unlock app.');
+          }
+
+          await refreshSession();
+          return true;
+        } finally {
+          setIsSessionLoading(false);
+        }
+      },
+      refreshSession,
     }),
-    [currentUser]
+    [
+      applySessionState,
+      currentUser,
+      hasAccess,
+      isSessionLoading,
+      pinProtectedUsers,
+      refreshSession,
+    ]
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
@@ -211,4 +327,18 @@ export const useUser = (): UserContextType => {
     throw new Error('useUser must be used within a UserProvider');
   }
   return context;
+};
+
+export const useAppSession = (): Pick<
+  UserContextType,
+  'hasAccess' | 'pinProtectedUsers' | 'isSessionLoading' | 'unlockApp' | 'refreshSession'
+> => {
+  const context = useUser();
+  return {
+    hasAccess: context.hasAccess,
+    pinProtectedUsers: context.pinProtectedUsers,
+    isSessionLoading: context.isSessionLoading,
+    unlockApp: context.unlockApp,
+    refreshSession: context.refreshSession,
+  };
 };

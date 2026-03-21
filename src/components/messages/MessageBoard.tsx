@@ -3,6 +3,7 @@ import { useToast } from '@/context';
 import type { Message } from '@/types';
 import { spacing, typography } from '@/design-system';
 import ConfirmDialog from '@/ui/ConfirmDialog';
+import SyncBanner from '@/ui/SyncBanner';
 import { useMessages } from '@/hooks/useMessages';
 import MessageInput from './MessageInput';
 import MessageList from './MessageList';
@@ -15,8 +16,11 @@ const MessageBoard: React.FC = () => {
     error,
     isLoading,
     isSubmitting,
+    isDegraded,
+    isSyncBlocked,
     addMessage,
     deleteMessage,
+    retrySync,
   } = useMessages();
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
 
@@ -133,6 +137,11 @@ const MessageBoard: React.FC = () => {
             error={error}
             onDelete={setMessageToDelete}
           />
+          {isDegraded ? (
+            <div style={{ padding: `${spacing.sm} ${spacing.md}` }}>
+              <SyncBanner isBlocked={isSyncBlocked} onRetry={retrySync} />
+            </div>
+          ) : null}
           <MessageInput
             currentUser={currentUser}
             isSubmitting={isSubmitting}

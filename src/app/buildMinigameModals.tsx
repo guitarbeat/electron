@@ -3,8 +3,7 @@ import MessageBoard from '@/components/messages/MessageBoard';
 import SpinWheelGame from '@/components/SpinWheelGame';
 import Matchmaker from '@/components/matchmaker/Matchmaker';
 import QuizEditor from '@/components/quiz/QuizEditor';
-import QuizFlow from '@/components/quiz/QuizFlow';
-import type { QuizData } from '@/hooks/useQuiz';
+import QuizFlowModalContent from '@/app/QuizFlowModalContent';
 import type { User } from '@/types';
 import { spacing } from '@/design-system';
 
@@ -36,7 +35,6 @@ export interface BuildFeatureModalsParams {
   showMatchmaker: boolean;
   quizCompleted: boolean;
   isSpinWheelLocked: boolean;
-  quizData: QuizData | null | undefined;
   currentUser: User | null;
   setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
@@ -56,7 +54,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     showMatchmaker,
     quizCompleted,
     isSpinWheelLocked,
-    quizData,
     currentUser,
     setShowMessages,
     setShowQuizEditor,
@@ -114,20 +111,17 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 900,
       contentStyle: paddedScrollContentStyle,
       content:
-        quizData && currentUser ? (
-          <QuizFlow
-            key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
-            quizData={quizData}
+        currentUser ? (
+          <QuizFlowModalContent
+            currentUser={currentUser}
+            quizCompleted={quizCompleted}
             onComplete={onQuizComplete}
             onEdit={() => {
               setShowQuizFlow(false);
               setShowQuizEditor(true);
             }}
-            isCompleted={false}
           />
-        ) : (
-          null
-        ),
+        ) : null,
     },
     {
       key: 'matchmaker',

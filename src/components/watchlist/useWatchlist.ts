@@ -3,17 +3,17 @@ import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
-  getMemories,
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
 } from '@/services/memoryService';
 import { usePolling } from '@/services/polling';
-import { SortMode, ContentTab, Movie, MovieSuggestion, User, SharedMemory } from '@/types';
+import { SortMode, ContentTab, Movie, MovieSuggestion, User } from '@/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/context';
 import { areDeeplyEqual, sanitizeInput } from '@/utils';
 import { trackMetric } from '@/services/analyticsService';
+import { readScope, retryScopeSync } from '@/services/stateClient';
 
 const POLLING_INTERVAL = 30000;
 interface UseWatchlistProps {
@@ -31,9 +31,18 @@ interface SubmitRecommendationInput {
   title: string;
   suggestedBy?: string;
   reason?: string;
+  preserveSuggestedBy?: boolean;
 }
 
-const normalizeRecommendationAuthor = (currentUser: User | null, suggestedBy?: string): string => {
+const normalizeRecommendationAuthor = (
+  currentUser: User | null,
+  suggestedBy?: string,
+  preserveSuggestedBy = false
+): string => {
+  if (preserveSuggestedBy) {
+    return sanitizeInput(suggestedBy || '') || currentUser || 'Anonymous';
+  }
+
   if (currentUser) {
     return currentUser;
   }
@@ -44,6 +53,7 @@ const normalizeRecommendationAuthor = (currentUser: User | null, suggestedBy?: s
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { showToast } = useToast();
+  const readMemories = useCallback(() => readScope('memories'), []);
 
   // State (from useWatchlistState)
   const [isAdding, setIsAdding] = useState(false);
@@ -78,10 +88,13 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isLoading,
     isSubmitting,
     error: moviesError,
+    isDegraded: isMoviesDegraded,
+    isSyncBlocked: isMoviesSyncBlocked,
     addMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,
+    retrySync: retryMoviesSync,
   } = useMovies(currentUser, isPaused);
 
   const {
@@ -90,25 +103,28 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     acceptSuggestion,
     rejectSuggestion,
     isLoading: isSuggestionsLoading,
+    isDegraded: isSuggestionsDegraded,
+    isSyncBlocked: isSuggestionsSyncBlocked,
+    retrySync: retrySuggestionsSync,
   } = useSuggestions(isPaused);
 
   const {
-    data: polledMemories,
+    data: memoriesSnapshot,
     isLoading: isMemoriesLoading,
     error: memoriesError,
     refresh: refreshMemories,
-  } = usePolling<SharedMemory[]>(getMemories, POLLING_INTERVAL, areDeeplyEqual, {
+  } = usePolling(readMemories, POLLING_INTERVAL, areDeeplyEqual, {
     key: 'memories',
     isPaused,
   });
   const memories = useMemo(() => {
-    return [...(polledMemories || [])].sort((a, b) => {
+    return [...(memoriesSnapshot?.data || [])].sort((a, b) => {
       if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
         return a.isPinned ? -1 : 1;
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [polledMemories]);
+  }, [memoriesSnapshot]);
   const addMemory = useCallback(
     async (movieId: string | undefined, movieTitle: string, author: string, note: string) => {
       const result = await addMemoryService(movieId, movieTitle, author, note);
@@ -235,13 +251,18 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   }, [sortedMovies, pendingSuggestions]);
 
   const submitRecommendation = useCallback(
-    async ({ title, suggestedBy, reason }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
+    async ({
+      title,
+      suggestedBy,
+      reason,
+      preserveSuggestedBy = false,
+    }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
       setIsSubmittingRecommendation(true);
 
       try {
         const suggestion = await addSuggestion(
           title,
-          normalizeRecommendationAuthor(currentUser, suggestedBy),
+          normalizeRecommendationAuthor(currentUser, suggestedBy, preserveSuggestedBy),
           reason
         );
         trackMetric('suggestion_submitted');
@@ -301,6 +322,22 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     [currentUser, pendingSuggestions, rejectSuggestion]
   );
 
+  const retryWatchlistSync = useCallback(async () => {
+    await Promise.all([
+      retryMoviesSync(),
+      retrySuggestionsSync(),
+      retryScopeSync('memories'),
+    ]);
+    refreshMemories();
+  }, [refreshMemories, retryMoviesSync, retrySuggestionsSync]);
+
+  const isWatchlistDegraded =
+    isMoviesDegraded || isSuggestionsDegraded || (memoriesSnapshot?.degraded ?? false);
+  const isWatchlistSyncBlocked =
+    isMoviesSyncBlocked ||
+    isSuggestionsSyncBlocked ||
+    (memoriesSnapshot?.blocked ?? false);
+
   return {
     // State returns
     isMobile,
@@ -328,10 +365,13 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isLoading,
     isSubmitting,
     moviesError,
+    isWatchlistDegraded,
+    isWatchlistSyncBlocked,
     addMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,
+    retryWatchlistSync,
     pendingSuggestions,
     submitRecommendation,
     acceptSuggestionToWatchlist,
