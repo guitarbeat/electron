@@ -4,7 +4,7 @@
 
 - App: collaborative movie-night/watchlist SPA built with React 19, TypeScript, and Vite.
 - Package manager: prefer `pnpm`. `pnpm-lock.yaml` is the active lockfile.
-- Runtime: Node.js 22+ (`package.json` engines).
+- Runtime: Node.js 22.x (`package.json` engines).
 - Deploy shape: static frontend plus serverless-style handlers in `api/`.
 
 ## Core Commands
