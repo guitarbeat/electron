@@ -7,7 +7,6 @@ import type { MainTab } from '@/types';
 import BottomSheet from '@/ui/BottomSheet';
 import MinigameModal from '@/ui/MinigameModal';
 import UserSelection from '@/components/common/UserSelection';
-import FoodMergeGame from '@/components/food-merge/FoodMergeGame';
 import SpinWheelGame from '@/components/SpinWheelGame';
 import FloatingMemoriesPanel from '@/components/memories/FloatingMemoriesPanel';
 import Matchmaker from '@/components/matchmaker/Matchmaker';
@@ -112,7 +111,6 @@ const AppInner: React.FC = () => {
     () => localStorage.getItem('quizCompleted') === 'true'
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [showFoodMerge, setShowFoodMerge] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showMemories, setShowMemories] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
@@ -263,7 +261,6 @@ const AppInner: React.FC = () => {
       { label: 'Matchmaker', icon: '💘', action: openMatchmaker },
       { label: 'Memories', icon: '📸', action: () => setShowMemories(true) },
       { label: 'Spin Wheel', icon: '🎰', action: () => setShowSpinWheel(true) },
-      { label: 'Food Merge', icon: '🍔', action: () => setShowFoodMerge(true) },
     ].filter(Boolean) as CommandActionItem[],
     [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
   );
@@ -367,16 +364,6 @@ const AppInner: React.FC = () => {
       maxWidth: 1200,
       maxHeight: 900,
       content: <QuizEditor onClose={() => setShowQuizEditor(false)} />,
-    },
-    {
-      key: 'food-merge',
-      isOpen: showFoodMerge,
-      onClose: () => setShowFoodMerge(false),
-      title: 'Food Merge',
-      ariaLabel: 'Food merge game',
-      maxWidth: 620,
-      maxHeight: 780,
-      content: <FoodMergeGame />,
     },
     {
       key: 'spin-wheel',
