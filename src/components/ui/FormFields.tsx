@@ -10,13 +10,23 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = '', style, id: providedId, fullWidth = true, ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      className = '',
+      style,
+      id: providedId,
+      fullWidth = true,
+      onFocus,
+      onBlur,
+      ...props
+    },
+    ref
+  ) => {
     const generatedId = useId();
     const id = providedId || generatedId;
     const errorId = `${id}-error`;
-    const restingBorderColor =
-      typeof style?.borderColor === 'string' ? style.borderColor : colors.borderSubtle;
-    const restingBoxShadow = typeof style?.boxShadow === 'string' ? style.boxShadow : 'none';
 
     return (
       <div
@@ -50,29 +60,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={`ui-input__field ${error ? 'ui-input__field--error' : ''} ${className}`.trim()}
             style={{
               width: '100%',
-              padding: `${spacing.sm} ${spacing.md}`,
-              backgroundColor: colors.surface0,
-              border: `1.5px solid ${error ? colors.error : colors.borderSubtle}`,
-              borderRadius: radius.md,
-              color: colors.textPrimary,
-              fontFamily: typography.fontFamily.body.join(', '),
-              fontSize: typography.fontSize.base,
-              transition: `all ${motion.duration.fast} ${motion.easing.ease}`,
-              outline: 'none',
               ...style,
             }}
-            onFocus={(e) => {
-              if (!error) {
-                e.currentTarget.style.borderColor = colors.accent;
-                e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.accentMuted}`;
-              }
-            }}
-            onBlur={(e) => {
-              if (!error) {
-                e.currentTarget.style.borderColor = restingBorderColor;
-                e.currentTarget.style.boxShadow = restingBoxShadow;
-              }
-            }}
+            onFocus={onFocus}
+            onBlur={onBlur}
             {...props}
           />
         </div>

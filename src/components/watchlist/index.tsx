@@ -16,7 +16,6 @@ import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import BottomSheet from '@/ui/BottomSheet';
 import { Input, Textarea } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import SyncBanner from '@/components/ui/SyncBanner';
@@ -342,6 +341,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       />
 
       <div
+        className="watchlist-top-controls__toolbar"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -350,6 +350,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         }}
       >
         <form
+          className="watchlist-top-controls__search-form"
           onSubmit={(event) => {
             event.preventDefault();
             void onSubmit();
@@ -362,8 +363,9 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             flexWrap: 'wrap',
           }}
         >
-          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+          <div className="watchlist-top-controls__search-shell" style={{ flex: '1 1 220px', minWidth: 0 }}>
             <Input
+              className="watchlist-top-controls__search-field"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Movie title"
@@ -372,7 +374,10 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             />
           </div>
           {hasSearchQuery && (
-            <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+            <div
+              className="watchlist-top-controls__search-actions"
+              style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}
+            >
               {currentUser ? (
                 <Button
                   type="submit"
@@ -382,6 +387,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                   isLoading={isAdding}
                   title="Add movie"
                   aria-label="Add movie"
+                  className="watchlist-top-controls__search-button"
                 >
                   Add
                 </Button>
@@ -406,6 +412,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                 isLoading={isSharing}
                 title="Share movie suggestion link"
                 aria-label="Share movie suggestion link"
+                className="watchlist-top-controls__share-button"
               >
                 <ShareIcon size={14} /> Share
               </Button>
@@ -420,6 +427,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           disabled={isAdding || isSubmittingRecommendation || !canSurprise}
           title="Surprise me"
           aria-label="Pick a random movie"
+          className="watchlist-top-controls__surprise"
           style={{
             fontSize: '1.25rem',
             padding: spacing.xs,
@@ -640,7 +648,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   onTogglePin,
   isHighlighted = false,
 }) => {
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(false);
   const [showMemories, setShowMemories] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -651,20 +658,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const hasSharedMemories = memories.length > 0;
   const canOpenNotes = hasSharedMemories || Boolean(currentUser);
   const memoryCountText = `${memories.length} note${memories.length === 1 ? '' : 's'}`;
-  const firstMemoryNote = memories[0]?.note;
-  const memoryPreviewText = firstMemoryNote
-    ? ` - "${firstMemoryNote.slice(0, 56)}${firstMemoryNote.length > 56 ? '...' : ''}"`
-    : '';
-
-  const handleCardClick = () => {
-    if (isMobile) {
-      setIsBottomSheetOpen(true);
-    }
-  };
-
-  const runBottomSheetAction = (action: () => void) => {
-    executeAction(action, () => setIsBottomSheetOpen(false));
-  };
 
   const handleToggleMemories = (event?: React.MouseEvent) => {
     event?.stopPropagation();
@@ -680,7 +673,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
       console.error('Failed to toggle watched status', error);
     } finally {
       setIsUpdating(false);
-      setIsBottomSheetOpen(false);
     }
   };
 
@@ -692,14 +684,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-card slide-up ${
           watchedByBoth ? 'movie-item-card--watched' : ''
         } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
-        onClick={isMobile ? handleCardClick : undefined}
         data-movie-id={movie.id}
         style={{
           padding: 0,
           marginBottom: 0,
           animationDelay,
           borderColor: watchedByBoth ? colors.accent : colors.border,
-          cursor: isMobile ? 'pointer' : 'default',
         }}
       >
         <div className="movie-item-poster-wrap">
@@ -738,7 +728,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
               currentUser={currentUser}
               watchedByCurrentUser={watchedByCurrentUser}
               isUpdating={isUpdating}
-              isMobile={isMobile}
               onToggle={handleToggle}
               onDelete={onDelete}
             />
@@ -758,57 +747,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onTogglePin={onTogglePin}
         />
       )}
-
-      <BottomSheet
-        isOpen={isBottomSheetOpen}
-        onClose={() => setIsBottomSheetOpen(false)}
-        title={movie.title}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-          <div className="movie-sheet-summary">
-            <MoviePoster movie={movie} className="movie-poster-wrap--sheet" />
-            <div className="movie-sheet-summary__details">
-              <MovieDetails movie={movie} />
-
-              <div className="movie-sheet-watchers">
-                {movie.watchedBy.includes('Aaron') && (
-                  <WatcherBadge user="Aaron" variant="text" showLabel />
-                )}
-                {movie.watchedBy.includes('Electra') && (
-                  <WatcherBadge user="Electra" variant="text" showLabel />
-                )}
-              </div>
-
-              {canOpenNotes && (
-                <button
-                  type="button"
-                  onClick={() => runBottomSheetAction(() => setShowMemories(true))}
-                  className="movie-sheet-memory-button"
-                  aria-label={
-                    hasSharedMemories
-                      ? `View notes for "${movie.title}"`
-                      : `Add note to "${movie.title}"`
-                  }
-                >
-                  {hasSharedMemories ? memoryCountText : 'Add note'}
-                  {hasSharedMemories ? memoryPreviewText : ''}
-                </button>
-              )}
-            </div>
-          </div>
-
-          <MovieActions
-            movie={movie}
-            currentUser={currentUser}
-            watchedByCurrentUser={watchedByCurrentUser}
-            isUpdating={isUpdating}
-            isMobile={isMobile}
-            onToggle={handleToggle}
-            onDelete={() => runBottomSheetAction(onDelete)}
-            onCloseBottomSheet={() => setIsBottomSheetOpen(false)}
-          />
-        </div>
-      </BottomSheet>
     </>
   );
 };
@@ -887,10 +825,8 @@ interface MovieActionsProps {
   currentUser: User | null;
   watchedByCurrentUser: boolean;
   isUpdating: boolean;
-  isMobile: boolean;
   onToggle: () => void;
   onDelete: () => void;
-  onCloseBottomSheet?: () => void;
 }
 
 interface MovieIconActionButtonProps {
@@ -935,10 +871,8 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   currentUser,
   watchedByCurrentUser,
   isUpdating,
-  isMobile,
   onToggle,
   onDelete,
-  onCloseBottomSheet,
 }) => {
   const isGuest = !currentUser;
   const primaryActionLabel = watchedByCurrentUser ? 'Unwatch' : 'Mark watched';
@@ -949,49 +883,14 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     event.stopPropagation();
   };
 
-  const runAction = (action?: () => void) => {
-    executeAction(action, onCloseBottomSheet);
-  };
-
   const handlePrimaryAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
-    if (isMobile && onCloseBottomSheet) {
-      runAction(onToggle);
-      return;
-    }
     executeAction(onToggle);
   };
 
   const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
-    runAction(onDelete);
-  };
-
-  const primaryActionVisualStyle: React.CSSProperties = watchedByCurrentUser
-    ? {
-        color: '#f2fff3',
-        background:
-          'radial-gradient(circle at 20% 0%, rgba(126, 224, 140, 0.24) 0%, transparent 58%), linear-gradient(180deg, rgba(34, 106, 50, 0.92) 0%, rgba(18, 56, 30, 0.95) 100%)',
-        border: '1px solid color-mix(in srgb, var(--color-success) 46%, transparent)',
-        boxShadow:
-          '0 10px 20px rgba(0, 0, 0, 0.32), 0 0 18px rgba(126, 224, 140, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.07)',
-      }
-    : {
-        color: '#f5f9ff',
-        background:
-          'radial-gradient(circle at 20% 0%, rgba(179, 232, 255, 0.22) 0%, transparent 55%), linear-gradient(180deg, rgba(12, 22, 40, 0.92) 0%, rgba(8, 14, 24, 0.94) 100%)',
-        border: '1px solid rgba(173, 210, 255, 0.56)',
-        boxShadow:
-          '0 10px 20px rgba(0, 0, 0, 0.32), 0 0 18px rgba(149, 220, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-      };
-
-  const mobileActionStyle: React.CSSProperties = {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    opacity: isGuest ? 0.5 : 1,
+    executeAction(onDelete);
   };
 
   const primaryButton = (
@@ -999,7 +898,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       type="button"
       onClick={handlePrimaryAction}
       variant={watchedByCurrentUser ? 'primary' : 'secondary'}
-      size={isMobile ? 'md' : 'sm'}
+      size="sm"
       isLoading={isUpdating}
       loadingText="Updating..."
       disabled={isGuest}
@@ -1011,15 +910,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       }
       className={`movie-item-primary-action ${watchedByCurrentUser ? 'movie-item-primary-action--watched' : 'movie-item-primary-action--unwatched'}`}
       style={{
-        ...primaryActionVisualStyle,
         opacity: isGuest ? 0.5 : 1,
-        ...(isMobile && {
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: spacing.sm,
-        }),
       }}
     >
       {watchedByCurrentUser ? (
@@ -1037,26 +928,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       </span>
     </Button>
   );
-
-  if (isMobile) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-        {primaryButton}
-
-        <Button
-          type="button"
-          onClick={handleDeleteAction}
-          variant="danger"
-          disabled={isGuest}
-          className="movie-item-mobile-action"
-          style={mobileActionStyle}
-        >
-          <TrashIcon />
-          Remove from Watchlist
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className="movie-actions">
@@ -1244,70 +1115,6 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           }}
         >
           No notes on this movie yet. Leave the first one above.
-        </p>
-      )}
-    </div>
-  );
-};
-
-const MovieDetails: React.FC<{ movie: Movie; className?: string }> = ({
-  movie,
-  className = '',
-}) => {
-  return (
-    <div className={`movie-details ${className}`}>
-      {(movie.year || movie.runtime || movie.imdbRating || movie.category) && (
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            marginBottom: spacing.xs,
-          }}
-        >
-          {movie.year && (
-            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
-              {movie.year}
-            </span>
-          )}
-          {movie.runtime && (
-            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
-              {movie.runtime}
-            </span>
-          )}
-          {movie.imdbRating && (
-            <span style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary }}>
-              {movie.imdbRating} IMDb
-            </span>
-          )}
-          {movie.category && (
-            <span
-              style={{
-                color: colors.accentLight,
-                backgroundColor: `${colors.accent}15`,
-                padding: '2px 8px',
-                borderRadius: radius.full,
-                ...typography.presets.badge,
-                border: `1px solid ${colors.accent}30`,
-              }}
-            >
-              {movie.category}
-            </span>
-          )}
-        </div>
-      )}
-
-      {movie.plot && (
-        <p
-          style={{
-            margin: 0,
-            color: colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            lineHeight: typography.lineHeight.normal,
-          }}
-        >
-          {movie.plot}
         </p>
       )}
     </div>
