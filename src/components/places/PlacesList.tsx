@@ -11,9 +11,10 @@ import { Input } from '@/ui/FormFields';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import PlacesMap from './PlacesMap';
+import ThemeToggle from '@/ui/ThemeToggle';
 import { CheckIcon, PlusIcon, TrashIcon } from '@/common/icons';
 import { colors, spacing, typography, motion } from '@/design-system';
-import type { Place } from '@/types';
+import type { Place, MainTab } from '@/types';
 
 type PlaceFilter = 'all' | 'queue' | 'visited';
 
@@ -229,7 +230,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   );
 };
 
-const PlacesList: React.FC = () => {
+interface PlacesListProps {
+  activeTab?: MainTab;
+  onTabChange?: (tab: MainTab) => void;
+  isMobile?: boolean;
+}
+
+const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobile: propIsMobile }) => {
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -352,15 +359,24 @@ const PlacesList: React.FC = () => {
         mobileClassName="places-workspace"
         desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
         first={
-          <PlacesTopControls
-            nameInput={nameInput}
-            notesInput={notesInput}
-            nameInputRef={nameInputRef}
-            isSubmitting={isSubmitting}
-            onNameChange={setNameInput}
-            onNotesChange={setNotesInput}
-            onSubmit={handleAdd}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+            {activeTab && onTabChange && (
+              <ThemeToggle
+                activeTab={activeTab}
+                onChange={onTabChange}
+                compact={propIsMobile || isMobile}
+              />
+            )}
+            <PlacesTopControls
+              nameInput={nameInput}
+              notesInput={notesInput}
+              nameInputRef={nameInputRef}
+              isSubmitting={isSubmitting}
+              onNameChange={setNameInput}
+              onNotesChange={setNotesInput}
+              onSubmit={handleAdd}
+            />
+          </div>
         }
         second={
           <Card
