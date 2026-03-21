@@ -11,7 +11,6 @@ export { default as Confetti } from './effects/Confetti';
 // Feature Components
 export { default as Matchmaker } from './matchmaker/Matchmaker';
 export { default as SpinWheelGame } from './SpinWheelGame';
-export { default as FoodMergeGame } from './food-merge/FoodMergeGame';
 export { default as FloatingMemoriesPanel } from './memories/FloatingMemoriesPanel';
 export { default as PlacesList } from './places/PlacesList';
 export { default as PlacesMap } from './places/PlacesMap';
