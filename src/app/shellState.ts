@@ -1,4 +1,4 @@
-import type { MainTab, User } from '@/types';
+import type { MainTab, User } from '@/shared/types';
 
 export interface QuizLaunchState {
   label: string;

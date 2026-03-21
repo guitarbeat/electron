@@ -9,7 +9,7 @@ import {
   Vec2,
   type OGLRenderingContext,
 } from 'ogl';
-import { useTheme } from '@/context';
+import { useTheme } from '@/app/providers';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import RippleEffect from './RippleEffect';
 

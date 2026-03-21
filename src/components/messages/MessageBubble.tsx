@@ -1,7 +1,7 @@
 import React from 'react';
-import type { Message, User } from '@/types';
+import type { Message, User } from '@/shared/types';
 import { TrashIcon } from '@/common/icons';
-import { spacing, typography } from '@/design-system';
+import { spacing, typography } from '@/theme/tokens';
 import { formatMessageTimestamp, IOS_BLUE, IOS_GRAY, IOS_TIMESTAMP, isMessageFromCurrentUser } from './messageUtils';
 
 interface MessageBubbleProps {

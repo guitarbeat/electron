@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useUser } from '@/context';
-import type { Message } from '@/types';
+import { useUser } from '@/app/providers';
+import type { Message } from '@/shared/types';
 import { areDeeplyEqual, sanitizeInput } from '@/utils';
 import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/messageService';
 import { usePolling } from '@/services/polling';
@@ -88,6 +88,7 @@ export const useMessages = () => {
     isSubmitting,
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
+    syncWarning: snapshot?.warning,
     addMessage,
     deleteMessage,
     refresh,

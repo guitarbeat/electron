@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback, useImperativeHandle } from 'react';
-import { User, Movie } from '@/types';
+import { User, Movie } from '@/shared/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
 import { useMovies } from '@/hooks/useMovies';
-import { useToast } from '@/context';
+import { useToast } from '@/app/providers';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import ConfirmDialog from '@/ui/ConfirmDialog';
@@ -15,7 +15,7 @@ import {
   typography,
   shadows,
   motion as motionTokens,
-} from '@/design-system';
+} from '@/theme/tokens';
 import {
   SHORT_AND_SWEET_VIBE,
   createMatchmakerPool,
@@ -265,6 +265,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     isSubmitting,
     isDegraded,
     isSyncBlocked,
+    syncWarning,
     startNewGame,
     swipe,
     undo,
@@ -438,7 +439,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
               label={
                 isSyncBlocked
                   ? 'Matchmaker hit a shared-state conflict. Refresh and retry.'
-                  : 'Matchmaker changes are being kept locally until shared sync recovers.'
+                  : syncWarning || 'Matchmaker changes are being kept locally until shared sync recovers.'
               }
             />
           </div>

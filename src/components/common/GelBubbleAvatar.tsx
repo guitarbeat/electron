@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from '@/types';
+import { User } from '@/shared/types';
 
 type BubbleSize = 'default' | 'compact' | 'tiny' | 'action';
 

@@ -1,7 +1,7 @@
 import { createHmac, pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
 
-import type { User } from '../../src/types.ts';
-import { isUser } from '../../src/utils.ts';
+import type { User } from '../../src/shared/types.ts';
+import { isUser } from '../../src/utils/shared.ts';
 
 const PROFILE_COOKIE = 'movie_watch_profile';
 const PROFILE_TTL_SECONDS = 60 * 60 * 24 * 7;

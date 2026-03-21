@@ -13,8 +13,8 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import type { MainTab, User } from '@/types';
-import { moviesTheme, placesTheme, spacing } from '@/design-system';
+import type { MainTab, User } from '@/shared/types';
+import { moviesTheme, placesTheme, spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/stateClient';
 import type { SessionState } from '@/services/stateTypes';

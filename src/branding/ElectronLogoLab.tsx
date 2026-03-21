@@ -112,8 +112,8 @@ const ElectronLogoLab: React.FC<ElectronLogoLabProps> = ({
           </h1>
           <p className="electron-logo-lab__lede">
             Each concept is tuned for the real icon footprint inside the floating action bubble and
-            checked again at favicon sizes. The default app route now uses the selected chrome AE
-            logo, and this lab stays available for comparing the original vector explorations.
+            checked again at favicon sizes. The favicon can use the chrome AE logo, while the
+            default app route keeps a cleaner utility bubble.
           </p>
         </div>
 

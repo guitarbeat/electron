@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { zIndex, motion } from '@/design-system';
+import { zIndex, motion } from '@/theme/tokens';
 import GelBubbleAvatar from '../common/GelBubbleAvatar';
 import { QuickActionsIcon } from '../common/icons';
-import { User } from '@/types';
+import { User } from '@/shared/types';
 
 interface ActionBubbleProps {
   currentUser?: User | null;

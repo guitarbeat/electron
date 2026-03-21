@@ -1,4 +1,4 @@
-import type { QuizCharacter, QuizQuestion } from '../components/quiz/types';
+import type { QuizCharacter, QuizQuestion } from '../components/quiz/types.ts';
 import type {
   MatchmakerGame,
   Message,
@@ -7,7 +7,7 @@ import type {
   Place,
   SharedMemory,
   User,
-} from '../types';
+} from '../shared/types.ts';
 
 export const STATE_SCOPES = [
   'movies',
@@ -51,6 +51,7 @@ export interface StateEnvelope<T> {
   data: T;
   version: string;
   degraded: boolean;
+  warning?: string;
 }
 
 export interface ScopeSnapshot<T> extends StateEnvelope<T> {

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { Message, User } from '@/types';
-import { spacing, typography } from '@/design-system';
+import type { Message, User } from '@/shared/types';
+import { spacing, typography } from '@/theme/tokens';
 import MessageBubble from './MessageBubble';
 
 interface MessageListProps {

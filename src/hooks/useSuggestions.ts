@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { usePolling } from '@/services/polling';
 import { areDeeplyEqual, sanitizeInput } from '@/utils';
-import { MovieSuggestion, User } from '@/types';
-import { useUser } from '@/context';
+import { MovieSuggestion, User } from '@/shared/types';
+import { useUser } from '@/app/providers';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 
 const POLLING_INTERVAL = 60000;
@@ -142,6 +142,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
     error,
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
+    syncWarning: snapshot?.warning,
     refresh,
     retrySync,
     addSuggestion,

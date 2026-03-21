@@ -1,11 +1,11 @@
 import type { CSSProperties, ReactNode } from 'react';
 import MessageBoard from '@/components/messages/MessageBoard';
-import SpinWheelGame from '@/components/SpinWheelGame';
+import SpinWheelGame from '@/components/spinWheel/SpinWheelGame';
 import Matchmaker from '@/components/matchmaker/Matchmaker';
 import QuizEditor from '@/components/quiz/QuizEditor';
 import QuizFlowModalContent from '@/app/QuizFlowModalContent';
-import type { User } from '@/types';
-import { spacing } from '@/design-system';
+import type { User } from '@/shared/types';
+import { spacing } from '@/theme/tokens';
 
 export interface AppModalConfig {
   key: string;

@@ -1,4 +1,4 @@
-import type { Message, User } from '@/types';
+import type { Message, User } from '@/shared/types';
 
 export const IOS_BLUE = '#007aff';
 export const IOS_GRAY = '#e5e5ea';

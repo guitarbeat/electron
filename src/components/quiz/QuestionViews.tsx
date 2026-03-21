@@ -6,7 +6,7 @@ import type {
   XYAxisQuestion as XYAxisQuestionType,
 } from './types';
 import Button from '@/ui/Button';
-import { spacing, typography, colors, shadows, radius } from '@/design-system';
+import { spacing, typography, colors, shadows, radius } from '@/theme/tokens';
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;

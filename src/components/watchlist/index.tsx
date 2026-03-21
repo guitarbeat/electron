@@ -5,9 +5,9 @@ import {
   parseSharedSuggestionIntent,
   type SharedSuggestionIntent,
 } from '@/app/sharedSuggestion';
-import { useUser } from '@/context';
+import { useUser } from '@/app/providers';
 import { useWatchlist } from './useWatchlist';
-import { ContentTab, Movie, MovieSuggestion, SharedMemory, SortMode, User, WatchlistProps } from '@/types';
+import { ContentTab, Movie, MovieSuggestion, SharedMemory, SortMode, User, WatchlistProps } from '@/shared/types';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { executeAction } from '@/utils';
 import ConfirmDialog from '@/ui/ConfirmDialog';
@@ -30,7 +30,7 @@ import {
   ShareIcon,
   TrashIcon,
 } from '@/common/icons';
-import { colors, motion, radius, spacing, typography } from '@/design-system';
+import { colors, motion, radius, spacing, typography } from '@/theme/tokens';
 import { trackMetric } from '@/services/analyticsService';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
@@ -770,17 +770,8 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
       ) : (
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
-            <span className="movie-poster-fallback__ornament" aria-hidden="true">
-              ✦
-            </span>
             <h3 className="movie-poster-fallback__title">{movie.title}</h3>
             {movie.year && <span className="movie-poster-fallback__year">{movie.year}</span>}
-            <span
-              className="movie-poster-fallback__ornament movie-poster-fallback__ornament--bottom"
-              aria-hidden="true"
-            >
-              ✦
-            </span>
           </div>
         </div>
       )}
@@ -1167,6 +1158,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     toggleMemoryPin,
     isWatchlistDegraded,
     isWatchlistSyncBlocked,
+    watchlistSyncWarning,
     retryWatchlistSync,
     filteredMovies,
     filteredSuggestions,
@@ -1522,7 +1514,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           label={
             isWatchlistSyncBlocked
               ? 'A shared watchlist change conflicted with local edits. Refresh and retry.'
-              : 'Watchlist changes are being kept locally until shared sync recovers.'
+              : watchlistSyncWarning ||
+                'Watchlist changes are being kept locally until shared sync recovers.'
           }
         />
       )}

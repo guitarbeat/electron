@@ -8,7 +8,7 @@ import {
   stepSnakeGame,
   toggleSnakePause,
   type SnakeGameState,
-} from './snake/snakeGame.ts';
+} from './snakeEngine.ts';
 
 const createState = (overrides: Partial<SnakeGameState> = {}): SnakeGameState => ({
   boardWidth: 5,

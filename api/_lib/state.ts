@@ -33,14 +33,14 @@ import type {
   Place,
   SharedMemory,
   User,
-} from '../../src/types.ts';
+} from '../../src/shared/types.ts';
 import {
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
   isValidUrl,
   parseJsonContent,
   sanitizeInput,
-} from '../../src/utils.ts';
+} from '../../src/utils/shared.ts';
 import {
   badRequestResponse,
   conflictResponse,
@@ -1001,6 +1001,18 @@ const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
   };
 };
 
+const getScopeWarning = (error: unknown): string | undefined => {
+  if (!(error instanceof Error)) {
+    return undefined;
+  }
+
+  if (error.message === 'GIST_ID is not configured.') {
+    return 'Shared sync is unavailable because the server is missing GIST_ID. Set GIST_ID to load and share data.';
+  }
+
+  return undefined;
+};
+
 const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
   let payload: unknown;
   try {
@@ -1066,6 +1078,7 @@ export const createReadHandler =
       let clientData: StateScopeDataMap[TScope];
       let version: string;
       let degraded = false;
+      let warning: string | undefined;
 
       try {
         const stored = await readScopeStoredData(scope);
@@ -1076,11 +1089,12 @@ export const createReadHandler =
         clientData = fallback.clientData;
         version = fallback.version;
         degraded = true;
+        warning = getScopeWarning(error);
         console.warn(`Falling back to default ${scope} state.`, error);
       }
 
       const incomingEtag = normalizeEtag(req.headers.get('if-none-match'));
-      if (incomingEtag && incomingEtag === normalizeEtag(version)) {
+      if (!degraded && incomingEtag && incomingEtag === normalizeEtag(version)) {
         return new Response(null, {
           status: 304,
           headers: {
@@ -1095,6 +1109,7 @@ export const createReadHandler =
           data: clientData,
           version,
           degraded,
+          warning,
         },
         {
           headers: {

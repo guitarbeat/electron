@@ -141,6 +141,7 @@ export const useQuiz = (isPaused: boolean = false) => {
     isSaving,
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
+    syncWarning: snapshot?.warning,
     refresh,
     retrySync,
     updateQuestions,

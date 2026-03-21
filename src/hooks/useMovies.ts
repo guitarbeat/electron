@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import type { Movie, User } from '@/types';
+import type { Movie, User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
 import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
@@ -313,6 +313,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     isSubmitting,
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
+    syncWarning: snapshot?.warning,
     addMovie,
     toggleWatched,
     deleteMovie,

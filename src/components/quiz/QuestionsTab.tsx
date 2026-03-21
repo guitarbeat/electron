@@ -14,8 +14,8 @@ import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { useToast } from '@/context';
-import { spacing, colors, typography, radius } from '@/design-system';
+import { useToast } from '@/app/providers';
+import { spacing, colors, typography, radius } from '@/theme/tokens';
 
 interface QuestionsTabProps {
   questions: QuizQuestion[];

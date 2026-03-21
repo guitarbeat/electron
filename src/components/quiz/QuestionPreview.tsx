@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { QuizQuestion, MultipleChoiceQuestion, ImageChoiceQuestion, XYAxisQuestion } from './types';
-import { spacing, colors, typography, radius } from '@/design-system';
+import { spacing, colors, typography, radius } from '@/theme/tokens';
 import Card from '@/ui/Card';
 
 interface QuestionPreviewProps {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput } from './utils.ts';
+import { executeAction, isValidUrl, sanitizeInput } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {

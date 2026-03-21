@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { colors } from '@/design-system';
+import { colors } from '@/theme/tokens';
 import { computeActionFanPositions } from './actionFanLayout';
 import type { CommandActionItem } from './CommandDeck';
 

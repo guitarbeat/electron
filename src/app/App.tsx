@@ -15,15 +15,16 @@ import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
+import { QuickActionsIcon } from '@/common/icons';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
-import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/context';
-import { colors, spacing } from '@/design-system';
+import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/app/providers';
+import { colors, spacing } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import type { MainTab } from '@/types';
+import type { MainTab } from '@/shared/types';
 import Card from '@/ui/Card';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
@@ -413,12 +414,7 @@ const App: React.FC = () => {
               }}
             >
               <span className="action-bubble__icon" aria-hidden="true">
-                <img
-                  src={ELECTRON_LOGO_MARK_PATH}
-                  alt=""
-                  className="action-bubble__icon-image"
-                  draggable="false"
-                />
+                <QuickActionsIcon size="100%" />
               </span>
               <span className="sr-only">Messages and extras</span>
             </button>
@@ -465,9 +461,23 @@ const App: React.FC = () => {
                       border: `1px solid ${colors.borderSubtle}`,
                     }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                      <p className="duo-status-card__eyebrow">Shared page</p>
-                      <h2 className="duo-status-card__title">Movies, dates, and messages</h2>
+                    <div className="duo-status-card__brand">
+                      <div className="duo-status-card__mark-shell" aria-hidden="true">
+                        <img
+                          src={ELECTRON_LOGO_MARK_PATH}
+                          alt=""
+                          className="duo-status-card__mark"
+                          draggable="false"
+                        />
+                      </div>
+
+                      <div className="duo-status-card__brand-copy">
+                        <p className="duo-status-card__eyebrow">Electron deck</p>
+                        <h2 className="duo-status-card__title">Movies, dates, and messages</h2>
+                        <p className="duo-status-card__copy">
+                          One shared board for movie picks, date spots, and the running chat.
+                        </p>
+                      </div>
                     </div>
 
                     <div className="duo-status-card__facts" aria-label="Page summary">
@@ -485,6 +495,17 @@ const App: React.FC = () => {
                 className="workspace-header workspace-header--simplified"
                 aria-label="Workspace controls"
               >
+                <p className="workspace-header__brandline">
+                  <span className="workspace-header__brand-mark-shell" aria-hidden="true">
+                    <img
+                      src={ELECTRON_LOGO_MARK_PATH}
+                      alt=""
+                      className="workspace-header__brand-mark"
+                      draggable="false"
+                    />
+                  </span>
+                  <span className="workspace-header__brand-text">Electron</span>
+                </p>
                 <p className="workspace-header__active">
                   <span className="workspace-header__active-icon">{workspaceMeta.icon}</span>
                   {workspaceMeta.eyebrow}

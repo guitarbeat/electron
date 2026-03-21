@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from './Button';
-import { colors, radius, spacing, typography } from '@/design-system';
+import { colors, radius, spacing, typography } from '@/theme/tokens';
 
 interface SyncBannerProps {
   isBlocked?: boolean;

@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react';
-import { useAppSession, useUser } from '@/context';
+import { useAppSession, useUser } from '@/app/providers';
 import { mutateScope } from '@/services/stateClient';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
-import type { User } from '../types.ts';
+import type { User } from '../shared/types.ts';
 
 const PINS_POLL_INTERVAL = 30000;
 

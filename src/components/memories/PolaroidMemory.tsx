@@ -1,7 +1,7 @@
 import React from 'react';
-import type { SharedMemory } from '@/types';
+import type { SharedMemory } from '@/shared/types';
 import { getStickyNoteRotation } from './memoryUtils';
-import { typography } from '@/design-system';
+import { typography } from '@/theme/tokens';
 
 interface PolaroidMemoryProps {
   memory: SharedMemory;

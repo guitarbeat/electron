@@ -4,8 +4,8 @@ import {
   isMessageRecord,
   parseMessagesContent,
 } from './stateSchemas.ts';
-import type { Message } from '@/types';
-import { sanitizeInput } from '../utils.ts';
+import type { Message } from '@/shared/types';
+import { sanitizeInput } from '../utils/shared.ts';
 
 export { cloneMessages, isMessageRecord, parseMessagesContent };
 

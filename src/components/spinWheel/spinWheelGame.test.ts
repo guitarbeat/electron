@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { Movie } from '@/types';
+import type { Movie } from '@/shared/types';
 import {
   appendSpinHistory,
   buildSpinWheelGradient,
   computeSpinOutcome,
   getSpinCandidates,
-} from './spinWheel/spinWheelGame.ts';
+} from './spinWheelEngine.ts';
 
 const movies: Movie[] = [
   {

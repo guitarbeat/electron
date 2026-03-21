@@ -3,7 +3,7 @@ import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import { useMovies } from '@/hooks/useMovies';
 import { usePolling } from '@/services/polling';
-import { useUser } from '@/context';
+import { useUser } from '@/app/providers';
 import {
   addMemory,
   deleteMemory,
@@ -12,10 +12,10 @@ import {
   updateMemory,
 } from '@/services/memoryService';
 import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
-import type { SharedMemory } from '@/types';
+import type { SharedMemory } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';
-import { colors, spacing, radius } from '@/design-system';
+import { colors, spacing, radius } from '@/theme/tokens';
 
 const memoryLaneInputStyle: React.CSSProperties = {
   borderRadius: '18px',
@@ -270,7 +270,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                         {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
                       </p>
                     </div>
-                    {memory.isPinned ? <span className="memory-lane__tag">★ Pinned</span> : null}
+                    {memory.isPinned ? <span className="memory-lane__tag">Pinned</span> : null}
                   </div>
 
                   {editingId === memory.id ? (

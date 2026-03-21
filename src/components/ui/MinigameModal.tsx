@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { colors, spacing, shadows, typography, radius, zIndex, motion } from '@/design-system';
+import { colors, spacing, shadows, typography, radius, zIndex, motion } from '@/theme/tokens';
 import { getModalOverlayStyle, isFocusWithin, trapFocusOnTab } from './modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
 
