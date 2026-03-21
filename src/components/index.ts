@@ -7,6 +7,8 @@ export * from './common';
 // Effects
 export { default as RetroEffects } from './effects/RetroEffects';
 export { default as Confetti } from './effects/Confetti';
+export { default as Moire } from './effects/Moire';
+export { default as FrameEffect } from './effects/FrameEffect';
 
 // Feature Components
 export { default as Matchmaker } from './matchmaker/Matchmaker';

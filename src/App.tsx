@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import FrameEffect from '@/components/effects/FrameEffect';
+import LoadingSequence from '@/components/effects/LoadingSequence';
+import Moire from '@/components/effects/Moire';
 import RetroEffects from '@/components/effects/RetroEffects';
 import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
@@ -89,6 +92,7 @@ const App: React.FC = () => {
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(
@@ -102,6 +106,14 @@ const App: React.FC = () => {
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [showActionFanMenu, setShowActionFanMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
+  const [showLoadingSequence, setShowLoadingSequence] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+  const [isMoireVisible, setIsMoireVisible] = useState(false);
   const mobileActionTimeoutRef = useRef<number | null>(null);
   const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
   const actionBubbleDragRef = useRef<{
@@ -136,6 +148,19 @@ const App: React.FC = () => {
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setShowLoadingSequence(false);
+      setIsMoireVisible(false);
+    }
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    if (!prefersReducedMotion && !showLoadingSequence && !isMoireVisible) {
+      setIsMoireVisible(true);
+    }
+  }, [isMoireVisible, prefersReducedMotion, showLoadingSequence]);
 
   const openMoreSheet = useCallback(() => {
     // On mobile, show ActionFanMenu instead of BottomSheet
@@ -380,118 +405,126 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
+      {showLoadingSequence && (
+        <LoadingSequence
+          onReveal={() => setIsMoireVisible(true)}
+          onComplete={() => setShowLoadingSequence(false)}
+        />
+      )}
       <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
-      <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
-        <a href="#main-content" className="skip-link">
-          Skip to content
-        </a>
+      <FrameEffect>
+        <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
+          {!prefersReducedMotion && <Moire isVisible={isMoireVisible} />}
+          <a href="#main-content" className="skip-link">
+            Skip to content
+          </a>
 
-        <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
-          <ActionBubble
-            ref={actionBubbleRef}
-            currentUser={currentUser}
-            position={actionBubblePosition}
-            isDragging={isDraggingActionBubble}
-            onClick={handleActionBubbleClick}
-            onPointerDown={handleActionBubblePointerDown}
-            onPointerMove={handleActionBubblePointerMove}
-            onPointerUp={finishActionBubbleDrag}
-            onPointerCancel={finishActionBubbleDrag}
-          />
-
-          {showActionFanMenu && (
-            <ActionFanMenu
-              items={commandDeckItems}
-              anchorX={actionBubblePosition.x}
-              anchorY={actionBubblePosition.y}
-              anchorSize={ACTION_BUBLE_SIZE}
-              onItemSelect={(item) => {
-                item.action();
-                setShowActionFanMenu(false);
-              }}
-              onClose={() => setShowActionFanMenu(false)}
+          <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
+            <ActionBubble
+              ref={actionBubbleRef}
+              currentUser={currentUser}
+              position={actionBubblePosition}
+              isDragging={isDraggingActionBubble}
+              onClick={handleActionBubbleClick}
+              onPointerDown={handleActionBubblePointerDown}
+              onPointerMove={handleActionBubblePointerMove}
+              onPointerUp={finishActionBubbleDrag}
+              onPointerCancel={finishActionBubbleDrag}
             />
-          )}
 
-          <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none' }}>
-            {isMobile && (
-              <section className="mobile-hero" aria-label="electron overview" style={{ padding: `${spacing['2xl']} ${spacing.md} ${spacing.xl}`, textAlign: 'center' }}>
-                <div className="mobile-hero__content">
-                  <UserSelection
-                    variant="inline"
-                    className="mobile-hero__selection"
-                  />
-                </div>
-              </section>
+            {showActionFanMenu && (
+              <ActionFanMenu
+                items={commandDeckItems}
+                anchorX={actionBubblePosition.x}
+                anchorY={actionBubblePosition.y}
+                anchorSize={ACTION_BUBLE_SIZE}
+                onItemSelect={(item) => {
+                  item.action();
+                  setShowActionFanMenu(false);
+                }}
+                onClose={() => setShowActionFanMenu(false)}
+              />
             )}
 
-            
-            <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
-              <section className="workspace-surface" aria-label="Primary workspace" style={{ minWidth: 0 }}>
-                {MAIN_TABS.map((tab) => {
-                  const isActivePanel = tab.id === activeTab;
-                  return (
-                    <section
-                      key={tab.id}
-                      id={`tabpanel-${tab.id}`}
-                      role="tabpanel"
-                      hidden={!isActivePanel}
-                      className="tab-panel"
-                      aria-label={`${tab.label} panel`}
-                      style={{ display: isActivePanel ? 'block' : 'none' }}
-                    >
-                      {isActivePanel ? tab.id === 'queue' ? <Watchlist activeTab={activeTab} onTabChange={handleTabChange} isMobile={isMobile} /> : <PlacesList activeTab={activeTab} onTabChange={handleTabChange} isMobile={isMobile} /> : null}
-                    </section>
-                  );
-                })}
-              </section>
-            </div>
-          </main>
-        </div>
+            <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none' }}>
+              {isMobile && (
+                <section className="mobile-hero" aria-label="electron overview" style={{ padding: `${spacing['2xl']} ${spacing.md} ${spacing.xl}`, textAlign: 'center' }}>
+                  <div className="mobile-hero__content">
+                    <UserSelection
+                      variant="inline"
+                      className="mobile-hero__selection"
+                    />
+                  </div>
+                </section>
+              )}
 
-        <BottomSheet
-          isOpen={showMoreSheet}
-          onClose={() => setShowMoreSheet(false)}
-          title="Profile & Settings"
-        >
-          <div className="more-sheet" style={{ padding: `0 ${spacing.sm}` }}>
-            <UserSelection
-              variant="panel"
-              title="Who's steering?"
-              subtitle="Pick your seat."
-              className="more-sheet__profile-panel"
-              onUserSelected={() => setShowMoreSheet(false)}
-            />
-
-            <div className="more-sheet__section" style={{ marginTop: spacing.xl, paddingTop: spacing.xl, borderTop: `1px solid ${colors.borderSubtle}` }}>
-              <p className="more-sheet__section-label" style={{ ...typography.presets.eyebrow, color: colors.textSecondary, marginBottom: spacing.md }}>Actions</p>
-              <CommandDeck
-                items={commandDeckItems}
-                variant="compact"
-                onItemSelect={handleDelayedDeckItemSelect}
-              />
-            </div>
+              <div className="workspace-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.md, padding: isMobile ? 0 : `0 ${spacing.xl} ${spacing.xl}` }}>
+                <section className="workspace-surface" aria-label="Primary workspace" style={{ minWidth: 0 }}>
+                  {MAIN_TABS.map((tab) => {
+                    const isActivePanel = tab.id === activeTab;
+                    return (
+                      <section
+                        key={tab.id}
+                        id={`tabpanel-${tab.id}`}
+                        role="tabpanel"
+                        hidden={!isActivePanel}
+                        className="tab-panel"
+                        aria-label={`${tab.label} panel`}
+                        style={{ display: isActivePanel ? 'block' : 'none' }}
+                      >
+                        {isActivePanel ? tab.id === 'queue' ? <Watchlist activeTab={activeTab} onTabChange={handleTabChange} isMobile={isMobile} /> : <PlacesList activeTab={activeTab} onTabChange={handleTabChange} isMobile={isMobile} /> : null}
+                      </section>
+                    );
+                  })}
+                </section>
+              </div>
+            </main>
           </div>
-        </BottomSheet>
 
-        {minigameModals.map((modal) => (
-          <MinigameModal
-            key={modal.key}
-            isOpen={modal.isOpen}
-            onClose={modal.onClose}
-            title={modal.title}
-            ariaLabel={modal.ariaLabel}
-            maxWidth={modal.maxWidth}
-            maxHeight={modal.maxHeight}
-            closeDisabled={modal.closeDisabled}
-            closeDisabledLabel={modal.closeDisabledLabel}
+          <BottomSheet
+            isOpen={showMoreSheet}
+            onClose={() => setShowMoreSheet(false)}
+            title="Profile & Settings"
           >
-            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
-              {modal.content}
+            <div className="more-sheet" style={{ padding: `0 ${spacing.sm}` }}>
+              <UserSelection
+                variant="panel"
+                title="Who's steering?"
+                subtitle="Pick your seat."
+                className="more-sheet__profile-panel"
+                onUserSelected={() => setShowMoreSheet(false)}
+              />
+
+              <div className="more-sheet__section" style={{ marginTop: spacing.xl, paddingTop: spacing.xl, borderTop: `1px solid ${colors.borderSubtle}` }}>
+                <p className="more-sheet__section-label" style={{ ...typography.presets.eyebrow, color: colors.textSecondary, marginBottom: spacing.md }}>Actions</p>
+                <CommandDeck
+                  items={commandDeckItems}
+                  variant="compact"
+                  onItemSelect={handleDelayedDeckItemSelect}
+                />
+              </div>
             </div>
-          </MinigameModal>
-        ))}
-      </div>
+          </BottomSheet>
+
+          {minigameModals.map((modal) => (
+            <MinigameModal
+              key={modal.key}
+              isOpen={modal.isOpen}
+              onClose={modal.onClose}
+              title={modal.title}
+              ariaLabel={modal.ariaLabel}
+              maxWidth={modal.maxWidth}
+              maxHeight={modal.maxHeight}
+              closeDisabled={modal.closeDisabled}
+              closeDisabledLabel={modal.closeDisabledLabel}
+            >
+              <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
+                {modal.content}
+              </div>
+            </MinigameModal>
+          ))}
+        </div>
+      </FrameEffect>
     </ThemeProvider>
   );
 };
