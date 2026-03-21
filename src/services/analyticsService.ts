@@ -1,6 +1,10 @@
 import { readStoredJson, writeStoredJson } from './gistClient.ts';
 
-export type AnalyticsMetric = 'suggestion_submitted' | 'suggestion_accepted';
+export type AnalyticsMetric =
+  | 'suggestion_submitted'
+  | 'suggestion_accepted'
+  | 'watchlist_share_clicked'
+  | 'shared_suggestion_saved';
 
 type AnalyticsMetrics = Partial<Record<AnalyticsMetric, number>>;
 
@@ -11,7 +15,10 @@ const cloneAnalyticsMetrics = (metrics: AnalyticsMetrics): AnalyticsMetrics => (
 });
 
 const isAnalyticsMetric = (value: string): value is AnalyticsMetric =>
-  value === 'suggestion_submitted' || value === 'suggestion_accepted';
+  value === 'suggestion_submitted' ||
+  value === 'suggestion_accepted' ||
+  value === 'watchlist_share_clicked' ||
+  value === 'shared_suggestion_saved';
 
 const isAnalyticsMetricsRecord = (value: unknown): value is AnalyticsMetrics => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {

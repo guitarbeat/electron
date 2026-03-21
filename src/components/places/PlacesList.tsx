@@ -9,6 +9,7 @@ import ConfirmDialog from '@/ui/ConfirmDialog';
 import { Input } from '@/ui/FormFields';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
+import SyncBanner from '@/components/ui/SyncBanner';
 import PlacesMap from './PlacesMap';
 import { CheckIcon, PlusIcon, TrashIcon, Spinner, MagicWandIcon } from '@/common/icons';
 import { colors, spacing, typography, radius } from '@/design-system';
@@ -41,6 +42,7 @@ interface PlacesTopControlsProps {
   suggestionError: string | null;
   queueCount: number;
   visitedCount: number;
+  canEdit: boolean;
 }
 
 const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
@@ -59,6 +61,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   suggestionError,
   queueCount,
   visitedCount,
+  canEdit,
 }) => {
   return (
     <section
@@ -120,7 +123,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
               type="submit"
               variant="secondary"
               size="md"
-              disabled={isAdding || isSuggesting}
+              disabled={isAdding || isSuggesting || !canEdit}
               isLoading={isAdding || isSuggesting}
               title="Add or suggest place"
               aria-label="Add or suggest place"
@@ -168,6 +171,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
 
 interface PlaceCardProps {
   place: Place;
+  canEdit: boolean;
   isSubmitting: boolean;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
@@ -208,6 +212,7 @@ function getPlaceGradient(name: string): { h1: number; h2: number; h3: number } 
 
 const PlaceCard: React.FC<PlaceCardProps> = ({
   place,
+  canEdit,
   isSubmitting,
   onMarkVisited,
   onMarkUnvisited,
@@ -291,7 +296,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               type="button"
               className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
               onClick={handleVisitToggle}
-              disabled={isSubmitting || isActionLoading}
+              disabled={isSubmitting || isActionLoading || !canEdit}
               aria-label={isVisited ? `Mark ${place.name} as not visited` : `Mark ${place.name} as visited`}
             >
               {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
@@ -300,7 +305,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               type="button"
               className="place-item-delete-btn"
               onClick={handleDelete}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !canEdit}
               aria-label={`Remove ${place.name}`}
             >
               <TrashIcon style={{ width: 13, height: 13 }} />
@@ -324,10 +329,13 @@ const PlacesList: React.FC<PlacesListProps> = () => {
     places,
     isLoading,
     isSubmitting,
+    isDegraded,
+    isSyncBlocked,
     addPlace,
     removePlace,
     markVisited,
     markUnvisited,
+    retrySync,
   } = usePlaces(currentUser);
 
   const [contentTab, setContentTab] = useState<PlaceContentTab>('queue');
@@ -388,6 +396,14 @@ const PlacesList: React.FC<PlacesListProps> = () => {
     const query = searchQuery.trim();
     if (!query || isAdding) return;
 
+    if (!currentUser) {
+      showToast({
+        message: 'Pick Aaron or Electra to edit shared places.',
+        type: 'info',
+      });
+      return;
+    }
+
     setIsAdding(true);
     setSuggestionError(null);
     
@@ -395,26 +411,14 @@ const PlacesList: React.FC<PlacesListProps> = () => {
       await addPlace(query);
       setSearchQuery('');
       showToast({ message: `"${query}" added!`, type: 'success' });
-    } catch {
-      setIsAdding(false);
-      setIsSuggesting(true);
-      setSuggestionError(null);
-      try {
-        // For now, we'll just add it as a suggestion
-        // In a real implementation, you might have an addPlaceSuggestion function
-        await addPlace(query + ' (suggestion)');
-        setSearchQuery('');
-        showToast({ message: `"${query}" suggested!`, type: 'success' });
-      } catch (error) {
-        setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
-        showToast({ message: 'Failed to add suggestion', type: 'error' });
-      } finally {
-        setIsSuggesting(false);
-      }
+    } catch (error) {
+      setSuggestionError(error instanceof Error ? error.message : 'Failed to add place');
+      showToast({ message: 'Failed to add place', type: 'error' });
     } finally {
       setIsAdding(false);
+      setIsSuggesting(false);
     }
-  }, [searchQuery, isAdding, addPlace, setSearchQuery, showToast]);
+  }, [searchQuery, isAdding, currentUser, addPlace, setSearchQuery, showToast]);
 
   const handleRandomPlacePick = useCallback(() => {
     const availablePlaces = contentTab === 'visited' 
@@ -434,6 +438,17 @@ const PlacesList: React.FC<PlacesListProps> = () => {
 
   const renderControls = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+      {isDegraded && (
+        <SyncBanner
+          isBlocked={isSyncBlocked}
+          onRetry={() => void retrySync()}
+          label={
+            isSyncBlocked
+              ? 'A shared places update conflicted with local edits. Refresh and retry.'
+              : 'Places changes are being kept locally until shared sync recovers.'
+          }
+        />
+      )}
       <PlacesTopControls
         contentTab={contentTab}
         setContentTab={setContentTab}
@@ -450,6 +465,7 @@ const PlacesList: React.FC<PlacesListProps> = () => {
         suggestionError={suggestionError}
         queueCount={queueCount}
         visitedCount={visitedCount}
+        canEdit={Boolean(currentUser)}
       />
     </div>
   );
@@ -514,6 +530,7 @@ const PlacesList: React.FC<PlacesListProps> = () => {
               <PlaceCard
                 key={place.id}
                 place={place}
+                canEdit={Boolean(currentUser)}
                 isSubmitting={isSubmitting}
                 onMarkVisited={markVisited}
                 onMarkUnvisited={markUnvisited}

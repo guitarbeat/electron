@@ -3,20 +3,20 @@ import { isValidUrl, sanitizeInput } from '../utils';
 const env = (import.meta.env ?? {}) as ImportMetaEnv & {
   VITE_OMDB_API_URL?: string;
   VITE_OMDB_API_KEY?: string;
+  VITE_TVMAZE_API_URL?: string;
 };
 
 const clean = (value: string) => value.trim().replace(/^["']|["']$/g, '');
 const OMDB_API_KEY = clean((env.VITE_OMDB_API_KEY || ''));
-const OMDB_DEFAULT_BASE_URL = import.meta.env.DEV ? 'https://www.omdbapi.com' : '/api/omdb';
+const OMDB_DEFAULT_BASE_URL = '/api/omdb';
+const TVMAZE_DEFAULT_BASE_URL = '/api/tvmaze';
 const resolveConfig = (value: string | undefined, fallback: string) => {
   const cleanedValue = clean(value || '');
   return cleanedValue.length > 0 ? cleanedValue : fallback;
 };
 
 const OMDB_BASE = resolveConfig(env.VITE_OMDB_API_URL, OMDB_DEFAULT_BASE_URL);
-
-
-const TVMAZE_BASE_URL = 'https://api.tvmaze.com';
+const TVMAZE_BASE = resolveConfig(env.VITE_TVMAZE_API_URL, TVMAZE_DEFAULT_BASE_URL);
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
 
 const stripHtml = (value?: string | null): string | undefined => {
@@ -53,6 +53,20 @@ const buildOmdbUrl = (params: Record<string, string>): string | null => {
     url.searchParams.set(key, value);
   });
 
+  return url.toString();
+};
+
+const buildTvMazeUrl = (
+  mode: 'show' | 'search',
+  value: string
+): string => {
+  const url = new URL(TVMAZE_BASE, window.location.origin);
+  url.searchParams.set('mode', mode);
+  if (mode === 'show') {
+    url.searchParams.set('id', value);
+  } else {
+    url.searchParams.set('q', value);
+  }
   return url.toString();
 };
 
@@ -217,9 +231,7 @@ export const fetchMovieMetadata = async (
     // If we have an ID and it's a TV show, use TVMaze directly by ID
     if (type === 'series' && id?.startsWith('tv-')) {
       const tvmazeId = id.replace('tv-', '');
-      // Ensure the ID is safe for path usage
-      const safeTvMazeId = encodeURIComponent(tvmazeId);
-      const tvmazeUrl = `${TVMAZE_BASE_URL}/shows/${safeTvMazeId}`;
+      const tvmazeUrl = buildTvMazeUrl('show', tvmazeId);
       const tvmazeRes = await fetchWithRetry(tvmazeUrl);
       if (!tvmazeRes.ok) {
         throw new Error(`TVMaze show lookup failed with status ${tvmazeRes.status}`);
@@ -292,10 +304,7 @@ export const fetchMovieMetadata = async (
 
     // 2. If OMDb fails or not found, try TVMaze (Best for TV Shows)
     try {
-      const tvmazeUrl = new URL(`${TVMAZE_BASE_URL}/search/shows`);
-      tvmazeUrl.searchParams.append('q', title);
-
-      const tvmazeRes = await fetchWithRetry(tvmazeUrl.toString());
+      const tvmazeRes = await fetchWithRetry(buildTvMazeUrl('search', title));
       if (!tvmazeRes.ok) {
         throw new Error(`TVMaze search failed with status ${tvmazeRes.status}`);
       }

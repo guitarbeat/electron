@@ -69,15 +69,23 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     if (userHasPin(profile)) {
       setPendingUser(profile);
     } else {
-      setCurrentUser(profile);
-      onUserSelected?.(profile);
+      void (async () => {
+        const didSet = await setCurrentUser(profile);
+        if (didSet) {
+          onUserSelected?.(profile);
+        }
+      })();
     }
   };
 
   const handleLogout = () => {
     if (isDisabled) return;
-    setCurrentUser(null);
-    onUserSelected?.(null);
+    void (async () => {
+      const didClear = await setCurrentUser(null);
+      if (didClear) {
+        onUserSelected?.(null);
+      }
+    })();
   };
 
   const handlePinSubmit = async (pin: string): Promise<boolean> => {
@@ -86,7 +94,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     try {
       const isValid = await verifyUserPin(pendingUser, pin);
       if (isValid) {
-        setCurrentUser(pendingUser);
         onUserSelected?.(pendingUser);
         setPendingUser(null);
         return true;

@@ -13,6 +13,7 @@ import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
 import QuestionsTab from './QuestionsTab';
 import DescriptionsTab from './DescriptionsTab';
+import SyncBanner from '@/components/ui/SyncBanner';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { spacing, colors, typography, radius } from '@/design-system';
@@ -145,7 +146,16 @@ interface QuizEditorProps {
 }
 
 const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
-  const { quizData, isLoading, isSaving, saveAllData, refresh } = useQuiz();
+  const {
+    quizData,
+    isLoading,
+    isSaving,
+    isDegraded,
+    isSyncBlocked,
+    saveAllData,
+    refresh,
+    retrySync,
+  } = useQuiz();
   const { showToast } = useToast();
   const isMobile = useMediaQuery(mediaBreakpoints.md);
 
@@ -177,9 +187,16 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
 
   const handleSave = async () => {
     if (!localData) return;
-    await saveAllData(localData);
-    setHasChanges(false);
-    refresh();
+    try {
+      await saveAllData(localData);
+      setHasChanges(false);
+      refresh();
+    } catch (error) {
+      showToast({
+        message: error instanceof Error ? error.message : 'Failed to save quiz changes.',
+        type: 'error',
+      });
+    }
   };
 
   const updateLocalData = (updates: Partial<QuizData>) => {
@@ -337,6 +354,20 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           </Button>
         </div>
       </Card>
+
+      {isDegraded && (
+        <div style={{ marginBottom: spacing.lg }}>
+          <SyncBanner
+            isBlocked={isSyncBlocked}
+            onRetry={() => void retrySync()}
+            label={
+              isSyncBlocked
+                ? 'Quiz changes conflicted with a newer shared version. Refresh and retry.'
+                : 'Quiz edits are being kept locally until shared sync recovers.'
+            }
+          />
+        </div>
+      )}
 
       {/* Tabs - Modern Segmented Control */}
       <div

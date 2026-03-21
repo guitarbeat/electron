@@ -6,6 +6,7 @@ import { useToast } from '@/context';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import ConfirmDialog from '@/ui/ConfirmDialog';
+import SyncBanner from '@/components/ui/SyncBanner';
 import { randomUtils } from '@/utils/random';
 import {
   colors,
@@ -262,10 +263,13 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     game,
     isLoading: isGameLoading,
     isSubmitting,
+    isDegraded,
+    isSyncBlocked,
     startNewGame,
     swipe,
     undo,
     endCurrentGame,
+    retrySync,
   } = useMatchmaker(currentUser);
 
   const [isPickingRandom, setIsPickingRandom] = useState(false);
@@ -426,6 +430,19 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   if (!game) {
     return (
       <div style={{ textAlign: 'center', padding: spacing.sm }}>
+        {isDegraded && (
+          <div style={{ marginBottom: spacing.md }}>
+            <SyncBanner
+              isBlocked={isSyncBlocked}
+              onRetry={() => void retrySync()}
+              label={
+                isSyncBlocked
+                  ? 'Matchmaker hit a shared-state conflict. Refresh and retry.'
+                  : 'Matchmaker changes are being kept locally until shared sync recovers.'
+              }
+            />
+          </div>
+        )}
         <div
           style={{
             display: 'flex',
@@ -501,6 +518,19 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         position: 'relative',
       }}
     >
+      {isDegraded && (
+        <div style={{ width: '100%' }}>
+          <SyncBanner
+            isBlocked={isSyncBlocked}
+            onRetry={() => void retrySync()}
+            label={
+              isSyncBlocked
+                ? 'Matchmaker hit a shared-state conflict. Refresh and retry.'
+                : 'Matchmaker changes are being kept locally until shared sync recovers.'
+            }
+          />
+        </div>
+      )}
       {(showConfetti || lastMatchedMovie) && (
         <div
           style={{

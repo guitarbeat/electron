@@ -1,4 +1,10 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
+import {
+  buildSharedSuggestionUrl,
+  clearCurrentSharedSuggestionParams,
+  parseSharedSuggestionIntent,
+  type SharedSuggestionIntent,
+} from '@/app/sharedSuggestion';
 import { useUser } from '@/context';
 import { useWatchlist } from './useWatchlist';
 import { ContentTab, Movie, MovieSuggestion, SharedMemory, SortMode, User, WatchlistProps } from '@/types';
@@ -13,16 +19,20 @@ import Button from '@/ui/Button';
 import BottomSheet from '@/ui/BottomSheet';
 import { Input, Textarea } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
+import SyncBanner from '@/components/ui/SyncBanner';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
+import SharedSuggestionPrompt from './SharedSuggestionPrompt';
 import {
   CheckIcon,
   CrossIcon,
   EyeIcon,
   EyeOffIcon,
+  ShareIcon,
   TrashIcon,
 } from '@/common/icons';
 import { colors, motion, radius, spacing, typography } from '@/design-system';
+import { trackMetric } from '@/services/analyticsService';
 
 const MOVIE_TABS: { id: ContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -39,6 +49,62 @@ const SORT_OPTIONS: { id: SortMode; label: string }[] = [
 
 const MAX_MOVIE_NOTE_LENGTH = 280;
 const MAX_RECOMMENDATION_REASON_LENGTH = 280;
+
+const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
+
+const copyTextToClipboard = async (value: string): Promise<void> => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const fallbackField = document.createElement('textarea');
+  fallbackField.value = value;
+  fallbackField.setAttribute('readonly', 'true');
+  fallbackField.style.position = 'fixed';
+  fallbackField.style.opacity = '0';
+  fallbackField.style.pointerEvents = 'none';
+
+  document.body.appendChild(fallbackField);
+  fallbackField.focus();
+  fallbackField.select();
+
+  const didCopy = document.execCommand('copy');
+  document.body.removeChild(fallbackField);
+
+  if (!didCopy) {
+    throw new Error('Clipboard unavailable');
+  }
+};
+
+const shareSuggestionLink = async (
+  title: string,
+  suggestedBy: string,
+  url: string
+): Promise<'native' | 'copy'> => {
+  const shareData = {
+    title: `Movie night pick: ${title}`,
+    text:
+      suggestedBy === 'Someone'
+        ? `Save "${title}" into the watchlist suggestions.`
+        : `${suggestedBy} wants to save "${title}" into the watchlist.`,
+    url,
+  };
+
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share(shareData);
+      return 'native';
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
+    }
+  }
+
+  await copyTextToClipboard(url);
+  return 'copy';
+};
 
 interface RecommendationComposerProps {
   currentUser: User | null;
@@ -200,9 +266,12 @@ interface WatchlistTopControlsProps {
   canSurprise: boolean;
   isAdding: boolean;
   isSubmittingRecommendation: boolean;
+  isSharing: boolean;
   suggestionError: string | null;
   memoryCount: number;
   memoryMovieCount: number;
+  canRecommend: boolean;
+  onShare: () => Promise<void> | void;
 }
 
 const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
@@ -227,9 +296,12 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   canSurprise,
   isAdding,
   isSubmittingRecommendation,
+  isSharing,
   suggestionError,
   memoryCount,
   memoryMovieCount,
+  canRecommend,
+  onShare,
 }) => {
   const hasSearchQuery = Boolean(searchQuery.trim());
 
@@ -306,7 +378,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                   type="submit"
                   variant="secondary"
                   size="sm"
-                  disabled={isAdding || isSubmittingRecommendation}
+                  disabled={isAdding || isSubmittingRecommendation || isSharing}
                   isLoading={isAdding}
                   title="Add movie"
                   aria-label="Add movie"
@@ -319,11 +391,23 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                 variant={currentUser ? 'ghost' : 'secondary'}
                 size="sm"
                 onClick={onRecommend}
-                disabled={isAdding || isSubmittingRecommendation}
+                disabled={isAdding || isSubmittingRecommendation || isSharing || !canRecommend}
                 title="Recommend movie"
                 aria-label="Recommend movie"
               >
-                Recommend
+                {canRecommend ? 'Recommend' : 'Pick a profile'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void onShare()}
+                disabled={isAdding || isSubmittingRecommendation || isSharing}
+                isLoading={isSharing}
+                title="Share movie suggestion link"
+                aria-label="Share movie suggestion link"
+              >
+                <ShareIcon size={14} /> Share
               </Button>
             </div>
           )}
@@ -1232,6 +1316,11 @@ const MovieDetails: React.FC<{ movie: Movie; className?: string }> = ({
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
+  const [sharedSuggestion, setSharedSuggestion] = useState<SharedSuggestionIntent | null>(() =>
+    typeof window === 'undefined' ? null : parseSharedSuggestionIntent(window.location.search)
+  );
+  const [isSharing, setIsSharing] = useState(false);
+  const [isSavingSharedSuggestion, setIsSavingSharedSuggestion] = useState(false);
 
   const {
     // State returns
@@ -1263,6 +1352,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addMovie,
     toggleWatched,
     deleteMovie,
+    pendingSuggestions,
     submitRecommendation,
     acceptSuggestionToWatchlist,
     rejectPendingSuggestion,
@@ -1271,6 +1361,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     updateMemory,
     deleteMemoryRecord,
     toggleMemoryPin,
+    isWatchlistDegraded,
+    isWatchlistSyncBlocked,
+    retryWatchlistSync,
     filteredMovies,
     filteredSuggestions,
     tabCounts,
@@ -1305,6 +1398,19 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     return memoriesByMovieId;
   }, [memories, movies]);
+
+  const isSharedSuggestionAlreadySaved = React.useMemo(() => {
+    if (!sharedSuggestion) {
+      return false;
+    }
+
+    const normalizedTitle = normalizeMovieTitle(sharedSuggestion.title);
+
+    return (
+      movies.some((movie) => normalizeMovieTitle(movie.title) === normalizedTitle) ||
+      pendingSuggestions.some((suggestion) => normalizeMovieTitle(suggestion.title) === normalizedTitle)
+    );
+  }, [movies, pendingSuggestions, sharedSuggestion]);
 
   // Handle confetti when both users watch a movie
   useEffect(() => {
@@ -1348,6 +1454,19 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const syncSharedSuggestion = () => {
+      setSharedSuggestion(parseSharedSuggestionIntent(window.location.search));
+    };
+
+    window.addEventListener('popstate', syncSharedSuggestion);
+    return () => window.removeEventListener('popstate', syncSharedSuggestion);
+  }, []);
+
+  useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
     }
@@ -1359,16 +1478,27 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       return;
     }
 
+    if (!currentUser) {
+      setToast({
+        message: 'Pick Aaron or Electra to add to shared suggestions.',
+        type: 'info',
+      });
+      return;
+    }
+
     setSuggestionError(null);
     setIsRecommendationComposerOpen(true);
-  }, [searchQuery]);
+  }, [currentUser, searchQuery, setToast]);
 
   const handleAddAction = useCallback(async () => {
     const title = searchQuery.trim();
     if (!title) return;
 
     if (!currentUser) {
-      openRecommendationComposer();
+      setToast({
+        message: 'Pick Aaron or Electra to add movies to the shared watchlist.',
+        type: 'info',
+      });
       return;
     }
 
@@ -1382,7 +1512,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     } finally {
       setIsAdding(false);
     }
-  }, [searchQuery, currentUser, openRecommendationComposer, addMovie, setIsAdding, setSearchQuery, setToast]);
+  }, [searchQuery, currentUser, addMovie, setIsAdding, setSearchQuery, setToast]);
 
   const handleRandomMoviePick = useCallback(() => {
     const movieTitles = filteredMovies.map((movie) => movie.title);
@@ -1405,6 +1535,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       return;
     }
 
+    if (!currentUser) {
+      setToast({
+        message: 'Pick Aaron or Electra to add to shared suggestions.',
+        type: 'info',
+      });
+      return;
+    }
+
     setSuggestionError(null);
 
     try {
@@ -1422,9 +1560,108 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, [
     recommendationGuestName,
     recommendationReason,
+    currentUser,
     resetRecommendationComposer,
     searchQuery,
     setToast,
+    submitRecommendation,
+  ]);
+
+  const dismissSharedSuggestion = useCallback(() => {
+    clearCurrentSharedSuggestionParams();
+    setSharedSuggestion(null);
+  }, []);
+
+  const handleShareAction = useCallback(async () => {
+    const title = searchQuery.trim();
+
+    if (!title || typeof window === 'undefined') {
+      return;
+    }
+
+    setIsSharing(true);
+
+    try {
+      const shareUrl = buildSharedSuggestionUrl(window.location.href, {
+        title,
+        suggestedBy: currentUser ?? 'Someone',
+      });
+      const shareMethod = await shareSuggestionLink(title, currentUser ?? 'Someone', shareUrl);
+
+      trackMetric('watchlist_share_clicked');
+      setToast({
+        message:
+          shareMethod === 'native'
+            ? `Share sheet opened for "${title}".`
+            : `Share link copied for "${title}".`,
+        type: 'success',
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+
+      setToast({ message: 'Failed to share movie link', type: 'error' });
+    } finally {
+      setIsSharing(false);
+    }
+  }, [currentUser, searchQuery, setToast]);
+
+  const handleSaveSharedSuggestion = useCallback(async () => {
+    if (!sharedSuggestion) {
+      return;
+    }
+
+    if (!currentUser) {
+      setToast({
+        message: 'Pick Aaron or Electra to save shared suggestions.',
+        type: 'info',
+      });
+      return;
+    }
+
+    if (isSharedSuggestionAlreadySaved) {
+      setToast({
+        message: `"${sharedSuggestion.title}" is already in your watchlist flow.`,
+        type: 'info',
+      });
+      dismissSharedSuggestion();
+      return;
+    }
+
+    setIsSavingSharedSuggestion(true);
+    setSuggestionError(null);
+
+    try {
+      await submitRecommendation({
+        title: sharedSuggestion.title,
+        suggestedBy: sharedSuggestion.suggestedBy,
+        preserveSuggestedBy: true,
+      });
+      trackMetric('shared_suggestion_saved');
+      setSearchQuery(sharedSuggestion.title);
+      resetRecommendationComposer();
+      setToast({
+        message: `"${sharedSuggestion.title}" saved to suggestions.`,
+        type: 'success',
+      });
+      dismissSharedSuggestion();
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to save shared suggestion',
+        type: 'error',
+      });
+    } finally {
+      setIsSavingSharedSuggestion(false);
+    }
+  }, [
+    dismissSharedSuggestion,
+    currentUser,
+    isSharedSuggestionAlreadySaved,
+    resetRecommendationComposer,
+    setSearchQuery,
+    setToast,
+    sharedSuggestion,
     submitRecommendation,
   ]);
 
@@ -1474,6 +1711,27 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   // Render components
   const renderControls = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+      {isWatchlistDegraded && (
+        <SyncBanner
+          isBlocked={isWatchlistSyncBlocked}
+          onRetry={() => void retryWatchlistSync()}
+          label={
+            isWatchlistSyncBlocked
+              ? 'A shared watchlist change conflicted with local edits. Refresh and retry.'
+              : 'Watchlist changes are being kept locally until shared sync recovers.'
+          }
+        />
+      )}
+      {sharedSuggestion && (
+        <SharedSuggestionPrompt
+          intent={sharedSuggestion}
+          isSaving={isSavingSharedSuggestion}
+          isAlreadySaved={isSharedSuggestionAlreadySaved}
+          canSave={Boolean(currentUser)}
+          onSave={() => void handleSaveSharedSuggestion()}
+          onDismiss={dismissSharedSuggestion}
+        />
+      )}
       <WatchlistTopControls
         currentUser={currentUser}
         contentTab={contentTab}
@@ -1496,9 +1754,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
         isAdding={isAdding}
         isSubmittingRecommendation={isSubmittingRecommendation}
+        isSharing={isSharing}
         suggestionError={suggestionError}
         memoryCount={memories.length}
         memoryMovieCount={movieMemories.size}
+        canRecommend={Boolean(currentUser)}
+        onShare={handleShareAction}
       />
     </div>
   );

@@ -1,97 +1,20 @@
-import { parseJsonContent, sanitizeInput } from '@/utils';
 import type { SharedMemory } from '@/types.ts';
-import {
-  canWriteGist,
-  GIST_MEMORIES_FILENAME,
-  patchGistFile,
-  readGistJsonFile,
-  readStoredJson,
-  setLocalOverride,
-  writeStoredJson,
-} from './gistClient.ts';
+import { mutateScope, readScope } from './stateClient.ts';
+import { cloneMemories } from './stateSchemas.ts';
+import { sanitizeInput } from '@/utils';
 
-const MEMORIES_LOCAL_STORAGE_KEY = 'movieList.localMemories';
-
-const cloneMemories = (memories: SharedMemory[]): SharedMemory[] =>
-  memories.map((memory) => ({
-    ...memory,
-  }));
-
-const isSharedMemoryRecord = (value: unknown): value is SharedMemory => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const memory = value as Partial<SharedMemory>;
-
-  return (
-    typeof memory.id === 'string' &&
-    typeof memory.movieTitle === 'string' &&
-    typeof memory.author === 'string' &&
-    typeof memory.note === 'string' &&
-    typeof memory.createdAt === 'string' &&
-    (memory.movieId === undefined || typeof memory.movieId === 'string') &&
-    (memory.updatedAt === undefined || typeof memory.updatedAt === 'string') &&
-    (memory.isPinned === undefined || typeof memory.isPinned === 'boolean')
+const sortMemories = (memories: SharedMemory[]): SharedMemory[] =>
+  [...memories].sort(
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
   );
-};
-
-const readStoredLocalMemories = (): SharedMemory[] | null =>
-  readStoredJson({
-    storageKey: MEMORIES_LOCAL_STORAGE_KEY,
-    validate: (value): value is SharedMemory[] =>
-      Array.isArray(value) && value.every(isSharedMemoryRecord),
-    clone: cloneMemories,
-    label: 'local memories fallback',
-  });
-
-const getFallbackMemories = (): SharedMemory[] => readStoredLocalMemories() ?? [];
-
-const saveLocalMemories = (memories: SharedMemory[]): void => {
-  writeStoredJson({
-    storageKey: MEMORIES_LOCAL_STORAGE_KEY,
-    value: memories,
-    clone: cloneMemories,
-    label: 'local memories fallback',
-  });
-  setLocalOverride('memories', true);
-};
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
-  try {
-    return await readGistJsonFile({
-      scope: 'memories',
-      filename: GIST_MEMORIES_FILENAME,
-      fallback: getFallbackMemories,
-      onMissingFileWhenWritable: () => [],
-      parse: (content) => parseJsonContent(content, 'memories') as SharedMemory[],
-    });
-  } catch (error) {
-    console.error('Error fetching memories from Gist:', error);
-    return getFallbackMemories();
-  }
+  const snapshot = await readScope('memories');
+  return sortMemories(snapshot.data);
 };
 
-const saveMemories = async (memories: SharedMemory[]): Promise<void> => {
-  if (!canWriteGist) {
-    saveLocalMemories(memories);
-    return;
-  }
-
-  try {
-    const response = await patchGistFile(GIST_MEMORIES_FILENAME, JSON.stringify(memories, null, 2));
-
-    if (!response.ok) {
-      console.warn(`Failed to save memories to Gist (${response.status}), using local fallback.`);
-      saveLocalMemories(memories);
-      return;
-    }
-    setLocalOverride('memories', false);
-  } catch (error) {
-    console.warn('Error saving memories to Gist, using local fallback:', error);
-    saveLocalMemories(memories);
-  }
-};
+const getOptimisticMemories = async (): Promise<SharedMemory[]> => cloneMemories(await getMemories());
 
 export const addMemory = async (
   movieId: string | undefined,
@@ -101,8 +24,7 @@ export const addMemory = async (
   createdAt?: string,
   imageUrl?: string
 ): Promise<SharedMemory> => {
-  const memories = await getMemories();
-
+  const memories = await getOptimisticMemories();
   const newMemory: SharedMemory = {
     id: `memory-${crypto.randomUUID()}`,
     movieId,
@@ -113,8 +35,17 @@ export const addMemory = async (
     imageUrl: imageUrl ? sanitizeInput(imageUrl) : undefined,
   };
 
-  memories.unshift(newMemory);
-  await saveMemories(memories);
+  await mutateScope('memories', {
+    op: 'add_memory',
+    payload: {
+      id: newMemory.id,
+      movieId: newMemory.movieId,
+      movieTitle: newMemory.movieTitle,
+      note: newMemory.note,
+      imageUrl: newMemory.imageUrl,
+    },
+    optimisticData: [newMemory, ...memories],
+  });
 
   return newMemory;
 };
@@ -130,7 +61,7 @@ export const updateMemory = async (
     movieTitle?: string;
   }
 ): Promise<SharedMemory> => {
-  const memories = await getMemories();
+  const memories = await getOptimisticMemories();
   const memoryIndex = findMemoryIndex(memories, memoryId);
 
   if (memoryIndex < 0) {
@@ -147,39 +78,58 @@ export const updateMemory = async (
     updatedAt: new Date().toISOString(),
   };
 
-  memories[memoryIndex] = nextMemory;
-  await saveMemories(memories);
+  const nextMemories = memories.map((memory) =>
+    memory.id === memoryId ? nextMemory : memory
+  );
+
+  await mutateScope('memories', {
+    op: 'update_memory',
+    payload: {
+      memoryId,
+      updates,
+    },
+    optimisticData: nextMemories,
+  });
 
   return nextMemory;
 };
 
 export const deleteMemory = async (memoryId: string): Promise<void> => {
-  const memories = await getMemories();
+  const memories = await getOptimisticMemories();
   const nextMemories = memories.filter((memory) => memory.id !== memoryId);
 
   if (nextMemories.length === memories.length) {
     throw new Error('Memory not found');
   }
 
-  await saveMemories(nextMemories);
+  await mutateScope('memories', {
+    op: 'delete_memory',
+    payload: { memoryId },
+    optimisticData: nextMemories,
+  });
 };
 
 export const toggleMemoryPin = async (memoryId: string): Promise<SharedMemory> => {
-  const memories = await getMemories();
+  const memories = await getOptimisticMemories();
   const memoryIndex = findMemoryIndex(memories, memoryId);
 
   if (memoryIndex < 0) {
     throw new Error('Memory not found');
   }
 
-  const target = memories[memoryIndex];
   const nextMemory: SharedMemory = {
-    ...target,
-    isPinned: !target.isPinned,
+    ...memories[memoryIndex],
+    isPinned: !memories[memoryIndex].isPinned,
     updatedAt: new Date().toISOString(),
   };
 
-  memories[memoryIndex] = nextMemory;
-  await saveMemories(memories);
+  await mutateScope('memories', {
+    op: 'toggle_memory_pin',
+    payload: { memoryId },
+    optimisticData: memories.map((memory) =>
+      memory.id === memoryId ? nextMemory : memory
+    ),
+  });
+
   return nextMemory;
 };

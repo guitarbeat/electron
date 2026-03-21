@@ -14,13 +14,13 @@ import {
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
+import AccessGate from '@/components/common/AccessGate';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
-import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/context';
+import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/context';
 import { colors, spacing } from '@/design-system';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useQuiz } from '@/hooks/useQuiz';
 import type { MainTab } from '@/types';
 import Card from '@/ui/Card';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
@@ -41,8 +41,8 @@ const getViewportSize = () => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
+  const { hasAccess, isSessionLoading } = useAppSession();
   const { playSwitch } = useAudio();
-  const { quizData } = useQuiz();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
@@ -181,7 +181,6 @@ const App: React.FC = () => {
         showMatchmaker,
         quizCompleted,
         isSpinWheelLocked,
-        quizData,
         currentUser,
         setShowMessages,
         setShowQuizEditor,
@@ -196,7 +195,6 @@ const App: React.FC = () => {
       handleQuizComplete,
       isSpinWheelLocked,
       quizCompleted,
-      quizData,
       showMatchmaker,
       showMessages,
       showQuizEditor,
@@ -301,7 +299,7 @@ const App: React.FC = () => {
   const isMoireVisible = !showLoadingSequence && !prefersReducedMotion;
   const summaryFacts = [
     currentUser ? `${currentUser} active` : 'Guest mode',
-    `${quizData?.questions.length ?? 0} prompts`,
+    'Shared state secured',
     activeTab === 'queue' ? 'Watchlist open' : 'Date ideas open',
   ];
   const actionItems = useMemo(
@@ -333,6 +331,26 @@ const App: React.FC = () => {
     const viewport = getViewportSize();
     return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
   }, [actionBubblePosition]);
+
+  if (!hasAccess) {
+    if (isSessionLoading) {
+      return (
+        <main
+          style={{
+            minHeight: '100vh',
+            display: 'grid',
+            placeItems: 'center',
+            backgroundColor: colors.background,
+            color: colors.textSecondary,
+          }}
+        >
+          Loading shared session...
+        </main>
+      );
+    }
+
+    return <AccessGate />;
+  }
 
   return (
     <ThemeProvider activeTab={activeTab}>

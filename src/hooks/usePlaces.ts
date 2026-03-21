@@ -1,116 +1,59 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Place, User } from '@/types';
 import { usePolling } from '@/services/polling';
+import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import {
-  GIST_PLACES_FILENAME,
-  readGistJsonFile,
-  readStoredJson,
-  saveGistJson,
-  setLocalOverride,
-  writeStoredJson,
-} from '@/services/gistClient.ts';
-import { areDeeplyEqual, isUser, parseJsonContent, sanitizeInput, shallowCloneArray, validateAndThrow, validatePlace } from '@/utils';
+  areDeeplyEqual,
+  sanitizeInput,
+  validateAndThrow,
+  validatePlace,
+} from '@/utils';
 
-const PLACES_LOCAL_STORAGE_KEY = 'movieList.localPlaces';
-
-const isPlaceRecord = (value: unknown): value is Place => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const place = value as Partial<Place>;
-
-  return (
-    typeof place.id === 'string' &&
-    typeof place.name === 'string' &&
-    typeof place.createdAt === 'string' &&
-    (place.addedBy === undefined || isUser(place.addedBy)) &&
-    (place.notes === undefined || typeof place.notes === 'string') &&
-    (place.visitedAt === undefined || typeof place.visitedAt === 'string') &&
-    (place.lat === undefined || typeof place.lat === 'number') &&
-    (place.lng === undefined || typeof place.lng === 'number')
-  );
-};
-
-const readStoredLocalPlaces = (): Place[] | null =>
-  readStoredJson({
-    storageKey: PLACES_LOCAL_STORAGE_KEY,
-    validate: (value): value is Place[] => Array.isArray(value) && value.every(isPlaceRecord),
-    clone: shallowCloneArray,
-    label: 'local places fallback',
-  });
-
-const getFallbackPlaces = (): Place[] => readStoredLocalPlaces() ?? [];
-
-const saveLocalPlaces = (places: Place[]): void => {
-  writeStoredJson({
-    storageKey: PLACES_LOCAL_STORAGE_KEY,
-    value: places,
-    clone: shallowCloneArray,
-    label: 'local places fallback',
-  });
-  setLocalOverride('places', true);
-};
-
-const getPlaces = async (): Promise<Place[]> => {
-  try {
-    return await readGistJsonFile({
-      scope: 'places',
-      filename: GIST_PLACES_FILENAME,
-      fallback: getFallbackPlaces,
-      onMissingFileWhenWritable: () => [],
-      parse: (content) => {
-        const places = parseJsonContent(content, 'places') as Place[];
-        return Array.isArray(places) ? places : [];
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching places from Gist:', error);
-    console.warn('Falling back to local places');
-    return getFallbackPlaces();
-  }
-};
-
-const savePlaces = (places: Place[]): Promise<void> =>
-  saveGistJson(GIST_PLACES_FILENAME, 'places', places, saveLocalPlaces);
+const POLLING_INTERVAL = 15000;
 
 export const usePlaces = (currentUser: User | null, isPaused: boolean = false) => {
+  const readPlaces = useCallback(() => readScope('places'), []);
   const {
-    data: places,
+    data: snapshot,
     error,
     isLoading,
     refresh,
-  } = usePolling(getPlaces, 10000, areDeeplyEqual, {
+  } = usePolling(readPlaces, POLLING_INTERVAL, areDeeplyEqual, {
     key: 'places',
     isPaused,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isSubmittingRef = useRef(false);
+
+  const places = useMemo(() => snapshot?.data ?? [], [snapshot]);
 
   const performMutation = useCallback(
-    async (mutate: (latestPlaces: Place[]) => Place[]) => {
-      if (isSubmittingRef.current) {
-        return false;
+    async (
+      op: string,
+      payload: unknown,
+      optimisticData: Place[]
+    ) => {
+      if (!currentUser) {
+        throw new Error('Profile required');
       }
 
-      isSubmittingRef.current = true;
       setIsSubmitting(true);
       try {
-        const latestPlaces = await getPlaces();
-        await savePlaces(mutate(latestPlaces));
+        await mutateScope('places', {
+          op,
+          payload,
+          optimisticData,
+        });
         refresh();
         return true;
       } finally {
-        isSubmittingRef.current = false;
         setIsSubmitting(false);
       }
     },
-    [refresh]
+    [currentUser, refresh]
   );
 
   const addPlace = useCallback(
     async (name: string, notes?: string, lat?: number, lng?: number) => {
-      // Validate input
       validateAndThrow(validatePlace, { name, notes: notes || '' });
 
       const trimmed = sanitizeInput(name.trim());
@@ -125,58 +68,97 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
         ...(typeof lat === 'number' && typeof lng === 'number' && { lat, lng }),
       };
 
-      await performMutation((latestPlaces) => [...latestPlaces, place]);
+      await performMutation(
+        'add_place',
+        {
+          id: place.id,
+          name: place.name,
+          notes: place.notes,
+          lat: place.lat,
+          lng: place.lng,
+        },
+        [...places, place]
+      );
     },
-    [currentUser, performMutation]
+    [currentUser, performMutation, places]
   );
 
   const removePlace = useCallback(
     async (id: string) => {
-      await performMutation((latestPlaces) => latestPlaces.filter((p) => p.id !== id));
+      await performMutation(
+        'remove_place',
+        { placeId: id },
+        places.filter((p) => p.id !== id)
+      );
     },
-    [performMutation]
+    [performMutation, places]
   );
 
   const restorePlace = useCallback(
     async (place: Place) => {
-      await performMutation((latestPlaces) => [...latestPlaces, place]);
+      await performMutation(
+        'add_place',
+        {
+          id: place.id,
+          name: place.name,
+          notes: place.notes,
+          lat: place.lat,
+          lng: place.lng,
+        },
+        [...places, place]
+      );
     },
-    [performMutation]
+    [performMutation, places]
   );
 
   const updatePlace = useCallback(
     async (id: string, updates: Partial<Pick<Place, 'name' | 'notes'>>) => {
-      await performMutation((latestPlaces) =>
-        latestPlaces.map((p) => (p.id === id ? { ...p, ...updates } : p))
+      await performMutation(
+        'update_place',
+        { placeId: id, updates },
+        places.map((p) => (p.id === id ? { ...p, ...updates } : p))
       );
     },
-    [performMutation]
+    [performMutation, places]
   );
 
   const markVisited = useCallback(
     async (id: string) => {
-      await performMutation((latestPlaces) =>
-        latestPlaces.map((p) => (p.id === id ? { ...p, visitedAt: new Date().toISOString() } : p))
+      const visitedAt = new Date().toISOString();
+      await performMutation(
+        'mark_visited',
+        { placeId: id },
+        places.map((p) => (p.id === id ? { ...p, visitedAt } : p))
       );
     },
-    [performMutation]
+    [performMutation, places]
   );
 
   const markUnvisited = useCallback(
     async (id: string) => {
-      await performMutation((latestPlaces) =>
-        latestPlaces.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p))
+      await performMutation(
+        'mark_unvisited',
+        { placeId: id },
+        places.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p))
       );
     },
-    [performMutation]
+    [performMutation, places]
   );
 
+  const retrySync = useCallback(async () => {
+    await retryScopeSync('places');
+    refresh();
+  }, [refresh]);
+
   return {
-    places: places ?? [],
+    places,
     isLoading,
     isSubmitting,
     error,
+    isDegraded: snapshot?.degraded ?? false,
+    isSyncBlocked: snapshot?.blocked ?? false,
     refresh,
+    retrySync,
     addPlace,
     removePlace,
     restorePlace,
