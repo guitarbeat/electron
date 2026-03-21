@@ -1,4 +1,4 @@
-import { readStoredJson, writeStoredJson } from './gistClient.ts';
+import { readStoredJson, writeStoredJson } from './storageClient.ts';
 
 export type AnalyticsMetric =
   | 'suggestion_submitted'

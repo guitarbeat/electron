@@ -989,6 +989,18 @@ const readScopeStoredData = async <TScope extends StateScope>(
   };
 };
 
+const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
+  const definition = getScopeDefinition(scope);
+  const stored = definition.parse(null);
+  const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
+  const version = computeVersion(clientData);
+
+  return {
+    clientData,
+    version,
+  };
+};
+
 const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
   let payload: unknown;
   try {
@@ -1046,7 +1058,22 @@ export const createReadHandler =
         return unauthorizedResponse();
       }
 
-      const { clientData, version } = await readScopeStoredData(scope);
+      let clientData: StateScopeDataMap[TScope];
+      let version: string;
+      let degraded = false;
+
+      try {
+        const stored = await readScopeStoredData(scope);
+        clientData = stored.clientData;
+        version = stored.version;
+      } catch (error) {
+        const fallback = buildFallbackScopeData(scope);
+        clientData = fallback.clientData;
+        version = fallback.version;
+        degraded = true;
+        console.warn(`Falling back to default ${scope} state.`, error);
+      }
+
       const incomingEtag = normalizeEtag(req.headers.get('if-none-match'));
       if (incomingEtag && incomingEtag === normalizeEtag(version)) {
         return new Response(null, {
@@ -1062,7 +1089,7 @@ export const createReadHandler =
         {
           data: clientData,
           version,
-          degraded: false,
+          degraded,
         },
         {
           headers: {

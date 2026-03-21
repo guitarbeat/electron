@@ -1,22 +1,10 @@
-import {
-  createHmac,
-  pbkdf2Sync,
-  randomBytes,
-  timingSafeEqual,
-} from 'node:crypto';
+import { createHmac, pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
 
 import type { User } from '../../src/types.ts';
 import { isUser } from '../../src/utils.ts';
 
-const ACCESS_COOKIE = 'movie_watch_access';
 const PROFILE_COOKIE = 'movie_watch_profile';
-const ACCESS_TTL_SECONDS = 60 * 60 * 24 * 7;
 const PROFILE_TTL_SECONDS = 60 * 60 * 24 * 7;
-
-interface AccessSessionPayload {
-  type: 'access';
-  exp: number;
-}
 
 interface ProfileSessionPayload {
   type: 'profile';
@@ -24,13 +12,10 @@ interface ProfileSessionPayload {
   exp: number;
 }
 
-type SessionPayload = AccessSessionPayload | ProfileSessionPayload;
+type SessionPayload = ProfileSessionPayload;
 
 const clean = (value: string | undefined): string =>
   (value || '').trim().replace(/^["']|["']$/g, '');
-
-const getAppAccessSecret = (): string =>
-  clean(process.env.APP_ACCESS_SECRET);
 
 const getSessionSigningSecret = (): string =>
   clean(process.env.SESSION_SIGNING_SECRET);
@@ -139,17 +124,6 @@ const buildCookie = (
   return parts.join('; ');
 };
 
-export const buildAccessCookie = (req: Request): string =>
-  buildCookie(
-    req,
-    ACCESS_COOKIE,
-    encodeToken({
-      type: 'access',
-      exp: Math.floor(Date.now() / 1000) + ACCESS_TTL_SECONDS,
-    }),
-    ACCESS_TTL_SECONDS
-  );
-
 export const buildProfileCookie = (req: Request, user: User): string =>
   buildCookie(
     req,
@@ -165,35 +139,24 @@ export const buildProfileCookie = (req: Request, user: User): string =>
 export const buildClearProfileCookie = (req: Request): string =>
   buildCookie(req, PROFILE_COOKIE, '', 0);
 
-export const hasValidAppSecret = (secret: string): boolean => {
-  const configured = assertSecret('APP_ACCESS_SECRET', getAppAccessSecret());
-  const left = Buffer.from(secret);
-  const right = Buffer.from(configured);
-
-  return left.length === right.length && timingSafeEqual(left, right);
-};
-
 export const getSessionState = (req: Request): {
   hasAccess: boolean;
   currentUser: User | null;
 } => {
   const cookies = parseCookies(req);
-  const access = verifyToken<AccessSessionPayload>(cookies[ACCESS_COOKIE], 'access');
   const profile = verifyToken<ProfileSessionPayload>(cookies[PROFILE_COOKIE], 'profile');
 
   return {
-    hasAccess: Boolean(access),
-    currentUser: access ? profile?.user ?? null : null,
+    hasAccess: true,
+    currentUser: profile?.user ?? null,
   };
 };
 
 export const requireAccessUser = (req: Request): User | null => {
-  const { hasAccess, currentUser } = getSessionState(req);
-  return hasAccess ? currentUser : null;
+  return getSessionState(req).currentUser;
 };
 
-export const hasAccessSession = (req: Request): boolean =>
-  getSessionState(req).hasAccess;
+export const hasAccessSession = (_req: Request): boolean => true;
 
 export const requireProfileUser = (req: Request): User | null =>
   getSessionState(req).currentUser;

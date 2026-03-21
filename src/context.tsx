@@ -188,7 +188,6 @@ interface UserContextType {
   isSessionLoading: boolean;
   currentUser: User | null;
   setCurrentUser: (user: User | null) => Promise<boolean>;
-  unlockApp: (secret: string) => Promise<boolean>;
   refreshSession: () => Promise<void>;
 }
 
@@ -279,33 +278,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         applySessionState(session);
         return true;
       },
-      unlockApp: async (secret: string) => {
-        setIsSessionLoading(true);
-        try {
-          const response = await fetch('/api/session/access', {
-            method: 'POST',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ secret }),
-          });
-
-          if (response.status === 401 || response.status === 403) {
-            return false;
-          }
-
-          if (!response.ok) {
-            throw new Error('Failed to unlock app.');
-          }
-
-          await refreshSession();
-          return true;
-        } finally {
-          setIsSessionLoading(false);
-        }
-      },
       refreshSession,
     }),
     [
@@ -331,14 +303,13 @@ export const useUser = (): UserContextType => {
 
 export const useAppSession = (): Pick<
   UserContextType,
-  'hasAccess' | 'pinProtectedUsers' | 'isSessionLoading' | 'unlockApp' | 'refreshSession'
+  'hasAccess' | 'pinProtectedUsers' | 'isSessionLoading' | 'refreshSession'
 > => {
   const context = useUser();
   return {
     hasAccess: context.hasAccess,
     pinProtectedUsers: context.pinProtectedUsers,
     isSessionLoading: context.isSessionLoading,
-    unlockApp: context.unlockApp,
     refreshSession: context.refreshSession,
   };
 };
