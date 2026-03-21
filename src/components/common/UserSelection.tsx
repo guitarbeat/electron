@@ -59,7 +59,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const panelStatusTitle = selectedNamedUser ? 'Seat active' : 'Guest mode';
   const panelStatusCopy = selectedNamedUser
     ? `${selectedNamedUser} is driving the board right now. Swap seats, manage the PIN, or log out below.`
-    : 'Pick a profile to personalize the watchlist, unlock saved preferences, and start the shared games.';
+    : 'Pick a profile to personalize the watchlist, unlock saved preferences, and start the shared quiz.';
 
   useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {

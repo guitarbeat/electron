@@ -1,5 +1,5 @@
-import React, { useId, useRef } from 'react';
-import { MainTab } from '@/types';
+import React, { useId } from 'react';
+import type { MainTab } from '@/types';
 
 interface ThemeToggleProps {
   activeTab: MainTab;
@@ -14,8 +14,8 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   onChange,
   compact = false,
   className = '',
+  label,
 }) => {
-  const toggleRef = useRef<HTMLInputElement>(null);
   const toggleId = useId();
 
   const isPlacesMode = activeTab === 'places';
@@ -32,22 +32,43 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     }
   };
 
+  const handlePointerMove = (event: React.PointerEvent<HTMLLabelElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+
+    event.currentTarget.style.setProperty('--mouse-x', `${x}%`);
+    event.currentTarget.style.setProperty('--mouse-y', `${y}%`);
+  };
+
+  const resetPointerGlow = (event: React.PointerEvent<HTMLLabelElement>) => {
+    event.currentTarget.style.setProperty('--mouse-x', '50%');
+    event.currentTarget.style.setProperty('--mouse-y', '50%');
+  };
+
   return (
     <div
-      className={`theme-toggle${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`theme-toggle theme-toggle--${isPlacesMode ? 'places' : 'movies'}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
     >
-      <label className="theme-toggle__label" htmlFor={toggleId}>
+      <label
+        className="theme-toggle__label"
+        htmlFor={toggleId}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={resetPointerGlow}
+      >
         <input
-          ref={toggleRef}
           id={toggleId}
           type="checkbox"
           checked={isPlacesMode}
           onChange={handleToggle}
           onKeyDown={handleKeyDown}
-          aria-label={`Switch to ${isPlacesMode ? 'Movies' : 'Places'} mode`}
+          aria-label={label ?? `Switch to ${isPlacesMode ? 'Movies' : 'Places'} mode`}
         />
         <div className="theme-toggle__track">
+          <div className="theme-toggle__track-glow" aria-hidden="true" />
+          <div className="theme-toggle__track-stars" aria-hidden="true" />
           <div className="theme-toggle__thumb" aria-hidden="true">
+            <div className="theme-toggle__thumb-aura" />
             <div className="theme-toggle__thumb-shine" />
             <div className="theme-toggle__thumb-inner-glow" />
           </div>

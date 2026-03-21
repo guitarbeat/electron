@@ -2,176 +2,175 @@
 
 ## High-Level Structure
 
-The site is a single-page React app with a shared shell and two primary workspaces:
+The site is a single-page React app with two primary workspaces:
 
 - `Watchlist` mode (`queue`)
 - `Date Spots` mode (`places`)
 
-The shell remains consistent while the main workspace swaps between these two panels.
+The shell is intentionally simpler than earlier revisions. It now focuses on:
+
+1. shared profile state
+2. one retained quiz ritual
+3. one workspace switcher
+4. the active primary panel
 
 ## Global App Shell
 
 The top-level structure is:
 
-1. `ThemeProvider` + visual effects layer (`RetroEffects`)
-2. Fixed profile chip in the top-left (opens profile/settings sheet)
-3. Draggable floating action bubble (opens quick actions)
-4. Main workspace area (`#main-content`)
-5. Mobile-only bottom navigation
-6. Bottom sheet and modal stack for tools/minigames
+1. `ThemeProvider` plus visual effects layer (`RetroEffects`, optional `Moire`, frame effect)
+2. Accessibility skip link to `#main-content`
+3. Persistent duo-status strip
+   - profile selection and seat state
+   - one quiz launch card (`Start`, `Retake`, or `Edit`)
+4. Workspace header
+   - active workspace label
+   - shared `ThemeToggle` for switching between `Watchlist` and `Date Spots`
+5. Primary workspace surface
+6. Quiz-only modal stack
 
-There is also an accessibility skip link that jumps directly to `#main-content`.
+Removed from the main shell:
+
+- floating action bubble
+- action fan menu
+- command deck support rail
+- shell-level memories launcher
+- spin wheel and matchmaker launch paths
+
+## Duo-Status Area
+
+The duo-status strip is always above the active workspace and is the only persistent secondary surface.
+
+### Left side
+
+- `UserSelection` panel
+- active seat / guest state
+- PIN and logout actions stay attached to profile management
+
+### Right side
+
+- `Compatibility Quiz` ritual card
+- CTA changes by state:
+  - `Edit Quiz` when no profile is active
+  - `Start Quiz` for a fresh run
+  - `Retake Quiz` after completion
+
+## Workspace Header
+
+The workspace header is shared by both modes and contains:
+
+- active mode eyebrow + icon
+- mode title and short explanatory copy
+- `ThemeToggle`
+
+The shell owns workspace switching; the individual workspaces no longer render their own mode toggles.
 
 ## Main Workspace Layout
 
-### Header Area
-
-- Workspace mode toggle (`ThemeToggle`) switches between `Watchlist` and `Date Spots`
-- Active mode indicator shows icon + label (for example, `🎬 Watchlist Mode`)
-
-### Core Grid
-
-Desktop:
-
-- Two-column grid:
-  - Left: primary tab panel (`Watchlist` or `Date Spots`)
-  - Right: support rail with `Quick Actions` command deck
-
-Mobile:
-
-- Single-column content flow
-- Inline hero section with profile selection bubbles
-- No persistent right-side support rail
-
-## Navigation Model
-
 ### Desktop
 
-- `ThemeToggle` controls the active workspace tab
-- Profile chip and floating action bubble are always available
+- duo-status strip at top
+- shared workspace header below it
+- one primary workspace surface underneath
+- no persistent support rail
 
 ### Mobile
 
-- Bottom nav contains:
-  - `Watchlist`
-  - `Date Spots`
-  - `More` (opens sheet with profile/settings/actions)
+- same order as desktop, stacked into a single column
+- no bottom navigation
+- no shell-level More sheet
 
 ## Primary Panels
 
 ### 1) Watchlist Panel (`Watchlist`)
 
-Desktop internal layout:
+Primary control stack:
 
-- Left sticky controls column:
-  - Content tab switch (movies vs suggestions)
-  - Sorting controls
-  - Search/add input and random pick action
-- Right content grid:
-  - Movie cards or suggestion cards
-  - Loading skeleton state
-  - Empty-state messages
+- content tabs (`All`, `Queue`, `Watched`, `Suggestions`)
+- sort controls
+- search/add input
+- random pick action
+- small memory summary pills
 
-Mobile internal layout:
+Content area:
 
-- Controls stacked above content grid
+- movie cards
+- suggestion cards
+- loading skeleton state
+- empty states
+
+Memories:
+
+- memories live only inside the watchlist flow
+- movie cards can expand inline memories
+- mobile movie sheet can jump into that same memory path
+- no standalone shell-level memories modal
 
 Other surfaces:
 
-- Confetti layer when both users mark a movie watched
-- Delete confirmation dialog for movie removal
+- confetti when both users mark a movie watched
+- delete confirmation dialog
 
 ### 2) Date Spots Panel (`PlacesList`)
 
-Top section:
+Primary control stack:
 
-- Title + short explanatory copy
+- content tabs (`All`, `Queue`, `Visited`)
+- sort controls
+- search/add input
+- random pick action
+- queue / visited summary pills
 
-Two-card workspace section:
+Supporting panel:
 
-- Card 1: Add-new-spot form (name, notes, submit)
-- Card 2: Map preview (`PlacesMap`) with optional helper text
+- map preview card
+- helper copy when spots exist without map coordinates
 
-List section:
+Content area:
 
-- Sub-nav tabs:
-  - `Dream spots`
-  - `Been together`
-- Responsive card grid of places
-- Place actions:
-  - Mark visited/unvisited
-  - Delete
+- responsive place card grid
+- visited / unvisited toggle
+- delete action
+- loading skeleton state
+- empty states
 
 Other surfaces:
 
-- Loading skeleton state
-- Delete confirmation dialog (with undo flow via toast)
+- delete confirmation dialog
 
-## Utility/Action Surfaces
+## Modal Stack
 
-### Floating Action Bubble
+The shell-level modal stack now covers quiz only:
 
-- Always visible, draggable, fixed-position bubble
-- Opens a compact quick-actions menu near bubble position
-- Menu includes:
-  - Quiz (start/retake or edit)
-  - Matchmaker
-  - Memories
-  - Spin Wheel
-  - Food Merge
-  - CRT toggle
-  - Cursor trail toggle
+- `Quiz Editor`
+- `Quiz Flow`
 
-### Quick Actions Rail (Desktop)
+Pruned from the active product surface:
 
-- Right-side support card with full-size `CommandDeck` buttons
-- Mirrors the same action set as the bubble menu
-
-### Bottom Sheet (Mobile + shared trigger)
-
-`Profile & Settings` sheet contains:
-
-- User/profile selection panel
-- PIN management + logout (inside profile component)
-- Compact actions deck
-
-### Modal Stack
-
-The app uses `MinigameModal` overlays for feature workflows:
-
-- Quiz Editor
-- Food Merge
-- Spin Wheel (close can be temporarily locked while spinning)
-- Memories
-- Quiz Flow experience
-- Matchmaker
-
-Each modal is scrollable internally and sized per feature.
+- `Spin Wheel`
+- `Matchmaker`
+- standalone `Memories` modal
 
 ## Theming + Visual Behavior
 
-- Theme context is driven by active workspace (`movies` vs `places`)
-- Body `data-theme` attribute updates when tab changes
-- Retro visual effects can be toggled:
-  - CRT overlay
-  - Cursor trail
-- Animations are used for panel transitions, card entrances, and quick-action surfaces
+- theme context is driven by the active workspace
+- `body[data-theme]` switches between movie and places palettes
+- optional CRT and cursor-trail effects still respect saved state
+- shell chrome is calmer, but the Y2K textures, gradients, and motion language remain
 
 ## Compact Diagram
 
 ```mermaid
 flowchart TD
   App["App shell"]
-  App --> Profile["Profile chip"]
-  App --> Bubble["Floating action bubble"]
+  App --> Effects["Theme + visual effects"]
+  App --> Duo["Duo-status strip"]
+  Duo --> Profiles["Profile selection"]
+  Duo --> Quiz["Quiz ritual card"]
   App --> Header["Workspace header"]
   Header --> Toggle["Theme toggle"]
-  Header --> Active["Active mode label"]
-  App --> Grid["Workspace grid"]
-  Grid --> Watch["Watchlist panel"]
-  Grid --> Places["Date Spots panel"]
-  Grid --> Rail["Support rail (desktop)"]
-  App --> Mobile["Mobile bottom nav"]
-  App --> Sheet["Profile & Settings sheet"]
-  App --> Modal["Modal stack"]
+  App --> Surface["Primary workspace surface"]
+  Surface --> Watch["Watchlist panel"]
+  Surface --> Places["Date Spots panel"]
+  App --> Modal["Quiz modal stack"]
 ```

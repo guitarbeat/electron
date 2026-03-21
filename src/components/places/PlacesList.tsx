@@ -1,7 +1,6 @@
-import React, { useState, useCallback, useRef, memo } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { useUser, useToast } from '@/context';
 import { usePlaces } from '@/hooks/usePlaces';
-import { usePlacesAutocomplete } from '@/hooks/usePlacesAutocomplete';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
@@ -11,10 +10,9 @@ import { Input } from '@/ui/FormFields';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import PlacesMap from './PlacesMap';
-import ThemeToggle from '@/ui/ThemeToggle';
 import { CheckIcon, PlusIcon, TrashIcon, Spinner, MagicWandIcon } from '@/common/icons';
-import { colors, spacing, typography, motion, radius } from '@/design-system';
-import type { Place, MainTab, PlaceContentTab, PlaceSortMode, PlaceSuggestion } from '@/types';
+import { colors, spacing, typography, radius } from '@/design-system';
+import type { Place, PlaceContentTab, PlaceSortMode } from '@/types';
 
 const PLACE_TABS: { id: PlaceContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -41,6 +39,8 @@ interface PlacesTopControlsProps {
   isAdding: boolean;
   isSuggesting: boolean;
   suggestionError: string | null;
+  queueCount: number;
+  visitedCount: number;
 }
 
 const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
@@ -57,17 +57,31 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   isAdding,
   isSuggesting,
   suggestionError,
+  queueCount,
+  visitedCount,
 }) => {
   return (
-    <div
-      className="places-top-controls"
+    <section
+      className="workspace-control-panel ui-control-surface places-top-controls"
       style={{
-        marginBottom: spacing.xl,
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.lg,
       }}
     >
+      <div className="workspace-control-panel__header">
+        <p className="workspace-control-panel__eyebrow">Date Spots Atlas</p>
+        <h2 className="workspace-control-panel__title">Keep the outing list moving</h2>
+        <p className="workspace-control-panel__copy">
+          Add places quickly, keep the queue separate from visited spots, and use the map as context instead of clutter.
+        </p>
+      </div>
+
+      <div className="workspace-control-panel__meta" aria-label="Date spots overview">
+        <span className="workspace-control-panel__pill">{queueCount} queued</span>
+        <span className="workspace-control-panel__pill">{visitedCount} visited</span>
+      </div>
+
       <SubNav
         tabs={PLACE_TABS.map((tab) => ({
           id: tab.id,
@@ -151,7 +165,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
           {suggestionError}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
@@ -161,7 +175,6 @@ interface PlaceCardProps {
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
-  animationIndex: number;
 }
 
 function getPlaceIcon(name: string): string {
@@ -202,7 +215,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
-  animationIndex,
 }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const isVisited = Boolean(place.visitedAt);
@@ -304,12 +316,10 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 };
 
 interface PlacesListProps {
-  activeTab?: MainTab;
-  onTabChange?: (tab: MainTab) => void;
   isMobile?: boolean;
 }
 
-const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobile: propIsMobile }) => {
+const PlacesList: React.FC<PlacesListProps> = () => {
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -319,7 +329,6 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
     isSubmitting,
     addPlace,
     removePlace,
-    restorePlace,
     markVisited,
     markUnvisited,
   } = usePlaces(currentUser);
@@ -330,16 +339,7 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
   const [isAdding, setIsAdding] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [nameInput, setNameInput] = useState('');
-  const [notesInput, setNotesInput] = useState('');
-  const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-
-  usePlacesAutocomplete(nameInputRef, (name, lat, lng) => {
-    setNameInput(name);
-    setPendingCoords(typeof lat === 'number' && typeof lng === 'number' ? { lat, lng } : null);
-  });
 
   const queueCount = places.filter((p) => !p.visitedAt).length;
   const visitedCount = places.filter((p) => p.visitedAt).length;
@@ -375,29 +375,6 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
 
   const hasMappedPlaces = places.some((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
 
-  const handleAdd = useCallback(async () => {
-      const name = nameInput.trim();
-      if (!name || isSubmitting) return;
-
-      try {
-        await addPlace(
-          name,
-          notesInput.trim() || undefined,
-          pendingCoords?.lat,
-          pendingCoords?.lng
-        );
-        setNameInput('');
-        setNotesInput('');
-        setPendingCoords(null);
-        showToast({ message: `"${name}" added to list!`, type: 'success' });
-      } catch (err) {
-        showToast({ message: 'Failed to add place', type: 'error' });
-        console.error(err);
-      }
-    },
-    [nameInput, notesInput, pendingCoords, isSubmitting, addPlace, showToast]
-  );
-
   const confirmDelete = useCallback(async () => {
     if (!placeToDelete) return;
 
@@ -423,7 +400,7 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
       await addPlace(query);
       setSearchQuery('');
       showToast({ message: `"${query}" added!`, type: 'success' });
-    } catch (_error) {
+    } catch {
       setIsAdding(false);
       setIsSuggesting(true);
       setSuggestionError(null);
@@ -462,13 +439,6 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
 
   const renderControls = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-      {activeTab && onTabChange && (
-        <ThemeToggle
-          activeTab={activeTab}
-          onChange={onTabChange}
-          compact={propIsMobile || isMobile}
-        />
-      )}
       <PlacesTopControls
         contentTab={contentTab}
         setContentTab={setContentTab}
@@ -483,6 +453,8 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
         isAdding={isAdding}
         isSuggesting={isSuggesting}
         suggestionError={suggestionError}
+        queueCount={queueCount}
+        visitedCount={visitedCount}
       />
     </div>
   );
@@ -548,7 +520,7 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
           }}
         >
           {sorted.length > 0 ? (
-            sorted.map((place, index) => (
+            sorted.map((place) => (
               <PlaceCard
                 key={place.id}
                 place={place}
@@ -556,7 +528,6 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
                 onMarkVisited={markVisited}
                 onMarkUnvisited={markUnvisited}
                 onDelete={setPlaceToDelete}
-                animationIndex={index}
               />
             ))
           ) : (
