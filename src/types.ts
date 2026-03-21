@@ -10,6 +10,22 @@ export interface Place {
   visitedAt?: string; // optional: when you went (ISO string)
   lat?: number;
   lng?: number;
+  category?: string; // e.g. "Restaurant", "Park", "Museum"
+  rating?: string; // e.g. "4.5", "3.8"
+  description?: string; // detailed description
+  imageUrl?: string; // optional photo
+}
+
+export interface PlaceSuggestion {
+  id: string;
+  name: string;
+  suggestedBy: User;
+  createdAt: string;
+  notes?: string;
+  category?: string;
+  rating?: string;
+  description?: string;
+  imageUrl?: string;
 }
 
 export interface Movie {
@@ -66,7 +82,9 @@ export interface MatchmakerGame {
 }
 
 export type ContentTab = 'all' | 'queue' | 'watched' | 'suggestions';
+export type PlaceContentTab = 'all' | 'queue' | 'visited';
 export type SortMode = 'recent' | 'title' | 'year';
+export type PlaceSortMode = 'recent' | 'name';
 
 export interface WatchlistProps {
   isPaused?: boolean;
