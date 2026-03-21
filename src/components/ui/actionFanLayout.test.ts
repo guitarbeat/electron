@@ -3,6 +3,22 @@ import assert from 'node:assert/strict';
 import { computeActionFanPositions } from './actionFanLayout.ts';
 
 test('computeActionFanPositions', async (t) => {
+  const getMinimumDistance = (positions: Array<{ x: number; y: number }>) => {
+    let minimumDistance = Number.POSITIVE_INFINITY;
+
+    for (let index = 0; index < positions.length; index += 1) {
+      for (let comparisonIndex = 0; comparisonIndex < index; comparisonIndex += 1) {
+        const distance = Math.hypot(
+          positions[index].x - positions[comparisonIndex].x,
+          positions[index].y - positions[comparisonIndex].y
+        );
+        minimumDistance = Math.min(minimumDistance, distance);
+      }
+    }
+
+    return minimumDistance;
+  };
+
   await t.test('keeps the quick actions visible near the bottom-left corner', () => {
     const positions = computeActionFanPositions({
       count: 7,
@@ -23,6 +39,22 @@ test('computeActionFanPositions', async (t) => {
       assert.ok(position.x > 50, `expected bubble to stay off the left edge, got ${position.x}`);
       assert.ok(position.y < 558, `expected bubble to stay above the bottom edge, got ${position.y}`);
     });
+  });
+
+  await t.test('maintains readable spacing for larger quick action fans', () => {
+    const positions = computeActionFanPositions({
+      count: 7,
+      anchorX: 18,
+      anchorY: 526,
+      anchorSize: 64,
+      viewportWidth: 620,
+      viewportHeight: 618,
+    });
+
+    assert.ok(
+      getMinimumDistance(positions) >= 60,
+      `expected the fan items to stay separated, got min distance ${getMinimumDistance(positions)}`
+    );
   });
 
   await t.test('leans the quick actions toward open space near the bottom-left corner', () => {
