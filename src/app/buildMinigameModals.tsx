@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import SnakeGame from '@/components/SnakeGame';
 import SpinWheelGame from '@/components/SpinWheelGame';
 import Matchmaker from '@/components/matchmaker/Matchmaker';
 import QuizEditor from '@/components/quiz/QuizEditor';
@@ -31,6 +32,7 @@ export interface BuildFeatureModalsParams {
   showQuizEditor: boolean;
   showQuizFlow: boolean;
   showSpinWheel: boolean;
+  showSnake: boolean;
   showMatchmaker: boolean;
   quizCompleted: boolean;
   isSpinWheelLocked: boolean;
@@ -39,6 +41,7 @@ export interface BuildFeatureModalsParams {
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
+  setShowSnake: (open: boolean) => void;
   setShowMatchmaker: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
@@ -49,6 +52,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     showQuizEditor,
     showQuizFlow,
     showSpinWheel,
+    showSnake,
     showMatchmaker,
     quizCompleted,
     isSpinWheelLocked,
@@ -57,6 +61,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     setShowQuizEditor,
     setShowQuizFlow,
     setShowSpinWheel,
+    setShowSnake,
     setShowMatchmaker,
     setIsSpinWheelLocked,
     onQuizComplete,
@@ -72,6 +77,16 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 1200,
       maxHeight: 900,
       content: <QuizEditor onClose={() => setShowQuizEditor(false)} />,
+    },
+    {
+      key: 'snake',
+      isOpen: showSnake,
+      onClose: () => setShowSnake(false),
+      title: 'Snake',
+      ariaLabel: 'Snake game',
+      maxWidth: 760,
+      maxHeight: 860,
+      content: <SnakeGame />,
     },
     {
       key: 'spin-wheel',

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Movie, User } from '@/types';
-import { Input, Textarea } from '@/ui/FormFields';
+import { Textarea } from '@/ui/FormFields';
 import Button from '@/ui/Button';
-import { colors, radius, spacing, typography } from '@/design-system';
+import { radius, spacing, typography } from '@/design-system';
 import { canCreateMemory } from './memoryUtils';
 
 interface MemoryComposerProps {
@@ -43,6 +43,32 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
   noteInputRef,
 }) => {
   const creationLocked = !canCreateMemory(currentUser);
+  const selectedMovie =
+    watchedMovieOptions.find((movie) => movie.id === selectedMovieId) ?? watchedMovieOptions[0] ?? null;
+  const isSingleMovieContext = watchedMovieOptions.length <= 1 && Boolean(selectedMovie);
+  const showComposerToggle = !isSingleMovieContext || !isComposerOpen;
+  const authorLabel = currentUser || 'Guest';
+  const authorBadgeStyles =
+    currentUser === 'Aaron'
+      ? {
+          color: '#17356d',
+          background:
+            'linear-gradient(135deg, rgba(170, 220, 255, 0.98) 0%, rgba(118, 196, 255, 0.98) 100%)',
+          border: '1px solid rgba(83, 152, 214, 0.5)',
+        }
+      : currentUser === 'Electra'
+        ? {
+            color: '#6b173a',
+            background:
+              'linear-gradient(135deg, rgba(255, 205, 229, 0.98) 0%, rgba(255, 165, 208, 0.98) 100%)',
+            border: '1px solid rgba(216, 107, 158, 0.5)',
+          }
+        : {
+            color: '#51433a',
+            background:
+              'linear-gradient(135deg, rgba(255, 240, 214, 0.98) 0%, rgba(243, 219, 182, 0.98) 100%)',
+            border: '1px solid rgba(179, 145, 100, 0.45)',
+          };
 
   return (
     <>
@@ -60,57 +86,62 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
           <h3
             style={{
               margin: 0,
-              color: '#fff5e6',
+              color: '#fff2e8',
               fontSize: typography.fontSize.lg,
               fontWeight: typography.fontWeight.bold,
               fontFamily: typography.fontFamily.heading.join(', '),
-              letterSpacing: typography.letterSpacing.wide,
+              letterSpacing: typography.letterSpacing.normal,
             }}
           >
-            Shared Memory Wall
+            Movie note pile
           </h3>
           <p
             style={{
               margin: `${spacing.xs} 0 0`,
-              color: '#f7e0c3',
+              color: '#ffd9e9',
               fontSize: typography.fontSize.sm,
             }}
           >
-            Pin your favorite movie-night moments like sticky notes on a board.
+            Save the quote, reaction, or tiny thought you want stuck to this movie.
           </p>
         </div>
 
-        <Button
-          type="button"
-          variant={isComposerOpen ? 'ghost' : 'secondary'}
-          size="sm"
-          onClick={onComposerToggle}
-          style={{
-            border: '1px solid rgba(255, 227, 173, 0.5)',
-            minHeight: '38px',
-            color: '#fff4dc',
-            backgroundColor: isComposerOpen ? 'rgba(44, 25, 11, 0.42)' : undefined,
-          }}
-        >
-          {isComposerOpen ? 'Hide Composer' : 'Add Memory'}
-        </Button>
+        {showComposerToggle && (
+          <Button
+            type="button"
+            variant={isComposerOpen ? 'ghost' : 'primary'}
+            size="sm"
+            onClick={onComposerToggle}
+            style={{
+              border: '1px solid rgba(255, 214, 233, 0.45)',
+              minHeight: '38px',
+              color: isComposerOpen ? '#fff3f8' : '#241321',
+              background: isComposerOpen
+                ? 'rgba(82, 34, 57, 0.36)'
+                : 'linear-gradient(135deg, #ffd3e5 0%, #ffb3d4 100%)',
+              boxShadow: isComposerOpen ? 'none' : '0 10px 22px rgba(255, 127, 198, 0.22)',
+            }}
+          >
+            {isComposerOpen ? 'Hide note pad' : 'Add quote/thought'}
+          </Button>
+        )}
       </div>
 
       {creationLocked && (
         <div
           style={{
             marginBottom: spacing.md,
-            border: '1px solid rgba(209, 162, 79, 0.75)',
+            border: '1px solid rgba(239, 171, 109, 0.75)',
             background:
-              'linear-gradient(160deg, rgba(255, 233, 174, 0.95) 0%, rgba(244, 202, 124, 0.95) 100%)',
-            color: '#4a2e15',
+              'linear-gradient(160deg, rgba(255, 233, 202, 0.95) 0%, rgba(255, 210, 166, 0.95) 100%)',
+            color: '#522d1d',
             borderRadius: radius.sm,
             padding: spacing.sm,
             fontSize: typography.fontSize.sm,
             boxShadow: '0 8px 14px rgba(0,0,0,0.25)',
           }}
         >
-          Pick Aaron or Electra to add memories. Guests can still browse everything below.
+          Pick Aaron or Electra to leave a little note. Guests can still read what is already here.
         </div>
       )}
 
@@ -125,15 +156,15 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
             aria-hidden
             style={{
               position: 'absolute',
-              top: '-10px',
-              left: isMobile ? '12px' : '22px',
-              width: '72px',
-              height: '20px',
-              background: 'rgba(252, 241, 214, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.35)',
-              transform: 'rotate(-8deg)',
-              borderRadius: radius.sm,
-              boxShadow: '0 2px 3px rgba(0,0,0,0.18)',
+              top: isMobile ? '-8px' : '-12px',
+              left: isMobile ? '14px' : '22px',
+              width: isMobile ? '34px' : '42px',
+              height: isMobile ? '34px' : '42px',
+              background:
+                'radial-gradient(circle at 35% 35%, rgba(255, 244, 187, 0.98) 0%, rgba(255, 206, 121, 0.95) 72%, rgba(235, 156, 84, 0.92) 100%)',
+              border: '1px solid rgba(255, 241, 206, 0.5)',
+              borderRadius: radius.full,
+              boxShadow: '0 10px 18px rgba(0,0,0,0.24)',
               pointerEvents: 'none',
             }}
           />
@@ -141,15 +172,13 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
             aria-hidden
             style={{
               position: 'absolute',
-              top: '-10px',
-              right: isMobile ? '12px' : '26px',
-              width: '72px',
-              height: '20px',
-              background: 'rgba(252, 241, 214, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.35)',
-              transform: 'rotate(7deg)',
-              borderRadius: radius.sm,
-              boxShadow: '0 2px 3px rgba(0,0,0,0.18)',
+              top: isMobile ? '18px' : '12px',
+              right: isMobile ? '16px' : '24px',
+              width: isMobile ? '16px' : '18px',
+              height: isMobile ? '16px' : '18px',
+              background: 'rgba(255, 214, 170, 0.78)',
+              borderRadius: radius.full,
+              boxShadow: '0 0 0 6px rgba(255, 214, 170, 0.12)',
               pointerEvents: 'none',
             }}
           />
@@ -158,77 +187,215 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: spacing.sm,
+              gap: spacing.md,
               marginBottom: 0,
               padding: isMobile ? spacing.sm : spacing.md,
-              border: '1px solid rgba(255, 228, 177, 0.35)',
-              borderRadius: radius.md,
+              border: '1px solid rgba(255, 217, 234, 0.34)',
+              borderRadius: '24px',
               background:
-                'linear-gradient(165deg, rgba(25, 35, 60, 0.86) 0%, rgba(17, 24, 42, 0.93) 100%)',
-              boxShadow: '0 12px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
+                'linear-gradient(160deg, rgba(49, 28, 50, 0.94) 0%, rgba(21, 24, 43, 0.95) 50%, rgba(19, 36, 56, 0.96) 100%)',
+              boxShadow: '0 16px 30px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
           >
             <div
               style={{
+                padding: isMobile ? spacing.sm : `${spacing.sm} ${spacing.md}`,
+                borderRadius: '20px',
+                border: '1px solid rgba(255, 217, 234, 0.2)',
+                background:
+                  'linear-gradient(135deg, rgba(255, 192, 219, 0.16) 0%, rgba(146, 211, 255, 0.14) 100%)',
+                color: '#ffe9f3',
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: typography.fontSize.sm,
+                  lineHeight: typography.lineHeight.normal,
+                }}
+              >
+                Save the line you keep repeating, the joke that landed, or the tiny thought that belongs with this movie.
+              </p>
+            </div>
+
+            <div
+              style={{
                 display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : '1.2fr 0.8fr',
+                gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.25fr) minmax(180px, 0.75fr)',
                 gap: spacing.sm,
               }}
             >
-              <label style={{ color: colors.textSecondary, fontSize: typography.fontSize.xs }}>
-                Movie
-                <select
-                  value={selectedMovieId}
-                  onChange={(e) => onSelectedMovieIdChange(e.target.value)}
-                  disabled={watchedMovieOptions.length === 0 || isSubmitting}
+              {isSingleMovieContext && selectedMovie ? (
+                <div
                   style={{
-                    marginTop: spacing.xs,
-                    width: '100%',
-                    height: '44px',
-                    borderRadius: radius.md,
-                    border: `1px solid ${colors.borderSecondary}40`,
-                    backgroundColor: colors.surface,
-                    color: colors.textPrimary,
-                    padding: `0 ${spacing.sm}`,
-                    fontFamily: typography.fontFamily.body.join(', '),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: spacing.xs,
                   }}
                 >
-                  {watchedMovieOptions.length === 0 ? (
-                    <option value="">No shared watches yet</option>
-                  ) : (
-                    watchedMovieOptions.map((movie) => (
-                      <option key={movie.id} value={movie.id}>
-                        {movie.title}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </label>
+                  <span
+                    style={{
+                      ...typography.presets.eyebrow,
+                      color: '#ffc9df',
+                    }}
+                  >
+                    For movie
+                  </span>
+                  <div
+                    style={{
+                      minHeight: '48px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: spacing.sm,
+                      flexWrap: 'wrap',
+                      padding: `${spacing.sm} ${spacing.md}`,
+                      borderRadius: '18px',
+                      background: 'rgba(255, 255, 255, 0.09)',
+                      border: '1px solid rgba(255, 220, 236, 0.22)',
+                      color: '#fff4fa',
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        fontSize: typography.fontSize.lg,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {'"'}
+                    </span>
+                    <strong
+                      style={{
+                        fontSize: typography.fontSize.base,
+                        fontWeight: typography.fontWeight.semibold,
+                      }}
+                    >
+                      {selectedMovie.title}
+                    </strong>
+                    {selectedMovie.year ? (
+                      <span style={{ color: '#ffc9df', fontSize: typography.fontSize.xs }}>
+                        {selectedMovie.year}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ) : (
+                <label style={{ color: '#ffc9df', fontSize: typography.fontSize.xs }}>
+                  Movie
+                  <select
+                    value={selectedMovieId}
+                    onChange={(e) => onSelectedMovieIdChange(e.target.value)}
+                    disabled={watchedMovieOptions.length === 0 || isSubmitting}
+                    style={{
+                      marginTop: spacing.xs,
+                      width: '100%',
+                      height: '48px',
+                      borderRadius: '18px',
+                      border: '1px solid rgba(255, 220, 236, 0.22)',
+                      background: 'rgba(255, 255, 255, 0.09)',
+                      color: '#f8fafc',
+                      padding: `0 ${spacing.sm}`,
+                      fontFamily: typography.fontFamily.body.join(', '),
+                    }}
+                  >
+                    {watchedMovieOptions.length === 0 ? (
+                      <option value="">No shared watches yet</option>
+                    ) : (
+                      watchedMovieOptions.map((movie) => (
+                        <option key={movie.id} value={movie.id}>
+                          {movie.title}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </label>
+              )}
 
-              <Input
-                label="By"
-                value={currentUser || 'Guest'}
-                onChange={() => {}}
-                disabled
-                style={{ height: '44px' }}
-              />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: spacing.xs,
+                }}
+              >
+                <span
+                  style={{
+                    ...typography.presets.eyebrow,
+                    color: '#bde4ff',
+                  }}
+                >
+                  From
+                </span>
+                <div
+                  style={{
+                    minHeight: '48px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    gap: spacing.xs,
+                    padding: `${spacing.sm} ${spacing.md}`,
+                    borderRadius: '18px',
+                    width: isMobile ? '100%' : 'fit-content',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.28)',
+                    ...authorBadgeStyles,
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      fontSize: typography.fontSize.base,
+                      lineHeight: 1,
+                    }}
+                  >
+                    o
+                  </span>
+                  <strong
+                    style={{
+                      fontSize: typography.fontSize.sm,
+                      fontWeight: typography.fontWeight.semibold,
+                      letterSpacing: typography.letterSpacing.normal,
+                    }}
+                  >
+                    {authorLabel}
+                  </strong>
+                </div>
+              </div>
             </div>
 
-            <Textarea
-              ref={noteInputRef}
-              label="Memory"
-              value={note}
-              onChange={(e) => onNoteChange(e.target.value)}
-              onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                  e.preventDefault();
-                  e.currentTarget.form?.requestSubmit();
-                }
+            <div
+              style={{
+                padding: isMobile ? spacing.sm : spacing.md,
+                borderRadius: isMobile ? '22px' : '26px',
+                background:
+                  'linear-gradient(145deg, rgba(255, 241, 247, 0.96) 0%, rgba(255, 236, 223, 0.95) 100%)',
+                border: '1px solid rgba(255, 219, 188, 0.88)',
+                boxShadow: '0 12px 22px rgba(16, 24, 40, 0.14)',
               }}
-              placeholder="What made this movie night special?"
-              disabled={isSubmitting || watchedMovieOptions.length === 0 || creationLocked}
-              style={{ minHeight: isMobile ? '100px' : '120px' }}
-            />
+            >
+              <Textarea
+                ref={noteInputRef}
+                label="Quote, thought, or tiny reaction"
+                value={note}
+                onChange={(e) => onNoteChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                placeholder="A quote you loved, a tiny review, an inside joke, or the one line you keep repeating..."
+                disabled={isSubmitting || watchedMovieOptions.length === 0 || creationLocked}
+                style={{
+                  minHeight: isMobile ? '104px' : '126px',
+                  backgroundColor: 'transparent',
+                  color: '#42263e',
+                  border: 'none',
+                  boxShadow: 'none',
+                  padding: 0,
+                  fontSize: typography.fontSize.base,
+                }}
+              />
+            </div>
 
             <div
               style={{
@@ -242,7 +409,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <span
                   style={{
-                    color: remainingChars <= 30 ? colors.warning : colors.textTertiary,
+                    color: remainingChars <= 30 ? '#ffd36b' : '#dfe6ff',
                     fontSize: typography.fontSize.xs,
                     fontWeight:
                       remainingChars <= 30
@@ -252,27 +419,37 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
                 >
                   {remainingChars} chars left
                 </span>
-                <span style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
-                  Tip: press Ctrl/Cmd + Enter to save. Mentions: @Aaron or @Electra.
+                <span style={{ color: '#cfe2ff', fontSize: typography.fontSize.xs }}>
+                  Tip: press Ctrl/Cmd + Enter to tuck it onto this movie. Mentions still work: @Aaron or @Electra.
                 </span>
               </div>
               <Button
                 type="submit"
-                variant="secondary"
+                variant="primary"
                 disabled={!canSubmit}
                 isLoading={isSubmitting}
-                style={{ minHeight: '44px', minWidth: isMobile ? '100%' : '140px' }}
+                style={{
+                  minHeight: '44px',
+                  minWidth: isMobile ? '100%' : '174px',
+                  color: '#2a1732',
+                  background: 'linear-gradient(135deg, #ffe39a 0%, #ffbf8b 100%)',
+                  boxShadow: '0 12px 22px rgba(255, 175, 120, 0.2)',
+                }}
               >
-                Save Memory
+                Add quote/thought
               </Button>
             </div>
 
             {error && (
               <div
                 style={{
-                  color: colors.error,
+                  color: '#ffd4d4',
                   fontSize: typography.fontSize.xs,
                   fontWeight: typography.fontWeight.bold,
+                  padding: `${spacing.xs} ${spacing.sm}`,
+                  borderRadius: radius.md,
+                  background: 'rgba(248, 113, 113, 0.14)',
+                  border: '1px solid rgba(248, 113, 113, 0.3)',
                 }}
                 role="status"
                 aria-live="polite"
@@ -283,9 +460,13 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
             {successMessage && (
               <div
                 style={{
-                  color: colors.success,
+                  color: '#d5ffe2',
                   fontSize: typography.fontSize.xs,
                   fontWeight: typography.fontWeight.bold,
+                  padding: `${spacing.xs} ${spacing.sm}`,
+                  borderRadius: radius.md,
+                  background: 'rgba(74, 222, 128, 0.12)',
+                  border: '1px solid rgba(74, 222, 128, 0.28)',
                 }}
                 role="status"
                 aria-live="polite"

@@ -26,6 +26,7 @@ export const API_SECRET = clean(env.VITE_API_SECRET || "");
 export const GIST_FILENAME = "movielist.json";
 export const GIST_QUIZ_FILENAME = "quiz.json";
 export const GIST_SUGGESTIONS_FILENAME = "suggestions.json";
+export const GIST_MESSAGES_FILENAME = "messages.json";
 export const GIST_MEMORIES_FILENAME = "memories.json";
 export const GIST_MATCHMAKER_FILENAME = "matchmaker.json";
 export const GIST_PLACES_FILENAME = "places.json";

@@ -94,6 +94,7 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showSnake, setShowSnake] = useState(false);
   const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showActionFanMenu, setShowActionFanMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
@@ -183,6 +184,7 @@ const App: React.FC = () => {
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
+        showSnake,
         showMatchmaker,
         quizCompleted,
         isSpinWheelLocked,
@@ -191,6 +193,7 @@ const App: React.FC = () => {
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
+        setShowSnake,
         setShowMatchmaker,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
@@ -204,6 +207,7 @@ const App: React.FC = () => {
       showMatchmaker,
       showQuizEditor,
       showQuizFlow,
+      showSnake,
       showSpinWheel,
     ]
   );
@@ -302,6 +306,11 @@ const App: React.FC = () => {
         label: quizLaunch.label,
         icon: '🧠',
         action: openQuizExperience,
+      },
+      {
+        label: 'Snake',
+        icon: '🐍',
+        action: () => setShowSnake(true),
       },
       {
         label: 'Spin Wheel',

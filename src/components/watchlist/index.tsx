@@ -31,6 +31,8 @@ const SORT_OPTIONS: { id: SortMode; label: string }[] = [
   { id: 'year', label: 'Year' },
 ];
 
+const MAX_MOVIE_NOTE_LENGTH = 280;
+
 interface WatchlistTopControlsProps {
   contentTab: ContentTab;
   setContentTab: (tab: ContentTab) => void;
@@ -80,14 +82,14 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         <p className="workspace-control-panel__eyebrow">Movie Night Queue</p>
         <h2 className="workspace-control-panel__title">Plan the next watch</h2>
         <p className="workspace-control-panel__copy">
-          Add picks fast, review suggestions, and keep shared memories attached to the movies that earned them.
+          Add picks fast, review suggestions, and keep little notes tucked onto the movies that earned them.
         </p>
       </div>
 
       <div className="workspace-control-panel__meta" aria-label="Watchlist overview">
         <span className="workspace-control-panel__pill">{tabCounts.queue} queued</span>
         <span className="workspace-control-panel__pill">
-          {memoryCount} memor{memoryCount === 1 ? 'y' : 'ies'} on {memoryMovieCount} title{memoryMovieCount === 1 ? '' : 's'}
+          {memoryCount} note{memoryCount === 1 ? '' : 's'} on {memoryMovieCount} title{memoryMovieCount === 1 ? '' : 's'}
         </span>
       </div>
 
@@ -370,10 +372,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
   const hasSharedMemories = memories.length > 0;
-  const memoryCountText = `${memories.length} shared memor${memories.length === 1 ? 'y' : 'ies'}`;
+  const canOpenNotes = hasSharedMemories || Boolean(currentUser);
+  const memoryCountText = `${memories.length} note${memories.length === 1 ? '' : 's'}`;
   const firstMemoryNote = memories[0]?.note;
   const memoryPreviewText = firstMemoryNote
-    ? `: "${firstMemoryNote.slice(0, 60)}${firstMemoryNote.length > 60 ? '...' : ''}"`
+    ? ` - "${firstMemoryNote.slice(0, 56)}${firstMemoryNote.length > 56 ? '...' : ''}"`
     : '';
 
   const handleCardClick = () => {
@@ -438,14 +441,18 @@ const MovieCard: React.FC<MovieCardProps> = ({
               <MovieMetadata movie={movie} />
             </div>
 
-            {hasSharedMemories && (
+            {canOpenNotes && (
               <button
                 type="button"
                 onClick={handleToggleMemories}
                 className="movie-item-memory-toggle"
-                aria-label={`View memories for "${movie.title}"`}
+                aria-label={
+                  hasSharedMemories
+                    ? `View notes for "${movie.title}"`
+                    : `Add a quote or thought to "${movie.title}"`
+                }
               >
-                {memoryCountText}
+                {hasSharedMemories ? memoryCountText : 'Add quote/thought'}
               </button>
             )}
 
@@ -495,15 +502,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 )}
               </div>
 
-              {hasSharedMemories && (
+              {canOpenNotes && (
                 <button
                   type="button"
                   onClick={() => runBottomSheetAction(() => setShowMemories(true))}
                   className="movie-sheet-memory-button"
-                  aria-label={`View memories for "${movie.title}"`}
+                  aria-label={
+                    hasSharedMemories
+                      ? `View notes for "${movie.title}"`
+                      : `Add a quote or thought to "${movie.title}"`
+                  }
                 >
-                  {memoryCountText}
-                  {memoryPreviewText}
+                  {hasSharedMemories ? memoryCountText : 'Add quote/thought'}
+                  {hasSharedMemories ? memoryPreviewText : ' - Leave a tiny line on this movie.'}
                 </button>
               )}
             </div>
@@ -793,17 +804,22 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
   onTogglePin,
 }) => {
   const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
+  const [draftNote, setDraftNote] = React.useState('');
+  const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
+  const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
+  const canSubmitNote = !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
 
   const handleMemorySubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!onAddMemory) return;
+    const trimmedNote = draftNote.trim();
+    if (!trimmedNote) return;
 
     setIsSubmittingMemory(true);
     try {
-      const form = event.currentTarget as HTMLFormElement;
-      const note = (form.elements.namedItem('note') as HTMLTextAreaElement).value;
-      await onAddMemory(note);
-      form.reset();
+      await onAddMemory(trimmedNote);
+      setDraftNote('');
+      noteInputRef.current?.focus();
     } finally {
       setIsSubmittingMemory(false);
     }
@@ -820,13 +836,55 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         marginTop: `-${spacing.sm}`,
         marginBottom: spacing.md,
         padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
-        borderRadius: '0 0 12px 12px',
-        background: 'rgba(20, 20, 25, 0.4)',
-        border: '1px solid rgba(236, 72, 153, 0.18)',
+        borderRadius: '0 0 16px 16px',
+        background:
+          'linear-gradient(180deg, rgba(39, 24, 44, 0.94) 0%, rgba(23, 26, 46, 0.95) 36%, rgba(22, 37, 55, 0.96) 100%)',
+        border: '1px solid rgba(255, 182, 214, 0.22)',
         borderTop: 'none',
-        borderLeft: '3px solid rgba(255, 127, 198, 0.28)',
+        borderLeft: '3px solid rgba(255, 184, 146, 0.38)',
+        boxShadow: '0 18px 34px rgba(6, 11, 24, 0.24)',
       }}
     >
+      <div
+        style={{
+          marginBottom: spacing.md,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.xs,
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            ...typography.presets.eyebrow,
+            color: '#ffbed7',
+          }}
+        >
+          Notes on this movie
+        </p>
+        <h4
+          style={{
+            margin: 0,
+            color: '#fff3f7',
+            fontSize: typography.fontSize.lg,
+            fontFamily: typography.fontFamily.heading.join(', '),
+            letterSpacing: typography.letterSpacing.normal,
+          }}
+        >
+          {movie.title}
+        </h4>
+        <p
+          style={{
+            margin: 0,
+            color: '#d8e6ff',
+            fontSize: typography.fontSize.sm,
+            lineHeight: typography.lineHeight.normal,
+          }}
+        >
+          Quotes, reactions, and tiny thoughts worth keeping with this one.
+        </p>
+      </div>
+
       {currentUser && onAddMemory && (
         <div style={{ marginBottom: spacing.md }}>
           <MemoryComposer
@@ -836,16 +894,16 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
             currentUser={currentUser}
             onSubmit={handleMemorySubmit}
             isSubmitting={isSubmittingMemory}
-            canSubmit={!isSubmittingMemory}
+            canSubmit={canSubmitNote}
             isMobile={isMobile}
-            note=""
-            onNoteChange={() => {}}
+            note={draftNote}
+            onNoteChange={(nextNote) => setDraftNote(nextNote.slice(0, MAX_MOVIE_NOTE_LENGTH))}
             isComposerOpen
             onComposerToggle={() => {}}
-            remainingChars={280}
+            remainingChars={remainingChars}
             error={null}
             successMessage={null}
-            noteInputRef={React.createRef()}
+            noteInputRef={noteInputRef}
           />
         </div>
       )}
@@ -855,6 +913,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           memories={memories}
           visibleMemories={memories}
           sortedMemories={memories}
+          contextMovieTitle={movie.title}
           currentUser={currentUser}
           isMobile={isMobile}
           onEditMemory={async (memory, note) => {
@@ -888,7 +947,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
             padding: spacing.sm,
           }}
         >
-          No memories yet. Add one above!
+          No notes on this movie yet. Leave the first one above.
         </p>
       )}
     </div>
