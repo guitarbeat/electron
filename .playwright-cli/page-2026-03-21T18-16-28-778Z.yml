@@ -1,0 +1,80 @@
+- generic [ref=e90]:
+  - link "Skip to content" [ref=e91] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e92]:
+    - button "Open messages and extras" [ref=e93] [cursor=pointer]:
+      - generic [ref=e94]: ✦
+      - generic [ref=e95]: Messages and extras
+    - main [ref=e96]:
+      - region "Profiles and app summary" [ref=e97]:
+        - generic [ref=e98]:
+          - generic [ref=e100]:
+            - heading "Choose a profile" [level=3] [ref=e101]
+            - status [ref=e102]:
+              - generic [ref=e103]: Guest mode
+            - group "Select profile" [ref=e105]:
+              - button "Select Aaron" [ref=e107] [cursor=pointer]:
+                - generic [ref=e108]:
+                  - img "Aaron's profile" [ref=e110]
+                  - generic: Aaron
+              - button "Select Electra" [ref=e112] [cursor=pointer]:
+                - generic [ref=e113]:
+                  - img "Electra's profile" [ref=e115]
+                  - generic: Electra
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - paragraph [ref=e119]: Shared page
+              - heading "Movies, dates, and messages" [level=2] [ref=e120]
+            - generic "Page summary" [ref=e121]:
+              - generic [ref=e122]: Guest mode
+              - generic [ref=e123]: Shared state secured
+              - generic [ref=e124]: Watchlist open
+      - region "Workspace controls" [ref=e125]:
+        - paragraph [ref=e126]:
+          - generic [ref=e127]: 🎬
+          - text: Movies
+        - heading "Watchlist" [level=1] [ref=e128]:
+          - generic [ref=e129]: 🎬
+          - text: Watchlist
+        - generic [ref=e132] [cursor=pointer]:
+          - checkbox "Switch between Watchlist and Date Ideas"
+          - generic [ref=e133]:
+            - generic:
+              - generic: 🎬
+              - generic: Movies
+            - generic:
+              - generic: 📍
+              - generic: Places
+      - region "Primary workspace" [ref=e135]:
+        - generic [ref=e137]:
+          - complementary [ref=e138]:
+            - generic [ref=e140]:
+              - generic [ref=e141]:
+                - paragraph [ref=e142]: Movies
+                - heading "Plan the next movie" [level=2] [ref=e143]
+              - generic "Watchlist overview" [ref=e144]:
+                - generic [ref=e145]: 0 queued
+                - generic [ref=e146]: 0 notes on 0 titles
+              - generic [ref=e147]:
+                - tablist [ref=e148]:
+                  - tab "All 0" [selected] [ref=e149] [cursor=pointer]:
+                    - text: All
+                    - generic [ref=e150]: "0"
+                  - tab "Queue 0" [ref=e152] [cursor=pointer]:
+                    - text: Queue
+                    - generic [ref=e153]: "0"
+                  - tab "Watched 0" [ref=e154] [cursor=pointer]:
+                    - text: Watched
+                    - generic [ref=e155]: "0"
+                  - tab "Suggestions 0" [ref=e156] [cursor=pointer]:
+                    - text: Suggestions
+                    - generic [ref=e157]: "0"
+                - generic [ref=e158]:
+                  - button "Recent" [ref=e159] [cursor=pointer]
+                  - button "A-Z" [ref=e160] [cursor=pointer]
+                  - button "Year" [ref=e161] [cursor=pointer]
+              - generic [ref=e162]:
+                - textbox "Movie title" [ref=e167]
+                - button "Pick a random movie" [disabled] [ref=e168]:
+                  - generic [ref=e169]: 🎲
+          - generic [ref=e172]: Your watchlist is empty

@@ -1,6 +1,4 @@
 import React from 'react';
-import { colors, radius, shadows, motion } from '@/design-system';
-
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   className?: string;
@@ -25,31 +23,6 @@ const Card: React.FC<CardProps> = ({
 }) => {
   const isInteractive = typeof onClick === 'function' || variant === 'interactive';
 
-  const getVariantStyles = () => {
-    switch (variant) {
-      case 'elevated':
-        return {
-          backgroundColor: colors.surface2,
-          boxShadow: shadows.cardElevated,
-          border: `1.5px solid ${colors.borderSecondary}45`,
-        };
-      case 'outlined':
-        return {
-          backgroundColor: 'transparent',
-          border: `1.5px solid ${colors.borderSubtle}`,
-          boxShadow: 'none',
-        };
-      case 'interactive':
-      case 'default':
-      default:
-        return {
-          backgroundColor: colors.surface1,
-          boxShadow: shadows.card,
-          border: `1.5px solid ${colors.borderSubtle}`,
-        };
-    }
-  };
-
   return (
     <div
       className={`ui-card ui-card--${variant} ${hover ? 'ui-card--hover' : ''} ${
@@ -59,13 +32,9 @@ const Card: React.FC<CardProps> = ({
       tabIndex={isInteractive ? (tabIndex ?? 0) : tabIndex}
       style={{
         position: 'relative',
-        borderRadius: radius.card,
         overflow: 'hidden',
-        transition: `all ${motion.duration.normal} ${motion.easing.ease}`,
         cursor: isInteractive ? 'pointer' : 'default',
         padding: '1.25rem',
-        ...getVariantStyles(),
-        ...(glow && { boxShadow: shadows.glow }),
         ...style,
       }}
       onClick={onClick}
@@ -98,4 +67,3 @@ const Card: React.FC<CardProps> = ({
 };
 
 export default Card;
-

@@ -1,7 +1,6 @@
 import React, { useState, useCallback, memo } from 'react';
 import { useUser, useToast } from '@/context';
 import { usePlaces } from '@/hooks/usePlaces';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import SubNav from '@/ui/SubNav';
@@ -97,6 +96,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
       />
 
       <div
+        className="places-top-controls__toolbar"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -105,6 +105,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
         }}
       >
         <form
+          className="places-top-controls__search-form"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -324,7 +325,6 @@ interface PlacesListProps {
 const PlacesList: React.FC<PlacesListProps> = () => {
   const { currentUser } = useUser();
   const { showToast } = useToast();
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const {
     places,
     isLoading,
@@ -491,14 +491,13 @@ const PlacesList: React.FC<PlacesListProps> = () => {
       }}
     >
       <WorkspacePanels
-        isMobile={isMobile}
         className="places-workspace"
-        mobileClassName="places-workspace"
         desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
         first={renderControls()}
         second={
           <Card
             variant="default"
+            className="places-map-card"
             style={{
               padding: spacing.md,
               height: '340px',
@@ -519,7 +518,7 @@ const PlacesList: React.FC<PlacesListProps> = () => {
       ) : (
         <CollectionGrid
           className="places-grid"
-          minColumnWidth="300px"
+          minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
           style={{ 
             gap: spacing.lg,
             marginTop: spacing.md
