@@ -57,6 +57,13 @@ export interface MovieSuggestion {
   respondedBy?: User; // Aaron or Electra
 }
 
+export interface Message {
+  id: string;
+  author: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface SharedMemory {
   id: string;
   movieId?: string;

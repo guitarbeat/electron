@@ -18,6 +18,7 @@ interface MemoryListProps {
   memories: SharedMemory[];
   visibleMemories: SharedMemory[];
   sortedMemories: SharedMemory[];
+  contextMovieTitle?: string;
   movieFilterOptions: Array<{ id: string; title: string }>;
   activeMovieFilter: string;
   onActiveMovieFilterChange: (nextFilter: string) => void;
@@ -68,6 +69,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
   memories,
   visibleMemories,
   sortedMemories,
+  contextMovieTitle,
   movieFilterOptions,
   activeMovieFilter,
   onActiveMovieFilterChange,
@@ -91,6 +93,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
 
   const canManageMemories = Boolean(currentUser);
+  const isSingleMovieContext = Boolean(contextMovieTitle);
   const pinnedCount = sortedMemories.filter((memory) => memory.isPinned).length;
 
   const confirmDeleteMemory = async () => {
@@ -136,14 +139,14 @@ const MemoryList: React.FC<MemoryListProps> = ({
             letterSpacing: typography.letterSpacing.normal,
           }}
         >
-          Latest Memories
+          {contextMovieTitle ? `Notes on ${contextMovieTitle}` : 'Latest notes'}
         </h4>
         <span style={{ color: '#f7ddba', fontSize: typography.fontSize.xs }}>
-          {pinnedCount} pinned
+          {pinnedCount} pinned note{pinnedCount === 1 ? '' : 's'}
         </span>
       </div>
 
-      {memories.length > 0 && (
+      {memories.length > 0 && !isSingleMovieContext && (
         <div
           style={{
             display: 'grid',
@@ -157,7 +160,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
           }}
         >
           <label style={{ color: colors.textSecondary, fontSize: typography.fontSize.xs }}>
-            Filter by movie
+            Filter by title
             <select
               value={activeMovieFilter}
               onChange={(e) => onActiveMovieFilterChange(e.target.value)}
@@ -173,7 +176,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                 fontFamily: typography.fontFamily.body.join(', '),
               }}
             >
-              <option value={ALL_MOVIES_FILTER}>All movies</option>
+              <option value={ALL_MOVIES_FILTER}>All titles</option>
               {movieFilterOptions.map((movieOption) => (
                 <option key={movieOption.id} value={movieOption.id}>
                   {movieOption.title}
@@ -215,25 +218,27 @@ const MemoryList: React.FC<MemoryListProps> = ({
             fontSize: typography.fontSize.xs,
           }}
         >
-          Select Aaron or Electra to pin, edit, or delete memories.
+          Select Aaron or Electra to pin, edit, or delete notes.
         </p>
       )}
 
       {isLoading && memories.length === 0 && (
-        <p style={{ margin: 0, color: colors.textSecondary }}>Loading memories...</p>
+        <p style={{ margin: 0, color: colors.textSecondary }}>Loading notes...</p>
       )}
 
       {memoriesError && memories.length === 0 && (
         <p style={{ margin: 0, color: colors.error, fontSize: typography.fontSize.sm }}>
-          Couldn&apos;t load memories right now. Try again in a few seconds.
+          Couldn&apos;t load notes right now. Try again in a few seconds.
         </p>
       )}
 
       {!isLoading && !memoriesError && visibleMemories.length === 0 && (
         <p style={{ margin: 0, color: '#f6e4cb' }}>
-          {activeMovieFilter === ALL_MOVIES_FILTER
-            ? 'No memories yet. Add your first one after your next shared watch.'
-            : 'No memories match this movie yet.'}
+          {isSingleMovieContext
+            ? 'No notes on this movie yet. Leave the first little one above.'
+            : activeMovieFilter === ALL_MOVIES_FILTER
+              ? 'No notes yet. Add your first one after your next shared watch.'
+              : 'No notes match this title yet.'}
         </p>
       )}
 
@@ -294,7 +299,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                 }}
               >
                 <strong style={{ color: noteTheme.heading, fontSize: typography.fontSize.sm }}>
-                  {memory.movieTitle}
+                  {isSingleMovieContext ? 'Quote or thought' : memory.movieTitle}
                 </strong>
                 <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
                   {memory.isPinned && (
@@ -320,7 +325,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
               {isEditing ? (
                 <>
                   <Textarea
-                    label="Edit memory"
+                    label="Edit note"
                     value={draftNote}
                     onChange={(e) => setDraftNote(e.target.value)}
                     style={{ minHeight: '100px' }}
@@ -343,7 +348,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                         }
                       }}
                     >
-                      Save
+                      Save note
                     </Button>
                     <Button
                       type="button"
@@ -359,6 +364,19 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     </Button>
                   </div>
                 </>
+              ) : isSingleMovieContext ? (
+                <div
+                  style={{
+                    margin: `${spacing.xs} 0`,
+                    color: noteTheme.text,
+                    fontSize: typography.fontSize.sm,
+                    lineHeight: typography.lineHeight.normal,
+                    whiteSpace: 'pre-wrap',
+                    flex: 1,
+                  }}
+                >
+                  {renderMemoryNote(memory.note)}
+                </div>
               ) : (
                 <button
                   type="button"
@@ -396,15 +414,17 @@ const MemoryList: React.FC<MemoryListProps> = ({
                 <div
                   style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap', marginTop: 'auto' }}
                 >
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onJumpToMovie(memory)}
-                    style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
-                  >
-                    Jump to movie
-                  </Button>
+                  {!isSingleMovieContext && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onJumpToMovie(memory)}
+                      style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
+                    >
+                      Open movie
+                    </Button>
+                  )}
 
                   <Button
                     type="button"
@@ -421,7 +441,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     }}
                     style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
                   >
-                    {memory.isPinned ? 'Unpin' : 'Pin'}
+                    {memory.isPinned ? 'Unpin note' : 'Keep pinned'}
                   </Button>
 
                   <Button
@@ -435,7 +455,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     }}
                     style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
                   >
-                    Edit
+                    Edit note
                   </Button>
 
                   <Button
@@ -446,7 +466,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     onClick={() => setMemoryToDelete(memory)}
                     style={{ border: '1px solid rgba(153, 66, 58, 0.45)', color: '#7a261f' }}
                   >
-                    Delete
+                    Delete note
                   </Button>
                 </div>
               )}
@@ -491,9 +511,9 @@ const MemoryList: React.FC<MemoryListProps> = ({
 
       <ConfirmDialog
         isOpen={!!memoryToDelete}
-        title="Delete Memory"
-        message={`Delete this memory from ${memoryToDelete?.author || 'Unknown'}?`}
-        confirmText="Delete"
+        title="Delete Note"
+        message={`Delete this note from ${memoryToDelete?.author || 'Unknown'}?`}
+        confirmText="Delete note"
         onConfirm={confirmDeleteMemory}
         onCancel={() => setMemoryToDelete(null)}
       />
