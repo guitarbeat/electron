@@ -37,12 +37,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
     setSubmitError(null);
 
     if (!currentUser) {
-      setSubmitError('Choose Aaron or Electra to send a message.');
+      setSubmitError('Profile required');
       return;
     }
 
     if (!content.trim()) {
-      setSubmitError('Please enter a message.');
+      setSubmitError('Message required');
       return;
     }
 
@@ -56,7 +56,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       setContent('');
       window.setTimeout(() => textareaRef.current?.focus(), 250);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Failed to send message.');
+      setSubmitError(error instanceof Error ? error.message : 'Unavailable');
     }
   };
 

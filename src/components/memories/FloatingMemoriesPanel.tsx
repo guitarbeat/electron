@@ -119,9 +119,6 @@ const FloatingMemoriesPanel: React.FC = () => {
       <div className="memory-lane__header">
         <p className="memory-lane__eyebrow">Movie notes</p>
         <h3 className="memory-lane__title">Notes</h3>
-        <p className="memory-lane__subtitle">
-          Add, edit, pin, and search the notes you want to keep with your movies.
-        </p>
       </div>
 
       <div className="memory-lane__composer">
@@ -129,7 +126,7 @@ const FloatingMemoriesPanel: React.FC = () => {
           label="Movie title"
           value={movieQuery}
           onChange={(event) => setMovieQuery(event.target.value)}
-          placeholder="e.g. The Last Unicorn"
+          placeholder="Movie title"
           list="memory-movie-suggestions"
           className="memory-lane__input"
           style={memoryLaneInputStyle}
@@ -142,10 +139,10 @@ const FloatingMemoriesPanel: React.FC = () => {
           ))}
         </datalist>
         <Input
-          label="Image URL (optional)"
+          label="Image URL"
           value={imageUrl}
           onChange={(event) => setImageUrl(event.target.value)}
-          placeholder="https://example.com/photo.jpg"
+          placeholder="Image URL"
           className="memory-lane__input"
           style={memoryLaneInputStyle}
         />
@@ -153,24 +150,20 @@ const FloatingMemoriesPanel: React.FC = () => {
           label="Memory"
           value={note}
           onChange={(event) => setNote(event.target.value)}
-          placeholder="What made this one special?"
+          placeholder="Note"
           className="memory-lane__textarea"
           style={{ ...memoryLaneTextareaStyle, minHeight: 90 }}
         />
-        {currentUser ? (
-          <Button
-            onClick={createMemory}
-            variant="primary"
-            size="sm"
-            disabled={submitting || !note.trim() || !movieQuery.trim()}
-            className="memory-lane__action-btn memory-lane__save memory-lane__action-btn--save"
-            style={memoryLaneAccentActionStyle}
-          >
-            {submitting ? 'Saving...' : 'Save Memory'}
-          </Button>
-        ) : (
-          <p className="memory-lane__hint">Select Aaron or Electra to add memories.</p>
-        )}
+        <Button
+          onClick={createMemory}
+          variant="primary"
+          size="sm"
+          disabled={!currentUser || submitting || !note.trim() || !movieQuery.trim()}
+          className="memory-lane__action-btn memory-lane__save memory-lane__action-btn--save"
+          style={memoryLaneAccentActionStyle}
+        >
+          {submitting ? 'Saving' : 'Save'}
+        </Button>
       </div>
 
       <div className="memory-lane__controls">
@@ -179,7 +172,7 @@ const FloatingMemoriesPanel: React.FC = () => {
             label="Search memories"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search notes, titles, or authors"
+            placeholder="Search"
             className="memory-lane__input"
             style={{ ...memoryLaneInputStyle, flex: 1, minWidth: 220 }}
           />
@@ -197,7 +190,7 @@ const FloatingMemoriesPanel: React.FC = () => {
               variant={viewMode === 'list' ? 'primary' : 'ghost'}
               onClick={() => setViewMode('list')}
               style={{ padding: '4px 8px', minWidth: '40px' }}
-              title="List View"
+              title="List"
             >
               💬
             </Button>
@@ -206,7 +199,7 @@ const FloatingMemoriesPanel: React.FC = () => {
               variant={viewMode === 'scrapbook' ? 'primary' : 'ghost'}
               onClick={() => setViewMode('scrapbook')}
               style={{ padding: '4px 8px', minWidth: '40px' }}
-              title="Scrapbook View"
+              title="Scrapbook"
             >
               📸
             </Button>
@@ -217,13 +210,11 @@ const FloatingMemoriesPanel: React.FC = () => {
           Shared Notes {filtered.length > 0 ? `(${filtered.length})` : ''}
         </h4>
         {isLoading && filtered.length === 0 ? (
-          <p className="memory-lane__status">Loading memories...</p>
+          <p className="memory-lane__status">Loading</p>
         ) : error ? (
-          <p className="memory-lane__status memory-lane__status--error">
-            {error instanceof Error ? error.message : 'Unable to load memories.'}
-          </p>
+          <p className="memory-lane__status memory-lane__status--error">Unavailable</p>
         ) : filtered.length === 0 ? (
-          <p className="memory-lane__status">No memories match your filters.</p>
+          <p className="memory-lane__status">{search.trim() || showPinnedOnly ? 'No matches' : 'No memories'}</p>
         ) : viewMode === 'scrapbook' ? (
           <div
             className="memory-lane__scrapbook"

@@ -22,7 +22,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   onUserSelected,
   onActionsClick,
   variant = 'inline',
-  title = 'Choose a profile',
+  title = 'Profiles',
   className,
 }) => {
   const { currentUser, setCurrentUser } = useUser();

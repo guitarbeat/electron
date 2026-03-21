@@ -15,18 +15,18 @@ export const getQuizLaunchState = ({
 }: QuizLaunchStateParams): QuizLaunchState => {
   if (!currentUser) {
     return {
-      label: 'Edit Quiz',
+      label: 'Editor',
     };
   }
 
   if (quizCompleted) {
     return {
-      label: 'Retake Quiz',
+      label: 'Retake',
     };
   }
 
   return {
-    label: 'Start Quiz',
+    label: 'Quiz',
   };
 };
 

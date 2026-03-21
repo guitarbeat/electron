@@ -450,7 +450,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         {/* Profile Image Container - click image for new cat */}
         <div
           onClick={canRefreshImage ? onImageClick : undefined}
-          title={canRefreshImage ? 'Click for new cat' : undefined}
+          title={canRefreshImage ? 'New cat' : undefined}
           style={{
             width: imageWrapSize,
             height: imageWrapSize,
