@@ -66,6 +66,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   memoryCount,
   memoryMovieCount,
 }) => {
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   return (
     <section
       className="workspace-control-panel ui-control-surface watchlist-top-controls"
@@ -134,20 +136,18 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
               fullWidth
             />
           </div>
-          {searchQuery.trim() && (
-            <Button
-              type="submit"
-              variant="secondary"
-              size="md"
-              disabled={isAdding || isSuggesting}
-              isLoading={isAdding || isSuggesting}
-              title="Add or suggest movie"
-              aria-label="Add or suggest movie"
-              style={{ minWidth: '44px' }}
-            >
-              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-            </Button>
-          )}
+          <Button
+            type="submit"
+            variant="secondary"
+            size="md"
+            disabled={isAdding || isSuggesting || !hasSearchQuery}
+            isLoading={isAdding || isSuggesting}
+            title={hasSearchQuery ? 'Add or suggest movie' : 'Type a movie title to add'}
+            aria-label={hasSearchQuery ? 'Add or suggest movie' : 'Type a movie title to add'}
+            style={{ minWidth: '44px' }}
+          >
+            {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+          </Button>
         </form>
 
         <Button

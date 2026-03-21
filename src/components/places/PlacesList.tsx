@@ -60,6 +60,8 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   queueCount,
   visitedCount,
 }) => {
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   return (
     <section
       className="workspace-control-panel ui-control-surface places-top-controls"
@@ -118,20 +120,18 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
             aria-label="Place name"
             fullWidth
           />
-          {searchQuery.trim() && (
-            <Button
-              type="submit"
-              variant="secondary"
-              size="md"
-              disabled={isAdding || isSuggesting}
-              isLoading={isAdding || isSuggesting}
-              title="Add or suggest place"
-              aria-label="Add or suggest place"
-              style={{ minWidth: '44px' }}
-            >
-              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-            </Button>
-          )}
+          <Button
+            type="submit"
+            variant="secondary"
+            size="md"
+            disabled={isAdding || isSuggesting || !hasSearchQuery}
+            isLoading={isAdding || isSuggesting}
+            title={hasSearchQuery ? 'Add or suggest place' : 'Type a place to add'}
+            aria-label={hasSearchQuery ? 'Add or suggest place' : 'Type a place to add'}
+            style={{ minWidth: '44px' }}
+          >
+            {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+          </Button>
         </form>
 
         <Button
