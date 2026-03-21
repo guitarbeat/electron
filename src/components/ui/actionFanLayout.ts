@@ -17,14 +17,14 @@ const DESKTOP_ITEM_SIZE = 72;
 const MOBILE_ITEM_SIZE = 62;
 const LABEL_WIDTH = 124;
 const LABEL_HEIGHT = 26;
-const SIDE_GUTTER = 10;
-const TOP_GUTTER = 10;
-const BOTTOM_GUTTER = 14;
-const MAX_RADIUS = 130;
-const MIN_RADIUS = 56;
-const RADIUS_STEP = 4;
-const ANGLE_STEP = 12;
-const MIN_NEIGHBOR_SPACING_RATIO = 0.74;
+const SIDE_GUTTER = 16;
+const TOP_GUTTER = 16;
+const BOTTOM_GUTTER = 20;
+const MAX_RADIUS = 160;
+const MIN_RADIUS = 72;
+const RADIUS_STEP = 6;
+const ANGLE_STEP = 8;
+const MIN_NEIGHBOR_SPACING_RATIO = 0.85;
 
 const clamp = (value: number, min: number, max: number): number => {
   if (max < min) {
@@ -46,12 +46,13 @@ const distanceBetween = (a: ActionFanPosition, b: ActionFanPosition): number =>
 
 const getArcCandidates = (count: number, viewportWidth: number): number[] => {
   if (count <= 1) return [0];
-  if (count === 2) return [70, 58];
-  if (count <= 4) return [98, 86, 74];
-  if (count <= 6) return [134, 120, 106, 92];
+  if (count === 2) return [80, 68];
+  if (count <= 4) return [108, 96, 84];
+  if (count <= 6) return [144, 128, 112, 98];
+  if (count <= 8) return [176, 160, 144, 128, 112];
 
-  const maxArc = viewportWidth <= MOBILE_BREAKPOINT ? 152 : 168;
-  return [maxArc, maxArc - 16, maxArc - 32, 112, 96];
+  const maxArc = viewportWidth <= MOBILE_BREAKPOINT ? 168 : 188;
+  return [maxArc, maxArc - 20, maxArc - 40, 128, 108];
 };
 
 const getAngleCandidates = (preferredAngle: number): number[] => {
@@ -150,7 +151,7 @@ export function computeActionFanPositions({
   const minNeighborSpacing = itemSize * MIN_NEIGHBOR_SPACING_RATIO;
   const startingRadius = Math.min(
     MAX_RADIUS,
-    Math.max(MIN_RADIUS, Math.round(Math.min(viewportWidth, viewportHeight) * 0.22))
+    Math.max(MIN_RADIUS, Math.round(Math.min(viewportWidth, viewportHeight) * 0.24 + (count * 8)))
   );
 
   let bestFallback: {
