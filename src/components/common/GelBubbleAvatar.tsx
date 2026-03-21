@@ -224,21 +224,23 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
 
   const shellBackground = isActionBubble
     ? `
-        radial-gradient(circle at 24% 18%, rgba(255,255,255,0.86) 0%, rgba(255,255,255,0.24) 18%, transparent 34%),
-        radial-gradient(circle at 74% 80%, color-mix(in srgb, ${accentColor} 18%, transparent) 0%, transparent 34%),
-        radial-gradient(circle at 50% 54%, rgba(255,255,255,0.08) 0%, transparent 56%),
-        conic-gradient(from 198deg at 50% 50%,
-          color-mix(in srgb, white 76%, ${haloColor} 24%) 0deg,
-          color-mix(in srgb, ${accentColor} 34%, rgba(83, 37, 59, 0.94) 66%) 98deg,
-          rgba(30, 12, 42, 0.98) 188deg,
-          color-mix(in srgb, ${haloColor} 32%, rgba(18, 30, 52, 0.96) 68%) 274deg,
-          color-mix(in srgb, white 76%, ${haloColor} 24%) 360deg
+        radial-gradient(circle at 23% 16%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.42) 13%, rgba(255,255,255,0.04) 34%, transparent 46%),
+        radial-gradient(circle at 78% 20%, color-mix(in srgb, ${haloColor} 28%, rgba(255,255,255,0.08)) 0%, transparent 26%),
+        radial-gradient(circle at 76% 80%, color-mix(in srgb, ${accentColor} 20%, transparent) 0%, transparent 30%),
+        linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 20%, transparent 44%),
+        conic-gradient(from 210deg at 50% 50%,
+          rgba(255,255,255,0.94) 0deg,
+          color-mix(in srgb, ${haloColor} 68%, rgba(255,255,255,0.24)) 68deg,
+          color-mix(in srgb, ${accentColor} 42%, rgba(56, 23, 60, 0.94) 58%) 142deg,
+          rgba(12, 10, 30, 0.98) 220deg,
+          color-mix(in srgb, ${haloColor} 36%, rgba(18, 32, 56, 0.98) 64%) 304deg,
+          rgba(255,255,255,0.94) 360deg
         ),
         linear-gradient(145deg,
-          rgba(255, 241, 233, 0.88) 0%,
-          rgba(236, 196, 220, 0.5) 22%,
-          rgba(82, 36, 58, 0.96) 58%,
-          rgba(20, 10, 31, 0.98) 100%
+          rgba(255, 248, 253, 0.92) -8%,
+          rgba(246, 218, 238, 0.48) 18%,
+          rgba(56, 29, 66, 0.98) 54%,
+          rgba(11, 13, 31, 1) 100%
         )
       `
     : `
@@ -259,13 +261,14 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
 
   const shellBoxShadow = isActionBubble
     ? `
-        inset 0 -18px 38px rgba(18, 8, 29, 0.82),
-        inset 0 14px 22px rgba(255, 255, 255, 0.32),
-        inset 0 0 18px color-mix(in srgb, ${accentColor} 22%, transparent),
-        0 0 0 2px color-mix(in srgb, ${haloColor} 16%, transparent),
-        0 18px 34px rgba(5, 0, 18, 0.44),
-        0 0 ${isHovered ? '34px' : '24px'} color-mix(in srgb, ${accentColor} ${isHovered ? '40%' : '24%'}, transparent),
-        0 0 ${isHovered ? '56px' : '38px'} color-mix(in srgb, ${haloColor} ${isHovered ? '34%' : '18%'}, transparent)
+        inset 0 -18px 34px rgba(10, 7, 27, 0.86),
+        inset 0 14px 20px rgba(255, 255, 255, 0.34),
+        inset 0 0 20px color-mix(in srgb, ${accentColor} 24%, transparent),
+        0 0 0 1px rgba(255, 255, 255, 0.22),
+        0 0 0 6px rgba(6, 2, 18, 0.2),
+        0 22px 42px rgba(4, 0, 14, 0.54),
+        0 0 ${isHovered ? '30px' : '20px'} color-mix(in srgb, ${accentColor} ${isHovered ? '52%' : '30%'}, transparent),
+        0 0 ${isHovered ? '62px' : '42px'} color-mix(in srgb, ${haloColor} ${isHovered ? '38%' : '20%'}, transparent)
       `
     : `
         inset 0 -15px 40px color-mix(in srgb, var(--color-surface-0) 65%, ${haloColor} 35%),
@@ -276,7 +279,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       `;
 
   const shellBorder = isActionBubble
-    ? `1.5px solid color-mix(in srgb, rgba(255, 255, 255, 0.84) 50%, ${haloColor} 50%)`
+    ? `1.5px solid color-mix(in srgb, rgba(255, 255, 255, 0.94) 56%, ${haloColor} 44%)`
     : `2px solid color-mix(in srgb, ${haloColor} 45%, var(--color-border-subtle) 55%)`;
 
   const shellTransform = isActionBubble
@@ -290,10 +293,10 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   const imageWrapBackground = icon
     ? isActionBubble
       ? `
-          radial-gradient(circle at 34% 28%, rgba(255,255,255,0.24) 0%, transparent 34%),
-          radial-gradient(circle at 70% 72%, color-mix(in srgb, ${accentColor} 18%, transparent) 0%, transparent 40%),
-          linear-gradient(180deg, rgba(255, 244, 252, 0.22) 0%, rgba(45, 22, 58, 0.9) 100%),
-          radial-gradient(circle at 50% 50%, color-mix(in srgb, ${haloColor} 18%, rgba(11, 13, 30, 0.96)) 0%, rgba(11, 13, 30, 0.98) 72%)
+          radial-gradient(circle at 30% 26%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.08) 26%, transparent 42%),
+          radial-gradient(circle at 72% 74%, color-mix(in srgb, ${accentColor} 22%, transparent) 0%, transparent 38%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(28, 18, 44, 0.24) 36%, rgba(18, 11, 30, 0.72) 100%),
+          radial-gradient(circle at 50% 46%, color-mix(in srgb, white 14%, ${haloColor} 86%) 0%, color-mix(in srgb, ${haloColor} 20%, rgba(11, 13, 30, 0.98)) 24%, rgba(11, 13, 30, 0.98) 74%)
         `
       : 'transparent'
     : 'rgba(255, 255, 255, 0.05)';

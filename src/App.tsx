@@ -28,7 +28,7 @@ interface ActionBubblePosition {
   y: number;
 }
 
-const ACTION_BUBBLE_SIZE = 64;
+const ACTION_BUBBLE_SIZE = 68;
 const ACTION_BUBBLE_EDGE_MARGIN = 12;
 const ACTION_BUBBLE_DRAG_THRESHOLD = 16;
 
@@ -333,6 +333,7 @@ const App: React.FC = () => {
               currentUser={currentUser}
               position={actionBubblePosition}
               isDragging={isDraggingActionBubble}
+              isOpen={showActionFanMenu}
               onClick={handleActionBubbleClick}
               onPointerDown={handleActionBubblePointerDown}
               onPointerMove={handleActionBubblePointerMove}

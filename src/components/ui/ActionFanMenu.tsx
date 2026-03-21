@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { colors, motion, radius, spacing, typography } from '@/design-system';
+import React, { useEffect, useCallback, useMemo, useState } from 'react';
+import { colors, motion } from '@/design-system';
 import GelBubbleAvatar from '../common/GelBubbleAvatar';
-import { computeActionFanPositions, type ActionFanLayoutOptions, type ActionFanPosition } from './actionFanLayout';
+import { computeActionFanPositions } from './actionFanLayout';
 import type { CommandActionItem } from './CommandDeck';
 
 interface ActionFanMenuProps {
@@ -22,7 +22,6 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
   onClose,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [layoutType, setLayoutType] = useState<string>('arc');
   
   const handleItemClick = useCallback((item: CommandActionItem) => {
     onItemSelect(item);
@@ -55,29 +54,27 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
     viewportHeight,
   });
 
-  // Detect layout type based on positions
-  useEffect(() => {
+  const layoutType = useMemo(() => {
     if (items.length >= 6) {
       const centerX = anchorX + anchorSize / 2;
       const centerY = anchorY + anchorSize / 2;
       
-      // Simple heuristic to detect layout type
       const avgDistance = positions.reduce((sum, pos) => {
         return sum + Math.hypot(pos.x - centerX, pos.y - centerY);
       }, 0) / positions.length;
       
       if (avgDistance < 100) {
-        setLayoutType('cluster');
-      } else if (Math.abs(positions[0]?.x - centerX) < 10 && Math.abs(positions[0]?.y - centerY) < 10) {
-        setLayoutType('flower');
-      } else if (items.length >= 5) {
-        setLayoutType('spiral');
-      } else {
-        setLayoutType('wave');
+        return 'cluster';
       }
-    } else {
-      setLayoutType('arc');
+      if (Math.abs(positions[0]?.x - centerX) < 10 && Math.abs(positions[0]?.y - centerY) < 10) {
+        return 'flower';
+      }
+      if (items.length >= 5) {
+        return 'spiral';
+      }
+      return 'wave';
     }
+    return 'arc';
   }, [items.length, positions, anchorX, anchorY, anchorSize]);
 
   // Action palette for colors
@@ -106,24 +103,24 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
   };
 
   return (
-    <>
-      {/* Enhanced backdrop with gradient */}
+    <div
+      className="action-fan-menu"
+      style={{
+        ['--fan-origin-x' as string]: `${anchorX + anchorSize / 2}px`,
+        ['--fan-origin-y' as string]: `${anchorY + anchorSize / 2}px`,
+      }}
+    >
       <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at ${anchorX + anchorSize/2}px ${anchorY + anchorSize/2}px, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6))`,
-          backdropFilter: 'blur(3px)',
-          zIndex: 1000,
-        }}
+        className="action-fan-backdrop"
         onClick={onClose}
         aria-hidden="true"
       />
+      <div className="action-fan-origin" aria-hidden="true">
+        <div className="action-fan-origin__core" />
+        <div className="action-fan-origin__ring action-fan-origin__ring--inner" />
+        <div className="action-fan-origin__ring action-fan-origin__ring--outer" />
+      </div>
 
-      {/* Action items with enhanced animations */}
       {items.map((item, index) => {
         const position = positions[index];
         const accentColor = actionPalette[index % actionPalette.length];
@@ -132,21 +129,22 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
         return (
           <div
             key={item.label}
+            className={`action-fan-item action-fan-item--${layoutType}${hoveredIndex === index ? ' is-hovered' : ''}`}
             style={{
-              position: 'fixed',
               left: position.x,
               top: position.y,
-              transform: 'translate(-50%, -50%)',
-              zIndex: 1001,
-              animation: `${layoutType}ItemAppear ${motion.duration.normal} ${motion.easing.spring} forwards`,
-              animationDelay: `${getAnimationDelay(index)}ms`,
+              ['--fan-i' as string]: index,
+              ['--fan-delay' as string]: `${getAnimationDelay(index)}ms`,
+              ['--fan-accent' as string]: accentColor,
+              ['--fan-halo' as string]: haloColor,
             }}
           >
+            <span className="action-fan-item__trail" aria-hidden="true" />
             <GelBubbleAvatar
+              className="action-fan-avatar"
               icon={item.icon}
-              label={item.label}
               size="action"
-              showName={true}
+              showName={false}
               isHovered={hoveredIndex === index}
               onClick={() => handleItemClick(item)}
               accentColor={accentColor}
@@ -157,72 +155,15 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
               onBlur={() => setHoveredIndex(null)}
               style={{
                 cursor: 'pointer',
-                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-                filter: hoveredIndex === index ? 'brightness(1.2)' : 'brightness(1)',
+                transition: `transform ${motion.duration.button} ${motion.easing.ease}, filter ${motion.duration.button} ${motion.easing.ease}`,
+                filter: hoveredIndex === index ? 'brightness(1.12) saturate(1.08)' : 'brightness(1)',
               }}
             />
+            <span className="action-fan-item__label" aria-hidden="true">{item.label}</span>
           </div>
         );
       })}
-
-      {/* Enhanced CSS animations for different layout types */}
-      <style>{`
-        @keyframes arcItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.3) rotate(-15deg);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          }
-        }
-
-        @keyframes spiralItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.1) rotate(720deg);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          }
-        }
-
-        @keyframes flowerItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0) rotate(180deg);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          }
-        }
-
-        @keyframes waveItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5) translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) translateY(0);
-          }
-        }
-
-        @keyframes clusterItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 
