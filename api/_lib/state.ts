@@ -1007,7 +1007,7 @@ const getScopeWarning = (error: unknown): string | undefined => {
   }
 
   if (error.message === 'GIST_ID is not configured.') {
-    return 'Shared sync is unavailable because the server is missing GIST_ID. Set GIST_ID to load and share data.';
+    return 'Shared sync is unavailable because the server is missing GIST_ID. Set GIST_ID, or VITE_GIST_ID during local Vite development, to load and share data.';
   }
 
   return undefined;
