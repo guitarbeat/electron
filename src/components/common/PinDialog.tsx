@@ -42,13 +42,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       focusTimerRef.current = window.setTimeout(() => inputRef.current?.focus(), 100);
-
-      // Reset form state only when opening
-      setPin('');
-      setNewPin('');
-      setConfirmPin('');
-      setError('');
-      setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
     }
 
     return () => {
