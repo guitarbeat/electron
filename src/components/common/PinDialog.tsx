@@ -202,17 +202,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
     return 'Security PIN';
   };
 
-  const getSubtitle = () => {
-    if (mode === 'enter') return 'Enter your 4-digit code to continue';
-    if (mode === 'set') return 'Choose a 4-digit code to protect your profile';
-    if (mode === 'change') {
-      if (step === 'current') return 'Please enter your current PIN first';
-      if (step === 'new') return 'Choose your new 4-digit code';
-      return 'Type it once more to confirm';
-    }
-    return 'Secure your account';
-  };
-
   const getCurrentValue = () => {
     if (step === 'current') return pin;
     if (step === 'new') return newPin;
@@ -276,16 +265,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
             >
               {getTitle()}
             </h2>
-            <p
-              style={{
-                fontSize: typography.fontSize.xs,
-                color: colors.textSecondary,
-                margin: 0,
-                opacity: 0.8,
-              }}
-            >
-              {getSubtitle()}
-            </p>
           </div>
 
           <form onSubmit={handleSubmit}>

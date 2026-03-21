@@ -30,11 +30,12 @@ const getLabelOffsets = (
   const distance = Math.hypot(deltaX, deltaY) || 1;
   const unitX = deltaX / distance;
   const unitY = deltaY / distance;
-  const baseDistance = 74;
-  const verticalBoost = Math.abs(unitY) > 0.7 ? 12 : 0;
+  const baseDistance = Math.min(104, 54 + distance * 0.2);
+  const horizontalBoost = Math.abs(unitX) > 0.72 ? 8 : 0;
+  const verticalBoost = Math.abs(unitY) > 0.7 ? 14 : 0;
 
   return {
-    ['--fan-label-x' as string]: `${Math.round(unitX * baseDistance)}px`,
+    ['--fan-label-x' as string]: `${Math.round(unitX * (baseDistance + horizontalBoost))}px`,
     ['--fan-label-y' as string]: `${Math.round(unitY * (baseDistance + verticalBoost))}px`,
   };
 };

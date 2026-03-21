@@ -15,21 +15,14 @@ interface UserSelectionProps {
   onActionsClick?: () => void;
   variant?: UserSelectionVariant;
   title?: string;
-  subtitle?: string;
   className?: string;
 }
-
-const PROFILE_NOTES: Record<User, string> = {
-  Aaron: 'Use Aaron to add movies, places, and messages as Aaron.',
-  Electra: 'Use Electra to add movies, places, and messages as Electra.',
-};
 
 const UserSelection: React.FC<UserSelectionProps> = ({
   onUserSelected,
   onActionsClick,
   variant = 'inline',
   title = 'Choose a profile',
-  subtitle = 'Sign in as Aaron or Electra before you add movies, places, or messages.',
   className,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
@@ -51,10 +44,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
   const showBubbleName = variant !== 'inline';
-  const panelStatusTitle = selectedNamedUser ? 'Signed in' : 'Guest mode';
-  const panelStatusCopy = selectedNamedUser
-    ? `${selectedNamedUser} is signed in right now. You can switch profiles, manage the PIN, or log out below.`
-    : 'Pick a profile to add movies, date ideas, quiz answers, and messages.';
+  const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {
@@ -158,10 +148,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         {variant === 'panel' && (
           <>
             <h3 className="user-selection__title">{title}</h3>
-            <p className="user-selection__subtitle">{subtitle}</p>
             <div className="user-selection__panel-status" role="status" aria-live="polite">
               <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
-              <p className="user-selection__panel-status-copy">{panelStatusCopy}</p>
             </div>
           </>
         )}
@@ -210,7 +198,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     aria-pressed={isActive}
                   />
 
-                  {variant === 'panel' ? (
+                  {variant === 'panel' && (isActive || hasPin) ? (
                     <div className="user-selection__profile-caption">
                       <div className="user-selection__profile-meta">
                         {isActive ? (
@@ -224,9 +212,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                           </span>
                         ) : null}
                       </div>
-                      <p className="user-selection__profile-note">
-                        {isActive ? `${profile} is signed in right now.` : PROFILE_NOTES[profile]}
-                      </p>
                     </div>
                   ) : null}
                 </div>
@@ -281,9 +266,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 </button>
               </>
             ) : (
-              <p className="user-selection__logged-out">
-                Logged out. Pick Aaron or Electra to sign back in.
-              </p>
+              null
             )}
           </div>
         )}

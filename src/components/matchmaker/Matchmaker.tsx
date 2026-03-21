@@ -6,7 +6,6 @@ import { useToast } from '@/context';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { shuffleArray } from '@/utils';
 import { randomUtils } from '@/utils/random';
 import {
   colors,
@@ -16,6 +15,15 @@ import {
   shadows,
   motion as motionTokens,
 } from '@/design-system';
+import {
+  SHORT_AND_SWEET_VIBE,
+  createMatchmakerPool,
+  filterMoviesByVibe,
+  getAvailableMatchmakerVibes,
+  getMatchIds,
+  getUserSwipedIds,
+  selectRandomMatch,
+} from './matchmakerGame';
 
 interface MatchmakerProps {
   currentUser: User | null;
@@ -277,18 +285,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     return game.moviePool.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
   }, [game, movieMap]);
 
-  const swipedIds = useMemo(() => {
-    const userLikes = currentUser === 'Aaron' ? game?.aaronLikes || [] : game?.electraLikes || [];
-    const userDislikes =
-      currentUser === 'Aaron' ? game?.aaronDislikes || [] : game?.electraDislikes || [];
-    return [...userLikes, ...userDislikes];
-  }, [
-    currentUser,
-    game?.aaronLikes,
-    game?.electraLikes,
-    game?.aaronDislikes,
-    game?.electraDislikes,
-  ]);
+  const swipedIds = useMemo(() => getUserSwipedIds(game, currentUser), [currentUser, game]);
 
   const remainingMovies = useMemo(() => {
     const swipedSet = new Set(swipedIds);
@@ -297,10 +294,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
   const matches = useMemo(() => {
     if (!game || !movieMap) return [];
-    const electraLikesSet = new Set(game.electraLikes);
-    const intersection = game.aaronLikes.filter((id) => electraLikesSet.has(id));
-    return intersection.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
+    return getMatchIds(game).map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
   }, [game, movieMap]);
+  const isSessionComplete = game?.status === 'completed';
 
   const cardRef = useRef<SwipeCardHandle>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -358,46 +354,15 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     lastMatchCount.current = matches.length;
   }, [matches.length, movies, matches]);
 
-  const availableVibes = useMemo(() => {
-    const counts: Record<string, number> = {};
-    unwatchedMovies.forEach((m) => {
-      const tags = [
-        ...(m.genre ? m.genre.split(',').map((g) => g.trim()) : []),
-        ...(m.category ? [m.category] : []),
-      ];
-      tags.forEach((tag) => {
-        const clean = tag?.trim();
-        if (!clean) return;
-        counts[clean] = (counts[clean] || 0) + 1;
-      });
-    });
-
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([vibe]) => vibe);
-  }, [unwatchedMovies]);
-
+  const availableVibes = useMemo(() => getAvailableMatchmakerVibes(unwatchedMovies), [unwatchedMovies]);
 
   const handleStart = (selectedVibe: string | null = null) => {
     if (!currentUser) return;
     clearTransientUiState();
 
-    let poolSource = [...unwatchedMovies];
-    if (selectedVibe === 'Short & Sweet') {
-      poolSource = poolSource.filter((m) => {
-        const mins = parseInt(m.runtime || '120', 10);
-        return mins > 0 && mins < 100;
-      });
-    } else if (selectedVibe) {
-      poolSource = poolSource.filter(
-        (m) =>
-          m.genre?.toLowerCase().includes(selectedVibe.toLowerCase()) ||
-          m.category?.toLowerCase().includes(selectedVibe.toLowerCase())
-      );
-    }
+    const filteredMovies = filterMoviesByVibe(unwatchedMovies, selectedVibe);
 
-    if (poolSource.length < 3) {
+    if (filteredMovies.length < 3) {
       const vibeLabel = selectedVibe ? `${selectedVibe} ` : '';
       showToast({
         message: `Not enough ${vibeLabel}movies in your queue. Add at least 3 to start.`,
@@ -406,9 +371,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
       return;
     }
 
-    const shuffled = shuffleArray(poolSource);
-    const pool = shuffled.slice(0, 10).map((m) => m.id);
-    startNewGame(pool);
+    startNewGame(createMatchmakerPool(unwatchedMovies, selectedVibe));
   };
 
   const handleSwipe = (direction: 'left' | 'right') => {
@@ -425,7 +388,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   };
 
   const handlePickRandom = () => {
-    if (matches.length < 2 || isPickingRandom) return;
+    if (matches.length === 0 || isPickingRandom) return;
     if (randomPickTimeoutRef.current !== null) {
       window.clearTimeout(randomPickTimeoutRef.current);
     }
@@ -434,7 +397,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     }
     setIsPickingRandom(true);
     randomPickTimeoutRef.current = window.setTimeout(() => {
-      const winner = randomUtils.randomItem(matches);
+      const winner = selectRandomMatch(matches, Math.random);
+      if (!winner) {
+        setIsPickingRandom(false);
+        randomPickTimeoutRef.current = null;
+        return;
+      }
       setIsPickingRandom(false);
       setLastMatchedMovie(winner);
       setShowConfetti(true);
@@ -458,18 +426,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   if (!game) {
     return (
       <div style={{ textAlign: 'center', padding: spacing.sm }}>
-        <p
-          style={{
-            color: colors.textSecondary,
-            margin: '0 auto',
-            marginBottom: spacing.lg,
-            maxWidth: 420,
-            fontSize: typography.fontSize.sm,
-          }}
-        >
-          Pick a vibe and swipe on 10 movies. If you both like one, it's a match.
-        </p>
-
         <div
           style={{
             display: 'flex',
@@ -505,15 +461,11 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                   {v}
                 </Button>
               ))
-            ) : (
-              <div style={{ color: colors.textTertiary, fontSize: typography.fontSize.xs }}>
-                Add movies with genres to filter by vibe!
-              </div>
-            )}
+            ) : null}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleStart('Short & Sweet')}
+              onClick={() => handleStart(SHORT_AND_SWEET_VIBE)}
               disabled={!currentUser || isSubmitting}
               style={{
                 border: `1px solid ${colors.secondary}50`,
@@ -532,7 +484,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             size="lg"
             disabled={!currentUser}
           >
-            {currentUser ? 'Surprise Us (Random 10)' : 'Pick User to Start'}
+            Surprise Us (Random 10)
           </Button>
         </div>
       </div>
@@ -706,10 +658,14 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                 marginBottom: spacing.xs,
               }}
             >
-              All Caught Up!
+              {isSessionComplete ? 'Session Complete!' : 'All Caught Up!'}
             </h3>
             <p style={{ color: colors.textSecondary, fontSize: typography.fontSize.sm }}>
-              Waiting for {currentUser === 'Aaron' ? 'Electra' : 'Aaron'} to finish their swipes.
+              {isSessionComplete
+                ? matches.length > 0
+                  ? 'Both players finished. Review your mutual picks below or let Matchmaker choose one.'
+                  : 'Both players finished this round without a mutual pick. Reset to try another batch.'
+                : `Waiting for ${currentUser === 'Aaron' ? 'Electra' : 'Aaron'} to finish their swipes.`}
             </p>
           </div>
         )}
@@ -830,7 +786,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             >
               It's a Match!
             </h4>
-            {matches.length >= 2 && (
+            {matches.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -843,7 +799,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                   border: `1px solid ${colors.secondary}50`,
                 }}
               >
-                {isPickingRandom ? 'Choosing...' : 'Pick for Us'}
+                {isPickingRandom ? 'Choosing...' : matches.length === 1 ? 'Highlight Match' : 'Pick for Us'}
               </Button>
             )}
           </div>
@@ -859,19 +815,41 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
           >
             {matches.map((movie) => (
               <div key={movie.id} style={{ flexShrink: 0, width: '100px', textAlign: 'center' }}>
-                <img
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  style={{
-                    width: '100px',
-                    height: '150px',
-                    borderRadius: radius.md,
-                    objectFit: 'cover',
-                    border: `2px solid ${colors.accent}`,
-                    boxShadow: shadows.glow,
-                    marginBottom: spacing.xs,
-                  }}
-                />
+                {movie.posterUrl ? (
+                  <img
+                    src={movie.posterUrl}
+                    alt={movie.title}
+                    style={{
+                      width: '100px',
+                      height: '150px',
+                      borderRadius: radius.md,
+                      objectFit: 'cover',
+                      border: `2px solid ${colors.accent}`,
+                      boxShadow: shadows.glow,
+                      marginBottom: spacing.xs,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '100px',
+                      height: '150px',
+                      borderRadius: radius.md,
+                      border: `2px solid ${colors.accent}`,
+                      boxShadow: shadows.glow,
+                      marginBottom: spacing.xs,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: colors.textTertiary,
+                      background: `${colors.borderSecondary}22`,
+                      fontSize: typography.fontSize['2xs'],
+                      textTransform: typography.presets.badge.textTransform,
+                    }}
+                  >
+                    No poster
+                  </div>
+                )}
                 <div
                   style={{
                     fontSize: typography.fontSize['2xs'],
@@ -892,9 +870,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
 
       <ConfirmDialog
         isOpen={showEndSessionConfirm}
-        title="End Session"
-        message="Are you sure you want to end this matchmaker session?"
-        confirmText="End Session"
+        title="Reset Matchmaker"
+        message="Are you sure you want to reset this matchmaker session?"
+        confirmText="Reset Session"
         onConfirm={() => {
           clearTransientUiState();
           endCurrentGame();

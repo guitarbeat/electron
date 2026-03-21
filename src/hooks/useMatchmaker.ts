@@ -12,6 +12,11 @@ import {
   writeStoredJson,
 } from '@/services/gistClient.ts';
 import { areDeeplyEqual, isUser, parseJsonContent } from '@/utils';
+import {
+  applyMatchmakerSwipe,
+  reconcileMatchmakerStatus,
+  undoMatchmakerSwipe,
+} from '@/components/matchmaker/matchmakerGame';
 
 const MATCHMAKER_LOCAL_STORAGE_KEY = 'movieList.localMatchmaker';
 
@@ -82,7 +87,7 @@ const getMatchmakerGame = async (): Promise<MatchmakerGame | null> => {
       onMissingFileWhenWritable: () => null,
       parse: (content) => {
         const parsed = parseJsonContent(content, 'matchmaker');
-        return isMatchmakerGameRecord(parsed) ? parsed : null;
+        return isMatchmakerGameRecord(parsed) ? reconcileMatchmakerStatus(parsed) : null;
       },
     });
   } catch (error) {
@@ -197,37 +202,7 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
       await performMutation((latestGame) => {
         if (!latestGame || latestGame.status !== 'active') return latestGame;
 
-        const updatedGame = {
-          ...latestGame,
-          aaronLikes: latestGame.aaronLikes || [],
-          electraLikes: latestGame.electraLikes || [],
-          aaronDislikes: latestGame.aaronDislikes || [],
-          electraDislikes: latestGame.electraDislikes || [],
-        };
-
-        const al = updatedGame.aaronLikes;
-        const el = updatedGame.electraLikes;
-        const ad = updatedGame.aaronDislikes;
-        const ed = updatedGame.electraDislikes;
-
-        if (currentUser === 'Aaron') {
-          if (liked) {
-            if (!al.includes(movieId) && !ad.includes(movieId)) {
-              updatedGame.aaronLikes = [...al, movieId];
-            }
-          } else if (!ad.includes(movieId) && !al.includes(movieId)) {
-            updatedGame.aaronDislikes = [...ad, movieId];
-          }
-        } else if (currentUser === 'Electra') {
-          if (liked) {
-            if (!el.includes(movieId) && !ed.includes(movieId)) {
-              updatedGame.electraLikes = [...el, movieId];
-            }
-          } else if (!ed.includes(movieId) && !el.includes(movieId)) {
-            updatedGame.electraDislikes = [...ed, movieId];
-          }
-        }
-        return updatedGame;
+        return applyMatchmakerSwipe(latestGame, currentUser, movieId, liked);
       });
     },
     [currentUser, performMutation]
@@ -236,37 +211,8 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
   const undo = useCallback(async () => {
     if (!currentUser) return;
     await performMutation((latestGame) => {
-      if (!latestGame || latestGame.status !== 'active') return latestGame;
-      const updatedGame = {
-        ...latestGame,
-        aaronLikes: latestGame.aaronLikes || [],
-        electraLikes: latestGame.electraLikes || [],
-        aaronDislikes: latestGame.aaronDislikes || [],
-        electraDislikes: latestGame.electraDislikes || [],
-      };
-
-      if (currentUser === 'Aaron') {
-        const userSwipedIds = [...updatedGame.aaronLikes, ...updatedGame.aaronDislikes];
-        const poolInReverse = [...updatedGame.moviePool].reverse();
-        const lastSwipedId = poolInReverse.find((id) => userSwipedIds.includes(id));
-
-        if (lastSwipedId) {
-          updatedGame.aaronLikes = updatedGame.aaronLikes.filter((id) => id !== lastSwipedId);
-          updatedGame.aaronDislikes = updatedGame.aaronDislikes.filter((id) => id !== lastSwipedId);
-        }
-      } else {
-        const userSwipedIds = [...updatedGame.electraLikes, ...updatedGame.electraDislikes];
-        const poolInReverse = [...updatedGame.moviePool].reverse();
-        const lastSwipedId = poolInReverse.find((id) => userSwipedIds.includes(id));
-
-        if (lastSwipedId) {
-          updatedGame.electraLikes = updatedGame.electraLikes.filter((id) => id !== lastSwipedId);
-          updatedGame.electraDislikes = updatedGame.electraDislikes.filter(
-            (id) => id !== lastSwipedId
-          );
-        }
-      }
-      return updatedGame;
+      if (!latestGame) return latestGame;
+      return undoMatchmakerSwipe(latestGame, currentUser);
     });
   }, [currentUser, performMutation]);
 

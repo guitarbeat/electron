@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { colors, radius, shadows, spacing, typography } from '@/design-system';
+import { colors, shadows, spacing, typography } from '@/design-system';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import Button from '@/ui/Button';
 import {
@@ -178,25 +178,8 @@ const SnakeGame: React.FC = () => {
               >
                 {game.status === 'game-over' ? 'Game Over' : 'Paused'}
               </p>
-              <p
-                style={{
-                  margin: `${spacing.xs} 0 0`,
-                  color: colors.textSecondary,
-                  textAlign: 'center',
-                }}
-              >
-                {game.status === 'game-over'
-                  ? 'Press restart or hit Enter.'
-                  : 'Press pause again or tap resume.'}
-              </p>
             </div>
           ) : null}
-        </div>
-
-        <div className="snake-game-copy">
-          <p className="snake-game-copy__title">Controls</p>
-          <p className="snake-game-copy__body">Use arrow keys or WASD to steer. Space or P pauses. R or Enter restarts.</p>
-          <p className="snake-game-copy__body">Stay inside the grid, eat the food, and avoid crossing your own body.</p>
         </div>
       </div>
 

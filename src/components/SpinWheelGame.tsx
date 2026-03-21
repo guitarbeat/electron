@@ -4,12 +4,16 @@ import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/context';
 import { colors, spacing, typography, radius } from '@/design-system';
 import type { Movie } from '@/types';
+import {
+  SPIN_HISTORY_MAX,
+  appendSpinHistory,
+  buildSpinWheelGradient,
+  computeSpinOutcome,
+  getSpinCandidates,
+  type SpinMode,
+} from '@/components/spinWheel/spinWheelGame';
 
-const SEGMENT_COLORS = ['#ff7ea8', '#6ad6ff', '#ffd166', '#7ee08c', '#c7a0ff', '#ff9f68'];
 const SPIN_HISTORY_KEY = 'spinWheelHistory';
-const SPIN_HISTORY_MAX = 10;
-
-type SpinMode = 'queue' | 'all';
 
 interface SpinWheelGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
@@ -61,54 +65,44 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     };
   }, [onSpinningChange]);
 
-  const candidates = useMemo(() => {
-    if (mode === 'all') return movies;
-    const queue = movies.filter((movie) => movie.watchedBy.length < 2);
-    return queue.length > 0 ? queue : movies;
-  }, [mode, movies]);
+  useEffect(() => {
+    if (selectedMovieId && !movies.some((movie) => movie.id === selectedMovieId)) {
+      setSelectedMovieId(null);
+    }
+  }, [movies, selectedMovieId]);
+
+  const candidates = useMemo(() => getSpinCandidates(movies, mode), [mode, movies]);
 
   const selectedMovie = useMemo(
     () => movies.find((movie) => movie.id === selectedMovieId) || null,
     [movies, selectedMovieId]
   );
 
-  const gradient = useMemo(() => {
-    if (candidates.length === 0) {
-      return 'conic-gradient(#444, #222)';
-    }
-    const step = 360 / candidates.length;
-    const parts = candidates.map((_, index) => {
-      const start = Math.round(index * step);
-      const end = Math.round((index + 1) * step);
-      return `${SEGMENT_COLORS[index % SEGMENT_COLORS.length]} ${start}deg ${end}deg`;
-    });
-    return `conic-gradient(${parts.join(', ')})`;
-  }, [candidates]);
+  const gradient = useMemo(() => buildSpinWheelGradient(candidates.length), [candidates.length]);
 
   const handleSpin = () => {
     if (isSpinning || candidates.length === 0) return;
 
-    const targetIndex = Math.floor(Math.random() * candidates.length);
-    const step = 360 / candidates.length;
-    const targetCenterDeg = targetIndex * step + step / 2;
-    const pointerDeg = 0;
-    const normalizedTarget = (360 - targetCenterDeg + pointerDeg + 360) % 360;
-    const nextRotation = rotation + 360 * 6 + normalizedTarget;
+    const outcome = computeSpinOutcome(candidates, rotation);
+    if (!outcome) {
+      return;
+    }
 
     setIsSpinning(true);
-    setRotation(nextRotation);
+    setRotation(outcome.nextRotation);
 
     if (spinTimeoutRef.current !== null) {
       window.clearTimeout(spinTimeoutRef.current);
     }
 
     spinTimeoutRef.current = window.setTimeout(() => {
-      const winner = candidates[targetIndex];
+      const winner = outcome.winner;
       setSelectedMovieId(winner.id);
-
-      const nextHistory = [winner.title, ...history].slice(0, SPIN_HISTORY_MAX);
-      setHistory(nextHistory);
-      writeHistory(nextHistory);
+      setHistory((currentHistory) => {
+        const nextHistory = appendSpinHistory(currentHistory, winner.title, SPIN_HISTORY_MAX);
+        writeHistory(nextHistory);
+        return nextHistory;
+      });
 
       setIsSpinning(false);
       showToast({
@@ -180,6 +174,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     );
   };
 
+  const emptyStateMessage = isLoading
+    ? 'Loading movies...'
+    : movies.length === 0
+      ? 'No movies available.'
+      : null;
+
   return (
     <div style={{ padding: spacing.md, color: colors.textPrimary }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.md }}>
@@ -243,20 +243,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         {candidates.length} candidate{candidates.length === 1 ? '' : 's'} available
       </p>
 
-      {isSpinning ? (
-        <p
-          style={{
-            marginTop: 0,
-            marginBottom: spacing.md,
-            textAlign: 'center',
-            color: colors.textTertiary,
-            fontSize: typography.fontSize.xs,
-          }}
-        >
-          Finish the current spin before changing modes or closing the wheel.
-        </p>
-      ) : null}
-
       {selectedMovie ? (
         <div
           className="result-display-container"
@@ -280,17 +266,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                 ? `Undo watched for ${currentUser}`
                 : `Mark watched by ${currentUser}`}
             </Button>
-          ) : (
-            <p style={{ margin: 0, fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
-              Select Aaron or Electra to mark watched.
-            </p>
-          )}
+          ) : null}
         </div>
-      ) : (
+      ) : emptyStateMessage ? (
         <p style={{ margin: 0, textAlign: 'center', color: colors.textSecondary }}>
-          {isLoading ? 'Loading movies...' : 'Spin to pick a movie from your list.'}
+          {emptyStateMessage}
         </p>
-      )}
+      ) : null}
 
       {history.length > 0 && (
         <div style={{ marginTop: spacing.md }}>
