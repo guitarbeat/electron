@@ -98,10 +98,10 @@ const FloatingMemoriesPanel: React.FC = () => {
   return (
     <div className="memory-lane">
       <div className="memory-lane__header">
-        <p className="memory-lane__eyebrow">iMessage scrapbook</p>
-        <h3 className="memory-lane__title">Memory Lane</h3>
+        <p className="memory-lane__eyebrow">Movie notes</p>
+        <h3 className="memory-lane__title">Notes</h3>
         <p className="memory-lane__subtitle">
-          Add, edit, pin, and search little movie-night texts to your future selves.
+          Add, edit, pin, and search the notes you want to keep with your movies.
         </p>
       </div>
 

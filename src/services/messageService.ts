@@ -1,4 +1,4 @@
-import { parseJsonContent, sanitizeInput } from '@/utils';
+import { parseJsonContent, sanitizeInput } from '../utils.ts';
 import type { Message } from '@/types';
 import {
   canWriteGist,

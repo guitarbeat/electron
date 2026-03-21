@@ -1,0 +1,91 @@
+- generic [ref=e393]:
+  - link "Skip to content" [ref=e394] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e395]:
+    - button "Open messages and extras" [ref=e396] [cursor=pointer]:
+      - generic [ref=e397]: ✦
+      - generic [ref=e398]: Messages and extras
+    - main [ref=e399]:
+      - region "Profiles and app summary" [ref=e400]:
+        - generic [ref=e401]:
+          - generic [ref=e403]:
+            - heading "Choose a profile" [level=3] [ref=e404]
+            - paragraph [ref=e405]: Sign in as Aaron or Electra before you add movies, places, or messages.
+            - status [ref=e406]:
+              - generic [ref=e407]: Guest mode
+              - paragraph [ref=e408]: Pick a profile to add movies, date ideas, quiz answers, and messages.
+            - group "Select profile" [ref=e410]:
+              - generic [ref=e411] [cursor=pointer]:
+                - button "Select Aaron" [ref=e412]:
+                  - generic [ref=e413]:
+                    - img "Aaron's profile" [ref=e415]
+                    - generic: Aaron
+                - paragraph [ref=e417]: Use Aaron to add movies, places, and messages as Aaron.
+              - generic [ref=e418] [cursor=pointer]:
+                - button "Select Electra" [ref=e419]:
+                  - generic [ref=e420]:
+                    - img "Electra's profile" [ref=e422]
+                    - generic: Electra
+                - paragraph [ref=e424]: Use Electra to add movies, places, and messages as Electra.
+            - paragraph [ref=e426]: Logged out. Pick Aaron or Electra to sign back in.
+          - generic [ref=e427]:
+            - generic [ref=e428]:
+              - paragraph [ref=e429]: Shared page
+              - heading "Movies, dates, and messages" [level=2] [ref=e430]
+              - paragraph [ref=e431]: Use the watchlist for movies, the date list for places to go, and the floating bubble for messages and the extras you still want to keep around.
+            - generic "Page summary" [ref=e432]:
+              - generic [ref=e433]: Guest mode
+              - generic [ref=e434]: Messages in the bubble
+              - generic [ref=e435]: Movie notes stay on each title
+      - region "Workspace controls" [ref=e436]:
+        - paragraph [ref=e437]:
+          - generic [ref=e438]: 🎬
+          - text: Movies
+        - heading "Watchlist" [level=1] [ref=e439]:
+          - generic [ref=e440]: 🎬
+          - text: Watchlist
+        - paragraph [ref=e441]: Keep track of what you want to watch together and leave notes on the ones you finish.
+        - generic [ref=e444] [cursor=pointer]:
+          - checkbox "Switch between Watchlist and Date Ideas"
+          - generic [ref=e445]:
+            - generic:
+              - generic: 🎬
+              - generic: Movies
+            - generic:
+              - generic: 📍
+              - generic: Places
+      - region "Primary workspace" [ref=e447]:
+        - generic [ref=e449]:
+          - complementary [ref=e450]:
+            - generic [ref=e452]:
+              - generic [ref=e453]:
+                - paragraph [ref=e454]: Movies
+                - heading "Plan the next movie" [level=2] [ref=e455]
+                - paragraph [ref=e456]: Add movies, review suggestions, and keep notes on the ones you finish together.
+              - generic "Watchlist overview" [ref=e457]:
+                - generic [ref=e458]: 0 queued
+                - generic [ref=e459]: 0 notes on 0 titles
+              - generic [ref=e460]:
+                - tablist [ref=e461]:
+                  - tab "All 0" [selected] [ref=e462] [cursor=pointer]:
+                    - text: All
+                    - generic [ref=e463]: "0"
+                  - tab "Queue 0" [ref=e465] [cursor=pointer]:
+                    - text: Queue
+                    - generic [ref=e466]: "0"
+                  - tab "Watched 0" [ref=e467] [cursor=pointer]:
+                    - text: Watched
+                    - generic [ref=e468]: "0"
+                  - tab "Suggestions 0" [ref=e469] [cursor=pointer]:
+                    - text: Suggestions
+                    - generic [ref=e470]: "0"
+                - generic [ref=e471]:
+                  - button "Recent" [ref=e472] [cursor=pointer]
+                  - button "A-Z" [ref=e473] [cursor=pointer]
+                  - button "Year" [ref=e474] [cursor=pointer]
+              - generic [ref=e475]:
+                - textbox "Search or add a movie" [ref=e480]:
+                  - /placeholder: Search or add a movie...
+                - button "Pick a random movie" [disabled] [ref=e481]:
+                  - generic [ref=e482]: 🎲
+          - generic [ref=e485]: Your watchlist is empty

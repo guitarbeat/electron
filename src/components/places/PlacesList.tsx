@@ -70,10 +70,10 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
       }}
     >
       <div className="workspace-control-panel__header">
-        <p className="workspace-control-panel__eyebrow">Date Spots Atlas</p>
-        <h2 className="workspace-control-panel__title">Keep the outing list moving</h2>
+        <p className="workspace-control-panel__eyebrow">Dates</p>
+        <h2 className="workspace-control-panel__title">Plan the next date</h2>
         <p className="workspace-control-panel__copy">
-          Add places quickly, keep the queue separate from visited spots, and use the map as context instead of clutter.
+          Add places to try, keep upcoming and visited spots separate, and use the map when you need it.
         </p>
       </div>
 

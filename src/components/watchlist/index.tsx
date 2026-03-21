@@ -79,10 +79,10 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       }}
     >
       <div className="workspace-control-panel__header">
-        <p className="workspace-control-panel__eyebrow">Movie Night Queue</p>
-        <h2 className="workspace-control-panel__title">Plan the next watch</h2>
+        <p className="workspace-control-panel__eyebrow">Movies</p>
+        <h2 className="workspace-control-panel__title">Plan the next movie</h2>
         <p className="workspace-control-panel__copy">
-          Add picks fast, review suggestions, and keep little notes tucked onto the movies that earned them.
+          Add movies, review suggestions, and keep notes on the ones you finish together.
         </p>
       </div>
 

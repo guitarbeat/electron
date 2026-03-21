@@ -46,7 +46,7 @@ test('getQuizLaunchState', async (t) => {
     });
 
     assert.equal(state.label, 'Start Quiz');
-    assert.match(state.description, /Aaron is active/i);
+    assert.match(state.description, /Aaron is signed in/i);
   });
 
   await t.test('retakes quiz for an active user with a completed run', () => {
@@ -57,7 +57,7 @@ test('getQuizLaunchState', async (t) => {
     });
 
     assert.equal(state.label, 'Retake Quiz');
-    assert.match(state.description, /Electra can rerun/i);
+    assert.match(state.description, /Electra can take the quiz again/i);
   });
 });
 
@@ -72,7 +72,7 @@ test('getWorkspaceMeta', async (t) => {
   await t.test('returns places workspace copy', () => {
     const meta = getWorkspaceMeta('places');
 
-    assert.equal(meta.title, 'Date Spots');
+    assert.equal(meta.title, 'Date Ideas');
     assert.equal(meta.icon, '📍');
   });
 });

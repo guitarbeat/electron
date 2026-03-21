@@ -27,20 +27,20 @@ export const getQuizLaunchState = ({
   if (!currentUser) {
     return {
       label: 'Edit Quiz',
-      description: `No seat is active yet. Tune the shared quiz before the next run. ${promptCountLabel} ready.`,
+      description: `No profile is selected. Update the quiz whenever you want. ${promptCountLabel} ready.`,
     };
   }
 
   if (quizCompleted) {
     return {
       label: 'Retake Quiz',
-      description: `${currentUser} can rerun the compatibility ritual whenever the mood changes. ${promptCountLabel} loaded.`,
+      description: `${currentUser} can take the quiz again any time. ${promptCountLabel} loaded.`,
     };
   }
 
   return {
     label: 'Start Quiz',
-    description: `${currentUser} is active. Start the shared ritual and see where tonight lands. ${promptCountLabel} loaded.`,
+    description: `${currentUser} is signed in. Start the quiz whenever you're ready. ${promptCountLabel} loaded.`,
   };
 };
 
@@ -53,15 +53,15 @@ export interface WorkspaceMeta {
 
 const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
   queue: {
-    eyebrow: 'Movie Night Queue',
+    eyebrow: 'Movies',
     title: 'Watchlist',
-    description: 'Capture picks fast, review suggestions, and keep shared memories attached to the movies that matter.',
+    description: 'Keep track of what you want to watch together and leave notes on the ones you finish.',
     icon: '🎬',
   },
   places: {
-    eyebrow: 'Date Spots Atlas',
-    title: 'Date Spots',
-    description: 'Keep the outing list focused on ideas, visited spots, and map-aware planning without extra shell clutter.',
+    eyebrow: 'Dates',
+    title: 'Date Ideas',
+    description: 'Save places to try, mark the ones you have been to, and keep the map nearby when you need it.',
     icon: '📍',
   },
 };
