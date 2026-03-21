@@ -32,7 +32,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
   const [isShaking, setIsShaking] = useState(false);
-  const [step, setStep] = useState<'current' | 'new' | 'confirm'>(
+  const [step, setStep] = useState<'current' | 'new' | 'confirm'>(() =>
     mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current'
   );
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -41,10 +41,17 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const hadModalOpenClassRef = useRef(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !hadModalOpenClassRef.current) {
       hadModalOpenClassRef.current = document.body.classList.contains('modal-open');
       document.body.classList.add('modal-open');
       focusTimerRef.current = window.setTimeout(() => inputRef.current?.focus(), 100);
+
+      // Reset form state only when opening
+      setPin('');
+      setNewPin('');
+      setConfirmPin('');
+      setError('');
+      setStep(mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current');
     }
 
     return () => {
