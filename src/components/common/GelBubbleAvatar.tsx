@@ -303,6 +303,17 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   ]
     .filter(Boolean)
     .join(' ') || 'none';
+  const imageWrapSize = isActionBubble
+    ? '74%'
+    : size === 'tiny'
+      ? '78%'
+      : size === 'compact'
+        ? '80%'
+        : '82%';
+  const insideNameBottom = size === 'tiny' ? '4.5%' : isActionBubble ? '7%' : '6.5%';
+  const insideNameMaxWidth = size === 'tiny' ? '78%' : '74%';
+  const insideNamePadding =
+    size === 'tiny' ? '0.16rem 0.46rem 0.2rem' : '0.22rem 0.68rem 0.28rem';
 
   const onImageClick = (e: React.MouseEvent) => {
     if (!canRefreshImage) {
@@ -441,8 +452,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           onClick={canRefreshImage ? onImageClick : undefined}
           title={canRefreshImage ? 'Click for new cat' : undefined}
           style={{
-            width: isActionBubble ? '68%' : '72%',
-            height: isActionBubble ? '68%' : '72%',
+            width: imageWrapSize,
+            height: imageWrapSize,
             borderRadius: '50%',
             overflow: 'hidden',
             border: isActionBubble
@@ -473,7 +484,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           {icon ? (
             <span
               className={`gel-avatar-icon${isActionBubble ? ' gel-avatar-icon--action' : ''}`}
-              style={{ fontSize: size === 'action' ? '1.5rem' : '2rem' }}
+              style={{ fontSize: size === 'action' ? '1.7rem' : '2.2rem' }}
             >
               {icon}
             </span>
@@ -490,6 +501,24 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               }}
             />
           )}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `
+                linear-gradient(
+                  180deg,
+                  rgba(255, 255, 255, 0.08) 0%,
+                  rgba(255, 255, 255, 0) 26%,
+                  rgba(6, 8, 20, 0) 54%,
+                  rgba(6, 8, 20, 0.24) 74%,
+                  rgba(6, 8, 20, 0.76) 100%
+                )
+              `,
+              pointerEvents: 'none',
+            }}
+          />
           {isCatLoading && user && (
             <div
               style={{
@@ -524,7 +553,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
             style={{
               position: 'absolute',
               left: '50%',
-              bottom: '6%',
+              bottom: insideNameBottom,
               transform: isHovered
                 ? 'translate(-50%, 0) scale(1.05)'
                 : 'translate(-50%, 0) scale(1)',
@@ -539,10 +568,28 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
                 0 2px 4px rgba(0, 0, 0, 0.5)
               `,
               letterSpacing: 'var(--letter-spacing-widest)',
-              WebkitTextStroke: `0.5px color-mix(in srgb, ${haloColor} 48%, transparent)`,
+              WebkitTextStroke: `0.35px color-mix(in srgb, ${haloColor} 40%, transparent)`,
               transition: 'all 0.3s ease-out',
               pointerEvents: 'none',
               whiteSpace: 'nowrap',
+              maxWidth: insideNameMaxWidth,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              padding: insideNamePadding,
+              borderRadius: '999px',
+              background: `
+                linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.04) 100%),
+                color-mix(in srgb, rgba(8, 10, 24, 0.9) 78%, ${accentColor} 22%)
+              `,
+              border: `1px solid color-mix(in srgb, ${haloColor} 28%, rgba(255, 255, 255, 0.14))`,
+              boxShadow: `
+                0 12px 18px rgba(4, 6, 18, 0.28),
+                0 0 14px color-mix(in srgb, ${accentColor} 18%, transparent),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16)
+              `,
+              backdropFilter: 'blur(10px) saturate(125%)',
+              WebkitBackdropFilter: 'blur(10px) saturate(125%)',
+              lineHeight: 1.05,
             }}
           >
             {label || user}

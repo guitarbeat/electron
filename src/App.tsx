@@ -416,7 +416,7 @@ const App: React.FC = () => {
                       padding: isMobile ? spacing.lg : spacing.xl,
                       border: `1px solid ${colors.borderSubtle}`,
                     }}
-                    >
+                  >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
                       <p className="duo-status-card__eyebrow">Shared page</p>
                       <h2 className="duo-status-card__title">Movies, dates, and messages</h2>

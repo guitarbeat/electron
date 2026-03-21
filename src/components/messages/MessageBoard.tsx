@@ -110,7 +110,7 @@ const MessageBoard: React.FC = () => {
                   color: '#8e8e93',
                 }}
               >
-                {currentUser ? `${currentUser} signed in` : 'Read only until you choose a profile'}
+                {currentUser ?? 'Guest mode'}
               </div>
             </div>
             <div

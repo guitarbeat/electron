@@ -210,18 +210,6 @@ const MemoryList: React.FC<MemoryListProps> = ({
         </div>
       )}
 
-      {!canManageMemories && memories.length > 0 && (
-        <p
-          style={{
-            margin: `0 0 ${spacing.sm}`,
-            color: '#ffe6bd',
-            fontSize: typography.fontSize.xs,
-          }}
-        >
-          Select Aaron or Electra to pin, edit, or delete notes.
-        </p>
-      )}
-
       {isLoading && memories.length === 0 && (
         <p style={{ margin: 0, color: colors.textSecondary }}>Loading notes...</p>
       )}
@@ -235,10 +223,10 @@ const MemoryList: React.FC<MemoryListProps> = ({
       {!isLoading && !memoriesError && visibleMemories.length === 0 && (
         <p style={{ margin: 0, color: '#f6e4cb' }}>
           {isSingleMovieContext
-            ? 'No notes on this movie yet. Leave the first little one above.'
+            ? 'No notes yet.'
             : activeMovieFilter === ALL_MOVIES_FILTER
-              ? 'No notes yet. Add your first one after your next shared watch.'
-              : 'No notes match this title yet.'}
+              ? 'No notes yet.'
+              : 'No matching notes.'}
         </p>
       )}
 

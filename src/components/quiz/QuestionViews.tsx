@@ -575,22 +575,6 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
                 }}
               />
             )}
-            {!selectedPosition && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: colors.textTertiary,
-                  fontSize: typography.fontSize.sm,
-                  pointerEvents: 'none',
-                }}
-              >
-                Tap to place marker
-              </div>
-            )}
           </div>
           <div
             style={{
