@@ -254,9 +254,17 @@ export const fetchMovieMetadata = async (
           const omdbData: OmdbMovieResponse = await omdbRes.json();
           if (omdbData.Response === 'True') {
             return toMetadataResultFromOmdb(omdbData);
+          } else if (omdbData.Error) {
+            console.error(`OMDb ID lookup failed for "${id}": ${omdbData.Error}`);
+          } else {
+            console.error(`OMDb ID lookup failed for "${id}" with unknown error`);
           }
         } catch (error) {
-          console.error('Error fetching metadata by OMDb ID:', error);
+          if (error instanceof Error && error.message) {
+            console.error(`OMDb ID lookup failed for "${id}": ${error.message}`);
+          } else {
+            console.error(`OMDb ID lookup failed for "${id}" with unknown error`);
+          }
         }
       }
     }
@@ -275,7 +283,10 @@ export const fetchMovieMetadata = async (
           return toMetadataResultFromOmdb(omdbData);
         }
       } catch (error) {
-        console.error('Error fetching metadata by OMDb title:', error);
+        // Only log meaningful errors, not empty objects or network timeouts
+        if (error instanceof Error && error.message && !error.message.includes('timeout')) {
+          console.warn(`OMDb title lookup failed for "${title}":`, error.message);
+        }
       }
     }
 
@@ -305,12 +316,18 @@ export const fetchMovieMetadata = async (
         };
       }
     } catch (error) {
-      console.error('Error fetching metadata from TVMaze:', error);
-    }
+        // Only log meaningful errors from TVMaze
+        if (error instanceof Error && error.message && !error.message.includes('timeout')) {
+          console.warn(`TVMaze search failed for "${title}":`, error.message);
+        }
+      }
 
     return {};
   } catch (error) {
-    console.error('Error fetching metadata:', error);
+    // Only log critical errors at the top level
+    if (error instanceof Error && error.message && !error.message.includes('timeout') && !error.message.includes('fetch')) {
+      console.error('Critical metadata fetch error:', error.message);
+    }
     return {};
   }
 };

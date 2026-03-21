@@ -17,8 +17,8 @@ import QuizFlow from '@/components/quiz/QuizFlow';
 import Watchlist from '@/components/watchlist';
 import ThemeToggle from '@/ui/ThemeToggle';
 import ActionBubble from '@/ui/ActionBubble';
+import ActionFanMenu from '@/ui/ActionFanMenu';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
-import { QuickActionsIcon } from '@/components/common/icons';
 import { useAudio } from '@/hooks/useAudio';
 import { colors, spacing, typography } from '@/design-system';
 import { executeAction } from '@/utils';
@@ -101,7 +101,7 @@ const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition
 };
 
 const AppInner: React.FC = () => {
-  const { currentUser } = useUser();
+  const { currentUser, setCurrentUser } = useUser();
   const { showToast } = useToast();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
@@ -117,6 +117,7 @@ const AppInner: React.FC = () => {
   const [showMemories, setShowMemories] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showMatchmaker, setShowMatchmaker] = useState(false);
+  const [showActionFanMenu, setShowActionFanMenu] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const mobileActionTimeoutRef = useRef<number | null>(null);
@@ -228,6 +229,33 @@ const AppInner: React.FC = () => {
   const commandDeckItems = useMemo(
     (): CommandActionItem[] => [
       {
+        label: currentUser ? 'Switch to Aaron' : 'Login as Aaron',
+        icon: '👤',
+        action: () => {
+          if (currentUser !== 'Aaron') {
+            // Simple login without PIN for demo purposes
+            // In production, this would trigger PIN verification if Aaron has PIN
+            setCurrentUser('Aaron');
+          }
+        },
+      },
+      {
+        label: currentUser ? 'Switch to Electra' : 'Login as Electra', 
+        icon: '👩',
+        action: () => {
+          if (currentUser !== 'Electra') {
+            // Simple login without PIN for demo purposes
+            // In production, this would trigger PIN verification if Electra has PIN
+            setCurrentUser('Electra');
+          }
+        },
+      },
+      currentUser && {
+        label: 'Logout',
+        icon: '🚪',
+        action: () => setCurrentUser(null),
+      },
+      {
         label: currentUser ? (quizCompleted ? 'Retake Quiz' : 'Start Quiz') : 'Edit Quiz',
         icon: '🧠',
         action: openQuizExperience,
@@ -236,18 +264,8 @@ const AppInner: React.FC = () => {
       { label: 'Memories', icon: '📸', action: () => setShowMemories(true) },
       { label: 'Spin Wheel', icon: '🎰', action: () => setShowSpinWheel(true) },
       { label: 'Food Merge', icon: '🍔', action: () => setShowFoodMerge(true) },
-      {
-        label: crtEnabled ? 'Disable CRT' : 'Enable CRT',
-        icon: crtEnabled ? '📺' : '📟',
-        action: () => setCrtEnabled((prev) => !prev),
-      },
-      {
-        label: cursorTrailEnabled ? 'Disable Trail' : 'Enable Trail',
-        icon: cursorTrailEnabled ? '✨' : '💫',
-        action: () => setCursorTrailEnabled((prev) => !prev),
-      },
-    ],
-    [currentUser, openMatchmaker, openQuizExperience, quizCompleted, crtEnabled, cursorTrailEnabled]
+    ].filter(Boolean) as CommandActionItem[],
+    [currentUser, openMatchmaker, openQuizExperience, quizCompleted]
   );
 
   const handleActionBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -317,14 +335,14 @@ const AppInner: React.FC = () => {
   };
 
   const handleActionBubbleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (didActionBubbleDragRef.current || suppressActionBubbleClickRef.current) {
+    if (suppressActionBubbleClickRef.current) {
+      suppressActionBubbleClickRef.current = false;
       event.preventDefault();
       event.stopPropagation();
-      suppressActionBubbleClickRef.current = false;
       return;
     }
 
-    openMoreSheet();
+    setShowActionFanMenu(true);
   };
 
   const handleTabChange = (tab: MainTab) => {
@@ -429,32 +447,6 @@ const AppInner: React.FC = () => {
         </a>
 
         <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
-          <div className="profile-login-anchor">
-            <button
-              type="button"
-              className={`profile-chip${currentUser ? ' profile-chip--active' : ' profile-chip--guest'}`}
-              onClick={openMoreSheet}
-              aria-label={
-                currentUser
-                  ? `Signed in as ${currentUser}. Tap to manage profile.`
-                  : 'No profile selected. Tap to choose a profile.'
-              }
-            >
-              <span className="profile-chip__avatar" aria-hidden="true">
-                {currentUser ? currentUser[0] : <QuickActionsIcon className="profile-chip__avatar-icon" />}
-              </span>
-              <span className="profile-chip__content">
-                <span className="profile-chip__eyebrow">
-                  {currentUser ? 'Seat Active' : 'Choose Profile'}
-                </span>
-                <span className="profile-chip__label">
-                  {currentUser ?? 'Guest Mode'}
-                </span>
-              </span>
-              <span className="profile-chip__signal" aria-hidden="true" />
-            </button>
-          </div>
-
           <ActionBubble
             ref={actionBubbleRef}
             currentUser={currentUser}
@@ -466,6 +458,20 @@ const AppInner: React.FC = () => {
             onPointerUp={finishActionBubbleDrag}
             onPointerCancel={finishActionBubbleDrag}
           />
+
+          {showActionFanMenu && (
+            <ActionFanMenu
+              items={commandDeckItems}
+              anchorX={actionBubblePosition.x + 32} // Center of bubble
+              anchorY={actionBubblePosition.y + 32}
+              anchorSize={64}
+              onItemSelect={(item) => {
+                item.action();
+                setShowActionFanMenu(false);
+              }}
+              onClose={() => setShowActionFanMenu(false)}
+            />
+          )}
 
           <main id="main-content" className="workspace-stage" tabIndex={-1} style={{ outline: 'none' }}>
             {isMobile && (
