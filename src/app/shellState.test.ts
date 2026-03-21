@@ -9,7 +9,7 @@ test('getQuizLaunchState', async (t) => {
       quizCompleted: false,
     });
 
-    assert.equal(state.label, 'Editor');
+    assert.equal(state.label, 'Edit Quiz');
     assert.equal('description' in state, false);
   });
 
@@ -19,7 +19,7 @@ test('getQuizLaunchState', async (t) => {
       quizCompleted: false,
     });
 
-    assert.equal(state.label, 'Quiz');
+    assert.equal(state.label, 'Start Quiz');
     assert.equal('description' in state, false);
   });
 
@@ -29,7 +29,7 @@ test('getQuizLaunchState', async (t) => {
       quizCompleted: true,
     });
 
-    assert.equal(state.label, 'Retake');
+    assert.equal(state.label, 'Retake Quiz');
     assert.equal('description' in state, false);
   });
 });

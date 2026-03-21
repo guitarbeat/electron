@@ -52,7 +52,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
           </Button>
           {onEdit && (
             <Button onClick={onEdit} variant="secondary" size="md">
-              Editor
+              Edit Quiz
             </Button>
           )}
         </div>
@@ -112,7 +112,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
         <div style={{ textAlign: 'center', padding: spacing.xl }}>
           <h3>Quiz Completed!</h3>
           <Button onClick={handleRetake} variant="primary" style={{ marginTop: spacing.md }}>
-            Retake
+            Retake Quiz
           </Button>
         </div>
       );

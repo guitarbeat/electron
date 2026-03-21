@@ -8,11 +8,12 @@ import {
   updateMemory as updateMemoryService,
 } from '@/services/memoryService';
 import { usePolling } from '@/services/polling';
-import { SortMode, ContentTab, Movie, User, SharedMemory } from '@/types';
+import { SortMode, ContentTab, Movie, MovieSuggestion, User, SharedMemory } from '@/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/context';
-import { areDeeplyEqual } from '@/utils';
+import { areDeeplyEqual, sanitizeInput } from '@/utils';
+import { trackMetric } from '@/services/analyticsService';
 
 const POLLING_INTERVAL = 30000;
 interface UseWatchlistProps {
@@ -26,6 +27,20 @@ interface WatchlistToast {
   onUndo?: () => void;
 }
 
+interface SubmitRecommendationInput {
+  title: string;
+  suggestedBy?: string;
+  reason?: string;
+}
+
+const normalizeRecommendationAuthor = (currentUser: User | null, suggestedBy?: string): string => {
+  if (currentUser) {
+    return currentUser;
+  }
+
+  return sanitizeInput(suggestedBy || '') || 'Anonymous';
+};
+
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { showToast } = useToast();
@@ -35,6 +50,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
+  const [isSubmittingRecommendation, setIsSubmittingRecommendation] = useState(false);
   const [contentTab, setContentTab] = useState<ContentTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
@@ -218,6 +234,73 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     };
   }, [sortedMovies, pendingSuggestions]);
 
+  const submitRecommendation = useCallback(
+    async ({ title, suggestedBy, reason }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
+      setIsSubmittingRecommendation(true);
+
+      try {
+        const suggestion = await addSuggestion(
+          title,
+          normalizeRecommendationAuthor(currentUser, suggestedBy),
+          reason
+        );
+        trackMetric('suggestion_submitted');
+        setContentTab('suggestions');
+        return suggestion;
+      } finally {
+        setIsSubmittingRecommendation(false);
+      }
+    },
+    [addSuggestion, currentUser]
+  );
+
+  const acceptSuggestionToWatchlist = useCallback(
+    async (suggestionId: string): Promise<MovieSuggestion> => {
+      if (!currentUser) {
+        throw new Error('Profile required');
+      }
+
+      const suggestion = pendingSuggestions.find((entry) => entry.id === suggestionId);
+      if (!suggestion) {
+        throw new Error('Suggestion not found');
+      }
+
+      setProcessingSuggestionId(suggestionId);
+
+      try {
+        await addMovie(suggestion.title);
+        await acceptSuggestion(suggestionId, currentUser);
+        trackMetric('suggestion_accepted');
+        return suggestion;
+      } finally {
+        setProcessingSuggestionId(null);
+      }
+    },
+    [acceptSuggestion, addMovie, currentUser, pendingSuggestions]
+  );
+
+  const rejectPendingSuggestion = useCallback(
+    async (suggestionId: string): Promise<void> => {
+      if (!currentUser) {
+        throw new Error('Profile required');
+      }
+
+      const suggestion = pendingSuggestions.find((entry) => entry.id === suggestionId);
+      if (!suggestion) {
+        throw new Error('Suggestion not found');
+      }
+
+      setProcessingSuggestionId(suggestionId);
+
+      try {
+        await rejectSuggestion(suggestionId, currentUser);
+      } finally {
+        setProcessingSuggestionId(null);
+      }
+    },
+    [currentUser, pendingSuggestions, rejectSuggestion]
+  );
+
   return {
     // State returns
     isMobile,
@@ -229,7 +312,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
-    setProcessingSuggestionId,
+    isSubmittingRecommendation,
     contentTab,
     setContentTab,
     searchQuery,
@@ -250,9 +333,9 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     deleteMovie,
     restoreMovie,
     pendingSuggestions,
-    addSuggestion,
-    acceptSuggestion,
-    rejectSuggestion,
+    submitRecommendation,
+    acceptSuggestionToWatchlist,
+    rejectPendingSuggestion,
     isSuggestionsLoading,
     memories,
     addMemory,
