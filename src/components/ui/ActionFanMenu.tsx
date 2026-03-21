@@ -32,6 +32,9 @@ interface ActionFanMenuProps {
   onClose: () => void;
 }
 
+const BUBBLE_RADIUS = 36; // half of 72px desktop bubble
+const LABEL_OFFSET = BUBBLE_RADIUS + 22; // px from bubble center → label center
+
 const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
   items,
   anchorX,
@@ -51,6 +54,10 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
     viewportWidth,
     viewportHeight,
   });
+
+  // Centre of the trigger bubble — labels radiate outward from here
+  const fanCX = anchorX + anchorSize / 2;
+  const fanCY = anchorY + anchorSize / 2;
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -72,6 +79,17 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
         const pos = positions[i];
         const accent = ACCENT_PALETTE[i % ACCENT_PALETTE.length];
         const halo = HALO_PALETTE[i % HALO_PALETTE.length];
+
+        // Unit vector pointing FROM the fan centre TO this item
+        const dx = pos.x - fanCX;
+        const dy = pos.y - fanCY;
+        const dist = Math.hypot(dx, dy) || 1;
+        const ux = dx / dist;
+        const uy = dy / dist;
+
+        // Push label outward along that vector
+        const lx = Math.round(ux * LABEL_OFFSET);
+        const ly = Math.round(uy * LABEL_OFFSET);
 
         return (
           <button
@@ -96,7 +114,15 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
               <div className="action-fan-item__shine" aria-hidden="true" />
               <span className="action-fan-item__icon" aria-hidden="true">{item.icon}</span>
             </div>
-            <span className="action-fan-item__label">{item.label}</span>
+            <span
+              className="action-fan-item__label"
+              style={{
+                transform: `translate(calc(-50% + ${lx}px), calc(-50% + ${ly}px))`,
+              }}
+              aria-hidden="true"
+            >
+              {item.label}
+            </span>
           </button>
         );
       })}
