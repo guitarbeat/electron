@@ -16,11 +16,49 @@ interface CachedGist {
 
 let gistCache: CachedGist | null = null;
 
-const clean = (value: string | undefined): string =>
-  (value || '').trim().replace(/^["']|["']$/g, '');
+const cleanEnvValue = (value: string | undefined): string => {
+  let normalized = (value || '').trim();
 
-const getGistId = (): string => clean(process.env.GIST_ID);
-const getGitHubToken = (): string => clean(process.env.GITHUB_TOKEN);
+  while (
+    normalized.length >= 2 &&
+    ((normalized.startsWith('"') && normalized.endsWith('"')) ||
+      (normalized.startsWith("'") && normalized.endsWith("'")))
+  ) {
+    normalized = normalized.slice(1, -1).trim();
+  }
+
+  return normalized;
+};
+
+const normalizeGistId = (value: string | undefined): string => {
+  const normalized = cleanEnvValue(value);
+  if (!normalized) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    const segments = parsed.pathname.split('/').filter(Boolean);
+
+    if (
+      (parsed.hostname === 'gist.github.com' || parsed.hostname === 'www.gist.github.com') &&
+      segments.length >= 2
+    ) {
+      return segments[segments.length - 1] || '';
+    }
+
+    if (parsed.hostname === 'api.github.com' && segments[0] === 'gists' && segments[1]) {
+      return segments[1];
+    }
+  } catch {
+    // Fall back to treating the value as a raw gist id.
+  }
+
+  return normalized;
+};
+
+const getGistId = (): string => normalizeGistId(process.env.GIST_ID || process.env.VITE_GIST_ID);
+const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN);
 
 const getGitHubHeaders = (): Headers => {
   const headers = new Headers({

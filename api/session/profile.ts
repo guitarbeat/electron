@@ -15,7 +15,7 @@ import { getPinProtectedUsers, verifyProfilePin } from '../_lib/state.ts';
 import { isUser } from '../../src/utils/shared.ts';
 
 const PROFILE_STORE_CONFIG_ERROR =
-  'Profile login is unavailable because the shared pin store is not configured. Set GIST_ID on the server to enable profile PINs.';
+  'Profile login is unavailable because the shared pin store is not configured. Set GIST_ID on the server, or VITE_GIST_ID during local Vite development, to enable profile PINs.';
 
 const isMissingPinStoreConfigError = (error: unknown): boolean =>
   error instanceof Error && error.message === 'GIST_ID is not configured.';

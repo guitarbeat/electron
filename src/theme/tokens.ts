@@ -7,53 +7,53 @@
  */
 
 export const moviesTheme = {
-  accent: '#ff7fc6',
-  accentHover: '#ff9bd3',
-  accentMuted: '#ff7fc640',
-  accentLight: '#ffc2e6',
-  secondary: '#95dcff',
-  secondaryHover: '#b3e8ff',
-  secondaryMuted: '#95dcff40',
-  tertiary: '#a78af2',
-  tertiaryHover: '#c0a8ff',
-  background: '#020617',
-  surface: 'rgba(15, 23, 42, 0.65)',
-  surfaceElevated: 'rgba(30, 41, 59, 0.8)',
-  surface0: '#0a0f1e',
-  surface1: 'rgba(15, 23, 42, 0.7)',
-  surface2: 'rgba(30, 41, 59, 0.85)',
-  surface3: 'rgba(51, 65, 85, 0.92)',
-  glow: '0 0 15px rgba(255, 127, 198, 0.4), 0 0 30px rgba(255, 127, 198, 0.15)',
-  glowStrong: '0 0 20px rgba(255, 127, 198, 0.6), 0 0 40px rgba(255, 127, 198, 0.25)',
-  textGlow: '0 1px 2px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 127, 198, 0.35)',
-  gradientPrimary: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%)',
-  textGradient: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 50%, #fff 100%)',
+  accent: '#c88d59',
+  accentHover: '#d9a170',
+  accentMuted: '#c88d5940',
+  accentLight: '#efd2af',
+  secondary: '#8e9f82',
+  secondaryHover: '#a3b497',
+  secondaryMuted: '#8e9f8240',
+  tertiary: '#9a6554',
+  tertiaryHover: '#af7b68',
+  background: '#1d140e',
+  surface: 'rgba(73, 51, 32, 0.72)',
+  surfaceElevated: 'rgba(92, 64, 40, 0.84)',
+  surface0: '#130d08',
+  surface1: 'rgba(69, 48, 29, 0.78)',
+  surface2: 'rgba(90, 63, 39, 0.9)',
+  surface3: 'rgba(113, 81, 52, 0.95)',
+  glow: '0 0 16px rgba(200, 141, 89, 0.22), 0 0 32px rgba(142, 159, 130, 0.12)',
+  glowStrong: '0 0 24px rgba(200, 141, 89, 0.34), 0 0 40px rgba(212, 177, 115, 0.16)',
+  textGlow: '0 1px 2px rgba(15, 10, 6, 0.4), 0 0 8px rgba(200, 141, 89, 0.18)',
+  gradientPrimary: 'linear-gradient(135deg, #c88d59 0%, #d4b173 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(102, 75, 49, 0.96) 0%, rgba(58, 39, 24, 0.92) 100%)',
+  textGradient: 'linear-gradient(135deg, #f4dfbc 0%, #d4b173 52%, #fff7e3 100%)',
 } as const;
 
 export const placesTheme = {
-  accent: '#fff06a',
-  accentHover: '#fff8bf',
-  accentMuted: '#fff06a40',
-  accentLight: '#fff8cc',
-  secondary: '#90ee90',
-  secondaryHover: '#a8f5a8',
-  secondaryMuted: '#90ee9040',
-  tertiary: '#ffb347',
-  tertiaryHover: '#ffc266',
-  background: '#0a0f1a',
-  surface: 'rgba(20, 25, 40, 0.65)',
-  surfaceElevated: 'rgba(35, 45, 60, 0.8)',
-  surface0: '#0f1419',
-  surface1: 'rgba(20, 25, 40, 0.7)',
-  surface2: 'rgba(35, 45, 60, 0.85)',
-  surface3: 'rgba(55, 65, 75, 0.92)',
-  glow: '0 0 15px rgba(255, 240, 106, 0.4), 0 0 30px rgba(144, 238, 144, 0.15)',
-  glowStrong: '0 0 20px rgba(255, 240, 106, 0.6), 0 0 40px rgba(144, 238, 144, 0.25)',
-  textGlow: '0 1px 2px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 240, 106, 0.35)',
-  gradientPrimary: 'linear-gradient(135deg, #fff06a 0%, #90ee90 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(45, 55, 70, 0.95) 0%, rgba(35, 45, 60, 0.88) 100%)',
-  textGradient: 'linear-gradient(135deg, #fff06a 0%, #90ee90 50%, #fff 100%)',
+  accent: '#b87248',
+  accentHover: '#cb8861',
+  accentMuted: '#b8724840',
+  accentLight: '#ebc3a6',
+  secondary: '#98a06a',
+  secondaryHover: '#acb47a',
+  secondaryMuted: '#98a06a40',
+  tertiary: '#6f8f8e',
+  tertiaryHover: '#86a5a3',
+  background: '#1c140d',
+  surface: 'rgba(70, 50, 31, 0.72)',
+  surfaceElevated: 'rgba(90, 64, 39, 0.84)',
+  surface0: '#120d08',
+  surface1: 'rgba(67, 48, 29, 0.78)',
+  surface2: 'rgba(87, 63, 38, 0.9)',
+  surface3: 'rgba(109, 79, 50, 0.95)',
+  glow: '0 0 16px rgba(184, 114, 72, 0.2), 0 0 32px rgba(152, 160, 106, 0.12)',
+  glowStrong: '0 0 24px rgba(184, 114, 72, 0.3), 0 0 40px rgba(135, 164, 160, 0.16)',
+  textGlow: '0 1px 2px rgba(15, 10, 6, 0.4), 0 0 8px rgba(184, 114, 72, 0.18)',
+  gradientPrimary: 'linear-gradient(135deg, #b87248 0%, #98a06a 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(100, 74, 47, 0.96) 0%, rgba(57, 40, 24, 0.92) 100%)',
+  textGradient: 'linear-gradient(135deg, #f2dcc0 0%, #98a06a 52%, #fff7e3 100%)',
 } as const;
 
 // * Spacing scale (Tight but balanced)
@@ -71,71 +71,71 @@ export const spacing = {
 // Default colors (Movies theme - backward compatibility)
 export const colors = {
   // Base
-  background: '#020617',
-  surface: 'rgba(15, 23, 42, 0.65)',
-  surfaceElevated: 'rgba(30, 41, 59, 0.8)',
+  background: '#1d140e',
+  surface: 'rgba(73, 51, 32, 0.72)',
+  surfaceElevated: 'rgba(92, 64, 40, 0.84)',
 
   // Surface layering system (for consistent depth hierarchy)
-  surface0: '#0a0f1e', // deepest -- page background
-  surface1: 'rgba(15, 23, 42, 0.7)', // card level
-  surface2: 'rgba(30, 41, 59, 0.85)', // elevated / floating elements
-  surface3: 'rgba(51, 65, 85, 0.92)', // popovers / modals
+  surface0: '#130d08', // deepest -- page background
+  surface1: 'rgba(69, 48, 29, 0.78)', // card level
+  surface2: 'rgba(90, 63, 39, 0.9)', // elevated / floating elements
+  surface3: 'rgba(113, 81, 52, 0.95)', // popovers / modals
 
   // Text (improved contrast for WCAG AA compliance)
-  textPrimary: '#f8fafc',
-  textSecondary: '#e2e8f0',
-  textTertiary: '#e2e4f4', // Meets WCAG AA 4.5:1 on dark backgrounds
+  textPrimary: '#f7efdf',
+  textSecondary: '#e0d2b6',
+  textTertiary: '#b9a489', // Meets WCAG AA on the warm dark surfaces above
 
   // Interactive (for links and clickable elements)
-  interactive: '#ff7fc6',
-  interactiveHover: '#ff9bd3',
+  interactive: '#c88d59',
+  interactiveHover: '#d9a170',
 
-  // Accent (Hot Pink)
-  accent: '#ff7fc6',
-  accentHover: '#ff9bd3',
-  accentMuted: '#ff7fc640',
-  accentLight: '#ffc2e6',
+  // Accent (aged copper)
+  accent: '#c88d59',
+  accentHover: '#d9a170',
+  accentMuted: '#c88d5940',
+  accentLight: '#efd2af',
 
-  // Secondary accent (Light Sky Blue)
-  secondary: '#95dcff',
-  secondaryHover: '#b3e8ff',
-  secondaryMuted: '#95dcff40',
+  // Secondary accent (sage)
+  secondary: '#8e9f82',
+  secondaryHover: '#a3b497',
+  secondaryMuted: '#8e9f8240',
 
-  // Tertiary (Medium Purple)
-  tertiary: '#a78af2',
-  tertiaryHover: '#c0a8ff',
+  // Tertiary (clay)
+  tertiary: '#9a6554',
+  tertiaryHover: '#af7b68',
 
   // Status
-  success: '#4ade80',
-  warning: '#fbbf24',
-  error: '#f87171',
+  success: '#8ca26d',
+  warning: '#d1a15c',
+  error: '#bb705f',
 
   // Border
-  border: 'rgba(99, 102, 241, 0.4)',
-  borderSecondary: 'rgba(236, 72, 153, 0.3)',
-  borderTertiary: 'rgba(56, 189, 248, 0.3)',
-  borderInset: '#365a90',
-  borderSubtle: 'rgba(148, 163, 184, 0.15)',
+  border: 'rgba(180, 142, 92, 0.4)',
+  borderSecondary: 'rgba(200, 141, 89, 0.28)',
+  borderTertiary: 'rgba(142, 159, 130, 0.24)',
+  borderInset: '#7d5f3a',
+  borderSubtle: 'rgba(193, 154, 96, 0.18)',
 
   // Overlay
-  overlay: 'rgba(2, 6, 23, 0.78)',
+  overlay: 'rgba(18, 11, 7, 0.78)',
 
   // Special retro colors
-  yellow: '#fff06a',
-  khaki: '#f7efaa',
+  yellow: '#d4b173',
+  khaki: '#e8d3ac',
 
   // Gradients
-  gradientPink: 'linear-gradient(135deg, #ff7fc6 0%, #ff9bd3 100%)',
-  gradientBlue: 'linear-gradient(135deg, #95dcff 0%, #b3e8ff 100%)',
-  gradientPurple: 'linear-gradient(135deg, #a78af2 0%, #c0a8ff 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(44, 63, 104, 0.95) 0%, rgba(36, 53, 90, 0.88) 100%)',
+  gradientPink: 'linear-gradient(135deg, #c88d59 0%, #d9a170 100%)',
+  gradientBlue: 'linear-gradient(135deg, #8e9f82 0%, #a3b497 100%)',
+  gradientPurple: 'linear-gradient(135deg, #9a6554 0%, #af7b68 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(102, 75, 49, 0.96) 0%, rgba(58, 39, 24, 0.92) 100%)',
 } as const;
 
 // * Typography scale
 const fontFamily = {
   heading: ['Papyrus', 'Copperplate', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
-  body: ['Trebuchet MS', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
-  sans: ['Trebuchet MS', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+  body: ['Cormorant Garamond', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
+  sans: ['Cormorant Garamond', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
   mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
 } as const;
 

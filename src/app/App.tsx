@@ -463,7 +463,7 @@ const App: React.FC = () => {
                       </div>
 
                       <div className="duo-status-card__brand-copy">
-                        <p className="duo-status-card__eyebrow">Electron deck</p>
+                        <p className="duo-status-card__eyebrow">Shared folio</p>
                         <h2 className="duo-status-card__title">Movies, dates, and messages</h2>
                         <p className="duo-status-card__copy">
                           One shared board for movie picks, date spots, and the running chat.
