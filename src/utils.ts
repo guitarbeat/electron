@@ -43,6 +43,39 @@ export const executeAction = (action?: () => void, onComplete?: () => void): voi
   onComplete?.();
 };
 
+export const getErrorMessage = (
+  error: unknown,
+  fallback: string = "Something went wrong.",
+): string => {
+  if (error instanceof Error) {
+    const message = sanitizeInput(error.message);
+    if (message) {
+      return message;
+    }
+  }
+
+  return fallback;
+};
+
+export const readApiErrorMessage = async (
+  response: Response,
+  fallback: string,
+): Promise<string> => {
+  try {
+    const payload = (await response.clone().json()) as { error?: unknown };
+    if (typeof payload?.error === "string") {
+      const message = sanitizeInput(payload.error);
+      if (message) {
+        return message;
+      }
+    }
+  } catch {
+    // Fall through to the provided fallback.
+  }
+
+  return fallback;
+};
+
 /**
  * Sanitizes input string by removing control characters and trimming whitespace.
  * This helps prevent injection attacks and storage of malformed data.

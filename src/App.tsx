@@ -12,6 +12,8 @@ import {
   type ActionBubblePosition,
 } from '@/app/actionBubble';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
+import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
+import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
@@ -72,6 +74,19 @@ const App: React.FC = () => {
     return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
   });
   const [isDraggingActionBubble, setIsDraggingActionBubble] = useState(false);
+  const logoLabState = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return {
+        enabled: false,
+        initialVariant: undefined,
+      };
+    }
+
+    return {
+      enabled: isLogoLabEnabled(window.location.search),
+      initialVariant: getRequestedLogoVariant(window.location.search),
+    };
+  }, []);
 
   const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
   const actionBubbleMenuRef = useRef<HTMLDivElement | null>(null);
@@ -330,6 +345,20 @@ const App: React.FC = () => {
     const viewport = getViewportSize();
     return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
   }, [actionBubblePosition]);
+
+  if (logoLabState.enabled) {
+    return (
+      <ThemeProvider activeTab={activeTab}>
+        <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
+        <FrameEffect>
+          <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
+            {!prefersReducedMotion ? <Moire isVisible /> : null}
+            <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
+          </div>
+        </FrameEffect>
+      </ThemeProvider>
+    );
+  }
 
   if (isSessionLoading) {
     return (

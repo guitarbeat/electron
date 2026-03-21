@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useAppSession, useUser } from '@/context';
 import { mutateScope } from '@/services/stateClient';
+import { getErrorMessage, readApiErrorMessage } from '@/utils';
 import type { User } from '../types.ts';
 
 const PINS_POLL_INTERVAL = 30000;
@@ -103,14 +104,19 @@ export const usePins = (isPaused: boolean = false) => {
         }
 
         if (!response.ok) {
-          throw new Error('Failed to verify PIN.');
+          throw new Error(
+            await readApiErrorMessage(response, 'Failed to verify PIN.')
+          );
         }
 
         await refreshSession();
         return true;
       } catch (error) {
         console.error('PIN verification failed:', error);
-        return false;
+        throw new Error(
+          getErrorMessage(error, 'Profile login is unavailable right now.'),
+          { cause: error }
+        );
       }
     },
     [hasAccess, refreshSession]
