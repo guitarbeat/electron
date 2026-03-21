@@ -12,72 +12,146 @@ import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import PlacesMap from './PlacesMap';
 import ThemeToggle from '@/ui/ThemeToggle';
-import { CheckIcon, PlusIcon, TrashIcon } from '@/common/icons';
-import { colors, spacing, typography, motion } from '@/design-system';
-import type { Place, MainTab } from '@/types';
+import { CheckIcon, PlusIcon, TrashIcon, Spinner, MagicWandIcon } from '@/common/icons';
+import { colors, spacing, typography, motion, radius } from '@/design-system';
+import type { Place, MainTab, PlaceContentTab, PlaceSortMode, PlaceSuggestion } from '@/types';
 
-type PlaceFilter = 'all' | 'queue' | 'visited';
+const PLACE_TABS: { id: PlaceContentTab; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'queue', label: 'Queue' },
+  { id: 'visited', label: 'Visited' },
+];
+
+const PLACE_SORT_OPTIONS: { id: PlaceSortMode; label: string }[] = [
+  { id: 'recent', label: 'Recent' },
+  { id: 'name', label: 'A-Z' },
+];
 
 interface PlacesTopControlsProps {
-  nameInput: string;
-  notesInput: string;
-  nameInputRef: React.RefObject<HTMLInputElement | null>;
-  isSubmitting: boolean;
-  onNameChange: (value: string) => void;
-  onNotesChange: (value: string) => void;
-  onSubmit: (event: React.FormEvent) => Promise<void> | void;
+  contentTab: PlaceContentTab;
+  setContentTab: (tab: PlaceContentTab) => void;
+  sortMode: PlaceSortMode;
+  setSortMode: (mode: PlaceSortMode) => void;
+  tabCounts: Record<PlaceContentTab, number>;
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+  onSubmit: () => Promise<void> | void;
+  onPickRandom: () => void;
+  canSurprise: boolean;
+  isAdding: boolean;
+  isSuggesting: boolean;
+  suggestionError: string | null;
 }
 
 const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
-  nameInput,
-  notesInput,
-  nameInputRef,
-  isSubmitting,
-  onNameChange,
-  onNotesChange,
+  contentTab,
+  setContentTab,
+  sortMode,
+  setSortMode,
+  tabCounts,
+  searchQuery,
+  setSearchQuery,
   onSubmit,
+  onPickRandom,
+  canSurprise,
+  isAdding,
+  isSuggesting,
+  suggestionError,
 }) => {
   return (
-    <Card
-      variant="elevated"
+    <div
+      className="places-top-controls"
       style={{
-        padding: spacing.lg,
+        marginBottom: spacing.xl,
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.md,
-        background: 'rgba(255, 255, 255, 0.03)',
-        border: `1px solid ${colors.borderSubtle}`,
+        gap: spacing.lg,
       }}
     >
-      <h2 style={{ ...typography.presets.titleSm, margin: 0, fontSize: '1.25rem' }}>Add new spot</h2>
-      <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-        <Input
-          ref={nameInputRef}
-          value={nameInput}
-          onChange={(event) => onNameChange(event.target.value)}
-          placeholder="Place name or address"
-          aria-label="Place name"
-          fullWidth
-        />
-        <Input
-          value={notesInput}
-          onChange={(event) => onNotesChange(event.target.value)}
-          placeholder="Notes (optional)"
-          aria-label="Notes"
-          fullWidth
-        />
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={!nameInput.trim() || isSubmitting}
-          isLoading={isSubmitting}
-          style={{ alignSelf: 'flex-start', minWidth: '140px' }}
+      <SubNav
+        tabs={PLACE_TABS.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          count: tabCounts[tab.id] ?? 0,
+        }))}
+        activeTabId={contentTab}
+        onTabChange={(id) => setContentTab(id as PlaceContentTab)}
+        chips={PLACE_SORT_OPTIONS}
+        activeChipId={sortMode}
+        onChipChange={(id) => setSortMode(id as PlaceSortMode)}
+        variant="underlined"
+      />
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: spacing.sm,
+          width: '100%',
+        }}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+          style={{ display: 'flex', gap: spacing.sm, flex: 1 }}
         >
-          <PlusIcon style={{ width: 16, height: 16 }} />
-          Add spot
+          <Input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Add place or suggestion..."
+            aria-label="Place name"
+            fullWidth
+          />
+          {searchQuery.trim() && (
+            <Button
+              type="submit"
+              variant="secondary"
+              size="md"
+              disabled={isAdding || isSuggesting}
+              isLoading={isAdding || isSuggesting}
+              title="Add or suggest place"
+              aria-label="Add or suggest place"
+              style={{ minWidth: '44px' }}
+            >
+              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
+            </Button>
+          )}
+        </form>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onPickRandom}
+          disabled={isAdding || isSuggesting || !canSurprise}
+          title="Surprise me"
+          aria-label="Pick a random place"
+          style={{
+            minWidth: '44px',
+            opacity: canSurprise && !isAdding && !isSuggesting ? 1 : 0.5,
+          }}
+        >
+          <MagicWandIcon style={{ width: 18, height: 18 }} />
         </Button>
-      </form>
-    </Card>
+      </div>
+
+      {suggestionError && (
+        <div
+          style={{
+            padding: spacing.sm,
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: `1px solid rgba(239, 68, 68, 0.2)`,
+            borderRadius: radius.md,
+            color: '#ef4444',
+            fontSize: typography.presets.bodySm.fontSize,
+            lineHeight: typography.presets.bodySm.lineHeight,
+          }}
+        >
+          {suggestionError}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -162,8 +236,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 
   return (
     <div
-      className={`place-item-card slide-up${isVisited ? ' place-item-card--visited' : ''}`}
-      style={{ animationDelay: `${animationIndex * 0.05}s` }}
+      className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
     >
       <div className="place-item-poster-wrap">
         <div
@@ -251,7 +324,12 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
     markUnvisited,
   } = usePlaces(currentUser);
 
-  const [filter, setFilter] = useState<PlaceFilter>('queue');
+  const [contentTab, setContentTab] = useState<PlaceContentTab>('queue');
+  const [sortMode, setSortMode] = useState<PlaceSortMode>('recent');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -266,17 +344,38 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
   const queueCount = places.filter((p) => !p.visitedAt).length;
   const visitedCount = places.filter((p) => p.visitedAt).length;
   const allCount = places.length;
-  const filtered =
-    filter === 'all'
+  
+  const tabCounts: Record<PlaceContentTab, number> = {
+    all: allCount,
+    queue: queueCount,
+    visited: visitedCount,
+  };
+
+  const filteredByTab = 
+    contentTab === 'all'
       ? places
-      : filter === 'queue'
+      : contentTab === 'queue'
         ? places.filter((p) => !p.visitedAt)
         : places.filter((p) => p.visitedAt);
+
+  const filtered = searchQuery.trim()
+    ? filteredByTab.filter((p) => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : filteredByTab;
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortMode === 'name') {
+      return a.name.localeCompare(b.name);
+    }
+    // recent (default)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   const hasMappedPlaces = places.some((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
 
-  const handleAdd = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+  const handleAdd = useCallback(async () => {
       const name = nameInput.trim();
       if (!name || isSubmitting) return;
 
@@ -305,30 +404,95 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
     const deleted = placeToDelete;
     try {
       await removePlace(deleted.id);
+      showToast({ message: `"${deleted.name}" removed!`, type: 'info' });
+    } catch {
+      showToast({ message: 'Failed to remove place', type: 'error' });
+    } finally {
       setPlaceToDelete(null);
-      showToast({
-        message: `Removed "${deleted.name}"`,
-        type: 'info',
-        onUndo: async () => {
-          try {
-            await restorePlace(deleted);
-            showToast({ message: `Restored "${deleted.name}"`, type: 'success' });
-          } catch {
-            showToast({ message: 'Failed to restore', type: 'error' });
-          }
-        },
-        duration: 5000,
-      });
-    } catch (err) {
-      showToast({ message: 'Failed to remove', type: 'error' });
-      console.error(err);
     }
-  }, [placeToDelete, removePlace, restorePlace, showToast]);
+  }, [placeToDelete, removePlace, showToast]);
+
+  const handleAddAction = useCallback(async () => {
+    const query = searchQuery.trim();
+    if (!query || isAdding) return;
+
+    setIsAdding(true);
+    setSuggestionError(null);
+    
+    try {
+      await addPlace(query);
+      setSearchQuery('');
+      showToast({ message: `"${query}" added!`, type: 'success' });
+    } catch (_error) {
+      setIsAdding(false);
+      setIsSuggesting(true);
+      setSuggestionError(null);
+      try {
+        // For now, we'll just add it as a suggestion
+        // In a real implementation, you might have an addPlaceSuggestion function
+        await addPlace(query + ' (suggestion)');
+        setSearchQuery('');
+        showToast({ message: `"${query}" suggested!`, type: 'success' });
+      } catch (error) {
+        setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
+        showToast({ message: 'Failed to add suggestion', type: 'error' });
+      } finally {
+        setIsSuggesting(false);
+      }
+    } finally {
+      setIsAdding(false);
+    }
+  }, [searchQuery, isAdding, addPlace, setSearchQuery, showToast]);
+
+  const handleRandomPlacePick = useCallback(() => {
+    const availablePlaces = contentTab === 'visited' 
+      ? places.filter(p => p.visitedAt)
+      : places.filter(p => !p.visitedAt);
+    
+    if (availablePlaces.length === 0) return;
+    
+    const randomIndex = Math.floor(Math.random() * availablePlaces.length);
+    const randomPlace = availablePlaces[randomIndex];
+    
+    showToast({ 
+      message: `🎲 How about "${randomPlace.name}"?`, 
+      type: 'info' 
+    });
+  }, [contentTab, places, showToast]);
+
+  const renderControls = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+      {activeTab && onTabChange && (
+        <ThemeToggle
+          activeTab={activeTab}
+          onChange={onTabChange}
+          compact={propIsMobile || isMobile}
+        />
+      )}
+      <PlacesTopControls
+        contentTab={contentTab}
+        setContentTab={setContentTab}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        tabCounts={tabCounts}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleAddAction}
+        onPickRandom={handleRandomPlacePick}
+        canSurprise={contentTab === 'queue' ? places.filter(p => !p.visitedAt).length > 0 : places.filter(p => p.visitedAt).length > 0}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+      />
+    </div>
+  );
 
   const renderSkeleton = () => (
-    <CollectionGrid minColumnWidth="280px" gap={spacing.md}>
-      {[1, 2, 3].map((i) => <MovieCardSkeleton key={i} />)}
-    </CollectionGrid>
+    <>
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <MovieCardSkeleton key={i} />
+      ))}
+    </>
   );
 
   return (
@@ -341,43 +505,14 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.xl,
-        animation: `fade-in ${motion.duration.slow} ${motion.easing.easeOut} both`
       }}
     >
-      <header style={{ marginBottom: spacing.md }}>
-        <h1 style={{ ...typography.presets.titleMd, color: colors.textPrimary, marginBottom: spacing.xs }}>
-          Date spot wishlist
-        </h1>
-        <p style={{ ...typography.presets.bodySm, color: colors.textSecondary, maxWidth: '600px' }}>
-          Save dream spots for your next outing, then mark the places you explored together.
-        </p>
-      </header>
-
       <WorkspacePanels
         isMobile={isMobile}
         className="places-workspace"
         mobileClassName="places-workspace"
         desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
-        first={
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-            {activeTab && onTabChange && (
-              <ThemeToggle
-                activeTab={activeTab}
-                onChange={onTabChange}
-                compact={propIsMobile || isMobile}
-              />
-            )}
-            <PlacesTopControls
-              nameInput={nameInput}
-              notesInput={notesInput}
-              nameInputRef={nameInputRef}
-              isSubmitting={isSubmitting}
-              onNameChange={setNameInput}
-              onNotesChange={setNotesInput}
-              onSubmit={handleAdd}
-            />
-          </div>
-        }
+        first={renderControls()}
         second={
           <Card
             variant="default"
@@ -401,49 +536,42 @@ const PlacesList: React.FC<PlacesListProps> = ({ activeTab, onTabChange, isMobil
         }
       />
 
-      <div style={{ marginTop: spacing.md }}>
-        <SubNav
-          tabs={[
-            { id: 'all', label: 'All', count: allCount },
-            { id: 'queue', label: 'Queue', count: queueCount },
-            { id: 'visited', label: 'Visited', count: visitedCount },
-          ]}
-          activeTabId={filter}
-          onTabChange={(id) => setFilter(id as PlaceFilter)}
-          variant="underlined"
-        />
-
-        {isLoading && places.length === 0 ? (
-          renderSkeleton()
-        ) : (
-          <CollectionGrid
-            className="places-grid"
-            minColumnWidth="300px"
-            style={{ 
-              gap: spacing.lg,
-              marginTop: spacing.md
-            }}
-          >
-            {filtered.length === 0 ? (
-              <CollectionEmptyState style={{ color: colors.textTertiary, ...typography.presets.bodySm }}>
-                {filter === 'visited' ? 'No visited spots yet.' : 'No date spots yet. Add one above!'}
-              </CollectionEmptyState>
-            ) : (
-              filtered.map((place, index) => (
-                <PlaceCard
-                  key={place.id}
-                  place={place}
-                  isSubmitting={isSubmitting}
-                  animationIndex={index}
-                  onMarkVisited={markVisited}
-                  onMarkUnvisited={markUnvisited}
-                  onDelete={setPlaceToDelete}
-                />
-              ))
-            )}
-          </CollectionGrid>
-        )}
-      </div>
+      {isLoading && places.length === 0 ? (
+        renderSkeleton()
+      ) : (
+        <CollectionGrid
+          className="places-grid"
+          minColumnWidth="300px"
+          style={{ 
+            gap: spacing.lg,
+            marginTop: spacing.md
+          }}
+        >
+          {sorted.length > 0 ? (
+            sorted.map((place, index) => (
+              <PlaceCard
+                key={place.id}
+                place={place}
+                isSubmitting={isSubmitting}
+                onMarkVisited={markVisited}
+                onMarkUnvisited={markUnvisited}
+                onDelete={setPlaceToDelete}
+                animationIndex={index}
+              />
+            ))
+          ) : (
+            <CollectionEmptyState>
+              {searchQuery.trim()
+                ? 'No places found matching your search'
+                : contentTab === 'visited'
+                  ? 'No visited places yet'
+                  : contentTab === 'queue'
+                    ? 'No places in queue'
+                    : 'No places added yet'}
+            </CollectionEmptyState>
+          )}
+        </CollectionGrid>
+      )}
 
       {placeToDelete && (
         <ConfirmDialog

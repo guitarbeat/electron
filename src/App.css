@@ -5536,7 +5536,7 @@ body.grabbing * {
 .movie-poster-wrap--sheet {
   width: 72px;
   min-width: 72px;
-  border-radius: 14px;
+  border-radius: 0;
   box-shadow:
     0 14px 28px rgba(0, 0, 0, 0.34),
     0 0 0 1px rgba(255, 255, 255, 0.08);
