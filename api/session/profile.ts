@@ -14,10 +14,22 @@ import {
 import { getPinProtectedUsers, verifyProfilePin } from '../_lib/state.ts';
 import { isUser } from '../../src/utils.ts';
 
+const PROFILE_STORE_CONFIG_ERROR =
+  'Profile login is unavailable because the shared pin store is not configured. Set GIST_ID on the server to enable profile PINs.';
+
+const isMissingPinStoreConfigError = (error: unknown): boolean =>
+  error instanceof Error && error.message === 'GIST_ID is not configured.';
+
 export default async function handler(req: Request): Promise<Response> {
   try {
     if (req.method === 'DELETE') {
-      const pinProtectedUsers = await getPinProtectedUsers();
+      let pinProtectedUsers: Awaited<ReturnType<typeof getPinProtectedUsers>> = [];
+      try {
+        pinProtectedUsers = await getPinProtectedUsers();
+      } catch (error) {
+        console.warn('Failed to read pin-protected users during logout.', error);
+      }
+
       return jsonResponse(
         {
           hasAccess: true,
@@ -74,6 +86,10 @@ export default async function handler(req: Request): Promise<Response> {
       }
     );
   } catch (error) {
+    if (isMissingPinStoreConfigError(error)) {
+      return serverErrorResponse(PROFILE_STORE_CONFIG_ERROR);
+    }
+
     console.error('Failed to update profile session', error);
     return serverErrorResponse();
   }

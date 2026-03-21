@@ -18,6 +18,7 @@ import { moviesTheme, placesTheme, spacing } from '@/design-system';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/stateClient';
 import type { SessionState } from '@/services/stateTypes';
+import { getErrorMessage, readApiErrorMessage } from '@/utils';
 
 // ============================================================================
 // Theme Context
@@ -253,30 +254,39 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isSessionLoading,
       currentUser,
       setCurrentUser: async (user: User | null) => {
-        const response = await fetch('/api/session/profile', {
-          method: user ? 'POST' : 'DELETE',
-          credentials: 'include',
-          cache: 'no-store',
-          headers: user
-            ? {
-                'Content-Type': 'application/json',
-              }
-            : undefined,
-          body: user ? JSON.stringify({ user }) : undefined,
-        });
+        try {
+          const response = await fetch('/api/session/profile', {
+            method: user ? 'POST' : 'DELETE',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: user
+              ? {
+                  'Content-Type': 'application/json',
+                }
+              : undefined,
+            body: user ? JSON.stringify({ user }) : undefined,
+          });
 
-        if (response.status === 401 || response.status === 403) {
-          await refreshSession();
-          return false;
+          if (response.status === 401 || response.status === 403) {
+            await refreshSession();
+            return false;
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              await readApiErrorMessage(response, 'Failed to update profile session.')
+            );
+          }
+
+          const session = (await response.json()) as SessionState;
+          applySessionState(session);
+          return true;
+        } catch (error) {
+          throw new Error(
+            getErrorMessage(error, 'Profile login is unavailable right now.'),
+            { cause: error }
+          );
         }
-
-        if (!response.ok) {
-          throw new Error('Failed to update profile session.');
-        }
-
-        const session = (await response.json()) as SessionState;
-        applySessionState(session);
-        return true;
       },
       refreshSession,
     }),

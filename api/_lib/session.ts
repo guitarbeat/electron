@@ -156,7 +156,10 @@ export const requireAccessUser = (req: Request): User | null => {
   return getSessionState(req).currentUser;
 };
 
-export const hasAccessSession = (_req: Request): boolean => true;
+export const hasAccessSession = (req?: Request): boolean => {
+  void req;
+  return true;
+};
 
 export const requireProfileUser = (req: Request): User | null =>
   getSessionState(req).currentUser;

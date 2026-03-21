@@ -3,7 +3,7 @@ import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '../../context';
 import type { User } from '../../types';
 import { usePins } from '../../hooks/usePins';
-import { USER_OPTIONS } from '@/utils';
+import { getErrorMessage, USER_OPTIONS } from '@/utils';
 import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
@@ -37,6 +37,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const [focusedUser, setFocusedUser] = useState<User | null>(null);
   const [isActionsHovered, setIsActionsHovered] = useState(false);
   const [isActionsFocused, setIsActionsFocused] = useState(false);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
   const previousUserRef = useRef<User | null>(currentUser);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isDisabled = isLoading || isVerifying;
@@ -66,13 +67,20 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     if (isDisabled) return;
     if (profile === currentUser) return;
 
+    setSelectionError(null);
+
     if (userHasPin(profile)) {
       setPendingUser(profile);
     } else {
       void (async () => {
-        const didSet = await setCurrentUser(profile);
-        if (didSet) {
-          onUserSelected?.(profile);
+        try {
+          const didSet = await setCurrentUser(profile);
+          if (didSet) {
+            onUserSelected?.(profile);
+          }
+        } catch (error) {
+          console.error('Profile selection failed:', error);
+          setSelectionError(getErrorMessage(error, 'Profile login is unavailable right now.'));
         }
       })();
     }
@@ -80,10 +88,18 @@ const UserSelection: React.FC<UserSelectionProps> = ({
 
   const handleLogout = () => {
     if (isDisabled) return;
+
+    setSelectionError(null);
+
     void (async () => {
-      const didClear = await setCurrentUser(null);
-      if (didClear) {
-        onUserSelected?.(null);
+      try {
+        const didClear = await setCurrentUser(null);
+        if (didClear) {
+          onUserSelected?.(null);
+        }
+      } catch (error) {
+        console.error('Profile logout failed:', error);
+        setSelectionError(getErrorMessage(error, 'Unable to update the profile session.'));
       }
     })();
   };
@@ -106,6 +122,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
 
   const openPinSettings = () => {
     if (!selectedNamedUser || isDisabled || isSavingPinSettings) return;
+    setSelectionError(null);
     setPinSettingsUser(selectedNamedUser);
   };
 
@@ -277,13 +294,22 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             )}
           </div>
         )}
+
+        {selectionError ? (
+          <p className="user-selection__error" role="alert">
+            {selectionError}
+          </p>
+        ) : null}
       </div>
 
       {pendingUser && (
         <PinDialog
           isOpen={!!pendingUser}
           user={pendingUser}
-          onCancel={() => setPendingUser(null)}
+          onCancel={() => {
+            setPendingUser(null);
+            setSelectionError(null);
+          }}
           onSubmit={handlePinSubmit}
           mode="enter"
           isLoading={isVerifying}
@@ -294,7 +320,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         <PinDialog
           isOpen={!!pinSettingsUser}
           user={pinSettingsUser}
-          onCancel={() => setPinSettingsUser(null)}
+          onCancel={() => {
+            setPinSettingsUser(null);
+            setSelectionError(null);
+          }}
           onSubmit={handlePinSettingsSubmit}
           onRemove={pinSettingsMode === 'change' ? handleRemovePin : undefined}
           mode={pinSettingsMode}

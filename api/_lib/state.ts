@@ -304,7 +304,7 @@ const scopes: {
               }
 
               const watchedBy = movie.watchedBy.includes(context.currentUser)
-                ? movie.watchedBy.filter((user) => user !== context.currentUser)
+                ? movie.watchedBy.filter((user: User) => user !== context.currentUser)
                 : [...movie.watchedBy, context.currentUser];
 
               return {
@@ -1040,20 +1040,15 @@ export const verifyProfilePin = async (
   user: User,
   pin: string | undefined
 ): Promise<boolean> => {
-  try {
-    const { stored } = await readScopeStoredData('pins');
-    const pins = stored as UserPins;
-    const storedHash = pins[user];
+  const { stored } = await readScopeStoredData('pins');
+  const pins = stored as UserPins;
+  const storedHash = pins[user];
 
-    if (!storedHash) {
-      return true;
-    }
-
-    return pin ? verifyStoredPin(pin, storedHash) : false;
-  } catch (error) {
-    console.warn(`Falling back to unlocked ${user} profile selection.`, error);
+  if (!storedHash) {
     return true;
   }
+
+  return pin ? verifyStoredPin(pin, storedHash) : false;
 };
 
 export const createReadHandler =

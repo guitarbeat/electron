@@ -4,6 +4,7 @@ import { User } from '@/types';
 import { Card, Button } from '@/components/ui';
 import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/modalPrimitives';
 import { colors, spacing, typography, radius, shadows } from '@/design-system';
+import { getErrorMessage } from '@/utils';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -163,7 +164,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
     } catch (submitError) {
       console.error('PIN submit failed:', submitError);
-      triggerError('Unable to save PIN. Please try again.');
+      triggerError(getErrorMessage(submitError, 'Unable to save PIN. Please try again.'));
     }
   };
 
