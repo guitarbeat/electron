@@ -250,17 +250,6 @@ const MessageList: React.FC<MessageListProps> = ({
             >
               No messages yet
             </p>
-            <p
-              style={{
-                fontSize: '15px',
-                color: '#8e8e93',
-                marginTop: spacing.xs,
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
-              }}
-            >
-              Start the conversation when you&apos;re ready.
-            </p>
           </div>
         ) : null}
 

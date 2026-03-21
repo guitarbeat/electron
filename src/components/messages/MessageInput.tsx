@@ -87,23 +87,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
           gap: spacing.xs,
         }}
       >
-        {!currentUser ? (
-          <div
-            style={{
-              fontSize: '13px',
-              color: '#8e8e93',
-              padding: `${spacing.xs} ${spacing.sm}`,
-              borderRadius: '10px',
-              background: '#ffffff',
-              border: '1px solid #e5e5ea',
-              fontFamily:
-                '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
-            }}
-          >
-            Choose Aaron or Electra above to send a message. Guests can still read everything here.
-          </div>
-        ) : null}
-
         <div
           style={{
             display: 'flex',
@@ -144,7 +127,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 setSubmitError(null);
               }}
               onKeyDown={handleKeyDown}
-              placeholder={currentUser ? 'Type a message' : 'Read-only until you choose a profile'}
+              placeholder="Message"
               rows={1}
               maxLength={MAX_MESSAGE_LENGTH}
               disabled={isSubmitting || !currentUser}

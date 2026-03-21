@@ -285,7 +285,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     return game.moviePool.map((id) => movieMap.get(id)).filter((m): m is Movie => !!m);
   }, [game, movieMap]);
 
-  const swipedIds = useMemo(() => getUserSwipedIds(game, currentUser), [currentUser, game]);
+  const swipedIds = useMemo(() => getUserSwipedIds(game ?? null, currentUser), [currentUser, game]);
 
   const remainingMovies = useMemo(() => {
     const swipedSet = new Set(swipedIds);

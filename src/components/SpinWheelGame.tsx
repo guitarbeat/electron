@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/context';
-import { colors, spacing, typography, radius } from '@/design-system';
+import { colors, spacing } from '@/design-system';
 import type { Movie } from '@/types';
 import {
   SPIN_HISTORY_MAX,
@@ -79,6 +79,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   );
 
   const gradient = useMemo(() => buildSpinWheelGradient(candidates.length), [candidates.length]);
+  const segmentAngle = candidates.length > 0 ? 360 / candidates.length : 0;
+  const previewMovies = useMemo(() => candidates.slice(0, 3), [candidates]);
 
   const handleSpin = () => {
     if (isSpinning || candidates.length === 0) return;
@@ -124,166 +126,218 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     }
   };
 
-  const renderMovieMeta = (movie: Movie) => {
-    const statusLabel =
-      movie.watchedBy.length === 2
-        ? 'Watched by both'
-        : movie.watchedBy.length === 1
-          ? `Watched by ${movie.watchedBy[0]}`
-          : 'Unwatched';
-
-    return (
-      <>
-        <p style={{ marginTop: 0, marginBottom: spacing.xs, color: colors.textSecondary }}>
-          Tonight&apos;s pick
-        </p>
-        <h3 className="current-movie-title current-movie-title--result">{movie.title}</h3>
-        <p style={{ marginBottom: spacing.xs, color: colors.textSecondary }}>
-          {movie.year || 'Unknown year'} {movie.genre ? `· ${movie.genre}` : ''}
-        </p>
-        <p style={{ marginTop: 0, marginBottom: spacing.md, color: colors.textSecondary }}>
-          {statusLabel}
-        </p>
-        {movie.posterUrl ? (
-          <img
-            src={movie.posterUrl}
-            alt={`${movie.title} poster`}
-            style={{
-              width: 140,
-              height: 200,
-              objectFit: 'cover',
-              borderRadius: radius.md,
-              margin: `0 auto ${spacing.sm}`,
-              border: `1px solid ${colors.borderSecondary}35`,
-            }}
-          />
-        ) : null}
-        {movie.plot ? (
-          <p
-            style={{
-              marginTop: 0,
-              marginBottom: spacing.md,
-              color: colors.textPrimary,
-              maxWidth: 480,
-            }}
-          >
-            {movie.plot}
-          </p>
-        ) : null}
-      </>
+  const renderPoster = (movie: Movie, className: string) =>
+    movie.posterUrl ? (
+      <img src={movie.posterUrl} alt={`${movie.title} poster`} className={className} />
+    ) : (
+      <div className={`${className} ${className}--fallback`}>
+        <span>{movie.title.slice(0, 2).toUpperCase()}</span>
+      </div>
     );
-  };
 
-  const emptyStateMessage = isLoading
-    ? 'Loading movies...'
-    : movies.length === 0
-      ? 'No movies available.'
-      : null;
+  const selectedMovieStatus =
+    selectedMovie?.watchedBy.length === 2
+      ? 'Watched by both'
+      : selectedMovie?.watchedBy.length === 1
+        ? `Watched by ${selectedMovie.watchedBy[0]}`
+        : 'Unwatched';
+
+  const emptyStateMessage = !currentUser
+    ? 'Select Aaron or Electra to load the wheel.'
+    : isLoading
+      ? 'Loading movies...'
+      : movies.length === 0
+        ? 'Add movies to spin the wheel.'
+        : null;
+
+  const triggerLabel = isSpinning
+    ? '...'
+    : !currentUser
+      ? 'Pick'
+      : candidates.length === 0
+        ? 'Wait'
+        : 'Spin';
 
   return (
-    <div style={{ padding: spacing.md, color: colors.textPrimary }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.md }}>
-        <div className="spin-wheel-container" style={{ width: 320, height: 320, minHeight: 320 }}>
-          <div className="spin-marker" />
-          <div
-            className="spin-wheel"
-            style={{
-              background: gradient,
-              transform: `rotate(${rotation}deg)`,
-              transition: isSpinning
-                ? 'transform 4.2s cubic-bezier(0.12, 0.85, 0.18, 1)'
-                : 'transform 0.4s ease',
-            }}
-          />
-          <div className="spin-hub" />
+    <div className="spin-wheel-shell" style={{ padding: spacing.md, color: colors.textPrimary }}>
+      <div className="spin-wheel-summary">
+        <div className="spin-wheel-summary__item">
+          <span className="spin-wheel-summary__label">Pool</span>
+          <strong className="spin-wheel-summary__value">{mode === 'queue' ? 'Queue Only' : 'All Movies'}</strong>
+        </div>
+        <div className="spin-wheel-summary__item">
+          <span className="spin-wheel-summary__label">Candidates</span>
+          <strong className="spin-wheel-summary__value">
+            {candidates.length} title{candidates.length === 1 ? '' : 's'}
+          </strong>
+        </div>
+        <div className="spin-wheel-summary__item">
+          <span className="spin-wheel-summary__label">State</span>
+          <strong className="spin-wheel-summary__value">
+            {isSpinning ? 'Locked In' : selectedMovie ? 'Winner Ready' : 'Idle'}
+          </strong>
         </div>
       </div>
 
-      <div
-        className="spin-wheel-actions"
-      >
-        <Button
-          onClick={handleSpin}
-          variant="primary"
-          size="md"
-          disabled={isSpinning || isLoading || candidates.length === 0}
-          className="spin-wheel-action"
-        >
-          {isSpinning ? 'Spinning...' : 'Spin Wheel'}
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => setSelectedMovieId(null)}
-          disabled={isSpinning || !selectedMovieId}
-          className="spin-wheel-action"
-        >
-          Clear Result
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setMode((prev) => (prev === 'queue' ? 'all' : 'queue'))}
-          disabled={isSpinning || candidates.length === 0}
-          className="spin-wheel-action spin-wheel-action--mode"
-        >
-          Mode: {mode === 'queue' ? 'Queue Only' : 'All Movies'}
-        </Button>
-      </div>
-
-      <p
-        style={{
-          marginTop: 0,
-          marginBottom: spacing.sm,
-          textAlign: 'center',
-          color: colors.textSecondary,
-          fontSize: typography.fontSize.sm,
-        }}
-      >
-        {candidates.length} candidate{candidates.length === 1 ? '' : 's'} available
-      </p>
-
-      {selectedMovie ? (
+      <div className="spin-wheel-stage">
         <div
-          className="result-display-container"
-          style={{ maxWidth: 560, margin: '0 auto', pointerEvents: 'auto' }}
+          className={`spin-wheel-wrapper ${isSpinning ? 'spin-wheel-wrapper--spinning' : ''} ${
+            selectedMovie ? 'spin-wheel-wrapper--result' : ''
+          }`}
         >
-          {renderMovieMeta(selectedMovie)}
-          {currentUser ? (
-            <Button
-              variant={selectedMovie.watchedBy.includes(currentUser) ? 'danger' : 'primary'}
-              size="sm"
-              isLoading={isTogglingWatched}
-              disabled={isTogglingWatched}
-              onClick={toggleWatchedForCurrentUser}
-              className={`spin-result-action ${
-                selectedMovie.watchedBy.includes(currentUser)
-                  ? 'spin-result-action--undo'
-                  : 'spin-result-action--mark'
-              }`}
+          <div className="spin-marker" />
+          <div className="spin-wheel-container">
+            <div
+              className="spin-wheel-rotor"
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transition: isSpinning
+                  ? 'transform 4.2s cubic-bezier(0.12, 0.85, 0.18, 1)'
+                  : 'transform 0.4s ease',
+              }}
             >
-              {selectedMovie.watchedBy.includes(currentUser)
-                ? `Undo watched for ${currentUser}`
-                : `Mark watched by ${currentUser}`}
-            </Button>
-          ) : null}
-        </div>
-      ) : emptyStateMessage ? (
-        <p style={{ margin: 0, textAlign: 'center', color: colors.textSecondary }}>
-          {emptyStateMessage}
-        </p>
-      ) : null}
+              <div className="spin-wheel" style={{ background: gradient }} />
+              <div className="spin-wheel-gloss" />
+              {candidates.map((movie, index) => {
+                const angle = segmentAngle * index + segmentAngle / 2;
+                const isFlipped = angle > 90 && angle < 270;
 
-      {history.length > 0 && (
-        <div style={{ marginTop: spacing.md }}>
-          <h4 style={{ margin: `0 0 ${spacing.xs}`, color: colors.textSecondary }}>Recent Picks</h4>
-          <ol style={{ margin: 0, paddingLeft: spacing.lg, color: colors.textPrimary }}>
-            {history.map((title, index) => (
-              <li key={`${title}-${index}`}>{title}</li>
-            ))}
-          </ol>
+                return (
+                  <div
+                    key={movie.id}
+                    className="spin-wheel-segment"
+                    style={
+                      {
+                        '--segment-angle': `${angle}deg`,
+                        '--segment-count': `${Math.max(candidates.length, 1)}`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div
+                      className={`spin-wheel-segment__content ${
+                        isFlipped ? 'spin-wheel-segment__content--flipped' : ''
+                      }`}
+                    >
+                      {renderPoster(movie, 'spin-wheel-segment__poster')}
+                      <span className="spin-wheel-segment__title">{movie.title}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="spin-wheel-rim" />
+            <div className="spin-hub" />
+            <button
+              type="button"
+              className="spin-wheel-trigger"
+              onClick={handleSpin}
+              disabled={isSpinning || isLoading || candidates.length === 0}
+              aria-label={
+                isSpinning
+                  ? 'Spinning'
+                  : emptyStateMessage ?? 'Spin the wheel'
+              }
+            >
+              <span className="spin-wheel-trigger__label">{triggerLabel}</span>
+              <span className="spin-wheel-trigger__subtext">
+                {isSpinning ? 'Locked' : emptyStateMessage ? 'Load' : 'Launch'}
+              </span>
+            </button>
+          </div>
         </div>
-      )}
+
+        <div className="spin-wheel-panel">
+          {selectedMovie ? (
+            <div className="result-display-container spin-wheel-panel__card">
+              <p className="spin-wheel-panel__eyebrow">Tonight&apos;s Pick</p>
+              <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
+              <p className="spin-wheel-panel__meta">
+                {selectedMovie.year || 'Unknown year'} {selectedMovie.genre ? `· ${selectedMovie.genre}` : ''}
+              </p>
+              <p className="spin-wheel-panel__status">{selectedMovieStatus}</p>
+              {renderPoster(selectedMovie, 'spin-wheel-panel__poster')}
+              {selectedMovie.plot ? <p className="spin-wheel-panel__copy">{selectedMovie.plot}</p> : null}
+              {currentUser ? (
+                <Button
+                  variant={selectedMovie.watchedBy.includes(currentUser) ? 'danger' : 'primary'}
+                  size="sm"
+                  isLoading={isTogglingWatched}
+                  disabled={isTogglingWatched}
+                  onClick={toggleWatchedForCurrentUser}
+                  className={`spin-result-action ${
+                    selectedMovie.watchedBy.includes(currentUser)
+                      ? 'spin-result-action--undo'
+                      : 'spin-result-action--mark'
+                  }`}
+                >
+                  {selectedMovie.watchedBy.includes(currentUser)
+                    ? `Undo watched for ${currentUser}`
+                    : `Mark watched by ${currentUser}`}
+                </Button>
+              ) : null}
+            </div>
+          ) : (
+            <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
+              <p className="spin-wheel-panel__eyebrow">
+                {isSpinning ? 'Spinning Now' : currentUser ? 'Wheel Loaded' : 'Pick A Profile'}
+              </p>
+              <h3 className="spin-wheel-panel__title">
+                {emptyStateMessage ? 'Wheel Offline' : 'Movie Night Roulette'}
+              </h3>
+              <p className="spin-wheel-panel__copy">
+                {emptyStateMessage ??
+                  `The wheel is loaded with ${candidates.length} ${
+                    mode === 'queue' ? 'queue' : 'total'
+                  } titles. Tap the center button and let it decide.`}
+              </p>
+
+              {previewMovies.length > 0 ? (
+                <div className="spin-wheel-preview-strip" aria-label="Candidate preview">
+                  {previewMovies.map((movie) => (
+                    <div key={movie.id} className="spin-wheel-preview-strip__item">
+                      {renderPoster(movie, 'spin-wheel-preview-strip__poster')}
+                      <span className="spin-wheel-preview-strip__title">{movie.title}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          <div className="spin-wheel-actions">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setSelectedMovieId(null)}
+              disabled={isSpinning || !selectedMovieId}
+              className="spin-wheel-action"
+            >
+              Clear Result
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMode((prev) => (prev === 'queue' ? 'all' : 'queue'))}
+              disabled={isSpinning || candidates.length === 0}
+              className="spin-wheel-action spin-wheel-action--mode"
+            >
+              {mode === 'queue' ? 'Switch To All' : 'Switch To Queue'}
+            </Button>
+          </div>
+
+          {history.length > 0 && (
+            <div className="spin-wheel-history">
+              <h4 className="spin-wheel-history__title">Recent Picks</h4>
+              <ol className="spin-wheel-history__list">
+                {history.map((title, index) => (
+                  <li key={`${title}-${index}`}>{title}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
-import { User } from '@/types';
 import type { QuizData } from '@/hooks/useQuiz';
 import {
   MultipleChoiceQuestionView,
@@ -17,7 +16,6 @@ import { calculateQuizResults } from './quizScoring';
 interface QuizFlowProps {
   onComplete: () => void;
   quizData: QuizData;
-  currentUser?: User | null;
   onEdit?: () => void;
   isCompleted?: boolean;
 }
@@ -25,7 +23,6 @@ interface QuizFlowProps {
 const QuizFlow: React.FC<QuizFlowProps> = ({
   onComplete,
   quizData,
-  currentUser,
   onEdit,
   isCompleted,
 }) => {
@@ -190,17 +187,6 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
         margin: '0 auto',
       }}
     >
-      {currentUser && (
-        <p
-          style={{
-            color: colors.textTertiary,
-            fontSize: typography.fontSize.xs,
-            marginBottom: spacing.sm,
-          }}
-        >
-          Taking quiz as {currentUser}
-        </p>
-      )}
       <div
         style={{
           marginBottom: spacing.xl,

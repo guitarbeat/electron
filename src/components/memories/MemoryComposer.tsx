@@ -93,17 +93,8 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
               letterSpacing: typography.letterSpacing.normal,
             }}
           >
-            Movie note pile
+            Movie notes
           </h3>
-          <p
-            style={{
-              margin: `${spacing.xs} 0 0`,
-              color: '#ffd9e9',
-              fontSize: typography.fontSize.sm,
-            }}
-          >
-            Save the quote, reaction, or tiny thought you want stuck to this movie.
-          </p>
         </div>
 
         {showComposerToggle && (
@@ -122,28 +113,10 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
               boxShadow: isComposerOpen ? 'none' : '0 10px 22px rgba(255, 127, 198, 0.22)',
             }}
           >
-            {isComposerOpen ? 'Hide note pad' : 'Add quote/thought'}
+            {isComposerOpen ? 'Hide note' : 'Add note'}
           </Button>
         )}
       </div>
-
-      {creationLocked && (
-        <div
-          style={{
-            marginBottom: spacing.md,
-            border: '1px solid rgba(239, 171, 109, 0.75)',
-            background:
-              'linear-gradient(160deg, rgba(255, 233, 202, 0.95) 0%, rgba(255, 210, 166, 0.95) 100%)',
-            color: '#522d1d',
-            borderRadius: radius.sm,
-            padding: spacing.sm,
-            fontSize: typography.fontSize.sm,
-            boxShadow: '0 8px 14px rgba(0,0,0,0.25)',
-          }}
-        >
-          Pick Aaron or Electra to leave a little note. Guests can still read what is already here.
-        </div>
-      )}
 
       {isComposerOpen && (
         <div
@@ -197,27 +170,6 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
               boxShadow: '0 16px 30px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
           >
-            <div
-              style={{
-                padding: isMobile ? spacing.sm : `${spacing.sm} ${spacing.md}`,
-                borderRadius: '20px',
-                border: '1px solid rgba(255, 217, 234, 0.2)',
-                background:
-                  'linear-gradient(135deg, rgba(255, 192, 219, 0.16) 0%, rgba(146, 211, 255, 0.14) 100%)',
-                color: '#ffe9f3',
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: typography.fontSize.sm,
-                  lineHeight: typography.lineHeight.normal,
-                }}
-              >
-                Save the line you keep repeating, the joke that landed, or the tiny thought that belongs with this movie.
-              </p>
-            </div>
-
             <div
               style={{
                 display: 'grid',
@@ -374,7 +326,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
             >
               <Textarea
                 ref={noteInputRef}
-                label="Quote, thought, or tiny reaction"
+                label="Note"
                 value={note}
                 onChange={(e) => onNoteChange(e.target.value)}
                 onKeyDown={(e) => {
@@ -383,7 +335,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
                     e.currentTarget.form?.requestSubmit();
                   }
                 }}
-                placeholder="A quote you loved, a tiny review, an inside joke, or the one line you keep repeating..."
+                placeholder="Note"
                 disabled={isSubmitting || watchedMovieOptions.length === 0 || creationLocked}
                 style={{
                   minHeight: isMobile ? '104px' : '126px',
@@ -419,9 +371,6 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
                 >
                   {remainingChars} chars left
                 </span>
-                <span style={{ color: '#cfe2ff', fontSize: typography.fontSize.xs }}>
-                  Tip: press Ctrl/Cmd + Enter to tuck it onto this movie. Mentions still work: @Aaron or @Electra.
-                </span>
               </div>
               <Button
                 type="submit"
@@ -436,7 +385,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
                   boxShadow: '0 12px 22px rgba(255, 175, 120, 0.2)',
                 }}
               >
-                Add quote/thought
+                Add note
               </Button>
             </div>
 

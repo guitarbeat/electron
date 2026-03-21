@@ -118,7 +118,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
           <QuizFlow
             key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
             quizData={quizData}
-            currentUser={currentUser}
             onComplete={onQuizComplete}
             onEdit={() => {
               setShowQuizFlow(false);

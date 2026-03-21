@@ -7,7 +7,7 @@ export interface QuizLaunchState {
 interface QuizLaunchStateParams {
   currentUser: User | null;
   quizCompleted: boolean;
-};
+}
 
 export const getQuizLaunchState = ({
   currentUser,
