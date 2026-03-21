@@ -1026,24 +1026,34 @@ const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
 };
 
 export const getPinProtectedUsers = async (): Promise<User[]> => {
-  const { stored } = await readScopeStoredData('pins');
-  const pins = stored as UserPins;
-  return (['Aaron', 'Electra'] as const).filter((user) => Boolean(pins[user]));
+  try {
+    const { stored } = await readScopeStoredData('pins');
+    const pins = stored as UserPins;
+    return (['Aaron', 'Electra'] as const).filter((user) => Boolean(pins[user]));
+  } catch (error) {
+    console.warn('Falling back to no protected users.', error);
+    return [];
+  }
 };
 
 export const verifyProfilePin = async (
   user: User,
   pin: string | undefined
 ): Promise<boolean> => {
-  const { stored } = await readScopeStoredData('pins');
-  const pins = stored as UserPins;
-  const storedHash = pins[user];
+  try {
+    const { stored } = await readScopeStoredData('pins');
+    const pins = stored as UserPins;
+    const storedHash = pins[user];
 
-  if (!storedHash) {
+    if (!storedHash) {
+      return true;
+    }
+
+    return pin ? verifyStoredPin(pin, storedHash) : false;
+  } catch (error) {
+    console.warn(`Falling back to unlocked ${user} profile selection.`, error);
     return true;
   }
-
-  return pin ? verifyStoredPin(pin, storedHash) : false;
 };
 
 export const createReadHandler =
