@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SharedSuggestionIntent } from '@/app/sharedSuggestion';
-import { colors, motion, spacing, typography } from '@/design-system';
+import { colors, motion, spacing, typography } from '@/theme/tokens';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 

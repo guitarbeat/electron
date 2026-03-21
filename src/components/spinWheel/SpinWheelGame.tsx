@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/useMovies';
-import { useUser, useToast } from '@/context';
-import { colors, spacing } from '@/design-system';
-import type { Movie } from '@/types';
+import { useUser, useToast } from '@/app/providers';
+import { colors, spacing } from '@/theme/tokens';
+import type { Movie } from '@/shared/types';
 import {
   SPIN_HISTORY_MAX,
   appendSpinHistory,
@@ -11,7 +11,7 @@ import {
   computeSpinOutcome,
   getSpinCandidates,
   type SpinMode,
-} from '@/components/spinWheel/spinWheelGame';
+} from './spinWheelEngine.ts';
 
 const SPIN_HISTORY_KEY = 'spinWheelHistory';
 

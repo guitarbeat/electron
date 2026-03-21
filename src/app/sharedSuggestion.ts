@@ -1,4 +1,4 @@
-import { MAX_MOVIE_TITLE_LENGTH, sanitizeInput } from '../utils.ts';
+import { MAX_MOVIE_TITLE_LENGTH, sanitizeInput } from '../utils/shared.ts';
 
 export const SHARED_SUGGESTION_TITLE_PARAM = 'sharedMovie';
 export const SHARED_SUGGESTION_BY_PARAM = 'sharedBy';

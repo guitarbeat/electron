@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { User } from '@/types';
-import { Card, Button } from '@/components/ui';
+import type { User } from '@/shared/types';
+import Button from '@/ui/Button';
+import Card from '@/ui/Card';
 import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/modalPrimitives';
-import { colors, spacing, typography, radius, shadows } from '@/design-system';
+import { colors, spacing, typography, radius, shadows } from '@/theme/tokens';
 import { getErrorMessage } from '@/utils';
 
 interface PinDialogProps {

@@ -1,4 +1,4 @@
-import type { SharedMemory } from '@/types.ts';
+import type { SharedMemory } from '@/shared/types';
 import { mutateScope, readScope } from './stateClient.ts';
 import { cloneMemories } from './stateSchemas.ts';
 import { sanitizeInput } from '@/utils';

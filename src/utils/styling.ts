@@ -1,4 +1,4 @@
-import { colors, spacing, typography, radius, shadows } from '@/design-system';
+import { colors, spacing, typography, radius, shadows } from '@/theme/tokens';
 
 /**
  * Common styling patterns and utilities

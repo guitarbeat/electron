@@ -16,6 +16,8 @@ const SESSION_INVALID_EVENT = 'movie-watch-session-invalid';
 interface StoredSnapshot<T> {
   data: T;
   version: string;
+  degraded?: boolean;
+  warning?: string;
 }
 
 type ErrorCode =
@@ -161,11 +163,11 @@ const parseJsonResponse = async <T>(response: Response): Promise<T> => {
 
 const fetchStateFromServer = async <TScope extends StateScope>(
   scope: TScope,
-  version?: string
+  snapshot?: StoredSnapshot<StateScopeDataMap[TScope]> | null
 ): Promise<Response> => {
   const headers = new Headers();
-  if (version) {
-    headers.set('If-None-Match', `"${version}"`);
+  if (snapshot?.version && !snapshot.degraded && !snapshot.warning) {
+    headers.set('If-None-Match', `"${snapshot.version}"`);
   }
 
   return fetch(buildStateUrl(scope), {
@@ -203,8 +205,9 @@ const readOptimisticSnapshot = <TScope extends StateScope>(
   return {
     data: snapshot?.data ?? deepClone(getDefaultScopeData(scope)),
     version: outbox?.lastKnownVersion ?? snapshot?.version ?? '',
-    degraded: Boolean(outbox?.pendingOps.length),
+    degraded: Boolean(outbox?.pendingOps.length) || Boolean(snapshot?.degraded),
     blocked: outbox?.blocked,
+    warning: snapshot?.warning,
   };
 };
 
@@ -216,6 +219,7 @@ const queueMutation = <TScope extends StateScope>(
   currentVersion: string
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => {
   const existing = readOutbox(scope);
+  const storedSnapshot = readSnapshot(scope);
   const nextOutbox: ScopeOutbox = {
     scope,
     pendingOps: [...(existing?.pendingOps ?? []), { op, payload }],
@@ -228,6 +232,8 @@ const queueMutation = <TScope extends StateScope>(
   writeSnapshot(scope, {
     data: optimisticData,
     version: nextOutbox.lastKnownVersion,
+    degraded: true,
+    warning: storedSnapshot?.warning,
   });
 
   return {
@@ -235,6 +241,7 @@ const queueMutation = <TScope extends StateScope>(
     version: nextOutbox.lastKnownVersion,
     degraded: true,
     blocked: false,
+    warning: storedSnapshot?.warning,
   };
 };
 
@@ -280,6 +287,7 @@ const replayOutbox = async <TScope extends StateScope>(
             version: latestVersion,
             degraded: true,
             blocked: true,
+            warning: storedSnapshot?.warning ?? optimisticSnapshot.warning,
           };
         }
 
@@ -295,6 +303,7 @@ const replayOutbox = async <TScope extends StateScope>(
             version: latestVersion,
             degraded: true,
             blocked: true,
+            warning: storedSnapshot?.warning ?? optimisticSnapshot.warning,
           };
         }
 
@@ -304,6 +313,7 @@ const replayOutbox = async <TScope extends StateScope>(
             version: latestVersion,
             degraded: true,
             blocked: false,
+            warning: storedSnapshot?.warning ?? optimisticSnapshot.warning,
           };
         }
 
@@ -327,6 +337,7 @@ const replayOutbox = async <TScope extends StateScope>(
           version: latestVersion,
           degraded: true,
           blocked: false,
+          warning: storedSnapshot?.warning ?? optimisticSnapshot.warning,
         };
       }
     }
@@ -335,6 +346,7 @@ const replayOutbox = async <TScope extends StateScope>(
     writeSnapshot(scope, {
       data: latestData,
       version: latestVersion,
+      degraded: false,
     });
 
     return {
@@ -342,6 +354,7 @@ const replayOutbox = async <TScope extends StateScope>(
       version: latestVersion,
       degraded: false,
       blocked: false,
+      warning: undefined,
     };
   })();
 
@@ -365,7 +378,15 @@ export const readScope = async <TScope extends StateScope>(
   const stored = readSnapshot(scope);
 
   try {
-    const response = await fetchStateFromServer(scope, outbox?.lastKnownVersion || stored?.version);
+    const response = await fetchStateFromServer(
+      scope,
+      stored
+        ? {
+            ...stored,
+            version: outbox?.lastKnownVersion || stored.version,
+          }
+        : null
+    );
 
     if (response.status === 401 || response.status === 403) {
       notifySessionInvalid();
@@ -377,15 +398,17 @@ export const readScope = async <TScope extends StateScope>(
         return replayOutbox(scope, {
           data: stored.data,
           version: outbox.lastKnownVersion || stored.version,
-          degraded: false,
+          degraded: Boolean(stored.degraded),
+          warning: stored.warning,
         });
       }
 
       return {
         data: stored.data,
         version: stored.version,
-        degraded: false,
+        degraded: Boolean(stored.degraded),
         blocked: false,
+        warning: stored.warning,
       };
     }
 
@@ -397,6 +420,8 @@ export const readScope = async <TScope extends StateScope>(
     writeSnapshot(scope, {
       data: parsed.data,
       version: parsed.version,
+      degraded: parsed.degraded,
+      warning: parsed.warning,
     });
 
     if (outbox?.pendingOps.length) {
@@ -406,8 +431,9 @@ export const readScope = async <TScope extends StateScope>(
     return {
       data: parsed.data,
       version: parsed.version,
-      degraded: false,
+      degraded: parsed.degraded,
       blocked: false,
+      warning: parsed.warning,
     };
   } catch (error) {
     if (error instanceof StateClientError) {
@@ -420,6 +446,7 @@ export const readScope = async <TScope extends StateScope>(
         version: outbox?.lastKnownVersion || stored.version,
         degraded: true,
         blocked: outbox?.blocked,
+        warning: stored.warning,
       };
     }
 
@@ -428,6 +455,7 @@ export const readScope = async <TScope extends StateScope>(
       version: '',
       degraded: true,
       blocked: outbox?.blocked,
+      warning: undefined,
     };
   }
 };
@@ -504,6 +532,7 @@ export const mutateScope = async <TScope extends StateScope>(
     writeSnapshot(scope, {
       data: parsed.data,
       version: parsed.version,
+      degraded: false,
     });
 
     return {
@@ -511,6 +540,7 @@ export const mutateScope = async <TScope extends StateScope>(
       version: parsed.version,
       degraded: false,
       blocked: false,
+      warning: undefined,
     };
   } catch (error) {
     if (error instanceof StateClientError) {

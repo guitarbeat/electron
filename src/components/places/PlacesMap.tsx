@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { colors, spacing, radius, typography } from '@/design-system';
-import type { Place } from '@/types';
+import { colors, spacing, radius, typography } from '@/theme/tokens';
+import type { Place } from '@/shared/types';
 
 const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };
 const DEFAULT_ZOOM = 4;

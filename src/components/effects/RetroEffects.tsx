@@ -17,7 +17,9 @@ const CrtOverlay = () => (
 
 const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnabled }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
-  const [stars, setStars] = useState<{ id: number; x: number; y: number; opacity: number; scale: number }[]>([]);
+  const [trailParticles, setTrailParticles] = useState<
+    { id: number; x: number; y: number; opacity: number; scale: number }[]
+  >([]);
   const nextIdRef = useRef(0);
 
   // Cursor Trail logic
@@ -27,7 +29,7 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnab
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      const newStar = {
+      const newParticle = {
         id: nextIdRef.current++,
         x: e.clientX,
         y: e.clientY,
@@ -35,10 +37,10 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnab
         scale: 0.5 + Math.random(),
       };
 
-      setStars((prev) => [...prev.slice(-15), newStar]);
+      setTrailParticles((prev) => [...prev.slice(-15), newParticle]);
 
       setTimeout(() => {
-        setStars((prev) => prev.filter((s) => s.id !== newStar.id));
+        setTrailParticles((prev) => prev.filter((particle) => particle.id !== newParticle.id));
       }, 800);
     };
 
@@ -51,18 +53,16 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ crtEnabled, cursorTrailEnab
       {crtEnabled && <CrtOverlay />}
       {cursorTrailEnabled && !isMobile && (
         <div className="cursor-trail-container" aria-hidden="true">
-          {stars.filter(() => cursorTrailEnabled && !isMobile).map((star) => (
+          {trailParticles.map((particle) => (
             <div
-              key={star.id}
-              className="cursor-trail-star"
+              key={particle.id}
+              className="cursor-trail-particle"
               style={{
-                left: star.x,
-                top: star.y,
-                transform: `translate(-50%, -50%) scale(${star.scale})`,
+                left: particle.x,
+                top: particle.y,
+                transform: `translate(-50%, -50%) scale(${particle.scale})`,
               }}
-            >
-              ✦
-            </div>
+            />
           ))}
         </div>
       )}

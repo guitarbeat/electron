@@ -1,4 +1,4 @@
-import type { Movie, SharedMemory } from '@/types';
+import type { Movie, SharedMemory } from '@/shared/types';
 
 export const INITIAL_VISIBLE_COUNT = 6;
 export const ALL_MOVIES_FILTER = 'all';

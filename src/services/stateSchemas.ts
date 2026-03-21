@@ -16,8 +16,8 @@ import type {
   MovieSuggestion,
   Place,
   SharedMemory,
-} from '../types';
-import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../utils.ts';
+} from '../shared/types.ts';
+import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../utils/shared.ts';
 import type { PinsState, QuizData } from './stateTypes';
 
 const normalizeRequiredString = (value: unknown): string | null => {

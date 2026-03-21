@@ -2,7 +2,7 @@ import React from 'react';
 import { QuizResult, QuizCharacter } from './types';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { spacing, typography, colors } from '@/design-system';
+import { spacing, typography, colors } from '@/theme/tokens';
 
 interface ResultsScreenProps {
   result: QuizResult;

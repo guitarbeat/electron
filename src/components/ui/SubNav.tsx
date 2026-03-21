@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, radius, spacing, typography, motion } from '@/design-system';
+import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
 
 interface SubNavTab {

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Place, User } from '@/types';
+import { Place, User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import {
@@ -157,6 +157,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     error,
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
+    syncWarning: snapshot?.warning,
     refresh,
     retrySync,
     addPlace,

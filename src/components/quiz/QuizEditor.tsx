@@ -8,7 +8,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useToast } from '@/context';
+import { useToast } from '@/app/providers';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
 import QuestionsTab from './QuestionsTab';
@@ -16,7 +16,7 @@ import DescriptionsTab from './DescriptionsTab';
 import SyncBanner from '@/components/ui/SyncBanner';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { spacing, colors, typography, radius } from '@/design-system';
+import { spacing, colors, typography, radius } from '@/theme/tokens';
 import { ArrowLeftIcon } from '@/common/icons';
 
 interface UseUndoRedoReturn<T> {
@@ -152,6 +152,7 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
     isSaving,
     isDegraded,
     isSyncBlocked,
+    syncWarning,
     saveAllData,
     refresh,
     retrySync,
@@ -363,7 +364,7 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
             label={
               isSyncBlocked
                 ? 'Quiz changes conflicted with a newer shared version. Refresh and retry.'
-                : 'Quiz edits are being kept locally until shared sync recovers.'
+                : syncWarning || 'Quiz edits are being kept locally until shared sync recovers.'
             }
           />
         </div>

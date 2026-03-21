@@ -1,5 +1,5 @@
-import { shuffleArray } from '../../utils.ts';
-import type { MatchmakerGame, Movie, User } from '@/types';
+import { shuffleArray } from '../../utils/shared.ts';
+import type { MatchmakerGame, Movie, User } from '@/shared/types';
 
 export const MATCHMAKER_POOL_SIZE = 10;
 export const SHORT_AND_SWEET_VIBE = 'Short & Sweet';

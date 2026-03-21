@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors, spacing, typography } from '@/design-system';
+import { colors, spacing, typography } from '@/theme/tokens';
 
 // ============================================================================
 // CollectionEmptyState

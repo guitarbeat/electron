@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { MatchmakerGame, Movie } from '@/types';
+import type { MatchmakerGame, Movie } from '@/shared/types';
 import {
   SHORT_AND_SWEET_VIBE,
   applyMatchmakerSwipe,
@@ -13,7 +13,7 @@ import {
   parseRuntimeMinutes,
   selectRandomMatch,
   undoMatchmakerSwipe,
-} from './matchmaker/matchmakerGame.ts';
+} from './matchmakerGame.ts';
 
 const movies: Movie[] = [
   {

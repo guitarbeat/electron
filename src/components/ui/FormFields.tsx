@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { colors, radius, spacing, typography, motion, shadows } from '@/design-system';
+import { colors, radius, spacing, typography, motion, shadows } from '@/theme/tokens';
 
 // ─── Input ────────────────────────────────────────────────────────────────────
 

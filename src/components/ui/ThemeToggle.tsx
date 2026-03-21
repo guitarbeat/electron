@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import type { MainTab } from '@/types';
+import type { MainTab } from '@/shared/types';
 
 interface ThemeToggleProps {
   activeTab: MainTab;

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@/common/icons';
 import { MAX_MESSAGE_LENGTH } from '@/utils';
-import type { User } from '@/types';
-import { spacing } from '@/design-system';
+import type { User } from '@/shared/types';
+import { spacing } from '@/theme/tokens';
 
 interface MessageInputProps {
   currentUser: User | null;

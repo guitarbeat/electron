@@ -7,7 +7,7 @@ import {
   spacing,
   typography,
   shadows,
-} from '@/design-system';
+} from '@/theme/tokens';
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,

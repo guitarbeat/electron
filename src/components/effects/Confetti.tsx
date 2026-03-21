@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { colors } from '@/design-system';
+import { colors } from '@/theme/tokens';
 
 interface ConfettiProps {
   isActive: boolean;

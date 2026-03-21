@@ -77,12 +77,9 @@ export const QuickActionsIcon: React.FC<IconProps> = ({
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <path
-      d="M13.5 1.75 6.65 12.2h4.48L9.8 22.25l7.56-11.55h-4.73L13.5 1.75Z"
-      fill="currentColor"
-    />
-    <circle cx="18.15" cy="5.35" r="1.1" fill="rgba(255, 255, 255, 0.96)" />
-    <circle cx="6.1" cy="18" r="0.8" fill="rgba(255, 255, 255, 0.7)" />
+    <rect x="4.75" y="5" width="14.5" height="3.2" rx="1.6" fill="currentColor" opacity="0.96" />
+    <rect x="7.1" y="10.4" width="9.8" height="3.2" rx="1.6" fill="currentColor" opacity="0.76" />
+    <rect x="4.75" y="15.8" width="14.5" height="3.2" rx="1.6" fill="currentColor" opacity="0.96" />
   </svg>
 );
 

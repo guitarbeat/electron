@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import QuizFlow from '@/components/quiz/QuizFlow';
 import { useQuiz } from '@/hooks/useQuiz';
-import type { User } from '@/types';
+import type { User } from '@/shared/types';
 
 interface QuizFlowModalContentProps {
   currentUser: User | null;

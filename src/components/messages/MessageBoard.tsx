@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useToast } from '@/context';
-import type { Message } from '@/types';
-import { spacing, typography } from '@/design-system';
+import { useToast } from '@/app/providers';
+import type { Message } from '@/shared/types';
+import { spacing, typography } from '@/theme/tokens';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import SyncBanner from '@/ui/SyncBanner';
 import { useMessages } from '@/hooks/useMessages';
@@ -18,6 +18,7 @@ const MessageBoard: React.FC = () => {
     isSubmitting,
     isDegraded,
     isSyncBlocked,
+    syncWarning,
     addMessage,
     deleteMessage,
     retrySync,
@@ -139,7 +140,11 @@ const MessageBoard: React.FC = () => {
           />
           {isDegraded ? (
             <div style={{ padding: `${spacing.sm} ${spacing.md}` }}>
-              <SyncBanner isBlocked={isSyncBlocked} onRetry={retrySync} />
+              <SyncBanner
+                isBlocked={isSyncBlocked}
+                onRetry={retrySync}
+                label={isSyncBlocked ? undefined : syncWarning}
+              />
             </div>
           ) : null}
           <MessageInput

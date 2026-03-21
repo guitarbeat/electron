@@ -1,6 +1,31 @@
+import fs from 'fs';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+const resolveApiModulePath = (apiPath: string): string => {
+  const exactFilePath = path.resolve(__dirname, `.${apiPath}.ts`);
+  if (fs.existsSync(exactFilePath)) {
+    return exactFilePath;
+  }
+
+  const segments = apiPath.split('/').filter(Boolean);
+
+  if (segments.length === 3 && segments[0] === 'api' && segments[1] === 'state') {
+    return path.resolve(__dirname, './api/state/[scope].ts');
+  }
+
+  if (
+    segments.length === 4 &&
+    segments[0] === 'api' &&
+    segments[1] === 'state' &&
+    segments[3] === 'mutate'
+  ) {
+    return path.resolve(__dirname, './api/state/[scope]/mutate.ts');
+  }
+
+  return exactFilePath;
+};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -22,7 +47,7 @@ export default defineConfig(({ mode }) => {
             if (req.url && req.url.startsWith('/api/')) {
               try {
                 const apiPath = req.url.split('?')[0];
-                const filePath = path.resolve(__dirname, `.${apiPath}.ts`);
+                const filePath = resolveApiModulePath(apiPath);
 
                 // Use Vite's SSR loader to execute the .ts files in Node
                 const module = await server.ssrLoadModule(filePath);
@@ -87,17 +112,16 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@/common': path.resolve(__dirname, 'src/components/common'),
         '@/effects': path.resolve(__dirname, 'src/components/effects'),
-        '@/food-merge': path.resolve(__dirname, 'src/components/food-merge'),
         '@/matchmaker': path.resolve(__dirname, 'src/components/matchmaker'),
         '@/memories': path.resolve(__dirname, 'src/components/memories'),
         '@/quiz': path.resolve(__dirname, 'src/components/quiz'),
         '@/ui': path.resolve(__dirname, 'src/components/ui'),
         '@/hooks': path.resolve(__dirname, 'src/hooks'),
-        '@/context': path.resolve(__dirname, 'src/context'),
-        '@/design-system': path.resolve(__dirname, 'src/design-system'),
+        '@/app': path.resolve(__dirname, 'src/app'),
+        '@/shared': path.resolve(__dirname, 'src/shared'),
+        '@/theme': path.resolve(__dirname, 'src/theme'),
         '@/services': path.resolve(__dirname, 'src/services'),
         '@/utils': path.resolve(__dirname, 'src/utils'),
-        '@/integrations': path.resolve(__dirname, 'src/integrations'),
         '@': path.resolve(__dirname, 'src'),
       },
     },

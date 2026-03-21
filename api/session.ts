@@ -1,7 +1,7 @@
 import { jsonResponse, methodNotAllowedResponse, serverErrorResponse } from './_lib/http.ts';
 import { getSessionState } from './_lib/session.ts';
 import { getPinProtectedUsers } from './_lib/state.ts';
-import type { User } from '../src/types.ts';
+import type { User } from '../src/shared/types.ts';
 
 export default async function handler(req: Request): Promise<Response> {
   try {

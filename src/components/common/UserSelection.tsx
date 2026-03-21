@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useUser } from '../../context';
-import type { User } from '../../types';
-import { usePins } from '../../hooks/usePins';
+import { useUser } from '@/app/providers';
+import type { User } from '@/shared/types';
+import { usePins } from '@/hooks/usePins';
 import { getErrorMessage, USER_OPTIONS } from '@/utils';
 import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';

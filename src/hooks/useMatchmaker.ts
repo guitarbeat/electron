@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { MatchmakerGame, User } from '@/types';
+import { MatchmakerGame, User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import { areDeeplyEqual } from '@/utils';
@@ -110,6 +110,7 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
     isSubmitting,
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
+    syncWarning: snapshot?.warning,
     startNewGame,
     swipe,
     undo,

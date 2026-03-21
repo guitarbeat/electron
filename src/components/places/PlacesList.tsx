@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
-import { useUser, useToast } from '@/context';
+import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/usePlaces';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
@@ -11,8 +11,8 @@ import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/Coll
 import SyncBanner from '@/components/ui/SyncBanner';
 import PlacesMap from './PlacesMap';
 import { CheckIcon, PlusIcon, TrashIcon, Spinner, MagicWandIcon } from '@/common/icons';
-import { colors, spacing, typography, radius } from '@/design-system';
-import type { Place, PlaceContentTab, PlaceSortMode } from '@/types';
+import { colors, spacing, typography, radius } from '@/theme/tokens';
+import type { Place, PlaceContentTab, PlaceSortMode } from '@/shared/types';
 
 const PLACE_TABS: { id: PlaceContentTab; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -270,8 +270,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           aria-hidden="true"
         >
           <span className="place-item-cover__icon">{icon}</span>
-          <span className="place-item-cover__sparkle place-item-cover__sparkle--tl">✦</span>
-          <span className="place-item-cover__sparkle place-item-cover__sparkle--br">✦</span>
           {hasCoords && (
             <span className="place-item-cover__pin">📍</span>
           )}
@@ -327,6 +325,7 @@ const PlacesList: React.FC = () => {
     isSubmitting,
     isDegraded,
     isSyncBlocked,
+    syncWarning,
     addPlace,
     removePlace,
     markVisited,
@@ -441,7 +440,7 @@ const PlacesList: React.FC = () => {
           label={
             isSyncBlocked
               ? 'A shared places update conflicted with local edits. Refresh and retry.'
-              : 'Places changes are being kept locally until shared sync recovers.'
+              : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
           }
         />
       )}

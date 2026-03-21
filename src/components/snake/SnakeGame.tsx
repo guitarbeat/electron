@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { colors, shadows, spacing, typography } from '@/design-system';
+import { colors, shadows, spacing, typography } from '@/theme/tokens';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import Button from '@/ui/Button';
 import {
@@ -10,7 +10,7 @@ import {
   toggleSnakePause,
   type SnakeDirection,
   type SnakeGameState,
-} from '@/components/snake/snakeGame';
+} from './snakeEngine.ts';
 
 const TICK_MS = 160;
 const BOARD_COLUMNS = 14;

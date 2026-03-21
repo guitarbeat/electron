@@ -98,5 +98,5 @@ export interface WatchlistProps {
   isMobile?: boolean;
 }
 
-export type { QuizCharacter } from './components/quiz/types.ts';
-export { CHARACTERS } from './components/quiz/types.ts';
+export type { QuizCharacter } from '../components/quiz/types.ts';
+export { CHARACTERS } from '../components/quiz/types.ts';

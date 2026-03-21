@@ -7,10 +7,10 @@ import {
   updateMemory as updateMemoryService,
 } from '@/services/memoryService';
 import { usePolling } from '@/services/polling';
-import { SortMode, ContentTab, Movie, MovieSuggestion, User } from '@/types';
+import { SortMode, ContentTab, Movie, MovieSuggestion, User } from '@/shared/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
-import { useToast } from '@/context';
+import { useToast } from '@/app/providers';
 import { areDeeplyEqual, sanitizeInput } from '@/utils';
 import { trackMetric } from '@/services/analyticsService';
 import { readScope, retryScopeSync } from '@/services/stateClient';
@@ -90,6 +90,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     error: moviesError,
     isDegraded: isMoviesDegraded,
     isSyncBlocked: isMoviesSyncBlocked,
+    syncWarning: moviesSyncWarning,
     addMovie,
     toggleWatched,
     deleteMovie,
@@ -105,6 +106,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isLoading: isSuggestionsLoading,
     isDegraded: isSuggestionsDegraded,
     isSyncBlocked: isSuggestionsSyncBlocked,
+    syncWarning: suggestionsSyncWarning,
     retrySync: retrySuggestionsSync,
   } = useSuggestions(isPaused);
 
@@ -337,6 +339,8 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isMoviesSyncBlocked ||
     isSuggestionsSyncBlocked ||
     (memoriesSnapshot?.blocked ?? false);
+  const watchlistSyncWarning =
+    moviesSyncWarning ?? suggestionsSyncWarning ?? memoriesSnapshot?.warning;
 
   return {
     // State returns
@@ -367,6 +371,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     moviesError,
     isWatchlistDegraded,
     isWatchlistSyncBlocked,
+    watchlistSyncWarning,
     addMovie,
     toggleWatched,
     deleteMovie,
