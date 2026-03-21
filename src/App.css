@@ -200,10 +200,6 @@ body {
     radial-gradient(circle at 50% 108%, color-mix(in srgb, var(--color-tertiary) 20%, transparent) 0%, transparent 44%),
     radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--color-quaternary) 18%, transparent) 0%, transparent 34%),
     var(--gradient-metal-bg);
-  transition:
-    background-color var(--theme-transition-duration) var(--theme-transition-easing),
-    background-image var(--theme-transition-duration) var(--theme-transition-easing),
-    color var(--theme-transition-duration) var(--theme-transition-easing);
 }
 
 
@@ -1745,10 +1741,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  /* Smooth page-level transitions */
-  transition:
-    background-color 0.4s ease,
-    color 0.3s ease;
 }
 
 /* Enhanced focus-visible styles */
