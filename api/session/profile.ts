@@ -10,7 +10,6 @@ import {
   buildClearProfileCookie,
   buildProfileCookie,
   getSessionState,
-  hasAccessSession,
 } from '../_lib/session.ts';
 import { getPinProtectedUsers, verifyProfilePin } from '../_lib/state.ts';
 import { isUser } from '../../src/utils.ts';
@@ -18,11 +17,12 @@ import { isUser } from '../../src/utils.ts';
 export default async function handler(req: Request): Promise<Response> {
   try {
     if (req.method === 'DELETE') {
+      const pinProtectedUsers = await getPinProtectedUsers();
       return jsonResponse(
         {
-          hasAccess: hasAccessSession(req),
+          hasAccess: true,
           currentUser: null,
-          pinProtectedUsers: hasAccessSession(req) ? await getPinProtectedUsers() : [],
+          pinProtectedUsers,
         },
         {
           headers: mergeHeaders({
@@ -34,10 +34,6 @@ export default async function handler(req: Request): Promise<Response> {
 
     if (req.method !== 'POST') {
       return methodNotAllowedResponse('POST, DELETE');
-    }
-
-    if (!hasAccessSession(req)) {
-      return unauthorizedResponse('App access required.');
     }
 
     let payload: unknown;

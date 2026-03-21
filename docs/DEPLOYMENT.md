@@ -59,6 +59,7 @@ In development, these are proxied via `vite.config.ts` to `http://localhost:3001
 - `GIST_ID`: Server-side ID for the gist.
 - `GITHUB_TOKEN`: Auth token for Gist API writes.
 - `API_SECRET`: Server-side secret used to authorize client write requests. Must match `VITE_API_SECRET`.
+- `SESSION_SIGNING_SECRET`: Required for profile session cookies and PIN-protected profile auth.
 - `OMDB_API_URL`: Server-side base URL for OMDb proxy.
 - `OMDB_API_KEY`: Server-side API key for OMDb.
 

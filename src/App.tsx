@@ -14,7 +14,6 @@ import {
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
-import AccessGate from '@/components/common/AccessGate';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
 import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/context';
@@ -41,7 +40,7 @@ const getViewportSize = () => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { hasAccess, isSessionLoading } = useAppSession();
+  const { isSessionLoading } = useAppSession();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -332,24 +331,20 @@ const App: React.FC = () => {
     return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
   }, [actionBubblePosition]);
 
-  if (!hasAccess) {
-    if (isSessionLoading) {
-      return (
-        <main
-          style={{
-            minHeight: '100vh',
-            display: 'grid',
-            placeItems: 'center',
-            backgroundColor: colors.background,
-            color: colors.textSecondary,
-          }}
-        >
-          Loading shared session...
-        </main>
-      );
-    }
-
-    return <AccessGate />;
+  if (isSessionLoading) {
+    return (
+      <main
+        style={{
+          minHeight: '100vh',
+          display: 'grid',
+          placeItems: 'center',
+          backgroundColor: colors.background,
+          color: colors.textSecondary,
+        }}
+      >
+        Loading session...
+      </main>
+    );
   }
 
   return (
