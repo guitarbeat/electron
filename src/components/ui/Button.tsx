@@ -1,5 +1,4 @@
 import React from 'react';
-import { typography, colors, motion, radius, shadows } from '@/design-system';
 import { useAudio } from '@/hooks/useAudio';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -37,61 +36,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || isLoading;
     const buttonType = type === 'submit' ? 'submit' : type === 'reset' ? 'reset' : 'button';
 
-    const getVariantStyles = () => {
-      switch (variant) {
-        case 'secondary':
-          return {
-            background: colors.secondary,
-            color: '#1a1a2e',
-            border: 'none',
-            boxShadow: shadows.button,
-          };
-        case 'danger':
-          return {
-            background: colors.error,
-            color: '#fff',
-            border: 'none',
-            boxShadow: shadows.button,
-          };
-        case 'ghost':
-          return {
-            background: 'transparent',
-            color: colors.textSecondary,
-            border: `1px solid ${colors.borderSubtle}`,
-            boxShadow: 'none',
-          };
-        case 'primary':
-        default:
-          return {
-            background: colors.accent,
-            color: '#1a1a2e',
-            border: 'none',
-            boxShadow: shadows.button,
-          };
-      }
-    };
-
-    const getSizeStyles = () => {
-      switch (size) {
-        case 'sm':
-          return {
-            padding: '0.4rem 0.8rem',
-            fontSize: typography.fontSize.xs,
-          };
-        case 'lg':
-          return {
-            padding: '0.82rem 1.75rem',
-            fontSize: typography.fontSize.lg,
-          };
-        case 'md':
-        default:
-          return {
-            padding: '0.62rem 1.25rem',
-            fontSize: typography.fontSize.base,
-          };
-      }
-    };
-
     return (
       <button
         ref={ref}
@@ -107,21 +51,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           onClick?.(event);
         }}
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.55rem',
-          borderRadius: radius.md,
-          fontFamily: typography.fontFamily.heading.join(', '),
-          fontWeight: typography.fontWeight.semibold,
-          letterSpacing: typography.letterSpacing.button,
-          textTransform: 'uppercase',
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
-          transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-          opacity: isDisabled ? 0.6 : 1,
-          width: fullWidth ? '100%' : 'auto',
-          ...getVariantStyles(),
-          ...getSizeStyles(),
           ...style,
         }}
         {...props}
@@ -160,4 +89,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export default Button;
-
