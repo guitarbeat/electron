@@ -17,6 +17,25 @@ import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';
 import { colors, spacing, radius } from '@/design-system';
 
+const memoryLaneInputStyle: React.CSSProperties = {
+  borderRadius: '18px',
+  background:
+    'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 30%), rgba(12, 12, 18, 0.28)',
+  borderColor: 'color-mix(in srgb, var(--color-border-secondary, var(--color-accent)) 42%, transparent)',
+};
+
+const memoryLaneTextareaStyle: React.CSSProperties = {
+  borderRadius: '18px',
+  background:
+    'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 24%), rgba(17, 20, 35, 0.78)',
+  borderColor: 'color-mix(in srgb, var(--color-accent) 36%, transparent)',
+};
+
+const memoryLaneAccentActionStyle: React.CSSProperties = {
+  color: '#f5f9ff',
+  border: '1px solid color-mix(in srgb, var(--color-accent) 40%, transparent)',
+};
+
 const FloatingMemoriesPanel: React.FC = () => {
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser, false);
@@ -113,6 +132,7 @@ const FloatingMemoriesPanel: React.FC = () => {
           placeholder="e.g. The Last Unicorn"
           list="memory-movie-suggestions"
           className="memory-lane__input"
+          style={memoryLaneInputStyle}
         />
         <datalist id="memory-movie-suggestions">
           {movies.map((movie) => (
@@ -127,6 +147,7 @@ const FloatingMemoriesPanel: React.FC = () => {
           onChange={(event) => setImageUrl(event.target.value)}
           placeholder="https://example.com/photo.jpg"
           className="memory-lane__input"
+          style={memoryLaneInputStyle}
         />
         <Textarea
           label="Memory"
@@ -134,7 +155,7 @@ const FloatingMemoriesPanel: React.FC = () => {
           onChange={(event) => setNote(event.target.value)}
           placeholder="What made this one special?"
           className="memory-lane__textarea"
-          style={{ minHeight: 90 }}
+          style={{ ...memoryLaneTextareaStyle, minHeight: 90 }}
         />
         {currentUser ? (
           <Button
@@ -143,6 +164,7 @@ const FloatingMemoriesPanel: React.FC = () => {
             size="sm"
             disabled={submitting || !note.trim() || !movieQuery.trim()}
             className="memory-lane__action-btn memory-lane__save memory-lane__action-btn--save"
+            style={memoryLaneAccentActionStyle}
           >
             {submitting ? 'Saving...' : 'Save Memory'}
           </Button>
@@ -159,7 +181,7 @@ const FloatingMemoriesPanel: React.FC = () => {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search notes, titles, or authors"
             className="memory-lane__input"
-            style={{ flex: 1, minWidth: 220 }}
+            style={{ ...memoryLaneInputStyle, flex: 1, minWidth: 220 }}
           />
           <Button
             size="sm"
@@ -257,7 +279,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                       value={editingNote}
                       onChange={(event) => setEditingNote(event.target.value)}
                       className="memory-lane__textarea"
-                      style={{ minHeight: 80, marginTop: '0.35rem' }}
+                      style={{ ...memoryLaneTextareaStyle, minHeight: 80, marginTop: '0.35rem' }}
                     />
                   ) : (
                     <p className="memory-lane__note">{memory.note}</p>
@@ -271,6 +293,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                           variant="secondary"
                           onClick={() => saveEdit(memory)}
                           className="memory-lane__action-btn memory-lane__action-btn--save"
+                          style={memoryLaneAccentActionStyle}
                         >
                           Save
                         </Button>
@@ -306,6 +329,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                               variant="ghost"
                               onClick={() => startEditing(memory)}
                               className="memory-lane__action-btn memory-lane__action-btn--edit"
+                              style={memoryLaneAccentActionStyle}
                             >
                               Edit
                             </Button>

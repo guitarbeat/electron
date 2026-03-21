@@ -687,6 +687,24 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     runAction(onDelete);
   };
 
+  const primaryActionVisualStyle: React.CSSProperties = watchedByCurrentUser
+    ? {
+        color: '#f2fff3',
+        background:
+          'radial-gradient(circle at 20% 0%, rgba(126, 224, 140, 0.24) 0%, transparent 58%), linear-gradient(180deg, rgba(34, 106, 50, 0.92) 0%, rgba(18, 56, 30, 0.95) 100%)',
+        border: '1px solid color-mix(in srgb, var(--color-success) 46%, transparent)',
+        boxShadow:
+          '0 10px 20px rgba(0, 0, 0, 0.32), 0 0 18px rgba(126, 224, 140, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.07)',
+      }
+    : {
+        color: '#f5f9ff',
+        background:
+          'radial-gradient(circle at 20% 0%, rgba(179, 232, 255, 0.22) 0%, transparent 55%), linear-gradient(180deg, rgba(12, 22, 40, 0.92) 0%, rgba(8, 14, 24, 0.94) 100%)',
+        border: '1px solid rgba(173, 210, 255, 0.56)',
+        boxShadow:
+          '0 10px 20px rgba(0, 0, 0, 0.32), 0 0 18px rgba(149, 220, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+      };
+
   const mobileActionStyle: React.CSSProperties = {
     width: '100%',
     display: 'flex',
@@ -713,6 +731,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       }
       className={`movie-item-primary-action ${watchedByCurrentUser ? 'movie-item-primary-action--watched' : 'movie-item-primary-action--unwatched'}`}
       style={{
+        ...primaryActionVisualStyle,
         opacity: isGuest ? 0.5 : 1,
         ...(isMobile && {
           width: '100%',

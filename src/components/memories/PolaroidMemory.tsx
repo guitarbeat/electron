@@ -11,17 +11,21 @@ interface PolaroidMemoryProps {
 
 const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete }) => {
   const rotation = getStickyNoteRotation(memory);
+  const hoverRotation = rotation + (rotation > 0 ? 2 : -2);
   
   return (
     <div
       className="polaroid-card"
       style={{
+        ['--polaroid-rotation' as string]: `${rotation}deg`,
+        ['--polaroid-hover-rotation' as string]: `${hoverRotation}deg`,
+        ['--polaroid-shadow' as string]: '0 8px 16px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1)',
         width: '100%',
         maxWidth: '260px',
         background: '#fff',
         padding: '12px 12px 32px 12px',
-        boxShadow: '0 8px 16px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1)',
-        transform: `rotate(${rotation}deg)`,
+        boxShadow: 'var(--polaroid-shadow)',
+        transform: 'rotate(var(--polaroid-rotation))',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
@@ -143,7 +147,6 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
           display: 'flex',
           justifyContent: 'center',
           gap: '12px',
-          opacity: 0,
           transition: 'opacity 0.2s ease',
         }}
       >
@@ -164,12 +167,15 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
       </div>
 
       <style>{`
+        .polaroid-actions {
+          opacity: 0;
+        }
         .polaroid-card:hover .polaroid-actions {
-          opacity: 1 !important;
+          opacity: 1;
         }
         .polaroid-card:hover {
-           transform: rotate(${rotation + (rotation > 0 ? 2 : -2)}deg) scale(1.05) !important;
-           z-index: 10;
+          transform: rotate(var(--polaroid-hover-rotation)) scale(1.05);
+          z-index: 10;
         }
       `}</style>
     </div>
