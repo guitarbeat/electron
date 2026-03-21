@@ -1,0 +1,156 @@
+import React, { useState } from 'react';
+import { useToast } from '@/context';
+import type { Message } from '@/types';
+import { spacing, typography } from '@/design-system';
+import ConfirmDialog from '@/ui/ConfirmDialog';
+import { useMessages } from '@/hooks/useMessages';
+import MessageInput from './MessageInput';
+import MessageList from './MessageList';
+
+const MessageBoard: React.FC = () => {
+  const { showToast } = useToast();
+  const {
+    currentUser,
+    messages,
+    error,
+    isLoading,
+    isSubmitting,
+    addMessage,
+    deleteMessage,
+  } = useMessages();
+  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
+
+  const handleSend = async (content: string) => {
+    await addMessage(content);
+    showToast({
+      message: 'Message sent.',
+      type: 'success',
+      duration: 2500,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!messageToDelete) {
+      return;
+    }
+
+    try {
+      await deleteMessage(messageToDelete);
+      showToast({
+        message: 'Message deleted.',
+        type: 'info',
+        duration: 2500,
+      });
+      setMessageToDelete(null);
+    } catch (deleteError) {
+      showToast({
+        message: deleteError instanceof Error ? deleteError.message : 'Failed to delete message.',
+        type: 'error',
+        duration: 3000,
+      });
+    }
+  };
+
+  return (
+    <>
+      <div
+        style={{
+          maxWidth: '720px',
+          width: '100%',
+          margin: '0 auto',
+          padding: spacing.md,
+          height: 'min(680px, 78vh)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(249, 249, 249, 0.94)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              padding: `${spacing.sm} ${spacing.md}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              minHeight: '52px',
+              borderBottom: '0.5px solid rgba(0, 0, 0, 0.1)',
+              gap: spacing.sm,
+            }}
+          >
+            <div style={{ minWidth: '52px' }} />
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div
+                style={{
+                  fontFamily: typography.fontFamily.heading.join(', '),
+                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: '17px',
+                  color: '#000000',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                Messages
+              </div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: '#8e8e93',
+                }}
+              >
+                {currentUser ? `${currentUser} signed in` : 'Read only until you choose a profile'}
+              </div>
+            </div>
+            <div
+              style={{
+                minWidth: '52px',
+                textAlign: 'right',
+                fontSize: '13px',
+                color: '#8e8e93',
+              }}
+            >
+              {messages.length} total
+            </div>
+          </div>
+
+          <MessageList
+            messages={messages}
+            currentUser={currentUser}
+            isLoading={isLoading}
+            isSubmitting={isSubmitting}
+            error={error}
+            onDelete={setMessageToDelete}
+          />
+          <MessageInput
+            currentUser={currentUser}
+            isSubmitting={isSubmitting}
+            onSend={handleSend}
+          />
+        </div>
+      </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(messageToDelete)}
+        title="Delete Message"
+        message={`Delete this message from ${messageToDelete?.author || 'Unknown'}?`}
+        confirmText="Delete message"
+        onConfirm={confirmDelete}
+        onCancel={() => setMessageToDelete(null)}
+      />
+    </>
+  );
+};
+
+export default MessageBoard;

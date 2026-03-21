@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import SnakeGame from '@/components/SnakeGame';
+import MessageBoard from '@/components/messages/MessageBoard';
 import SpinWheelGame from '@/components/SpinWheelGame';
 import Matchmaker from '@/components/matchmaker/Matchmaker';
 import QuizEditor from '@/components/quiz/QuizEditor';
@@ -29,19 +29,19 @@ const paddedScrollContentStyle: CSSProperties = {
 };
 
 export interface BuildFeatureModalsParams {
+  showMessages: boolean;
   showQuizEditor: boolean;
   showQuizFlow: boolean;
   showSpinWheel: boolean;
-  showSnake: boolean;
   showMatchmaker: boolean;
   quizCompleted: boolean;
   isSpinWheelLocked: boolean;
   quizData: QuizData | null | undefined;
   currentUser: User | null;
+  setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
-  setShowSnake: (open: boolean) => void;
   setShowMatchmaker: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
@@ -49,25 +49,39 @@ export interface BuildFeatureModalsParams {
 
 export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
   const {
+    showMessages,
     showQuizEditor,
     showQuizFlow,
     showSpinWheel,
-    showSnake,
     showMatchmaker,
     quizCompleted,
     isSpinWheelLocked,
     quizData,
     currentUser,
+    setShowMessages,
     setShowQuizEditor,
     setShowQuizFlow,
     setShowSpinWheel,
-    setShowSnake,
     setShowMatchmaker,
     setIsSpinWheelLocked,
     onQuizComplete,
   } = params;
 
   return [
+    {
+      key: 'messages',
+      isOpen: showMessages,
+      onClose: () => setShowMessages(false),
+      title: 'Messages',
+      ariaLabel: 'Shared messages',
+      maxWidth: 820,
+      maxHeight: 920,
+      contentStyle: {
+        flex: 1,
+        overflow: 'hidden',
+      },
+      content: <MessageBoard />,
+    },
     {
       key: 'quiz-editor',
       isOpen: showQuizEditor,
@@ -77,16 +91,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 1200,
       maxHeight: 900,
       content: <QuizEditor onClose={() => setShowQuizEditor(false)} />,
-    },
-    {
-      key: 'snake',
-      isOpen: showSnake,
-      onClose: () => setShowSnake(false),
-      title: 'Snake',
-      ariaLabel: 'Snake game',
-      maxWidth: 760,
-      maxHeight: 860,
-      content: <SnakeGame />,
     },
     {
       key: 'spin-wheel',

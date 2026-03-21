@@ -20,21 +20,16 @@ interface UserSelectionProps {
 }
 
 const PROFILE_NOTES: Record<User, string> = {
-  Aaron: 'Neon thrillers, fast picks, and impulsive rewatches.',
-  Electra: 'Soft-focus chaos, sharp instincts, and midnight romance.',
-};
-
-const PROFILE_TAGS: Record<User, string> = {
-  Aaron: 'Action Lead',
-  Electra: 'Vibe Pilot',
+  Aaron: 'Use Aaron to add movies, places, and messages as Aaron.',
+  Electra: 'Use Electra to add movies, places, and messages as Electra.',
 };
 
 const UserSelection: React.FC<UserSelectionProps> = ({
   onUserSelected,
   onActionsClick,
   variant = 'inline',
-  title = "Who's watching?",
-  subtitle = 'Choose a profile to personalize your feed.',
+  title = 'Choose a profile',
+  subtitle = 'Sign in as Aaron or Electra before you add movies, places, or messages.',
   className,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
@@ -56,10 +51,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
   const showBubbleName = variant !== 'inline';
-  const panelStatusTitle = selectedNamedUser ? 'Seat active' : 'Guest mode';
+  const panelStatusTitle = selectedNamedUser ? 'Signed in' : 'Guest mode';
   const panelStatusCopy = selectedNamedUser
-    ? `${selectedNamedUser} is driving the board right now. Swap seats, manage the PIN, or log out below.`
-    : 'Pick a profile to personalize the watchlist, unlock saved preferences, and start the shared quiz.';
+    ? `${selectedNamedUser} is signed in right now. You can switch profiles, manage the PIN, or log out below.`
+    : 'Pick a profile to add movies, date ideas, quiz answers, and messages.';
 
   useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {
@@ -218,9 +213,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   {variant === 'panel' ? (
                     <div className="user-selection__profile-caption">
                       <div className="user-selection__profile-meta">
-                        <span className="user-selection__meta-pill user-selection__meta-pill--persona">
-                          {PROFILE_TAGS[profile]}
-                        </span>
                         {isActive ? (
                           <span className="user-selection__meta-pill user-selection__meta-pill--active">
                             Active
@@ -233,9 +225,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                         ) : null}
                       </div>
                       <p className="user-selection__profile-note">
-                        {isActive
-                          ? `${profile} is steering the plan right now.`
-                          : PROFILE_NOTES[profile]}
+                        {isActive ? `${profile} is signed in right now.` : PROFILE_NOTES[profile]}
                       </p>
                     </div>
                   ) : null}
@@ -292,7 +282,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
               </>
             ) : (
               <p className="user-selection__logged-out">
-                Logged out. Pick a bubble to hop back in.
+                Logged out. Pick Aaron or Electra to sign back in.
               </p>
             )}
           </div>

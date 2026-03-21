@@ -8,7 +8,7 @@ import {
   stepSnakeGame,
   toggleSnakePause,
   type SnakeGameState,
-} from './snakeGame.ts';
+} from './snake/snakeGame.ts';
 
 const createState = (overrides: Partial<SnakeGameState> = {}): SnakeGameState => ({
   boardWidth: 5,
@@ -106,13 +106,13 @@ test('stepSnakeGame', async (t) => {
         snake: [
           { x: 2, y: 2 },
           { x: 3, y: 2 },
-          { x: 3, y: 3 },
-          { x: 2, y: 3 },
-          { x: 1, y: 3 },
+          { x: 3, y: 1 },
+          { x: 2, y: 1 },
+          { x: 1, y: 1 },
           { x: 1, y: 2 },
         ],
-        direction: 'up',
-        queuedDirection: 'left',
+        direction: 'left',
+        queuedDirection: 'up',
       })
     );
 
@@ -131,7 +131,7 @@ test('createFoodPosition', async (t) => {
         { x: 2, y: 0 },
         { x: 0, y: 1 },
       ],
-      () => 0.6
+      () => 0.4
     );
 
     assert.deepEqual(food, { x: 0, y: 2 });

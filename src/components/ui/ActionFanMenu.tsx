@@ -1,7 +1,6 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { colors, motion, radius, spacing, typography } from '@/design-system';
-import GelBubbleAvatar from '../common/GelBubbleAvatar';
-import { computeActionFanPositions, type ActionFanLayoutOptions, type ActionFanPosition } from './actionFanLayout';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { colors } from '@/design-system';
+import { computeActionFanPositions } from './actionFanLayout';
 import type { CommandActionItem } from './CommandDeck';
 
 interface ActionFanMenuProps {
@@ -13,6 +12,33 @@ interface ActionFanMenuProps {
   onClose: () => void;
 }
 
+const actionPalette = [
+  colors.accent,
+  colors.secondary,
+  colors.tertiary,
+  colors.warning,
+  colors.success,
+] as const;
+
+const getLabelOffsets = (
+  position: { x: number; y: number },
+  anchorCenterX: number,
+  anchorCenterY: number
+) => {
+  const deltaX = position.x - anchorCenterX;
+  const deltaY = position.y - anchorCenterY;
+  const distance = Math.hypot(deltaX, deltaY) || 1;
+  const unitX = deltaX / distance;
+  const unitY = deltaY / distance;
+  const baseDistance = 74;
+  const verticalBoost = Math.abs(unitY) > 0.7 ? 12 : 0;
+
+  return {
+    ['--fan-label-x' as string]: `${Math.round(unitX * baseDistance)}px`,
+    ['--fan-label-y' as string]: `${Math.round(unitY * (baseDistance + verticalBoost))}px`,
+  };
+};
+
 const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
   items,
   anchorX,
@@ -22,207 +48,99 @@ const ActionFanMenu: React.FC<ActionFanMenuProps> = ({
   onClose,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [layoutType, setLayoutType] = useState<string>('arc');
-  
-  const handleItemClick = useCallback((item: CommandActionItem) => {
-    onItemSelect(item);
-    onClose();
-  }, [onItemSelect, onClose]);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
-
-  // Get viewport dimensions for positioning
+  const anchorCenterX = anchorX + anchorSize / 2;
+  const anchorCenterY = anchorY + anchorSize / 2;
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
   const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
 
-  // Compute positions using the enhanced layout algorithm
-  const positions = computeActionFanPositions({
-    count: items.length,
-    anchorX,
-    anchorY,
-    anchorSize,
-    viewportWidth,
-    viewportHeight,
-  });
+  const positions = useMemo(
+    () =>
+      computeActionFanPositions({
+        count: items.length,
+        anchorX,
+        anchorY,
+        anchorSize,
+        viewportWidth,
+        viewportHeight,
+      }),
+    [items.length, anchorX, anchorY, anchorSize, viewportWidth, viewportHeight]
+  );
 
-  // Detect layout type based on positions
+  const handleItemClick = useCallback(
+    (item: CommandActionItem) => {
+      onItemSelect(item);
+      onClose();
+    },
+    [onItemSelect, onClose]
+  );
+
   useEffect(() => {
-    if (items.length >= 6) {
-      const centerX = anchorX + anchorSize / 2;
-      const centerY = anchorY + anchorSize / 2;
-      
-      // Simple heuristic to detect layout type
-      const avgDistance = positions.reduce((sum, pos) => {
-        return sum + Math.hypot(pos.x - centerX, pos.y - centerY);
-      }, 0) / positions.length;
-      
-      if (avgDistance < 100) {
-        setLayoutType('cluster');
-      } else if (Math.abs(positions[0]?.x - centerX) < 10 && Math.abs(positions[0]?.y - centerY) < 10) {
-        setLayoutType('flower');
-      } else if (items.length >= 5) {
-        setLayoutType('spiral');
-      } else {
-        setLayoutType('wave');
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
       }
-    } else {
-      setLayoutType('arc');
-    }
-  }, [items.length, positions, anchorX, anchorY, anchorSize]);
+    };
 
-  // Action palette for colors
-  const actionPalette = [
-    colors.accent,
-    colors.secondary,
-    colors.tertiary,
-    colors.warning,
-    colors.success,
-  ];
-
-  // Get animation based on layout type
-  const getAnimationDelay = (index: number) => {
-    switch (layoutType) {
-      case 'spiral':
-        return index * 30; // Fast sequential for spiral
-      case 'flower':
-        return index === 0 ? 0 : index * 40; // Center first, then petals
-      case 'wave':
-        return Math.abs(index - Math.floor(items.length / 2)) * 30; // Outside-in for wave
-      case 'cluster':
-        return (index % 2) * 20; // Alternating for grid
-      default:
-        return index * 50; // Staggered for arc
-    }
-  };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
-    <>
-      {/* Enhanced backdrop with gradient */}
+    <div className="action-fan-menu" role="presentation">
       <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at ${anchorX + anchorSize/2}px ${anchorY + anchorSize/2}px, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6))`,
-          backdropFilter: 'blur(3px)',
-          zIndex: 1000,
-        }}
+        className="action-fan-backdrop"
         onClick={onClose}
         aria-hidden="true"
+        style={
+          {
+            ['--action-fan-origin-x' as string]: `${anchorCenterX}px`,
+            ['--action-fan-origin-y' as string]: `${anchorCenterY}px`,
+          } as React.CSSProperties
+        }
       />
 
-      {/* Action items with enhanced animations */}
       {items.map((item, index) => {
         const position = positions[index];
         const accentColor = actionPalette[index % actionPalette.length];
         const haloColor = actionPalette[(index + 2) % actionPalette.length];
+        const labelOffsets = getLabelOffsets(position, anchorCenterX, anchorCenterY);
 
         return (
-          <div
+          <button
             key={item.label}
-            style={{
-              position: 'fixed',
-              left: position.x,
-              top: position.y,
-              transform: 'translate(-50%, -50%)',
-              zIndex: 1001,
-              animation: `${layoutType}ItemAppear ${motion.duration.normal} ${motion.easing.spring} forwards`,
-              animationDelay: `${getAnimationDelay(index)}ms`,
-            }}
+            type="button"
+            className="action-fan-item"
+            aria-label={item.label}
+            onClick={() => handleItemClick(item)}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex((current) => (current === index ? null : current))}
+            onFocus={() => setHoveredIndex(index)}
+            onBlur={() => setHoveredIndex((current) => (current === index ? null : current))}
+            style={
+              {
+                left: `${position.x}px`,
+                top: `${position.y}px`,
+                ['--fan-i' as string]: index,
+                ['--fan-accent' as string]: accentColor,
+                ['--fan-halo' as string]: haloColor,
+                ['--fan-hover-scale' as string]: hoveredIndex === index ? 1.12 : 1,
+                ...labelOffsets,
+              } as React.CSSProperties
+            }
           >
-            <GelBubbleAvatar
-              icon={item.icon}
-              label={item.label}
-              size="action"
-              showName={true}
-              isHovered={hoveredIndex === index}
-              onClick={() => handleItemClick(item)}
-              accentColor={accentColor}
-              haloColor={haloColor}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              onFocus={() => setHoveredIndex(index)}
-              onBlur={() => setHoveredIndex(null)}
-              style={{
-                cursor: 'pointer',
-                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-                filter: hoveredIndex === index ? 'brightness(1.2)' : 'brightness(1)',
-              }}
-            />
-          </div>
+            <span className="action-fan-item__bubble" aria-hidden="true">
+              <span className="action-fan-item__chrome-ring" />
+              <span className="action-fan-item__shine" />
+              <span className="action-fan-item__core" />
+              <span className="action-fan-item__icon">{item.icon}</span>
+            </span>
+            <span className="action-fan-item__label">{item.label}</span>
+          </button>
         );
       })}
-
-      {/* Enhanced CSS animations for different layout types */}
-      <style>{`
-        @keyframes arcItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.3) rotate(-15deg);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          }
-        }
-
-        @keyframes spiralItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.1) rotate(720deg);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          }
-        }
-
-        @keyframes flowerItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0) rotate(180deg);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          }
-        }
-
-        @keyframes waveItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5) translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1) translateY(0);
-          }
-        }
-
-        @keyframes clusterItemAppear {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

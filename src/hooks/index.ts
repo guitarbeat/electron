@@ -4,6 +4,7 @@ export { useMediaQuery, mediaBreakpoints } from './useMediaQuery';
 
 // Feature Hooks
 export { useMatchmaker } from './useMatchmaker';
+export { useMessages } from './useMessages';
 export { useMovies } from './useMovies';
 export { usePins } from './usePins';
 export { usePlaces } from './usePlaces';

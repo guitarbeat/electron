@@ -3,6 +3,15 @@ import FrameEffect from '@/components/effects/FrameEffect';
 import LoadingSequence from '@/components/effects/LoadingSequence';
 import Moire from '@/components/effects/Moire';
 import RetroEffects from '@/components/effects/RetroEffects';
+import {
+  ACTION_BUBBLE_DRAG_THRESHOLD,
+  ACTION_BUBBLE_SIZE,
+  clampActionBubblePosition,
+  getActionBubbleMenuPosition,
+  getDefaultActionBubblePosition,
+  snapActionBubbleToEdge,
+  type ActionBubblePosition,
+} from '@/app/actionBubble';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
@@ -14,69 +23,21 @@ import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useQuiz } from '@/hooks/useQuiz';
 import type { MainTab } from '@/types';
-import ActionBubble from '@/ui/ActionBubble';
-import ActionFanMenu from '@/ui/ActionFanMenu';
-import Button from '@/ui/Button';
 import Card from '@/ui/Card';
-import type { CommandActionItem } from '@/ui/CommandDeck';
+import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import ThemeToggle from '@/ui/ThemeToggle';
 import './App.css';
 
-interface ActionBubblePosition {
-  x: number;
-  y: number;
-}
-
-const ACTION_BUBBLE_SIZE = 64;
-const ACTION_BUBBLE_EDGE_MARGIN = 12;
-const ACTION_BUBBLE_DRAG_THRESHOLD = 16;
-
-const clampActionBubblePosition = (x: number, y: number): ActionBubblePosition => {
+const getViewportSize = () => {
   if (typeof window === 'undefined') {
-    return { x, y };
+    return { width: 1280, height: 800 };
   }
-
-  const maxX = Math.max(
-    ACTION_BUBBLE_EDGE_MARGIN,
-    window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
-  );
-  const maxY = Math.max(
-    ACTION_BUBBLE_EDGE_MARGIN,
-    window.innerHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
-  );
 
   return {
-    x: Math.min(Math.max(x, ACTION_BUBBLE_EDGE_MARGIN), maxX),
-    y: Math.min(Math.max(y, ACTION_BUBBLE_EDGE_MARGIN), maxY),
+    width: window.innerWidth,
+    height: window.innerHeight,
   };
-};
-
-const snapActionBubbleToEdge = (position: ActionBubblePosition): ActionBubblePosition => {
-  if (typeof window === 'undefined') {
-    return position;
-  }
-
-  const midX = window.innerWidth / 2;
-  const snappedX =
-    position.x + ACTION_BUBBLE_SIZE / 2 < midX
-      ? ACTION_BUBBLE_EDGE_MARGIN
-      : window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN;
-
-  return clampActionBubblePosition(snappedX, position.y);
-};
-
-const getDefaultActionBubblePosition = (isMobile: boolean): ActionBubblePosition => {
-  if (typeof window === 'undefined') {
-    return { x: ACTION_BUBBLE_EDGE_MARGIN, y: ACTION_BUBBLE_EDGE_MARGIN };
-  }
-
-  const defaultX = isMobile
-    ? window.innerWidth - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN
-    : ACTION_BUBBLE_EDGE_MARGIN + 6;
-  const defaultY = window.innerHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN - 6;
-
-  return clampActionBubblePosition(defaultX, defaultY);
 };
 
 const App: React.FC = () => {
@@ -91,12 +52,12 @@ const App: React.FC = () => {
   const [quizCompleted, setQuizCompleted] = useState<boolean>(
     () => localStorage.getItem('quizCompleted') === 'true'
   );
+  const [showMessages, setShowMessages] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [showSnake, setShowSnake] = useState(false);
   const [showMatchmaker, setShowMatchmaker] = useState(false);
-  const [showActionFanMenu, setShowActionFanMenu] = useState(false);
+  const [showActionBubbleMenu, setShowActionBubbleMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [showLoadingSequence, setShowLoadingSequence] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
@@ -109,11 +70,14 @@ const App: React.FC = () => {
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
-  const [actionBubblePosition, setActionBubblePosition] = useState<ActionBubblePosition>(() =>
-    getDefaultActionBubblePosition(isMobile)
-  );
+  const [actionBubblePosition, setActionBubblePosition] = useState<ActionBubblePosition>(() => {
+    const viewport = getViewportSize();
+    return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
+  });
   const [isDraggingActionBubble, setIsDraggingActionBubble] = useState(false);
 
+  const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
+  const actionBubbleMenuRef = useRef<HTMLDivElement | null>(null);
   const actionBubbleDragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -122,21 +86,65 @@ const App: React.FC = () => {
   } | null>(null);
   const didActionBubbleDragRef = useRef(false);
   const suppressActionBubbleClickRef = useRef(false);
+  const hasCustomActionBubblePositionRef = useRef(false);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
   useEffect(() => {
-    const handleDragResize = () => {
-      setActionBubblePosition((previous) => clampActionBubblePosition(previous.x, previous.y));
+    if (hasCustomActionBubblePositionRef.current) {
+      return;
+    }
+
+    const viewport = getViewportSize();
+    setActionBubblePosition(getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile));
+  }, [isMobile]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const viewport = getViewportSize();
+      setActionBubblePosition((previous) =>
+        clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height)
+      );
     };
 
-    window.addEventListener('resize', handleDragResize);
-    return () => {
-      window.removeEventListener('resize', handleDragResize);
-    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!showActionBubbleMenu) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (
+        actionBubbleMenuRef.current?.contains(target) ||
+        actionBubbleRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      setShowActionBubbleMenu(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, {
+        capture: true,
+      });
+    };
+  }, [showActionBubbleMenu]);
 
   const openQuizExperience = useCallback(() => {
     if (currentUser) {
@@ -150,7 +158,7 @@ const App: React.FC = () => {
   const openMatchmaker = useCallback(() => {
     if (!currentUser) {
       showToast({
-        message: 'Pick Aaron or Electra before starting Matchmaker.',
+        message: 'Choose Aaron or Electra before starting Matchmaker.',
         type: 'info',
       });
       return;
@@ -166,7 +174,7 @@ const App: React.FC = () => {
       }
 
       playSwitch();
-      setShowActionFanMenu(false);
+      setShowActionBubbleMenu(false);
       setActiveTab(tab);
     },
     [activeTab, playSwitch]
@@ -181,19 +189,19 @@ const App: React.FC = () => {
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
+        showMessages,
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
-        showSnake,
         showMatchmaker,
         quizCompleted,
         isSpinWheelLocked,
         quizData,
         currentUser,
+        setShowMessages,
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
-        setShowSnake,
         setShowMatchmaker,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
@@ -205,9 +213,9 @@ const App: React.FC = () => {
       quizCompleted,
       quizData,
       showMatchmaker,
+      showMessages,
       showQuizEditor,
       showQuizFlow,
-      showSnake,
       showSpinWheel,
     ]
   );
@@ -239,7 +247,8 @@ const App: React.FC = () => {
 
     if (
       !didActionBubbleDragRef.current &&
-      (Math.abs(deltaX) > ACTION_BUBBLE_DRAG_THRESHOLD || Math.abs(deltaY) > ACTION_BUBBLE_DRAG_THRESHOLD)
+      (Math.abs(deltaX) > ACTION_BUBBLE_DRAG_THRESHOLD ||
+        Math.abs(deltaY) > ACTION_BUBBLE_DRAG_THRESHOLD)
     ) {
       didActionBubbleDragRef.current = true;
       setIsDraggingActionBubble(true);
@@ -249,15 +258,26 @@ const App: React.FC = () => {
       return;
     }
 
-    setActionBubblePosition(() =>
-      clampActionBubblePosition(dragState.origin.x + deltaX, dragState.origin.y + deltaY)
+    const viewport = getViewportSize();
+    setActionBubblePosition(
+      clampActionBubblePosition(
+        dragState.origin.x + deltaX,
+        dragState.origin.y + deltaY,
+        viewport.width,
+        viewport.height
+      )
     );
   };
 
   const handleActionBubbleDragEnd = () => {
     if (didActionBubbleDragRef.current) {
+      const viewport = getViewportSize();
       suppressActionBubbleClickRef.current = true;
-      setActionBubblePosition((previous) => snapActionBubbleToEdge(previous));
+      hasCustomActionBubblePositionRef.current = true;
+      setActionBubblePosition((previous) =>
+        snapActionBubbleToEdge(previous, viewport.width, viewport.height)
+      );
+      setShowActionBubbleMenu(false);
     }
 
     setIsDraggingActionBubble(false);
@@ -287,30 +307,29 @@ const App: React.FC = () => {
       return;
     }
 
-    setShowActionFanMenu((isOpen) => !isOpen);
+    setShowActionBubbleMenu((current) => !current);
   };
 
   const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted, quizData });
   const workspaceMeta = getWorkspaceMeta(activeTab);
   const shouldShowLoadingSequence = showLoadingSequence && !prefersReducedMotion;
   const isMoireVisible = !showLoadingSequence && !prefersReducedMotion;
-  const quizFacts = [
-    currentUser ? `${currentUser} active` : 'Guest mode',
-    `${quizData?.questions.length ?? 0} prompts`,
-    quizCompleted ? 'Retake ready' : currentUser ? 'Fresh run' : 'Editor access',
+  const summaryFacts = [
+    currentUser ? `${currentUser} signed in` : 'Guest mode',
+    'Messages in the bubble',
+    'Movie notes stay on each title',
   ];
-
-  const actionFanItems = useMemo(
+  const actionItems = useMemo(
     (): CommandActionItem[] => [
+      {
+        label: 'Messages',
+        icon: '💬',
+        action: () => setShowMessages(true),
+      },
       {
         label: quizLaunch.label,
         icon: '🧠',
         action: openQuizExperience,
-      },
-      {
-        label: 'Snake',
-        icon: '🐍',
-        action: () => setShowSnake(true),
       },
       {
         label: 'Spin Wheel',
@@ -325,56 +344,87 @@ const App: React.FC = () => {
     ],
     [openMatchmaker, openQuizExperience, quizLaunch.label]
   );
+  const actionBubbleMenuStyle = useMemo(() => {
+    const viewport = getViewportSize();
+    return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
+  }, [actionBubblePosition]);
 
   return (
     <ThemeProvider activeTab={activeTab}>
-      {shouldShowLoadingSequence && <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />}
+      {shouldShowLoadingSequence ? (
+        <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
+      ) : null}
       <RetroEffects crtEnabled={crtEnabled} cursorTrailEnabled={cursorTrailEnabled} />
       <FrameEffect>
-        <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
-          {!prefersReducedMotion && <Moire isVisible={isMoireVisible} />}
+        <div
+          className="app-shell bg-main"
+          style={{ minHeight: '100vh', backgroundColor: colors.background }}
+        >
+          {!prefersReducedMotion ? <Moire isVisible={isMoireVisible} /> : null}
           <a href="#main-content" className="skip-link">
             Skip to content
           </a>
 
           <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
-            <ActionBubble
-              currentUser={currentUser}
-              position={actionBubblePosition}
-              isDragging={isDraggingActionBubble}
+            <button
+              ref={actionBubbleRef}
+              type="button"
+              className={`action-bubble${isDraggingActionBubble ? ' is-dragging' : ''}`}
               onClick={handleActionBubbleClick}
               onPointerDown={handleActionBubblePointerDown}
               onPointerMove={handleActionBubblePointerMove}
               onPointerUp={finishActionBubbleDrag}
               onPointerCancel={finishActionBubbleDrag}
-            />
+              aria-label="Open messages and extras"
+              aria-haspopup="menu"
+              aria-expanded={showActionBubbleMenu}
+              aria-controls="action-bubble-menu"
+              style={{
+                top: `${actionBubblePosition.y}px`,
+                left: `${actionBubblePosition.x}px`,
+              }}
+            >
+              <span className="action-bubble__icon" aria-hidden="true">
+                ✦
+              </span>
+              <span className="sr-only">Messages and extras</span>
+            </button>
 
-            {showActionFanMenu && (
-              <ActionFanMenu
-                items={actionFanItems}
-                anchorX={actionBubblePosition.x}
-                anchorY={actionBubblePosition.y}
-                anchorSize={ACTION_BUBBLE_SIZE}
-                onItemSelect={(item) => {
-                  item.action();
-                }}
-                onClose={() => setShowActionFanMenu(false)}
-              />
-            )}
+            {showActionBubbleMenu ? (
+              <div
+                id="action-bubble-menu"
+                ref={actionBubbleMenuRef}
+                className="action-bubble-menu"
+                style={actionBubbleMenuStyle}
+              >
+                <CommandDeck
+                  items={actionItems}
+                  variant="compact"
+                  onItemSelect={(item) => {
+                    setShowActionBubbleMenu(false);
+                    item.action();
+                  }}
+                />
+              </div>
+            ) : null}
 
-            <main id="main-content" className="workspace-stage workspace-stage--simplified" tabIndex={-1}>
-              <section className="duo-status-shell" aria-label="Profiles and shared ritual">
+            <main
+              id="main-content"
+              className="workspace-stage workspace-stage--simplified"
+              tabIndex={-1}
+            >
+              <section className="duo-status-shell" aria-label="Profiles and app summary">
                 <div className="duo-status-shell__grid">
                   <UserSelection
                     variant="panel"
-                    title="Who's steering tonight?"
-                    subtitle="Pick the seat that should shape suggestions, memories, and quiz runs."
+                    title="Choose a profile"
+                    subtitle="Sign in as Aaron or Electra before you add movies, places, or messages."
                     className="duo-status-shell__selection"
                   />
 
                   <Card
                     variant="default"
-                    className="duo-status-card duo-status-card--quiz"
+                    className="duo-status-card"
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
@@ -384,31 +434,29 @@ const App: React.FC = () => {
                     }}
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                      <p className="duo-status-card__eyebrow">Shared Ritual</p>
-                      <h2 className="duo-status-card__title">Compatibility Quiz</h2>
-                      <p className="duo-status-card__copy">{quizLaunch.description}</p>
+                      <p className="duo-status-card__eyebrow">Shared page</p>
+                      <h2 className="duo-status-card__title">Movies, dates, and messages</h2>
+                      <p className="duo-status-card__copy">
+                        Use the watchlist for movies, the date list for places to go, and the
+                        floating bubble for messages and the extras you still want to keep around.
+                      </p>
                     </div>
 
-                    <div className="duo-status-card__facts" aria-label="Quiz status">
-                      {quizFacts.map((fact) => (
+                    <div className="duo-status-card__facts" aria-label="Page summary">
+                      {summaryFacts.map((fact) => (
                         <span key={fact} className="duo-status-card__fact">
                           {fact}
                         </span>
                       ))}
                     </div>
-
-                    <Button
-                      size={isMobile ? 'md' : 'lg'}
-                      onClick={openQuizExperience}
-                      style={{ alignSelf: 'flex-start' }}
-                    >
-                      {quizLaunch.label}
-                    </Button>
                   </Card>
                 </div>
               </section>
 
-              <section className="workspace-header workspace-header--simplified" aria-label="Workspace controls">
+              <section
+                className="workspace-header workspace-header--simplified"
+                aria-label="Workspace controls"
+              >
                 <p className="workspace-header__active">
                   <span className="workspace-header__active-icon">{workspaceMeta.icon}</span>
                   {workspaceMeta.eyebrow}
@@ -437,13 +485,21 @@ const App: React.FC = () => {
                     onChange={handleTabChange}
                     compact={isMobile}
                     className="workspace-header__toggle"
-                    label="Switch between Watchlist and Date Spots"
+                    label="Switch between Watchlist and Date Ideas"
                   />
                 </div>
               </section>
 
-              <section className="workspace-surface" aria-label="Primary workspace" style={{ minWidth: 0 }}>
-                {activeTab === 'queue' ? <Watchlist isMobile={isMobile} /> : <PlacesList isMobile={isMobile} />}
+              <section
+                className="workspace-surface"
+                aria-label="Primary workspace"
+                style={{ minWidth: 0 }}
+              >
+                {activeTab === 'queue' ? (
+                  <Watchlist isMobile={isMobile} />
+                ) : (
+                  <PlacesList isMobile={isMobile} />
+                )}
               </section>
             </main>
           </div>
