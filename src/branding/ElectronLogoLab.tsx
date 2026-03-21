@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { LOGO_LAB_QUERY_PARAM, LOGO_VARIANT_QUERY_PARAM } from '@/app/logoLab';
 import Card from '@/ui/Card';
 import ElectronMark from './ElectronMark.tsx';
+import { DEFAULT_ELECTRON_FAVICON_PATH } from './logoAssets';
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   ELECTRON_MARK_META,
@@ -84,6 +85,7 @@ const ElectronLogoLab: React.FC<ElectronLogoLabProps> = ({
       return;
     }
 
+    link.type = 'image/svg+xml';
     link.href = getElectronMarkDataUri(activeVariant, {
       size: 64,
       title: `${activeMeta.name} favicon`,
@@ -94,7 +96,8 @@ const ElectronLogoLab: React.FC<ElectronLogoLabProps> = ({
     return () => {
       const link = getManagedFaviconLink();
       if (link) {
-        link.href = '/favicon.svg';
+        link.type = 'image/png';
+        link.href = DEFAULT_ELECTRON_FAVICON_PATH;
       }
     };
   }, []);
@@ -109,8 +112,8 @@ const ElectronLogoLab: React.FC<ElectronLogoLabProps> = ({
           </h1>
           <p className="electron-logo-lab__lede">
             Each concept is tuned for the real icon footprint inside the floating action bubble and
-            checked again at favicon sizes. The default app route stays on the existing star bubble
-            until you pick a winner.
+            checked again at favicon sizes. The default app route now uses the selected chrome AE
+            logo, and this lab stays available for comparing the original vector explorations.
           </p>
         </div>
 

@@ -14,6 +14,7 @@ import {
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
+import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
@@ -412,7 +413,12 @@ const App: React.FC = () => {
               }}
             >
               <span className="action-bubble__icon" aria-hidden="true">
-                ✦
+                <img
+                  src={ELECTRON_LOGO_MARK_PATH}
+                  alt=""
+                  className="action-bubble__icon-image"
+                  draggable="false"
+                />
               </span>
               <span className="sr-only">Messages and extras</span>
             </button>

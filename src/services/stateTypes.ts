@@ -9,15 +9,21 @@ import type {
   User,
 } from '../types';
 
-export type StateScope =
-  | 'movies'
-  | 'messages'
-  | 'memories'
-  | 'places'
-  | 'suggestions'
-  | 'quiz'
-  | 'matchmaker'
-  | 'pins';
+export const STATE_SCOPES = [
+  'movies',
+  'messages',
+  'memories',
+  'places',
+  'suggestions',
+  'quiz',
+  'matchmaker',
+  'pins',
+] as const;
+
+export type StateScope = (typeof STATE_SCOPES)[number];
+
+export const isStateScope = (value: string): value is StateScope =>
+  STATE_SCOPES.includes(value as StateScope);
 
 export interface QuizData {
   questions: QuizQuestion[];
