@@ -72,9 +72,6 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
       <div className="workspace-control-panel__header">
         <p className="workspace-control-panel__eyebrow">Dates</p>
         <h2 className="workspace-control-panel__title">Plan the next date</h2>
-        <p className="workspace-control-panel__copy">
-          Add places to try, keep upcoming and visited spots separate, and use the map when you need it.
-        </p>
       </div>
 
       <div className="workspace-control-panel__meta" aria-label="Date spots overview">
@@ -114,7 +111,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
           <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Add place or suggestion..."
+            placeholder="Place name"
             aria-label="Place name"
             fullWidth
           />
@@ -373,8 +370,6 @@ const PlacesList: React.FC<PlacesListProps> = () => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const hasMappedPlaces = places.some((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
-
   const confirmDelete = useCallback(async () => {
     if (!placeToDelete) return;
 
@@ -499,11 +494,6 @@ const PlacesList: React.FC<PlacesListProps> = () => {
             }}
           >
             <PlacesMap places={places} />
-            {places.length > 0 && !hasMappedPlaces && (
-              <p style={{ ...typography.presets.caption, color: colors.textTertiary, textAlign: 'center', margin: 0 }}>
-                Use search results to pin spots on the map.
-              </p>
-            )}
           </Card>
         }
       />

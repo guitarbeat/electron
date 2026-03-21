@@ -166,8 +166,10 @@ const Moire: React.FC<MoireProps> = ({ isVisible }) => {
       cameraZ: 50,
       mouseOver: false,
       hasNewMouseInput: false,
-      color1: new Color(themeTokens.accent),
-      color2: new Color(themeTokens.secondary),
+      // Theme colors are applied by the dedicated update effect below so we
+      // do not need to recreate the canvas when the theme changes.
+      color1: new Color('#000000'),
+      color2: new Color('#000000'),
     };
 
     runtimeRef.current = runtime;

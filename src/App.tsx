@@ -5,7 +5,6 @@ import Moire from '@/components/effects/Moire';
 import RetroEffects from '@/components/effects/RetroEffects';
 import {
   ACTION_BUBBLE_DRAG_THRESHOLD,
-  ACTION_BUBBLE_SIZE,
   clampActionBubblePosition,
   getActionBubbleMenuPosition,
   getDefaultActionBubblePosition,
@@ -17,8 +16,8 @@ import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
-import { ThemeProvider, ToastProvider, UserProvider, useToast, useUser } from '@/context';
-import { colors, spacing, typography } from '@/design-system';
+import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/context';
+import { colors, spacing } from '@/design-system';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -42,7 +41,6 @@ const getViewportSize = () => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { showToast } = useToast();
   const { playSwitch } = useAudio();
   const { quizData } = useQuiz();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -93,25 +91,20 @@ const App: React.FC = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    if (hasCustomActionBubblePositionRef.current) {
-      return;
-    }
-
-    const viewport = getViewportSize();
-    setActionBubblePosition(getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile));
-  }, [isMobile]);
-
-  useEffect(() => {
     const handleResize = () => {
       const viewport = getViewportSize();
-      setActionBubblePosition((previous) =>
-        clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height)
-      );
+      setActionBubblePosition((previous) => {
+        if (!hasCustomActionBubblePositionRef.current) {
+          return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
+        }
+
+        return clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height);
+      });
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (!showActionBubbleMenu) {
@@ -156,16 +149,8 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   const openMatchmaker = useCallback(() => {
-    if (!currentUser) {
-      showToast({
-        message: 'Choose Aaron or Electra before starting Matchmaker.',
-        type: 'info',
-      });
-      return;
-    }
-
     setShowMatchmaker(true);
-  }, [currentUser, showToast]);
+  }, []);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
@@ -310,14 +295,14 @@ const App: React.FC = () => {
     setShowActionBubbleMenu((current) => !current);
   };
 
-  const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted, quizData });
+  const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
   const workspaceMeta = getWorkspaceMeta(activeTab);
   const shouldShowLoadingSequence = showLoadingSequence && !prefersReducedMotion;
   const isMoireVisible = !showLoadingSequence && !prefersReducedMotion;
   const summaryFacts = [
-    currentUser ? `${currentUser} signed in` : 'Guest mode',
-    'Messages in the bubble',
-    'Movie notes stay on each title',
+    currentUser ? `${currentUser} active` : 'Guest mode',
+    `${quizData?.questions.length ?? 0} prompts`,
+    activeTab === 'queue' ? 'Watchlist open' : 'Date ideas open',
   ];
   const actionItems = useMemo(
     (): CommandActionItem[] => [
@@ -418,7 +403,6 @@ const App: React.FC = () => {
                   <UserSelection
                     variant="panel"
                     title="Choose a profile"
-                    subtitle="Sign in as Aaron or Electra before you add movies, places, or messages."
                     className="duo-status-shell__selection"
                   />
 
@@ -432,14 +416,10 @@ const App: React.FC = () => {
                       padding: isMobile ? spacing.lg : spacing.xl,
                       border: `1px solid ${colors.borderSubtle}`,
                     }}
-                  >
+                    >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
                       <p className="duo-status-card__eyebrow">Shared page</p>
                       <h2 className="duo-status-card__title">Movies, dates, and messages</h2>
-                      <p className="duo-status-card__copy">
-                        Use the watchlist for movies, the date list for places to go, and the
-                        floating bubble for messages and the extras you still want to keep around.
-                      </p>
                     </div>
 
                     <div className="duo-status-card__facts" aria-label="Page summary">
@@ -467,18 +447,6 @@ const App: React.FC = () => {
                   </span>
                   {workspaceMeta.title}
                 </h1>
-                <p
-                  className="workspace-header__summary"
-                  style={{
-                    margin: 0,
-                    maxWidth: '52rem',
-                    textAlign: 'center',
-                    color: colors.textSecondary,
-                    ...typography.presets.bodySm,
-                  }}
-                >
-                  {workspaceMeta.description}
-                </p>
                 <div className="workspace-header__controls workspace-header__controls--toggle">
                   <ThemeToggle
                     activeTab={activeTab}

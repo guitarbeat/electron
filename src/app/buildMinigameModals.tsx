@@ -6,7 +6,7 @@ import QuizEditor from '@/components/quiz/QuizEditor';
 import QuizFlow from '@/components/quiz/QuizFlow';
 import type { QuizData } from '@/hooks/useQuiz';
 import type { User } from '@/types';
-import { colors, spacing } from '@/design-system';
+import { spacing } from '@/design-system';
 
 export interface AppModalConfig {
   key: string;
@@ -127,7 +127,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
             isCompleted={false}
           />
         ) : (
-          <p style={{ margin: 0, color: colors.textSecondary }}>Pick a profile to take the quiz.</p>
+          null
         ),
     },
     {

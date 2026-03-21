@@ -81,9 +81,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       <div className="workspace-control-panel__header">
         <p className="workspace-control-panel__eyebrow">Movies</p>
         <h2 className="workspace-control-panel__title">Plan the next movie</h2>
-        <p className="workspace-control-panel__copy">
-          Add movies, review suggestions, and keep notes on the ones you finish together.
-        </p>
       </div>
 
       <div className="workspace-control-panel__meta" aria-label="Watchlist overview">
@@ -131,8 +128,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             <Input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search or add a movie..."
-              aria-label="Search or add a movie"
+              placeholder="Movie title"
+              aria-label="Movie title"
               fullWidth
             />
           </div>
@@ -449,10 +446,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 aria-label={
                   hasSharedMemories
                     ? `View notes for "${movie.title}"`
-                    : `Add a quote or thought to "${movie.title}"`
+                    : `Add note to "${movie.title}"`
                 }
               >
-                {hasSharedMemories ? memoryCountText : 'Add quote/thought'}
+                {hasSharedMemories ? memoryCountText : 'Add note'}
               </button>
             )}
 
@@ -510,11 +507,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
                   aria-label={
                     hasSharedMemories
                       ? `View notes for "${movie.title}"`
-                      : `Add a quote or thought to "${movie.title}"`
+                      : `Add note to "${movie.title}"`
                   }
                 >
-                  {hasSharedMemories ? memoryCountText : 'Add quote/thought'}
-                  {hasSharedMemories ? memoryPreviewText : ' - Leave a tiny line on this movie.'}
+                  {hasSharedMemories ? memoryCountText : 'Add note'}
+                  {hasSharedMemories ? memoryPreviewText : ''}
                 </button>
               )}
             </div>

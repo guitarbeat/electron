@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   colors,
   radius,
   spacing,
   typography,
-  zIndex,
   shadows,
-  motion,
 } from '@/design-system';
 import {
   getModalCloseButtonStyle,
@@ -16,8 +15,8 @@ import {
   trapFocusOnTab,
 } from '../modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
-import Card from '../Card';
 import Button from '../Button';
+import SharedMinigameModal from '../MinigameModal';
 
 // Base modal hook for shared functionality
 const useModalBase = (isOpen: boolean, onClose?: () => void) => {
@@ -82,7 +81,6 @@ const Modal: React.FC<ModalProps> = ({
   maxWidth = 520,
   maxHeight = 720,
   closeDisabled = false,
-  closeDisabledLabel = 'Please wait for the current action to finish.',
   variant = 'centered',
 }) => {
   const { dialogRef, closeButtonRef, playPop } = useModalBase(isOpen, onClose);
@@ -273,18 +271,6 @@ interface BottomSheetProps {
 }
 
 const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setPrefersReducedMotion(mediaQuery.matches);
-    update();
-    mediaQuery.addEventListener('change', update);
-    return () => mediaQuery.removeEventListener('change', update);
-  }, []);
-
   return (
     <Modal
       isOpen={isOpen}
@@ -297,44 +283,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
   );
 };
 
-// Minigame Modal with unified modal
-interface MinigameModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  maxWidth?: number;
-  maxHeight?: number;
-  children: React.ReactNode;
-  ariaLabel?: string;
-  closeDisabled?: boolean;
-  closeDisabledLabel?: string;
-}
-
-const MinigameModal: React.FC<MinigameModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  maxWidth = 520,
-  maxHeight = 720,
-  children,
-  ariaLabel = 'Dialog',
-  closeDisabled = false,
-  closeDisabledLabel = 'Please wait for the current action to finish.',
-}) => {
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      maxWidth={maxWidth}
-      maxHeight={maxHeight}
-      ariaLabel={ariaLabel}
-      closeDisabled={closeDisabled}
-      closeDisabledLabel={closeDisabledLabel}
-    >
-      {children}
-    </Modal>
-  );
-};
+const MinigameModal = SharedMinigameModal;
 
 export { Modal, ConfirmDialog, BottomSheet, MinigameModal, useModalBase };

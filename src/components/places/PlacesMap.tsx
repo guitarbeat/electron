@@ -157,7 +157,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
           ...style,
         }}
       >
-        Add VITE_GOOGLE_PLACES_API_KEY to .env to show the map.
+        Map unavailable.
       </div>
     );
   }
