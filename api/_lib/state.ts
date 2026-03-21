@@ -7,7 +7,6 @@ import {
 import {
   normalizeMovieRecord,
   normalizeMovies,
-  type Movie,
 } from '../../src/services/movieRecords.ts';
 import { type UserPins } from '../../src/services/pinHelpers.ts';
 import {
@@ -29,6 +28,7 @@ import type {
 import type {
   MatchmakerGame,
   Message,
+  Movie,
   MovieSuggestion,
   Place,
   SharedMemory,
