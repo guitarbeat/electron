@@ -7,6 +7,7 @@ import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { shuffleArray } from '@/utils';
+import { randomUtils } from '@/utils/random';
 import {
   colors,
   spacing,
@@ -33,11 +34,11 @@ interface SwipeCardProps {
 const MatchmakerConfetti: React.FC = () => {
   const [items] = useState(() => [...Array(30)].map((_, i) => ({
     id: i,
-    left: `${Math.random() * 100}%`,
+    left: `${randomUtils.randomRange(0, 100)}%`,
     color: [colors.accent, colors.secondary, colors.success, colors.warning][i % 4],
-    shape: Math.random() > 0.5 ? '50%' : '0',
-    duration: 2 + Math.random() * 2,
-    delay: Math.random() * 0.5,
+    shape: randomUtils.randomBool() ? '50%' : '0',
+    duration: 2 + randomUtils.randomRange(0, 2),
+    delay: randomUtils.randomRange(0, 0.5),
   })));
 
   return (
@@ -433,7 +434,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     }
     setIsPickingRandom(true);
     randomPickTimeoutRef.current = window.setTimeout(() => {
-      const winner = matches[Math.floor(Math.random() * matches.length)];
+      const winner = randomUtils.randomItem(matches);
       setIsPickingRandom(false);
       setLastMatchedMovie(winner);
       setShowConfetti(true);

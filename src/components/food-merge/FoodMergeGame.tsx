@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Button from '@/ui/Button';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { colors, spacing, typography, radius, shadows } from '@/design-system';
+import { Button, Card } from '@/components/ui';
 import { useToast } from '@/context';
-import { colors, spacing, typography, radius } from '@/design-system';
+import { randomUtils } from '@/utils/random';
 import appleImage from '@/components/food-merge/assets/fruits/apple.svg';
 import blueberryImage from '@/components/food-merge/assets/fruits/blueberry.svg';
 import dragonfruitImage from '@/components/food-merge/assets/fruits/dragonfruit.svg';
@@ -257,14 +258,14 @@ const FoodMergeGame: React.FC = () => {
             });
           }
 
-          if (Math.random() < difficultyConfig[difficulty].spawnChance) {
+          if (randomUtils.randomRange(0, 1) < difficultyConfig[difficulty].spawnChance) {
             const maxIndex = FRUIT_DIFFICULTY_SPAWN_LIMIT[difficulty];
-            const fruit = FRUIT_LIST[Math.floor(Math.random() * maxIndex)];
+            const fruit = randomUtils.randomItem(FRUIT_LIST.slice(0, maxIndex));
             remaining.push({
               id: crypto.randomUUID(),
-              x: Math.random() * (BOARD_WIDTH - FOOD_SIZE),
+              x: randomUtils.randomRange(0, BOARD_WIDTH - FOOD_SIZE),
               y: -FOOD_SIZE,
-              speed: 2 + Math.random() * 2,
+              speed: 2 + randomUtils.randomRange(0, 2),
               fruit,
               emoji: FRUIT_EMOJIS[fruit],
             });
