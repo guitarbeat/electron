@@ -85,7 +85,6 @@ interface WorkspacePanelsProps {
 }
 
 const WorkspacePanels: React.FC<WorkspacePanelsProps> = ({
-  isMobile = false,
   first,
   second,
   desktopColumns = 'minmax(280px, 320px) 1fr',
@@ -100,37 +99,26 @@ const WorkspacePanels: React.FC<WorkspacePanelsProps> = ({
   firstAs: FirstTag = 'div',
   secondAs: SecondTag = 'div',
 }) => {
-  if (isMobile) {
-    return (
-      <div
-        className={`workspace-layout--mobile ${mobileClassName}`.trim()}
-        style={{ gap: mobileGap }}
-      >
-        <FirstTag className={firstClassName}>{first}</FirstTag>
-        <SecondTag className={secondClassName}>{second}</SecondTag>
-      </div>
-    );
-  }
-
   return (
     <div
-      className={`workspace-layout ${className}`.trim()}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: desktopColumns,
-        gap,
-        alignItems: 'start',
-      }}
+      className={`workspace-layout ${className} ${mobileClassName}`.trim()}
+      style={
+        {
+          '--workspace-layout-columns': desktopColumns,
+          '--workspace-layout-gap': gap,
+          '--workspace-layout-mobile-gap': mobileGap,
+        } as React.CSSProperties
+      }
     >
       <FirstTag
-        className={`workspace-layout__controls ${firstClassName}`.trim()}
+        className={`workspace-layout__controls ${
+          stickyFirst ? 'workspace-layout__controls--sticky' : ''
+        } ${firstClassName}`.trim()}
         style={
           stickyFirst
-            ? {
-                position: 'sticky',
-                top: stickyOffset,
-                height: 'fit-content',
-              }
+            ? ({
+                '--workspace-layout-sticky-offset': stickyOffset,
+              } as React.CSSProperties)
             : undefined
         }
       >
