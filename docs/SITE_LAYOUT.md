@@ -23,23 +23,22 @@ The top-level structure is:
 3. Persistent duo-status strip
    - profile selection and seat state
    - one quiz launch card (`Start`, `Retake`, or `Edit`)
-4. Workspace header
+4. Floating action bubble + action fan menu
+   - quick access to quiz, spin wheel, and matchmaker
+5. Workspace header
    - active workspace label
    - shared `ThemeToggle` for switching between `Watchlist` and `Date Spots`
-5. Primary workspace surface
-6. Quiz-only modal stack
+6. Primary workspace surface
+7. Shared feature modal stack
 
-Removed from the main shell:
+Still removed from the main shell:
 
-- floating action bubble
-- action fan menu
 - command deck support rail
 - shell-level memories launcher
-- spin wheel and matchmaker launch paths
 
 ## Duo-Status Area
 
-The duo-status strip is always above the active workspace and is the only persistent secondary surface.
+The duo-status strip is always above the active workspace and remains the primary persistent shell surface for shared state.
 
 ### Left side
 
@@ -54,6 +53,17 @@ The duo-status strip is always above the active workspace and is the only persis
   - `Edit Quiz` when no profile is active
   - `Start Quiz` for a fresh run
   - `Retake Quiz` after completion
+
+## Quick Actions
+
+The floating quick-actions layer is available again:
+
+- draggable `ActionBubble`
+- `ActionFanMenu` anchored to the bubble
+- quick launches for:
+  - quiz
+  - spin wheel
+  - matchmaker
 
 ## Workspace Header
 
@@ -70,6 +80,7 @@ The shell owns workspace switching; the individual workspaces no longer render t
 ### Desktop
 
 - duo-status strip at top
+- floating action bubble above the shell
 - shared workspace header below it
 - one primary workspace surface underneath
 - no persistent support rail
@@ -77,6 +88,7 @@ The shell owns workspace switching; the individual workspaces no longer render t
 ### Mobile
 
 - same order as desktop, stacked into a single column
+- floating action bubble remains available
 - no bottom navigation
 - no shell-level More sheet
 
@@ -140,15 +152,15 @@ Other surfaces:
 
 ## Modal Stack
 
-The shell-level modal stack now covers quiz only:
+The shell-level modal stack now covers:
 
 - `Quiz Editor`
 - `Quiz Flow`
-
-Pruned from the active product surface:
-
 - `Spin Wheel`
 - `Matchmaker`
+
+Still pruned from the active product surface:
+
 - standalone `Memories` modal
 
 ## Theming + Visual Behavior
@@ -167,10 +179,12 @@ flowchart TD
   App --> Duo["Duo-status strip"]
   Duo --> Profiles["Profile selection"]
   Duo --> Quiz["Quiz ritual card"]
+  App --> Bubble["Action bubble"]
+  Bubble --> Fan["Action fan menu"]
   App --> Header["Workspace header"]
   Header --> Toggle["Theme toggle"]
   App --> Surface["Primary workspace surface"]
   Surface --> Watch["Watchlist panel"]
   Surface --> Places["Date Spots panel"]
-  App --> Modal["Quiz modal stack"]
+  App --> Modal["Feature modal stack"]
 ```
