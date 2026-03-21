@@ -179,6 +179,27 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         </div>
       </div>
 
+      <div className="spin-wheel-mode-bar" role="group" aria-label="Spin wheel pool">
+        <button
+          type="button"
+          className={`spin-wheel-mode-pill ${mode === 'queue' ? 'spin-wheel-mode-pill--active' : ''}`}
+          onClick={() => setMode('queue')}
+          disabled={isSpinning || isLoading}
+          aria-pressed={mode === 'queue'}
+        >
+          Queue
+        </button>
+        <button
+          type="button"
+          className={`spin-wheel-mode-pill ${mode === 'all' ? 'spin-wheel-mode-pill--active' : ''}`}
+          onClick={() => setMode('all')}
+          disabled={isSpinning || isLoading}
+          aria-pressed={mode === 'all'}
+        >
+          All Movies
+        </button>
+      </div>
+
       <div className="spin-wheel-stage">
         <div
           className={`spin-wheel-wrapper ${isSpinning ? 'spin-wheel-wrapper--spinning' : ''} ${
@@ -249,7 +270,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
         <div className="spin-wheel-panel">
           {selectedMovie ? (
-            <div className="result-display-container spin-wheel-panel__card">
+            <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
               <p className="spin-wheel-panel__eyebrow">Tonight&apos;s Pick</p>
               <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
               <p className="spin-wheel-panel__meta">
@@ -314,15 +335,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               className="spin-wheel-action"
             >
               Clear Result
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMode((prev) => (prev === 'queue' ? 'all' : 'queue'))}
-              disabled={isSpinning || candidates.length === 0}
-              className="spin-wheel-action spin-wheel-action--mode"
-            >
-              {mode === 'queue' ? 'Switch To All' : 'Switch To Queue'}
             </Button>
           </div>
 

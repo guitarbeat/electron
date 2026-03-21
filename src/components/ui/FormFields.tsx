@@ -14,6 +14,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const generatedId = useId();
     const id = providedId || generatedId;
     const errorId = `${id}-error`;
+    const restingBorderColor =
+      typeof style?.borderColor === 'string' ? style.borderColor : colors.borderSubtle;
+    const restingBoxShadow = typeof style?.boxShadow === 'string' ? style.boxShadow : 'none';
 
     return (
       <div
@@ -66,8 +69,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }}
             onBlur={(e) => {
               if (!error) {
-                e.currentTarget.style.borderColor = colors.borderSubtle;
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = restingBorderColor;
+                e.currentTarget.style.boxShadow = restingBoxShadow;
               }
             }}
             {...props}
