@@ -155,10 +155,10 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
         <div
           style={{
             padding: spacing.sm,
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            border: `1px solid rgba(239, 68, 68, 0.2)`,
+            backgroundColor: `${colors.error}12`,
+            border: `1px solid ${colors.error}33`,
             borderRadius: radius.md,
-            color: '#ef4444',
+            color: colors.error,
             fontSize: typography.presets.bodySm.fontSize,
             lineHeight: typography.presets.bodySm.lineHeight,
           }}

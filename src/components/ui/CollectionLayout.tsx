@@ -17,7 +17,7 @@ const CollectionEmptyState: React.FC<CollectionEmptyStateProps> = ({
   ...props
 }) => (
   <div
-    className={className}
+    className={`collection-empty-state ${className}`.trim()}
     style={{
       gridColumn: '1 / -1',
       textAlign: 'center',

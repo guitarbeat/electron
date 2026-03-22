@@ -130,21 +130,27 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          className="ui-textarea"
           style={{
             width: '100%',
             minHeight: '100px',
             padding: `${spacing.sm} ${spacing.md}`,
-            backgroundColor: isFocused ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.25)',
+            background:
+              isFocused
+                ? `linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 42%), ${colors.surface1}`
+                : `linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 42%), ${colors.surface0}`,
             color: colors.textPrimary,
             border: `1px solid ${error ? colors.error : isFocused ? colors.accent : colors.borderSubtle}`,
-            borderRadius: radius.md,
+            borderRadius: radius.lg,
             fontSize: typography.fontSize.base,
             fontFamily: typography.fontFamilyValue.body,
             lineHeight: typography.lineHeight.normal,
             outline: 'none',
             resize: 'vertical',
             transition: `all ${motion.duration.fast} ${motion.easing.ease}`,
-            boxShadow: isFocused ? shadows.buttonActive : 'inset 0 2px 4px rgba(0,0,0,0.1)',
+            boxShadow: isFocused
+              ? shadows.buttonActive
+              : 'inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 14px rgba(0,0,0,0.18)',
             ...style,
           }}
           aria-invalid={!!error}
