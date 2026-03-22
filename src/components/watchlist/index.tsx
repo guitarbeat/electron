@@ -140,9 +140,9 @@ const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
         flexDirection: 'column',
         gap: spacing.md,
         padding: spacing.lg,
-        border: `1px solid ${colors.borderSecondary}`,
+        border: `1px solid ${colors.borderSubtle}`,
         background:
-          'radial-gradient(circle at top right, rgba(255, 127, 198, 0.18), transparent 54%), linear-gradient(180deg, rgba(26, 18, 43, 0.94), rgba(11, 18, 34, 0.96))',
+          `radial-gradient(circle at top right, ${colors.accentMuted} 0%, transparent 54%), linear-gradient(180deg, ${colors.surface2}, ${colors.surface1})`,
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
@@ -993,11 +993,11 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
         borderRadius: '0 0 16px 16px',
         background:
-          'linear-gradient(180deg, rgba(39, 24, 44, 0.94) 0%, rgba(23, 26, 46, 0.95) 36%, rgba(22, 37, 55, 0.96) 100%)',
-        border: '1px solid rgba(255, 182, 214, 0.22)',
+          `linear-gradient(180deg, ${colors.surface2} 0%, ${colors.surface1} 42%, ${colors.surface0} 100%)`,
+        border: `1px solid ${colors.borderSubtle}`,
         borderTop: 'none',
-        borderLeft: '3px solid rgba(255, 184, 146, 0.38)',
-        boxShadow: '0 18px 34px rgba(6, 11, 24, 0.24)',
+        borderLeft: `3px solid ${colors.accentMuted}`,
+        boxShadow: '0 18px 34px rgba(18, 11, 7, 0.24)',
       }}
     >
       <div
@@ -1012,7 +1012,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           style={{
             margin: 0,
             ...typography.presets.eyebrow,
-            color: '#ffbed7',
+            color: colors.accentLight,
           }}
         >
           Notes on this movie
@@ -1020,7 +1020,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         <h4
           style={{
             margin: 0,
-            color: '#fff3f7',
+            color: colors.textPrimary,
             fontSize: typography.fontSize.lg,
             fontFamily: typography.fontFamily.heading.join(', '),
             letterSpacing: typography.letterSpacing.normal,
@@ -1031,7 +1031,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         <p
           style={{
             margin: 0,
-            color: '#d8e6ff',
+            color: colors.textSecondary,
             fontSize: typography.fontSize.sm,
             lineHeight: typography.lineHeight.normal,
           }}

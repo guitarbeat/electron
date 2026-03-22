@@ -11,9 +11,9 @@ import {
 } from '@/app/actionBubble';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
+import ElectronMark from '@/branding/ElectronMark';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
-import { QuickActionsIcon } from '@/common/icons';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
@@ -405,7 +405,11 @@ const App: React.FC = () => {
               }}
             >
               <span className="action-bubble__icon" aria-hidden="true">
-                <QuickActionsIcon size="100%" />
+                <ElectronMark
+                  className="action-bubble__icon-image action-bubble__mark"
+                  variant={logoLabState.initialVariant}
+                  size="100%"
+                />
               </span>
               <span className="sr-only">Messages and extras</span>
             </button>

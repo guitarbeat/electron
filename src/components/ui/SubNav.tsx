@@ -80,6 +80,7 @@ const SubNav: React.FC<SubNavProps> = ({
               role="tab"
               aria-selected={isActive}
               onClick={() => handleTabClick(tab.id)}
+              className={`ui-subnav__tab${isActive ? ' is-active' : ''}`}
               style={{
                 position: 'relative',
                 display: 'flex',
@@ -100,6 +101,7 @@ const SubNav: React.FC<SubNavProps> = ({
               {tab.label}
               {tab.count !== undefined && (
                 <span
+                  className="ui-subnav__count"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -124,6 +126,7 @@ const SubNav: React.FC<SubNavProps> = ({
               )}
               {variant === 'underlined' && isActive && (
                 <div
+                  className="ui-subnav__indicator"
                   style={{
                     position: 'absolute',
                     bottom: '-1px',
@@ -158,6 +161,7 @@ const SubNav: React.FC<SubNavProps> = ({
               <button
                 key={chip.id}
                 onClick={() => handleChipClick(chip.id)}
+                className={`ui-subnav__chip${isActive ? ' is-active' : ''}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
