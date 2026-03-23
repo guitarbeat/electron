@@ -1,3 +1,5 @@
+import { fetchWithRetry } from './_lib/retryFetch.ts';
+
 const resolveConfig = (value: string | undefined, fallback: string) => {
   const cleanedValue = (value || '').trim();
   return cleanedValue.length > 0 ? cleanedValue : fallback;
@@ -128,11 +130,16 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
 
-    const upstreamResponse = await fetch(targetUrl, {
-      headers: {
-        Accept: 'application/json',
+    const upstreamResponse = await fetchWithRetry(
+      targetUrl,
+      {
+        headers: {
+          Accept: 'application/json',
+        },
       },
-    });
+      'tvmaze',
+      { timeoutMs: 5000 }
+    );
     const body = await upstreamResponse.text();
     const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
 
