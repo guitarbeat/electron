@@ -392,18 +392,17 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     <div className="movie-actions">
       {primaryButton}
 
-      <div className="movie-secondary-actions">
-        <MovieIconActionButton
-          onClick={handleDeleteAction}
-          disabled={isGuest}
-          title={`Delete "${movie.title}"`}
-          color={colors.error}
-          borderColor={`${colors.error}45`}
-          className="movie-icon-action--delete"
-        >
-          <TrashIcon style={{ width: '14px', height: '14px' }} />
-        </MovieIconActionButton>
-      </div>
+      <button
+        type="button"
+        onClick={handleDeleteAction}
+        disabled={isGuest}
+        title={`Delete "${movie.title}"`}
+        aria-label={`Delete "${movie.title}"`}
+        className="movie-item-remove-link"
+      >
+        <TrashIcon style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+        Remove
+      </button>
     </div>
   );
 };
