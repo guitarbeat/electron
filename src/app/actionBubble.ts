@@ -8,7 +8,8 @@ export interface ActionBubbleMenuPosition {
   top: string;
 }
 
-export const ACTION_BUBBLE_SIZE = 62;
+/** Matches `.action-bubble` width/height in App.scss (default layout) */
+export const ACTION_BUBBLE_SIZE = 78;
 export const ACTION_BUBBLE_EDGE_MARGIN = 12;
 export const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
 export const ACTION_BUBBLE_MENU_WIDTH = 260;
