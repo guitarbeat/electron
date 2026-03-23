@@ -161,6 +161,8 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           console.warn('Metadata enrichment failed:', metadataError);
         }
       })();
+
+      return newMovie;
     },
     [currentUser, movies, performMutation]
   );

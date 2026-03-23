@@ -25,6 +25,8 @@ interface WatchlistToast {
   message: string;
   type: 'success' | 'error' | 'info';
   onUndo?: () => void;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
 interface SubmitRecommendationInput {
@@ -75,6 +77,8 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
       showToast({
         message: toast.message,
         type: toast.type,
+        actionLabel: toast.actionLabel,
+        onAction: toast.onAction,
         onUndo: toast.onUndo,
         duration: toast.onUndo ? 6000 : 3500,
       });

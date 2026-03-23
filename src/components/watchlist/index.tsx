@@ -222,15 +222,34 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     setIsAdding(true);
     try {
-      await addMovie(title);
+      const addedMovie = await addMovie(title);
+      setSuccessMovieId(addedMovie.id);
+      window.setTimeout(() => setSuccessMovieId((current) => (current === addedMovie.id ? null : current)), 2400);
       setSearchQuery('');
-      setToast({ message: `"${title}" added to watchlist!`, type: 'success' });
+      setToast({
+        message: `"${title}" added to watchlist!`,
+        type: 'success',
+        actionLabel: 'Open',
+        onAction: () => {
+          setContentTab('queue');
+          setSearchQuery(title);
+        },
+      });
     } catch {
       setToast({ message: 'Failed to add movie', type: 'error' });
     } finally {
       setIsAdding(false);
     }
-  }, [searchQuery, currentUser, addMovie, setIsAdding, setSearchQuery, setToast]);
+  }, [
+    searchQuery,
+    currentUser,
+    addMovie,
+    setContentTab,
+    setIsAdding,
+    setSearchQuery,
+    setSuccessMovieId,
+    setToast,
+  ]);
 
   const handleRandomMoviePick = useCallback(() => {
     const movieTitles = filteredMovies.map((movie) => movie.title);
@@ -535,6 +554,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             onToggle={() => toggleWatched(movie.id)}
             onDelete={() => setMovieToDelete(movie)}
             animationDelay={`${index * 0.05}s`}
+            isHighlighted={successMovieId === movie.id}
             memories={movieMemories.get(movie.id) ?? []}
             onAddMemory={
               currentUser
