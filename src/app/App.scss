@@ -1642,6 +1642,8 @@ body {
   filter:
     drop-shadow(0 0 10px rgba(255, 255, 255, 0.24))
     drop-shadow(0 6px 16px rgba(0, 0, 0, 0.26));
+  overflow: hidden;
+  border-radius: 50%;
 }
 
 .action-bubble__icon > svg,
@@ -1655,7 +1657,7 @@ body {
 }
 
 .action-bubble__mark {
-  transform: scale(0.96) translateY(1px);
+  transform: scale(1.28) translateX(2px) translateY(2px);
 }
 
 .action-bubble__mark svg {
@@ -1752,13 +1754,10 @@ body {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Tab shell meets the logo bubble; overlap + radius read as one dock (see getActionBubbleTogglePosition) */
-.app-floating-chrome .action-bubble-toggle--left {
-  border-radius: 999px 14px 14px 999px;
-}
-
+/* Toggle is a free-floating circle bubble */
+.app-floating-chrome .action-bubble-toggle--left,
 .app-floating-chrome .action-bubble-toggle--right {
-  border-radius: 14px 999px 999px 14px;
+  border-radius: 999px;
 }
 
 .action-bubble-toggle::before,
@@ -9517,7 +9516,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   }
 
   .action-bubble__mark {
-    transform: scale(0.94) translateY(1px);
+    transform: scale(1.28) translateX(2px) translateY(2px);
   }
 
   .action-bubble-menu {
