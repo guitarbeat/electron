@@ -66,9 +66,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
     if (profile === currentUser) {
-      if (variant === 'inline') {
-        handleLogout();
-      }
+      handleLogout();
       return;
     }
 
@@ -226,6 +224,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
                     disabled={isDisabled}
                     animationOffset={profile === 'Electra'}
+                    aria-label={isActive ? 'Log out' : undefined}
                     aria-pressed={isActive}
                   />
 
