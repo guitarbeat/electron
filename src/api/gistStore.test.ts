@@ -9,11 +9,13 @@ const withGistEnv = async (
   env: {
     GIST_ID?: string;
     VITE_GIST_ID?: string;
+    GITHUB_TOKEN?: string;
   },
   run: () => Promise<void>
 ) => {
   const previousGistId = process.env.GIST_ID;
   const previousViteGistId = process.env.VITE_GIST_ID;
+  const previousGitHubToken = process.env.GITHUB_TOKEN;
 
   if (typeof env.GIST_ID === 'string') {
     process.env.GIST_ID = env.GIST_ID;
@@ -25,6 +27,12 @@ const withGistEnv = async (
     process.env.VITE_GIST_ID = env.VITE_GIST_ID;
   } else {
     delete process.env.VITE_GIST_ID;
+  }
+
+  if (typeof env.GITHUB_TOKEN === 'string') {
+    process.env.GITHUB_TOKEN = env.GITHUB_TOKEN;
+  } else {
+    delete process.env.GITHUB_TOKEN;
   }
 
   invalidateGistCache();
@@ -42,6 +50,12 @@ const withGistEnv = async (
       process.env.VITE_GIST_ID = previousViteGistId;
     } else {
       delete process.env.VITE_GIST_ID;
+    }
+
+    if (typeof previousGitHubToken === 'string') {
+      process.env.GITHUB_TOKEN = previousGitHubToken;
+    } else {
+      delete process.env.GITHUB_TOKEN;
     }
 
     invalidateGistCache();
@@ -108,6 +122,70 @@ test('readGistFile falls back to VITE_GIST_ID and accepts full gist URLs', async
         assert.equal(content, '[]');
         assert.deepEqual(calls, [`https://api.github.com/gists/${GIST_ID}`]);
       });
+    }
+  );
+});
+
+test('readGistFile retries without auth when GitHub rejects the token', async () => {
+  await withGistEnv(
+    {
+      GIST_ID,
+      GITHUB_TOKEN: 'ghp_expiredTokenValue',
+    },
+    async () => {
+      const originalFetch = globalThis.fetch;
+      const calls: Array<{ url: string; auth: string | null }> = [];
+
+      globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        calls.push({
+          url: String(input),
+          auth: headers.get('Authorization'),
+        });
+
+        if (calls.length === 1) {
+          return new Response(JSON.stringify({ message: 'Bad credentials' }), {
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+        }
+
+        return new Response(
+          JSON.stringify({
+            files: {
+              'movielist.json': {
+                content: '[]',
+              },
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }) as typeof fetch;
+
+      try {
+        const content = await readGistFile('movielist.json');
+
+        assert.equal(content, '[]');
+        assert.deepEqual(calls, [
+          {
+            url: `https://api.github.com/gists/${GIST_ID}`,
+            auth: 'Bearer ghp_expiredTokenValue',
+          },
+          {
+            url: `https://api.github.com/gists/${GIST_ID}`,
+            auth: null,
+          },
+        ]);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
     }
   );
 });

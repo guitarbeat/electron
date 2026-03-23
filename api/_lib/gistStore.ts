@@ -62,14 +62,14 @@ const normalizeGistId = (value: string | undefined): string => {
 const getGistId = (): string => normalizeGistId(process.env.GIST_ID || process.env.VITE_GIST_ID);
 const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN);
 
-const getGitHubHeaders = (): Headers => {
+const getGitHubHeaders = (options: { includeAuthorization?: boolean } = {}): Headers => {
   const headers = new Headers({
     Accept: 'application/vnd.github+json',
     'User-Agent': 'movie-watch-state-server',
   });
 
   const token = getGitHubToken();
-  if (token) {
+  if (token && options.includeAuthorization !== false) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
@@ -90,14 +90,28 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
     return gistCache.data;
   }
 
-  const response = await fetchWithRetry(
-    getGistUrl(),
+  const gistUrl = getGistUrl();
+  const token = getGitHubToken();
+
+  let response = await fetchWithRetry(
+    gistUrl,
     {
       method: 'GET',
       headers: getGitHubHeaders(),
     },
     'read gist'
   );
+
+  if (!response.ok && token && (response.status === 401 || response.status === 403)) {
+    response = await fetchWithRetry(
+      gistUrl,
+      {
+        method: 'GET',
+        headers: getGitHubHeaders({ includeAuthorization: false }),
+      },
+      'read gist without auth'
+    );
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to read gist (${response.status}).`);
