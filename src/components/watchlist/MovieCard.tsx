@@ -337,7 +337,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 }) => {
   const isGuest = !currentUser;
   const primaryActionLabel = watchedByCurrentUser ? 'Watched' : 'Mark watched';
-  const primaryActionLabelShort = watchedByCurrentUser ? 'Watched' : 'Watch';
+  const primaryActionLabelShort = watchedByCurrentUser ? 'Watched ✓' : 'Watch';
 
   const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
