@@ -58,3 +58,32 @@ test('fetchWithRetry does not retry 404', async () => {
   assert.equal(res.status, 404);
   assert.equal(calls, 1);
 });
+
+test('fetchWithRetry times out and retries', async () => {
+  let calls = 0;
+  let aborts = 0;
+
+  globalThis.fetch = async (_input, init) => {
+    calls += 1;
+    const signal = init?.signal as AbortSignal | undefined;
+
+    return new Promise<Response>((_resolve, reject) => {
+      signal?.addEventListener(
+        'abort',
+        () => {
+          aborts += 1;
+          reject(new Error('aborted'));
+        },
+        { once: true }
+      );
+    });
+  };
+
+  await assert.rejects(() =>
+    fetchWithRetry('https://example.com', { method: 'GET' }, 'test', { timeoutMs: 10 }),
+  );
+
+  // MAX_ATTEMPTS is 3 in the implementation.
+  assert.equal(calls, 3);
+  assert.ok(aborts >= 1);
+});
