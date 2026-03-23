@@ -1,4 +1,4 @@
-# AGENTS.md
+# Development & Operations
 
 ## Repo Snapshot
 
@@ -95,3 +95,4 @@ Server-side variables used by deployed handlers:
 
 - Human-oriented overview: `README.md`. Doc index: `docs/README.md`.
 - For commands, env vars, and API behavior, prefer `package.json`, `vite.config.ts`, `api/`, and this file.
+

@@ -2,7 +2,7 @@
 
 ## Local development
 
-Use **pnpm** (see `package.json` and `AGENTS.md`).
+Use **pnpm** (see `package.json` and `DEVELOPMENT.md`).
 
 ```bash
 pnpm install
@@ -53,4 +53,4 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
 ## Host notes
 
 - **Vercel**: `vercel.json` — `/api/*` → handlers, other routes → `index.html` SPA fallback
-- **Netlify**: `netlify.toml` builds the app; `/api/*` must target a real backend unless you add compatible functions — see `AGENTS.md`
+- **Netlify**: `netlify.toml` builds the app; `/api/*` must target a real backend unless you add compatible functions — see `DEVELOPMENT.md`
