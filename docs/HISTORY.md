@@ -52,6 +52,7 @@ Maximalist visuals meet disciplined engineering.
 - **Y2K UI (`a2225c2`)**: The app doubles down on nostalgia with gel bubbles and dashboard chrome.
 - **Server Proxy (`28a92ef`)**: Gist access is moved behind API handlers (Vite dev middleware + deployable `/api` routes) for security and reliability.
 - **Modernization (`3ce46e4`)**: Upgraded to ESLint 9, Vite 6, and modern package health.
+- **Spin wheel + Gist**: Recent picks and the UTC “daily” wheel outcome persist via `/api/state/spinHistory` and `/api/state/dailySpin` (Gist files `spinhistory.json` and `dailyspin.json`), replacing local-only `localStorage` for cross-device parity with the rest of shared state.
 
 ---
 

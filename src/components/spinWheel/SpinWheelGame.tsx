@@ -1,50 +1,38 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
+import { buildSharedSuggestionUrl } from '@/app/sharedSuggestion';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/app/providers';
+import { trackMetric } from '@/services/analyticsService';
+import { shareSuggestionLink } from '@/components/watchlist/watchlistShare';
+import { ShareIcon } from '@/common/icons';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
 import {
-  SPIN_HISTORY_MAX,
-  appendSpinHistory,
   buildSpinWheelGradient,
   computeSpinOutcome,
   getSpinCandidates,
   type SpinMode,
 } from './spinWheelEngine.ts';
-
-const SPIN_HISTORY_KEY = 'spinWheelHistory';
+import { useSpinWheelState } from '@/hooks/useSpinWheelState';
 
 interface SpinWheelGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
 }
 
-const readHistory = (): string[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(SPIN_HISTORY_KEY);
-    const parsed = raw ? (JSON.parse(raw) as string[]) : [];
-    return Array.isArray(parsed) ? parsed.slice(0, SPIN_HISTORY_MAX) : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeHistory = (history: string[]) => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(SPIN_HISTORY_KEY, JSON.stringify(history.slice(0, SPIN_HISTORY_MAX)));
-};
+const todayUtcDate = (): string => new Date().toISOString().slice(0, 10);
 
 const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
+  const { history, daily, recordSpin } = useSpinWheelState(currentUser, false);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('queue');
-  const [history, setHistory] = useState<string[]>(readHistory);
+  const [isSharing, setIsSharing] = useState(false);
   const spinTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -78,12 +66,48 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     [movies, selectedMovieId]
   );
 
+  const handleSharePick = useCallback(async () => {
+    if (!selectedMovie || !currentUser || typeof window === 'undefined') {
+      return;
+    }
+
+    setIsSharing(true);
+    try {
+      const shareUrl = buildSharedSuggestionUrl(window.location.href, {
+        title: selectedMovie.title,
+        suggestedBy: currentUser,
+      });
+      const shareMethod = await shareSuggestionLink(
+        selectedMovie.title,
+        currentUser,
+        shareUrl
+      );
+      trackMetric('spin_pick_share_clicked');
+      showToast({
+        message:
+          shareMethod === 'native'
+            ? `Share sheet opened for "${selectedMovie.title}".`
+            : `Share link copied for "${selectedMovie.title}".`,
+        type: 'success',
+        duration: 3000,
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+
+      showToast({ message: 'Failed to share movie link', type: 'error' });
+    } finally {
+      setIsSharing(false);
+    }
+  }, [currentUser, selectedMovie, showToast]);
+
   const gradient = useMemo(() => buildSpinWheelGradient(candidates.length), [candidates.length]);
   const segmentAngle = candidates.length > 0 ? 360 / candidates.length : 0;
   const previewMovies = useMemo(() => candidates.slice(0, 3), [candidates]);
 
   const handleSpin = () => {
-    if (isSpinning || candidates.length === 0) return;
+    if (isSpinning || candidates.length === 0 || !currentUser) return;
 
     const outcome = computeSpinOutcome(candidates, rotation);
     if (!outcome) {
@@ -100,18 +124,26 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     spinTimeoutRef.current = window.setTimeout(() => {
       const winner = outcome.winner;
       setSelectedMovieId(winner.id);
-      setHistory((currentHistory) => {
-        const nextHistory = appendSpinHistory(currentHistory, winner.title, SPIN_HISTORY_MAX);
-        writeHistory(nextHistory);
-        return nextHistory;
-      });
-
       setIsSpinning(false);
-      showToast({
-        message: `Wheel picked "${winner.title}"`,
-        type: 'success',
-        duration: 3000,
-      });
+
+      void (async () => {
+        const saved = await recordSpin(winner.id, winner.title);
+        if (saved) {
+          showToast({
+            message: `Wheel picked "${winner.title}"`,
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          showToast({
+            message:
+              'Could not save spin to shared state. Your pick is shown here; Recent picks may be out of date.',
+            type: 'error',
+            duration: 4000,
+          });
+        }
+      })();
+
       spinTimeoutRef.current = null;
     }, 4200);
   };
@@ -177,6 +209,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             {isSpinning ? 'Locked In' : selectedMovie ? 'Winner Ready' : 'Idle'}
           </strong>
         </div>
+        {daily && daily.date === todayUtcDate() ? (
+          <div className="spin-wheel-summary__item">
+            <span className="spin-wheel-summary__label">Today (UTC)</span>
+            <strong className="spin-wheel-summary__value">{daily.movieTitle}</strong>
+          </div>
+        ) : null}
       </div>
 
       <div className="spin-wheel-mode-bar" role="group" aria-label="Spin wheel pool">
@@ -253,7 +291,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               type="button"
               className="spin-wheel-trigger"
               onClick={handleSpin}
-              disabled={isSpinning || isLoading || candidates.length === 0}
+              disabled={isSpinning || isLoading || candidates.length === 0 || !currentUser}
               aria-label={
                 isSpinning
                   ? 'Spinning'

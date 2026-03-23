@@ -166,6 +166,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       return;
     }
 
+    if (parseSharedSuggestionIntent(window.location.search)) {
+      trackMetric('shared_suggestion_link_opened');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const syncSharedSuggestion = () => {
       setSharedSuggestion(parseSharedSuggestionIntent(window.location.search));
     };
