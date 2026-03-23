@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface LoadingSequenceProps {
   onReveal?: () => void;
@@ -7,6 +7,13 @@ interface LoadingSequenceProps {
 
 const LoadingSequence: React.FC<LoadingSequenceProps> = ({ onReveal, onComplete }) => {
   const [isRevealed, setIsRevealed] = useState(false);
+  const onRevealRef = useRef(onReveal);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onRevealRef.current = onReveal;
+    onCompleteRef.current = onComplete;
+  }, [onComplete, onReveal]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -17,12 +24,12 @@ const LoadingSequence: React.FC<LoadingSequenceProps> = ({ onReveal, onComplete 
     }, 500);
 
     const moireTimer = window.setTimeout(() => {
-      onReveal?.();
+      onRevealRef.current?.();
     }, 700);
 
     const completeTimer = window.setTimeout(() => {
       document.body.style.overflow = previousOverflow;
-      onComplete?.();
+      onCompleteRef.current?.();
     }, 2000);
 
     return () => {
@@ -31,7 +38,7 @@ const LoadingSequence: React.FC<LoadingSequenceProps> = ({ onReveal, onComplete 
       window.clearTimeout(completeTimer);
       document.body.style.overflow = previousOverflow;
     };
-  }, [onComplete, onReveal]);
+  }, []);
 
   return (
     <div className="loading-sequence" aria-hidden="true">
