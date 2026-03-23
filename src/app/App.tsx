@@ -51,6 +51,7 @@ const App: React.FC = () => {
     () => localStorage.getItem('quizCompleted') === 'true'
   );
   const [showMessages, setShowMessages] = useState(false);
+  const [showPlanControls, setShowPlanControls] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
@@ -333,6 +334,14 @@ const App: React.FC = () => {
   const actionItems = useMemo(
     (): CommandActionItem[] => [
       {
+        label: 'Plan next pick',
+        icon: '🎬',
+        action: () => {
+          setActiveTab('queue');
+          setShowPlanControls(true);
+        },
+      },
+      {
         label: 'Messages',
         icon: '💬',
         action: () => setShowMessages(true),
@@ -448,6 +457,8 @@ const App: React.FC = () => {
               activeTab={activeTab}
               workspaceMeta={workspaceMeta}
               workspaceControlsRef={workspaceControlsRef}
+              showPlanControls={showPlanControls}
+              onClosePlanControls={() => setShowPlanControls(false)}
             />
           </div>
         </div>
