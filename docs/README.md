@@ -1,6 +1,6 @@
 # Documentation
 
-Project conventions for humans and agents live in [`AGENTS.md`](../AGENTS.md) at the repo root (commands, env vars, validation).
+Project conventions for humans and agents live in [`DEVELOPMENT.md`](../DEVELOPMENT.md) at the repo root (commands, env vars, validation).
 
 | Doc | Contents |
 | --- | --- |

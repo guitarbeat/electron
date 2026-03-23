@@ -24,7 +24,7 @@ pnpm test
 ## Documentation
 
 - **[docs/README.md](docs/README.md)** — index of guides (deployment, site layout, history)
-- **[AGENTS.md](AGENTS.md)** — toolchain, env vars, and workflow (source of truth for agents)
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** — toolchain, env vars, and workflow
 
 ## Tech stack
 
