@@ -39,7 +39,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     movieToDelete,
     setMovieToDelete,
     setToast,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     successMovieId,
     setSuccessMovieId,
     processingSuggestionId,

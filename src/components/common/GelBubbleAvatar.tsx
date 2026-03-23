@@ -559,6 +559,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
                 objectFit: isHoverPreview ? 'contain' : 'cover',
                 transition: 'opacity 0.25s ease',
                 opacity: isCatLoading ? 0.7 : 1,
+                fontFamily: 'Papyrus',
+                verticalAlign: 'middle',
               }}
             />
           )}

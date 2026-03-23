@@ -31,6 +31,78 @@ const isMissingPinStoreConfigError = (error: unknown): boolean =>
 const isMissingSessionSecretError = (error: unknown): boolean =>
   error instanceof Error && error.message === 'SESSION_SIGNING_SECRET is not configured.';
 
+const MAX_PIN_ATTEMPTS = 5;
+const PIN_LOCKOUT_MS = 5 * 60 * 1000;
+
+type PinAttemptState = {
+  failures: number;
+  lockedUntil: number | null;
+};
+
+const pinAttemptsByProfile = new Map<string, PinAttemptState>();
+
+export const profilePinRateLimitConfig = {
+  maxAttempts: MAX_PIN_ATTEMPTS,
+  lockoutMs: PIN_LOCKOUT_MS,
+} as const;
+
+const getClientFingerprint = (req: Request): string => {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const clientIp =
+    forwardedFor?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    req.headers.get('cf-connecting-ip') ||
+    'unknown-client';
+
+  return clientIp;
+};
+
+const getPinAttemptKey = (req: Request, user: string): string =>
+  `${getClientFingerprint(req)}:${user}`;
+
+const getLockoutRemainingSeconds = (lockedUntil: number, now: number): number =>
+  Math.max(1, Math.ceil((lockedUntil - now) / 1000));
+
+export const computeNextPinAttemptState = (
+  currentFailures: number,
+  now: number
+): PinAttemptState => {
+  const nextFailures = currentFailures + 1;
+  return {
+    failures: nextFailures,
+    lockedUntil: nextFailures >= MAX_PIN_ATTEMPTS ? now + PIN_LOCKOUT_MS : null,
+  };
+};
+
+const getActiveLock = (key: string, now: number): PinAttemptState | null => {
+  const state = pinAttemptsByProfile.get(key);
+  if (!state) {
+    return null;
+  }
+
+  if (!state.lockedUntil || state.lockedUntil <= now) {
+    pinAttemptsByProfile.delete(key);
+    return null;
+  }
+
+  return state;
+};
+
+const recordPinFailure = (key: string, now: number): PinAttemptState => {
+  const current = pinAttemptsByProfile.get(key);
+  const nextState = computeNextPinAttemptState(current?.failures ?? 0, now);
+  pinAttemptsByProfile.set(key, nextState);
+  return nextState;
+};
+
+const clearPinFailures = (key: string): void => {
+  pinAttemptsByProfile.delete(key);
+};
+
+export const resetProfilePinAttemptState = (): void => {
+  pinAttemptsByProfile.clear();
+};
+
 export default async function handler(req: Request): Promise<Response> {
   try {
     if (req.method === 'DELETE') {
@@ -76,10 +148,45 @@ export default async function handler(req: Request): Promise<Response> {
       return badRequestResponse('A valid user is required.');
     }
 
+    const now = Date.now();
+    const attemptKey = getPinAttemptKey(req, user);
+    const activeLock = getActiveLock(attemptKey, now);
+    if (activeLock?.lockedUntil) {
+      const retryAfter = getLockoutRemainingSeconds(activeLock.lockedUntil, now);
+      return jsonResponse(
+        {
+          error: `Too many incorrect PIN attempts. Try again in ${retryAfter} seconds.`,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+          },
+        }
+      );
+    }
+
     const isValid = await verifyProfilePin(user, pin);
     if (!isValid) {
+      const failedState = recordPinFailure(attemptKey, now);
+      if (failedState.lockedUntil) {
+        const retryAfter = getLockoutRemainingSeconds(failedState.lockedUntil, now);
+        return jsonResponse(
+          {
+            error: `Too many incorrect PIN attempts. Try again in ${retryAfter} seconds.`,
+          },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(retryAfter),
+            },
+          }
+        );
+      }
       return unauthorizedResponse('Incorrect PIN.');
     }
+
+    clearPinFailures(attemptKey);
 
     const currentSession = getSessionState(req);
     const pinProtectedUsers = await getPinProtectedUsers();

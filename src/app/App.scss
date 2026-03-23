@@ -9636,6 +9636,10 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   transform: none;
 }
 
+:is(.watchlist-top-controls, .places-top-controls) .ui-subnav__chip {
+  font-family: Papyrus;
+}
+
 :is(.watchlist-top-controls, .places-top-controls) .ui-subnav__tab:hover,
 :is(.watchlist-top-controls, .places-top-controls) .ui-subnav__chip:hover {
   color: var(--color-text-primary);
@@ -9673,6 +9677,55 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
 :is(.watchlist-top-controls, .places-top-controls) .ui-subnav__indicator {
   display: none !important;
+}
+
+@media (max-width: 520px) {
+  .watchlist-top-controls .ui-subnav-segmented {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .watchlist-top-controls .ui-subnav-segmented__tabs {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    gap: 0.28rem;
+    padding: 0.18rem;
+    justify-content: space-between;
+  }
+
+  .watchlist-top-controls .ui-subnav-segmented__sort {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+  }
+
+  .watchlist-top-controls .ui-subnav__tab {
+    flex: 1 1 0%;
+    min-width: 0;
+    justify-content: center;
+    padding: 0.34rem 0.45rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+  }
+
+  .watchlist-top-controls .ui-subnav__chip {
+    flex: 1 1 0%;
+    min-width: 0;
+    justify-content: center;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.72rem;
+  }
+
+  .watchlist-top-controls .ui-subnav__count {
+    min-width: 0.95rem;
+    height: 0.95rem;
+    padding: 0 0.2rem;
+    font-size: 0.55rem;
+  }
 }
 
 .watchlist-top-controls__search-form,
