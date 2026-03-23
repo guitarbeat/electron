@@ -69,6 +69,7 @@ Server-side variables used by deployed handlers:
 - Add or update `*.test.ts` files when changing service logic, state helpers, or utility behavior.
 - Prefer verifying the narrowest surface first, then run the full validation set before finishing:
   `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm build`.
+- CI (GitHub Actions): `.github/workflows/ci.yml` runs the same install, lint, typecheck, test, and build steps on pushes and pull requests to `main`/`master`.
 
 ## Deployment Notes
 
@@ -76,6 +77,10 @@ Server-side variables used by deployed handlers:
 
 - `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
 - Set the same server env vars as in [Environment Variables](#environment-variables) (`GIST_ID`, `GITHUB_TOKEN`, `API_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
+
+**Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling GitHub (use for frequent uptime pings). `GET /api/health?deep=1` performs a cached gist read via `movielist.json` to verify `GIST_ID` and GitHub reachability; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
+
+**Monitoring:** Use Vercel’s function logs and error rates for `/api/state/*` and related handlers; alert on spikes in 5xx or latency. External uptime tools can target `/api/health` (liveness) and optionally `?deep=1` on a longer interval.
 
 ### Netlify (static build only until `/api` is wired)
 
