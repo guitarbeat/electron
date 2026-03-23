@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Button from './Button';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import { getSyncBannerContent } from './syncBannerContent';
@@ -15,10 +15,35 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   label,
 }) => {
   const content = getSyncBannerContent({ isBlocked, label });
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyDebugInfo = useCallback(async () => {
+    const payload = [
+      `Sync banner: ${content.title}`,
+      `Description: ${content.description}`,
+      ...content.debugHints.map((hint) => `- ${hint}`),
+    ].join('\n');
+
+    try {
+      await navigator.clipboard.writeText(payload);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }, [content.debugHints, content.description, content.title]);
+
+  useEffect(() => {
+    if (!copied) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => setCopied(false), 1800);
+    return () => window.clearTimeout(timeoutId);
+  }, [copied]);
 
   return (
     <div
-      role={isBlocked ? 'alert' : 'status'}
+      role={content.tone === 'assertive' ? 'alert' : 'status'}
       aria-live={content.tone}
       style={{
         display: 'flex',
@@ -31,6 +56,10 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         background: content.accent,
         border: `1px solid ${content.border}`,
         color: colors.textPrimary,
+        boxShadow:
+          content.tone === 'assertive'
+            ? '0 0 0 1px rgba(255, 120, 120, 0.25), 0 8px 24px rgba(255, 87, 87, 0.15)'
+            : undefined,
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs, minWidth: 0 }}>
@@ -42,8 +71,9 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
             padding: '0.2rem 0.5rem',
             borderRadius: 999,
             border: `1px solid ${content.border}`,
-            background: 'rgba(255, 255, 255, 0.06)',
-            color: colors.textPrimary,
+            background:
+              content.tone === 'assertive' ? 'rgba(255, 87, 87, 0.22)' : 'rgba(255, 255, 255, 0.06)',
+            color: content.tone === 'assertive' ? '#ffd9d9' : colors.textPrimary,
             fontSize: typography.fontSize.xs,
             fontWeight: 700,
             letterSpacing: '0.08em',
@@ -55,15 +85,53 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         <strong style={{ fontSize: typography.fontSize.sm }}>
           {content.title}
         </strong>
-        <span style={{ fontSize: typography.fontSize.xs, color: colors.textSecondary }}>
+        <span
+          style={{
+            fontSize: typography.fontSize.xs,
+            color: content.tone === 'assertive' ? '#ffd3d3' : colors.textSecondary,
+          }}
+        >
           {content.description}
         </span>
+        {content.debugHints.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+            <strong
+              style={{
+                fontSize: typography.fontSize.xs,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                color: content.tone === 'assertive' ? '#ffdede' : colors.textSecondary,
+              }}
+            >
+              Debug details
+            </strong>
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: '1.1rem',
+                display: 'grid',
+                gap: '0.2rem',
+                fontSize: typography.fontSize.xs,
+                color: content.tone === 'assertive' ? '#ffd3d3' : colors.textSecondary,
+              }}
+            >
+              {content.debugHints.map((hint) => (
+                <li key={hint}>{hint}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
-      {onRetry ? (
-        <Button size="sm" variant={isBlocked ? 'secondary' : 'ghost'} onClick={() => void onRetry()}>
-          Retry sync
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: spacing.xs }}>
+        <Button size="sm" variant="ghost" onClick={() => void handleCopyDebugInfo()}>
+          {copied ? 'Copied' : 'Copy debug info'}
         </Button>
-      ) : null}
+        {onRetry ? (
+          <Button size="sm" variant={isBlocked ? 'secondary' : 'ghost'} onClick={() => void onRetry()}>
+            Retry sync
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 };
