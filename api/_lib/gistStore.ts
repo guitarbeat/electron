@@ -60,7 +60,7 @@ const normalizeGistId = (value: string | undefined): string => {
 };
 
 const getGistId = (): string => normalizeGistId(process.env.GIST_ID || process.env.VITE_GIST_ID);
-const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN);
+const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN || process.env.GITHUB_PERSONAL_ACCESS_TOKEN);
 
 const getGitHubHeaders = (): Headers => {
   const headers = new Headers({
