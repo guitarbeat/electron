@@ -1657,7 +1657,8 @@ body {
 }
 
 .action-bubble__mark {
-  transform: scale(1.28) translateX(2px) translateY(2px);
+  /* Keep the lockup optically centered inside the circular bubble. */
+  transform: scale(1.24) translateX(-1px) translateY(0);
 }
 
 .action-bubble__mark svg {
