@@ -7244,18 +7244,30 @@ body.grabbing * {
     border-color 0.22s ease;
 }
 
+/* Touch: squeeze on tap */
 .movie-item-card:active {
   transform: scale(0.98);
   transition-duration: 0.1s;
 }
 
 @media (hover: hover) and (pointer: fine) {
+  /* Desktop hover: lift */
   .movie-item-card:hover {
     transform: translateY(-6px) scale(1.025);
     box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.5),
       0 0 0 1px rgba(255, 127, 198, 0.22),
       0 0 28px rgba(255, 127, 198, 0.18);
+  }
+
+  /* Desktop click: squeeze overrides the hover lift */
+  .movie-item-card:hover:active {
+    transform: translateY(-2px) scale(0.98);
+    transition-duration: 0.1s;
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 127, 198, 0.18),
+      0 0 14px rgba(255, 127, 198, 0.12);
   }
 }
 
