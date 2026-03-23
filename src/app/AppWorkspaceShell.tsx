@@ -1,5 +1,4 @@
 import type { FC, RefObject } from 'react';
-import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
 import type { MainTab } from '@/shared/types';
@@ -10,6 +9,8 @@ interface AppWorkspaceShellProps {
   activeTab: MainTab;
   workspaceMeta: WorkspaceMeta;
   workspaceControlsRef: RefObject<HTMLDivElement | null>;
+  showPlanControls: boolean;
+  onClosePlanControls: () => void;
 }
 
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
@@ -17,6 +18,8 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   activeTab,
   workspaceMeta: _workspaceMeta,
   workspaceControlsRef,
+  showPlanControls,
+  onClosePlanControls,
 }) => {
   void _workspaceMeta;
   const modeClass = activeTab === 'queue' ? 'queue' : 'places';
@@ -51,7 +54,15 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         aria-label="Primary workspace"
         style={{ minWidth: 0 }}
       >
-        {activeTab === 'queue' ? <Watchlist isMobile={isMobile} /> : <PlacesList />}
+        {activeTab === 'queue' ? (
+          <Watchlist
+            isMobile={isMobile}
+            showPlanControls={showPlanControls}
+            onClosePlanControls={onClosePlanControls}
+          />
+        ) : (
+          <PlacesList />
+        )}
       </section>
     </main>
   );
