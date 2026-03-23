@@ -9660,6 +9660,34 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     border-bottom-color: rgba(203, 168, 112, 0.16);
   }
 
+  .action-bubble-menu__profiles {
+    border-bottom-color: rgba(203, 168, 112, 0.18);
+  }
+
+  .action-bubble-menu .command-deck__bubble-label {
+    color: color-mix(in srgb, var(--color-text-secondary) 85%, rgba(212, 177, 115, 0.6) 15%);
+    text-shadow: 0 0 10px rgba(212, 177, 115, 0.3);
+  }
+
+  .action-bubble-menu .command-deck__bubble-item:hover .command-deck__bubble-label,
+  .action-bubble-menu .command-deck__bubble-item:focus-within .command-deck__bubble-label {
+    color: color-mix(in srgb, var(--color-text-primary) 90%, white 10%);
+    text-shadow:
+      0 0 12px rgba(212, 177, 115, 0.5),
+      0 0 24px rgba(203, 168, 112, 0.3);
+  }
+
+  .action-bubble-menu .gel-avatar-chrome-ring {
+    background: conic-gradient(
+      from 20deg,
+      rgba(255, 244, 219, 0.78) 0deg,
+      rgba(212, 177, 115, 0.42) 86deg,
+      rgba(203, 168, 112, 0.38) 185deg,
+      rgba(255, 244, 219, 0.78) 290deg,
+      rgba(255, 244, 219, 0.78) 360deg
+    );
+  }
+
   .action-bubble-toggle {
     border-color: rgba(239, 205, 153, 0.32);
     background:

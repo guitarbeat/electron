@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from './Button';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import { getSyncBannerContent } from './syncBannerContent';
@@ -14,12 +14,20 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   onRetry,
   label,
 }) => {
-  const content = getSyncBannerContent({ isBlocked, label });
+  const prevKeyRef = useRef('');
+  const stableTimestampRef = useRef('');
+  const incidentKey = `${isBlocked}::${label ?? ''}`;
+  if (incidentKey !== prevKeyRef.current) {
+    prevKeyRef.current = incidentKey;
+    stableTimestampRef.current = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  const content = { ...getSyncBannerContent({ isBlocked, label }), occurredAt: stableTimestampRef.current };
   const [copied, setCopied] = useState(false);
 
   const handleCopyDebugInfo = useCallback(async () => {
     const payload = [
       `Sync banner: ${content.title}`,
+      `Occurred at: ${content.occurredAt}`,
       `Description: ${content.description}`,
       ...content.debugHints.map((hint) => `- ${hint}`),
     ].join('\n');
@@ -30,7 +38,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
     } catch {
       setCopied(false);
     }
-  }, [content.debugHints, content.description, content.title]);
+  }, [content.debugHints, content.description, content.title, content.occurredAt]);
 
   useEffect(() => {
     if (!copied) {
@@ -84,6 +92,16 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         </span>
         <strong style={{ fontSize: typography.fontSize.sm }}>
           {content.title}
+          <span
+            style={{
+              fontWeight: 400,
+              fontSize: typography.fontSize.xs,
+              color: content.tone === 'assertive' ? '#ffd3d3' : colors.textSecondary,
+              marginLeft: spacing.xs,
+            }}
+          >
+            at {content.occurredAt}
+          </span>
         </strong>
         <span
           style={{

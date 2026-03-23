@@ -11,6 +11,7 @@ export interface SyncBannerContent {
   accent: string;
   border: string;
   tone: 'polite' | 'assertive';
+  occurredAt: string;
 }
 
 interface SyncBannerInput {
@@ -80,10 +81,17 @@ const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
   ];
 };
 
+const formatTimestamp = (): string => {
+  const now = new Date();
+  return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
 export const getSyncBannerContent = ({
   isBlocked,
   label,
 }: SyncBannerInput): SyncBannerContent => {
+  const occurredAt = formatTimestamp();
+
   if (isBlocked) {
     return {
       badge: 'Action needed',
@@ -93,6 +101,7 @@ export const getSyncBannerContent = ({
       accent: 'rgba(255, 189, 89, 0.16)',
       border: 'rgba(255, 189, 89, 0.45)',
       tone: 'assertive',
+      occurredAt,
     };
   }
 
@@ -104,5 +113,6 @@ export const getSyncBannerContent = ({
     accent: 'rgba(255, 87, 87, 0.16)',
     border: 'rgba(255, 120, 120, 0.46)',
     tone: 'assertive',
+    occurredAt,
   };
 };
