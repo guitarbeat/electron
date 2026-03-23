@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import LoadingSequence from '@/components/effects/LoadingSequence';
 import RetroEffects from '@/components/effects/RetroEffects';
 import {
@@ -11,7 +12,6 @@ import {
 } from '@/app/actionBubble';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import ElectronMark from '@/branding/ElectronMark';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
@@ -19,7 +19,7 @@ import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
 import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/app/providers';
-import { colors, spacing } from '@/theme/tokens';
+import { colors } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
@@ -344,6 +344,14 @@ const App: React.FC = () => {
     return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
   }, [actionBubblePosition]);
 
+  const duoStatusPortalEl = useMemo(() => {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    return document.getElementById('duo-status-card-root');
+  }, []);
+
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
@@ -371,8 +379,35 @@ const App: React.FC = () => {
     );
   }
 
+  const duoStatusCard = (
+    <Card
+      variant="default"
+      className="duo-status-card duo-status-card--portal"
+    >
+      <div className="duo-status-card__brand duo-status-card__brand--mark-only">
+        <div className="duo-status-card__mark-shell" aria-hidden="true">
+          <img
+            src={ELECTRON_LOGO_MARK_PATH}
+            alt=""
+            className="duo-status-card__mark"
+            draggable="false"
+          />
+        </div>
+      </div>
+
+      <div className="duo-status-card__facts" aria-label="Page summary">
+        {summaryFacts.map((fact) => (
+          <span key={fact} className="duo-status-card__fact">
+            {fact}
+          </span>
+        ))}
+      </div>
+    </Card>
+  );
+
   return (
     <ThemeProvider activeTab={activeTab}>
+      {duoStatusPortalEl ? createPortal(duoStatusCard, duoStatusPortalEl) : null}
       {shouldShowLoadingSequence ? (
         <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
       ) : null}
@@ -405,10 +440,11 @@ const App: React.FC = () => {
               }}
             >
               <span className="action-bubble__icon" aria-hidden="true">
-                <ElectronMark
+                <img
+                  src={ELECTRON_LOGO_MARK_PATH}
+                  alt=""
                   className="action-bubble__icon-image action-bubble__mark"
-                  variant={logoLabState.initialVariant}
-                  size="100%"
+                  draggable="false"
                 />
               </span>
               <span className="sr-only">Messages and extras</span>
@@ -444,45 +480,6 @@ const App: React.FC = () => {
                     title="Choose a profile"
                     className="duo-status-shell__selection"
                   />
-
-                  <Card
-                    variant="default"
-                    className="duo-status-card"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: spacing.lg,
-                      padding: isMobile ? spacing.lg : spacing.xl,
-                      border: `1px solid ${colors.borderSubtle}`,
-                    }}
-                  >
-                    <div className="duo-status-card__brand">
-                      <div className="duo-status-card__mark-shell" aria-hidden="true">
-                        <img
-                          src={ELECTRON_LOGO_MARK_PATH}
-                          alt=""
-                          className="duo-status-card__mark"
-                          draggable="false"
-                        />
-                      </div>
-
-                      <div className="duo-status-card__brand-copy">
-                        <p className="duo-status-card__eyebrow">Shared folio</p>
-                        <h2 className="duo-status-card__title">Movies, dates, and messages</h2>
-                        <p className="duo-status-card__copy">
-                          One shared board for movie picks, date spots, and the running chat.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="duo-status-card__facts" aria-label="Page summary">
-                      {summaryFacts.map((fact) => (
-                        <span key={fact} className="duo-status-card__fact">
-                          {fact}
-                        </span>
-                      ))}
-                    </div>
-                  </Card>
                 </div>
               </section>
 

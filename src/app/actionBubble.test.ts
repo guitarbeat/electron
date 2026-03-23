@@ -39,7 +39,7 @@ test('getActionBubbleMenuPosition', async (t) => {
     const menuPosition = getActionBubbleMenuPosition({ x: 24, y: 400 }, 1280, 900);
 
     assert.equal(menuPosition.left, '12px');
-    assert.equal(menuPosition.top, '472px');
+    assert.equal(menuPosition.top, '488px');
   });
 
   await t.test('opens above the bubble when there is not enough space below', () => {

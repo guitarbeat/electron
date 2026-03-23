@@ -311,7 +311,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         ? '80%'
         : '82%';
   const insideNameBottom = size === 'tiny' ? '4.5%' : isActionBubble ? '7%' : '6.5%';
-  const insideNameMaxWidth = size === 'tiny' ? '78%' : '74%';
+  /** Cap width to bubble; intrinsic width shows full name (no ellipsis) */
+  const insideNameMaxWidth = size === 'tiny' ? '96%' : '96%';
   const insideNamePadding =
     size === 'tiny' ? '0.16rem 0.46rem 0.2rem' : '0.22rem 0.68rem 0.28rem';
 
@@ -572,9 +573,11 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               transition: 'all 0.3s ease-out',
               pointerEvents: 'none',
               whiteSpace: 'nowrap',
+              textAlign: 'center',
+              width: 'max-content',
               maxWidth: insideNameMaxWidth,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              boxSizing: 'border-box',
+              overflow: 'visible',
               padding: insideNamePadding,
               borderRadius: '999px',
               background: `
