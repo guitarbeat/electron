@@ -7043,6 +7043,15 @@ body.grabbing * {
     0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
+.watchlist-top-controls__helper {
+  margin: -0.1rem 0 0;
+  color: color-mix(in srgb, var(--color-text-secondary) 84%, var(--color-secondary) 16%);
+  font-family: var(--type-caption-family);
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
+  max-width: 34rem;
+}
+
 .watchlist-top-controls__search-shell {
   flex: 1 1 220px;
   flex: 1;
