@@ -94,30 +94,11 @@ const SubNav: React.FC<SubNavProps> = ({
 
   return (
     <div
-      className={`ui-subnav ui-subnav--${variant} ${className}`}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.md,
-        width: '100%',
-        marginBottom: spacing.lg,
-      }}
+      className={`ui-subnav ui-subnav--${variant} ui-subnav--default-layout ${className}`}
     >
       <div
-        className="ui-subnav-tabs"
+        className="ui-subnav-tabs ui-subnav-tabs--default"
         role="tablist"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: variant === 'pills' ? spacing.sm : '0',
-          borderBottom:
-            variant === 'underlined' ? `1px solid ${colors.borderSubtle}` : 'none',
-          paddingBottom: variant === 'underlined' ? '0' : spacing.xs,
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch',
-        }}
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
@@ -130,8 +111,6 @@ const SubNav: React.FC<SubNavProps> = ({
               className={`ui-subnav__tab${isActive ? ' is-active' : ''}`}
               style={{
                 position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
                 gap: spacing.xs,
                 padding: `${spacing.sm} ${spacing.md}`,
                 backgroundColor:
@@ -150,9 +129,6 @@ const SubNav: React.FC<SubNavProps> = ({
                 <span
                   className="ui-subnav__count"
                   style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     minWidth: '1.25rem',
                     height: '1.25rem',
                     padding: '0 0.35rem',
@@ -194,8 +170,6 @@ const SubNav: React.FC<SubNavProps> = ({
         <div
           className="ui-subnav-chips"
           style={{
-            display: 'flex',
-            alignItems: 'center',
             gap: spacing.xs,
             overflowX: 'auto',
             scrollbarWidth: 'none',
@@ -210,8 +184,6 @@ const SubNav: React.FC<SubNavProps> = ({
                 onClick={() => handleChipClick(chip.id)}
                 className={`ui-subnav__chip${isActive ? ' is-active' : ''}`}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
                   gap: spacing.xs,
                   padding: `${spacing.xs} ${spacing.sm}`,
                   backgroundColor: isActive ? `${colors.accent}20` : 'rgba(255,255,255,0.04)',

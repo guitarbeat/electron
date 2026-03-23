@@ -50,11 +50,10 @@ const CollectionGrid: React.FC<CollectionGridProps> = ({
   ...props
 }) => (
   <div
-    className={className}
+    className={`collection-grid ${className}`.trim()}
     style={{
-      display: 'grid',
-      gridTemplateColumns: `repeat(auto-fill, minmax(${minColumnWidth}, 1fr))`,
-      gap,
+      ['--collection-grid-min-column-width' as string]: minColumnWidth,
+      ['--collection-grid-gap' as string]: gap,
       ...style,
     }}
     {...props}

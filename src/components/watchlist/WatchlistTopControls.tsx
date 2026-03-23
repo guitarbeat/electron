@@ -69,9 +69,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
     <section
       className="workspace-control-panel ui-control-surface watchlist-top-controls"
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.lg,
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
@@ -96,12 +93,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
 
       <div
         className="watchlist-top-controls__toolbar"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: spacing.sm,
-          width: '100%',
-        }}
       >
         <form
           className="watchlist-top-controls__search-form"
@@ -109,12 +100,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             event.preventDefault();
             void onSubmit();
           }}
-          style={{
-            flex: 1,
-            minWidth: 0,
-          }}
         >
-          <div className="watchlist-top-controls__search-shell" style={{ flex: '1 1 220px', minWidth: 0 }}>
+          <div className="watchlist-top-controls__search-shell">
             <Input
               className="watchlist-top-controls__search-field"
               value={searchQuery}
@@ -127,13 +114,12 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           {hasSearchQuery && (
             <div
               className="watchlist-top-controls__search-actions"
-              style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}
             >
               {currentUser ? (
                 <Button
                   type="submit"
                   variant="secondary"
-                  size="sm"
+                  size="md"
                   disabled={isAdding || isSubmittingRecommendation || isSharing}
                   isLoading={isAdding}
                   title="Add movie"
@@ -146,7 +132,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
               <Button
                 type="button"
                 variant={currentUser ? 'ghost' : 'secondary'}
-                size="sm"
+                size="md"
                 onClick={onRecommend}
                 disabled={isAdding || isSubmittingRecommendation || isSharing || !canRecommend}
                 title="Recommend movie"
@@ -157,7 +143,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="md"
                 onClick={() => void onShare()}
                 disabled={isAdding || isSubmittingRecommendation || isSharing}
                 isLoading={isSharing}

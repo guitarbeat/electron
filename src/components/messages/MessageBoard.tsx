@@ -59,17 +59,20 @@ const MessageBoard: React.FC = () => {
   return (
     <>
       <div
+        className="message-board"
         style={{
           maxWidth: '720px',
           width: '100%',
           margin: '0 auto',
           padding: spacing.md,
-          height: 'min(680px, 78vh)',
+          height: 'min(680px, calc(100dvh - 9rem))',
+          minHeight: 'min(520px, calc(100dvh - 9rem))',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
         <div
+          className="message-board__surface"
           style={{
             display: 'flex',
             flexDirection: 'column',

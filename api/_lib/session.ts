@@ -4,7 +4,9 @@ import type { User } from '../../src/shared/types.ts';
 import { isUser } from '../../src/utils/shared.ts';
 
 const PROFILE_COOKIE = 'movie_watch_profile';
+const PIN_ATTEMPT_COOKIE = 'movie_watch_pin_attempt';
 const PROFILE_TTL_SECONDS = 60 * 60 * 24 * 7;
+const PIN_ATTEMPT_TTL_SECONDS = 60 * 10;
 
 interface ProfileSessionPayload {
   type: 'profile';
@@ -12,7 +14,15 @@ interface ProfileSessionPayload {
   exp: number;
 }
 
-type SessionPayload = ProfileSessionPayload;
+interface PinAttemptPayload {
+  type: 'pin_attempt';
+  user: User;
+  failures: number;
+  lockUntil: number | null;
+  exp: number;
+}
+
+type SessionPayload = ProfileSessionPayload | PinAttemptPayload;
 
 const clean = (value: string | undefined): string =>
   (value || '').trim().replace(/^["']|["']$/g, '');
@@ -78,6 +88,17 @@ const verifyToken = <T extends SessionPayload>(
     if (parsed.type === 'profile' && !isUser(parsed.user)) {
       return null;
     }
+    if (parsed.type === 'pin_attempt') {
+      if (
+        !isUser(parsed.user) ||
+        !Number.isFinite(parsed.failures) ||
+        parsed.failures < 0 ||
+        (parsed.lockUntil !== null &&
+          (!Number.isFinite(parsed.lockUntil) || parsed.lockUntil <= 0))
+      ) {
+        return null;
+      }
+    }
 
     return parsed as T;
   } catch {
@@ -139,6 +160,30 @@ export const buildProfileCookie = (req: Request, user: User): string =>
 export const buildClearProfileCookie = (req: Request): string =>
   buildCookie(req, PROFILE_COOKIE, '', 0);
 
+export const buildPinAttemptCookie = (
+  req: Request,
+  payload: {
+    user: User;
+    failures: number;
+    lockUntil: number | null;
+  }
+): string =>
+  buildCookie(
+    req,
+    PIN_ATTEMPT_COOKIE,
+    encodeToken({
+      type: 'pin_attempt',
+      user: payload.user,
+      failures: payload.failures,
+      lockUntil: payload.lockUntil,
+      exp: Math.floor(Date.now() / 1000) + PIN_ATTEMPT_TTL_SECONDS,
+    }),
+    PIN_ATTEMPT_TTL_SECONDS
+  );
+
+export const buildClearPinAttemptCookie = (req: Request): string =>
+  buildCookie(req, PIN_ATTEMPT_COOKIE, '', 0);
+
 export const getSessionState = (req: Request): {
   hasAccess: boolean;
   currentUser: User | null;
@@ -163,6 +208,26 @@ export const hasAccessSession = (req?: Request): boolean => {
 
 export const requireProfileUser = (req: Request): User | null =>
   getSessionState(req).currentUser;
+
+export const getPinAttemptState = (
+  req: Request
+): {
+  user: User;
+  failures: number;
+  lockUntil: number | null;
+} | null => {
+  const cookies = parseCookies(req);
+  const payload = verifyToken<PinAttemptPayload>(cookies[PIN_ATTEMPT_COOKIE], 'pin_attempt');
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    user: payload.user,
+    failures: payload.failures,
+    lockUntil: payload.lockUntil,
+  };
+};
 
 export const hashPin = (pin: string): string => {
   const salt = randomBytes(16);
