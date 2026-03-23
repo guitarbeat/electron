@@ -210,36 +210,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   /** Inline profile avatars: photo fills shell; chrome / gloss / name stack above */
   const isTinyFullBleed = size === 'tiny' && !icon && !isActionBubble;
   const hasPhotoFill = Boolean(user && !icon && !isActionBubble);
-  const isHoverPreview = Boolean(hasPhotoFill && isHovered && !disabled);
-
-  React.useEffect(() => {
-    if (!user) return;
-    // #region agent log
-    fetch('http://127.0.0.1:7514/ingest/a7642128-7508-4c11-bd07-2f9ada94f387', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Debug-Session-Id': '357275',
-      },
-      body: JSON.stringify({
-        sessionId: '357275',
-        location: 'GelBubbleAvatar.tsx:hover',
-        message: 'photo bubble hover state',
-        data: {
-          user,
-          size,
-          isHovered,
-          isHoverPreview,
-          hasPhotoFill,
-          disabled: Boolean(disabled),
-        },
-        timestamp: Date.now(),
-        hypothesisId: 'H2-H4',
-        runId: 'debug-357275',
-      }),
-    }).catch(() => {});
-    // #endregion
-  }, [user, size, isHovered, isHoverPreview, hasPhotoFill, disabled]);
+  /** Inline full-bleed: skip photo "preview" mode (1.88× + name hide) — use dedicated hover scale on the button instead */
+  const isHoverPreview = Boolean(hasPhotoFill && isHovered && !disabled && !isTinyFullBleed);
 
   const bubbleClasses = [
     'gel-bubble',
@@ -315,7 +287,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     ? `1.5px solid color-mix(in srgb, rgba(255, 255, 255, 0.84) 50%, ${haloColor} 50%)`
     : `2px solid color-mix(in srgb, ${haloColor} 45%, var(--color-border-subtle) 55%)`;
 
-  /** Preview scale is applied on the <button> so hit-testing matches the enlarged visual; scaling only the inner shell caused mouseLeave on the button and hover flicker (session 357275 logs). */
+  /** Preview scale is applied on the <button> so hit-testing matches the enlarged visual; scaling only the inner shell caused mouseLeave on the button and hover flicker. */
   const photoPreviewScaleMult =
     size === 'tiny' ? 1.88 : size === 'compact' ? 1.72 : 1.62;
 
@@ -325,9 +297,11 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       : 'translateY(0) scale(1)'
     : isHoverPreview
       ? 'scale(1) translateZ(0)'
-      : isHovered
-        ? 'scale(1.07) rotate(-1.2deg)'
-        : 'scale(1)';
+      : isTinyFullBleed && isHovered
+        ? 'translateY(-2px) rotate(-1deg)'
+        : isHovered
+          ? 'scale(1.07) rotate(-1.2deg)'
+          : 'scale(1)';
 
   const imageWrapBackground = icon
     ? isActionBubble
@@ -390,7 +364,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         ['--gel-name-size' as string]: sizeTokens.name,
         ['--gel-base-scale' as string]: isSmall ? 0.62 : 1,
         position: 'relative',
-        zIndex: isHoverPreview ? 70 : undefined,
+        zIndex:
+          isHoverPreview ? 70 : isTinyFullBleed && isHovered && !disabled ? 28 : undefined,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -410,7 +385,12 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               transform: `scale(calc(var(--gel-base-scale, 1) * ${photoPreviewScaleMult}))`,
               transformOrigin: 'center center',
             }
-          : {}),
+          : isTinyFullBleed && isHovered && !disabled
+            ? {
+                transform: 'scale(calc(var(--gel-base-scale, 1) * 1.09))',
+                transformOrigin: 'center center',
+              }
+            : {}),
         ...customStyle,
       }}
     >
