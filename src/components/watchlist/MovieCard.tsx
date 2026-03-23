@@ -7,7 +7,7 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { EyeIcon, EyeOffIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EyeOffIcon, TrashIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 
 interface MovieCardProps {
@@ -24,6 +24,19 @@ interface MovieCardProps {
   isHighlighted?: boolean;
 }
 
+const USER_PHOTOS: Record<string, string[]> = {
+  Aaron: [
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
+    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
+    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
+  ],
+  Electra: [
+    'https://i.redd.it/vkmos70wqw641.jpg',
+    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
+    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
+  ],
+};
+
 interface WatcherBadgeProps {
   user: string;
   size?: 'sm' | 'md' | 'lg';
@@ -31,6 +44,29 @@ interface WatcherBadgeProps {
   showLabel?: boolean;
   className?: string;
 }
+
+const WatcherBadgePhoto: React.FC<{ user: string }> = ({ user }) => {
+  const [index, setIndex] = React.useState(0);
+  const sources = USER_PHOTOS[user] ?? [];
+
+  const handleError = () => {
+    if (index < sources.length - 1) setIndex((i) => i + 1);
+  };
+
+  if (sources.length === 0 || index >= sources.length) {
+    return <span className="watcher-badge__avatar-initial">{user.charAt(0).toUpperCase()}</span>;
+  }
+
+  return (
+    <img
+      src={sources[index]}
+      alt={user}
+      className="watcher-badge__avatar-photo"
+      onError={handleError}
+      draggable={false}
+    />
+  );
+};
 
 const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   user,
@@ -51,7 +87,9 @@ const WatcherBadge: React.FC<WatcherBadgeProps> = ({
 
   return (
     <div className={badgeClassName}>
-      <div className="watcher-badge__avatar">{user.charAt(0).toUpperCase()}</div>
+      <div className="watcher-badge__avatar">
+        <WatcherBadgePhoto user={user} />
+      </div>
       {showLabel && <span className="watcher-badge__label">{user}</span>}
     </div>
   );
@@ -117,10 +155,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <div className="movie-item-poster-wrap">
           <MoviePoster movie={movie} />
 
-          <div className="movie-item-watchers">
-            {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
-            {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
-          </div>
+          {movie.watchedBy.length > 0 && (
+            <div className="movie-item-watchers">
+              {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
+              {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
+            </div>
+          )}
 
           {isHighlighted && (
             <div className="movie-item-success-badge" aria-hidden>
@@ -296,8 +336,8 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onDelete,
 }) => {
   const isGuest = !currentUser;
-  const primaryActionLabel = watchedByCurrentUser ? 'Unwatch' : 'Mark watched';
-  const primaryActionLabelShort = watchedByCurrentUser ? 'Unwatch' : 'Watch';
+  const primaryActionLabel = watchedByCurrentUser ? 'Watched' : 'Mark watched';
+  const primaryActionLabelShort = watchedByCurrentUser ? 'Watched ✓' : 'Watch';
 
   const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -335,7 +375,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       }}
     >
       {watchedByCurrentUser ? (
-        <EyeIcon style={{ width: '12px' }} />
+        <CheckIcon style={{ width: '12px' }} />
       ) : (
         <EyeOffIcon style={{ width: '12px' }} />
       )}
@@ -354,18 +394,17 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     <div className="movie-actions">
       {primaryButton}
 
-      <div className="movie-secondary-actions">
-        <MovieIconActionButton
-          onClick={handleDeleteAction}
-          disabled={isGuest}
-          title={`Delete "${movie.title}"`}
-          color={colors.error}
-          borderColor={`${colors.error}45`}
-          className="movie-icon-action--delete"
-        >
-          <TrashIcon style={{ width: '14px', height: '14px' }} />
-        </MovieIconActionButton>
-      </div>
+      <button
+        type="button"
+        onClick={handleDeleteAction}
+        disabled={isGuest}
+        title={`Delete "${movie.title}"`}
+        aria-label={`Delete "${movie.title}"`}
+        className="movie-item-remove-link"
+      >
+        <TrashIcon style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+        Remove
+      </button>
     </div>
   );
 };
