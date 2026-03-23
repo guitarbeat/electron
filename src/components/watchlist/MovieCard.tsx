@@ -7,7 +7,7 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { EyeIcon, EyeOffIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EyeOffIcon, TrashIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 
 interface MovieCardProps {
@@ -155,10 +155,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <div className="movie-item-poster-wrap">
           <MoviePoster movie={movie} />
 
-          <div className="movie-item-watchers">
-            {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
-            {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
-          </div>
+          {movie.watchedBy.length > 0 && (
+            <div className="movie-item-watchers">
+              {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
+              {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
+            </div>
+          )}
 
           {isHighlighted && (
             <div className="movie-item-success-badge" aria-hidden>
@@ -334,8 +336,8 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onDelete,
 }) => {
   const isGuest = !currentUser;
-  const primaryActionLabel = watchedByCurrentUser ? 'Unwatch' : 'Mark watched';
-  const primaryActionLabelShort = watchedByCurrentUser ? 'Unwatch' : 'Watch';
+  const primaryActionLabel = watchedByCurrentUser ? 'Watched' : 'Mark watched';
+  const primaryActionLabelShort = watchedByCurrentUser ? 'Watched' : 'Watch';
 
   const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -373,7 +375,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       }}
     >
       {watchedByCurrentUser ? (
-        <EyeIcon style={{ width: '12px' }} />
+        <CheckIcon style={{ width: '12px' }} />
       ) : (
         <EyeOffIcon style={{ width: '12px' }} />
       )}
