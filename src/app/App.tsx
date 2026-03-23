@@ -429,7 +429,7 @@ const App: React.FC = () => {
               </div>
             </header>
           ) : null}
-          <div className="app-workspace-stack">
+          <div className="app-floating-chrome">
             <ActionBubbleLayer
               actionBubbleRef={actionBubbleRef}
               actionBubbleMenuRef={actionBubbleMenuRef}
@@ -449,6 +449,8 @@ const App: React.FC = () => {
               onActionBubblePointerMove={handleActionBubblePointerMove}
               onFinishActionBubbleDrag={finishActionBubbleDrag}
             />
+          </div>
+          <div className="app-workspace-stack">
             <AppWorkspaceShell
               isMobile={isMobile}
               activeTab={activeTab}

@@ -97,7 +97,12 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
     throw new Error(`Failed to read gist (${response.status}).`);
   }
 
-  const gist = (await response.json()) as GistResponse;
+  let gist: GistResponse;
+  try {
+    gist = (await response.json()) as GistResponse;
+  } catch {
+    throw new Error('Failed to read gist (invalid JSON response).');
+  }
   gistCache = {
     expiresAt: Date.now() + GIST_CACHE_TTL_MS,
     data: gist,

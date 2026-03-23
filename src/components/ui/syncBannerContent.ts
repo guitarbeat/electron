@@ -1,3 +1,8 @@
+import {
+  SYNC_WARNING_CLIENT_NETWORK,
+  SYNC_WARNING_OUTBOX,
+} from '@/services/stateClient';
+
 export interface SyncBannerContent {
   badge: string;
   title: string;
@@ -22,7 +27,25 @@ const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
     ];
   }
 
-  if (label && /GIST_ID|VITE_GIST_ID/i.test(label)) {
+  const text = label ?? '';
+
+  if (text === SYNC_WARNING_OUTBOX || /waiting to sync to the server/i.test(text)) {
+    return [
+      'Cause: one or more changes are still queued for the server.',
+      'Verify: stay online and use Retry sync, or wait for the next successful save.',
+      'State: local edits are preserved until the queue clears.',
+    ];
+  }
+
+  if (text === SYNC_WARNING_CLIENT_NETWORK || /Could not reach the app sync API/i.test(text)) {
+    return [
+      'Cause: this browser could not reach /api/state (dev server offline, wrong origin, or offline).',
+      'Verify: run pnpm dev and open the app on the same origin; check the browser Network tab.',
+      'State: showing cached local data until the API responds.',
+    ];
+  }
+
+  if (/GIST_ID is not configured|missing GIST_ID|VITE_GIST_ID.*development/i.test(text)) {
     return [
       'Cause: shared backend is not configured.',
       'Verify: set GIST_ID (server) or VITE_GIST_ID (local Vite), then restart dev server.',
@@ -30,9 +53,29 @@ const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
     ];
   }
 
+  if (
+    /GITHUB_TOKEN|GitHub rejected|rate limit|HTTP (401|403|404|429)|cannot find the configured Gist|could not be (loaded|saved) from GitHub/i.test(
+      text
+    )
+  ) {
+    return [
+      'Cause: GitHub API rejected the request, the Gist was not found, or rate limits applied.',
+      'Verify: GITHUB_TOKEN has gist access; GIST_ID matches an existing Gist; retry after cooldown.',
+      'State: writes may be local-only until GitHub accepts requests.',
+    ];
+  }
+
+  if (/GitHub|Gist|gist\.github|shared state could not be loaded/i.test(text)) {
+    return [
+      'Cause: shared state uses a GitHub Gist.',
+      'Verify: environment variables, server logs, and https://www.githubstatus.com.',
+      'State: writes are local-only until Gist reads succeed.',
+    ];
+  }
+
   return [
-    'Cause: temporary shared-sync outage or connectivity issue.',
-    'Verify: network reachability and shared state endpoint health.',
+    'Cause: shared state could not be synchronized.',
+    'Verify: server logs, .env.local, and browser Network requests to /api/state.',
     'State: writes are currently local-only until sync recovers.',
   ];
 };

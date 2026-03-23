@@ -13,6 +13,13 @@ const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
 const OUTBOX_PREFIX = 'movieList.scopeOutbox.';
 const SESSION_INVALID_EVENT = 'movie-watch-session-invalid';
 
+/** Shown when fetch to /api/state fails (offline, dev server down, CORS). */
+export const SYNC_WARNING_CLIENT_NETWORK =
+  'Could not reach the app sync API. Check that the dev server is running, or try again when back online.';
+
+/** Shown when local mutations are queued and not yet applied on the server. */
+export const SYNC_WARNING_OUTBOX = 'Some changes are waiting to sync to the server.';
+
 interface StoredSnapshot<T> {
   data: T;
   version: string;
@@ -201,13 +208,14 @@ const readOptimisticSnapshot = <TScope extends StateScope>(
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => {
   const snapshot = readSnapshot(scope);
   const outbox = readOutbox(scope);
+  const hasPending = Boolean(outbox?.pendingOps.length);
 
   return {
     data: snapshot?.data ?? deepClone(getDefaultScopeData(scope)),
     version: outbox?.lastKnownVersion ?? snapshot?.version ?? '',
-    degraded: Boolean(outbox?.pendingOps.length) || Boolean(snapshot?.degraded),
+    degraded: hasPending || Boolean(snapshot?.degraded),
     blocked: outbox?.blocked,
-    warning: snapshot?.warning,
+    warning: snapshot?.warning ?? (hasPending ? SYNC_WARNING_OUTBOX : undefined),
   };
 };
 
@@ -233,7 +241,7 @@ const queueMutation = <TScope extends StateScope>(
     data: optimisticData,
     version: nextOutbox.lastKnownVersion,
     degraded: true,
-    warning: storedSnapshot?.warning,
+    warning: storedSnapshot?.warning ?? SYNC_WARNING_OUTBOX,
   });
 
   return {
@@ -241,7 +249,7 @@ const queueMutation = <TScope extends StateScope>(
     version: nextOutbox.lastKnownVersion,
     degraded: true,
     blocked: false,
-    warning: storedSnapshot?.warning,
+    warning: storedSnapshot?.warning ?? SYNC_WARNING_OUTBOX,
   };
 };
 
@@ -446,7 +454,7 @@ export const readScope = async <TScope extends StateScope>(
         version: outbox?.lastKnownVersion || stored.version,
         degraded: true,
         blocked: outbox?.blocked,
-        warning: stored.warning,
+        warning: stored.warning ?? SYNC_WARNING_CLIENT_NETWORK,
       };
     }
 
@@ -455,7 +463,7 @@ export const readScope = async <TScope extends StateScope>(
       version: '',
       degraded: true,
       blocked: outbox?.blocked,
-      warning: undefined,
+      warning: SYNC_WARNING_CLIENT_NETWORK,
     };
   }
 };

@@ -1001,16 +1001,59 @@ const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
   };
 };
 
-const getScopeWarning = (error: unknown): string | undefined => {
+/**
+ * Maps Gist/API errors to user-safe banner copy (no secrets). Exported for tests.
+ */
+export const getScopeWarning = (error: unknown): string | undefined => {
   if (!(error instanceof Error)) {
     return undefined;
   }
 
-  if (error.message === 'GIST_ID is not configured.') {
+  const msg = error.message;
+
+  if (msg === 'GIST_ID is not configured.') {
     return 'Shared sync is unavailable because the server is missing GIST_ID. Set GIST_ID, or VITE_GIST_ID during local Vite development, to load and share data.';
   }
 
-  return undefined;
+  if (msg === 'GITHUB_TOKEN is not configured.') {
+    return 'Shared sync cannot write changes: GITHUB_TOKEN is not set on the server. Set a token with gist scope for updates (reads may still work for public Gists).';
+  }
+
+  const readMatch = /^Failed to read gist \((\d+)\)\.$/.exec(msg);
+  if (readMatch) {
+    const status = Number(readMatch[1]);
+    if (status === 404) {
+      return 'Shared sync cannot find the configured Gist. Verify GIST_ID or VITE_GIST_ID matches a GitHub Gist that exists.';
+    }
+    if (status === 401 || status === 403) {
+      return 'GitHub rejected the Gist read (401/403). Check GITHUB_TOKEN has access to this Gist (required for private Gists).';
+    }
+    if (status === 429) {
+      return 'GitHub API rate limit reached. Retry after a short wait.';
+    }
+    return `Shared state could not be loaded from GitHub (HTTP ${status}). Check server logs and https://www.githubstatus.com.`;
+  }
+
+  if (msg.includes('invalid JSON')) {
+    return 'GitHub returned an unexpected response when loading the Gist. Check server logs.';
+  }
+
+  const updateMatch = /^Failed to update gist \((\d+)\)\.$/.exec(msg);
+  if (updateMatch) {
+    const status = Number(updateMatch[1]);
+    if (status === 404) {
+      return 'Shared sync cannot update the Gist (404). Verify the Gist id and that your token can edit it.';
+    }
+    if (status === 401 || status === 403) {
+      return 'GitHub rejected the Gist update (401/403). Verify GITHUB_TOKEN has gist write access.';
+    }
+    if (status === 429) {
+      return 'GitHub API rate limit reached while saving. Retry after a short wait.';
+    }
+    return `Shared state could not be saved to GitHub (HTTP ${status}). Check server logs.`;
+  }
+
+  return 'Shared state could not be loaded. Check server logs and GitHub connectivity.';
 };
 
 const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
