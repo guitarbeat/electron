@@ -20,43 +20,29 @@ The top-level structure is:
 
 1. `ThemeProvider` plus visual effects layer (`RetroEffects`, optional `MagicComponent` / moiré background, `VignetteOverlay` edge strips with frosted backdrop — adapted from [personal-website `theme/_vignette`](https://github.com/guitarbeat/personal-website/blob/main/src/sass/theme/_vignette.scss))
 2. Accessibility skip link to `#main-content`
-3. Persistent duo-status strip
-   - profile selection and seat state
-   - one quiz launch card (`Start`, `Retake`, or `Edit`)
-4. Floating action bubble + action fan menu
-   - quick access to quiz, spin wheel, and matchmaker
-5. Workspace header
-   - active workspace label
-   - shared `ThemeToggle` for switching between `Watchlist` and `Date Spots`
-6. Primary workspace surface
-7. Shared feature modal stack
+3. **Desktop:** sticky **session bar** (`.app-session-bar`) with profile bubbles / PIN / logout (`UserSelection` in the main tree — not portaled). **Mobile:** profile row lives in the mobile shell header.
+4. **Floating chrome** (`.app-floating-chrome`) — fixed full-viewport overlay with `pointer-events: none` so it doesn’t sit in the workspace grid; holds the draggable `ActionBubble`, `ThemeToggle`, and popover menu (Watchlist ↔ Date Spots + quick actions for quiz, spin wheel, matchmaker).
+5. Main column (`.app-workspace-stack`) holds **only** the workspace (`AppWorkspaceShell`); **no** outer “picture frame” wrapper.
+6. Workspace header (desktop) — mode title + copy (toggle is on the bubble, not in the header)
+7. Primary workspace surface
+8. Shared feature modal stack
 
 Still removed from the main shell:
 
 - command deck support rail
 - shell-level memories launcher
 
-## Duo-Status Area
+## Profiles / session strip
 
-The duo-status strip is always above the active workspace and remains the primary persistent shell surface for shared state.
+On **desktop**, profiles sit in a **sticky top bar** inside `.app-shell__canvas--main` so they stay visible while scrolling and aren’t trapped in a fixed off-screen portal. On **mobile**, the same `UserSelection` content appears in the mobile shell header.
 
-### Left side
-
-- `UserSelection` panel
-- active seat / guest state
-- PIN and logout actions stay attached to profile management
-
-### Right side
-
-- `Compatibility Quiz` ritual card
-- CTA changes by state:
-  - `Edit Quiz` when no profile is active
-  - `Start Quiz` for a fresh run
-  - `Retake Quiz` after completion
+- `UserSelection` (`panel` on desktop in the bar)
+- Guest vs named profile, PIN entry, PIN settings, logout
+- Quiz and other rituals are reached from the **action bubble** menu, not this strip
 
 ## Quick Actions
 
-The floating quick-actions layer is available again:
+The floating quick-actions layer lives in `.app-floating-chrome` (not inside `.app-workspace-stack`) so controls stay viewport-positioned and aren’t stretched by the main column grid.
 
 - draggable `ActionBubble`
 - `ActionFanMenu` anchored to the bubble
@@ -71,16 +57,15 @@ The workspace header is shared by both modes and contains:
 
 - active mode eyebrow + icon
 - mode title and short explanatory copy
-- `ThemeToggle`
 
-The shell owns workspace switching; the individual workspaces no longer render their own mode toggles.
+Workspace switching uses the **`ThemeToggle` on the floating action bubble** (not a duplicate in the header).
 
 ## Main Workspace Layout
 
 ### Desktop
 
-- duo-status strip at top
-- floating action bubble above the shell
+- sticky profile session bar at top (scrolls with the page; stays pinned at the top of the viewport)
+- floating action bubble (`ThemeToggle` + quick actions)
 - shared workspace header below it
 - one primary workspace surface underneath
 - no persistent support rail
@@ -165,7 +150,7 @@ Still pruned from the active product surface:
 
 ## Theming + Visual Behavior
 
-- wax / parchment overrides for the floating action bubble and `ThemeToggle` live under `.app-shell--viewport:has(.app-frame)` in `App.scss` so they don’t compete with the earlier global “glass” chrome (e.g. logo-lab shell without `.app-frame`)
+- wax / parchment overrides for the floating action bubble and `ThemeToggle` live under `.app-shell--viewport:has(.app-workspace-stack)` in `App.scss` so they don’t compete with the earlier global “glass” chrome (e.g. logo-lab shell without the main workspace column)
 - theme context is driven by the active workspace
 - `body[data-theme]` switches between movie and places palettes
 - optional CRT and cursor-trail effects still respect saved state
@@ -177,13 +162,11 @@ Still pruned from the active product surface:
 flowchart TD
   App["App shell"]
   App --> Effects["Theme + visual effects"]
-  App --> Duo["Duo-status strip"]
-  Duo --> Profiles["Profile selection"]
-  Duo --> Quiz["Quiz ritual card"]
+  App --> Profiles["Sticky profile bar (desktop)"]
   App --> Bubble["Action bubble"]
-  Bubble --> Fan["Action fan menu"]
+  Bubble --> Toggle["Theme toggle"]
+  Bubble --> Fan["Quick actions menu"]
   App --> Header["Workspace header"]
-  Header --> Toggle["Theme toggle"]
   App --> Surface["Primary workspace surface"]
   Surface --> Watch["Watchlist panel"]
   Surface --> Places["Date Spots panel"]

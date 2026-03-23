@@ -143,7 +143,12 @@ const MessageBoard: React.FC = () => {
               <SyncBanner
                 isBlocked={isSyncBlocked}
                 onRetry={retrySync}
-                label={isSyncBlocked ? undefined : syncWarning}
+                label={
+                  isSyncBlocked
+                    ? undefined
+                    : syncWarning ||
+                      'Messages are being kept locally until shared sync recovers.'
+                }
               />
             </div>
           ) : null}
