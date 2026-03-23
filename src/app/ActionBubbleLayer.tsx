@@ -4,6 +4,7 @@ import type { ActionBubbleMenuPosition, ActionBubblePosition, ActionBubbleToggle
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
+import UserSelection from '@/components/common/UserSelection';
 import type { MainTab } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
@@ -98,12 +99,14 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
           className="action-bubble-menu"
           style={actionBubbleMenuStyle}
         >
+          <UserSelection variant="inline" className="action-bubble-menu__profiles" />
           <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
         </div>
       ) : null}
 
       <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick actions">
         <div id="action-bubble-sheet">
+          <UserSelection variant="inline" className="action-bubble-menu__profiles" />
           <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
         </div>
       </BottomSheet>
