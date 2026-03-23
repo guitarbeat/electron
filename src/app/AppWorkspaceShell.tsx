@@ -27,6 +27,11 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       className={`workspace-stage workspace-stage--simplified${isMobile ? ' workspace-stage--mobile-shell' : ''}`}
       tabIndex={-1}
     >
+      {isMobile ? (
+        <header className="mobile-shell-header" aria-label="Profiles and app summary">
+          <UserSelection variant="inline" className="mobile-shell-header__user-selection" />
+        </header>
+      ) : null}
 
       {!isMobile ? (
         // Desktop: keep an invisible dock target so the action bubble can position itself.

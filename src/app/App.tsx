@@ -421,6 +421,15 @@ const App: React.FC = () => {
         </a>
 
         <div className="app-shell__canvas app-shell__canvas--main">
+          {!isMobile ? (
+            <header className="app-session-bar" aria-label="Profiles and session">
+              <UserSelection
+                variant="panel"
+                title="Profiles"
+                className="duo-status-shell__selection"
+              />
+            </header>
+          ) : null}
           <div className="app-floating-chrome">
             <ActionBubbleLayer
               actionBubbleRef={actionBubbleRef}
