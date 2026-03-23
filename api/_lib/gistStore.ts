@@ -1,3 +1,5 @@
+import { fetchWithRetry } from './retryFetch.ts';
+
 const GIST_API_BASE_URL = 'https://api.github.com/gists';
 const GIST_CACHE_TTL_MS = 5000;
 
@@ -88,10 +90,14 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
     return gistCache.data;
   }
 
-  const response = await fetch(getGistUrl(), {
-    method: 'GET',
-    headers: getGitHubHeaders(),
-  });
+  const response = await fetchWithRetry(
+    getGistUrl(),
+    {
+      method: 'GET',
+      headers: getGitHubHeaders(),
+    },
+    'read gist'
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to read gist (${response.status}).`);
@@ -131,20 +137,24 @@ export const patchGistFile = async (
     throw new Error('GITHUB_TOKEN is not configured.');
   }
 
-  const response = await fetch(getGistUrl(), {
-    method: 'PATCH',
-    headers: new Headers({
-      ...Object.fromEntries(getGitHubHeaders()),
-      'Content-Type': 'application/json',
-    }),
-    body: JSON.stringify({
-      files: {
-        [filename]: {
-          content,
+  const response = await fetchWithRetry(
+    getGistUrl(),
+    {
+      method: 'PATCH',
+      headers: new Headers({
+        ...Object.fromEntries(getGitHubHeaders()),
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify({
+        files: {
+          [filename]: {
+            content,
+          },
         },
-      },
-    }),
-  });
+      }),
+    },
+    'patch gist'
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to update gist (${response.status}).`);
