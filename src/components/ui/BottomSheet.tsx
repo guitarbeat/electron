@@ -22,9 +22,18 @@ interface BottomSheetProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  closeDisabled?: boolean;
+  closeDisabledLabel?: string;
 }
 
-const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
+const BottomSheet: React.FC<BottomSheetProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  closeDisabled = false,
+  closeDisabledLabel = 'This panel cannot be closed right now.',
+}) => {
   const { playPop } = useAudio();
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -54,6 +63,10 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
     document.body.style.overflow = 'hidden';
 
     const initialFocusTimer = window.setTimeout(() => {
+      if (closeDisabled) {
+        sheetRef.current?.focus();
+        return;
+      }
       closeButtonRef.current?.focus();
     }, 0);
 
@@ -63,6 +76,10 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
       }
 
       if (event.key === 'Escape') {
+        if (closeDisabled) {
+          event.preventDefault();
+          return;
+        }
         event.preventDefault();
         onClose();
         return;
@@ -78,7 +95,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [closeDisabled, isOpen, onClose]);
 
   const handleTouchStart = (event: React.TouchEvent) => {
     startY.current = event.touches[0].clientY;
@@ -96,7 +113,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
   };
 
   const handleTouchEnd = () => {
-    if (currentY.current > 100) {
+    if (!closeDisabled && currentY.current > 100) {
       handleClose();
     } else if (sheetRef.current) {
       sheetRef.current.style.transform = 'translateY(0)';
@@ -105,6 +122,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
   };
 
   const handleClose = () => {
+    if (closeDisabled) return;
     playPop();
     onClose();
   };
@@ -119,7 +137,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
       }}
     >
       <div
-        onClick={handleClose}
+        onClick={closeDisabled ? undefined : handleClose}
         style={{
           position: 'absolute',
           inset: 0,
@@ -147,6 +165,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
 
       <div
         ref={sheetRef}
+        tabIndex={closeDisabled ? -1 : undefined}
         role="dialog"
         aria-modal="true"
         aria-label={title || 'Bottom sheet'}
@@ -169,7 +188,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
             ? undefined
             : 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
-          maxHeight: '82vh',
+          maxHeight: 'min(82dvh, 82vh)',
           overflowY: 'auto',
           backdropFilter: 'blur(18px)',
           WebkitBackdropFilter: 'blur(18px)',
@@ -195,16 +214,24 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, child
           ref={closeButtonRef}
           type="button"
           onClick={handleClose}
-          aria-label="Close panel"
+          aria-label={closeDisabled ? closeDisabledLabel : 'Close panel'}
+          title={closeDisabled ? closeDisabledLabel : undefined}
+          disabled={closeDisabled}
           style={{
             ...getModalCloseButtonStyle(),
             fontSize: '1rem',
             width: '32px',
             height: '32px',
             transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+            opacity: closeDisabled ? 0.45 : 1,
+            cursor: closeDisabled ? 'not-allowed' : 'pointer',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.surface3)}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.surface2)}
+          onMouseEnter={(e) => {
+            if (!closeDisabled) e.currentTarget.style.backgroundColor = colors.surface3;
+          }}
+          onMouseLeave={(e) => {
+            if (!closeDisabled) e.currentTarget.style.backgroundColor = colors.surface2;
+          }}
         >
           ✕
         </button>

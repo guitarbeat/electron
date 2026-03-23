@@ -93,6 +93,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
         activeChipId={sortMode}
         onChipChange={(id) => setSortMode(id as PlaceSortMode)}
         variant="underlined"
+        mode="segmented"
       />
 
       <div
@@ -492,10 +493,9 @@ const PlacesList: React.FC = () => {
         second={
           <Card
             variant="default"
-            className="places-map-card"
+            className="places-map-card places-map-card--height"
             style={{
               padding: spacing.md,
-              height: '340px',
               display: 'flex',
               flexDirection: 'column',
               gap: spacing.sm,

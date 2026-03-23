@@ -16,10 +16,11 @@ import {
 } from '../modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
 import Button from '../Button';
+import SharedBottomSheet from '../BottomSheet';
 import SharedMinigameModal from '../MinigameModal';
 
 // Base modal hook for shared functionality
-const useModalBase = (isOpen: boolean, onClose?: () => void) => {
+const useModalBase = (isOpen: boolean, onClose?: () => void, closeDisabled?: boolean) => {
   const { playPop } = useAudio();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -38,6 +39,10 @@ const useModalBase = (isOpen: boolean, onClose?: () => void) => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isFocusWithin(dialogRef.current)) {
+        if (closeDisabled) {
+          event.preventDefault();
+          return;
+        }
         event.preventDefault();
         onClose?.();
       }
@@ -53,7 +58,7 @@ const useModalBase = (isOpen: boolean, onClose?: () => void) => {
         document.body.classList.remove('modal-open');
       }
     };
-  }, [isOpen, onClose]);
+  }, [closeDisabled, isOpen, onClose]);
 
   return { dialogRef, closeButtonRef, previousFocusedElement, playPop };
 };
@@ -81,9 +86,10 @@ const Modal: React.FC<ModalProps> = ({
   maxWidth = 520,
   maxHeight = 720,
   closeDisabled = false,
+  closeDisabledLabel,
   variant = 'centered',
 }) => {
-  const { dialogRef, closeButtonRef, playPop } = useModalBase(isOpen, onClose);
+  const { dialogRef, closeButtonRef, playPop } = useModalBase(isOpen, onClose, closeDisabled);
 
   if (!isOpen) return null;
 
@@ -95,7 +101,8 @@ const Modal: React.FC<ModalProps> = ({
     left: 0,
     right: 0,
     maxWidth: '100%',
-    maxHeight: '90vh',
+    maxHeight: 'min(90dvh, 90vh)',
+    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     transform: 'translateY(0)',
     borderRadius: `${radius.lg} ${radius.lg} 0 0`,
   } : {
@@ -110,7 +117,11 @@ const Modal: React.FC<ModalProps> = ({
 
   return createPortal(
     <div
-      style={getModalOverlayStyle('rgba(0, 0, 0, 0.4)')}
+      style={{
+        ...getModalOverlayStyle('rgba(0, 0, 0, 0.4)'),
+        minHeight: '100dvh',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
       onClick={closeDisabled ? undefined : onClose}
       role="dialog"
       aria-modal="true"
@@ -153,7 +164,7 @@ const Modal: React.FC<ModalProps> = ({
                 {title}
               </h2>
             )}
-            {!closeDisabled && (
+            {!closeDisabled ? (
               <button
                 ref={closeButtonRef}
                 type="button"
@@ -163,6 +174,21 @@ const Modal: React.FC<ModalProps> = ({
                 }}
                 aria-label="Close dialog"
                 style={getModalCloseButtonStyle()}
+              >
+                ×
+              </button>
+            ) : (
+              <button
+                ref={closeButtonRef}
+                type="button"
+                disabled
+                aria-label={closeDisabledLabel ?? 'Dialog cannot be closed'}
+                title={closeDisabledLabel}
+                style={{
+                  ...getModalCloseButtonStyle(),
+                  opacity: 0.45,
+                  cursor: 'not-allowed',
+                }}
               >
                 ×
               </button>
@@ -262,26 +288,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   );
 };
 
-// Bottom Sheet with unified modal
-interface BottomSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children: React.ReactNode;
-}
-
-const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      variant="bottom-sheet"
-    >
-      {children}
-    </Modal>
-  );
-};
+/** Canonical bottom sheet — see `../BottomSheet.tsx`; re-exported for one import surface. */
+const BottomSheet = SharedBottomSheet;
 
 const MinigameModal = SharedMinigameModal;
 
