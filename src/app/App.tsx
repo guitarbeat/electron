@@ -15,12 +15,11 @@ import UserSelection from '@/components/common/UserSelection';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
-import LoadingSequence from '@/components/effects/LoadingSequence';
 import MagicComponent from '@/components/effects/Moire/Moire';
 import RetroEffects from '@/components/effects/RetroEffects';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
-import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/app/providers';
+import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
@@ -41,7 +40,6 @@ const getViewportSize = () => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { isSessionLoading } = useAppSession();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -58,13 +56,6 @@ const App: React.FC = () => {
   const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showActionBubbleMenu, setShowActionBubbleMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
-  const [showLoadingSequence, setShowLoadingSequence] = useState<boolean>(() => {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-
-    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  });
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
@@ -329,8 +320,7 @@ const App: React.FC = () => {
   };
 
   const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
-  const shouldShowLoadingSequence = showLoadingSequence && !prefersReducedMotion;
-  const isMoireVisible = !showLoadingSequence && !prefersReducedMotion;
+  const isMoireVisible = !prefersReducedMotion;
   const actionItems = useMemo(
     (): CommandActionItem[] => [
       {
@@ -397,30 +387,8 @@ const App: React.FC = () => {
     );
   }
 
-  if (isSessionLoading) {
-    return (
-      <main className="session-loading-screen" aria-live="polite" aria-busy="true">
-        <div className="session-loading-screen__panel">
-          <p className="session-loading-screen__eyebrow">Electron</p>
-          <p className="session-loading-screen__title">Loading Session</p>
-          <p className="session-loading-screen__subtitle">
-            Warming up your watchlist and date ideas.
-          </p>
-          <div className="session-loading-screen__dots" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <ThemeProvider activeTab={activeTab}>
-      {shouldShowLoadingSequence ? (
-        <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
-      ) : null}
       <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell app-shell--viewport bg-main">
         {!prefersReducedMotion ? <MagicComponent isVisible={isMoireVisible} opacity={0.2} /> : null}
