@@ -122,7 +122,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
             {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
           </div>
 
-          <div className="movie-item-overlay">
+          {isHighlighted && (
+            <div className="movie-item-success-badge" aria-hidden>
+              Added
+            </div>
+          )}
+
+          <div className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}>
             <div>
               <h3 className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}>
                 {movie.title}

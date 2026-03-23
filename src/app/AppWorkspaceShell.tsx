@@ -1,5 +1,4 @@
 import type { FC, RefObject } from 'react';
-import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import UserSelection from '@/components/common/UserSelection';
 import PlacesList from '@/components/places/PlacesList';
 import Watchlist from '@/components/watchlist';
@@ -16,9 +15,10 @@ interface AppWorkspaceShellProps {
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   isMobile,
   activeTab,
-  workspaceMeta,
+  workspaceMeta: _workspaceMeta,
   workspaceControlsRef,
 }) => {
+  void _workspaceMeta;
   const modeClass = activeTab === 'queue' ? 'queue' : 'places';
 
   return (
@@ -30,40 +30,20 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       {isMobile ? (
         <header className="mobile-shell-header" aria-label="Profiles and app summary">
           <UserSelection variant="inline" className="mobile-shell-header__user-selection" />
-          <div className="mobile-shell-header__facts" aria-label="Workspace summary">
-            <span className="mobile-shell-header__fact-icon" aria-hidden="true">
-              {workspaceMeta.icon}
-            </span>
-            <span className="mobile-shell-header__fact-title">{workspaceMeta.title}</span>
-          </div>
         </header>
       ) : null}
 
       {!isMobile ? (
-        <section
-          className={`workspace-header workspace-header--simplified workspace-header--${modeClass}`}
-          aria-label="Workspace controls"
-        >
-          <p className="workspace-header__brandline">
-            <span className="workspace-header__brand-mark-shell" aria-hidden="true">
-              <img
-                src={ELECTRON_LOGO_MARK_PATH}
-                alt=""
-                className="workspace-header__brand-mark"
-                draggable="false"
-              />
-            </span>
-            <span className="workspace-header__brand-text">Electron</span>
-          </p>
-          <h1 className="workspace-header__title">
-            <span className="workspace-header__title-icon" aria-hidden="true">
-              {workspaceMeta.icon}
-            </span>
-            {workspaceMeta.title}
-          </h1>
-          <div ref={workspaceControlsRef} className="workspace-header__controls workspace-header__controls--toggle" />
-        </section>
+        // Desktop: keep an invisible dock target so the action bubble can position itself.
+        // We avoid the full workspace header to make desktop match the mobile layout.
+        <div
+          ref={workspaceControlsRef}
+          aria-hidden="true"
+          className="workspace-header__controls workspace-header__controls--toggle"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
+        />
       ) : (
+        // Mobile: no meaningful dock target (preserves existing behavior for pointer/tap docking).
         <div
           ref={workspaceControlsRef}
           aria-hidden="true"

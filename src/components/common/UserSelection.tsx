@@ -65,7 +65,12 @@ const UserSelection: React.FC<UserSelectionProps> = ({
 
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
-    if (profile === currentUser) return;
+    if (profile === currentUser) {
+      if (variant === 'inline') {
+        handleLogout();
+      }
+      return;
+    }
 
     setSelectionError(null);
 
