@@ -271,7 +271,8 @@
   --y2k-metal-glint-a: rgba(255, 207, 220, 0.24);
   --y2k-metal-glint-b: rgba(255, 226, 189, 0.2);
   --glass-highlight: rgba(255, 255, 255, 0.18);
-  --loading-mask-color: #999;
+  --loading-sequence-blend-mode: difference;
+  --loading-mask-color: #e8e0d4;
   --z-index-loading-sequence: 11000;
 }
 
@@ -280,6 +281,8 @@
   inset: 0;
   z-index: var(--z-index-loading-sequence);
   pointer-events: none;
+  /* Whole overlay blends with content behind; masks are opaque curtains inside */
+  mix-blend-mode: var(--loading-sequence-blend-mode, difference);
 }
 
 .loading-sequence__mask {
@@ -288,7 +291,6 @@
   width: 100%;
   height: 50%;
   background: var(--loading-mask-color);
-  mix-blend-mode: difference;
   transition: transform 1s ease-in-out;
 }
 
@@ -304,6 +306,16 @@
 
 .loading-sequence__mask--revealed {
   transform: scaleY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-sequence {
+    mix-blend-mode: normal;
+  }
+
+  .loading-sequence__mask {
+    transition: transform 0.35s ease-out;
+  }
 }
 
 .session-loading-screen {
@@ -869,20 +881,20 @@ body {
   flex-direction: row;
   justify-content: center;
   align-items: flex-start;
-  gap: 1.15rem;
+  gap: 0.75rem;
   flex-wrap: nowrap;
-  padding: 0.25rem 0.15rem 0.4rem;
+  padding: 0.2rem 0.1rem 0.3rem;
 }
 
 .user-selection--inline {
-  --inline-profile-bubble-size: clamp(84px, 13vw, 112px);
-  --inline-profile-name-size: clamp(1.2rem, 4vw, 1.85rem);
-  padding: 0.35rem 0.45rem;
+  --inline-profile-bubble-size: clamp(56px, 9vw, 82px);
+  --inline-profile-name-size: clamp(0.72rem, 2.2vw, 1.1rem);
+  padding: 0.28rem 0.4rem;
 }
 
 /* Mobile inline: edge-to-edge profile row, two equal columns */
 .user-selection--inline.is-mobile {
-  --inline-profile-name-size: clamp(1.45rem, 7.5vw, 2.35rem);
+  --inline-profile-name-size: clamp(0.82rem, 3.2vw, 1.28rem);
   width: 100vw;
   max-width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -919,11 +931,12 @@ body {
   max-width: 100%;
 }
 
+/* Keep avatars sized from --gel-bubble-size; avoid stretching to full column width */
 .user-selection--inline.is-mobile .gel-bubble--inline .gel-avatar-shell {
-  width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 1.22 / 1;
-  max-width: 100%;
+  width: calc(var(--gel-bubble-size) * 1.22) !important;
+  height: var(--gel-bubble-size) !important;
+  max-width: min(100%, calc(var(--gel-bubble-size) * 1.22)) !important;
+  aspect-ratio: unset !important;
 }
 
 .user-selection__bubble-cluster--inline {
@@ -938,12 +951,12 @@ body {
 
 .user-selection--inline .user-selection__profile-card {
   min-width: var(--inline-profile-bubble-size);
-  padding: 0.15rem 0.2rem 0.3rem;
+  padding: 0.1rem 0.15rem 0.22rem;
 }
 
 .user-selection--inline.is-mobile .user-selection__profile-card {
   min-width: 0;
-  padding: 0.2rem 0.1rem 0.35rem;
+  padding: 0.15rem 0.08rem 0.28rem;
 }
 
 .user-selection--inline .user-selection__profile-card.is-active {
@@ -962,7 +975,7 @@ body {
   width: 100% !important;
   max-width: 96% !important;
   margin-inline: auto !important;
-  padding: 0.35rem 0.5rem !important;
+  padding: 0.22rem 0.38rem !important;
   overflow: visible !important;
   text-overflow: clip !important;
   letter-spacing: 0.14em !important;
@@ -985,7 +998,7 @@ body {
 }
 
 .user-selection--inline.is-mobile .gel-avatar-name--inside {
-  padding: 0.42rem 0.5rem !important;
+  padding: 0.28rem 0.4rem !important;
   max-width: 100% !important;
 }
 
@@ -1053,14 +1066,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.45rem;
   cursor: pointer;
   transition: transform 0.22s ease, filter 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
 }
 
 .user-selection__profile-card--panel {
-  min-width: 188px;
-  padding: 0.8rem 0.75rem 0.85rem;
+  min-width: 156px;
+  padding: 0.65rem 0.6rem 0.72rem;
   border-radius: 4px;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 78%, rgba(255, 255, 255, 0.08));
   background:
@@ -9261,6 +9274,9 @@ body.grabbing * {
 
 :root {
   --shell-max-width: 1520px;
+  /* Loading curtain: difference/exclusion inverts against parchment; warm fill reads stronger than flat grey */
+  --loading-sequence-blend-mode: difference;
+  --loading-mask-color: #efe6d8;
   --shell-border: rgba(177, 141, 88, 0.26);
   --color-success: #8ca26d;
   --color-warning: #d1a15c;
@@ -9844,10 +9860,11 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
   .action-bubble-toggle .theme-toggle__track {
     border-color: rgba(239, 205, 153, 0.3);
+    /* Even top-edge sheen only — a fixed left-side radial read as a misplaced “orb” over Movies */
     background:
-      radial-gradient(circle at 26% 24%, rgba(255, 235, 198, 0.35) 0%, transparent 32%),
-      radial-gradient(circle at 76% 80%, rgba(71, 28, 20, 0.25) 0%, transparent 34%),
-      linear-gradient(180deg, rgba(255, 240, 212, 0.14) 0%, transparent 42%),
+      radial-gradient(ellipse 120% 42% at 50% 0%, rgba(255, 235, 198, 0.14) 0%, transparent 55%),
+      radial-gradient(circle at 76% 80%, rgba(71, 28, 20, 0.22) 0%, transparent 34%),
+      linear-gradient(180deg, rgba(255, 240, 212, 0.12) 0%, transparent 42%),
       linear-gradient(160deg, color-mix(in srgb, var(--wax-accent) 88%, #593726 12%) 0%, #5f3424 48%, #321910 100%);
     box-shadow:
       0 18px 30px rgba(16, 10, 6, 0.3),
@@ -9869,9 +9886,9 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
   .action-bubble-toggle .theme-toggle__track::after {
     background:
-      radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 247, 228, 0.14) 0%, transparent 48%),
-      radial-gradient(circle at 88% 12%, rgba(255, 241, 213, 0.4) 0%, rgba(255, 241, 213, 0.08) 38%, transparent 68%);
-    opacity: 0.75;
+      radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 247, 228, 0.1) 0%, transparent 44%),
+      radial-gradient(circle at 88% 12%, rgba(255, 241, 213, 0.18) 0%, rgba(255, 241, 213, 0.05) 36%, transparent 62%);
+    opacity: 0.42;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -9893,6 +9910,14 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   .theme-toggle__track-stars,
   .theme-toggle__track-shimmer {
     display: none;
+  }
+
+  .action-bubble-toggle .theme-toggle__gel-half::before {
+    opacity: 0.42;
+  }
+
+  .action-bubble-toggle .theme-toggle__gel-half::after {
+    opacity: 0.22;
   }
 
   .theme-toggle__thumb {
@@ -9920,6 +9945,15 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
   .theme-toggle__option {
     gap: 0.18rem;
+  }
+
+  .theme-toggle--compact .theme-toggle__option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 1.35em;
+    font-size: 1.15rem;
   }
 
   .theme-toggle__option-icon {
