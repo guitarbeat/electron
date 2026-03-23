@@ -60,3 +60,34 @@ test('pollingManager clears cache after last unsubscribe', async () => {
   assert.ok(seen.includes(2));
   assert.equal(pollingManager.getData(key), undefined);
 });
+
+test('should handle fetch errors and notify listeners', async () => {
+  const originalConsoleError = console.error;
+  console.error = () => {};
+
+  try {
+    const error = new Error('Fetch failed');
+    const fetchFn = async () => {
+      throw error;
+    };
+    const key = 'test-error';
+
+    let receivedData: any;
+    let receivedError: any;
+
+    const unsub = pollingManager.subscribe(key, fetchFn, 1000, (d, e) => {
+      receivedData = d;
+      receivedError = e;
+    });
+
+    await wait(20);
+
+    assert.equal(receivedData, undefined);
+    assert.equal(receivedError, error);
+    assert.equal(pollingManager.getError(key), error);
+
+    unsub();
+  } finally {
+    console.error = originalConsoleError;
+  }
+});
