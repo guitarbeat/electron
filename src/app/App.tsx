@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import LoadingSequence from '@/components/effects/LoadingSequence';
-import RetroEffects from '@/components/effects/RetroEffects';
+import ActionBubbleLayer from '@/app/ActionBubbleLayer';
+import AppWorkspaceShell from '@/app/AppWorkspaceShell';
 import {
   ACTION_BUBBLE_DRAG_THRESHOLD,
   clampActionBubblePosition,
@@ -11,22 +11,21 @@ import {
   snapActionBubbleToEdge,
   type ActionBubblePosition,
 } from '@/app/actionBubble';
+import UserSelection from '@/components/common/UserSelection';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import ElectronLogoLab from '@/branding/ElectronLogoLab';
-import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
-import UserSelection from '@/components/common/UserSelection';
-import PlacesList from '@/components/places/PlacesList';
-import Watchlist from '@/components/watchlist';
+import LoadingSequence from '@/components/effects/LoadingSequence';
+import MagicComponent from '@/components/effects/Moire/Moire';
+import RetroEffects from '@/components/effects/RetroEffects';
+import VignetteOverlay from '@/components/effects/VignetteOverlay';
+import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useAppSession, useUser } from '@/app/providers';
-import { colors } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
-import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
+import type { CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
-import ThemeToggle from '@/ui/ThemeToggle';
 import './App.scss';
 
 const getViewportSize = () => {
@@ -131,17 +130,17 @@ const App: React.FC = () => {
         }
 
         const viewport = getViewportSize();
-        return clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height);
+        return clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height, isMobile);
       });
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [getDefaultBubblePosition]);
+  }, [getDefaultBubblePosition, isMobile]);
 
   useEffect(() => {
-    if (!showActionBubbleMenu) {
+    if (!showActionBubbleMenu || isMobile) {
       return undefined;
     }
 
@@ -171,7 +170,7 @@ const App: React.FC = () => {
         capture: true,
       });
     };
-  }, [showActionBubbleMenu]);
+  }, [isMobile, showActionBubbleMenu]);
 
   const openQuizExperience = useCallback(() => {
     if (currentUser) {
@@ -281,7 +280,8 @@ const App: React.FC = () => {
         dragState.origin.x + deltaX,
         dragState.origin.y + deltaY,
         viewport.width,
-        viewport.height
+        viewport.height,
+        isMobile
       )
     );
   };
@@ -292,7 +292,7 @@ const App: React.FC = () => {
       suppressActionBubbleClickRef.current = true;
       hasCustomActionBubblePositionRef.current = true;
       setActionBubblePosition((previous) =>
-        snapActionBubbleToEdge(previous, viewport.width, viewport.height)
+        snapActionBubbleToEdge(previous, viewport.width, viewport.height, isMobile)
       );
       setShowActionBubbleMenu(false);
     }
@@ -328,8 +328,8 @@ const App: React.FC = () => {
   };
 
   const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
-  const workspaceMeta = getWorkspaceMeta(activeTab);
   const shouldShowLoadingSequence = showLoadingSequence && !prefersReducedMotion;
+  const isMoireVisible = !showLoadingSequence && !prefersReducedMotion;
   const actionItems = useMemo(
     (): CommandActionItem[] => [
       {
@@ -357,19 +357,26 @@ const App: React.FC = () => {
   );
   const actionBubbleMenuStyle = useMemo(() => {
     const viewport = getViewportSize();
-    return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
+    return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height, false);
   }, [actionBubblePosition]);
   const actionBubbleToggleStyle = useMemo(() => {
     const viewport = getViewportSize();
     return getActionBubbleTogglePosition(actionBubblePosition, viewport.width, viewport.height, isMobile);
   }, [actionBubblePosition, isMobile]);
+  const actionBubbleToggleSide = useMemo<'left' | 'right'>(() => {
+    const toggleLeft = Number.parseFloat(actionBubbleToggleStyle.left);
+    return toggleLeft < actionBubblePosition.x ? 'left' : 'right';
+  }, [actionBubblePosition.x, actionBubbleToggleStyle.left]);
 
+  const workspaceMeta = useMemo(() => getWorkspaceMeta(activeTab), [activeTab]);
 
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-        <div className="app-shell bg-main" style={{ minHeight: '100vh', backgroundColor: colors.background }}>
+        <div className="app-shell app-shell--viewport bg-main">
+          {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
+          <VignetteOverlay />
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
       </ThemeProvider>
@@ -401,130 +408,55 @@ const App: React.FC = () => {
         <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
       ) : null}
       <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-      <div
-        className="app-shell bg-main"
-        style={{ minHeight: '100vh', backgroundColor: colors.background }}
-      >
+      <div className="app-shell app-shell--viewport bg-main">
+        {!prefersReducedMotion ? <MagicComponent isVisible={isMoireVisible} opacity={0.2} /> : null}
+        <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
 
-          <div className="app-frame" style={{ position: 'relative', minHeight: '100vh' }}>
-            <button
-              ref={actionBubbleRef}
-              type="button"
-              className={`action-bubble${isDraggingActionBubble ? ' is-dragging' : ''}`}
-              onClick={handleActionBubbleClick}
-              onPointerDown={handleActionBubblePointerDown}
-              onPointerMove={handleActionBubblePointerMove}
-              onPointerUp={finishActionBubbleDrag}
-              onPointerCancel={finishActionBubbleDrag}
-              aria-label="Open messages and extras"
-              aria-haspopup="menu"
-              aria-expanded={showActionBubbleMenu}
-              aria-controls="action-bubble-menu"
-              style={{
-                top: `${actionBubblePosition.y}px`,
-                left: `${actionBubblePosition.x}px`,
-              }}
-            >
-              <span className="action-bubble__icon" aria-hidden="true">
-                <img
-                  src={ELECTRON_LOGO_MARK_PATH}
-                  alt=""
-                  className="action-bubble__icon-image action-bubble__mark"
-                  draggable="false"
-                />
-              </span>
-              <span className="sr-only">Messages and extras</span>
-            </button>
-            <div className="action-bubble-toggle" style={actionBubbleToggleStyle}>
-              <ThemeToggle
-                activeTab={activeTab}
-                onChange={handleTabChange}
-                compact={isMobile}
-                className="action-bubble-toggle__control"
-                label="Switch between Watchlist and Date Ideas"
-              />
-            </div>
-
-            {showActionBubbleMenu ? (
-              <div
-                id="action-bubble-menu"
-                ref={actionBubbleMenuRef}
-                className="action-bubble-menu"
-                style={actionBubbleMenuStyle}
-              >
-                <CommandDeck
-                  items={actionItems}
-                  variant="compact"
-                  onItemSelect={(item) => {
-                    setShowActionBubbleMenu(false);
-                    item.action();
-                  }}
-                />
-              </div>
-            ) : null}
-
-            <main
-              id="main-content"
-              className="workspace-stage workspace-stage--simplified"
-              tabIndex={-1}
-            >
-              <section className="duo-status-shell" aria-label="Profiles and app summary">
+        <div className="app-shell__canvas app-shell__canvas--main">
+          {!isMobile ? (
+            <header className="app-session-bar" aria-label="Profiles and session">
+              <div className="app-session-bar__chrome duo-status-card duo-status-card--portal duo-status-card--session-bar">
                 <div className="duo-status-shell__grid">
                   <UserSelection
                     variant="panel"
-                    title="Choose a profile"
+                    title="Profiles"
                     className="duo-status-shell__selection"
                   />
                 </div>
-              </section>
-
-              <section
-                className="workspace-header workspace-header--simplified"
-                aria-label="Workspace controls"
-              >
-                <p className="workspace-header__brandline">
-                  <span className="workspace-header__brand-mark-shell" aria-hidden="true">
-                    <img
-                      src={ELECTRON_LOGO_MARK_PATH}
-                      alt=""
-                      className="workspace-header__brand-mark"
-                      draggable="false"
-                    />
-                  </span>
-                  <span className="workspace-header__brand-text">Electron</span>
-                </p>
-                <p className="workspace-header__active">
-                  <span className="workspace-header__active-icon">{workspaceMeta.icon}</span>
-                  {workspaceMeta.eyebrow}
-                </p>
-                <h1 className="workspace-header__title">
-                  <span className="workspace-header__title-icon" aria-hidden="true">
-                    {workspaceMeta.icon}
-                  </span>
-                  {workspaceMeta.title}
-                </h1>
-                <div
-                  ref={workspaceControlsRef}
-                  className="workspace-header__controls workspace-header__controls--toggle"
-                />
-              </section>
-
-              <section
-                className="workspace-surface"
-                aria-label="Primary workspace"
-                style={{ minWidth: 0 }}
-              >
-	                {activeTab === 'queue' ? (
-	                  <Watchlist isMobile={isMobile} />
-	                ) : (
-	                  <PlacesList />
-	                )}
-              </section>
-            </main>
+              </div>
+            </header>
+          ) : null}
+          <div className="app-workspace-stack">
+            <ActionBubbleLayer
+              actionBubbleRef={actionBubbleRef}
+              actionBubbleMenuRef={actionBubbleMenuRef}
+              actionBubblePosition={actionBubblePosition}
+              isDraggingActionBubble={isDraggingActionBubble}
+              actionBubbleToggleSide={actionBubbleToggleSide}
+              actionBubbleToggleStyle={actionBubbleToggleStyle}
+              actionBubbleMenuStyle={actionBubbleMenuStyle}
+              isMobile={isMobile}
+              activeTab={activeTab}
+              showActionBubbleMenu={showActionBubbleMenu}
+              onToggleMenu={setShowActionBubbleMenu}
+              onTabChange={handleTabChange}
+              actionItems={actionItems}
+              onActionBubbleClick={handleActionBubbleClick}
+              onActionBubblePointerDown={handleActionBubblePointerDown}
+              onActionBubblePointerMove={handleActionBubblePointerMove}
+              onFinishActionBubbleDrag={finishActionBubbleDrag}
+            />
+            <AppWorkspaceShell
+              isMobile={isMobile}
+              activeTab={activeTab}
+              workspaceMeta={workspaceMeta}
+              workspaceControlsRef={workspaceControlsRef}
+            />
           </div>
+        </div>
 
         {featureModals.map((modal) => (
           <MinigameModal

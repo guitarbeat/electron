@@ -44,7 +44,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const users: User[] = [...USER_OPTIONS];
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
-  const showBubbleName = variant !== 'inline';
+  const showBubbleName = variant !== 'inline' || isMobile;
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   useEffect(() => {

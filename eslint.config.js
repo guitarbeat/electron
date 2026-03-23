@@ -25,4 +25,12 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ['src/components/effects/Moire/Moire.tsx', 'src/components/effects/Moire/RippleEffect.ts'],
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-empty': 'off',
+    },
+  },
 );

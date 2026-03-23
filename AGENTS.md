@@ -72,8 +72,19 @@ Server-side variables used by deployed handlers:
 
 ## Deployment Notes
 
-- `vercel.json` rewrites `/api/*` to the local `api/` handlers and falls back other routes to `index.html`.
-- `netlify.toml` builds the app but currently rewrites `/api/*` to a placeholder external backend host. Do not assume Netlify has serverless parity without configuring a real backend target.
+### Vercel (full parity with this repo)
+
+- `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
+- Set the same server env vars as in [Environment Variables](#environment-variables) (`GIST_ID`, `GITHUB_TOKEN`, `API_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
+
+### Netlify (static build only until `/api` is wired)
+
+- `netlify.toml` runs `npm run build` and publishes `dist/`. The SPA fallback `/* → /index.html` matches Vercel’s client routing.
+- **`/api/*` is not the repo handlers today**: redirects send `/api/*` to `https://your-backend-host.example.com/api/:splat` (placeholder). Gist sync, OMDb proxy, and state routes will **not** work until you either:
+  - Point that redirect at a real deployment that implements the same routes as `api/*.ts`, or
+  - Replace it with [Netlify Functions](https://docs.netlify.com/functions/overview/) (or Edge Functions) that mirror those handlers, or
+  - Host the static app on Netlify but configure the client to call a separate API origin (and update CORS / `ALLOWED_ORIGINS` as needed).
+- Treat **“works on Vercel”** as the default for API behavior; verify Netlify explicitly before relying on shared persistence or proxies there.
 
 ## Source-of-Truth Notes
 

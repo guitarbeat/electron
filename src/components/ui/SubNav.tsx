@@ -16,6 +16,7 @@ interface SubNavProps {
   chips?: { id: string; label: string; count?: number }[];
   activeChipId?: string;
   onChipChange?: (id: string) => void;
+  mode?: 'default' | 'segmented';
   className?: string;
 }
 
@@ -27,6 +28,7 @@ const SubNav: React.FC<SubNavProps> = ({
   chips,
   activeChipId,
   onChipChange,
+  mode = 'default',
   className = '',
 }) => {
   const { playSwitch } = useAudio();
@@ -44,6 +46,51 @@ const SubNav: React.FC<SubNavProps> = ({
       onChipChange?.(id);
     }
   };
+
+  if (mode === 'segmented') {
+    return (
+      <div className={`ui-subnav ui-subnav--segmented ${className}`}>
+        <div className="ui-subnav-segmented">
+          <div className="ui-subnav-segmented__tabs" role="tablist" aria-label="Watchlist tabs">
+            {tabs.map((tab) => {
+              const isActive = tab.id === activeTabId;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`ui-subnav__tab${isActive ? ' is-active' : ''}`}
+                >
+                  {tab.label}
+                  {tab.count !== undefined && <span className="ui-subnav__count">{tab.count}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {chips && chips.length > 0 && (
+            <div className="ui-subnav-segmented__sort" role="group" aria-label="Sort watchlist">
+              {chips.map((chip) => {
+                const isActive = chip.id === activeChipId;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => handleChipClick(chip.id)}
+                    className={`ui-subnav__chip${isActive ? ' is-active' : ''}`}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -18,7 +18,7 @@ The shell is intentionally simpler than earlier revisions. It now focuses on:
 
 The top-level structure is:
 
-1. `ThemeProvider` plus visual effects layer (`RetroEffects`, optional `Moire`, frame effect)
+1. `ThemeProvider` plus visual effects layer (`RetroEffects`, optional `MagicComponent` / moiré background, `VignetteOverlay` edge strips with frosted backdrop — adapted from [personal-website `theme/_vignette`](https://github.com/guitarbeat/personal-website/blob/main/src/sass/theme/_vignette.scss))
 2. Accessibility skip link to `#main-content`
 3. Persistent duo-status strip
    - profile selection and seat state
@@ -165,6 +165,7 @@ Still pruned from the active product surface:
 
 ## Theming + Visual Behavior
 
+- wax / parchment overrides for the floating action bubble and `ThemeToggle` live under `.app-shell--viewport:has(.app-frame)` in `App.scss` so they don’t compete with the earlier global “glass” chrome (e.g. logo-lab shell without `.app-frame`)
 - theme context is driven by the active workspace
 - `body[data-theme]` switches between movie and places palettes
 - optional CRT and cursor-trail effects still respect saved state

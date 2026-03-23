@@ -207,6 +207,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   const haloGlowOpacity = isHovered ? '45%' : '28%';
   const canRefreshImage = Boolean(enableImageRefresh && user && !disabled);
   const shouldPlaceNameInsideBubble = true;
+  /** Inline profile avatars: photo fills shell; chrome / gloss / name stack above */
+  const isTinyFullBleed = size === 'tiny' && !icon && !isActionBubble;
   const bubbleClasses = [
     'gel-bubble',
     'y2k-avatar-bubble',
@@ -217,6 +219,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     disabled ? 'gel-bubble--disabled' : '',
     isActionBubble ? 'gel-bubble--action' : '',
     size === 'tiny' ? 'gel-bubble--inline' : '',
+    isTinyFullBleed ? 'gel-bubble--inline-full-bleed' : '',
     externalClassName || '',
   ]
     .filter(Boolean)
@@ -306,7 +309,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   const imageWrapSize = isActionBubble
     ? '74%'
     : size === 'tiny'
-      ? '78%'
+      ? '86%'
       : size === 'compact'
         ? '80%'
         : '82%';
@@ -368,19 +371,22 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       <div
         style={{
           position: 'relative',
-          width: 'var(--gel-bubble-size)',
+          width: size === 'tiny' ? 'calc(var(--gel-bubble-size) * 1.22)' : 'var(--gel-bubble-size)',
           height: 'var(--gel-bubble-size)',
-          borderRadius: '50%',
-          background: shellBackground,
+          borderRadius: size === 'tiny' ? '42%' : '50%',
+          background: isTinyFullBleed ? 'transparent' : shellBackground,
           boxShadow: shellBoxShadow,
           border: shellBorder,
-          backdropFilter: isActionBubble ? 'blur(8px)' : 'blur(4px)',
-          WebkitBackdropFilter: isActionBubble ? 'blur(8px)' : 'blur(4px)',
+          backdropFilter: isTinyFullBleed ? 'none' : isActionBubble ? 'blur(8px)' : 'blur(4px)',
+          WebkitBackdropFilter: isTinyFullBleed ? 'none' : isActionBubble ? 'blur(8px)' : 'blur(4px)',
           transition: 'transform 0.28s ease-out, box-shadow 0.28s ease-out, border-color 0.28s ease-out',
           transform: shellTransform,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          /* Image is clipped inside `.gel-avatar-image-wrap--full-bleed`; shell must stay
+             overflow visible so centered names + text-stroke are not clipped at the oval edge. */
+          overflow: 'visible',
         }}
         className="gel-avatar-shell"
       >
@@ -420,6 +426,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
 
         {/* Glossy highlight - top left shine */}
         <div
+          className="gel-avatar-gloss"
           style={{
             position: 'absolute',
             top: '8%',
@@ -436,6 +443,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
 
         {/* Secondary highlight - bottom right */}
         <div
+          className="gel-avatar-gloss"
           style={{
             position: 'absolute',
             bottom: '15%',
@@ -453,26 +461,39 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           onClick={canRefreshImage ? onImageClick : undefined}
           title={canRefreshImage ? 'Click for new cat' : undefined}
           style={{
-            width: imageWrapSize,
-            height: imageWrapSize,
-            borderRadius: '50%',
-            overflow: 'hidden',
-            border: isActionBubble
-              ? `1.5px solid color-mix(in srgb, ${accentColor} 44%, white 56%)`
-              : `2px solid color-mix(in srgb, ${accentColor} 52%, white 48%)`,
-            boxShadow: isActionBubble
-              ? `
+            ...(isTinyFullBleed
+              ? {
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 0,
+                  borderRadius: 'inherit',
+                  border: 'none',
+                  boxShadow: 'none',
+                }
+              : {
+                  width: imageWrapSize,
+                  height: imageWrapSize,
+                  borderRadius: size === 'tiny' ? '38%' : '50%',
+                  border: isActionBubble
+                    ? `1.5px solid color-mix(in srgb, ${accentColor} 44%, white 56%)`
+                    : `2px solid color-mix(in srgb, ${accentColor} 52%, white 48%)`,
+                  boxShadow: isActionBubble
+                    ? `
                   0 0 0 1px color-mix(in srgb, white 55%, transparent),
                   0 0 18px color-mix(in srgb, ${accentColor} 38%, transparent),
                   inset 0 0 28px rgba(0, 0, 0, 0.34),
                   inset 0 10px 18px rgba(255, 255, 255, 0.08)
                 `
-              : `
+                    : `
                   0 0 0 1px color-mix(in srgb, white 44%, transparent),
                   0 0 15px color-mix(in srgb, ${accentColor} 44%, transparent),
                   inset 0 0 22px rgba(0, 0, 0, 0.24)
                 `,
-            position: 'relative',
+                  position: 'relative',
+                }),
+            overflow: 'hidden',
             cursor: disabled ? 'wait' : 'inherit',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             display: 'flex',
@@ -480,7 +501,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
             justifyContent: 'center',
             background: imageWrapBackground,
           }}
-          className={`gel-avatar-image-wrap${isActionBubble ? ' gel-avatar-image-wrap--action' : ''}`}
+          className={`gel-avatar-image-wrap${isActionBubble ? ' gel-avatar-image-wrap--action' : ''}${isTinyFullBleed ? ' gel-avatar-image-wrap--full-bleed' : ''}`}
         >
           {icon ? (
             <span
@@ -529,7 +550,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'rgba(0,0,0,0.35)',
-                borderRadius: '50%',
+                borderRadius: isTinyFullBleed ? 'inherit' : '50%',
                 pointerEvents: 'none',
               }}
               aria-hidden
@@ -553,11 +574,28 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
             className="gel-avatar-name gel-avatar-name--inside"
             style={{
               position: 'absolute',
-              left: '50%',
-              bottom: insideNameBottom,
-              transform: isHovered
-                ? 'translate(-50%, 0) scale(1.05)'
-                : 'translate(-50%, 0) scale(1)',
+              ...(isTinyFullBleed
+                ? {
+                    left: 0,
+                    right: 0,
+                    top: '50%',
+                    bottom: 'auto',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    /* Slight +Y nudge: Papyrus caps read optically high at pure 50% */
+                    transform: isHovered
+                      ? 'translateY(calc(-50% + 0.07em)) scale(1.04)'
+                      : 'translateY(calc(-50% + 0.07em))',
+                    transformOrigin: 'center center',
+                    zIndex: 4,
+                  }
+                : {
+                    left: '50%',
+                    bottom: insideNameBottom,
+                    transform: isHovered
+                      ? 'translate(-50%, 0) scale(1.05)'
+                      : 'translate(-50%, 0) scale(1)',
+                  }),
               fontFamily: 'var(--font-display)',
               fontSize: 'var(--gel-name-size)',
               fontWeight: 'var(--font-weight-bold)',
@@ -574,8 +612,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               pointerEvents: 'none',
               whiteSpace: 'nowrap',
               textAlign: 'center',
-              width: 'max-content',
-              maxWidth: insideNameMaxWidth,
+              width: isTinyFullBleed ? '100%' : 'max-content',
+              maxWidth: isTinyFullBleed ? '100%' : insideNameMaxWidth,
               boxSizing: 'border-box',
               overflow: 'visible',
               padding: insideNamePadding,
@@ -606,6 +644,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               position: 'absolute',
               bottom: '5%',
               right: '5%',
+              zIndex: isTinyFullBleed ? 6 : undefined,
               width: '32px',
               height: '32px',
               borderRadius: '50%',

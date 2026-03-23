@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { colors, spacing, shadows, typography, radius, zIndex, motion } from '@/theme/tokens';
 import { getModalOverlayStyle, isFocusWithin, trapFocusOnTab } from './modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface MinigameModalProps {
   isOpen: boolean;
@@ -37,6 +39,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   closeDisabledLabel = 'Please wait for the current action to finish.',
 }) => {
   const { playPop } = useAudio();
+  const isMobileShell = useMediaQuery(mediaBreakpoints.sm);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusedElement = useRef<HTMLElement | null>(null);
@@ -95,13 +98,61 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
     onClose();
   };
 
+  const overlayAlign = isMobileShell ? ('flex-end' as const) : ('center' as const);
+  const surfaceStyles: CSSProperties = isMobileShell
+    ? {
+        position: 'relative',
+        width: '100%',
+        maxWidth: '560px',
+        height: 'auto',
+        maxHeight: `min(${maxHeight}px, calc(92dvh - env(safe-area-inset-bottom, 0px)))`,
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        background:
+          'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
+        borderRadius: `${radius.xl} ${radius.xl} 0 0`,
+        border: `1px solid ${colors.borderSecondary}55`,
+        borderBottom: 'none',
+        boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        animation: `minigame-modal-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+      }
+    : {
+        position: 'relative',
+        width: 'min(100vw, 100%)',
+        height: 'min(100vh, 100%)',
+        maxWidth: `min(${maxWidth}px, 100vw)`,
+        maxHeight: `min(${maxHeight}px, 100dvh)`,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        background:
+          'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
+        borderRadius: radius.xl,
+        border: `1px solid ${colors.borderSecondary}55`,
+        boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        animation: `minigame-modal-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+      };
+
   return createPortal(
     <div
       style={{
-        ...getModalOverlayStyle('rgba(10, 6, 14, 0.64)', 'center', 0),
+        ...getModalOverlayStyle('rgba(10, 6, 14, 0.64)', overlayAlign, isMobileShell ? 0 : 0),
         zIndex: zIndex.modal + 100, // Higher than other modals
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        minWidth: '100%',
+        maxWidth: '100%',
+        minHeight: '100dvh',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        boxSizing: 'border-box',
         backgroundImage:
           'radial-gradient(circle at top, rgba(255, 150, 197, 0.14), transparent 30%), radial-gradient(circle at bottom, rgba(149, 220, 255, 0.1), transparent 28%)',
         WebkitBackdropFilter: 'blur(10px)',
@@ -116,24 +167,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         ref={dialogRef}
         tabIndex={-1}
         className="minigame-modal-surface"
-        style={{
-          position: 'relative',
-          width: 'min(100vw, 100%)',
-          height: 'min(100vh, 100%)',
-          maxWidth: `min(${maxWidth}px, 100vw)`,
-          maxHeight: `min(${maxHeight}px, 100vh)`,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          background:
-            'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
-          borderRadius: radius.xl,
-          border: `1px solid ${colors.borderSecondary}55`,
-          boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          animation: `minigame-modal-pop ${motion.duration.normal} ${motion.easing.spring} both`,
-        }}
+        style={surfaceStyles}
         onClick={(e) => e.stopPropagation()}
       >
         <style>

@@ -3,7 +3,9 @@ import test from 'node:test';
 import {
   ACTION_BUBBLE_DOCK_GAP,
   ACTION_BUBBLE_EDGE_MARGIN,
+  ACTION_BUBBLE_EDGE_MARGIN_MOBILE,
   ACTION_BUBBLE_SIZE,
+  ACTION_BUBBLE_SIZE_MOBILE,
   ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH,
   ACTION_BUBBLE_TOGGLE_GAP,
   ACTION_BUBBLE_TOGGLE_WIDTH,
@@ -16,11 +18,11 @@ import {
 } from './actionBubble.ts';
 
 test('clampActionBubblePosition', async (t) => {
-  await t.test('keeps the bubble inside the viewport bounds', () => {
-    const position = clampActionBubblePosition(-100, 2000, 390, 844);
+  await t.test('keeps the bubble inside the viewport bounds (mobile metrics)', () => {
+    const position = clampActionBubblePosition(-100, 2000, 390, 844, true);
 
-    assert.equal(position.x, ACTION_BUBBLE_EDGE_MARGIN);
-    assert.equal(position.y, 844 - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN);
+    assert.equal(position.x, ACTION_BUBBLE_EDGE_MARGIN_MOBILE);
+    assert.equal(position.y, 844 - ACTION_BUBBLE_SIZE_MOBILE - ACTION_BUBBLE_EDGE_MARGIN_MOBILE);
   });
 });
 
@@ -35,21 +37,21 @@ test('getDefaultActionBubblePosition', async (t) => {
   await t.test('starts near the lower right on mobile', () => {
     const position = getDefaultActionBubblePosition(390, 844, true);
 
-    assert.equal(position.x, 390 - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN);
-    assert.equal(position.y, 844 - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN - 6);
+    assert.equal(position.x, 390 - ACTION_BUBBLE_SIZE_MOBILE - ACTION_BUBBLE_EDGE_MARGIN_MOBILE);
+    assert.equal(position.y, 844 - ACTION_BUBBLE_SIZE_MOBILE - ACTION_BUBBLE_EDGE_MARGIN_MOBILE - 6);
   });
 });
 
 test('getActionBubbleMenuPosition', async (t) => {
   await t.test('opens below the bubble when there is enough space', () => {
-    const menuPosition = getActionBubbleMenuPosition({ x: 24, y: 400 }, 1280, 900);
+    const menuPosition = getActionBubbleMenuPosition({ x: 24, y: 400 }, 1280, 900, false);
 
     assert.equal(menuPosition.left, '12px');
     assert.equal(menuPosition.top, '488px');
   });
 
   await t.test('opens above the bubble when there is not enough space below', () => {
-    const menuPosition = getActionBubbleMenuPosition({ x: 320, y: 720 }, 390, 844);
+    const menuPosition = getActionBubbleMenuPosition({ x: 320, y: 720 }, 390, 844, false);
 
     assert.equal(menuPosition.left, '118px');
     assert.equal(menuPosition.top, '448px');
@@ -58,8 +60,8 @@ test('getActionBubbleMenuPosition', async (t) => {
 
 test('snapActionBubbleToEdge', async (t) => {
   await t.test('snaps to the nearest horizontal edge while keeping the current y position', () => {
-    const left = snapActionBubbleToEdge({ x: 90, y: 500 }, 1280, 900);
-    const right = snapActionBubbleToEdge({ x: 1080, y: 500 }, 1280, 900);
+    const left = snapActionBubbleToEdge({ x: 90, y: 500 }, 1280, 900, false);
+    const right = snapActionBubbleToEdge({ x: 1080, y: 500 }, 1280, 900, false);
 
     assert.equal(left.x, ACTION_BUBBLE_EDGE_MARGIN);
     assert.equal(left.y, 500);
@@ -109,8 +111,8 @@ test('getActionBubbleTogglePosition', async (t) => {
   await t.test('clamps compact toggle inside the viewport', () => {
     const position = getActionBubbleTogglePosition({ x: 8, y: 4 }, 390, 844, true);
 
-    assert.equal(position.left, `${8 + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_TOGGLE_GAP}px`);
-    assert.equal(position.top, `${4 + (ACTION_BUBBLE_SIZE - 52) / 2}px`);
+    assert.equal(position.left, `${8 + ACTION_BUBBLE_SIZE_MOBILE + ACTION_BUBBLE_TOGGLE_GAP}px`);
+    assert.equal(position.top, `${ACTION_BUBBLE_EDGE_MARGIN_MOBILE}px`);
     assert.ok(Number.parseInt(position.left, 10) <= 390 - ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH);
   });
 });

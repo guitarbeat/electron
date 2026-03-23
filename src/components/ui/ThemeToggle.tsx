@@ -7,6 +7,7 @@ interface ThemeToggleProps {
   compact?: boolean;
   className?: string;
   label?: string;
+  style?: React.CSSProperties;
 }
 
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
@@ -15,6 +16,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   compact = false,
   className = '',
   label,
+  style,
 }) => {
   const toggleId = useId();
 
@@ -25,14 +27,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     onChange(newTab);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleToggle();
-    }
-  };
-
-  const handlePointerMove = (event: React.PointerEvent<HTMLLabelElement>) => {
+  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = ((event.clientX - bounds.left) / bounds.width) * 100;
     const y = ((event.clientY - bounds.top) / bounds.height) * 100;
@@ -41,52 +36,74 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     event.currentTarget.style.setProperty('--mouse-y', `${y}%`);
   };
 
-  const resetPointerGlow = (event: React.PointerEvent<HTMLLabelElement>) => {
+  const resetPointerGlow = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.style.setProperty('--mouse-x', '50%');
     event.currentTarget.style.setProperty('--mouse-y', '50%');
   };
 
   return (
-    <div
-      className={`theme-toggle theme-toggle--${isPlacesMode ? 'places' : 'movies'}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+    <button
+      id={toggleId}
+      type="button"
+      role="switch"
+      aria-checked={isPlacesMode}
+      aria-label={label ?? `Switch to ${isPlacesMode ? 'Movies' : 'Places'} mode`}
+      onClick={handleToggle}
+      className={`theme-toggle theme-toggle__label theme-toggle--${isPlacesMode ? 'places' : 'movies'}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      style={style}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={resetPointerGlow}
     >
-      <label
-        className="theme-toggle__label"
-        htmlFor={toggleId}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={resetPointerGlow}
-      >
-        <input
-          id={toggleId}
-          type="checkbox"
-          checked={isPlacesMode}
-          onChange={handleToggle}
-          onKeyDown={handleKeyDown}
-          aria-label={label ?? `Switch to ${isPlacesMode ? 'Movies' : 'Places'} mode`}
-        />
-        <div className="theme-toggle__track">
-          <div className="theme-toggle__track-glow" aria-hidden="true" />
-          <div className="theme-toggle__track-stars" aria-hidden="true" />
-          <div className="theme-toggle__thumb" aria-hidden="true">
-            <div className="theme-toggle__thumb-aura" />
-            <div className="theme-toggle__thumb-shine" />
-            <div className="theme-toggle__thumb-inner-glow" />
-          </div>
-
-          <div className="theme-toggle__option theme-toggle__option--movies" aria-hidden="true">
-            <span className="theme-toggle__option-icon">🎬</span>
-            <span className="theme-toggle__option-text">Movies</span>
-          </div>
-
-          <div className="theme-toggle__option theme-toggle__option--places" aria-hidden="true">
-            <span className="theme-toggle__option-icon">📍</span>
-            <span className="theme-toggle__option-text">Places</span>
-          </div>
-
-          <div className="theme-toggle__track-shimmer" aria-hidden="true" />
+      <div className="theme-toggle__track">
+        <div className="theme-toggle__track-glow" aria-hidden="true" />
+        <div className="theme-toggle__track-stars" aria-hidden="true" />
+        <div className="theme-toggle__gel-halves" aria-hidden="true">
+          <span className="theme-toggle__gel-half theme-toggle__gel-half--movies" />
+          <span className="theme-toggle__gel-half theme-toggle__gel-half--places" />
         </div>
-      </label>
-    </div>
+        <div className="theme-toggle__gel-sweep" aria-hidden="true" />
+        <div className="theme-toggle__thumb" aria-hidden="true">
+          <div className="theme-toggle__thumb-aura" />
+          <div className="theme-toggle__thumb-shine" />
+          <div className="theme-toggle__thumb-inner-glow" />
+        </div>
+
+        <div className="theme-toggle__option theme-toggle__option--movies" aria-hidden="true">
+          <span className="theme-toggle__option-icon">🎬</span>
+          <span className="theme-toggle__option-text">Movies</span>
+        </div>
+
+        <div className="theme-toggle__option theme-toggle__option--places" aria-hidden="true">
+          <span className="theme-toggle__option-icon">📍</span>
+          <span className="theme-toggle__option-text">Places</span>
+        </div>
+
+        <div className="theme-toggle__track-shimmer" aria-hidden="true" />
+      </div>
+
+      {compact ? (
+        <div className="theme-toggle__compact-legend" aria-hidden="true">
+          <span
+            className={
+              !isPlacesMode
+                ? 'theme-toggle__compact-legend-item is-active'
+                : 'theme-toggle__compact-legend-item'
+            }
+          >
+            Movies
+          </span>
+          <span
+            className={
+              isPlacesMode
+                ? 'theme-toggle__compact-legend-item is-active'
+                : 'theme-toggle__compact-legend-item'
+            }
+          >
+            Places
+          </span>
+        </div>
+      ) : null}
+    </button>
   );
 };
 
