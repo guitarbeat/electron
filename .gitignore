@@ -38,5 +38,10 @@ pr_branches.json
 pr_status.json
 test-results/
 
+# Local screenshots and automation artifacts (not part of the app)
+attached_assets/
+output/
+.playwright-cli/
+
 .vercel
 .env*.local
