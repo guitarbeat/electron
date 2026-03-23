@@ -1483,6 +1483,15 @@ body {
   border-radius: 50% !important;
 }
 
+/* Tiny inline bubbles intentionally use an ellipse mask for a "rounded-rect" feel.
+   For command-deck icons we want a true circle silhouette, like the login avatar bubble. */
+.command-deck--compact
+  .gel-bubble--inline:not(.gel-bubble--action)
+  .gel-avatar-chrome-ring {
+  -webkit-mask: radial-gradient(circle, transparent 60%, black 74%);
+  mask: radial-gradient(circle, transparent 60%, black 74%);
+}
+
 .command-deck__bubble-item {
   display: flex;
   flex-direction: column;

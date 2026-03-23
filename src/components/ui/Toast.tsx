@@ -100,7 +100,11 @@ const Toast: React.FC<ToastProps> = ({
       aria-live={type === 'error' ? 'assertive' : 'polite'}
       className={`toast-notification toast--${type}`}
       style={{
-        width: 'min(680px, calc(100vw - 1.5rem))',
+        width: 'min(560px, calc(100vw - 1.5rem))',
+        maxWidth: '100%',
+        height: 'auto',
+        minHeight: 'unset',
+        alignSelf: 'center',
         padding: spacing.md,
         backgroundColor: styles.backgroundColor,
         borderColor: styles.borderColor,
@@ -116,9 +120,11 @@ const Toast: React.FC<ToastProps> = ({
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
-          gap: spacing.md,
+          alignItems: 'flex-start',
+          gap: spacing.sm,
           color: colors.textPrimary,
+          width: '100%',
+          minHeight: 'fit-content',
         }}
       >
         {icon}
@@ -127,66 +133,78 @@ const Toast: React.FC<ToastProps> = ({
           style={{
             fontSize: typography.fontSize.sm,
             fontWeight: typography.fontWeight.medium,
+            lineHeight: typography.lineHeight.normal,
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
             flex: '1 1 auto',
             minWidth: 0,
             textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+            marginTop: '0.1rem',
           }}
         >
           {message}
         </span>
 
-        {actionLabel && onAction && (
-          <button
-            type="button"
-            onClick={() => {
-              onAction();
-              handleDismiss();
-            }}
-            style={{
-              border: `1px solid ${styles.borderColor}`,
-              background: 'rgba(255,255,255,0.08)',
-              color: colors.textPrimary,
-              borderRadius: radius.sm,
-              padding: `0 ${spacing.sm}`,
-              minHeight: '30px',
-              cursor: 'pointer',
-              fontSize: typography.fontSize.xs,
-              fontWeight: typography.fontWeight.semibold,
-              letterSpacing: typography.letterSpacing.wide,
-              whiteSpace: 'nowrap',
-              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
-          >
-            {actionLabel}
-          </button>
-        )}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.xs,
+            flex: '0 0 auto',
+            marginLeft: spacing.xs,
+          }}
+        >
+          {actionLabel && onAction && (
+            <button
+              type="button"
+              onClick={() => {
+                onAction();
+                handleDismiss();
+              }}
+              style={{
+                border: `1px solid ${styles.borderColor}`,
+                background: 'rgba(255,255,255,0.08)',
+                color: colors.textPrimary,
+                borderRadius: radius.sm,
+                padding: `0 ${spacing.sm}`,
+                minHeight: '30px',
+                cursor: 'pointer',
+                fontSize: typography.fontSize.xs,
+                fontWeight: typography.fontWeight.semibold,
+                letterSpacing: typography.letterSpacing.wide,
+                whiteSpace: 'nowrap',
+                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+            >
+              {actionLabel}
+            </button>
+          )}
 
-        {onDismiss && (
-          <button
-            type="button"
-            onClick={handleDismiss}
-            aria-label="Dismiss notification"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: isExiting ? 'transparent' : colors.textSecondary,
-              cursor: 'pointer',
-              padding: spacing.xs,
-              fontSize: '1.05rem',
-              lineHeight: 1,
-              borderRadius: radius.sm,
-              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = colors.textPrimary)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = colors.textSecondary)}
-          >
-            ✕
-          </button>
-        )}
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={handleDismiss}
+              aria-label="Dismiss notification"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: isExiting ? 'transparent' : colors.textSecondary,
+                cursor: 'pointer',
+                padding: spacing.xs,
+                fontSize: '1.05rem',
+                lineHeight: 1,
+                borderRadius: radius.sm,
+                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = colors.textPrimary)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = colors.textSecondary)}
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
     </Card>
   );
