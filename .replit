@@ -34,5 +34,26 @@ externalPort = 80
 localPort = 5001
 externalPort = 3002
 
+[[ports]]
+localPort = 5002
+externalPort = 3001
+
+[[ports]]
+localPort = 23636
+externalPort = 3000
+
 [nix]
 channel = "stable-25_05"
+packages = ["gh"]
+
+[userenv]
+
+[userenv.shared]
+GIST_ID = "ba250f944e3e9e71c0d669060254eab2"
+VITE_GIST_ID = "ba250f944e3e9e71c0d669060254eab2"
+VITE_OMDB_API_KEY = "107d93368d2a51a595e29a63910446ee"
+SESSION_SIGNING_SECRET = "62a941b9aadf202e7f671812b9fca953e285988cf77b67294f0440fce4d50b23fedbafbbc9cef70d85d276d3da667862"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 120000

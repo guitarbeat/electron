@@ -60,7 +60,7 @@ const normalizeGistId = (value: string | undefined): string => {
 };
 
 const getGistId = (): string => normalizeGistId(process.env.GIST_ID || process.env.VITE_GIST_ID);
-const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN);
+const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN || process.env.GITHUB_PERSONAL_ACCESS_TOKEN);
 
 const getGitHubHeaders = (options: { includeAuthorization?: boolean } = {}): Headers => {
   const headers = new Headers({
@@ -92,17 +92,19 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
 
   const gistUrl = getGistUrl();
   const token = getGitHubToken();
-
+  const headersWithToken = getGitHubHeaders();
   let response = await fetchWithRetry(
     gistUrl,
-    {
-      method: 'GET',
-      headers: getGitHubHeaders(),
-    },
+    { method: 'GET', headers: headersWithToken },
     'read gist'
   );
 
-  if (!response.ok && token && (response.status === 401 || response.status === 403)) {
+  if (
+    !response.ok &&
+    token &&
+    (response.status === 401 || response.status === 403) &&
+    headersWithToken.has('Authorization')
+  ) {
     response = await fetchWithRetry(
       gistUrl,
       {
