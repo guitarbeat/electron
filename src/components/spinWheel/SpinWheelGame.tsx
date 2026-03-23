@@ -369,11 +369,26 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               variant="secondary"
               size="sm"
               onClick={() => setSelectedMovieId(null)}
-              disabled={isSpinning || !selectedMovieId}
+              disabled={isSpinning || isSharing || !selectedMovieId}
               className="spin-wheel-action"
             >
               Clear Result
             </Button>
+            {selectedMovie && currentUser ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void handleSharePick()}
+                disabled={isSpinning || isSharing}
+                isLoading={isSharing}
+                title="Share movie suggestion link"
+                aria-label="Share this pick as a shared suggestion link"
+                className="spin-wheel-action"
+              >
+                <ShareIcon size={14} /> Share pick
+              </Button>
+            ) : null}
           </div>
 
           {history.length > 0 && (

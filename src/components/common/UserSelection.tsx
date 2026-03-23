@@ -48,32 +48,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7514/ingest/a7642128-7508-4c11-bd07-2f9ada94f387', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Debug-Session-Id': '357275',
-      },
-      body: JSON.stringify({
-        sessionId: '357275',
-        location: 'UserSelection.tsx:hover-focus',
-        message: 'selection hover/focus',
-        data: {
-          hoveredUser,
-          focusedUser,
-          isDisabled,
-          variant,
-        },
-        timestamp: Date.now(),
-        hypothesisId: 'H1',
-        runId: 'debug-357275',
-      }),
-    }).catch(() => {});
-    // #endregion
-  }, [hoveredUser, focusedUser, isDisabled, variant]);
-
-  useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {
       previousUserRef.current = currentUser;
       return;
