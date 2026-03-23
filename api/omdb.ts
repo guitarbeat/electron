@@ -180,7 +180,8 @@ export default async function handler(req: Request): Promise<Response> {
       return badConfigResponse('Invalid OMDB_API_URL configuration.');
     }
 
-    const sourceUrl = new URL(req.url);
+    // Vercel may pass a relative `req.url` which requires a base.
+    const sourceUrl = new URL(req.url, 'http://localhost');
     if ([...sourceUrl.searchParams.keys()].length === 0) {
       return badRequestResponse('At least one OMDb lookup parameter is required.');
     }

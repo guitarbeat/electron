@@ -17,7 +17,7 @@ Collaborative movie-night app for two people: **React 19**, **TypeScript**, **Vi
 
 ## Commands
 
-Use **pnpm** (see root `README.md` and `AGENTS.md`).
+Use **pnpm** (see root `README.md` and `DEVELOPMENT.md`).
 
 ## Conventions
 

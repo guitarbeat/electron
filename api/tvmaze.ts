@@ -82,7 +82,8 @@ const buildTargetUrl = (req: Request): URL | Response => {
     return badConfigResponse('Invalid TVMAZE_API_URL configuration.');
   }
 
-  const sourceUrl = new URL(req.url);
+  // Vercel may pass a relative `req.url` which requires a base.
+  const sourceUrl = new URL(req.url, 'http://localhost');
   const mode = sourceUrl.searchParams.get('mode');
   const id = sourceUrl.searchParams.get('id');
   const query = sourceUrl.searchParams.get('q');

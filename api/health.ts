@@ -18,7 +18,8 @@ export default async function handler(req: Request): Promise<Response> {
     return methodNotAllowedResponse('GET, OPTIONS');
   }
 
-  const url = new URL(req.url);
+  // Vercel may pass a relative `req.url` (e.g. "/api/health") which throws without a base.
+  const url = new URL(req.url, 'http://localhost');
   const deep = url.searchParams.get('deep') === '1';
 
   if (!deep) {
