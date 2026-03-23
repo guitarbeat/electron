@@ -75,7 +75,8 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 920,
       contentStyle: {
         flex: 1,
-        overflow: 'hidden',
+        minHeight: 0,
+        overflowY: 'auto',
       },
       content: <MessageBoard />,
     },

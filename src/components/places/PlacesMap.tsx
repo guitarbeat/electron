@@ -167,7 +167,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
       ref={containerRef}
       style={{
         width: '100%',
-        height: 280,
+        height: 'clamp(220px, 38vh, 340px)',
         borderRadius: radius.lg,
         overflow: 'hidden',
         border: `1px solid ${colors.borderSecondary}35`,

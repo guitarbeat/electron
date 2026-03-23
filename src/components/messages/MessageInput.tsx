@@ -99,8 +99,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
             aria-hidden="true"
             tabIndex={-1}
             style={{
-              width: '36px',
-              height: '36px',
+              width: '44px',
+              height: '44px',
               borderRadius: '50%',
               backgroundColor: 'transparent',
               border: 'none',
@@ -144,7 +144,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                   '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
                 lineHeight: 1.25,
                 resize: 'none',
-                minHeight: '36px',
+                minHeight: '44px',
                 maxHeight: '100px',
                 outline: 'none',
                 transition: 'border-color 0.2s ease',
@@ -175,8 +175,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
             disabled={!currentUser || !content.trim() || isSubmitting || content.length > MAX_MESSAGE_LENGTH}
             aria-label="Send message"
             style={{
-              width: '36px',
-              height: '36px',
+              width: '44px',
+              height: '44px',
               borderRadius: '50%',
               backgroundColor: showSendButton && currentUser ? '#007aff' : 'transparent',
               border: 'none',

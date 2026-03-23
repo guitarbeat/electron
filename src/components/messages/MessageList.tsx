@@ -132,8 +132,8 @@ const MessageList: React.FC<MessageListProps> = ({
             onClick={scrollToBottom}
             aria-label="Scroll to latest messages"
             style={{
-              width: '40px',
-              height: '40px',
+              width: '44px',
+              height: '44px',
               border: 'none',
               borderRadius: '999px',
               background: 'rgba(0, 0, 0, 0.55)',

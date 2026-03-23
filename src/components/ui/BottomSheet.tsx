@@ -39,6 +39,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
+  const isDraggingHandle = useRef(false);
   const previousFocusedElement = useRef<HTMLElement | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -98,11 +99,15 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   }, [closeDisabled, isOpen, onClose]);
 
   const handleTouchStart = (event: React.TouchEvent) => {
+    isDraggingHandle.current = true;
     startY.current = event.touches[0].clientY;
     currentY.current = 0;
   };
 
   const handleTouchMove = (event: React.TouchEvent) => {
+    if (!isDraggingHandle.current) {
+      return;
+    }
     const deltaY = event.touches[0].clientY - startY.current;
     if (deltaY > 0) {
       currentY.current = deltaY;
@@ -113,12 +118,16 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   };
 
   const handleTouchEnd = () => {
+    if (!isDraggingHandle.current) {
+      return;
+    }
     if (!closeDisabled && currentY.current > 100) {
       handleClose();
     } else if (sheetRef.current) {
       sheetRef.current.style.transform = 'translateY(0)';
     }
     currentY.current = 0;
+    isDraggingHandle.current = false;
   };
 
   const handleClose = () => {
@@ -169,9 +178,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label={title || 'Bottom sheet'}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         style={{
           position: 'relative',
           width: '100%',
@@ -188,7 +194,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             ? undefined
             : 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
-          maxHeight: 'min(82dvh, 82vh)',
+          maxHeight: 'calc(100dvh - max(0.75rem, env(safe-area-inset-top, 0px)))',
           overflowY: 'auto',
           backdropFilter: 'blur(18px)',
           WebkitBackdropFilter: 'blur(18px)',
@@ -196,6 +202,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             width: '40px',
             height: '4px',

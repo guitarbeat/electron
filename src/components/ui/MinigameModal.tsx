@@ -109,7 +109,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        overflow: 'clip',
         background:
           'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
         borderRadius: `${radius.xl} ${radius.xl} 0 0`,
@@ -129,7 +129,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         maxHeight: `min(${maxHeight}px, 100dvh)`,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        overflow: 'clip',
         background:
           'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
         borderRadius: radius.xl,
@@ -270,13 +270,16 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
 
         {/* Content */}
         <div
+          className="minigame-modal-content"
           style={{
             position: 'relative',
             flex: 1,
             minHeight: 0,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           {children}
