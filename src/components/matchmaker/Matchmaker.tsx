@@ -527,7 +527,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             label={
               isSyncBlocked
                 ? 'Matchmaker hit a shared-state conflict. Refresh and retry.'
-                : 'Matchmaker changes are being kept locally until shared sync recovers.'
+                : syncWarning || 'Matchmaker changes are being kept locally until shared sync recovers.'
             }
           />
         </div>

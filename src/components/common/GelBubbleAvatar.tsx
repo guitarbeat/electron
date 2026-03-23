@@ -139,11 +139,11 @@ interface GelBubbleAvatarProps extends React.ButtonHTMLAttributes<HTMLButtonElem
 }
 
 const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
-  default: { bubble: 'clamp(140px, 35vw, 200px)', name: 'clamp(1rem, 4vw, 1.25rem)' },
-  compact: { bubble: 'clamp(90px, 22vw, 140px)', name: 'clamp(0.8rem, 3vw, 1rem)' },
+  default: { bubble: 'clamp(112px, 26vw, 168px)', name: 'clamp(0.9rem, 3.2vw, 1.12rem)' },
+  compact: { bubble: 'clamp(72px, 16vw, 118px)', name: 'clamp(0.72rem, 2.4vw, 0.95rem)' },
   tiny: {
-    bubble: 'var(--inline-profile-bubble-size, clamp(72px, 11vw, 98px))',
-    name: 'var(--inline-profile-name-size, clamp(0.65rem, 0.8vw, 0.85rem))',
+    bubble: 'var(--inline-profile-bubble-size, clamp(52px, 8vw, 76px))',
+    name: 'var(--inline-profile-name-size, clamp(0.62rem, 1.8vw, 0.78rem))',
   },
   action: { bubble: '64px', name: '0.7rem' },
 };
