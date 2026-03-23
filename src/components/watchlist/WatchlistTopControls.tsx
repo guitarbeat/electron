@@ -76,8 +76,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       }}
     >
       <div className="workspace-control-panel__header">
-        <p className="workspace-control-panel__eyebrow">Movies</p>
-        <h2 className="workspace-control-panel__title">Plan the next movie</h2>
+        <h2 className="workspace-control-panel__title">Plan next pick</h2>
       </div>
 
       <SubNav

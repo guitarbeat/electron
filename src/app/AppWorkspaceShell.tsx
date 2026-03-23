@@ -34,7 +34,6 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
             <span className="mobile-shell-header__fact-icon" aria-hidden="true">
               {workspaceMeta.icon}
             </span>
-            <span className="mobile-shell-header__fact-eyebrow">{workspaceMeta.eyebrow}</span>
             <span className="mobile-shell-header__fact-title">{workspaceMeta.title}</span>
           </div>
         </header>
@@ -55,10 +54,6 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
               />
             </span>
             <span className="workspace-header__brand-text">Electron</span>
-          </p>
-          <p className="workspace-header__active">
-            <span className="workspace-header__active-icon">{workspaceMeta.icon}</span>
-            {workspaceMeta.eyebrow}
           </p>
           <h1 className="workspace-header__title">
             <span className="workspace-header__title-icon" aria-hidden="true">

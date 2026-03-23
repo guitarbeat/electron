@@ -9693,6 +9693,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
 .movie-item-card,
 .place-item-card {
+  border-radius: 0;
   border: 1px solid rgba(189, 153, 100, 0.22);
   background:
     linear-gradient(180deg, rgba(255, 247, 228, 0.08) 0%, transparent 16%),
