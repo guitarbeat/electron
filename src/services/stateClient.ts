@@ -84,6 +84,10 @@ const getDefaultScopeData = <TScope extends StateScope>(
         Aaron: false,
         Electra: false,
       } as StateScopeDataMap[TScope];
+    case 'spinHistory':
+      return [] as unknown as StateScopeDataMap[TScope];
+    case 'dailySpin':
+      return null as unknown as StateScopeDataMap[TScope];
     default:
       return [] as unknown as StateScopeDataMap[TScope];
   }

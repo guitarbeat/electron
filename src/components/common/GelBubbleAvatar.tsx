@@ -209,6 +209,38 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   const shouldPlaceNameInsideBubble = true;
   /** Inline profile avatars: photo fills shell; chrome / gloss / name stack above */
   const isTinyFullBleed = size === 'tiny' && !icon && !isActionBubble;
+  const hasPhotoFill = Boolean(user && !icon && !isActionBubble);
+  const isHoverPreview = Boolean(hasPhotoFill && isHovered && !disabled);
+
+  React.useEffect(() => {
+    if (!user) return;
+    // #region agent log
+    fetch('http://127.0.0.1:7514/ingest/a7642128-7508-4c11-bd07-2f9ada94f387', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '357275',
+      },
+      body: JSON.stringify({
+        sessionId: '357275',
+        location: 'GelBubbleAvatar.tsx:hover',
+        message: 'photo bubble hover state',
+        data: {
+          user,
+          size,
+          isHovered,
+          isHoverPreview,
+          hasPhotoFill,
+          disabled: Boolean(disabled),
+        },
+        timestamp: Date.now(),
+        hypothesisId: 'H2-H4',
+        runId: 'debug-357275',
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, [user, size, isHovered, isHoverPreview, hasPhotoFill, disabled]);
+
   const bubbleClasses = [
     'gel-bubble',
     'y2k-avatar-bubble',
@@ -220,6 +252,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     isActionBubble ? 'gel-bubble--action' : '',
     size === 'tiny' ? 'gel-bubble--inline' : '',
     isTinyFullBleed ? 'gel-bubble--inline-full-bleed' : '',
+    isHoverPreview ? 'gel-bubble--photo-hover-preview' : '',
     externalClassName || '',
   ]
     .filter(Boolean)
@@ -282,13 +315,19 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     ? `1.5px solid color-mix(in srgb, rgba(255, 255, 255, 0.84) 50%, ${haloColor} 50%)`
     : `2px solid color-mix(in srgb, ${haloColor} 45%, var(--color-border-subtle) 55%)`;
 
+  /** Preview scale is applied on the <button> so hit-testing matches the enlarged visual; scaling only the inner shell caused mouseLeave on the button and hover flicker (session 357275 logs). */
+  const photoPreviewScaleMult =
+    size === 'tiny' ? 1.88 : size === 'compact' ? 1.72 : 1.62;
+
   const shellTransform = isActionBubble
     ? isHovered
       ? 'translateY(-2px) scale(1.08) rotate(-2deg)'
       : 'translateY(0) scale(1)'
-    : isHovered
-      ? 'scale(1.07) rotate(-1.2deg)'
-      : 'scale(1)';
+    : isHoverPreview
+      ? 'scale(1) translateZ(0)'
+      : isHovered
+        ? 'scale(1.07) rotate(-1.2deg)'
+        : 'scale(1)';
 
   const imageWrapBackground = icon
     ? isActionBubble
@@ -350,6 +389,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         ['--gel-bubble-size' as string]: sizeTokens.bubble,
         ['--gel-name-size' as string]: sizeTokens.name,
         ['--gel-base-scale' as string]: isSmall ? 0.62 : 1,
+        position: 'relative',
+        zIndex: isHoverPreview ? 70 : undefined,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -360,10 +401,16 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         padding: 0,
         opacity: opacityValue,
         transition:
-          'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.34s cubic-bezier(0.33, 1.1, 0.48, 1)',
         filter: bubbleFilter,
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
+        ...(isHoverPreview
+          ? {
+              transform: `scale(calc(var(--gel-base-scale, 1) * ${photoPreviewScaleMult}))`,
+              transformOrigin: 'center center',
+            }
+          : {}),
         ...customStyle,
       }}
     >
@@ -371,15 +418,20 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       <div
         style={{
           position: 'relative',
-          width: size === 'tiny' ? 'calc(var(--gel-bubble-size) * 1.22)' : 'var(--gel-bubble-size)',
+          width:
+            size === 'tiny'
+              ? 'calc(var(--gel-bubble-size) * var(--gel-bubble-width-mult, 1.22))'
+              : 'var(--gel-bubble-size)',
           height: 'var(--gel-bubble-size)',
-          borderRadius: size === 'tiny' ? '42%' : '50%',
+          borderRadius:
+            size === 'tiny' ? 'var(--gel-inline-border-radius, 14px)' : '50%',
           background: isTinyFullBleed ? 'transparent' : shellBackground,
           boxShadow: shellBoxShadow,
           border: shellBorder,
           backdropFilter: isTinyFullBleed ? 'none' : isActionBubble ? 'blur(8px)' : 'blur(4px)',
           WebkitBackdropFilter: isTinyFullBleed ? 'none' : isActionBubble ? 'blur(8px)' : 'blur(4px)',
-          transition: 'transform 0.28s ease-out, box-shadow 0.28s ease-out, border-color 0.28s ease-out',
+          transition:
+            'transform 0.34s cubic-bezier(0.33, 1.1, 0.48, 1), box-shadow 0.28s ease-out, border-color 0.28s ease-out',
           transform: shellTransform,
           display: 'flex',
           alignItems: 'center',
@@ -398,14 +450,14 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
         {isActionBubble && <div className="gel-avatar-action-lens" aria-hidden />}
 
         {/* Outer Ring Pulse on Hover */}
-        {isHovered && (
+        {isHovered && !isHoverPreview && (
           <>
             <div
               className="ring-pulse"
               style={{
                 position: 'absolute',
                 inset: '-12px',
-                borderRadius: '50%',
+                borderRadius: size === 'tiny' ? 'inherit' : '50%',
                 border: `3px solid color-mix(in srgb, ${accentColor} 62%, transparent)`,
                 pointerEvents: 'none',
               }}
@@ -415,7 +467,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               style={{
                 position: 'absolute',
                 inset: '-12px',
-                borderRadius: '50%',
+                borderRadius: size === 'tiny' ? 'inherit' : '50%',
                 border: `2px solid color-mix(in srgb, ${haloColor} 55%, transparent)`,
                 pointerEvents: 'none',
                 animationDelay: '0.3s',
@@ -438,6 +490,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
             borderRadius: '50%',
             pointerEvents: 'none',
             filter: 'blur(2px)',
+            opacity: isHoverPreview ? 0.2 : 1,
+            transition: 'opacity 0.25s ease',
           }}
         />
 
@@ -453,6 +507,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
             background: 'radial-gradient(ellipse, rgba(255,255,255,0.15) 0%, transparent 70%)',
             borderRadius: '50%',
             pointerEvents: 'none',
+            opacity: isHoverPreview ? 0.15 : 1,
+            transition: 'opacity 0.25s ease',
           }}
         />
 
@@ -475,7 +531,10 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               : {
                   width: imageWrapSize,
                   height: imageWrapSize,
-                  borderRadius: size === 'tiny' ? '38%' : '50%',
+                  borderRadius:
+                    size === 'tiny'
+                      ? 'calc(var(--gel-inline-border-radius, 14px) * 0.78)'
+                      : '50%',
                   border: isActionBubble
                     ? `1.5px solid color-mix(in srgb, ${accentColor} 44%, white 56%)`
                     : `2px solid color-mix(in srgb, ${accentColor} 52%, white 48%)`,
@@ -517,7 +576,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: isHoverPreview ? 'contain' : 'cover',
                 transition: 'opacity 0.25s ease',
                 opacity: isCatLoading ? 0.7 : 1,
               }}
@@ -539,6 +598,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
                 )
               `,
               pointerEvents: 'none',
+              opacity: isHoverPreview ? 0.08 : 1,
+              transition: 'opacity 0.28s ease',
             }}
           />
           {isCatLoading && user && (
@@ -550,7 +611,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'rgba(0,0,0,0.35)',
-                borderRadius: isTinyFullBleed ? 'inherit' : '50%',
+                borderRadius: isTinyFullBleed || size === 'tiny' ? 'inherit' : '50%',
                 pointerEvents: 'none',
               }}
               aria-hidden
@@ -612,6 +673,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               pointerEvents: 'none',
               whiteSpace: 'nowrap',
               textAlign: 'center',
+              opacity: isHoverPreview ? 0 : 1,
               width: isTinyFullBleed ? '100%' : 'max-content',
               maxWidth: isTinyFullBleed ? '100%' : insideNameMaxWidth,
               boxSizing: 'border-box',

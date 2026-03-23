@@ -6,9 +6,10 @@ import {
   ACTION_BUBBLE_EDGE_MARGIN_MOBILE,
   ACTION_BUBBLE_SIZE,
   ACTION_BUBBLE_SIZE_MOBILE,
-  ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH,
-  ACTION_BUBBLE_TOGGLE_GAP,
-  ACTION_BUBBLE_TOGGLE_WIDTH,
+  ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT,
+  ACTION_BUBBLE_TOGGLE_OUTER_WIDTH,
+  ACTION_BUBBLE_TOGGLE_OUTER_WIDTH_COMPACT,
+  ACTION_BUBBLE_TOGGLE_OVERLAP,
   clampActionBubblePosition,
   getDockedActionBubblePosition,
   getActionBubbleMenuPosition,
@@ -98,21 +99,27 @@ test('getActionBubbleTogglePosition', async (t) => {
   await t.test('docks the toggle to the left of the bubble when there is room', () => {
     const position = getActionBubbleTogglePosition({ x: 500, y: 300 }, 1280, 900, false);
 
-    assert.equal(position.left, `${500 - ACTION_BUBBLE_TOGGLE_WIDTH - ACTION_BUBBLE_TOGGLE_GAP}px`);
-    assert.equal(position.top, `${300 + (ACTION_BUBBLE_SIZE - 72) / 2}px`);
+    assert.equal(
+      position.left,
+      `${500 - ACTION_BUBBLE_TOGGLE_OUTER_WIDTH + ACTION_BUBBLE_TOGGLE_OVERLAP}px`
+    );
+    assert.equal(
+      position.top,
+      `${300 + (ACTION_BUBBLE_SIZE - ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT) / 2}px`
+    );
   });
 
   await t.test('falls back to the right of the bubble when there is no room on the left', () => {
     const position = getActionBubbleTogglePosition({ x: 24, y: 300 }, 1280, 900, false);
 
-    assert.equal(position.left, `${24 + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_TOGGLE_GAP}px`);
+    assert.equal(position.left, `${24 + ACTION_BUBBLE_SIZE - ACTION_BUBBLE_TOGGLE_OVERLAP}px`);
   });
 
   await t.test('clamps compact toggle inside the viewport', () => {
     const position = getActionBubbleTogglePosition({ x: 8, y: 4 }, 390, 844, true);
 
-    assert.equal(position.left, `${8 + ACTION_BUBBLE_SIZE_MOBILE + ACTION_BUBBLE_TOGGLE_GAP}px`);
+    assert.equal(position.left, `${8 + ACTION_BUBBLE_SIZE_MOBILE - ACTION_BUBBLE_TOGGLE_OVERLAP}px`);
     assert.equal(position.top, `${ACTION_BUBBLE_EDGE_MARGIN_MOBILE}px`);
-    assert.ok(Number.parseInt(position.left, 10) <= 390 - ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH);
+    assert.ok(Number.parseInt(position.left, 10) <= 390 - ACTION_BUBBLE_TOGGLE_OUTER_WIDTH_COMPACT);
   });
 });

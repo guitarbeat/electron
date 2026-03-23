@@ -33,11 +33,16 @@ export const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
 export const ACTION_BUBBLE_MENU_WIDTH = 260;
 export const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
 export const ACTION_BUBBLE_DOCK_GAP = 12;
-export const ACTION_BUBBLE_TOGGLE_GAP = 6;
-export const ACTION_BUBBLE_TOGGLE_WIDTH = 320;
-export const ACTION_BUBBLE_TOGGLE_HEIGHT = 72;
-export const ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH = 240;
-export const ACTION_BUBBLE_TOGGLE_COMPACT_HEIGHT = 52;
+/**
+ * Outer size of the floating tab button (`.action-bubble-toggle` padding + `.theme-toggle--icon-btn`).
+ * Kept in sync with `App.scss` for the fused dock layout.
+ */
+export const ACTION_BUBBLE_TOGGLE_OUTER_WIDTH = 56;
+export const ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT = 56;
+export const ACTION_BUBBLE_TOGGLE_OUTER_WIDTH_COMPACT = 52;
+export const ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT_COMPACT = 52;
+/** Horizontal overlap between tab button shell and action bubble so they read as one control */
+export const ACTION_BUBBLE_TOGGLE_OVERLAP = 10;
 
 export const getActionBubbleLayout = (isMobile: boolean) => {
   const bubbleSize = isMobile ? ACTION_BUBBLE_SIZE_MOBILE : ACTION_BUBBLE_SIZE;
@@ -141,10 +146,11 @@ export const getActionBubbleTogglePosition = (
 ): ActionBubbleTogglePosition => {
   const { bubbleSize, edgeMargin } = getActionBubbleLayout(compact);
   const margin = edgeMargin;
-  const toggleWidth = compact ? ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH : ACTION_BUBBLE_TOGGLE_WIDTH;
-  const toggleHeight = compact ? ACTION_BUBBLE_TOGGLE_COMPACT_HEIGHT : ACTION_BUBBLE_TOGGLE_HEIGHT;
-  const preferredLeft = bubblePosition.x - toggleWidth - ACTION_BUBBLE_TOGGLE_GAP;
-  const fallbackLeft = bubblePosition.x + bubbleSize + ACTION_BUBBLE_TOGGLE_GAP;
+  const toggleWidth = compact ? ACTION_BUBBLE_TOGGLE_OUTER_WIDTH_COMPACT : ACTION_BUBBLE_TOGGLE_OUTER_WIDTH;
+  const toggleHeight = compact ? ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT_COMPACT : ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT;
+  const o = ACTION_BUBBLE_TOGGLE_OVERLAP;
+  const preferredLeft = bubblePosition.x - toggleWidth + o;
+  const fallbackLeft = bubblePosition.x + bubbleSize - o;
   const hasRoomOnLeft = preferredLeft >= margin;
   const clampedLeft = Math.min(
     Math.max(hasRoomOnLeft ? preferredLeft : fallbackLeft, margin),

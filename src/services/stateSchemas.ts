@@ -16,7 +16,9 @@ import type {
   MovieSuggestion,
   Place,
   SharedMemory,
+  User,
 } from '../shared/types.ts';
+import type { DailySpinRecord } from './stateTypes.ts';
 import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../utils/shared.ts';
 import type { PinsState, QuizData } from './stateTypes';
 
@@ -353,3 +355,57 @@ export const normalizeStoredPins = (value: unknown): UserPins =>
   normalizeUserPins(value) ?? {};
 
 export const clonePinsState = (pins: PinsState): PinsState => ({ ...pins });
+
+const spinHistoryTitleFromEntry = (entry: unknown): string | null => {
+  if (typeof entry === 'string') {
+    const t = sanitizeInput(entry);
+    return t || null;
+  }
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+  const o = entry as { title?: unknown; movieTitle?: unknown };
+  if (typeof o.title === 'string') {
+    const t = sanitizeInput(o.title);
+    return t || null;
+  }
+  if (typeof o.movieTitle === 'string') {
+    const t = sanitizeInput(o.movieTitle);
+    return t || null;
+  }
+  return null;
+};
+
+/** Normalize gist JSON: string[], legacy objects, or invalid → string[] (newest-first order preserved). */
+export const normalizeSpinHistoryParsed = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((entry) => spinHistoryTitleFromEntry(entry))
+    .filter((t): t is string => Boolean(t));
+};
+
+export const normalizeDailySpinRecord = (value: unknown): DailySpinRecord | null => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const o = value as Partial<DailySpinRecord>;
+  const date = typeof o.date === 'string' ? sanitizeInput(o.date) : '';
+  const movieId = typeof o.movieId === 'string' ? sanitizeInput(o.movieId) : '';
+  const movieTitle = typeof o.movieTitle === 'string' ? sanitizeInput(o.movieTitle) : '';
+  const createdAt = typeof o.createdAt === 'string' ? sanitizeInput(o.createdAt) : '';
+  if (!date || !movieId || !movieTitle || !createdAt) {
+    return null;
+  }
+  if (o.spunBy !== 'Aaron' && o.spunBy !== 'Electra') {
+    return null;
+  }
+  return {
+    date,
+    movieId,
+    movieTitle,
+    spunBy: o.spunBy as User,
+    createdAt,
+  };
+};

@@ -357,8 +357,13 @@ const App: React.FC = () => {
   );
   const actionBubbleMenuStyle = useMemo(() => {
     const viewport = getViewportSize();
-    return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height, false);
-  }, [actionBubblePosition]);
+    return getActionBubbleMenuPosition(
+      actionBubblePosition,
+      viewport.width,
+      viewport.height,
+      isMobile
+    );
+  }, [actionBubblePosition, isMobile]);
   const actionBubbleToggleStyle = useMemo(() => {
     const viewport = getViewportSize();
     return getActionBubbleTogglePosition(actionBubblePosition, viewport.width, viewport.height, isMobile);

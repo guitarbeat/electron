@@ -18,6 +18,8 @@ export const STATE_SCOPES = [
   'quiz',
   'matchmaker',
   'pins',
+  'spinHistory',
+  'dailySpin',
 ] as const;
 
 export type StateScope = (typeof STATE_SCOPES)[number];
@@ -36,6 +38,15 @@ export interface PinsState {
   Electra: boolean;
 }
 
+/** Last wheel outcome for the UTC calendar day (Gist: dailyspin.json). */
+export interface DailySpinRecord {
+  date: string;
+  movieId: string;
+  movieTitle: string;
+  spunBy: User;
+  createdAt: string;
+}
+
 export interface StateScopeDataMap {
   movies: Movie[];
   messages: Message[];
@@ -45,6 +56,8 @@ export interface StateScopeDataMap {
   quiz: QuizData;
   matchmaker: MatchmakerGame | null;
   pins: PinsState;
+  spinHistory: string[];
+  dailySpin: DailySpinRecord | null;
 }
 
 export interface StateEnvelope<T> {

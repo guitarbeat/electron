@@ -1,6 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import {
+  appendSpinHistory,
+  SPIN_HISTORY_MAX,
+} from '../../src/components/spinWheel/spinWheelEngine.ts';
+import {
   applyMatchmakerSwipe,
   undoMatchmakerSwipe,
 } from '../../src/components/matchmaker/matchmakerGame.ts';
@@ -17,10 +21,13 @@ import {
   normalizePlaceRecord,
   normalizeQuizData,
   normalizeSharedMemoryRecord,
+  normalizeDailySpinRecord,
+  normalizeSpinHistoryParsed,
   normalizeStoredPins,
   normalizeSuggestionRecord,
 } from '../../src/services/stateSchemas.ts';
 import type {
+  DailySpinRecord,
   MutationRequest,
   StateScope,
   StateScopeDataMap,
@@ -185,6 +192,34 @@ const parsePins = (content: string | null): UserPins => {
   } catch (error) {
     console.error('Failed to parse pins.json; defaulting to empty pins.', error);
     return {};
+  }
+};
+
+const parseSpinHistory = (content: string | null): string[] => {
+  if (!content) {
+    return [];
+  }
+
+  try {
+    const parsed = parseJsonContent(content, 'spinHistory');
+    return normalizeSpinHistoryParsed(parsed);
+  } catch (error) {
+    console.error('Failed to parse spinhistory.json; defaulting to empty history.', error);
+    return [];
+  }
+};
+
+const parseDailySpin = (content: string | null): DailySpinRecord | null => {
+  if (!content) {
+    return null;
+  }
+
+  try {
+    const parsed = parseJsonContent(content, 'dailySpin');
+    return normalizeDailySpinRecord(parsed);
+  } catch (error) {
+    console.error('Failed to parse dailyspin.json; defaulting to no daily spin.', error);
+    return null;
   }
 };
 
@@ -959,6 +994,72 @@ const scopes: {
         default:
           return { ok: false, conflict: `Unsupported pins operation: ${op}` };
       }
+    },
+  },
+  spinHistory: {
+    filename: 'spinhistory.json',
+    parse: parseSpinHistory,
+    serialize: (value) => JSON.stringify(value, null, 2),
+    toClient: (value) => value as StateScopeDataMap['spinHistory'],
+    mutate: (current, op, payload) => {
+      const history = current as string[];
+
+      if (op !== 'record_pick') {
+        return { ok: false, conflict: `Unsupported spinHistory operation: ${op}` };
+      }
+
+      const title =
+        typeof (payload as { title?: unknown }).title === 'string'
+          ? sanitizeInput((payload as { title: string }).title)
+          : '';
+
+      if (!title) {
+        return { ok: false, conflict: 'Invalid spin history title.' };
+      }
+
+      return {
+        ok: true,
+        data: appendSpinHistory(history, title, SPIN_HISTORY_MAX),
+      };
+    },
+  },
+  dailySpin: {
+    filename: 'dailyspin.json',
+    parse: parseDailySpin,
+    serialize: (value) =>
+      value ? JSON.stringify(value, null, 2) : '',
+    toClient: (value) => value as StateScopeDataMap['dailySpin'],
+    mutate: (_current, op, payload, context) => {
+      if (op !== 'record_daily') {
+        return { ok: false, conflict: `Unsupported dailySpin operation: ${op}` };
+      }
+
+      const movieId =
+        typeof (payload as { movieId?: unknown }).movieId === 'string'
+          ? sanitizeInput((payload as { movieId: string }).movieId)
+          : '';
+      const movieTitle =
+        typeof (payload as { movieTitle?: unknown }).movieTitle === 'string'
+          ? sanitizeInput((payload as { movieTitle: string }).movieTitle)
+          : '';
+
+      if (!movieId || !movieTitle) {
+        return { ok: false, conflict: 'Invalid daily spin payload.' };
+      }
+
+      const dateUtc = new Date().toISOString().slice(0, 10);
+      const next: DailySpinRecord = {
+        date: dateUtc,
+        movieId,
+        movieTitle,
+        spunBy: context.currentUser,
+        createdAt: context.now,
+      };
+
+      return {
+        ok: true,
+        data: next,
+      };
     },
   },
 };
