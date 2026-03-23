@@ -8,12 +8,30 @@ export interface ActionBubbleMenuPosition {
   top: string;
 }
 
+export interface ActionBubbleTogglePosition {
+  left: string;
+  top: string;
+}
+
+export interface BubbleDockTarget {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 /** Matches `.action-bubble` width/height in App.scss (default layout) */
 export const ACTION_BUBBLE_SIZE = 78;
 export const ACTION_BUBBLE_EDGE_MARGIN = 12;
 export const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
 export const ACTION_BUBBLE_MENU_WIDTH = 260;
 export const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
+export const ACTION_BUBBLE_DOCK_GAP = 12;
+export const ACTION_BUBBLE_TOGGLE_GAP = 6;
+export const ACTION_BUBBLE_TOGGLE_WIDTH = 320;
+export const ACTION_BUBBLE_TOGGLE_HEIGHT = 72;
+export const ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH = 240;
+export const ACTION_BUBBLE_TOGGLE_COMPACT_HEIGHT = 52;
 
 export const clampActionBubblePosition = (
   x: number,
@@ -47,6 +65,20 @@ export const getDefaultActionBubblePosition = (
   const defaultY = viewportHeight - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN - 6;
 
   return clampActionBubblePosition(defaultX, defaultY, viewportWidth, viewportHeight);
+};
+
+export const getDockedActionBubblePosition = (
+  target: BubbleDockTarget,
+  viewportWidth: number,
+  viewportHeight: number
+): ActionBubblePosition => {
+  const preferredX = target.left + target.width + ACTION_BUBBLE_DOCK_GAP;
+  const fallbackX = target.left - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_DOCK_GAP;
+  const hasRoomOnRight = preferredX + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_EDGE_MARGIN <= viewportWidth;
+  const x = hasRoomOnRight ? preferredX : fallbackX;
+  const y = target.top + (target.height - ACTION_BUBBLE_SIZE) / 2;
+
+  return clampActionBubblePosition(x, y, viewportWidth, viewportHeight);
 };
 
 export const snapActionBubbleToEdge = (
@@ -86,5 +118,33 @@ export const getActionBubbleMenuPosition = (
   return {
     left: `${x}px`,
     top: `${Math.min(Math.max(menuY, margin), maxY)}px`,
+  };
+};
+
+export const getActionBubbleTogglePosition = (
+  bubblePosition: ActionBubblePosition,
+  viewportWidth: number,
+  viewportHeight: number,
+  compact: boolean
+): ActionBubbleTogglePosition => {
+  const margin = ACTION_BUBBLE_EDGE_MARGIN;
+  const toggleWidth = compact ? ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH : ACTION_BUBBLE_TOGGLE_WIDTH;
+  const toggleHeight = compact ? ACTION_BUBBLE_TOGGLE_COMPACT_HEIGHT : ACTION_BUBBLE_TOGGLE_HEIGHT;
+  const preferredLeft = bubblePosition.x - toggleWidth - ACTION_BUBBLE_TOGGLE_GAP;
+  const fallbackLeft = bubblePosition.x + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_TOGGLE_GAP;
+  const hasRoomOnLeft = preferredLeft >= margin;
+  const clampedLeft = Math.min(
+    Math.max(hasRoomOnLeft ? preferredLeft : fallbackLeft, margin),
+    Math.max(margin, viewportWidth - toggleWidth - margin)
+  );
+  const centeredTop = bubblePosition.y + (ACTION_BUBBLE_SIZE - toggleHeight) / 2;
+  const clampedTop = Math.min(
+    Math.max(centeredTop, margin),
+    Math.max(margin, viewportHeight - toggleHeight - margin)
+  );
+
+  return {
+    left: `${clampedLeft}px`,
+    top: `${clampedTop}px`,
   };
 };

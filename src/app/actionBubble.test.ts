@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  ACTION_BUBBLE_DOCK_GAP,
   ACTION_BUBBLE_EDGE_MARGIN,
   ACTION_BUBBLE_SIZE,
+  ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH,
+  ACTION_BUBBLE_TOGGLE_GAP,
+  ACTION_BUBBLE_TOGGLE_WIDTH,
   clampActionBubblePosition,
+  getDockedActionBubblePosition,
   getActionBubbleMenuPosition,
+  getActionBubbleTogglePosition,
   getDefaultActionBubblePosition,
   snapActionBubbleToEdge,
 } from './actionBubble.ts';
@@ -59,5 +65,52 @@ test('snapActionBubbleToEdge', async (t) => {
     assert.equal(left.y, 500);
     assert.equal(right.x, 1280 - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_EDGE_MARGIN);
     assert.equal(right.y, 500);
+  });
+});
+
+test('getDockedActionBubblePosition', async (t) => {
+  await t.test('docks to the right of the workspace control when there is room', () => {
+    const position = getDockedActionBubblePosition(
+      { left: 40, top: 230, width: 240, height: 52 },
+      1280,
+      900
+    );
+
+    assert.equal(position.x, 40 + 240 + ACTION_BUBBLE_DOCK_GAP);
+    assert.equal(position.y, 230 + (52 - ACTION_BUBBLE_SIZE) / 2);
+  });
+
+  await t.test('falls back to docking on the left when there is no room on the right', () => {
+    const position = getDockedActionBubblePosition(
+      { left: 270, top: 230, width: 240, height: 52 },
+      560,
+      900
+    );
+
+    assert.equal(position.x, 270 - ACTION_BUBBLE_SIZE - ACTION_BUBBLE_DOCK_GAP);
+    assert.equal(position.y, 230 + (52 - ACTION_BUBBLE_SIZE) / 2);
+  });
+});
+
+test('getActionBubbleTogglePosition', async (t) => {
+  await t.test('docks the toggle to the left of the bubble when there is room', () => {
+    const position = getActionBubbleTogglePosition({ x: 500, y: 300 }, 1280, 900, false);
+
+    assert.equal(position.left, `${500 - ACTION_BUBBLE_TOGGLE_WIDTH - ACTION_BUBBLE_TOGGLE_GAP}px`);
+    assert.equal(position.top, `${300 + (ACTION_BUBBLE_SIZE - 72) / 2}px`);
+  });
+
+  await t.test('falls back to the right of the bubble when there is no room on the left', () => {
+    const position = getActionBubbleTogglePosition({ x: 24, y: 300 }, 1280, 900, false);
+
+    assert.equal(position.left, `${24 + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_TOGGLE_GAP}px`);
+  });
+
+  await t.test('clamps compact toggle inside the viewport', () => {
+    const position = getActionBubbleTogglePosition({ x: 8, y: 4 }, 390, 844, true);
+
+    assert.equal(position.left, `${8 + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_TOGGLE_GAP}px`);
+    assert.equal(position.top, `${4 + (ACTION_BUBBLE_SIZE - 52) / 2}px`);
+    assert.ok(Number.parseInt(position.left, 10) <= 390 - ACTION_BUBBLE_TOGGLE_COMPACT_WIDTH);
   });
 });

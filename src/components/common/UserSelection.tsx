@@ -172,15 +172,17 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         {variant === 'panel' && (
           <>
             <h3 className="user-selection__title">{title}</h3>
-            <div className="user-selection__panel-status" role="status" aria-live="polite">
-              <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
-            </div>
           </>
         )}
 
         <div
           className={`user-selection__bubble-cluster user-selection__bubble-cluster--${variant}`}
         >
+          {variant === 'panel' ? (
+            <div className="user-selection__bubble-cluster-header" role="status" aria-live="polite">
+              <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
+            </div>
+          ) : null}
           <div
             className={`user-selection__bubble-row user-selection__bubble-row--${variant}`}
             role="group"

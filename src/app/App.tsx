@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import LoadingSequence from '@/components/effects/LoadingSequence';
 import RetroEffects from '@/components/effects/RetroEffects';
 import {
   ACTION_BUBBLE_DRAG_THRESHOLD,
   clampActionBubblePosition,
+  getDockedActionBubblePosition,
   getActionBubbleMenuPosition,
+  getActionBubbleTogglePosition,
   getDefaultActionBubblePosition,
   snapActionBubbleToEdge,
   type ActionBubblePosition,
@@ -23,7 +24,6 @@ import { colors } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
-import Card from '@/ui/Card';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import ThemeToggle from '@/ui/ThemeToggle';
@@ -89,6 +89,7 @@ const App: React.FC = () => {
 
   const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
   const actionBubbleMenuRef = useRef<HTMLDivElement | null>(null);
+  const workspaceControlsRef = useRef<HTMLDivElement | null>(null);
   const actionBubbleDragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -99,25 +100,45 @@ const App: React.FC = () => {
   const suppressActionBubbleClickRef = useRef(false);
   const hasCustomActionBubblePositionRef = useRef(false);
 
+  const getDefaultBubblePosition = useCallback(() => {
+    const viewport = getViewportSize();
+    if (isMobile || !workspaceControlsRef.current) {
+      return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
+    }
+
+    const bounds = workspaceControlsRef.current.getBoundingClientRect();
+    return getDockedActionBubblePosition(
+      {
+        left: bounds.left,
+        top: bounds.top,
+        width: bounds.width,
+        height: bounds.height,
+      },
+      viewport.width,
+      viewport.height
+    );
+  }, [isMobile]);
+
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
   useEffect(() => {
     const handleResize = () => {
-      const viewport = getViewportSize();
       setActionBubblePosition((previous) => {
         if (!hasCustomActionBubblePositionRef.current) {
-          return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
+          return getDefaultBubblePosition();
         }
 
+        const viewport = getViewportSize();
         return clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height);
       });
     };
 
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isMobile]);
+  }, [getDefaultBubblePosition]);
 
   useEffect(() => {
     if (!showActionBubbleMenu) {
@@ -309,11 +330,6 @@ const App: React.FC = () => {
   const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
   const workspaceMeta = getWorkspaceMeta(activeTab);
   const shouldShowLoadingSequence = showLoadingSequence && !prefersReducedMotion;
-  const summaryFacts = [
-    currentUser ? `${currentUser} active` : 'Guest mode',
-    'Shared state secured',
-    activeTab === 'queue' ? 'Watchlist open' : 'Date ideas open',
-  ];
   const actionItems = useMemo(
     (): CommandActionItem[] => [
       {
@@ -343,14 +359,11 @@ const App: React.FC = () => {
     const viewport = getViewportSize();
     return getActionBubbleMenuPosition(actionBubblePosition, viewport.width, viewport.height);
   }, [actionBubblePosition]);
+  const actionBubbleToggleStyle = useMemo(() => {
+    const viewport = getViewportSize();
+    return getActionBubbleTogglePosition(actionBubblePosition, viewport.width, viewport.height, isMobile);
+  }, [actionBubblePosition, isMobile]);
 
-  const duoStatusPortalEl = useMemo(() => {
-    if (typeof document === 'undefined') {
-      return null;
-    }
-
-    return document.getElementById('duo-status-card-root');
-  }, []);
 
   if (logoLabState.enabled) {
     return (
@@ -365,49 +378,25 @@ const App: React.FC = () => {
 
   if (isSessionLoading) {
     return (
-      <main
-        style={{
-          minHeight: '100vh',
-          display: 'grid',
-          placeItems: 'center',
-          backgroundColor: colors.background,
-          color: colors.textSecondary,
-        }}
-      >
-        Loading session...
+      <main className="session-loading-screen" aria-live="polite" aria-busy="true">
+        <div className="session-loading-screen__panel">
+          <p className="session-loading-screen__eyebrow">Electron</p>
+          <p className="session-loading-screen__title">Loading Session</p>
+          <p className="session-loading-screen__subtitle">
+            Warming up your watchlist and date ideas.
+          </p>
+          <div className="session-loading-screen__dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
       </main>
     );
   }
 
-  const duoStatusCard = (
-    <Card
-      variant="default"
-      className="duo-status-card duo-status-card--portal"
-    >
-      <div className="duo-status-card__brand duo-status-card__brand--mark-only">
-        <div className="duo-status-card__mark-shell" aria-hidden="true">
-          <img
-            src={ELECTRON_LOGO_MARK_PATH}
-            alt=""
-            className="duo-status-card__mark"
-            draggable="false"
-          />
-        </div>
-      </div>
-
-      <div className="duo-status-card__facts" aria-label="Page summary">
-        {summaryFacts.map((fact) => (
-          <span key={fact} className="duo-status-card__fact">
-            {fact}
-          </span>
-        ))}
-      </div>
-    </Card>
-  );
-
   return (
     <ThemeProvider activeTab={activeTab}>
-      {duoStatusPortalEl ? createPortal(duoStatusCard, duoStatusPortalEl) : null}
       {shouldShowLoadingSequence ? (
         <LoadingSequence onComplete={() => setShowLoadingSequence(false)} />
       ) : null}
@@ -449,6 +438,15 @@ const App: React.FC = () => {
               </span>
               <span className="sr-only">Messages and extras</span>
             </button>
+            <div className="action-bubble-toggle" style={actionBubbleToggleStyle}>
+              <ThemeToggle
+                activeTab={activeTab}
+                onChange={handleTabChange}
+                compact={isMobile}
+                className="action-bubble-toggle__control"
+                label="Switch between Watchlist and Date Ideas"
+              />
+            </div>
 
             {showActionBubbleMenu ? (
               <div
@@ -508,15 +506,10 @@ const App: React.FC = () => {
                   </span>
                   {workspaceMeta.title}
                 </h1>
-                <div className="workspace-header__controls workspace-header__controls--toggle">
-                  <ThemeToggle
-                    activeTab={activeTab}
-                    onChange={handleTabChange}
-                    compact={isMobile}
-                    className="workspace-header__toggle"
-                    label="Switch between Watchlist and Date Ideas"
-                  />
-                </div>
+                <div
+                  ref={workspaceControlsRef}
+                  className="workspace-header__controls workspace-header__controls--toggle"
+                />
               </section>
 
               <section
