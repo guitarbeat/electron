@@ -60,7 +60,10 @@ const normalizeGistId = (value: string | undefined): string => {
 };
 
 const getGistId = (): string => normalizeGistId(process.env.GIST_ID || process.env.VITE_GIST_ID);
-const getGitHubToken = (): string => cleanEnvValue(process.env.GITHUB_TOKEN || process.env.GITHUB_PERSONAL_ACCESS_TOKEN);
+const getGitHubToken = (): string =>
+  cleanEnvValue(
+    process.env.GITHUB_TOKEN || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || process.env.GH_TOKEN
+  );
 
 const getGitHubHeaders = (options: { includeAuthorization?: boolean } = {}): Headers => {
   const headers = new Headers({
@@ -99,6 +102,8 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
     'read gist'
   );
 
+  const firstAttemptStatus = response.status;
+
   if (
     !response.ok &&
     token &&
@@ -116,6 +121,12 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
   }
 
   if (!response.ok) {
+    if (token && (firstAttemptStatus === 401 || firstAttemptStatus === 403)) {
+      throw new Error(
+        `Failed to read gist (auth rejected: ${firstAttemptStatus}; anonymous retry: ${response.status}).`
+      );
+    }
+
     throw new Error(`Failed to read gist (${response.status}).`);
   }
 
