@@ -77,5 +77,5 @@ Server-side variables used by deployed handlers:
 
 ## Source-of-Truth Notes
 
-- `README.md` and `docs/DEPLOYMENT.md` still contain older guidance that mentions `npm` commands and a separate proxy server.
-- For current workflows, trust `package.json`, `vite.config.ts`, `api/`, and this file over the older docs until those docs are updated.
+- Human-oriented overview: `README.md`. Doc index: `docs/README.md`.
+- For commands, env vars, and API behavior, prefer `package.json`, `vite.config.ts`, `api/`, and this file.

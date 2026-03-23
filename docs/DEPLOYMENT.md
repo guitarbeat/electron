@@ -1,71 +1,56 @@
-# Deployment & Development Guide
+# Deployment and local development
 
-This document covers how to run the project locally and deploy it to production environments.
+## Local development
 
-## 🚀 Quick Start (Local Development)
+Use **pnpm** (see `package.json` and `AGENTS.md`).
 
-The project uses `pnpm` for package management and a Node.js proxy server for API requests.
+```bash
+pnpm install
+pnpm dev
+```
 
-1. **Install dependencies:**
-   ```bash
-   pnpm install
-   ```
+- Dev app: `http://localhost:5000`
+- `/api/*` requests are served in dev by Vite middleware that loads handlers from `api/` (no separate backend process)
 
-2. **Start the development server:**
-   ```bash
-   pnpm run dev
-   ```
-   *Starts both the Vite client and the API proxy. Available at http://localhost:5000*
+```bash
+pnpm check-types
+pnpm build
+pnpm preview
+```
 
-3. **Check Types & Build:**
-   ```bash
-   npm run check-types
-   npm run build
-   ```
+## Production shape
 
----
+- **Frontend**: static build from `pnpm build` (`dist/`)
+- **API**: serverless-style handlers in `api/` (e.g. Vercel: `vercel.json` rewrites `/api/*` to those modules)
 
-## 🏗️ Deployment Status
+For **static-only** hosting, omit Gist-related env vars; the app falls back to `localStorage`.
 
-The project is configured for successful production builds. Key requirements for `/api` endpoints:
-- `src/services/gistClient.ts` uses `GIST_API_URL` for shared data persistence.
-- `src/services/metadataService.ts` uses `OMDB_BASE` for movie metadata lookups.
+## Environment variables
 
-In development, these are proxied via `vite.config.ts` to `http://localhost:3001`.
+### Client (`VITE_*`)
 
-## 🌐 Deployment Options
+| Variable | Purpose |
+| --- | --- |
+| `VITE_GIST_ID` | Enables shared Gist storage (optional) |
+| `VITE_GIST_API_URL` | Override default `/api/gist` |
+| `VITE_API_SECRET` | Must match server `API_SECRET` for authorized writes |
+| `VITE_OMDB_API_URL` | Override default `/api/omdb` |
+| `VITE_OMDB_API_KEY` | OMDb key if calling OMDb directly from the client |
+| `VITE_GOOGLE_PLACES_API_KEY` | Map / Places features |
 
-### 1. Full App Parity (Recommended)
-- Deploy serverless handlers for `/api/gist` and `/api/omdb`.
-- **Vercel**: Configured via `api/gist.ts` and `api/omdb.ts` (proxies).
-- **Netlify**: Configured via `netlify.toml` for API rewrites.
+### Server / serverless (deployed handlers)
 
-### 2. Static Hosting Only
-- Omit `VITE_GIST_ID` to use `localStorage` fallback.
-- Set `VITE_GIST_API_URL` and `VITE_OMDB_API_URL` only if your host exposes compatible endpoints.
+| Variable | Purpose |
+| --- | --- |
+| `GIST_ID` | Gist id for shared state |
+| `GITHUB_TOKEN` | GitHub token for Gist API |
+| `API_SECRET` | Authorizes client writes; must match `VITE_API_SECRET` |
+| `SESSION_SIGNING_SECRET` | Session cookies and PIN-related auth (`api/_lib/session.ts`) |
+| `OMDB_API_URL` | Base URL for OMDb proxy |
+| `OMDB_API_KEY` | OMDb API key for proxy |
+| `ALLOWED_ORIGINS` | Origin allowlist for `api/omdb.ts` where applicable |
 
----
+## Host notes
 
-## 🔑 Environment Variables
-
-### Variables for App Behavior
-- `VITE_GIST_ID`: Enables remote shared storage. (Fallback: `localStorage`)
-- `VITE_GIST_API_URL`: Override default `/api/gist`.
-- `VITE_OMDB_API_URL`: Override default `/api/omdb`.
-- `VITE_OMDB_API_KEY`: API key for direct OMDb calls.
-- `VITE_GOOGLE_PLACES_API_KEY`: Required for map features.
-
-### Variables for Serverless Proxy (e.g., Vercel)
-- `GIST_ID`: Server-side ID for the gist.
-- `GITHUB_TOKEN`: Auth token for Gist API writes.
-- `API_SECRET`: Server-side secret used to authorize client write requests. Must match `VITE_API_SECRET`.
-- `SESSION_SIGNING_SECRET`: Required for profile session cookies and PIN-protected profile auth.
-- `OMDB_API_URL`: Server-side base URL for OMDb proxy.
-- `OMDB_API_KEY`: Server-side API key for OMDb.
-
----
-
-## 🛠️ Host-Specific Setup
-
-- **Vercel**: `vercel.json` ensures SPA fallback (`/index.html`).
-- **Netlify**: `netlify.toml` handles API proxying and SPA routing.
+- **Vercel**: `vercel.json` — `/api/*` → handlers, other routes → `index.html` SPA fallback
+- **Netlify**: `netlify.toml` builds the app; `/api/*` must target a real backend unless you add compatible functions — see `AGENTS.md`

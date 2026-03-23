@@ -1,48 +1,34 @@
-# Electron App
+# Collaborative movie night
 
-A collaborative movie-night application designed for two people. Built with **React**, **TypeScript**, and **Vite**, and styled with a nostalgic **Y2K aesthetic** featuring gel bubbles, dashboard chrome, and iMessage-inspired visuals.
+A two-person movie watchlist and shared space built with **React 19**, **TypeScript**, and **Vite**, with a nostalgic Y2K-inspired UI (gel bubbles, dashboard chrome, chat-style surfaces).
 
-## Overview
+Persistence defaults to **localStorage**, with optional **GitHub Gist** sync when configured.
 
-Born as an AI Studio prototype in October 2025, this project has evolved into a personal shared environment. It combines a movie watchlist with social layers like message boards, minigames (Food Merge, Spin Wheel), and shared memory walls.
+## Quick start
 
-The project emphasizes **nostalgia**, **personality**, and **expressive UI** while maintaining a disciplined storage model using **localStorage** by default (with optional GitHub Gist sync for multi-device persistence).
+```bash
+pnpm install
+pnpm dev
+```
 
-## 🚀 Quick Start
+Dev server: `http://localhost:5000`. API routes under `/api/*` are handled by Vite dev middleware (see `vite.config.ts` and `api/`).
 
-### Local Development
+```bash
+pnpm build
+pnpm preview
+pnpm lint
+pnpm check-types
+pnpm test
+```
 
-1. **Install dependencies:**
-   ```bash
-   pnpm install
-   ```
+## Documentation
 
-2. **Start the development server:**
-   ```bash
-   pnpm run dev
-   ```
-   *Starts both the Vite client and the API proxy. Available at http://localhost:5000*
+- **[docs/README.md](docs/README.md)** — index of guides (deployment, site layout, history)
+- **[AGENTS.md](AGENTS.md)** — toolchain, env vars, and workflow (source of truth for agents)
 
-### Main Commands
+## Tech stack
 
-- `npm run dev`: Start dev server with proxy.
-- `npm run build`: Build for production.
-- `npm run check-types`: Run TypeScript compiler check.
-- `npm test`: Run the test suite.
-
-## 📁 Documentation
-
-For more detailed information, please refer to the following guides in the `docs/` directory:
-
-- [**Deployment Guide**](docs/DEPLOYMENT.md): Detailed instructions for hosting on Vercel, Netlify, and managing environment variables.
-- [**Project History**](docs/HISTORY.md): A narrative "Stroll Through Memory Lane" and a chronological log of project milestones and regressions.
-- [**Repo Maintenance**](docs/MAINTENANCE.md): The repository simplification plan, consolidation summary, and file count status.
-- [**Site Layout**](docs/SITE_LAYOUT.md): App-shell and workspace structure, navigation model, and panel architecture.
-
-## 🧩 Tech Stack
-
-- **Frontend**: React 19, TypeScript, Vite
-- **Styling**: Vanilla CSS with custom design tokens for Y2K/Retro-futurist theme.
-- **Persistence**: localStorage by default, with optional GitHub Gist sync for shared/multi-device storage.
-- **APIs**: OMDb (movie metadata), Google Places (map components).
-- **Backend/Proxy**: Optional Node.js server for handling API requests (movie metadata, optional Gist sync).
+- **UI**: React, SCSS (`src/app/App.scss`), design tokens in `src/theme/`
+- **Data**: `localStorage` / Gist via `src/services/` and `api/gist.ts`
+- **Metadata**: OMDb (`api/omdb.ts`, `src/services/metadataService.ts`)
+- **Places**: Google Places (map components) when `VITE_GOOGLE_PLACES_API_KEY` is set
