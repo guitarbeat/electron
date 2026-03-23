@@ -129,7 +129,14 @@ const buildCookie = (
   value: string,
   maxAge: number
 ): string => {
-  const url = new URL(req.url);
+  // Vercel may pass a relative `req.url` which requires a base.
+  // For cookie security, prefer forwarded protocol so `Secure` is correct on HTTPS.
+  const forwardedProto = (req.headers.get('x-forwarded-proto') || req.headers.get('x-forwarded-scheme') || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+  const url = new URL(req.url, 'http://localhost');
+  const resolvedProtocol = forwardedProto ? `${forwardedProto}:` : url.protocol;
   const parts = [
     `${name}=${value}`,
     'Path=/',
@@ -138,7 +145,7 @@ const buildCookie = (
     `Max-Age=${maxAge}`,
   ];
 
-  if (url.protocol === 'https:') {
+  if (resolvedProtocol === 'https:') {
     parts.push('Secure');
   }
 

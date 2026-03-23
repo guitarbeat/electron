@@ -3,7 +3,8 @@ import { createReadHandler } from '../_lib/state.ts';
 import { isStateScope } from '../../src/services/stateTypes.ts';
 
 const resolveScope = (req: Request): string => {
-  const url = new URL(req.url);
+  // Vercel may pass a relative `req.url` which requires a base.
+  const url = new URL(req.url, 'http://localhost');
   const segments = url.pathname.split('/').filter(Boolean);
   return segments.at(-1) || '';
 };
