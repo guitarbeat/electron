@@ -9563,55 +9563,84 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   .action-bubble {
     width: 82px;
     height: 82px;
-    border-color: rgba(239, 205, 153, 0.28);
+    border: 1.5px solid rgba(214, 177, 115, 0.5);
     background:
-      linear-gradient(145deg, rgba(255, 236, 204, 0.12) 0%, transparent 28%),
+      radial-gradient(circle at 50% 64%, rgba(28, 12, 6, 0.38) 0%, transparent 52%),
+      radial-gradient(circle at 36% 20%, rgba(255, 226, 178, 0.2) 0%, transparent 44%),
+      linear-gradient(78deg, rgba(0, 0, 0, 0.07) 0%, transparent 30%, rgba(255, 236, 196, 0.05) 60%, transparent 80%),
       linear-gradient(165deg, color-mix(in srgb, var(--wax-accent) 88%, #593726 12%) 0%, #5f3424 48%, #321910 100%);
     box-shadow:
-      0 18px 30px rgba(16, 10, 6, 0.3),
-      0 0 0 4px rgba(214, 177, 115, 0.08),
-      inset 0 1px 0 rgba(255, 240, 212, 0.2),
-      inset 0 -12px 18px rgba(42, 18, 12, 0.28);
+      0 0 0 5px rgba(214, 177, 115, 0.06),
+      0 4px 12px rgba(12, 7, 3, 0.22),
+      0 22px 42px rgba(12, 7, 3, 0.42),
+      0 0 28px rgba(180, 138, 72, 0.1),
+      inset 0 1.5px 0 rgba(255, 240, 210, 0.3),
+      inset 0 -14px 22px rgba(38, 16, 8, 0.36);
     animation: action-bubble-drift 5.6s ease-in-out infinite;
   }
 
   .action-bubble::before {
-    inset: 6px;
+    inset: 5px;
     border-radius: inherit;
-    border: 1px dashed rgba(247, 220, 170, 0.24);
+    border: 1px dashed rgba(247, 215, 148, 0.42);
     background: none;
-    opacity: 0.9;
+    opacity: 1;
   }
 
   .action-bubble::after {
-    top: 11px;
-    right: 13px;
-    width: 14px;
-    height: 14px;
+    top: 9px;
+    left: 10px;
+    right: auto;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 241, 213, 0.55) 0%, transparent 70%);
-    filter: blur(0.35px);
+    background: radial-gradient(circle, rgba(255, 240, 200, 0.72) 0%, rgba(255, 235, 185, 0.22) 44%, transparent 68%);
+    filter: blur(1.5px);
     mix-blend-mode: screen;
   }
 
   .action-bubble:hover {
-    transform: translateY(-2px) rotate(1deg) scale(1.04);
+    transform: translateY(-4px) rotate(2deg) scale(1.06);
     box-shadow:
-      0 22px 34px rgba(16, 10, 6, 0.32),
-      0 0 0 4px rgba(214, 177, 115, 0.1),
-      inset 0 1px 0 rgba(255, 240, 212, 0.24),
-      inset 0 -12px 20px rgba(42, 18, 12, 0.24);
+      0 0 0 6px rgba(214, 177, 115, 0.18),
+      0 4px 14px rgba(12, 7, 3, 0.24),
+      0 28px 48px rgba(12, 7, 3, 0.46),
+      0 0 36px rgba(190, 148, 82, 0.14),
+      inset 0 1.5px 0 rgba(255, 242, 214, 0.36),
+      inset 0 -16px 26px rgba(38, 16, 8, 0.32);
   }
 
   .action-bubble.is-dragging {
     animation: none;
   }
 
+  .action-bubble--docked-left {
+    box-shadow:
+      -16px 0 28px rgba(180, 138, 72, 0.16),
+      0 0 0 5px rgba(214, 177, 115, 0.06),
+      0 22px 42px rgba(12, 7, 3, 0.42),
+      0 0 28px rgba(180, 138, 72, 0.1),
+      inset 0 1.5px 0 rgba(255, 240, 210, 0.3),
+      inset 0 -14px 22px rgba(38, 16, 8, 0.36);
+  }
+
+  .action-bubble--docked-right {
+    box-shadow:
+      16px 0 28px rgba(180, 138, 72, 0.16),
+      0 0 0 5px rgba(214, 177, 115, 0.06),
+      0 22px 42px rgba(12, 7, 3, 0.42),
+      0 0 28px rgba(180, 138, 72, 0.1),
+      inset 0 1.5px 0 rgba(255, 240, 210, 0.3),
+      inset 0 -14px 22px rgba(38, 16, 8, 0.36);
+  }
+
   .action-bubble__icon {
     width: 54px;
     height: 54px;
     color: #f6ebd2;
-    filter: drop-shadow(0 6px 10px rgba(20, 12, 7, 0.28));
+    filter:
+      sepia(30%) saturate(130%)
+      drop-shadow(0 6px 12px rgba(16, 8, 4, 0.36));
   }
 
   .action-bubble__mark {
