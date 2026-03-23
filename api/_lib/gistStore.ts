@@ -90,14 +90,19 @@ const fetchGist = async (bypassCache: boolean = false): Promise<GistResponse> =>
     return gistCache.data;
   }
 
-  const response = await fetchWithRetry(
-    getGistUrl(),
-    {
-      method: 'GET',
-      headers: getGitHubHeaders(),
-    },
-    'read gist'
-  );
+  const url = getGistUrl();
+  const headersWithToken = getGitHubHeaders();
+  let response = await fetchWithRetry(url, { method: 'GET', headers: headersWithToken }, 'read gist');
+
+  // If the token was rejected (401/403) on what might be a public Gist, retry without auth.
+  // This handles expired/invalid tokens gracefully for public Gists.
+  if ((response.status === 401 || response.status === 403) && headersWithToken.has('Authorization')) {
+    const anonHeaders = new Headers({
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'movie-watch-state-server',
+    });
+    response = await fetchWithRetry(url, { method: 'GET', headers: anonHeaders }, 'read gist (anon)');
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to read gist (${response.status}).`);
