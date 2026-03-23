@@ -1,8 +1,7 @@
 import type { ContentTab, SortMode } from '@/shared/types';
 
 export const MOVIE_TABS: { id: ContentTab; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'queue', label: 'Queue' },
+  { id: 'queue', label: 'Unwatched' },
   { id: 'watched', label: 'Watched' },
   { id: 'suggestions', label: 'Suggestions' },
 ];

@@ -63,7 +63,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
   const [isSubmittingRecommendation, setIsSubmittingRecommendation] = useState(false);
-  const [contentTab, setContentTab] = useState<ContentTab>('all');
+  const [contentTab, setContentTab] = useState<ContentTab>('queue');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
   const [showConfetti, setShowConfetti] = useState(false);
@@ -211,7 +211,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const filteredMovies = useMemo(() => {
     return sortedMovies.filter((movie) => {
       const inTab =
-        contentTab === 'all' ||
         (contentTab === 'queue' && movie.watchedBy.length < 2) ||
         (contentTab === 'watched' && movie.watchedBy.length === 2);
       if (!inTab) return false;
@@ -223,7 +222,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   }, [sortedMovies, contentTab, normalizedSearch]);
 
   const filteredSuggestions = useMemo(() => {
-    if (contentTab !== 'all' && contentTab !== 'suggestions') {
+    if (contentTab !== 'suggestions') {
       return [];
     }
     return pendingSuggestions.filter((suggestion) => {
@@ -249,7 +248,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     );
 
     return {
-      all: sortedMovies.length,
       queue: counts.queue,
       watched: counts.watched,
       suggestions: pendingSuggestions.length,

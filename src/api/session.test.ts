@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
-import profileHandler from '../../api/session/profile.ts';
+import profileHandler, {
+  computeNextPinAttemptState,
+  profilePinRateLimitConfig,
+} from '../../api/session/profile.ts';
 import sessionHandler from '../../api/session.ts';
 
 const withUnsetGistId = async (run: () => Promise<void>) => {
@@ -60,4 +63,24 @@ test('profile endpoint explains when the shared pin store is missing', async () 
       /shared pin store is not configured.*GIST_ID/i
     );
   });
+});
+
+test('PIN lockout state only starts after configured max failures', () => {
+  const now = Date.now();
+  let failures = 0;
+
+  for (let attempt = 1; attempt < profilePinRateLimitConfig.maxAttempts; attempt += 1) {
+    const next = computeNextPinAttemptState(failures, now);
+    assert.equal(next.failures, attempt);
+    assert.equal(next.lockedUntil, null);
+    failures = next.failures;
+  }
+});
+
+test('PIN lockout state sets lock duration at max failures', () => {
+  const now = Date.now();
+  const next = computeNextPinAttemptState(profilePinRateLimitConfig.maxAttempts - 1, now);
+
+  assert.equal(next.failures, profilePinRateLimitConfig.maxAttempts);
+  assert.equal(next.lockedUntil, now + profilePinRateLimitConfig.lockoutMs);
 });

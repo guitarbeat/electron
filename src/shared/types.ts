@@ -88,7 +88,7 @@ export interface MatchmakerGame {
   startedBy: User;
 }
 
-export type ContentTab = 'all' | 'queue' | 'watched' | 'suggestions';
+export type ContentTab = 'queue' | 'watched' | 'suggestions';
 export type PlaceContentTab = 'all' | 'queue' | 'visited';
 export type SortMode = 'recent' | 'title' | 'year';
 export type PlaceSortMode = 'recent' | 'name';
