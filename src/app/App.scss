@@ -7235,13 +7235,18 @@ body.grabbing * {
 
 /* Movie Card */
 .movie-item-card {
-  border-radius: 0;
+  border-radius: 1rem;
   overflow: hidden;
   will-change: transform, box-shadow;
   transition:
     transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 0.22s ease,
     border-color 0.22s ease;
+}
+
+.movie-item-card:active {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -7453,18 +7458,57 @@ body.grabbing * {
 .movie-item-watchers {
   position: absolute;
   top: 0.5rem;
-  left: 0.5rem;
+  right: 0.5rem;
+  left: auto;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-wrap: nowrap;
+  gap: 0;
   z-index: 3;
-  max-width: calc(100% - 1rem);
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.movie-item-watchers .watcher-badge--default {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.movie-item-watchers .watcher-badge + .watcher-badge {
+  margin-left: -6px;
+}
+
+.movie-item-watchers .watcher-badge:first-child {
+  z-index: 2;
+}
+
+.movie-item-watchers .watcher-badge:last-child {
+  z-index: 1;
+}
+
+.movie-item-watchers .watcher-badge--aaron .watcher-badge__avatar {
+  border-color: #60c5f5;
+  border-width: 2px;
+}
+
+.movie-item-watchers .watcher-badge--electra .watcher-badge__avatar {
+  border-color: #ff7fc6;
+  border-width: 2px;
 }
 
 .movie-item-success-badge {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem;
+  left: 0.5rem;
+  right: auto;
   z-index: 4;
   padding: 0.24rem 0.58rem;
   border-radius: 999px;
