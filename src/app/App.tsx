@@ -53,7 +53,6 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [showMatchmaker, setShowMatchmaker] = useState(false);
   const [showActionBubbleMenu, setShowActionBubbleMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
@@ -173,10 +172,6 @@ const App: React.FC = () => {
     setShowQuizEditor(true);
   }, [currentUser]);
 
-  const openMatchmaker = useCallback(() => {
-    setShowMatchmaker(true);
-  }, []);
-
   const handleTabChange = useCallback(
     (tab: MainTab) => {
       if (tab === activeTab) {
@@ -203,7 +198,6 @@ const App: React.FC = () => {
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
-        showMatchmaker,
         quizCompleted,
         isSpinWheelLocked,
         currentUser,
@@ -211,7 +205,6 @@ const App: React.FC = () => {
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
-        setShowMatchmaker,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
       }),
@@ -220,7 +213,6 @@ const App: React.FC = () => {
       handleQuizComplete,
       isSpinWheelLocked,
       quizCompleted,
-      showMatchmaker,
       showMessages,
       showQuizEditor,
       showQuizFlow,
@@ -324,14 +316,6 @@ const App: React.FC = () => {
   const actionItems = useMemo(
     (): CommandActionItem[] => [
       {
-        label: 'Plan next pick',
-        icon: '🎬',
-        action: () => {
-          setActiveTab('queue');
-          setShowPlanControls(true);
-        },
-      },
-      {
         label: 'Messages',
         icon: '💬',
         action: () => setShowMessages(true),
@@ -342,17 +326,12 @@ const App: React.FC = () => {
         action: openQuizExperience,
       },
       {
-        label: 'Spin Wheel',
-        icon: '🎰',
+        label: 'Spin & Match',
+        icon: '🎡',
         action: () => setShowSpinWheel(true),
       },
-      {
-        label: 'Matchmaker',
-        icon: '💘',
-        action: openMatchmaker,
-      },
     ],
-    [openMatchmaker, openQuizExperience, quizLaunch.label]
+    [openQuizExperience, quizLaunch.label]
   );
   const actionBubbleMenuStyle = useMemo(() => {
     const viewport = getViewportSize();
