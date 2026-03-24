@@ -1470,71 +1470,95 @@ body {
 }
 
 .command-deck--compact {
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 0.4rem;
-  padding: 0.25rem 0;
-}
-
-.command-deck--compact .gel-bubble--inline {
-  --gel-bubble-width-mult: 1;
-  --gel-inline-border-radius: 999px;
-}
-
-.command-deck--compact .gel-bubble--inline .gel-avatar-shell,
-.command-deck--compact .gel-bubble--inline .gel-avatar-image-wrap {
-  border-radius: 50% !important;
-}
-
-/* Tiny inline bubbles intentionally use an ellipse mask for a "rounded-rect" feel.
-   For command-deck icons we want a true circle silhouette, like the login avatar bubble. */
-.command-deck--compact
-  .gel-bubble--inline:not(.gel-bubble--action)
-  .gel-avatar-chrome-ring {
-  -webkit-mask: radial-gradient(circle, transparent 60%, black 74%);
-  mask: radial-gradient(circle, transparent 60%, black 74%);
-}
-
-.command-deck__bubble-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  animation: bubble-item-entrance 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: calc(var(--item-index, 0) * 0.06s);
+  gap: 0.1rem;
+  padding: 0.35rem 0.5rem 0.55rem;
 }
 
-@keyframes bubble-item-entrance {
+.command-deck__row-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+  animation: row-item-entrance 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--item-index, 0) * 0.05s);
+  text-align: left;
+}
+
+.command-deck__row-item:hover,
+.command-deck__row-item:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(2px);
+  outline: none;
+}
+
+.command-deck__row-item:active {
+  transform: translateX(1px) scale(0.985);
+}
+
+@keyframes row-item-entrance {
   from {
     opacity: 0;
-    transform: scale(0.7) translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
-.command-deck__bubble-label {
-  font-family: var(--type-eyebrow-family);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-text-secondary) 85%, var(--color-accent) 15%);
-  text-align: center;
-  white-space: nowrap;
-  text-shadow:
-    0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
-  pointer-events: none;
-  transition: color 0.2s ease, text-shadow 0.2s ease;
+.command-deck__row-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  border: 1px solid color-mix(in srgb, var(--row-accent, var(--color-accent)) 28%, transparent);
+  transition:
+    background 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
-.command-deck__bubble-item:hover .command-deck__bubble-label,
-.command-deck__bubble-item:focus-within .command-deck__bubble-label {
-  color: color-mix(in srgb, var(--color-text-primary) 90%, white 10%);
-  text-shadow:
-    0 0 12px color-mix(in srgb, var(--color-accent) 70%, transparent),
-    0 0 24px color-mix(in srgb, var(--color-secondary) 40%, transparent);
+.command-deck__row-label {
+  flex: 1;
+  font-family: var(--type-button-label-family);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.command-deck__row-chevron {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  opacity: 0.45;
+  transition:
+    transform 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.command-deck__row-item:hover .command-deck__row-chevron,
+.command-deck__row-item:focus-visible .command-deck__row-chevron {
+  transform: translateX(4px);
+  opacity: 0.85;
 }
 
 .action-bubble {
@@ -1710,7 +1734,7 @@ body {
 .action-bubble-menu {
   position: fixed;
   z-index: 649;
-  width: 260px;
+  width: 280px;
   max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
   max-height: calc(100vh - 1.25rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   border-radius: calc(var(--chrome-radius) + 0.15rem);
@@ -5713,13 +5737,12 @@ body.grabbing * {
     min-height: calc(100dvh - 6rem) !important;
   }
 
-  .command-deck__bubble-item {
-    gap: 0.4rem;
+  .command-deck__row-item {
+    padding: 0.5rem 0.6rem;
   }
 
-  .command-deck__bubble-label {
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
+  .command-deck__row-label {
+    font-size: 0.78rem;
   }
 }
 
@@ -9413,7 +9436,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 .duo-status-card__eyebrow,
 .workspace-header__active,
 .workspace-header__brandline,
-.command-deck__bubble-label {
+.command-deck__row-label {
   color: var(--color-text-secondary);
 }
 
@@ -9674,28 +9697,22 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     border-bottom-color: rgba(203, 168, 112, 0.18);
   }
 
-  .action-bubble-menu .command-deck__bubble-label {
-    color: color-mix(in srgb, var(--color-text-secondary) 85%, rgba(212, 177, 115, 0.6) 15%);
-    text-shadow: 0 0 10px rgba(212, 177, 115, 0.3);
+  .action-bubble-menu .command-deck__row-label {
+    color: color-mix(in srgb, var(--color-text-primary) 88%, rgba(242, 220, 175, 0.8) 12%);
   }
 
-  .action-bubble-menu .command-deck__bubble-item:hover .command-deck__bubble-label,
-  .action-bubble-menu .command-deck__bubble-item:focus-within .command-deck__bubble-label {
-    color: color-mix(in srgb, var(--color-text-primary) 90%, white 10%);
-    text-shadow:
-      0 0 12px rgba(212, 177, 115, 0.5),
-      0 0 24px rgba(203, 168, 112, 0.3);
+  .action-bubble-menu .command-deck__row-item:hover,
+  .action-bubble-menu .command-deck__row-item:focus-visible {
+    background: rgba(212, 177, 115, 0.08);
   }
 
-  .action-bubble-menu .gel-avatar-chrome-ring {
-    background: conic-gradient(
-      from 20deg,
-      rgba(255, 244, 219, 0.78) 0deg,
-      rgba(212, 177, 115, 0.42) 86deg,
-      rgba(203, 168, 112, 0.38) 185deg,
-      rgba(255, 244, 219, 0.78) 290deg,
-      rgba(255, 244, 219, 0.78) 360deg
-    );
+  .action-bubble-menu .command-deck__row-chevron {
+    color: rgba(212, 177, 115, 0.55);
+  }
+
+  .action-bubble-menu .command-deck__row-item:hover .command-deck__row-chevron,
+  .action-bubble-menu .command-deck__row-item:focus-visible .command-deck__row-chevron {
+    color: rgba(242, 220, 175, 0.9);
   }
 
   .action-bubble-toggle {

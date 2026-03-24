@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { colors, radius, spacing, typography, motion, shadows } from '@/theme/tokens';
-import GelBubbleAvatar from '../common/GelBubbleAvatar';
 
 export interface CommandActionItem {
   label: string;
@@ -32,41 +31,57 @@ const CommandDeck: React.FC<CommandDeckProps> = ({
   return (
     <div
       className={isCompact ? 'command-deck command-deck--compact' : 'command-deck'}
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: isCompact ? spacing.md : spacing.sm,
-        width: '100%',
-        padding: isCompact ? `${spacing.md} 0` : 0,
-      }}
+      style={
+        isCompact
+          ? { display: 'flex', flexDirection: 'column', width: '100%' }
+          : {
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: spacing.sm,
+              width: '100%',
+            }
+      }
     >
       {items.map((item, index) => {
         const accentColor = actionPalette[index % actionPalette.length];
-        const haloColor = actionPalette[(index + 2) % actionPalette.length];
 
         return isCompact ? (
-          <div
+          <button
             key={item.label}
-            className="command-deck__bubble-item"
-            style={{ '--item-index': index } as React.CSSProperties}
+            type="button"
+            className="command-deck__row-item"
+            onClick={() => onItemSelect(item)}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            onFocus={() => setHoveredIndex(index)}
+            onBlur={() => setHoveredIndex(null)}
+            style={
+              {
+                '--item-index': index,
+                '--row-accent': accentColor,
+              } as React.CSSProperties
+            }
           >
-            <GelBubbleAvatar
-              icon={item.icon}
-              label={item.label}
-              size="tiny"
-              showName={false}
-              isHovered={hoveredIndex === index}
-              onClick={() => onItemSelect(item)}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              onFocus={() => setHoveredIndex(index)}
-              onBlur={() => setHoveredIndex(null)}
-              accentColor={accentColor}
-              haloColor={haloColor}
-            />
-            <span className="command-deck__bubble-label" aria-hidden="true">{item.label}</span>
-          </div>
+            <span
+              className="command-deck__row-icon"
+              aria-hidden="true"
+              style={
+                hoveredIndex === index
+                  ? {
+                      background: `color-mix(in srgb, ${accentColor} 34%, transparent)`,
+                      boxShadow: `0 0 14px color-mix(in srgb, ${accentColor} 44%, transparent)`,
+                    }
+                  : {
+                      background: `color-mix(in srgb, ${accentColor} 16%, transparent)`,
+                    }
+              }
+            >
+              {item.icon}
+            </span>
+            <span className="command-deck__row-label">{item.label}</span>
+            <span className="command-deck__row-chevron" aria-hidden="true">›</span>
+          </button>
         ) : (
           <button
             key={item.label}
