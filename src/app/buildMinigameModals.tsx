@@ -1,7 +1,6 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import MessageBoard from '@/components/messages/MessageBoard';
-import SpinWheelGame from '@/components/spinWheel/SpinWheelGame';
-import Matchmaker from '@/components/matchmaker/Matchmaker';
+import SpinSwipeGame from '@/components/spinMatch/SpinSwipeGame';
 import QuizEditor from '@/components/quiz/QuizEditor';
 import QuizFlowModalContent from '@/app/QuizFlowModalContent';
 import type { User } from '@/shared/types';
@@ -41,62 +40,6 @@ export interface BuildFeatureModalsParams {
   setShowSpinWheel: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
-}
-
-type PickTab = 'spin' | 'match';
-
-const tabBarStyle: CSSProperties = {
-  display: 'flex',
-  borderBottom: '1px solid rgba(255,255,255,0.1)',
-  flexShrink: 0,
-};
-
-function tabButtonStyle(active: boolean): CSSProperties {
-  return {
-    flex: 1,
-    padding: '0.65rem 1rem',
-    background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
-    border: 'none',
-    borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
-    color: active ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-    fontFamily: 'var(--type-button-label-family)',
-    fontSize: '0.78rem',
-    fontWeight: active ? 700 : 500,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-    transition: 'all 0.18s ease',
-  };
-}
-
-function SpinMatchModal({
-  currentUser,
-  onSpinningChange,
-}: {
-  currentUser: User | null;
-  onSpinningChange: (locked: boolean) => void;
-}) {
-  const [tab, setTab] = useState<PickTab>('spin');
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={tabBarStyle}>
-        <button type="button" style={tabButtonStyle(tab === 'spin')} onClick={() => setTab('spin')}>
-          🎰 Spin Wheel
-        </button>
-        <button type="button" style={tabButtonStyle(tab === 'match')} onClick={() => setTab('match')}>
-          💘 Matchmaker
-        </button>
-      </div>
-      <div style={{ flex: 1, overflow: 'auto', padding: spacing.lg }}>
-        {tab === 'spin' ? (
-          <SpinWheelGame onSpinningChange={onSpinningChange} />
-        ) : (
-          <Matchmaker currentUser={currentUser} />
-        )}
-      </div>
-    </div>
-  );
 }
 
 export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
@@ -147,17 +90,13 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       isOpen: showSpinWheel,
       onClose: () => setShowSpinWheel(false),
       title: 'Spin & Match',
-      ariaLabel: 'Spin wheel and matchmaker',
-      maxWidth: 920,
-      maxHeight: 900,
+      ariaLabel: 'Swipe to pick movies, then spin the wheel',
+      maxWidth: 520,
+      maxHeight: 820,
       closeDisabled: isSpinWheelLocked,
       closeDisabledLabel: 'Finish the current spin before closing.',
-      content: (
-        <SpinMatchModal
-          currentUser={currentUser}
-          onSpinningChange={setIsSpinWheelLocked}
-        />
-      ),
+      content: <SpinSwipeGame onSpinningChange={setIsSpinWheelLocked} />,
+      contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
       key: 'quiz-flow',
@@ -168,18 +107,17 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 920,
       maxHeight: 900,
       contentStyle: paddedScrollContentStyle,
-      content:
-        currentUser ? (
-          <QuizFlowModalContent
-            currentUser={currentUser}
-            quizCompleted={quizCompleted}
-            onComplete={onQuizComplete}
-            onEdit={() => {
-              setShowQuizFlow(false);
-              setShowQuizEditor(true);
-            }}
-          />
-        ) : null,
+      content: currentUser ? (
+        <QuizFlowModalContent
+          currentUser={currentUser}
+          quizCompleted={quizCompleted}
+          onComplete={onQuizComplete}
+          onEdit={() => {
+            setShowQuizFlow(false);
+            setShowQuizEditor(true);
+          }}
+        />
+      ) : null,
     },
   ];
 }
