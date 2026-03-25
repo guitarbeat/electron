@@ -23,6 +23,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   }
   const content = { ...getSyncBannerContent({ isBlocked, label }), occurredAt: stableTimestampRef.current };
   const [copied, setCopied] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleCopyDebugInfo = useCallback(async () => {
     const payload = [
@@ -49,16 +50,16 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
     return () => window.clearTimeout(timeoutId);
   }, [copied]);
 
+  const dimText = content.tone === 'assertive' ? 'rgba(255,220,220,0.75)' : colors.textSecondary;
+
   return (
     <div
       role={content.tone === 'assertive' ? 'alert' : 'status'}
       aria-live={content.tone}
       style={{
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: spacing.md,
-        flexWrap: 'wrap',
+        flexDirection: 'column',
+        gap: spacing.sm,
         padding: `${spacing.sm} ${spacing.md}`,
         borderRadius: radius.md,
         background: content.accent,
@@ -66,17 +67,17 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         color: colors.textPrimary,
         boxShadow:
           content.tone === 'assertive'
-            ? '0 0 0 1px rgba(255, 120, 120, 0.25), 0 8px 24px rgba(255, 87, 87, 0.15)'
+            ? '0 0 0 1px rgba(255, 120, 120, 0.2), 0 8px 24px rgba(255, 87, 87, 0.12)'
             : undefined,
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs, minWidth: 0 }}>
+      {/* ── Top row: badge + timestamp + actions ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}>
         <span
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            width: 'fit-content',
-            padding: '0.2rem 0.5rem',
+            padding: '0.15rem 0.5rem',
             borderRadius: 999,
             border: `1px solid ${content.border}`,
             background:
@@ -90,66 +91,114 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         >
           {content.badge}
         </span>
-        <strong style={{ fontSize: typography.fontSize.sm }}>
-          {content.title}
-          <span
-            style={{
-              fontWeight: 400,
-              fontSize: typography.fontSize.xs,
-              color: content.tone === 'assertive' ? '#ffd3d3' : colors.textSecondary,
-              marginLeft: spacing.xs,
-            }}
-          >
-            at {content.occurredAt}
-          </span>
-        </strong>
         <span
           style={{
             fontSize: typography.fontSize.xs,
-            color: content.tone === 'assertive' ? '#ffd3d3' : colors.textSecondary,
+            color: dimText,
+            marginRight: 'auto',
           }}
         >
-          {content.description}
+          since {content.occurredAt}
         </span>
-        {content.debugHints.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-            <strong
-              style={{
-                fontSize: typography.fontSize.xs,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                color: content.tone === 'assertive' ? '#ffdede' : colors.textSecondary,
-              }}
-            >
-              Debug details
-            </strong>
-            <ul
-              style={{
-                margin: 0,
-                paddingLeft: '1.1rem',
-                display: 'grid',
-                gap: '0.2rem',
-                fontSize: typography.fontSize.xs,
-                color: content.tone === 'assertive' ? '#ffd3d3' : colors.textSecondary,
-              }}
-            >
-              {content.debugHints.map((hint) => (
-                <li key={hint}>{hint}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </div>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: spacing.xs }}>
-        <Button size="sm" variant="ghost" onClick={() => void handleCopyDebugInfo()}>
-          {copied ? 'Copied' : 'Copy debug info'}
-        </Button>
         {onRetry ? (
           <Button size="sm" variant={isBlocked ? 'secondary' : 'ghost'} onClick={() => void onRetry()}>
             Retry sync
           </Button>
         ) : null}
       </div>
+
+      {/* ── Main message ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        <strong style={{ fontSize: typography.fontSize.sm }}>{content.title}</strong>
+        <span style={{ fontSize: typography.fontSize.xs, color: dimText }}>
+          {content.description}
+        </span>
+      </div>
+
+      {/* ── What it means / what to do ── */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: spacing.sm,
+        }}
+      >
+        <div
+          style={{
+            padding: '0.4rem 0.6rem',
+            borderRadius: radius.sm,
+            background: 'rgba(0,0,0,0.15)',
+            fontSize: typography.fontSize.xs,
+            color: dimText,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: '0.2rem', color: colors.textPrimary }}>
+            What this means
+          </div>
+          {content.whatItMeans}
+        </div>
+        <div
+          style={{
+            padding: '0.4rem 0.6rem',
+            borderRadius: radius.sm,
+            background: 'rgba(0,0,0,0.15)',
+            fontSize: typography.fontSize.xs,
+            color: dimText,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: '0.2rem', color: colors.textPrimary }}>
+            What to do
+          </div>
+          {content.whatToDo}
+        </div>
+      </div>
+
+      {/* ── Collapsible technical details ── */}
+      {content.debugHints.length > 0 ? (
+        <div>
+          <button
+            onClick={() => setShowDetails((v) => !v)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              color: dimText,
+              fontSize: typography.fontSize.xs,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              letterSpacing: '0.03em',
+            }}
+          >
+            <span style={{ fontSize: '0.6rem' }}>{showDetails ? '▼' : '▶'}</span>
+            {showDetails ? 'Hide' : 'Show'} technical details
+          </button>
+          {showDetails ? (
+            <div style={{ marginTop: spacing.xs }}>
+              <ul
+                style={{
+                  margin: 0,
+                  paddingLeft: '1.1rem',
+                  display: 'grid',
+                  gap: '0.2rem',
+                  fontSize: typography.fontSize.xs,
+                  color: dimText,
+                }}
+              >
+                {content.debugHints.map((hint) => (
+                  <li key={hint}>{hint}</li>
+                ))}
+              </ul>
+              <div style={{ marginTop: spacing.xs }}>
+                <Button size="sm" variant="ghost" onClick={() => void handleCopyDebugInfo()}>
+                  {copied ? 'Copied!' : 'Copy details'}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 };

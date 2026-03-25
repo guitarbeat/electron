@@ -10,10 +10,11 @@ test('getSyncBannerContent', async (t) => {
   await t.test('returns local-only messaging for degraded sync', () => {
     const content = getSyncBannerContent({ isBlocked: false });
 
-    assert.equal(content.badge, 'Error');
-    assert.equal(content.title, 'Shared sync is unavailable');
-    assert.equal(content.description, 'Changes are being kept locally until the shared state comes back.');
+    assert.equal(content.badge, 'Sync paused');
+    assert.equal(content.title, 'Sync paused');
     assert.equal(content.tone, 'assertive');
+    assert.ok(content.whatItMeans.length > 0);
+    assert.ok(content.whatToDo.length > 0);
     assert.ok(content.debugHints.length > 0);
     assert.ok(content.debugHints.some((h) => /shared state could not be synchronized/i.test(h)));
   });
@@ -22,19 +23,19 @@ test('getSyncBannerContent', async (t) => {
     const content = getSyncBannerContent({ isBlocked: true });
 
     assert.equal(content.badge, 'Action needed');
-    assert.equal(content.title, 'Sync conflict detected');
-    assert.equal(content.description, 'Remote changes conflicted with local changes. Refresh and retry.');
+    assert.equal(content.title, 'Sync conflict');
     assert.equal(content.tone, 'assertive');
     assert.ok(content.debugHints[0]?.includes('remote sync conflict'));
   });
 
-  await t.test('prefers a caller-provided label', () => {
+  await t.test('prefers friendly content for caller-provided label', () => {
     const content = getSyncBannerContent({
       isBlocked: false,
       label: 'Places changes are being kept locally until shared sync recovers.',
     });
 
-    assert.equal(content.description, 'Places changes are being kept locally until shared sync recovers.');
+    assert.ok(content.whatItMeans.length > 0);
+    assert.ok(content.whatToDo.length > 0);
     assert.ok(content.debugHints.length > 0);
   });
 
@@ -42,12 +43,14 @@ test('getSyncBannerContent', async (t) => {
     const content = getSyncBannerContent({ isBlocked: false, label: SYNC_WARNING_OUTBOX });
 
     assert.ok(content.debugHints.some((h) => /queued/i.test(h)));
+    assert.ok(content.whatToDo.length > 0);
   });
 
   await t.test('classifies client network warnings', () => {
     const content = getSyncBannerContent({ isBlocked: false, label: SYNC_WARNING_CLIENT_NETWORK });
 
     assert.ok(content.debugHints.some((h) => /\/api\/state/i.test(h)));
+    assert.ok(content.whatToDo.length > 0);
   });
 
   await t.test('classifies GitHub API warnings', () => {
@@ -57,5 +60,6 @@ test('getSyncBannerContent', async (t) => {
     });
 
     assert.ok(content.debugHints.some((h) => /GitHub API/i.test(h)));
+    assert.ok(/token|permission/i.test(content.whatToDo));
   });
 });
