@@ -1,34 +1,12 @@
 import { useEffect, type FC, type MouseEvent, type PointerEvent, type RefObject } from 'react';
-import { useUser } from '@/app/providers';
-import ElectronMark from '@/branding/ElectronMark';
-import type { ElectronMarkPalette, ElectronMarkVariant } from '@/branding/electronMarkData';
+import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import type { ActionBubbleMenuPosition, ActionBubblePosition, ActionBubbleTogglePosition } from '@/app/actionBubble';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
 import UserSelection from '@/components/common/UserSelection';
 import { CrossIcon } from '@/common/icons';
-import type { MainTab, User } from '@/shared/types';
-
-const USER_LOGO_VARIANT: Record<User, ElectronMarkVariant> = {
-  Aaron: 'orbit-a',
-  Electra: 'orbit-e',
-};
-
-const USER_LOGO_PALETTE: Record<User, Partial<ElectronMarkPalette>> = {
-  Aaron: {
-    accent: '#ff9f45',
-    accentLight: '#ffcc80',
-    secondary: '#ffb347',
-    tertiary: '#e85d04',
-  },
-  Electra: {
-    accent: '#ff7fc6',
-    accentLight: '#ffc2e6',
-    secondary: '#95dcff',
-    tertiary: '#a78af2',
-  },
-};
+import type { MainTab } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
   actionBubbleRef: RefObject<HTMLButtonElement | null>;
@@ -69,7 +47,6 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   onActionBubblePointerMove,
   onFinishActionBubbleDrag,
 }) => {
-  const { currentUser } = useUser();
   const closeMenu = () => onToggleMenu(false);
 
   const runItem = (item: CommandActionItem) => {
@@ -121,11 +98,11 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         }}
       >
         <span className="action-bubble__icon" aria-hidden="true">
-          <ElectronMark
-            variant={currentUser ? USER_LOGO_VARIANT[currentUser] : 'pulse-ae'}
-            palette={currentUser ? USER_LOGO_PALETTE[currentUser] : undefined}
-            size="100%"
+          <img
+            src={ELECTRON_LOGO_MARK_PATH}
+            alt=""
             className="action-bubble__icon-image action-bubble__mark"
+            draggable="false"
           />
         </span>
         <span className="action-bubble__open-ring" aria-hidden="true" />
