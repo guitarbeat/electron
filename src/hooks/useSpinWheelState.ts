@@ -4,6 +4,7 @@ import { usePolling } from '@/services/polling';
 import { mutateScope, readScope } from '@/services/stateClient';
 import type { DailySpinRecord, SpinEntry } from '@/services/stateTypes';
 import { appendSpinHistory, SPIN_HISTORY_MAX } from '@/components/spinWheel/spinWheelEngine';
+import { appendDailySpinEntry } from '@/services/stateSchemas';
 import { areDeeplyEqual } from '@/utils';
 
 const POLLING_INTERVAL = 15000;
@@ -46,26 +47,8 @@ export const useSpinWheelState = (currentUser: User | null, isPaused: boolean = 
         : [...new Set(warnings)].join(' ');
 
     const today = new Date().toISOString().slice(0, 10);
-    let dailyData = dailySnap.data as any;
-
-    // Handle legacy format or date reset
-    if (dailyData) {
-      if (dailyData.date !== today) {
-        dailyData = null;
-      } else if (!Array.isArray(dailyData.spins)) {
-        // Migrate legacy single-spin format to array
-        const legacyEntry: SpinEntry = {
-          movieId: dailyData.movieId,
-          movieTitle: dailyData.movieTitle,
-          spunBy: dailyData.spunBy,
-          createdAt: dailyData.createdAt,
-        };
-        dailyData = {
-          date: today,
-          spins: [legacyEntry],
-        };
-      }
-    }
+    const dailyData =
+      dailySnap.data && dailySnap.data.date === today ? dailySnap.data : null;
 
     return {
       history: historySnap.data,
@@ -104,7 +87,6 @@ export const useSpinWheelState = (currentUser: User | null, isPaused: boolean = 
       );
 
       const now = new Date().toISOString();
-      const today = now.slice(0, 10);
       
       const newEntry: SpinEntry = {
         movieId,
@@ -113,10 +95,10 @@ export const useSpinWheelState = (currentUser: User | null, isPaused: boolean = 
         createdAt: now,
       };
 
-      const optimisticDaily: DailySpinRecord = 
-        prev?.daily && prev.daily.date === today
-          ? { ...prev.daily, spins: [...prev.daily.spins, newEntry] }
-          : { date: today, spins: [newEntry] };
+      const optimisticDaily: DailySpinRecord = appendDailySpinEntry(
+        prev?.daily ?? null,
+        newEntry
+      );
 
       try {
         await mutateScope('spinHistory', {

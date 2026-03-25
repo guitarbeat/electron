@@ -450,7 +450,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     setDragX(e.clientX - dragStartX.current);
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlePointerUp = () => {
     if (!isDragging) return;
     setIsDragging(false);
     dragStartX.current = null;

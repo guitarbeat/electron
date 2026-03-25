@@ -14,6 +14,7 @@ import {
 } from '../../src/services/movieRecords.ts';
 import { type UserPins } from '../../src/services/pinHelpers.ts';
 import {
+  appendDailySpinEntry,
   cloneQuizData,
   defaultQuizData,
   normalizeMatchmakerGame,
@@ -1031,7 +1032,7 @@ const scopes: {
     serialize: (value) =>
       value ? JSON.stringify(value, null, 2) : '',
     toClient: (value) => value as StateScopeDataMap['dailySpin'],
-    mutate: (_current, op, payload, context) => {
+    mutate: (current, op, payload, context) => {
       if (op !== 'record_daily') {
         return { ok: false, conflict: `Unsupported dailySpin operation: ${op}` };
       }
@@ -1049,14 +1050,12 @@ const scopes: {
         return { ok: false, conflict: 'Invalid daily spin payload.' };
       }
 
-      const dateUtc = new Date().toISOString().slice(0, 10);
-      const next: DailySpinRecord = {
-        date: dateUtc,
+      const next = appendDailySpinEntry(current as DailySpinRecord | null, {
         movieId,
         movieTitle,
         spunBy: context.currentUser,
         createdAt: context.now,
-      };
+      });
 
       return {
         ok: true,

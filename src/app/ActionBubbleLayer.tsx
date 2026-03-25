@@ -1,4 +1,12 @@
-import { useEffect, useState, type FC, type MouseEvent, type PointerEvent, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type FC,
+  type MouseEvent,
+  type PointerEvent,
+  type RefObject,
+} from 'react';
 import { useUser } from '@/app/providers';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import type { ActionBubbleMenuPosition, ActionBubblePosition } from '@/app/actionBubble';
@@ -72,13 +80,9 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   onFinishActionBubbleDrag,
 }) => {
   const { currentUser } = useUser();
-  const [photoError, setPhotoError] = useState(false);
-
-  useEffect(() => {
-    setPhotoError(false);
-  }, [currentUser]);
-
-  const closeMenu = () => onToggleMenu(false);
+  const [failedPhotoUser, setFailedPhotoUser] = useState<string | null>(null);
+  const photoError = Boolean(currentUser && failedPhotoUser === currentUser);
+  const closeMenu = useCallback(() => onToggleMenu(false), [onToggleMenu]);
 
   const runItem = (item: CommandActionItem) => {
     closeMenu();
@@ -97,7 +101,7 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showActionBubbleMenu]);
+  }, [actionBubbleRef, closeMenu, showActionBubbleMenu]);
 
   const actionBubbleSide =
     actionBubblePosition.x < window.innerWidth / 2 ? 'right' : 'left';
@@ -145,7 +149,7 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
               alt={currentUser}
               className="action-bubble__user-photo"
               draggable="false"
-              onError={() => setPhotoError(true)}
+              onError={() => setFailedPhotoUser(currentUser)}
             />
           ) : (
             <img

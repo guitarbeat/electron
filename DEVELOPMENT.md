@@ -40,31 +40,38 @@ Command behavior:
 ## App and API Workflow
 
 - There is no separate local backend process. `vite.config.ts` mounts a custom middleware that executes `api/*.ts` for `/api/*` requests during local development.
-- `api/gist.ts` is the server-side proxy for shared Gist persistence.
-- `api/omdb.ts` is the server-side OMDb proxy used in production-style deployments.
+- Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and Gist persistence in `api/_lib/gistStore.ts`.
+- Profile selection and PIN login are handled through signed cookies in `api/session.ts`, `api/session/profile.ts`, and `api/_lib/session.ts`.
+- `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
 - In development, `src/services/metadataService.ts` defaults OMDb reads to `https://www.omdbapi.com` unless `VITE_OMDB_API_URL` is set.
-- In development and production, `src/services/gistClient.ts` defaults shared persistence to `/api/gist`.
-- If Gist configuration is missing or write auth is unavailable, the app falls back to `localStorage`.
+- In local Vite development, `VITE_GIST_ID` is accepted as a fallback when `GIST_ID` is not set.
+- `api/gist.ts` still exists only as a deprecated `410 Gone` route for older clients; it is not the supported sync path.
+- If Gist configuration is missing or GitHub write auth is unavailable, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
 
 ## Environment Variables
 
 Client-side variables used by the app:
 
 - `VITE_GIST_ID`
-- `VITE_GIST_API_URL`
-- `VITE_API_SECRET`
 - `VITE_OMDB_API_URL`
 - `VITE_OMDB_API_KEY`
+- `VITE_TVMAZE_API_URL`
 - `VITE_GOOGLE_PLACES_API_KEY`
 
 Server-side variables used by deployed handlers:
 
 - `GIST_ID`
 - `GITHUB_TOKEN`
-- `API_SECRET`
+- `SESSION_SIGNING_SECRET`
 - `OMDB_API_URL`
 - `OMDB_API_KEY`
+- `TVMAZE_API_URL`
 - `ALLOWED_ORIGINS` for `api/omdb.ts` origin allowlisting
+
+Notes:
+
+- `SESSION_SIGNING_SECRET` should be set in any stable shared environment. If it is missing, the server falls back to an ephemeral in-process secret and profile sessions will not survive restarts.
+- `GITHUB_PERSONAL_ACCESS_TOKEN` and `GH_TOKEN` are also accepted as GitHub token fallbacks, but `GITHUB_TOKEN` is the primary supported variable.
 
 ## Validation Expectations
 
@@ -78,7 +85,7 @@ Server-side variables used by deployed handlers:
 ### Vercel (full parity with this repo)
 
 - `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
-- Set the same server env vars as in [Environment Variables](#environment-variables) (`GIST_ID`, `GITHUB_TOKEN`, `API_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
+- Set the same server env vars as in [Environment Variables](#environment-variables) (`GIST_ID`, `GITHUB_TOKEN`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
 
 **Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling GitHub (use for frequent uptime pings). `GET /api/health?deep=1` performs a cached gist read via `movielist.json` to verify `GIST_ID` and GitHub reachability; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
 

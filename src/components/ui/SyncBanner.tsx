@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Button from './Button';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import { getSyncBannerContent } from './syncBannerContent';
@@ -9,22 +9,27 @@ interface SyncBannerProps {
   label?: string;
 }
 
+const formatSyncBannerTimestamp = (): string =>
+  new Date().toLocaleString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
+const IncidentTimestamp: React.FC = () => {
+  const [stableTimestamp] = useState(formatSyncBannerTimestamp);
+  return <>{stableTimestamp}</>;
+};
+
 const SyncBanner: React.FC<SyncBannerProps> = ({
   isBlocked = false,
   onRetry,
   label,
 }) => {
-  const prevKeyRef = useRef('');
-  const stableTimestampRef = useRef('');
   const incidentKey = `${isBlocked}::${label ?? ''}`;
-  if (incidentKey !== prevKeyRef.current) {
-    prevKeyRef.current = incidentKey;
-    const now = new Date();
-    stableTimestampRef.current = now.toLocaleString([], {
-      weekday: 'short', month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-    });
-  }
 
   const content = getSyncBannerContent({ isBlocked, label });
   const [copied, setCopied] = useState(false);
@@ -71,7 +76,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
           {content.badge}
         </span>
         <span style={{ fontSize: typography.fontSize.xs, color: 'rgba(255,200,200,0.6)', marginRight: 'auto' }}>
-          {stableTimestampRef.current}
+          <IncidentTimestamp key={incidentKey} />
         </span>
         <Button size="sm" variant="ghost" onClick={() => void handleCopy()}>
           {copied ? 'Copied!' : 'Copy'}

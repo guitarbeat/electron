@@ -7,7 +7,13 @@ import {
 } from '@/app/sharedSuggestion';
 import { useUser } from '@/app/providers';
 import { useWatchlist } from './useWatchlist';
-import type { MovieSuggestion, SharedMemory, WatchlistProps } from '@/shared/types';
+import type {
+  ContentTab,
+  MovieSuggestion,
+  SharedMemory,
+  SortMode,
+  WatchlistProps,
+} from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
@@ -21,6 +27,7 @@ import { shareSuggestionLink } from '@/utils/browser';
 import WatchlistTopControls from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
+import { buildWatchlistTabView, getWatchlistTabCounts } from './watchlistView';
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
@@ -29,6 +36,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   );
   const [isSharing, setIsSharing] = useState(false);
   const [isSavingSharedSuggestion, setIsSavingSharedSuggestion] = useState(false);
+  const [contentTab, setContentTab] = useState<ContentTab>('queue');
+  const [sortMode, setSortMode] = useState<SortMode>('recent');
 
   const {
     // State returns
@@ -59,6 +68,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     submitRecommendation,
     acceptSuggestionToWatchlist,
     rejectPendingSuggestion,
+    isSuggestionsLoading,
     memories,
     addMemory,
     updateMemory,
@@ -68,7 +78,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     isWatchlistSyncBlocked,
     watchlistSyncWarning,
     retryWatchlistSync,
-    filteredMovies,
   } = useWatchlist({ currentUser, isPaused });
 
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
@@ -113,6 +122,23 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       pendingSuggestions.some((suggestion) => normalizeMovieTitle(suggestion.title) === normalizedTitle)
     );
   }, [movies, pendingSuggestions, sharedSuggestion]);
+
+  const tabCounts = React.useMemo(
+    () => getWatchlistTabCounts(movies, pendingSuggestions),
+    [movies, pendingSuggestions]
+  );
+
+  const activeView = React.useMemo(
+    () =>
+      buildWatchlistTabView({
+        contentTab,
+        movies,
+        pendingSuggestions,
+        sortMode,
+        searchQuery,
+      }),
+    [contentTab, movies, pendingSuggestions, searchQuery, sortMode]
+  );
 
   // Handle confetti when both users watch a movie
   useEffect(() => {
@@ -244,7 +270,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   ]);
 
   const handleRandomMoviePick = useCallback(() => {
-    const pool = filteredMovies.map((movie) => movie.title).filter(Boolean);
+    const pool = activeView.surprisePool;
 
     if (pool.length === 0) return;
 
@@ -254,7 +280,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     if (randomTitle) {
       setSearchQuery(randomTitle);
     }
-  }, [filteredMovies, setSearchQuery]);
+  }, [activeView.surprisePool, setSearchQuery]);
 
   const handleSubmitRecommendation = useCallback(async () => {
     const title = searchQuery.trim();
@@ -278,6 +304,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         suggestedBy: recommendationGuestName,
         reason: recommendationReason,
       });
+      setContentTab('suggestions');
       resetRecommendationComposer();
       setToast({ message: `"${title}" suggested for review!`, type: 'success' });
     } catch (error) {
@@ -287,6 +314,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, [
     recommendationGuestName,
     recommendationReason,
+    setContentTab,
     currentUser,
     resetRecommendationComposer,
     searchQuery,
@@ -366,6 +394,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         preserveSuggestedBy: true,
       });
       trackMetric('shared_suggestion_saved');
+      setContentTab('suggestions');
       setSearchQuery(sharedSuggestion.title);
       resetRecommendationComposer();
       setToast({
@@ -386,6 +415,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     currentUser,
     isSharedSuggestionAlreadySaved,
     resetRecommendationComposer,
+    setContentTab,
     setSearchQuery,
     setToast,
     sharedSuggestion,
@@ -443,7 +473,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
-      {isLoading ? (
+      {(contentTab === 'suggestions' ? isSuggestionsLoading : isLoading) &&
+      activeView.movies.length === 0 &&
+      activeView.suggestions.length === 0 ? (
         <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
           <div className="scanning-overlay" style={{ padding: spacing.xl }}>
             <div style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite' }}>
@@ -457,8 +489,21 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             ))}
           </div>
         </div>
-      ) : filteredMovies.length > 0 ? (
-        filteredMovies.map((movie, index) => (
+      ) : contentTab === 'suggestions' && activeView.suggestions.length > 0 ? (
+        activeView.suggestions.map((suggestion, index) => (
+          <SuggestionCard
+            key={suggestion.id}
+            suggestion={suggestion}
+            onAccept={() => void handleAcceptSuggestion(suggestion)}
+            onReject={() => void handleRejectSuggestion(suggestion)}
+            canRespond={Boolean(currentUser)}
+            disableActions={!currentUser}
+            isProcessing={processingSuggestionId === suggestion.id}
+            animationDelay={`${index * 0.05}s`}
+          />
+        ))
+      ) : activeView.movies.length > 0 ? (
+        activeView.movies.map((movie, index) => (
           <MovieCard
             key={movie.id}
             movie={movie}
@@ -492,7 +537,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           className={isMobile ? 'collection-empty-state--tight' : undefined}
           style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
         >
-          {searchQuery ? 'No matching movies found' : 'Your watchlist is empty'}
+          {activeView.emptyState}
         </CollectionEmptyState>
       )}
     </CollectionGrid>
@@ -517,6 +562,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
       <WatchlistTopControls
         currentUser={currentUser}
+        contentTab={contentTab}
+        setContentTab={setContentTab}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        tabCounts={tabCounts}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onSubmit={handleAddAction}
@@ -529,7 +579,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         setRecommendationReason={handleRecommendationReasonChange}
         showRecommendationComposer={isRecommendationComposerOpen}
         onPickRandom={handleRandomMoviePick}
-        canSurprise={filteredMovies.length > 0}
+        canSurprise={activeView.surprisePool.length > 0}
         isAdding={isAdding}
         isSubmittingRecommendation={isSubmittingRecommendation}
         isSharing={isSharing}

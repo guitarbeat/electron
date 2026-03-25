@@ -43,8 +43,6 @@ export function AccessFirst() {
             const isAaronWatched = movie.watchedBy.includes("Aaron");
             const isElectraWatched = movie.watchedBy.includes("Electra");
             const bothWatched = isAaronWatched && isElectraWatched;
-            const noneWatched = !isAaronWatched && !isElectraWatched;
-            
             const isCurrentUserWatched = movie.watchedBy.includes(currentUser);
 
             let statusColor = "bg-slate-800 text-slate-400 border-slate-700";
