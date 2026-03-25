@@ -28,20 +28,20 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
       <button
         type="button"
         aria-pressed={activeTab === 'queue'}
+        aria-label="Movies"
         onClick={() => onChange('queue')}
         className={`theme-toggle__segment${activeTab === 'queue' ? ' is-active' : ''}`}
       >
         <span className="theme-toggle__seg-icon" aria-hidden>🎬</span>
-        <span className="theme-toggle__seg-label">Movies</span>
       </button>
       <button
         type="button"
         aria-pressed={activeTab === 'places'}
+        aria-label="Places"
         onClick={() => onChange('places')}
         className={`theme-toggle__segment${activeTab === 'places' ? ' is-active' : ''}`}
       >
         <span className="theme-toggle__seg-icon" aria-hidden>📍</span>
-        <span className="theme-toggle__seg-label">Places</span>
       </button>
     </div>
   );
