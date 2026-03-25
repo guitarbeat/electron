@@ -1129,7 +1129,13 @@ export const getScopeWarning = (error: unknown): string | undefined => {
       return 'Shared sync cannot find the configured Gist. Verify GIST_ID or VITE_GIST_ID matches a GitHub Gist that exists.';
     }
     if (status === 401 || status === 403) {
-      return 'GitHub rejected the Gist read (401/403). Check GITHUB_TOKEN has access to this Gist (required for private Gists).';
+      const token = process.env.GITHUB_TOKEN;
+      const gistId = process.env.GIST_ID;
+      const tokenDisplay = token
+        ? `set (${token.slice(0, 4)}...${token.slice(-4)})`
+        : 'NOT SET';
+      const gistDisplay = gistId ?? 'NOT SET';
+      return `GitHub rejected the Gist read (401/403). Check GITHUB_TOKEN has access to this Gist (required for private Gists). [GITHUB_TOKEN: ${tokenDisplay}, GIST_ID: ${gistDisplay}]`;
     }
     if (status === 429) {
       return 'GitHub API rate limit reached. Retry after a short wait.';
