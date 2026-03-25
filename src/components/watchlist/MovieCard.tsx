@@ -351,6 +351,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
   const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
     stopActionPropagation(event);
+    if (isGuest) return;
     executeAction(onDelete);
   };
 
@@ -362,7 +363,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       size="sm"
       isLoading={isUpdating}
       loadingText="Updating..."
-      disabled={isGuest}
       aria-pressed={watchedByCurrentUser}
       aria-label={
         watchedByCurrentUser
@@ -408,7 +408,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       <button
         type="button"
         onClick={handleDeleteAction}
-        disabled={isGuest}
         title={`Remove "${movie.title}"`}
         aria-label={`Remove "${movie.title}" from list`}
         className="movie-item-remove-link"
