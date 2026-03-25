@@ -16,10 +16,13 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
 }) => {
   const prevKeyRef = useRef('');
   const stableTimestampRef = useRef('');
+  const stableDateRef = useRef('');
   const incidentKey = `${isBlocked}::${label ?? ''}`;
   if (incidentKey !== prevKeyRef.current) {
     prevKeyRef.current = incidentKey;
-    stableTimestampRef.current = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const now = new Date();
+    stableTimestampRef.current = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    stableDateRef.current = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
   }
   const content = { ...getSyncBannerContent({ isBlocked, label }), occurredAt: stableTimestampRef.current };
   const [copied, setCopied] = useState(false);
@@ -98,7 +101,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
             marginRight: 'auto',
           }}
         >
-          since {content.occurredAt}
+          since {stableDateRef.current} at {content.occurredAt}
         </span>
         {onRetry ? (
           <Button size="sm" variant={isBlocked ? 'secondary' : 'ghost'} onClick={() => void onRetry()}>
@@ -113,6 +116,22 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         <span style={{ fontSize: typography.fontSize.xs, color: dimText }}>
           {content.description}
         </span>
+        {label ? (
+          <span
+            style={{
+              fontSize: typography.fontSize.xs,
+              color: dimText,
+              fontFamily: 'monospace',
+              background: 'rgba(0,0,0,0.2)',
+              borderRadius: radius.sm,
+              padding: '0.25rem 0.5rem',
+              marginTop: '0.1rem',
+              wordBreak: 'break-word',
+            }}
+          >
+            {label}
+          </span>
+        ) : null}
       </div>
 
       {/* ── What it means / what to do ── */}
