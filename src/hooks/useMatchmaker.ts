@@ -58,6 +58,8 @@ export const useMatchmaker = (currentUser: User | null, isPaused: boolean = fals
         electraLikes: [],
         aaronDislikes: [],
         electraDislikes: [],
+        aaronSwipeOrder: [],
+        electraSwipeOrder: [],
         status: 'active',
         createdAt: new Date().toISOString(),
         startedBy: currentUser,

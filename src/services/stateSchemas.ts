@@ -321,6 +321,8 @@ export const normalizeMatchmakerGame = (value: unknown): MatchmakerGame | null =
     electraLikes: [...game.electraLikes],
     aaronDislikes: [...game.aaronDislikes],
     electraDislikes: [...game.electraDislikes],
+    aaronSwipeOrder: isStringArray(game.aaronSwipeOrder) ? [...game.aaronSwipeOrder] : [],
+    electraSwipeOrder: isStringArray(game.electraSwipeOrder) ? [...game.electraSwipeOrder] : [],
   });
 };
 
@@ -335,6 +337,8 @@ export const cloneMatchmakerGame = (
         electraLikes: [...game.electraLikes],
         aaronDislikes: [...game.aaronDislikes],
         electraDislikes: [...game.electraDislikes],
+        aaronSwipeOrder: [...(game.aaronSwipeOrder ?? [])],
+        electraSwipeOrder: [...(game.electraSwipeOrder ?? [])],
       }
     : null;
 

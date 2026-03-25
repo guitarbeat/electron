@@ -83,6 +83,8 @@ export interface MatchmakerGame {
   electraLikes: string[]; // Array of movie IDs
   aaronDislikes: string[]; // Array of movie IDs
   electraDislikes: string[]; // Array of movie IDs
+  aaronSwipeOrder?: string[]; // Ordered history of Aaron's swipes
+  electraSwipeOrder?: string[]; // Ordered history of Electra's swipes
   status: 'active' | 'completed';
   createdAt: string;
   startedBy: User;
