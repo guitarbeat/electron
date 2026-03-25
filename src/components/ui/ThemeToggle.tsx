@@ -10,6 +10,11 @@ interface ThemeToggleProps {
   style?: React.CSSProperties;
 }
 
+const TABS: { id: MainTab; icon: string; label: string }[] = [
+  { id: 'queue', icon: '🎬', label: 'Movies' },
+  { id: 'places', icon: '📍', label: 'Places' },
+];
+
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
   activeTab,
   onChange,
@@ -20,33 +25,27 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
 }) => {
   return (
     <div
-      role="group"
+      role="tablist"
       aria-label={label ?? 'Switch between Movies and Places'}
-      className={`theme-toggle theme-toggle--pill${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`theme-toggle theme-toggle--tabs${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
       style={style}
     >
-      <span
-        className={`theme-toggle__slider${activeTab === 'places' ? ' theme-toggle__slider--right' : ''}`}
-        aria-hidden
-      />
-      <button
-        type="button"
-        aria-pressed={activeTab === 'queue'}
-        aria-label="Movies"
-        onClick={() => onChange('queue')}
-        className={`theme-toggle__segment${activeTab === 'queue' ? ' is-active' : ''}`}
-      >
-        <span className="theme-toggle__seg-icon" aria-hidden>🎬</span>
-      </button>
-      <button
-        type="button"
-        aria-pressed={activeTab === 'places'}
-        aria-label="Places"
-        onClick={() => onChange('places')}
-        className={`theme-toggle__segment${activeTab === 'places' ? ' is-active' : ''}`}
-      >
-        <span className="theme-toggle__seg-icon" aria-hidden>📍</span>
-      </button>
+      {TABS.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={activeTab === tab.id}
+          onClick={() => onChange(tab.id)}
+          className={`theme-toggle__tab${activeTab === tab.id ? ' is-active' : ''}`}
+        >
+          <span className="theme-toggle__tab-icon" aria-hidden>{tab.icon}</span>
+          <span className="theme-toggle__tab-label">{tab.label}</span>
+          {activeTab === tab.id && (
+            <span className="theme-toggle__tab-indicator" aria-hidden />
+          )}
+        </button>
+      ))}
     </div>
   );
 };
