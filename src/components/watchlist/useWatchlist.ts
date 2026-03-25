@@ -210,49 +210,12 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
 
   const filteredMovies = useMemo(() => {
     return sortedMovies.filter((movie) => {
-      const inTab =
-        (contentTab === 'queue' && movie.watchedBy.length < 2) ||
-        (contentTab === 'watched' && movie.watchedBy.length === 2);
-      if (!inTab) return false;
       if (!normalizedSearch) return true;
       return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [sortedMovies, contentTab, normalizedSearch]);
-
-  const filteredSuggestions = useMemo(() => {
-    if (contentTab !== 'suggestions') {
-      return [];
-    }
-    return pendingSuggestions.filter((suggestion) => {
-      if (!normalizedSearch) return true;
-      return `${suggestion.title} ${suggestion.suggestedBy} ${suggestion.reason || ''}`
-        .toLowerCase()
-        .includes(normalizedSearch);
-    });
-  }, [pendingSuggestions, contentTab, normalizedSearch]);
-
-  const tabCounts = useMemo(() => {
-    const counts = sortedMovies.reduce(
-      (acc, movie) => {
-        if (movie.watchedBy.length < 2) {
-          acc.queue += 1;
-        } else if (movie.watchedBy.length === 2) {
-          acc.watched += 1;
-        }
-
-        return acc;
-      },
-      { queue: 0, watched: 0 }
-    );
-
-    return {
-      queue: counts.queue,
-      watched: counts.watched,
-      suggestions: pendingSuggestions.length,
-    };
-  }, [sortedMovies, pendingSuggestions]);
+  }, [sortedMovies, normalizedSearch]);
 
   const submitRecommendation = useCallback(
     async ({
@@ -356,12 +319,8 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
-    contentTab,
-    setContentTab,
     searchQuery,
     setSearchQuery,
-    sortMode,
-    setSortMode,
     showConfetti,
     setShowConfetti,
     previousMoviesRef,
@@ -394,7 +353,5 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     unwatchedMovies,
     watchedMovies,
     filteredMovies,
-    filteredSuggestions,
-    tabCounts,
   };
 };

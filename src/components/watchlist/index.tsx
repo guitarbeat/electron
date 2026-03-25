@@ -44,10 +44,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
-    contentTab,
-    setContentTab,
-    sortMode,
-    setSortMode,
     showConfetti,
     setShowConfetti,
     previousMoviesRef,
@@ -73,8 +69,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     watchlistSyncWarning,
     retryWatchlistSync,
     filteredMovies,
-    filteredSuggestions,
-    tabCounts,
   } = useWatchlist({ currentUser, isPaused });
 
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
@@ -229,9 +223,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       setToast({
         message: `"${title}" added to watchlist!`,
         type: 'success',
-        actionLabel: 'Open',
+        actionLabel: 'Find',
         onAction: () => {
-          setContentTab('queue');
           setSearchQuery(title);
         },
       });
@@ -244,7 +237,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     searchQuery,
     currentUser,
     addMovie,
-    setContentTab,
     setIsAdding,
     setSearchQuery,
     setSuccessMovieId,
@@ -252,9 +244,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   ]);
 
   const handleRandomMoviePick = useCallback(() => {
-    const movieTitles = filteredMovies.map((movie) => movie.title);
-    const suggestionTitles = filteredSuggestions.map((suggestion) => suggestion.title);
-    const pool = Array.from(new Set([...movieTitles, ...suggestionTitles])).filter(Boolean);
+    const pool = filteredMovies.map((movie) => movie.title).filter(Boolean);
 
     if (pool.length === 0) return;
 
@@ -264,7 +254,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     if (randomTitle) {
       setSearchQuery(randomTitle);
     }
-  }, [filteredMovies, filteredSuggestions, setSearchQuery]);
+  }, [filteredMovies, setSearchQuery]);
 
   const handleSubmitRecommendation = useCallback(async () => {
     const title = searchQuery.trim();
@@ -467,29 +457,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             ))}
           </div>
         </div>
-      ) : contentTab === 'suggestions' ? (
-        filteredSuggestions.length > 0 ? (
-          filteredSuggestions.map((suggestion, index) => (
-            <SuggestionCard
-              key={suggestion.id}
-              suggestion={suggestion}
-              onAccept={() => void handleAcceptSuggestion(suggestion)}
-              onReject={() => void handleRejectSuggestion(suggestion)}
-              canRespond={Boolean(currentUser)}
-              disableActions={Boolean(processingSuggestionId) || !currentUser}
-              isProcessing={processingSuggestionId === suggestion.id}
-              animationDelay={`${index * 0.05}s`}
-            />
-          ))
-        ) : (
-          <CollectionEmptyState
-            padding={isMobile ? spacing.md : spacing['2xl']}
-            className={isMobile ? 'collection-empty-state--tight' : undefined}
-            style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
-          >
-            No pending suggestions
-          </CollectionEmptyState>
-        )
       ) : filteredMovies.length > 0 ? (
         filteredMovies.map((movie, index) => (
           <MovieCard
@@ -550,11 +517,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
       <WatchlistTopControls
         currentUser={currentUser}
-        contentTab={contentTab}
-        setContentTab={setContentTab}
-        sortMode={sortMode}
-        setSortMode={setSortMode}
-        tabCounts={tabCounts}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onSubmit={handleAddAction}
@@ -567,7 +529,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         setRecommendationReason={handleRecommendationReasonChange}
         showRecommendationComposer={isRecommendationComposerOpen}
         onPickRandom={handleRandomMoviePick}
-        canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
+        canSurprise={filteredMovies.length > 0}
         isAdding={isAdding}
         isSubmittingRecommendation={isSubmittingRecommendation}
         isSharing={isSharing}

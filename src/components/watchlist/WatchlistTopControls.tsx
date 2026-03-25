@@ -1,21 +1,14 @@
 import React from 'react';
-import type { ContentTab, SortMode, User } from '@/shared/types';
+import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
-import SubNav from '@/ui/SubNav';
 import { motion } from '@/theme/tokens';
 import { ShareIcon, PlusIcon, Spinner } from '@/common/icons';
 import SurpriseButton from '@/common/SurpriseButton';
-import { MOVIE_TABS, SORT_OPTIONS } from './watchlistConstants';
 import RecommendationComposer from './RecommendationComposer';
 
 interface WatchlistTopControlsProps {
   currentUser: User | null;
-  contentTab: ContentTab;
-  setContentTab: (tab: ContentTab) => void;
-  sortMode: SortMode;
-  setSortMode: (mode: SortMode) => void;
-  tabCounts: Record<ContentTab, number>;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -39,11 +32,6 @@ interface WatchlistTopControlsProps {
 
 const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   currentUser,
-  contentTab,
-  setContentTab,
-  sortMode,
-  setSortMode,
-  tabCounts,
   searchQuery,
   setSearchQuery,
   onSubmit,
@@ -73,21 +61,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
-      <SubNav
-        tabs={MOVIE_TABS.map((tab) => ({
-          id: tab.id,
-          label: tab.label,
-          count: tabCounts[tab.id] ?? 0,
-        }))}
-        activeTabId={contentTab}
-        onTabChange={(id) => setContentTab(id as ContentTab)}
-        chips={SORT_OPTIONS}
-        activeChipId={sortMode}
-        onChipChange={(id) => setSortMode(id as SortMode)}
-        variant="underlined"
-        mode="segmented"
-      />
-
       <div className="watchlist-top-controls__toolbar">
         <form
           className="watchlist-top-controls__search-form"
