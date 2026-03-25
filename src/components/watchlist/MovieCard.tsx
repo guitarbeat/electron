@@ -7,7 +7,7 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, EyeOffIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EyeIcon, EyeOffIcon, TrashIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 
 interface MovieCardProps {
@@ -377,7 +377,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
       {watchedByCurrentUser ? (
         <CheckIcon style={{ width: '12px' }} />
       ) : (
-        <EyeOffIcon style={{ width: '12px' }} />
+        <EyeIcon style={{ width: '12px' }} />
       )}
       <span className="movie-item-primary-action-label">
         <span className="movie-item-primary-action-label--long">
