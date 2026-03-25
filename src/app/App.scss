@@ -8303,7 +8303,7 @@ body.grabbing * {
   background: #111;
 }
 
-/* Gradient cover art (generated per-place) */
+/* Cover art — dark cinematic surface matching movie card aesthetic */
 .place-item-cover {
   position: absolute;
   inset: 0;
@@ -8311,6 +8311,9 @@ body.grabbing * {
   align-items: center;
   justify-content: center;
   border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--color-surface-2) 60%, var(--color-secondary) 40%) 0%, transparent 55%),
+    linear-gradient(160deg, var(--color-surface-2) 0%, var(--color-surface-1) 100%);
 }
 
 /* Central emoji icon */

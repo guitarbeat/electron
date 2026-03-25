@@ -189,16 +189,6 @@ function getPlaceIcon(name: string): string {
   return '📍';
 }
 
-function getPlaceGradient(name: string): { h1: number; h2: number; h3: number } {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = Math.imul(31, hash) + name.charCodeAt(i) | 0;
-  }
-  const h1 = Math.abs(hash) % 360;
-  const h2 = (h1 + 55) % 360;
-  const h3 = (h1 + 110) % 360;
-  return { h1, h2, h3 };
-}
 
 const PlaceCard: React.FC<PlaceCardProps> = ({
   place,
@@ -211,7 +201,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const [isActionLoading, setIsActionLoading] = useState(false);
   const isVisited = Boolean(place.visitedAt);
   const icon = getPlaceIcon(place.name);
-  const { h1, h2, h3 } = getPlaceGradient(place.name);
   const hasCoords = typeof place.lat === 'number' && typeof place.lng === 'number';
 
   const handleVisitToggle = async (e: React.MouseEvent) => {
@@ -245,17 +234,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       <div className="place-item-poster-wrap">
         <div
           className="place-item-cover"
-          style={{
-            background: `
-              radial-gradient(circle at 28% 22%, rgba(255,255,255,0.18) 0%, transparent 40%),
-              conic-gradient(from 200deg at 45% 55%,
-                hsl(${h1}, 55%, 38%) 0deg,
-                hsl(${h2}, 60%, 30%) 120deg,
-                hsl(${h3}, 50%, 34%) 240deg,
-                hsl(${h1}, 55%, 38%) 360deg
-              )
-            `,
-          } as React.CSSProperties}
           aria-hidden="true"
         >
           <span className="place-item-cover__icon">{icon}</span>
