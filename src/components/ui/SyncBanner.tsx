@@ -29,22 +29,14 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   const content = getSyncBannerContent({ isBlocked, label });
   const [copied, setCopied] = useState(false);
 
-  const copyText = [
-    `[${content.badge.toUpperCase()}] ${stableTimestampRef.current}`,
-    '',
-    label ?? content.description,
-    '',
-    ...content.debugHints,
-  ].join('\n');
-
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(copyText);
+      await navigator.clipboard.writeText(content.copyPayload);
       setCopied(true);
     } catch {
       setCopied(false);
     }
-  }, [copyText]);
+  }, [content.copyPayload]);
 
   useEffect(() => {
     if (!copied) return undefined;
@@ -108,7 +100,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
           fontFamily: 'monospace',
         }}
       >
-        {copyText}
+        {content.copyPayload}
       </pre>
     </div>
   );
