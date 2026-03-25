@@ -401,6 +401,8 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     </Button>
   );
 
+  if (isGuest) return null;
+
   return (
     <div className="movie-actions">
       {primaryButton}
