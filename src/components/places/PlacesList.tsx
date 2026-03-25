@@ -2,288 +2,15 @@ import React, { useState, useCallback, memo } from 'react';
 import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/usePlaces';
 import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import SubNav from '@/ui/SubNav';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { Input } from '@/ui/FormFields';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import SyncBanner from '@/components/ui/SyncBanner';
 import PlacesMap from './PlacesMap';
-import { CheckIcon, PlusIcon, TrashIcon, Spinner, MagicWandIcon } from '@/common/icons';
-import { colors, spacing, typography, radius } from '@/theme/tokens';
+import PlaceCard from './PlaceCard';
+import PlacesTopControls from './PlacesTopControls';
+import { spacing, colors } from '@/theme/tokens';
 import type { Place, PlaceContentTab, PlaceSortMode } from '@/shared/types';
-
-const PLACE_TABS: { id: PlaceContentTab; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'queue', label: 'Queue' },
-  { id: 'visited', label: 'Visited' },
-];
-
-const PLACE_SORT_OPTIONS: { id: PlaceSortMode; label: string }[] = [
-  { id: 'recent', label: 'Recent' },
-  { id: 'name', label: 'A-Z' },
-];
-
-interface PlacesTopControlsProps {
-  contentTab: PlaceContentTab;
-  setContentTab: (tab: PlaceContentTab) => void;
-  sortMode: PlaceSortMode;
-  setSortMode: (mode: PlaceSortMode) => void;
-  tabCounts: Record<PlaceContentTab, number>;
-  searchQuery: string;
-  setSearchQuery: (value: string) => void;
-  onSubmit: () => Promise<void> | void;
-  onPickRandom: () => void;
-  canSurprise: boolean;
-  isAdding: boolean;
-  isSuggesting: boolean;
-  suggestionError: string | null;
-  canEdit: boolean;
-}
-
-const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
-  contentTab,
-  setContentTab,
-  sortMode,
-  setSortMode,
-  tabCounts,
-  searchQuery,
-  setSearchQuery,
-  onSubmit,
-  onPickRandom,
-  canSurprise,
-  isAdding,
-  isSuggesting,
-  suggestionError,
-  canEdit,
-}) => {
-  return (
-    <section
-      className="workspace-control-panel ui-control-surface places-top-controls"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-      }}
-    >
-      <SubNav
-        tabs={PLACE_TABS.map((tab) => ({
-          id: tab.id,
-          label: tab.label,
-          count: tabCounts[tab.id] ?? 0,
-        }))}
-        activeTabId={contentTab}
-        onTabChange={(id) => setContentTab(id as PlaceContentTab)}
-        chips={PLACE_SORT_OPTIONS}
-        activeChipId={sortMode}
-        onChipChange={(id) => setSortMode(id as PlaceSortMode)}
-        variant="underlined"
-        mode="segmented"
-      />
-
-      <div
-        className="places-top-controls__toolbar"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: spacing.sm,
-          width: '100%',
-        }}
-      >
-        <form
-          className="places-top-controls__search-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit();
-          }}
-          style={{ display: 'flex', gap: spacing.sm, flex: 1 }}
-        >
-          <Input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Place name"
-            aria-label="Place name"
-            fullWidth
-          />
-          {searchQuery.trim() && canEdit && (
-            <Button
-              type="submit"
-              variant="secondary"
-              size="md"
-              disabled={isAdding || isSuggesting}
-              isLoading={isAdding || isSuggesting}
-              title="Add or suggest place"
-              aria-label="Add or suggest place"
-              style={{ minWidth: '44px' }}
-            >
-              {isAdding || isSuggesting ? <Spinner /> : <PlusIcon />}
-            </Button>
-          )}
-        </form>
-
-        {canEdit && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onPickRandom}
-            disabled={isAdding || isSuggesting || !canSurprise}
-            title="Surprise me"
-            aria-label="Pick a random place"
-            style={{
-              minWidth: '44px',
-              opacity: canSurprise && !isAdding && !isSuggesting ? 1 : 0.5,
-            }}
-          >
-            <MagicWandIcon style={{ width: 18, height: 18 }} />
-          </Button>
-        )}
-      </div>
-
-      {suggestionError && (
-        <div
-          style={{
-            padding: spacing.sm,
-            backgroundColor: `${colors.error}12`,
-            border: `1px solid ${colors.error}33`,
-            borderRadius: radius.md,
-            color: colors.error,
-            fontSize: typography.presets.bodySm.fontSize,
-            lineHeight: typography.presets.bodySm.lineHeight,
-          }}
-        >
-          {suggestionError}
-        </div>
-      )}
-    </section>
-  );
-};
-
-interface PlaceCardProps {
-  place: Place;
-  canEdit: boolean;
-  isSubmitting: boolean;
-  onMarkVisited: (id: string) => void;
-  onMarkUnvisited: (id: string) => void;
-  onDelete: (place: Place) => void;
-}
-
-function getPlaceIcon(name: string): string {
-  const lower = name.toLowerCase();
-  if (/beach|ocean|sea|lake|river|bay|shore|coast|surf|swim/.test(lower)) return '🏖️';
-  if (/park|garden|trail|forest|nature|woods|hike|botanical|grove|meadow/.test(lower)) return '🌿';
-  if (/restaurant|diner|bistro|brasserie|grill|steakhouse|bbq|sushi|pizza|tacos|ramen|burger/.test(lower)) return '🍽️';
-  if (/cafe|coffee|espresso|bakery|patisserie|pastry|boulangerie|tea/.test(lower)) return '☕';
-  if (/bar|pub|brewery|taproom|cocktail|lounge|nightclub|club|wine/.test(lower)) return '🍻';
-  if (/museum|gallery|art|exhibit|modern/.test(lower)) return '🎨';
-  if (/theater|theatre|cinema|movies|show|performance|concert|opera|ballet/.test(lower)) return '🎭';
-  if (/mountain|hill|peak|summit|climb|rock|canyon|cliff/.test(lower)) return '⛰️';
-  if (/shop|store|market|mall|boutique|vintage|thrift/.test(lower)) return '🛍️';
-  if (/gym|fitness|yoga|pilates|spa|wellness|sauna/.test(lower)) return '🧘';
-  if (/hotel|resort|airbnb|hostel|motel|inn/.test(lower)) return '🏨';
-  if (/zoo|aquarium|safari|wildlife|animal/.test(lower)) return '🦁';
-  if (/library|bookstore|books|reading/.test(lower)) return '📚';
-  if (/airport|station|terminal|train/.test(lower)) return '✈️';
-  if (/bridge|landmark|tower|castle|palace/.test(lower)) return '🏰';
-  if (/island|cove|lagoon|waterfall/.test(lower)) return '🌊';
-  return '📍';
-}
-
-
-const PlaceCard: React.FC<PlaceCardProps> = ({
-  place,
-  canEdit,
-  isSubmitting,
-  onMarkVisited,
-  onMarkUnvisited,
-  onDelete,
-}) => {
-  const [isActionLoading, setIsActionLoading] = useState(false);
-  const isVisited = Boolean(place.visitedAt);
-  const icon = getPlaceIcon(place.name);
-  const hasCoords = typeof place.lat === 'number' && typeof place.lng === 'number';
-
-  const handleVisitToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isSubmitting || isActionLoading) return;
-    setIsActionLoading(true);
-    try {
-      if (isVisited) {
-        await onMarkUnvisited(place.id);
-      } else {
-        await onMarkVisited(place.id);
-      }
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDelete(place);
-  };
-
-  const visitedDate = place.visitedAt
-    ? new Date(place.visitedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : null;
-
-  return (
-    <div
-      className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
-    >
-      <div className="place-item-poster-wrap">
-        <div
-          className="place-item-cover"
-          aria-hidden="true"
-        >
-          <span className="place-item-cover__icon">{icon}</span>
-          {hasCoords && (
-            <span className="place-item-cover__pin">📍</span>
-          )}
-        </div>
-
-        {isVisited && (
-          <div className="place-item-visited-badge" aria-label="Visited">
-            <CheckIcon style={{ width: 10, height: 10 }} />
-            {visitedDate ?? 'Visited'}
-          </div>
-        )}
-
-        <div className="place-item-overlay">
-          <div className="place-item-info">
-            <h3 className="place-item-title">{place.name}</h3>
-            {place.notes && (
-              <p className="place-item-notes">{place.notes}</p>
-            )}
-          </div>
-
-          {canEdit && (
-            <div className="place-item-actions">
-              <button
-                type="button"
-                className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
-                onClick={handleVisitToggle}
-                disabled={isSubmitting || isActionLoading}
-                aria-label={isVisited ? `Mark ${place.name} as not visited` : `Mark ${place.name} as visited`}
-              >
-                {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
-              </button>
-              <button
-                type="button"
-                className="place-item-delete-btn"
-                onClick={handleDelete}
-                disabled={isSubmitting}
-                aria-label={`Remove ${place.name}`}
-              >
-                <TrashIcon style={{ width: 13, height: 13 }} />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
@@ -310,17 +37,13 @@ const PlacesList: React.FC = () => {
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
 
-  const queueCount = places.filter((p) => !p.visitedAt).length;
-  const visitedCount = places.filter((p) => p.visitedAt).length;
-  const allCount = places.length;
-  
   const tabCounts: Record<PlaceContentTab, number> = {
-    all: allCount,
-    queue: queueCount,
-    visited: visitedCount,
+    all: places.length,
+    queue: places.filter((p) => !p.visitedAt).length,
+    visited: places.filter((p) => p.visitedAt).length,
   };
 
-  const filteredByTab = 
+  const filteredByTab =
     contentTab === 'all'
       ? places
       : contentTab === 'queue'
@@ -328,49 +51,30 @@ const PlacesList: React.FC = () => {
         : places.filter((p) => p.visitedAt);
 
   const filtered = searchQuery.trim()
-    ? filteredByTab.filter((p) => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? filteredByTab.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.notes?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : filteredByTab;
 
   const sorted = [...filtered].sort((a, b) => {
-    if (sortMode === 'name') {
-      return a.name.localeCompare(b.name);
-    }
-    // recent (default)
+    if (sortMode === 'name') return a.name.localeCompare(b.name);
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
-
-  const confirmDelete = useCallback(async () => {
-    if (!placeToDelete) return;
-
-    const deleted = placeToDelete;
-    try {
-      await removePlace(deleted.id);
-      showToast({ message: `"${deleted.name}" removed!`, type: 'info' });
-    } catch {
-      showToast({ message: 'Failed to remove place', type: 'error' });
-    } finally {
-      setPlaceToDelete(null);
-    }
-  }, [placeToDelete, removePlace, showToast]);
 
   const handleAddAction = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query || isAdding) return;
 
     if (!currentUser) {
-      showToast({
-        message: 'Pick Aaron or Electra to edit shared places.',
-        type: 'info',
-      });
+      showToast({ message: 'Pick Aaron or Electra to edit shared places.', type: 'info' });
       return;
     }
 
     setIsAdding(true);
     setSuggestionError(null);
-    
+
     try {
       await addPlace(query);
       setSearchQuery('');
@@ -382,80 +86,74 @@ const PlacesList: React.FC = () => {
       setIsAdding(false);
       setIsSuggesting(false);
     }
-  }, [searchQuery, isAdding, currentUser, addPlace, setSearchQuery, showToast]);
+  }, [searchQuery, isAdding, currentUser, addPlace, showToast]);
 
   const handleRandomPlacePick = useCallback(() => {
-    const availablePlaces = contentTab === 'visited' 
-      ? places.filter(p => p.visitedAt)
-      : places.filter(p => !p.visitedAt);
-    
-    if (availablePlaces.length === 0) return;
-    
-    const randomIndex = Math.floor(Math.random() * availablePlaces.length);
-    const randomPlace = availablePlaces[randomIndex];
-    
-    showToast({ 
-      message: `🎲 How about "${randomPlace.name}"?`, 
-      type: 'info' 
-    });
+    const pool =
+      contentTab === 'visited'
+        ? places.filter((p) => p.visitedAt)
+        : places.filter((p) => !p.visitedAt);
+
+    if (pool.length === 0) return;
+
+    const randomPlace = pool[Math.floor(Math.random() * pool.length)];
+    showToast({ message: `🎲 How about "${randomPlace.name}"?`, type: 'info' });
   }, [contentTab, places, showToast]);
 
-  const renderControls = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-      {isDegraded && (
-        <SyncBanner
-          isBlocked={isSyncBlocked}
-          onRetry={() => void retrySync()}
-          label={
-            isSyncBlocked
-              ? 'A shared places update conflicted with local edits. Refresh and retry.'
-              : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
-          }
-        />
-      )}
-      <PlacesTopControls
-        contentTab={contentTab}
-        setContentTab={setContentTab}
-        sortMode={sortMode}
-        setSortMode={setSortMode}
-        tabCounts={tabCounts}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSubmit={handleAddAction}
-        onPickRandom={handleRandomPlacePick}
-        canSurprise={contentTab === 'queue' ? places.filter(p => !p.visitedAt).length > 0 : places.filter(p => p.visitedAt).length > 0}
-        isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        suggestionError={suggestionError}
-        canEdit={Boolean(currentUser)}
-      />
-    </div>
-  );
+  const confirmDelete = useCallback(async () => {
+    if (!placeToDelete) return;
+    const deleted = placeToDelete;
+    try {
+      await removePlace(deleted.id);
+      showToast({ message: `"${deleted.name}" removed!`, type: 'info' });
+    } catch {
+      showToast({ message: 'Failed to remove place', type: 'error' });
+    } finally {
+      setPlaceToDelete(null);
+    }
+  }, [placeToDelete, removePlace, showToast]);
 
-  const renderSkeleton = () => (
-    <>
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <MovieCardSkeleton key={i} />
-      ))}
-    </>
-  );
+  const canSurprise =
+    contentTab === 'visited'
+      ? places.some((p) => p.visitedAt)
+      : places.some((p) => !p.visitedAt);
 
   return (
-    <div 
-      className="places-container"
-      style={{ 
-        maxWidth: '1200px', 
-        margin: '0 auto', 
-        padding: `0 0 ${spacing['3xl']}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.xl,
-      }}
-    >
+    <div className="places-container">
       <WorkspacePanels
         className="places-workspace"
         desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
-        first={renderControls()}
+        first={
+          <div className="places-controls-column">
+            {isDegraded && (
+              <SyncBanner
+                isBlocked={isSyncBlocked}
+                onRetry={() => void retrySync()}
+                label={
+                  isSyncBlocked
+                    ? 'A shared places update conflicted with local edits. Refresh and retry.'
+                    : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
+                }
+              />
+            )}
+            <PlacesTopControls
+              contentTab={contentTab}
+              setContentTab={setContentTab}
+              sortMode={sortMode}
+              setSortMode={setSortMode}
+              tabCounts={tabCounts}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onSubmit={handleAddAction}
+              onPickRandom={handleRandomPlacePick}
+              canSurprise={canSurprise}
+              isAdding={isAdding}
+              isSuggesting={isSuggesting}
+              suggestionError={suggestionError}
+              canEdit={Boolean(currentUser)}
+            />
+          </div>
+        }
         second={
           <Card
             variant="default"
@@ -475,15 +173,12 @@ const PlacesList: React.FC = () => {
       />
 
       {isLoading && places.length === 0 ? (
-        renderSkeleton()
+        <>{[1, 2, 3, 4, 5, 6].map((i) => <MovieCardSkeleton key={i} />)}</>
       ) : (
         <CollectionGrid
           className="places-grid"
           minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
-          style={{ 
-            gap: spacing.lg,
-            marginTop: spacing.md
-          }}
+          style={{ gap: spacing.lg, marginTop: spacing.md }}
         >
           {sorted.length > 0 ? (
             sorted.map((place) => (

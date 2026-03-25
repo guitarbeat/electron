@@ -10,6 +10,7 @@ import {
   trapFocusOnTab,
 } from './modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
+import { CrossIcon } from '@/common/icons';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -102,18 +103,6 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       }}
       role="none presentation"
     >
-      <style>
-        {`
-          @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes confirm-dialog-pop {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-          }
-        `}
-      </style>
       <div
         ref={dialogRef}
         role="alertdialog"
@@ -144,11 +133,14 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               width: '32px',
               height: '32px',
               transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.surface3)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.surface2)}
           >
-            ✕
+            <CrossIcon size={14} />
           </button>
 
           <h2
