@@ -7,12 +7,8 @@ import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
 import UserSelection from '@/components/common/UserSelection';
 import { CrossIcon } from '@/common/icons';
-import type { MainTab, User } from '@/shared/types';
-
-const USER_PHOTOS: Record<User, string> = {
-  Aaron: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
-  Electra: 'https://i.redd.it/vkmos70wqw641.jpg',
-};
+import type { MainTab } from '@/shared/types';
+import { USER_PHOTOS } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
   actionBubbleRef: RefObject<HTMLButtonElement | null>;
@@ -31,6 +27,32 @@ interface ActionBubbleLayerProps {
   onActionBubblePointerMove: (event: PointerEvent<HTMLButtonElement>) => void;
   onFinishActionBubbleDrag: (event: PointerEvent<HTMLButtonElement>) => void;
 }
+
+interface ActionMenuBodyProps {
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
+  actionItems: CommandActionItem[];
+  onItemSelect: (item: CommandActionItem) => void;
+}
+
+const ActionMenuBody: FC<ActionMenuBodyProps> = ({
+  activeTab,
+  onTabChange,
+  actionItems,
+  onItemSelect,
+}) => (
+  <>
+    <UserSelection variant="inline" className="action-bubble-menu__profiles" />
+    <div className="action-bubble-menu__tab-row">
+      <ThemeToggle
+        activeTab={activeTab}
+        onChange={onTabChange}
+        label="Switch between Movies and Places"
+      />
+    </div>
+    <CommandDeck items={actionItems} onItemSelect={onItemSelect} />
+  </>
+);
 
 const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   actionBubbleRef,
@@ -89,15 +111,12 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     .filter(Boolean)
     .join(' ');
 
-  const tabToggle = (
-    <div className="action-bubble-menu__tab-row">
-      <ThemeToggle
-        activeTab={activeTab}
-        onChange={onTabChange}
-        label="Switch between Movies and Places"
-      />
-    </div>
-  );
+  const menuBodyProps: ActionMenuBodyProps = {
+    activeTab,
+    onTabChange,
+    actionItems,
+    onItemSelect: runItem,
+  };
 
   return (
     <>
@@ -161,17 +180,13 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
               <CrossIcon size={10} />
             </button>
           </div>
-          <UserSelection variant="inline" className="action-bubble-menu__profiles" />
-          {tabToggle}
-          <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
+          <ActionMenuBody {...menuBodyProps} />
         </div>
       ) : null}
 
       <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick Actions">
         <div id="action-bubble-sheet">
-          <UserSelection variant="inline" className="action-bubble-menu__profiles" />
-          {tabToggle}
-          <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
+          <ActionMenuBody {...menuBodyProps} />
         </div>
       </BottomSheet>
     </>

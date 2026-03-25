@@ -314,16 +314,19 @@ const App: React.FC = () => {
       {
         label: 'Messages',
         icon: '💬',
+        description: 'Chat with each other',
         action: () => setShowMessages(true),
       },
       {
         label: quizLaunch.label,
         icon: '🧠',
+        description: 'Find your movie personality',
         action: openQuizExperience,
       },
       {
         label: 'Spin & Match',
         icon: '🎡',
+        description: 'Decide what to watch together',
         action: () => setShowSpinWheel(true),
       },
     ],
