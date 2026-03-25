@@ -462,48 +462,53 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
               maxWidth: '600px',
             }}
           >
-            {availableVibes.length > 0 ? (
-              availableVibes.map((v) => (
+            {currentUser ? (
+              <>
+                {availableVibes.length > 0 ? (
+                  availableVibes.map((v) => (
+                    <Button
+                      key={v}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleStart(v)}
+                      disabled={isSubmitting}
+                      style={{
+                        border: `1px solid ${colors.borderSecondary}50`,
+                        borderRadius: radius.full,
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {v}
+                    </Button>
+                  ))
+                ) : null}
                 <Button
-                  key={v}
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleStart(v)}
-                  disabled={!currentUser || isSubmitting}
+                  onClick={() => handleStart(SHORT_AND_SWEET_VIBE)}
+                  disabled={isSubmitting}
                   style={{
-                    border: `1px solid ${colors.borderSecondary}50`,
+                    border: `1px solid ${colors.secondary}50`,
+                    color: colors.secondary,
                     borderRadius: radius.full,
-                    textTransform: 'capitalize',
                   }}
                 >
-                  {v}
+                  ⏱️ Under 100m
                 </Button>
-              ))
+              </>
             ) : null}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleStart(SHORT_AND_SWEET_VIBE)}
-              disabled={!currentUser || isSubmitting}
-              style={{
-                border: `1px solid ${colors.secondary}50`,
-                color: colors.secondary,
-                borderRadius: radius.full,
-              }}
-            >
-              ⏱️ Under 100m
-            </Button>
           </div>
 
-          <Button
-            variant="secondary"
-            onClick={() => handleStart(null)}
-            isLoading={isSubmitting}
-            size="lg"
-            disabled={!currentUser}
-          >
-            Surprise Us (Random 10)
-          </Button>
+          {currentUser ? (
+            <Button
+              variant="secondary"
+              onClick={() => handleStart(null)}
+              isLoading={isSubmitting}
+              size="lg"
+            >
+              Surprise Us (Random 10)
+            </Button>
+          ) : null}
         </div>
       </div>
     );
@@ -703,7 +708,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
       </div>
 
       {/* Action Buttons */}
-      {(remainingMovies.length > 0 || swipedIds.length > 0) && (
+      {currentUser && (remainingMovies.length > 0 || swipedIds.length > 0) && (
         <div
           style={{
             display: 'flex',

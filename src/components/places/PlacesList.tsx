@@ -120,12 +120,12 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
             aria-label="Place name"
             fullWidth
           />
-          {searchQuery.trim() && (
+          {searchQuery.trim() && canEdit && (
             <Button
               type="submit"
               variant="secondary"
               size="md"
-              disabled={isAdding || isSuggesting || !canEdit}
+              disabled={isAdding || isSuggesting}
               isLoading={isAdding || isSuggesting}
               title="Add or suggest place"
               aria-label="Add or suggest place"
@@ -136,20 +136,22 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
           )}
         </form>
 
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onPickRandom}
-          disabled={isAdding || isSuggesting || !canSurprise}
-          title="Surprise me"
-          aria-label="Pick a random place"
-          style={{
-            minWidth: '44px',
-            opacity: canSurprise && !isAdding && !isSuggesting ? 1 : 0.5,
-          }}
-        >
-          <MagicWandIcon style={{ width: 18, height: 18 }} />
-        </Button>
+        {canEdit && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onPickRandom}
+            disabled={isAdding || isSuggesting || !canSurprise}
+            title="Surprise me"
+            aria-label="Pick a random place"
+            style={{
+              minWidth: '44px',
+              opacity: canSurprise && !isAdding && !isSuggesting ? 1 : 0.5,
+            }}
+          >
+            <MagicWandIcon style={{ width: 18, height: 18 }} />
+          </Button>
+        )}
       </div>
 
       {suggestionError && (
@@ -291,26 +293,28 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             )}
           </div>
 
-          <div className="place-item-actions">
-            <button
-              type="button"
-              className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
-              onClick={handleVisitToggle}
-              disabled={isSubmitting || isActionLoading || !canEdit}
-              aria-label={isVisited ? `Mark ${place.name} as not visited` : `Mark ${place.name} as visited`}
-            >
-              {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
-            </button>
-            <button
-              type="button"
-              className="place-item-delete-btn"
-              onClick={handleDelete}
-              disabled={isSubmitting || !canEdit}
-              aria-label={`Remove ${place.name}`}
-            >
-              <TrashIcon style={{ width: 13, height: 13 }} />
-            </button>
-          </div>
+          {canEdit && (
+            <div className="place-item-actions">
+              <button
+                type="button"
+                className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
+                onClick={handleVisitToggle}
+                disabled={isSubmitting || isActionLoading}
+                aria-label={isVisited ? `Mark ${place.name} as not visited` : `Mark ${place.name} as visited`}
+              >
+                {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
+              </button>
+              <button
+                type="button"
+                className="place-item-delete-btn"
+                onClick={handleDelete}
+                disabled={isSubmitting}
+                aria-label={`Remove ${place.name}`}
+              >
+                <TrashIcon style={{ width: 13, height: 13 }} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

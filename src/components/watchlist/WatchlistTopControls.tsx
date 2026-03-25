@@ -146,17 +146,19 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                   Add
                 </Button>
               ) : null}
-              <Button
-                type="button"
-                variant={currentUser ? 'ghost' : 'secondary'}
-                size="md"
-                onClick={onRecommend}
-                disabled={isAdding || isSubmittingRecommendation || isSharing || !canRecommend}
-                title="Recommend movie"
-                aria-label="Recommend movie"
-              >
-                {canRecommend ? 'Recommend' : 'Pick a profile'}
-              </Button>
+              {currentUser ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="md"
+                  onClick={onRecommend}
+                  disabled={isAdding || isSubmittingRecommendation || isSharing || !canRecommend}
+                  title="Recommend movie"
+                  aria-label="Recommend movie"
+                >
+                  Recommend
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"
