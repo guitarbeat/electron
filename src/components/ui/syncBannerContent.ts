@@ -10,6 +10,7 @@ export interface SyncBannerContent {
   whatItMeans: string;
   whatToDo: string;
   debugHints: string[];
+  copyPayload: string;
   accent: string;
   border: string;
   tone: 'polite' | 'assertive';
@@ -143,9 +144,104 @@ const buildFriendlyContent = ({ isBlocked, label }: SyncBannerInput): Pick<SyncB
   };
 };
 
+const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { occurredAt: string }): string => {
+  const text = label ?? '';
+  const header = `[SYNC ERROR] ${occurredAt}`;
+  const appCtx = `App: electron — shared movie night app (React + Vite frontend, serverless Node API)`;
+
+  if (isBlocked) {
+    return [
+      header, appCtx, '',
+      `Problem: sync conflict — local and remote edits diverged.`,
+      `The app stores shared data (watchlist, messages, etc.) in a GitHub Gist.`,
+      `Two devices wrote conflicting changes at the same time.`,
+      '', `Fix: reload the page, then retry sync.`,
+      '', `Relevant file: api/_lib/gistStore.ts`,
+    ].join('\n');
+  }
+
+  if (
+    /GITHUB_TOKEN|GitHub rejected|rate limit|HTTP (401|403|404|429)|cannot find the configured Gist|could not be (loaded|saved) from GitHub/i.test(text)
+  ) {
+    return [
+      header, appCtx, '',
+      `Problem: GitHub Gist sync failed (401/403 — auth or not-found).`,
+      `Raw error: ${text}`,
+      '',
+      `How sync works:`,
+      `  The server reads/writes shared app data to a private GitHub Gist.`,
+      `  api/_lib/gistStore.ts calls api.github.com/gists/{GIST_ID} with a bearer token.`,
+      '',
+      `Required env vars (set in .env.local or Replit Secrets):`,
+      `  GITHUB_TOKEN  — Personal Access Token with the "gist" OAuth scope`,
+      `  GIST_ID       — ID of an existing Gist the token can access`,
+      '',
+      `Likely causes:`,
+      `  1. GITHUB_TOKEN is missing, expired, or revoked`,
+      `  2. Token exists but is missing the "gist" permission scope`,
+      `  3. GIST_ID doesn't match a Gist that token can see`,
+      `  4. GitHub rate limit hit — wait ~60 s and retry`,
+      '',
+      `Relevant files:`,
+      `  api/_lib/gistStore.ts  — Gist read/write logic`,
+      `  api/_lib/state.ts      — state scope handlers`,
+      `  .env.local             — where env vars should be defined`,
+    ].join('\n');
+  }
+
+  if (text === SYNC_WARNING_CLIENT_NETWORK || /Could not reach the app sync API/i.test(text)) {
+    return [
+      header, appCtx, '',
+      `Problem: frontend can't reach the sync API endpoint (/api/state).`,
+      `Raw error: ${text}`,
+      '',
+      `How sync works:`,
+      `  The React frontend polls GET /api/state/:scope and writes via PATCH.`,
+      `  These are serverless functions in the api/ directory.`,
+      '',
+      `Likely causes:`,
+      `  1. Dev server not running (run: pnpm dev)`,
+      `  2. Wrong origin — app must be served from the same host as the API`,
+      `  3. Browser is offline`,
+      '',
+      `Relevant files:`,
+      `  src/services/stateClient.ts  — fetch calls to /api/state`,
+      `  api/state.ts                 — API route entry point`,
+    ].join('\n');
+  }
+
+  if (/GIST_ID is not configured|missing GIST_ID|VITE_GIST_ID.*development/i.test(text)) {
+    return [
+      header, appCtx, '',
+      `Problem: GIST_ID env var is missing — shared backend not configured.`,
+      `Raw error: ${text}`,
+      '',
+      `Required env vars (set in .env.local or Replit Secrets):`,
+      `  GITHUB_TOKEN  — Personal Access Token with "gist" scope`,
+      `  GIST_ID       — ID or full URL of an existing GitHub Gist`,
+      '',
+      `Without these, all writes are local-only and won't sync to the other person.`,
+      '',
+      `Relevant file: api/_lib/gistStore.ts`,
+    ].join('\n');
+  }
+
+  return [
+    header, appCtx, '',
+    `Problem: shared Gist sync failed.`,
+    text ? `Raw error: ${text}` : `No additional error detail available.`,
+    '',
+    `The app syncs data via a GitHub Gist (api/_lib/gistStore.ts).`,
+    `Check: GITHUB_TOKEN and GIST_ID env vars, server logs, and network requests to /api/state.`,
+  ].join('\n');
+};
+
 const formatTimestamp = (): string => {
   const now = new Date();
-  return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return now.toLocaleString([], {
+    weekday: 'short', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
 };
 
 export const getSyncBannerContent = ({
@@ -160,6 +256,7 @@ export const getSyncBannerContent = ({
       badge: 'Action needed',
       ...friendly,
       debugHints: buildDebugHints({ isBlocked, label }),
+      copyPayload: buildCopyPayload({ isBlocked, label, occurredAt }),
       accent: 'rgba(255, 189, 89, 0.16)',
       border: 'rgba(255, 189, 89, 0.45)',
       tone: 'assertive',
@@ -171,6 +268,7 @@ export const getSyncBannerContent = ({
     badge: 'Sync paused',
     ...friendly,
     debugHints: buildDebugHints({ isBlocked, label }),
+    copyPayload: buildCopyPayload({ isBlocked, label, occurredAt }),
     accent: 'rgba(255, 87, 87, 0.1)',
     border: 'rgba(255, 120, 120, 0.35)',
     tone: 'assertive',
