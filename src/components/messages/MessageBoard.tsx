@@ -155,11 +155,28 @@ const MessageBoard: React.FC = () => {
               />
             </div>
           ) : null}
-          <MessageInput
-            currentUser={currentUser}
-            isSubmitting={isSubmitting}
-            onSend={handleSend}
-          />
+          {currentUser ? (
+            <MessageInput
+              currentUser={currentUser}
+              isSubmitting={isSubmitting}
+              onSend={handleSend}
+            />
+          ) : (
+            <div
+              style={{
+                background: '#f5f5f5',
+                padding: '10px 20px',
+                borderTop: '0.5px solid rgba(0, 0, 0, 0.1)',
+                paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+                textAlign: 'center',
+                fontSize: '13px',
+                color: '#8e8e93',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+              }}
+            >
+              Select a profile above to send a message
+            </div>
+          )}
         </div>
       </div>
 

@@ -287,22 +287,20 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
             <div className="spin-wheel-rim" />
             <div className="spin-hub" />
-            <button
-              type="button"
-              className="spin-wheel-trigger"
-              onClick={handleSpin}
-              disabled={isSpinning || isLoading || candidates.length === 0 || !currentUser}
-              aria-label={
-                isSpinning
-                  ? 'Spinning'
-                  : emptyStateMessage ?? 'Spin the wheel'
-              }
-            >
-              <span className="spin-wheel-trigger__label">{triggerLabel}</span>
-              <span className="spin-wheel-trigger__subtext">
-                {isSpinning ? 'Locked' : emptyStateMessage ? 'Load' : 'Launch'}
-              </span>
-            </button>
+            {currentUser ? (
+              <button
+                type="button"
+                className="spin-wheel-trigger"
+                onClick={handleSpin}
+                disabled={isSpinning || isLoading || candidates.length === 0}
+                aria-label={isSpinning ? 'Spinning' : emptyStateMessage ?? 'Spin the wheel'}
+              >
+                <span className="spin-wheel-trigger__label">{triggerLabel}</span>
+                <span className="spin-wheel-trigger__subtext">
+                  {isSpinning ? 'Locked' : emptyStateMessage ? 'Load' : 'Launch'}
+                </span>
+              </button>
+            ) : null}
           </div>
         </div>
 
