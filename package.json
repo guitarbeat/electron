@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test src/**/*.test.ts"
+    "test": "node --test src/**/*.test.ts",
+    "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
     "chroma-js": "^3.2.0",
