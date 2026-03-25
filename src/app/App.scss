@@ -1724,6 +1724,47 @@ body {
     0 0 30px rgba(190, 225, 255, 0.12);
 }
 
+.action-bubble.is-open {
+  animation: none;
+  transform: scale(1.06);
+  border-color: rgba(190, 220, 255, 0.52);
+  box-shadow:
+    0 0 0 3px rgba(152, 209, 255, 0.22),
+    0 0 0 6px rgba(152, 209, 255, 0.08),
+    0 22px 42px rgba(0, 0, 0, 0.5),
+    0 0 48px rgba(152, 209, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.54),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.22);
+}
+
+.action-bubble.is-open .action-bubble__mark {
+  transform: scale(1.24) translateX(-1px) rotate(15deg);
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.action-bubble__open-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.action-bubble.is-open .action-bubble__open-ring {
+  border-color: rgba(152, 209, 255, 0.38);
+  opacity: 1;
+  animation: open-ring-pulse 2s ease-in-out infinite;
+}
+
+@keyframes open-ring-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.04); }
+}
+
 .action-bubble--docked-left {
   box-shadow:
     -14px 0 22px rgba(148, 205, 255, 0.14),
@@ -1768,7 +1809,7 @@ body {
     inset 0 -1px 0 rgba(0, 0, 0, 0.22);
   padding: 0;
   overflow: hidden;
-  animation: action-bubble-menu-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: action-bubble-menu-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .action-bubble-toggle {
@@ -1823,18 +1864,72 @@ body {
 }
 
 .action-bubble-menu::before {
-  content: '';
-  display: block;
-  height: 28px;
+  display: none;
+}
+
+.action-bubble-menu__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem 0.55rem;
+  border-bottom: 1px solid rgba(208, 229, 255, 0.14);
   background:
-    linear-gradient(118deg, transparent 0%, rgba(255, 255, 255, 0.22) 34%, transparent 52%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 100%);
-  border-bottom: 1px solid rgba(208, 229, 255, 0.16);
-  position: relative;
+    linear-gradient(118deg, transparent 0%, rgba(255, 255, 255, 0.18) 34%, transparent 52%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.13) 0%, transparent 100%);
+  gap: 0.5rem;
+}
+
+.action-bubble-menu__title {
+  font-family: var(--type-button-label-family);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(200, 220, 255, 0.65);
+  line-height: 1;
+  flex: 1;
+}
+
+.action-bubble-menu__close-btn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(211, 230, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(190, 210, 255, 0.55);
+  font-size: 0.65rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    border-color 0.14s ease;
+  padding: 0;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(220, 235, 255, 0.9);
+    border-color: rgba(211, 230, 255, 0.38);
+    outline: none;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.92);
+  }
 }
 
 .action-bubble-menu > * {
   padding: 0.6rem 0.75rem 0.75rem;
+}
+
+.action-bubble-menu > .action-bubble-menu__header {
+  padding: 0.6rem 0.75rem 0.55rem;
 }
 
 .action-bubble-menu__profiles {
@@ -1848,13 +1943,19 @@ body {
 }
 
 @keyframes action-bubble-menu-pop {
-  from {
-    transform: scale(0.82) translateY(8px);
+  0% {
+    transform: scale(0.78) translateY(12px);
     opacity: 0;
+    filter: blur(2px);
   }
-  to {
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
     transform: scale(1) translateY(0);
     opacity: 1;
+    filter: blur(0);
   }
 }
 
@@ -9668,6 +9769,23 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
   .action-bubble.is-dragging {
     animation: none;
+  }
+
+  .action-bubble.is-open {
+    animation: none;
+    transform: scale(1.06);
+    border-color: rgba(214, 177, 115, 0.72);
+    box-shadow:
+      0 0 0 3px rgba(214, 177, 115, 0.28),
+      0 0 0 6px rgba(214, 177, 115, 0.1),
+      0 22px 42px rgba(12, 7, 3, 0.48),
+      0 0 42px rgba(190, 148, 82, 0.22),
+      inset 0 1.5px 0 rgba(255, 242, 214, 0.36),
+      inset 0 -14px 22px rgba(38, 16, 8, 0.32);
+  }
+
+  .action-bubble.is-open .action-bubble__open-ring {
+    border-color: rgba(214, 177, 115, 0.42);
   }
 
   .action-bubble--docked-left {
