@@ -1,4 +1,5 @@
-import { useEffect, type FC, type MouseEvent, type PointerEvent, type RefObject } from 'react';
+import { useEffect, useState, type FC, type MouseEvent, type PointerEvent, type RefObject } from 'react';
+import { useUser } from '@/app/providers';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import type { ActionBubbleMenuPosition, ActionBubblePosition, ActionBubbleTogglePosition } from '@/app/actionBubble';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
@@ -6,7 +7,12 @@ import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
 import UserSelection from '@/components/common/UserSelection';
 import { CrossIcon } from '@/common/icons';
-import type { MainTab } from '@/shared/types';
+import type { MainTab, User } from '@/shared/types';
+
+const USER_PHOTOS: Record<User, string> = {
+  Aaron: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
+  Electra: 'https://i.redd.it/vkmos70wqw641.jpg',
+};
 
 interface ActionBubbleLayerProps {
   actionBubbleRef: RefObject<HTMLButtonElement | null>;
@@ -47,6 +53,13 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   onActionBubblePointerMove,
   onFinishActionBubbleDrag,
 }) => {
+  const { currentUser } = useUser();
+  const [photoError, setPhotoError] = useState(false);
+
+  useEffect(() => {
+    setPhotoError(false);
+  }, [currentUser]);
+
   const closeMenu = () => onToggleMenu(false);
 
   const runItem = (item: CommandActionItem) => {
@@ -98,12 +111,22 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         }}
       >
         <span className="action-bubble__icon" aria-hidden="true">
-          <img
-            src={ELECTRON_LOGO_MARK_PATH}
-            alt=""
-            className="action-bubble__icon-image action-bubble__mark"
-            draggable="false"
-          />
+          {currentUser && !photoError ? (
+            <img
+              src={USER_PHOTOS[currentUser]}
+              alt={currentUser}
+              className="action-bubble__user-photo"
+              draggable="false"
+              onError={() => setPhotoError(true)}
+            />
+          ) : (
+            <img
+              src={ELECTRON_LOGO_MARK_PATH}
+              alt=""
+              className="action-bubble__icon-image action-bubble__mark"
+              draggable="false"
+            />
+          )}
         </span>
         <span className="action-bubble__open-ring" aria-hidden="true" />
         <span className="sr-only">{showActionBubbleMenu ? 'Close' : 'Open'} quick actions</span>
