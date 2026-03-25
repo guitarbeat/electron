@@ -38,13 +38,17 @@ export interface PinsState {
   Electra: boolean;
 }
 
-/** Last wheel outcome for the UTC calendar day (Gist: dailyspin.json). */
-export interface DailySpinRecord {
-  date: string;
+export interface SpinEntry {
   movieId: string;
   movieTitle: string;
   spunBy: User;
   createdAt: string;
+}
+
+/** All wheel outcomes for the UTC calendar day (Gist: dailyspin.json). */
+export interface DailySpinRecord {
+  date: string;
+  spins: SpinEntry[];
 }
 
 export interface StateScopeDataMap {

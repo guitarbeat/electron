@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
 import { mutateScope, readScope } from '@/services/stateClient';
-import type { DailySpinRecord } from '@/services/stateTypes';
+import type { DailySpinRecord, SpinEntry } from '@/services/stateTypes';
 import { appendSpinHistory, SPIN_HISTORY_MAX } from '@/components/spinWheel/spinWheelEngine';
 import { areDeeplyEqual } from '@/utils';
 
@@ -45,9 +45,31 @@ export const useSpinWheelState = (currentUser: User | null, isPaused: boolean = 
         ? undefined
         : [...new Set(warnings)].join(' ');
 
+    const today = new Date().toISOString().slice(0, 10);
+    let dailyData = dailySnap.data as any;
+
+    // Handle legacy format or date reset
+    if (dailyData) {
+      if (dailyData.date !== today) {
+        dailyData = null;
+      } else if (!Array.isArray(dailyData.spins)) {
+        // Migrate legacy single-spin format to array
+        const legacyEntry: SpinEntry = {
+          movieId: dailyData.movieId,
+          movieTitle: dailyData.movieTitle,
+          spunBy: dailyData.spunBy,
+          createdAt: dailyData.createdAt,
+        };
+        dailyData = {
+          date: today,
+          spins: [legacyEntry],
+        };
+      }
+    }
+
     return {
       history: historySnap.data,
-      daily: dailySnap.data,
+      daily: dailyData,
       degraded: historySnap.degraded || dailySnap.degraded,
       warning,
     };
@@ -80,14 +102,21 @@ export const useSpinWheelState = (currentUser: User | null, isPaused: boolean = 
         movieTitle,
         SPIN_HISTORY_MAX
       );
+
       const now = new Date().toISOString();
-      const optimisticDaily: DailySpinRecord = {
-        date: now.slice(0, 10),
+      const today = now.slice(0, 10);
+      
+      const newEntry: SpinEntry = {
         movieId,
         movieTitle,
         spunBy: currentUser,
         createdAt: now,
       };
+
+      const optimisticDaily: DailySpinRecord = 
+        prev?.daily && prev.daily.date === today
+          ? { ...prev.daily, spins: [...prev.daily.spins, newEntry] }
+          : { date: today, spins: [newEntry] };
 
       try {
         await mutateScope('spinHistory', {
