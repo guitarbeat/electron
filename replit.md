@@ -1,0 +1,148 @@
+# Collaborative Movie Night App
+
+## Overview
+
+A two-person collaborative movie watchlist and date-planning SPA titled "electron." Built for exactly two named users (Aaron and Electra), the app lets them manage a shared movie watchlist, send messages, play matchmaker-style swipe games, spin a wheel to pick a movie, take compatibility quizzes, and browse date spot ideas.
+
+**Core features:**
+- Shared movie watchlist with OMDb/TVMaze metadata enrichment
+- iMessage-style message board
+- Spin wheel for movie selection
+- Matchmaker swipe game
+- Compatibility quiz
+- Date spots/places workspace (Google Places integration)
+- Y2K-inspired UI with gel bubbles, retro chrome, and visual effects
+- Draggable floating action bubble for navigation
+
+**Persistence model:** defaults to `localStorage`; upgrades to GitHub Gist sync when environment variables are configured. No traditional database.
+
+**Deploy shape:** static frontend (`dist/`) + serverless-style API handlers in `api/` (Vercel target).
+
+---
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+---
+
+## System Architecture
+
+### Frontend
+
+- **Framework:** React 19 with TypeScript, bundled by Vite 7
+- **Entry point:** `index.html` → `src/main.tsx` → `src/app/App.tsx`
+- **Styling:** SCSS (co-located per component + global `src/app/App.scss`), design tokens in `src/theme/`
+- **Graphics:** `ogl` (WebGL), `chroma-js` for color math
+- **Fonts:** Inter, Outfit, Space Grotesk via Google Fonts
+
+**Directory layout:**
+```
+src/
+  app/         # Shell, providers, action bubble, workspace switching
+  branding/    # Logo marks, favicon, logo lab
+  components/  # Feature UI (watchlist, messages, matchmaker, spinWheel, places, quiz, effects, ui, ...)
+  hooks/       # Shared React hooks (useMovies, useMessages, useMatchmaker, usePolling, ...)
+  services/    # State client, polling, metadata fetching, Gist client, storage
+  shared/      # Shared TypeScript types
+  theme/       # Design tokens
+  utils/       # Shared helpers
+```
+
+**State management:** No Redux/Zustand. Uses React context (`ThemeProvider`, `UserProvider`, `ToastProvider` all consolidated in `src/app/providers.tsx`) plus custom hooks that wrap a polling service. Polling hits `/api/state/:scope` endpoints on a configurable interval (15–30s).
+
+**Routing:** No router library. Two primary workspaces (`queue` / `places`) toggled via a `MainTab` state value in `App.tsx`. URL params handle shared suggestion intents and logo lab feature flags.
+
+**API proxy in dev:** `vite.config.ts` registers a custom Vite middleware that intercepts `/api/*` requests and dynamically imports + executes the corresponding `api/*.ts` handler. No separate backend process runs locally.
+
+### Backend / API Handlers
+
+Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler exports a default `withWebHandler(handler)` which adapts between Node.js IncomingMessage style and the Web `Request`/`Response` API.
+
+**Key handlers:**
+| File | Purpose |
+|---|---|
+| `api/omdb.ts` | OMDb proxy with in-memory cache (1h TTL, 500 entries), rate limiting (30 req/min/IP), retries |
+| `api/tvmaze.ts` | TVMaze proxy with in-memory cache |
+| `api/gist.ts` | Deprecated generic Gist proxy; returns HTTP 410 |
+| `api/health.ts` | Liveness + optional readiness probe against Gist |
+| `api/session.ts` | Returns current session state and PIN-protected user list |
+| `api/session/profile.ts` | POST to set profile, PIN verification with lockout |
+| `api/state/[scope].ts` | GET scoped state from Gist (movies, messages, places, quiz, matchmaker, etc.) |
+| `api/state/[scope]/mutate.ts` | POST mutations to scoped state |
+
+**Shared library (`api/_lib/`):**
+- `gistStore.ts` — GitHub Gist read/write with 5s TTL cache
+- `state.ts` — Business logic: normalization, mutation handlers per scope
+- `session.ts` — HMAC-signed cookie sessions, PIN hashing (PBKDF2), lockout
+- `http.ts` — Response helpers (`jsonResponse`, `mergeHeaders`, etc.)
+- `retryFetch.ts` — Exponential backoff with jitter for GitHub API calls
+- `webHandler.ts` — Adapts Node.js request/response to Web API `Request`/`Response`
+
+### Persistence
+
+**Primary (always available):** `localStorage` — used as fallback and for some client-only state (quiz completion flag, action bubble position, etc.).
+
+**Optional shared sync:** GitHub Gist via `api/_lib/gistStore.ts`. When `GIST_ID` + `GITHUB_TOKEN` are configured, all scoped state is stored as JSON files within a single Gist. The client syncs via polling to `/api/state/:scope`.
+
+**Scope model:** State is split into named scopes, each mapping to a file in the Gist (e.g., `movielist.json`, `messages.json`, `places.json`, `quiz.json`, `matchmaker.json`, `pins.json`). Mutations are validated server-side before writing.
+
+### Authentication
+
+- No traditional auth. Two hardcoded named users: `Aaron` and `Electra`.
+- Optional PIN protection per user, stored in Gist (`pins.json`).
+- Sessions held in HMAC-signed HTTP cookies (`SESSION_SIGNING_SECRET`).
+- PIN attempts tracked in a separate short-lived cookie; locked out after 5 failures for 5 minutes.
+- Guests can view but write operations check session state.
+
+### Testing
+
+- Node.js built-in test runner (`node --test`).
+- Test files co-located as `*.test.ts` in `src/`.
+- Tests cover: API handlers, Gist store, state schemas, session logic, UI logic (action bubble math, shell state, shared suggestion parsing, logo lab).
+
+### Build & Deploy
+
+- `pnpm build` → Vite outputs static files to `dist/`
+- `vercel.json` rewrites: `/api/state/:scope/mutate` and `/api/state/:scope` to dynamic handler files; all other paths fall through to `index.html` (SPA routing)
+- `pnpm verify` = `check-types && lint && test && build` — run before every deploy
+
+---
+
+## External Dependencies
+
+### APIs & Services
+
+| Service | Integration point | Purpose |
+|---|---|---|
+| **GitHub Gist API** | `api/_lib/gistStore.ts` | Shared persistence store (optional) |
+| **OMDb API** | `api/omdb.ts` + `src/services/metadataService.ts` | Movie metadata (title, poster, ratings, plot) |
+| **TVMaze API** | `api/tvmaze.ts` | TV show metadata |
+| **Google Places API** | Map/places components, `VITE_GOOGLE_PLACES_API_KEY` | Date spot search and maps |
+| **Google Fonts** | `index.html` preconnect links | Typography (Inter, Outfit, Space Grotesk) |
+
+### Key npm Packages
+
+| Package | Role |
+|---|---|
+| `react` / `react-dom` 19 | UI framework |
+| `vite` 7 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
+| `typescript` ~5.9 | Type safety |
+| `ogl` | WebGL for visual effects |
+| `chroma-js` | Color manipulation |
+| `sass` / `sass-embedded` | SCSS compilation |
+| `eslint` + `typescript-eslint` | Linting |
+
+### Environment Variables
+
+**Client-side (`VITE_*`):**
+- `VITE_GIST_ID` — enables Gist sync
+- `VITE_API_SECRET` — must match server `API_SECRET` for authorized writes
+- `VITE_OMDB_API_URL` / `VITE_OMDB_API_KEY` — OMDb override
+- `VITE_GOOGLE_PLACES_API_KEY` — maps/places features
+
+**Server-side (Vercel/serverless):**
+- `GIST_ID` + `GITHUB_TOKEN` — Gist storage
+- `API_SECRET` — authorizes client mutations
+- `SESSION_SIGNING_SECRET` — signs session cookies (required for PIN auth)
+- `OMDB_API_KEY` / `OMDB_API_URL` — OMDb proxy

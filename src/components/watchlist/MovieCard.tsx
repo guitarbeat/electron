@@ -209,6 +209,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           memories={memories}
           currentUser={currentUser}
           isMobile={isMobile}
+          onClose={handleToggleMemories}
           onAddMemory={onAddMemory}
           onUpdateMemory={onUpdateMemory}
           onDeleteMemory={onDeleteMemory}
@@ -425,6 +426,7 @@ interface MovieMemoriesProps {
   memories: SharedMemory[];
   currentUser: User | null;
   isMobile: boolean;
+  onClose: () => void;
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
   onDeleteMemory?: (memoryId: string) => Promise<void>;
@@ -436,6 +438,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
   memories,
   currentUser,
   isMobile,
+  onClose,
   onAddMemory,
   onUpdateMemory,
   onDeleteMemory,
@@ -443,7 +446,9 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
 }) => {
   const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
   const [draftNote, setDraftNote] = React.useState('');
+  const [submitSuccess, setSubmitSuccess] = React.useState(false);
   const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
+  const memoriesListRef = React.useRef<HTMLDivElement>(null);
   const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
   const canSubmitNote = !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
 
@@ -457,7 +462,14 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
     try {
       await onAddMemory(trimmedNote);
       setDraftNote('');
-      noteInputRef.current?.focus();
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        noteInputRef.current?.focus();
+        if (memoriesListRef.current) {
+          memoriesListRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 1200);
     } finally {
       setIsSubmittingMemory(false);
     }
@@ -481,47 +493,34 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         borderTop: 'none',
         borderLeft: `3px solid ${colors.accentMuted}`,
         boxShadow: '0 18px 34px rgba(18, 11, 7, 0.24)',
+        position: 'relative',
       }}
     >
-      <div
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close notes panel"
         style={{
-          marginBottom: spacing.md,
+          position: 'absolute',
+          top: spacing.sm,
+          right: spacing.sm,
+          width: '28px',
+          height: '28px',
+          borderRadius: '50%',
+          border: `1px solid ${colors.borderSubtle}`,
+          background: 'rgba(255,255,255,0.07)',
+          color: colors.textSecondary,
+          cursor: 'pointer',
           display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.xs,
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          lineHeight: 1,
+          padding: 0,
         }}
       >
-        <p
-          style={{
-            margin: 0,
-            ...typography.presets.eyebrow,
-            color: colors.accentLight,
-          }}
-        >
-          Notes on this movie
-        </p>
-        <h4
-          style={{
-            margin: 0,
-            color: colors.textPrimary,
-            fontSize: typography.fontSize.lg,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            letterSpacing: typography.letterSpacing.normal,
-          }}
-        >
-          {movie.title}
-        </h4>
-        <p
-          style={{
-            margin: 0,
-            color: colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            lineHeight: typography.lineHeight.normal,
-          }}
-        >
-          Quotes, reactions, and tiny thoughts worth keeping with this one.
-        </p>
-      </div>
+        ×
+      </button>
 
       {currentUser && onAddMemory && (
         <div style={{ marginBottom: spacing.md }}>
@@ -540,13 +539,14 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
             onComposerToggle={() => {}}
             remainingChars={remainingChars}
             error={null}
-            successMessage={null}
+            successMessage={submitSuccess ? 'Saved!' : null}
             noteInputRef={noteInputRef}
           />
         </div>
       )}
 
       {memories.length > 0 ? (
+        <div ref={memoriesListRef}>
         <MemoryList
           memories={memories}
           visibleMemories={memories}
@@ -575,6 +575,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           memoriesError={null}
           onJumpToMovie={() => {}}
         />
+        </div>
       ) : (
         <p
           style={{
