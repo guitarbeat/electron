@@ -370,11 +370,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           : `Mark "${movie.title}" as watched`
       }
       className={`movie-item-primary-action ${watchedByCurrentUser ? 'movie-item-primary-action--watched' : 'movie-item-primary-action--unwatched'}`}
-<<<<<<< HEAD
-      style={{
-        opacity: isGuest ? 0.5 : 1,
-      }}
-=======
       style={
         watchedByCurrentUser
           ? {
@@ -389,7 +384,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
               boxShadow: '0 6px 18px rgba(5,150,105,0.4), inset 0 1px 0 rgba(255,255,255,0.18)',
             }
       }
->>>>>>> ac40f9e (Improve button appearance and functionality for movie actions)
     >
       {watchedByCurrentUser ? (
         <CheckIcon style={{ width: '12px' }} />
@@ -415,12 +409,11 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         type="button"
         onClick={handleDeleteAction}
         disabled={isGuest}
-        title={`Delete "${movie.title}"`}
-        aria-label={`Delete "${movie.title}"`}
+        title={`Remove "${movie.title}"`}
+        aria-label={`Remove "${movie.title}" from list`}
         className="movie-item-remove-link"
       >
-        <TrashIcon style={{ width: '12px', height: '12px', flexShrink: 0 }} />
-        Remove
+        <TrashIcon style={{ width: '15px', height: '15px' }} />
       </button>
     </div>
   );
