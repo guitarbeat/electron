@@ -4,7 +4,7 @@ import { buildSharedSuggestionUrl } from '@/app/sharedSuggestion';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/app/providers';
 import { trackMetric } from '@/services/analyticsService';
-import { shareSuggestionLink } from '@/components/watchlist/watchlistShare';
+import { shareSuggestionLink } from '@/utils/browser';
 import { ShareIcon } from '@/common/icons';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';

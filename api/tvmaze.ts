@@ -1,10 +1,6 @@
 import { fetchWithRetry } from './_lib/retryFetch.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
-
-const resolveConfig = (value: string | undefined, fallback: string) => {
-  const cleanedValue = (value || '').trim();
-  return cleanedValue.length > 0 ? cleanedValue : fallback;
-};
+import { resolveConfig } from './_lib/config.ts';
 
 const TVMAZE_API_BASE_URL = resolveConfig(
   process.env.TVMAZE_API_URL || process.env.VITE_TVMAZE_API_URL,

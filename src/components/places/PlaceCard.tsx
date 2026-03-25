@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@/common/icons';
+import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
-
-// ── Icon heuristic ────────────────────────────────────────────────────────────
 
 export function getPlaceIcon(name: string): string {
   const lower = name.toLowerCase();
@@ -24,8 +23,6 @@ export function getPlaceIcon(name: string): string {
   if (/island|cove|lagoon|waterfall/.test(lower)) return '🌊';
   return '📍';
 }
-
-// ── PlaceCard ─────────────────────────────────────────────────────────────────
 
 interface PlaceCardProps {
   place: Place;
@@ -74,12 +71,15 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     : null;
 
   return (
-    <div className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}>
-      <div className="place-item-poster-wrap">
-        <div className="place-item-cover" aria-hidden="true">
+    <MediaCard
+      variant={isVisited ? 'visited' : 'default'}
+      className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
+    >
+      <MediaCard.PosterWrap className="place-item-poster-wrap">
+        <MediaCard.Cover className="place-item-cover" aria-hidden="true">
           <span className="place-item-cover__icon">{icon}</span>
           {hasCoords && <span className="place-item-cover__pin">📍</span>}
-        </div>
+        </MediaCard.Cover>
 
         {isVisited && (
           <div className="place-item-visited-badge" aria-label="Visited">
@@ -88,14 +88,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           </div>
         )}
 
-        <div className="place-item-overlay">
-          <div className="place-item-info">
-            <h3 className="place-item-title">{place.name}</h3>
-            {place.notes && <p className="place-item-notes">{place.notes}</p>}
-          </div>
+        <MediaCard.Overlay className="place-item-overlay">
+          <MediaCard.Info className="place-item-info">
+            <MediaCard.Title className="place-item-title">{place.name}</MediaCard.Title>
+            {place.notes && <MediaCard.Subtext className="place-item-notes">{place.notes}</MediaCard.Subtext>}
+          </MediaCard.Info>
 
           {canEdit && (
-            <div className="place-item-actions">
+            <MediaCard.Actions className="place-item-actions">
               <button
                 type="button"
                 className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
@@ -118,11 +118,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               >
                 <TrashIcon style={{ width: 13, height: 13 }} />
               </button>
-            </div>
+            </MediaCard.Actions>
           )}
-        </div>
-      </div>
-    </div>
+        </MediaCard.Overlay>
+      </MediaCard.PosterWrap>
+    </MediaCard>
   );
 };
 

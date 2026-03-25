@@ -1,4 +1,6 @@
-export const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
+/**
+ * Browser-specific utilities for clipboard and native share.
+ */
 
 export const copyTextToClipboard = async (value: string): Promise<void> => {
   if (navigator.clipboard?.writeText) {

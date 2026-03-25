@@ -23,7 +23,9 @@ export {
   shallowCloneArray,
   shuffleArray,
   buildGoogleMapsUrl,
+  normalizeMovieTitle,
 } from './shared';
 export * from './random';
-export * from './formValidation';
 export * from './styling';
+export * from './date';
+export * from './browser';

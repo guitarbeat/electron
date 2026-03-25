@@ -294,3 +294,8 @@ export const buildGoogleMapsUrl = (
 ): string => {
   return `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=${libraries.join(",")}`;
 };
+
+/**
+ * Normalizes a movie title for comparison purposes (trim + lowercase).
+ */
+export const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();

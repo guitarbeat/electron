@@ -48,7 +48,7 @@ src/
   services/    # State client, polling, metadata fetching, Gist client, storage
   shared/      # Shared TypeScript types
   theme/       # Design tokens
-  utils/       # Shared helpers
+  utils/       # Shared helpers (date.ts, browser.ts, shared.ts, random.ts, styling.ts, commonUtils.ts)
 ```
 
 **State management:** No Redux/Zustand. Uses React context (`ThemeProvider`, `UserProvider`, `ToastProvider` all consolidated in `src/app/providers.tsx`) plus custom hooks that wrap a polling service. Polling hits `/api/state/:scope` endpoints on a configurable interval (15–30s).
@@ -74,12 +74,16 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 | `api/state/[scope]/mutate.ts` | POST mutations to scoped state |
 
 **Shared library (`api/_lib/`):**
+- `config.ts` — Shared `resolveConfig` helper for environment variable resolution
 - `gistStore.ts` — GitHub Gist read/write with 5s TTL cache
 - `state.ts` — Business logic: normalization, mutation handlers per scope
 - `session.ts` — HMAC-signed cookie sessions, PIN hashing (PBKDF2), lockout
 - `http.ts` — Response helpers (`jsonResponse`, `mergeHeaders`, etc.)
 - `retryFetch.ts` — Exponential backoff with jitter for GitHub API calls
 - `webHandler.ts` — Adapts Node.js request/response to Web API `Request`/`Response`
+
+**Shared UI components:**
+- `src/components/ui/MediaCard.tsx` — Compound component providing shared card structure (PosterWrap, Cover, Overlay, Title, Badge, Actions, Info, Subtext) used by both MovieCard and PlaceCard
 
 ### Persistence
 
