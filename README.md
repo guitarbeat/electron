@@ -14,12 +14,15 @@ pnpm dev
 Dev server: `http://localhost:5000`. API routes under `/api/*` are handled by Vite dev middleware (see `vite.config.ts` and `api/`).
 
 ```bash
+pnpm verify
 pnpm build
 pnpm preview
 pnpm lint
 pnpm check-types
 pnpm test
 ```
+
+Run `pnpm verify` before a Vercel deploy to execute the full local validation set in one command.
 
 ## Documentation
 

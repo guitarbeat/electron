@@ -12,6 +12,7 @@
 ```bash
 pnpm install
 pnpm dev
+pnpm verify
 pnpm build
 pnpm preview
 pnpm lint
@@ -22,6 +23,7 @@ pnpm test
 Command behavior:
 
 - `pnpm dev`: starts the Vite dev server on `http://localhost:5000`.
+- `pnpm verify`: runs the full pre-deploy validation set (`check-types`, `lint`, `test`, `build`).
 - `pnpm build`: writes the production bundle to `dist/`.
 - `pnpm preview`: serves the built app locally.
 - `pnpm lint`: runs `eslint .`.
@@ -33,7 +35,7 @@ Command behavior:
 1. Install dependencies with `pnpm install`.
 2. Copy `.env.example` to `.env.local` when working with remote sync or external APIs.
 3. Start local development with `pnpm dev`.
-4. Before handing work off, run `pnpm lint`, `pnpm check-types`, `pnpm test`, and `pnpm build`.
+4. Before handing work off or deploying to Vercel, run `pnpm verify`.
 
 ## App and API Workflow
 
@@ -68,7 +70,7 @@ Server-side variables used by deployed handlers:
 
 - Add or update `*.test.ts` files when changing service logic, state helpers, or utility behavior.
 - Prefer verifying the narrowest surface first, then run the full validation set before finishing:
-  `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm build`.
+  `pnpm verify` (or run `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm build` individually when narrowing failures).
 - CI (GitHub Actions): `.github/workflows/ci.yml` runs the same install, lint, typecheck, test, and build steps on pushes and pull requests to `main`/`master`.
 
 ## Deployment Notes
@@ -95,4 +97,3 @@ Server-side variables used by deployed handlers:
 
 - Human-oriented overview: `README.md`. Doc index: `docs/README.md`.
 - For commands, env vars, and API behavior, prefer `package.json`, `vite.config.ts`, `api/`, and this file.
-
