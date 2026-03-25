@@ -16,9 +16,8 @@ import type {
   MovieSuggestion,
   Place,
   SharedMemory,
-  User,
 } from '../shared/types.ts';
-import type { DailySpinRecord } from './stateTypes.ts';
+import type { DailySpinRecord, SpinEntry } from './stateTypes.ts';
 import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../utils/shared.ts';
 import type { PinsState, QuizData } from './stateTypes';
 
@@ -390,26 +389,68 @@ export const normalizeSpinHistoryParsed = (value: unknown): string[] => {
     .filter((t): t is string => Boolean(t));
 };
 
+export const normalizeSpinEntry = (value: unknown): SpinEntry | null => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const entry = value as Partial<SpinEntry>;
+  const movieId = normalizeRequiredString(entry.movieId);
+  const movieTitle = normalizeRequiredString(entry.movieTitle);
+  const createdAt = normalizeCreatedAt(entry.createdAt);
+
+  if (!movieId || !movieTitle || !createdAt || !isUser(entry.spunBy)) {
+    return null;
+  }
+
+  return {
+    movieId,
+    movieTitle,
+    spunBy: entry.spunBy,
+    createdAt,
+  };
+};
+
+export const appendDailySpinEntry = (
+  current: DailySpinRecord | null,
+  nextEntry: SpinEntry
+): DailySpinRecord => {
+  const nextDate = nextEntry.createdAt.slice(0, 10);
+  const spins = current?.date === nextDate ? current.spins : [];
+
+  return {
+    date: nextDate,
+    spins: [...spins, nextEntry],
+  };
+};
+
 export const normalizeDailySpinRecord = (value: unknown): DailySpinRecord | null => {
   if (!value || typeof value !== 'object') {
     return null;
   }
-  const o = value as Partial<DailySpinRecord>;
-  const date = typeof o.date === 'string' ? sanitizeInput(o.date) : '';
-  const movieId = typeof o.movieId === 'string' ? sanitizeInput(o.movieId) : '';
-  const movieTitle = typeof o.movieTitle === 'string' ? sanitizeInput(o.movieTitle) : '';
-  const createdAt = typeof o.createdAt === 'string' ? sanitizeInput(o.createdAt) : '';
-  if (!date || !movieId || !movieTitle || !createdAt) {
+
+  const candidate = value as Partial<DailySpinRecord> & Partial<SpinEntry>;
+  const date = normalizeRequiredString(candidate.date);
+  if (!date) {
     return null;
   }
-  if (o.spunBy !== 'Aaron' && o.spunBy !== 'Electra') {
+
+  if (Array.isArray(candidate.spins)) {
+    const spins = candidate.spins.flatMap((entry) => {
+      const normalized = normalizeSpinEntry(entry);
+      return normalized ? [normalized] : [];
+    });
+
+    return spins.length > 0 ? { date, spins } : null;
+  }
+
+  const legacyEntry = normalizeSpinEntry(candidate);
+  if (!legacyEntry) {
     return null;
   }
+
   return {
     date,
-    movieId,
-    movieTitle,
-    spunBy: o.spunBy as User,
-    createdAt,
+    spins: [legacyEntry],
   };
 };

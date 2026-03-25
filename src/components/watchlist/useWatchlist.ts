@@ -7,7 +7,7 @@ import {
   updateMemory as updateMemoryService,
 } from '@/services/memoryService';
 import { usePolling } from '@/services/polling';
-import { SortMode, ContentTab, Movie, MovieSuggestion, User } from '@/shared/types';
+import { Movie, MovieSuggestion, User } from '@/shared/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/app/providers';
@@ -63,9 +63,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
   const [isSubmittingRecommendation, setIsSubmittingRecommendation] = useState(false);
-  const [contentTab, setContentTab] = useState<ContentTab>('queue');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortMode, setSortMode] = useState<SortMode>('recent');
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Refs
@@ -182,40 +180,12 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     return [unwatched, watched];
   }, [movies]);
 
-  const normalizedSearch = searchQuery.trim().toLowerCase();
-
   let memoryErrorMessage: string | null = null;
   if (memoriesError instanceof Error) {
     memoryErrorMessage = memoriesError.message;
   } else if (memoriesError) {
     memoryErrorMessage = String(memoriesError);
   }
-
-  const sortedMovies = useMemo(() => {
-    if (!movies) return [];
-    const next = [...movies];
-    switch (sortMode) {
-      case 'title':
-        next.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'year':
-        next.sort((a, b) => Number(b.year || 0) - Number(a.year || 0));
-        break;
-      case 'recent':
-      default:
-        break;
-    }
-    return next;
-  }, [movies, sortMode]);
-
-  const filteredMovies = useMemo(() => {
-    return sortedMovies.filter((movie) => {
-      if (!normalizedSearch) return true;
-      return `${movie.title} ${movie.year || ''} ${movie.category || ''}`
-        .toLowerCase()
-        .includes(normalizedSearch);
-    });
-  }, [sortedMovies, normalizedSearch]);
 
   const submitRecommendation = useCallback(
     async ({
@@ -233,7 +203,6 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
           reason
         );
         trackMetric('suggestion_submitted');
-        setContentTab('suggestions');
         return suggestion;
       } finally {
         setIsSubmittingRecommendation(false);
@@ -352,6 +321,5 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     memoriesError: memoryErrorMessage,
     unwatchedMovies,
     watchedMovies,
-    filteredMovies,
   };
 };

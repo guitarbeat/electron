@@ -8,8 +8,8 @@ import {
   getElectronMarkSvgMarkup,
 } from './electronMarkData.ts';
 
-test('electron marks expose the planned four variants', () => {
-  assert.deepEqual(ELECTRON_MARK_VARIANTS, ['pulse-ae', 'orbit-e', 'static-gem', 'split-spark']);
+test('electron marks expose the planned five variants', () => {
+  assert.deepEqual(ELECTRON_MARK_VARIANTS, ['pulse-ae', 'orbit-e', 'orbit-a', 'static-gem', 'split-spark']);
   assert.equal(DEFAULT_ELECTRON_MARK_VARIANT, 'pulse-ae');
   assert.equal(ELECTRON_MARK_META['pulse-ae'].recommended, true);
 });

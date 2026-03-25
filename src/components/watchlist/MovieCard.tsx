@@ -292,43 +292,6 @@ interface MovieActionsProps {
   onDelete: () => void;
 }
 
-interface MovieIconActionButtonProps {
-  title: string;
-  disabled: boolean;
-  color: string;
-  borderColor: string;
-  className?: string;
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  children: React.ReactNode;
-}
-
-const MovieIconActionButton: React.FC<MovieIconActionButtonProps> = ({
-  title,
-  disabled,
-  color,
-  borderColor,
-  className = '',
-  onClick,
-  children,
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    aria-label={title}
-    style={
-      {
-        '--movie-action-color': color,
-        '--movie-action-border': borderColor,
-      } as React.CSSProperties
-    }
-    className={`movie-item-icon-action ${disabled ? 'is-disabled' : ''} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
-
 const MovieActions: React.FC<MovieActionsProps> = ({
   movie,
   currentUser,

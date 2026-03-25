@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Trash2, Check } from "lucide-react";
+import { Eye, Trash2, Check } from "lucide-react";
 
 const MOVIES = [
   { id: "1", title: "Parasite", year: "2019", runtime: "132 min", imdbRating: "8.5", posterUrl: "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg", watchedBy: ["Aaron", "Electra"] },

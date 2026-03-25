@@ -2,7 +2,7 @@
 
 A two-person movie watchlist and shared space built with **React 19**, **TypeScript**, and **Vite**, with a nostalgic Y2K-inspired UI (gel bubbles, dashboard chrome, chat-style surfaces).
 
-Persistence defaults to **localStorage**, with optional **GitHub Gist** sync when configured.
+Shared state flows through `/api/session` and `/api/state/*`. When `GIST_ID` and `GITHUB_TOKEN` are configured, those handlers persist the watchlist, suggestions, spin state, and profile PIN data to a **GitHub Gist**; otherwise the app degrades to local snapshot/outbox storage so development still works.
 
 ## Quick start
 
@@ -32,6 +32,6 @@ Run `pnpm verify` before a Vercel deploy to execute the full local validation se
 ## Tech stack
 
 - **UI**: React, SCSS (`src/app/App.scss`), design tokens in `src/theme/`
-- **Data**: `localStorage` / Gist via `src/services/` and `api/gist.ts`
+- **Data**: typed shared-state sync in `src/services/stateClient.ts`, `api/session.ts`, and `api/state/*`
 - **Metadata**: OMDb (`api/omdb.ts`, `src/services/metadataService.ts`)
 - **Places**: Google Places (map components) when `VITE_GOOGLE_PLACES_API_KEY` is set
