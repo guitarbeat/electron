@@ -13,6 +13,7 @@ import {
   getSessionState,
 } from '../_lib/session.ts';
 import { getPinProtectedUsers, verifyProfilePin } from '../_lib/state.ts';
+import { withWebHandler } from '../_lib/webHandler.ts';
 import { isUser } from '../../src/utils/shared.ts';
 
 const PROFILE_STORE_CONFIG_ERROR =
@@ -54,7 +55,7 @@ export const computeNextPinAttemptState = (
   };
 };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   try {
     if (req.method === 'DELETE') {
       let pinProtectedUsers: Awaited<ReturnType<typeof getPinProtectedUsers>> = [];
@@ -184,3 +185,5 @@ export default async function handler(req: Request): Promise<Response> {
     return serverErrorResponse();
   }
 }
+
+export default withWebHandler(handler);

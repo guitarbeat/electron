@@ -1,9 +1,10 @@
 import { jsonResponse, methodNotAllowedResponse, serverErrorResponse } from './_lib/http.ts';
 import { getSessionState } from './_lib/session.ts';
 import { getPinProtectedUsers } from './_lib/state.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
 import type { User } from '../src/shared/types.ts';
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   try {
     if (req.method !== 'GET') {
       return methodNotAllowedResponse('GET');
@@ -28,3 +29,5 @@ export default async function handler(req: Request): Promise<Response> {
     return serverErrorResponse();
   }
 }
+
+export default withWebHandler(handler);

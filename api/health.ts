@@ -1,10 +1,11 @@
 import { jsonResponse, mergeHeaders, methodNotAllowedResponse } from './_lib/http.ts';
 import { readGistFile } from './_lib/gistStore.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
 
 /** Known scope file; used only to verify the gist read path (may be null if not created yet). */
 const READINESS_PROBE_FILE = 'movielist.json';
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -37,3 +38,5 @@ export default async function handler(req: Request): Promise<Response> {
     );
   }
 }
+
+export default withWebHandler(handler);

@@ -1,4 +1,5 @@
 import { fetchWithRetry } from './_lib/retryFetch.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
 
 const resolveConfig = (value: string | undefined, fallback: string) => {
   const cleanedValue = (value || '').trim();
@@ -105,7 +106,7 @@ const buildTargetUrl = (req: Request): URL | Response => {
   return badRequestResponse('mode=show&id=... or mode=search&q=... is required.');
 };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   try {
     if (req.method !== 'GET') {
       return methodNotAllowedResponse();
@@ -167,3 +168,5 @@ export default async function handler(req: Request): Promise<Response> {
     return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), 500);
   }
 }
+
+export default withWebHandler(handler);
