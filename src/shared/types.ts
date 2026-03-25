@@ -1,4 +1,10 @@
 export type User = 'Aaron' | 'Electra';
+
+export const USER_PHOTOS: Record<User, string> = {
+  Aaron: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
+  Electra: 'https://i.redd.it/vkmos70wqw641.jpg',
+};
+
 export type MainTab = 'queue' | 'places';
 
 export interface Place {
