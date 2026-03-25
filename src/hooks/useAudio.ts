@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 /**
- * Shared audio hook for standard UI interactions.
- * All sounds are synthesized via Web Audio API — no external files.
+ * Shared audio hook — Y2K aesthetic.
+ * All sounds use pentatonic/major scale notes, sine waves, and soft envelopes
+ * for that warm early-2000s Windows/AIM/Nokia digital chime feel.
  */
 export const useAudio = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -79,39 +80,58 @@ export const useAudio = () => {
     [getCtx]
   );
 
-  /** Soft, short keyboard-tap click */
+  /**
+   * D5 (587 Hz) soft tap — clean digital keypress, Nokia/WinXP brevity.
+   * Very short, barely audible, just enough to register the action.
+   */
   const playClick = useCallback(() => {
-    playTone(1100, 900, 'sine', 0.038, 0.032, 0.002);
+    playTone(587, null, 'sine', 0.032, 0.022, 0.002);
   }, [playTone]);
 
-  /** Light descending pop — used for modals and bottom sheets */
+  /**
+   * Ascending spring bloop — 330 Hz → 660 Hz in 80 ms.
+   * That bubbly Y2K "bloop" (think MSN Messenger notification character).
+   */
   const playPop = useCallback(() => {
-    playTone(480, 210, 'sine', 0.09, 0.055, 0.003);
+    playTone(330, 660, 'sine', 0.08, 0.046, 0.003);
   }, [playTone]);
 
-  /** Subtle two-step tone for tab and workspace switches */
+  /**
+   * Two-step perfect-4th ping — E4 (330 Hz) then A4 (440 Hz).
+   * Like a tab/window switch in Windows XP or early browser chrome.
+   */
   const playSwitch = useCallback(() => {
-    playTone(460, null, 'sine', 0.055, 0.038, 0.003);
-    setTimeout(() => playTone(600, null, 'sine', 0.07, 0.038, 0.003), 60);
+    playTone(330, null, 'sine', 0.055, 0.032, 0.003);
+    setTimeout(() => playTone(440, null, 'sine', 0.065, 0.032, 0.003), 52);
   }, [playTone]);
 
-  /** Three-note rising arpeggio — C5 → E5 → G5 */
+  /**
+   * Four-note ascending pentatonic chime — C5 → E5 → G5 → C6.
+   * The Y2K "achievement unlocked" arpeggio, warm and melodic.
+   */
   const playSuccess = useCallback(() => {
-    playTone(523.25, null, 'sine', 0.11, 0.065, 0.004);
-    setTimeout(() => playTone(659.25, null, 'sine', 0.13, 0.065, 0.004), 90);
-    setTimeout(() => playTone(783.99, null, 'sine', 0.18, 0.06, 0.004), 180);
+    playTone(523.25, null, 'sine', 0.13, 0.052, 0.004);
+    setTimeout(() => playTone(659.25, null, 'sine', 0.14, 0.048, 0.004), 72);
+    setTimeout(() => playTone(783.99, null, 'sine', 0.16, 0.044, 0.004), 144);
+    setTimeout(() => playTone(1046.5, null, 'sine', 0.14, 0.036, 0.004), 216);
   }, [playTone]);
 
-  /** Soft descending two-tone — triangle instead of harsh square */
+  /**
+   * Warm descending digital tone — B4→G4 then G4→E4, all sine.
+   * Error, but gentle — like an early-2000s "nope" without the buzzer harshness.
+   */
   const playError = useCallback(() => {
-    playTone(300, 180, 'triangle', 0.18, 0.05, 0.005);
-    setTimeout(() => playTone(210, 140, 'triangle', 0.15, 0.04, 0.005), 160);
+    playTone(493.88, 392, 'sine', 0.13, 0.042, 0.006);
+    setTimeout(() => playTone(392, 293.66, 'sine', 0.12, 0.034, 0.006), 118);
   }, [playTone]);
 
-  /** Gentle double-pulse warning */
+  /**
+   * Descending ding-ding — G5 then E5, like a soft attention chime.
+   * Evokes AIM "door creak" era but stripped down to just the tone.
+   */
   const playWarning = useCallback(() => {
-    playTone(360, 320, 'sine', 0.09, 0.048, 0.004);
-    setTimeout(() => playTone(340, 300, 'sine', 0.09, 0.04, 0.004), 130);
+    playTone(783.99, null, 'sine', 0.09, 0.044, 0.004);
+    setTimeout(() => playTone(659.25, null, 'sine', 0.10, 0.036, 0.004), 105);
   }, [playTone]);
 
   return { playTone, playClick, playPop, playSwitch, playSuccess, playError, playWarning };
