@@ -176,7 +176,6 @@ const App: React.FC = () => {
       }
 
       playSwitch();
-      setShowActionBubbleMenu(false);
       setActiveTab(tab);
     },
     [activeTab, playSwitch]
