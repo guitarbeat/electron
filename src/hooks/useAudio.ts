@@ -38,19 +38,19 @@ export const useAudio = () => {
   /**
    * Play a single synthesized tone with a soft attack and smooth decay.
    * @param frequency     Start frequency in Hz
-   * @param endFrequency  Optional end frequency for a pitch glide
-   * @param type          Oscillator wave type
-   * @param duration      Total duration in seconds
-   * @param volume        Peak gain (0–1)
+   * @param endFrequency  End frequency for a pitch glide (null = no glide)
+   * @param type          Oscillator wave type (default 'sine')
+   * @param duration      Total duration in seconds (default 0.1)
+   * @param volume        Peak gain 0–1 (default 0.05)
    * @param attackTime    Linear ramp-up time in seconds (default 0.004)
    */
   const playTone = useCallback(
     (
       frequency: number,
-      endFrequency: number | null,
-      type: OscillatorType,
-      duration: number,
-      volume: number,
+      endFrequency: number | null = null,
+      type: OscillatorType = 'sine',
+      duration = 0.1,
+      volume = 0.05,
       attackTime = 0.004
     ) => {
       const ctx = getCtx();
