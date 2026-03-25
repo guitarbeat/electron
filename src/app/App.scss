@@ -1572,8 +1572,7 @@ body {
 }
 
 .action-bubble__mark {
-  /* Keep the lockup optically centered inside the circular bubble. */
-  transform: scale(1.24) translateX(-1px) translateY(0);
+  transform: scale(1.18);
 }
 
 .action-bubble__user-photo {
@@ -9716,7 +9715,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   }
 
   .action-bubble__mark {
-    transform: scale(1.28) translateX(2px) translateY(2px);
+    transform: scale(1.18);
   }
 
   .action-bubble-menu {
