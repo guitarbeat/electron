@@ -25,6 +25,10 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
       className={`theme-toggle theme-toggle--pill${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
       style={style}
     >
+      <span
+        className={`theme-toggle__slider${activeTab === 'places' ? ' theme-toggle__slider--right' : ''}`}
+        aria-hidden
+      />
       <button
         type="button"
         aria-pressed={activeTab === 'queue'}
