@@ -64,17 +64,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   onShare,
 }) => {
   const hasSearchQuery = Boolean(searchQuery.trim());
-  const helperTextId = 'watchlist-controls-helper';
-  const unwatchedCount = tabCounts.queue ?? 0;
-  const watchedCount = tabCounts.watched ?? 0;
-  const suggestionCount = tabCounts.suggestions ?? 0;
-  const helperText = hasSearchQuery
-    ? currentUser
-      ? 'Add this title to the shared watchlist, recommend it with a note, or share a quick suggestion link.'
-      : 'Pick Aaron or Electra to add this title directly, or recommend it without choosing a profile yet.'
-    : canSurprise
-      ? 'Surprise me picks from the movies and suggestions currently visible in this view.'
-      : 'Start by typing a movie title. Once something is saved here, Surprise me will pick from it.';
 
   return (
     <section
@@ -83,16 +72,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
-      <div className="workspace-control-panel__header">
-        <h2 className="workspace-control-panel__title">Plan next pick</h2>
-      </div>
-
-      <div className="workspace-control-panel__meta" aria-label="Watchlist overview">
-        <span className="workspace-control-panel__pill">{unwatchedCount} unwatched</span>
-        <span className="workspace-control-panel__pill">{watchedCount} watched</span>
-        <span className="workspace-control-panel__pill">{suggestionCount} suggestions</span>
-      </div>
-
       <SubNav
         tabs={MOVIE_TABS.map((tab) => ({
           id: tab.id,
@@ -108,9 +87,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         mode="segmented"
       />
 
-      <div
-        className="watchlist-top-controls__toolbar"
-      >
+      <div className="watchlist-top-controls__toolbar">
         <form
           className="watchlist-top-controls__search-form"
           onSubmit={(event) => {
@@ -129,9 +106,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             />
           </div>
           {hasSearchQuery && (
-            <div
-              className="watchlist-top-controls__search-actions"
-            >
+            <div className="watchlist-top-controls__search-actions">
               {currentUser ? (
                 <Button
                   type="submit"
@@ -184,7 +159,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           title="Surprise me"
           aria-label="Pick a random movie"
           className="watchlist-top-controls__surprise"
-          aria-describedby={helperTextId}
           style={{
             fontSize: '1.25rem',
             padding: spacing.xs,
@@ -196,10 +170,6 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           🎲
         </Button>
       </div>
-
-      <p id={helperTextId} className="watchlist-top-controls__helper" aria-live="polite">
-        {helperText}
-      </p>
 
       {showRecommendationComposer && hasSearchQuery && (
         <RecommendationComposer

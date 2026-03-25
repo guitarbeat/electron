@@ -6743,8 +6743,7 @@ body.grabbing * {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  flex-wrap: wrap;
-  align-items: flex-start !important;
+  flex-wrap: nowrap;
 }
 
 .watchlist-top-controls__search-actions {
@@ -6789,9 +6788,7 @@ body.grabbing * {
 
 .watchlist-top-controls__search-form {
   flex: 1;
-  flex: 0 1 24rem;
   min-width: 0;
-  width: 100%;
   display: flex;
   align-items: stretch;
   gap: 0;
@@ -6989,20 +6986,12 @@ body.grabbing * {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .watchlist-top-controls__toolbar,
   .places-top-controls__toolbar {
     flex-direction: column;
   }
 
-  .watchlist-top-controls__search-form,
   .places-top-controls__search-form {
     flex: 1 1 auto;
-    width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
-  .watchlist-top-controls__search-actions {
     width: 100%;
   }
 }
