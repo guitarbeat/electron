@@ -1408,8 +1408,8 @@ body {
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  min-height: 52px;
-  padding: 0.65rem 0.7rem;
+  min-height: 58px;
+  padding: 0.7rem 0.8rem;
   background: transparent;
   border: none;
   border-radius: 0.75rem;
@@ -1452,13 +1452,13 @@ body {
 
 .command-deck__row-icon {
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   border: 1px solid color-mix(in srgb, var(--row-accent, var(--color-accent)) 32%, transparent);
   transition:
     background 0.16s ease,
@@ -1715,7 +1715,7 @@ body {
 .action-bubble-menu {
   position: fixed;
   z-index: 649;
-  width: 280px;
+  width: 300px;
   max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
   max-height: calc(100vh - 1.25rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   border-radius: calc(var(--chrome-radius) + 0.15rem);
@@ -1819,14 +1819,12 @@ body {
 
 .action-bubble-menu__close-btn {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   border: 1px solid rgba(211, 230, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(190, 210, 255, 0.55);
-  font-size: 0.65rem;
-  line-height: 1;
+  color: rgba(190, 210, 255, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1834,20 +1832,21 @@ body {
   transition:
     background 0.14s ease,
     color 0.14s ease,
-    border-color 0.14s ease;
+    border-color 0.14s ease,
+    transform 0.14s ease;
   padding: 0;
 
   &:hover,
   &:focus-visible {
     background: rgba(255, 255, 255, 0.14);
-    color: rgba(220, 235, 255, 0.9);
-    border-color: rgba(211, 230, 255, 0.38);
+    color: rgba(230, 242, 255, 0.95);
+    border-color: rgba(211, 230, 255, 0.42);
     outline: none;
   }
 
   &:active {
     background: rgba(255, 255, 255, 0.08);
-    transform: scale(0.92);
+    transform: scale(0.88);
   }
 }
 
@@ -9427,6 +9426,18 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   .action-bubble-menu {
     border-radius: 1.35rem;
     overflow: hidden;
+    border-color: rgba(212, 177, 115, 0.22);
+    background:
+      var(--chrome-highlight-top),
+      radial-gradient(circle at 16% 12%, rgba(255, 247, 228, 0.12) 0%, transparent 28%),
+      radial-gradient(circle at 84% 84%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 30%),
+      linear-gradient(160deg, rgba(255, 247, 228, 0.08) 0%, rgba(80, 52, 24, 0.12) 16%, rgba(18, 10, 4, 0.94) 42%, rgba(6, 3, 1, 0.98) 100%);
+    box-shadow:
+      0 0 0 4px rgba(180, 138, 72, 0.07),
+      0 32px 62px rgba(0, 0, 0, 0.58),
+      0 0 44px rgba(180, 138, 72, 0.08),
+      inset 0 1px 0 rgba(255, 240, 210, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.28);
   }
 
   .action-bubble-menu::before {
@@ -9435,6 +9446,23 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
       linear-gradient(118deg, transparent 0%, rgba(255, 247, 228, 0.22) 34%, transparent 52%),
       linear-gradient(180deg, rgba(255, 247, 228, 0.12) 0%, transparent 100%);
     border-bottom-color: rgba(203, 168, 112, 0.16);
+  }
+
+  .action-bubble-menu__header {
+    border-bottom-color: rgba(203, 168, 112, 0.14);
+  }
+
+  .action-bubble-menu__close-btn {
+    border-color: rgba(212, 177, 115, 0.22);
+    background: rgba(180, 138, 72, 0.08);
+    color: rgba(212, 177, 115, 0.7);
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(212, 177, 115, 0.18);
+      color: rgba(242, 220, 175, 0.95);
+      border-color: rgba(212, 177, 115, 0.44);
+    }
   }
 
   .action-bubble-menu__profiles {
@@ -9447,7 +9475,12 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
   .action-bubble-menu .command-deck__row-item:hover,
   .action-bubble-menu .command-deck__row-item:focus-visible {
-    background: rgba(212, 177, 115, 0.08);
+    background: rgba(212, 177, 115, 0.1);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--row-accent, var(--color-secondary)) 70%, transparent);
+  }
+
+  .action-bubble-menu .command-deck__row-item + .command-deck__row-item {
+    border-top-color: rgba(212, 177, 115, 0.08);
   }
 
   .action-bubble-menu .command-deck__row-chevron {
@@ -9456,7 +9489,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
   .action-bubble-menu .command-deck__row-item:hover .command-deck__row-chevron,
   .action-bubble-menu .command-deck__row-item:focus-visible .command-deck__row-chevron {
-    color: rgba(242, 220, 175, 0.9);
+    color: rgba(242, 220, 175, 0.92);
   }
 
   .action-bubble-toggle {
