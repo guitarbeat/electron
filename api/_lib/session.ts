@@ -27,15 +27,17 @@ type SessionPayload = ProfileSessionPayload | PinAttemptPayload;
 const clean = (value: string | undefined): string =>
   (value || '').trim().replace(/^["']|["']$/g, '');
 
-const getSessionSigningSecret = (): string =>
-  clean(process.env.SESSION_SIGNING_SECRET);
-
-const assertSecret = (name: string, value: string): string => {
-  if (!value) {
-    throw new Error(`${name} is not configured.`);
+let _fallbackSecret: string | null = null;
+const getFallbackSecret = (): string => {
+  if (!_fallbackSecret) {
+    _fallbackSecret = randomBytes(32).toString('hex');
   }
+  return _fallbackSecret;
+};
 
-  return value;
+const getSessionSigningSecret = (): string => {
+  const configured = clean(process.env.SESSION_SIGNING_SECRET);
+  return configured || getFallbackSecret();
 };
 
 const base64urlEncode = (value: string): string =>
@@ -45,7 +47,7 @@ const base64urlDecode = (value: string): string =>
   Buffer.from(value, 'base64url').toString('utf8');
 
 const signValue = (value: string): string =>
-  createHmac('sha256', assertSecret('SESSION_SIGNING_SECRET', getSessionSigningSecret()))
+  createHmac('sha256', getSessionSigningSecret())
     .update(value)
     .digest('base64url');
 
