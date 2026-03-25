@@ -6767,23 +6767,7 @@ body.grabbing * {
 .watchlist-top-controls__surprise {
   flex: 0 0 auto;
   min-height: 2.75rem;
-  min-width: 2.7rem;
-  padding: 0 0.82rem;
-  border-radius: 50%;
-  font-size: 1.1rem;
-  line-height: 1;
-  background:
-    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.2) 0%, transparent 40%),
-    linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 84%, white 16%) 0%, color-mix(in srgb, var(--color-quaternary) 32%, var(--color-secondary) 68%) 100%);
-  box-shadow: var(--chrome-shadow-soft);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.watchlist-top-controls__surprise:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 40%, transparent),
-    0 0 12px color-mix(in srgb, var(--color-accent) 24%, transparent);
+  min-width: 44px;
 }
 
 .watchlist-top-controls__search-form {
