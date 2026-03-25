@@ -190,6 +190,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         ? 'Wait'
         : 'Spin';
 
+  const todaySpins = useMemo(() => {
+    if (daily && daily.date === todayUtcDate()) {
+      return daily.spins;
+    }
+    return [];
+  }, [daily]);
+
   return (
     <div className="spin-wheel-shell" style={{ padding: spacing.md, color: colors.textPrimary }}>
       <div className="spin-wheel-summary">
@@ -209,10 +216,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             {isSpinning ? 'Locked In' : selectedMovie ? 'Winner Ready' : 'Idle'}
           </strong>
         </div>
-        {daily && daily.date === todayUtcDate() ? (
+        {todaySpins.length > 0 ? (
           <div className="spin-wheel-summary__item">
-            <span className="spin-wheel-summary__label">Today (UTC)</span>
-            <strong className="spin-wheel-summary__value">{daily.movieTitle}</strong>
+            <span className="spin-wheel-summary__label">Today's Spins</span>
+            <strong className="spin-wheel-summary__value">{todaySpins.length}</strong>
           </div>
         ) : null}
       </div>
@@ -389,9 +396,25 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             ) : null}
           </div>
 
+          {todaySpins.length > 0 && (
+            <div className="spin-wheel-history">
+              <h4 className="spin-wheel-history__title">Today's Spins</h4>
+              <ol className="spin-wheel-history__list">
+                {todaySpins.map((spin, index) => (
+                  <li key={`${spin.movieId}-${index}`}>
+                    <strong>{spin.movieTitle}</strong>
+                    <span style={{ fontSize: '0.8em', opacity: 0.7, marginLeft: '8px' }}>
+                      (by {spin.spunBy} at {new Date(spin.createdAt).toLocaleTimeString()})
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
           {history.length > 0 && (
             <div className="spin-wheel-history">
-              <h4 className="spin-wheel-history__title">Recent Picks</h4>
+              <h4 className="spin-wheel-history__title">Recent Picks (All-time)</h4>
               <ol className="spin-wheel-history__list">
                 {history.map((title, index) => (
                   <li key={`${title}-${index}`}>{title}</li>
