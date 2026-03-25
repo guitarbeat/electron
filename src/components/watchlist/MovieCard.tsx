@@ -370,14 +370,11 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           : `Mark "${movie.title}" as watched`
       }
       className={`movie-item-primary-action ${watchedByCurrentUser ? 'movie-item-primary-action--watched' : 'movie-item-primary-action--unwatched'}`}
-      style={{
-        opacity: isGuest ? 0.5 : 1,
-      }}
     >
       {watchedByCurrentUser ? (
-        <CheckIcon style={{ width: '12px' }} />
+        <CheckIcon style={{ width: '14px' }} />
       ) : (
-        <EyeIcon style={{ width: '12px' }} />
+        <EyeIcon style={{ width: '14px' }} />
       )}
       <span className="movie-item-primary-action-label">
         <span className="movie-item-primary-action-label--long">
