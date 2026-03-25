@@ -1,4 +1,5 @@
 import type { Movie, SharedMemory } from '@/shared/types';
+import { normalizeMovieTitle } from '@/utils/shared';
 
 export const INITIAL_VISIBLE_COUNT = 6;
 export const ALL_MOVIES_FILTER = 'all';
@@ -62,8 +63,6 @@ const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
 
 const STICKY_NOTE_ROTATIONS = [-2.3, 1.8, -1.2, 2.4, -0.7, 1.1, -1.8, 2.7];
 
-const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
-
 const getFallbackMovieKey = (movieTitle: string): string =>
   `title:${normalizeMovieTitle(movieTitle)}`;
 
@@ -90,21 +89,6 @@ export const getStickyNoteTheme = (memory: SharedMemory): StickyNoteTheme => {
 export const getStickyNoteRotation = (memory: SharedMemory): number => {
   const seed = getMemorySeed(memory);
   return STICKY_NOTE_ROTATIONS[seed % STICKY_NOTE_ROTATIONS.length];
-};
-
-export const formatMemoryTimestamp = (createdAt: string): string => {
-  const parsedDate = new Date(createdAt);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return 'Unknown date';
-  }
-
-  return parsedDate.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
 };
 
 export const buildMovieMemorySummaries = (

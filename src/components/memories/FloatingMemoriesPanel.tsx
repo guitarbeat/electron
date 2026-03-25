@@ -11,7 +11,8 @@ import {
   toggleMemoryPin,
   updateMemory,
 } from '@/services/memoryService';
-import { formatMemoryTimestamp, sortMemories } from './memoryUtils';
+import { formatMemoryTimestamp } from '@/utils/date';
+import { sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';
