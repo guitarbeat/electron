@@ -1777,6 +1777,23 @@ body {
   .user-selection__bubble-row--inline {
     justify-content: center;
     gap: 0.75rem;
+    flex-wrap: nowrap;
+  }
+
+  .user-selection__profile-card:not(.user-selection__profile-card--actions) {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .user-selection__profile-card:not(.user-selection__profile-card--actions) > .gel-bubble--inline {
+    width: 100%;
+  }
+
+  .gel-bubble--inline .gel-avatar-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 }
 
