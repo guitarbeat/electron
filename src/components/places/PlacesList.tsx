@@ -39,8 +39,6 @@ interface PlacesTopControlsProps {
   isAdding: boolean;
   isSuggesting: boolean;
   suggestionError: string | null;
-  queueCount: number;
-  visitedCount: number;
   canEdit: boolean;
 }
 
@@ -58,8 +56,6 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   isAdding,
   isSuggesting,
   suggestionError,
-  queueCount,
-  visitedCount,
   canEdit,
 }) => {
   return (
@@ -68,19 +64,9 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.lg,
+        gap: '0.75rem',
       }}
     >
-      <div className="workspace-control-panel__header">
-        <p className="workspace-control-panel__eyebrow">Dates</p>
-        <h2 className="workspace-control-panel__title">Plan the next date</h2>
-      </div>
-
-      <div className="workspace-control-panel__meta" aria-label="Date spots overview">
-        <span className="workspace-control-panel__pill">{queueCount} queued</span>
-        <span className="workspace-control-panel__pill">{visitedCount} visited</span>
-      </div>
-
       <SubNav
         tabs={PLACE_TABS.map((tab) => ({
           id: tab.id,
@@ -463,8 +449,6 @@ const PlacesList: React.FC = () => {
         isAdding={isAdding}
         isSuggesting={isSuggesting}
         suggestionError={suggestionError}
-        queueCount={queueCount}
-        visitedCount={visitedCount}
         canEdit={Boolean(currentUser)}
       />
     </div>

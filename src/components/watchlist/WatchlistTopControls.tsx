@@ -3,8 +3,8 @@ import type { ContentTab, SortMode, User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
-import { motion, spacing } from '@/theme/tokens';
-import { ShareIcon } from '@/common/icons';
+import { motion } from '@/theme/tokens';
+import { ShareIcon, MagicWandIcon, PlusIcon, Spinner } from '@/common/icons';
 import { MOVIE_TABS, SORT_OPTIONS } from './watchlistConstants';
 import RecommendationComposer from './RecommendationComposer';
 
@@ -113,12 +113,12 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                   variant="secondary"
                   size="md"
                   disabled={isAdding || isSubmittingRecommendation || isSharing}
-                  isLoading={isAdding}
                   title="Add movie"
                   aria-label="Add movie"
                   className="watchlist-top-controls__search-button"
+                  style={{ minWidth: '44px' }}
                 >
-                  Add
+                  {isAdding ? <Spinner /> : <PlusIcon />}
                 </Button>
               ) : null}
               {currentUser ? (
@@ -160,14 +160,11 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           aria-label="Pick a random movie"
           className="watchlist-top-controls__surprise"
           style={{
-            fontSize: '1.25rem',
-            padding: spacing.xs,
-            borderRadius: '50%',
-            aspectRatio: '1/1',
             minWidth: '44px',
+            opacity: canSurprise && !isAdding && !isSubmittingRecommendation ? 1 : 0.5,
           }}
         >
-          🎲
+          <MagicWandIcon style={{ width: 18, height: 18 }} />
         </Button>
       </div>
 
