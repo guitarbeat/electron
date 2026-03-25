@@ -10,7 +10,7 @@
  *   Workspace — .workspace-stage, .workspace-header, .workspace-surface,
  *     .workspace-control-panel
  *   Mobile shell — .mobile-shell-header, .workspace-stage--mobile-shell
- *   Action bubble / dock — .action-bubble-, .action-bubble-toggle
+ *   Action bubble / dock — .action-bubble-, .action-bubble-menu
  *   Gel bubbles / profile strip — .gel-bubble, .inline-profile-, .watcher-badge
  *   Watchlist / movies — "Consolidated Watchlist Styles", .watchlist-, .movie-item-
  *   Minigames / modals — "Spin Wheel Modal", modal / overlay rules near end of file
@@ -66,7 +66,6 @@
 }
 
 .app-floating-chrome .action-bubble,
-.app-floating-chrome .action-bubble-toggle,
 .app-floating-chrome .action-bubble-menu {
   pointer-events: auto;
 }
@@ -75,11 +74,6 @@
   width: fit-content;
 }
 
-.app-floating-chrome .action-bubble-toggle.theme-toggle,
-.app-floating-chrome .action-bubble-toggle__control.theme-toggle {
-  width: fit-content;
-  max-width: min(100vw - 2rem, 260px);
-}
 
 .workspace-stage--mobile-shell {
   gap: 0.65rem;
@@ -1750,56 +1744,6 @@ body {
   animation: action-bubble-menu-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.action-bubble-toggle {
-  position: fixed;
-  z-index: 650;
-  margin-top: env(safe-area-inset-top);
-  margin-right: env(safe-area-inset-right);
-  margin-bottom: env(safe-area-inset-bottom);
-  margin-left: env(safe-area-inset-left);
-  padding: 4px;
-  border-radius: 999px;
-  border: 1px solid rgba(211, 230, 255, 0.2);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 50%),
-    linear-gradient(160deg, rgba(24, 31, 46, 0.92) 0%, rgba(8, 12, 18, 0.96) 100%);
-  box-shadow:
-    0 0 0 3px rgba(152, 209, 255, 0.08),
-    0 16px 30px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* Toggle is a free-floating circle bubble */
-.app-floating-chrome .action-bubble-toggle--left,
-.app-floating-chrome .action-bubble-toggle--right {
-  border-radius: 999px;
-}
-
-.action-bubble-toggle::before,
-.action-bubble-toggle::after {
-  content: none;
-}
-
-.action-bubble-toggle--left::after {
-  right: 0;
-  opacity: 0;
-}
-
-.action-bubble-toggle--right::before {
-  left: 0;
-  opacity: 0;
-}
-
-.action-bubble-toggle__control {
-  width: auto;
-  padding: 0;
-}
-
-.action-bubble-toggle__control.theme-toggle {
-  padding: 0;
-}
 
 .action-bubble-menu::before {
   display: none;
@@ -1877,6 +1821,13 @@ body {
     justify-content: center;
     gap: 0.75rem;
   }
+}
+
+.action-bubble-menu__tab-row {
+  display: flex;
+  justify-content: center;
+  padding: 0.6rem 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(211, 230, 255, 0.12);
 }
 
 @keyframes action-bubble-menu-pop {
@@ -9740,6 +9691,10 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     border-bottom-color: rgba(203, 168, 112, 0.18);
   }
 
+  .action-bubble-menu__tab-row {
+    border-bottom-color: rgba(203, 168, 112, 0.18);
+  }
+
   .action-bubble-menu .command-deck__row-label {
     color: color-mix(in srgb, var(--color-text-primary) 88%, rgba(242, 220, 175, 0.8) 12%);
   }
@@ -9761,18 +9716,6 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   .action-bubble-menu .command-deck__row-item:hover .command-deck__row-chevron,
   .action-bubble-menu .command-deck__row-item:focus-visible .command-deck__row-chevron {
     color: rgba(242, 220, 175, 0.92);
-  }
-
-  .action-bubble-toggle {
-    border-color: rgba(239, 205, 153, 0.32);
-    background:
-      linear-gradient(180deg, rgba(255, 240, 212, 0.08) 0%, transparent 45%),
-      linear-gradient(165deg, color-mix(in srgb, var(--wax-accent) 42%, #1a100a 58%) 0%, #181008 100%);
-    box-shadow:
-      0 18px 32px rgba(16, 10, 6, 0.32),
-      0 0 0 3px rgba(214, 177, 115, 0.1),
-      inset 0 1px 0 rgba(255, 240, 212, 0.2),
-      inset 0 -12px 20px rgba(42, 18, 12, 0.22);
   }
 
   .theme-toggle--pill {

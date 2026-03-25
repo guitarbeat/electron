@@ -6,7 +6,6 @@ import {
   clampActionBubblePosition,
   getDockedActionBubblePosition,
   getActionBubbleMenuPosition,
-  getActionBubbleTogglePosition,
   getDefaultActionBubblePosition,
   snapActionBubbleToEdge,
   type ActionBubblePosition,
@@ -340,15 +339,6 @@ const App: React.FC = () => {
       isMobile
     );
   }, [actionBubblePosition, isMobile]);
-  const actionBubbleToggleStyle = useMemo(() => {
-    const viewport = getViewportSize();
-    return getActionBubbleTogglePosition(actionBubblePosition, viewport.width, viewport.height, isMobile);
-  }, [actionBubblePosition, isMobile]);
-  const actionBubbleToggleSide = useMemo<'left' | 'right'>(() => {
-    const toggleLeft = Number.parseFloat(actionBubbleToggleStyle.left);
-    return toggleLeft < actionBubblePosition.x ? 'left' : 'right';
-  }, [actionBubblePosition.x, actionBubbleToggleStyle.left]);
-
   const workspaceMeta = useMemo(() => getWorkspaceMeta(activeTab), [activeTab]);
 
   if (logoLabState.enabled) {
@@ -381,8 +371,6 @@ const App: React.FC = () => {
               actionBubbleMenuRef={actionBubbleMenuRef}
               actionBubblePosition={actionBubblePosition}
               isDraggingActionBubble={isDraggingActionBubble}
-              actionBubbleToggleSide={actionBubbleToggleSide}
-              actionBubbleToggleStyle={actionBubbleToggleStyle}
               actionBubbleMenuStyle={actionBubbleMenuStyle}
               isMobile={isMobile}
               activeTab={activeTab}
