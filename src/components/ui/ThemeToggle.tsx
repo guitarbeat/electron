@@ -4,7 +4,6 @@ import type { MainTab } from '@/shared/types';
 interface ThemeToggleProps {
   activeTab: MainTab;
   onChange: (tab: MainTab) => void;
-  /** Slightly smaller hit target (e.g. floating chrome on mobile). */
   compact?: boolean;
   className?: string;
   label?: string;
@@ -19,29 +18,32 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   label,
   style,
 }) => {
-  const isPlacesMode = activeTab === 'places';
-
-  const handleClick = () => {
-    onChange(isPlacesMode ? 'queue' : 'places');
-  };
-
-  const defaultLabel = isPlacesMode
-    ? 'Date ideas (Places). Click to switch to Movies.'
-    : 'Movies watchlist. Click to switch to Places.';
-
   return (
-    <button
-      type="button"
-      aria-pressed={isPlacesMode}
-      aria-label={label ?? defaultLabel}
-      onClick={handleClick}
-      className={`theme-toggle theme-toggle--icon-btn${isPlacesMode ? ' theme-toggle--places' : ' theme-toggle--movies'}${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+    <div
+      role="group"
+      aria-label={label ?? 'Switch between Movies and Places'}
+      className={`theme-toggle theme-toggle--pill${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
       style={style}
     >
-      <span className="theme-toggle__icon" aria-hidden>
-        {isPlacesMode ? '📍' : '🎬'}
-      </span>
-    </button>
+      <button
+        type="button"
+        aria-pressed={activeTab === 'queue'}
+        onClick={() => onChange('queue')}
+        className={`theme-toggle__segment${activeTab === 'queue' ? ' is-active' : ''}`}
+      >
+        <span className="theme-toggle__seg-icon" aria-hidden>🎬</span>
+        <span className="theme-toggle__seg-label">Movies</span>
+      </button>
+      <button
+        type="button"
+        aria-pressed={activeTab === 'places'}
+        onClick={() => onChange('places')}
+        className={`theme-toggle__segment${activeTab === 'places' ? ' is-active' : ''}`}
+      >
+        <span className="theme-toggle__seg-icon" aria-hidden>📍</span>
+        <span className="theme-toggle__seg-label">Places</span>
+      </button>
+    </div>
   );
 };
 
