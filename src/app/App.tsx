@@ -17,7 +17,6 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
 import MagicComponent from '@/components/effects/Moire/Moire';
 import RetroEffects from '@/components/effects/RetroEffects';
-import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
 import { useAudio } from '@/hooks/useAudio';
@@ -359,7 +358,6 @@ const App: React.FC = () => {
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
         <div className="app-shell app-shell--viewport bg-main">
           {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
-          <VignetteOverlay />
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
       </ThemeProvider>
@@ -371,7 +369,6 @@ const App: React.FC = () => {
       <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell app-shell--viewport bg-main">
         {!prefersReducedMotion ? <MagicComponent isVisible={isMoireVisible} opacity={0.2} /> : null}
-        <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
