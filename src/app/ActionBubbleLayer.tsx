@@ -5,6 +5,7 @@ import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
 import UserSelection from '@/components/common/UserSelection';
+import { CrossIcon } from '@/common/icons';
 import type { MainTab } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
@@ -126,14 +127,14 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
           style={actionBubbleMenuStyle}
         >
           <div className="action-bubble-menu__header">
-            <span className="action-bubble-menu__title">Quick Actions</span>
+            <span className="action-bubble-menu__title" aria-hidden="true">Quick Actions</span>
             <button
               type="button"
               className="action-bubble-menu__close-btn"
               onClick={closeMenu}
               aria-label="Close menu"
             >
-              ✕
+              <CrossIcon size={10} />
             </button>
           </div>
           <UserSelection variant="inline" className="action-bubble-menu__profiles" />
