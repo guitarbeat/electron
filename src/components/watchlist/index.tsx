@@ -13,7 +13,6 @@ import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
 import SyncBanner from '@/components/ui/SyncBanner';
-import { BottomSheet } from '@/components/ui/modals';
 import SharedSuggestionPrompt from './SharedSuggestionPrompt';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
 import { trackMetric } from '@/services/analyticsService';
@@ -22,7 +21,7 @@ import WatchlistTopControls from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 
-const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, showPlanControls = false, onClosePlanControls }) => {
+const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const [sharedSuggestion, setSharedSuggestion] = useState<SharedSuggestionIntent | null>(() =>
     typeof window === 'undefined' ? null : parseSharedSuggestionIntent(window.location.search)
@@ -531,12 +530,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, showPlanControl
     </CollectionGrid>
   );
 
-  const handleClosePlanControls = () => {
-    onClosePlanControls?.();
-  };
-
   return (
-    <div className="watchlist-container" style={{ position: 'relative' }}>
+    <div className="watchlist-container" style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
 
       {isWatchlistDegraded && (
@@ -551,6 +546,35 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, showPlanControl
           }
         />
       )}
+
+      <WatchlistTopControls
+        currentUser={currentUser}
+        contentTab={contentTab}
+        setContentTab={setContentTab}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        tabCounts={tabCounts}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleAddAction}
+        onRecommend={openRecommendationComposer}
+        onSubmitRecommendation={handleSubmitRecommendation}
+        onCancelRecommendation={resetRecommendationComposer}
+        recommendationGuestName={recommendationGuestName}
+        setRecommendationGuestName={handleRecommendationGuestNameChange}
+        recommendationReason={recommendationReason}
+        setRecommendationReason={handleRecommendationReasonChange}
+        showRecommendationComposer={isRecommendationComposerOpen}
+        onPickRandom={handleRandomMoviePick}
+        canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
+        isAdding={isAdding}
+        isSubmittingRecommendation={isSubmittingRecommendation}
+        isSharing={isSharing}
+        suggestionError={suggestionError}
+        canRecommend={Boolean(currentUser)}
+        onShare={handleShareAction}
+      />
+
       {sharedSuggestion && (
         <SharedSuggestionPrompt
           intent={sharedSuggestion}
@@ -563,39 +587,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false, showPlanControl
       )}
 
       {renderContent()}
-
-      <BottomSheet
-        isOpen={showPlanControls}
-        onClose={handleClosePlanControls}
-      >
-        <WatchlistTopControls
-          currentUser={currentUser}
-          contentTab={contentTab}
-          setContentTab={setContentTab}
-          sortMode={sortMode}
-          setSortMode={setSortMode}
-          tabCounts={tabCounts}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSubmit={handleAddAction}
-          onRecommend={openRecommendationComposer}
-          onSubmitRecommendation={handleSubmitRecommendation}
-          onCancelRecommendation={resetRecommendationComposer}
-          recommendationGuestName={recommendationGuestName}
-          setRecommendationGuestName={handleRecommendationGuestNameChange}
-          recommendationReason={recommendationReason}
-          setRecommendationReason={handleRecommendationReasonChange}
-          showRecommendationComposer={isRecommendationComposerOpen}
-          onPickRandom={handleRandomMoviePick}
-          canSurprise={filteredMovies.length > 0 || filteredSuggestions.length > 0}
-          isAdding={isAdding}
-          isSubmittingRecommendation={isSubmittingRecommendation}
-          isSharing={isSharing}
-          suggestionError={suggestionError}
-          canRecommend={Boolean(currentUser)}
-          onShare={handleShareAction}
-        />
-      </BottomSheet>
 
       {movieToDelete && (
         <ConfirmDialog

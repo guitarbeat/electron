@@ -9,8 +9,6 @@ interface AppWorkspaceShellProps {
   activeTab: MainTab;
   workspaceMeta: WorkspaceMeta;
   workspaceControlsRef: RefObject<HTMLDivElement | null>;
-  showPlanControls: boolean;
-  onClosePlanControls: () => void;
 }
 
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
@@ -18,8 +16,6 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   activeTab,
   workspaceMeta: _workspaceMeta,
   workspaceControlsRef,
-  showPlanControls,
-  onClosePlanControls,
 }) => {
   void _workspaceMeta;
   const modeClass = activeTab === 'queue' ? 'queue' : 'places';
@@ -57,8 +53,6 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         {activeTab === 'queue' ? (
           <Watchlist
             isMobile={isMobile}
-            showPlanControls={showPlanControls}
-            onClosePlanControls={onClosePlanControls}
           />
         ) : (
           <PlacesList />
