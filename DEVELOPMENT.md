@@ -85,7 +85,10 @@ Notes:
 ### Vercel (full parity with this repo)
 
 - `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
+- Canonical Vercel project for this repo: `guitarbeats-projects / electra-and-aaron-movies`  
+  Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`
 - Set the same server env vars as in [Environment Variables](#environment-variables) (`GIST_ID`, `GITHUB_TOKEN`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
+- If a local checkout is missing `.vercel/project.json`, run `vercel link --project electra-and-aaron-movies` before using `vercel env pull`.
 
 **Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling GitHub (use for frequent uptime pings). `GET /api/health?deep=1` performs a cached gist read via `movielist.json` to verify `GIST_ID` and GitHub reachability; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
 
