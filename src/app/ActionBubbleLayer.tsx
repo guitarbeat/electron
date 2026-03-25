@@ -1,7 +1,7 @@
 import { useEffect, useState, type FC, type MouseEvent, type PointerEvent, type RefObject } from 'react';
 import { useUser } from '@/app/providers';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
-import type { ActionBubbleMenuPosition, ActionBubblePosition, ActionBubbleTogglePosition } from '@/app/actionBubble';
+import type { ActionBubbleMenuPosition, ActionBubblePosition } from '@/app/actionBubble';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
 import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
@@ -19,8 +19,6 @@ interface ActionBubbleLayerProps {
   actionBubbleMenuRef: RefObject<HTMLDivElement | null>;
   actionBubblePosition: ActionBubblePosition;
   isDraggingActionBubble: boolean;
-  actionBubbleToggleSide: 'left' | 'right';
-  actionBubbleToggleStyle: ActionBubbleTogglePosition;
   actionBubbleMenuStyle: ActionBubbleMenuPosition;
   isMobile: boolean;
   activeTab: MainTab;
@@ -39,8 +37,6 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   actionBubbleMenuRef,
   actionBubblePosition,
   isDraggingActionBubble,
-  actionBubbleToggleSide,
-  actionBubbleToggleStyle,
   actionBubbleMenuStyle,
   isMobile,
   activeTab,
@@ -81,14 +77,27 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [showActionBubbleMenu]);
 
+  const actionBubbleSide =
+    actionBubblePosition.x < window.innerWidth / 2 ? 'right' : 'left';
+
   const bubbleClasses = [
     'action-bubble',
-    `action-bubble--docked-${actionBubbleToggleSide}`,
+    `action-bubble--docked-${actionBubbleSide}`,
     isDraggingActionBubble ? 'is-dragging' : '',
     showActionBubbleMenu ? 'is-open' : '',
   ]
     .filter(Boolean)
     .join(' ');
+
+  const tabToggle = (
+    <div className="action-bubble-menu__tab-row">
+      <ThemeToggle
+        activeTab={activeTab}
+        onChange={onTabChange}
+        label="Switch between Movies and Places"
+      />
+    </div>
+  );
 
   return (
     <>
@@ -131,14 +140,6 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         <span className="action-bubble__open-ring" aria-hidden="true" />
         <span className="sr-only">{showActionBubbleMenu ? 'Close' : 'Open'} quick actions</span>
       </button>
-      <ThemeToggle
-        activeTab={activeTab}
-        onChange={onTabChange}
-        compact={isMobile}
-        className={`action-bubble-toggle action-bubble-toggle--${actionBubbleToggleSide} action-bubble-toggle__control`}
-        label="Switch between Watchlist and Date Ideas"
-        style={actionBubbleToggleStyle}
-      />
 
       {showActionBubbleMenu && !isMobile ? (
         <div
@@ -161,6 +162,7 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
             </button>
           </div>
           <UserSelection variant="inline" className="action-bubble-menu__profiles" />
+          {tabToggle}
           <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
         </div>
       ) : null}
@@ -168,6 +170,7 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
       <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick Actions">
         <div id="action-bubble-sheet">
           <UserSelection variant="inline" className="action-bubble-menu__profiles" />
+          {tabToggle}
           <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
         </div>
       </BottomSheet>
