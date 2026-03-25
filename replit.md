@@ -12,7 +12,9 @@ A two-person collaborative movie watchlist and date-planning SPA titled "electro
 - Compatibility quiz
 - Date spots/places workspace (Google Places integration)
 - Y2K-inspired UI with gel bubbles, retro chrome, and visual effects
-- Draggable floating action bubble for navigation
+- Draggable floating action bubble for navigation (profile switching lives exclusively in this menu — no duplicate session bar)
+
+**Profile/session UX:** Profile selection (Aaron / Electra / Guest) lives only in the action bubble quick-actions menu. A legacy `app-session-bar` header panel that created a duplicate login UI was removed; the `ActionBubble.tsx` and `ActionFanMenu.tsx` UI components are also gone (replaced by `ActionBubbleLayer.tsx`).
 
 **Persistence model:** defaults to `localStorage`; upgrades to GitHub Gist sync when environment variables are configured. No traditional database.
 

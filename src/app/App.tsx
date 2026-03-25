@@ -11,7 +11,6 @@ import {
   snapActionBubbleToEdge,
   type ActionBubblePosition,
 } from '@/app/actionBubble';
-import UserSelection from '@/components/common/UserSelection';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
