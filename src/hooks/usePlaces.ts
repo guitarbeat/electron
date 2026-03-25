@@ -113,6 +113,12 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
 
   const updatePlace = useCallback(
     async (id: string, updates: Partial<Pick<Place, 'name' | 'notes'>>) => {
+      if (updates.name !== undefined || updates.notes !== undefined) {
+        validateAndThrow(validatePlace, {
+          name: updates.name ?? places.find((p) => p.id === id)?.name ?? '',
+          notes: updates.notes ?? '',
+        });
+      }
       await performMutation(
         'update_place',
         { placeId: id, updates },

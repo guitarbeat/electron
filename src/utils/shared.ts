@@ -31,11 +31,22 @@ export const parseJsonContent = (content: string, context: string): unknown => {
 };
 
 export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
-  try {
-    return JSON.stringify(left) === JSON.stringify(right);
-  } catch {
-    return false;
+  if (left === right) return true;
+  if (left === null || right === null) return left === right;
+  if (typeof left !== 'object' || typeof right !== 'object') return false;
+  if (Array.isArray(left) !== Array.isArray(right)) return false;
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    if (left.length !== right.length) return false;
+    return left.every((item, index) => areDeeplyEqual(item, (right as unknown[])[index]));
   }
+
+  const leftObj = left as Record<string, unknown>;
+  const rightObj = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftObj);
+  const rightKeys = Object.keys(rightObj);
+  if (leftKeys.length !== rightKeys.length) return false;
+  return leftKeys.every((key) => Object.prototype.hasOwnProperty.call(rightObj, key) && areDeeplyEqual(leftObj[key], rightObj[key]));
 };
 
 export const executeAction = (action?: () => void, onComplete?: () => void): void => {

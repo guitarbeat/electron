@@ -908,6 +908,8 @@ const scopes: {
               electraLikes: [],
               aaronDislikes: [],
               electraDislikes: [],
+              aaronSwipeOrder: [],
+              electraSwipeOrder: [],
               status: 'active',
               createdAt: context.now,
               startedBy: context.currentUser,

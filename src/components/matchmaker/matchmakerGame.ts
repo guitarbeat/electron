@@ -132,19 +132,26 @@ export const applyMatchmakerSwipe = (
           ...game,
           aaronLikes: liked ? [...game.aaronLikes, movieId] : game.aaronLikes,
           aaronDislikes: liked ? game.aaronDislikes : [...game.aaronDislikes, movieId],
+          aaronSwipeOrder: [...(game.aaronSwipeOrder ?? []), movieId],
         }
       : {
           ...game,
           electraLikes: liked ? [...game.electraLikes, movieId] : game.electraLikes,
           electraDislikes: liked ? game.electraDislikes : [...game.electraDislikes, movieId],
+          electraSwipeOrder: [...(game.electraSwipeOrder ?? []), movieId],
         };
 
   return reconcileMatchmakerStatus(updatedGame);
 };
 
 export const undoMatchmakerSwipe = (game: MatchmakerGame, user: User): MatchmakerGame => {
-  const swipedIds = getUserSwipedIds(game, user);
-  const lastSwipedId = [...game.moviePool].reverse().find((movieId) => swipedIds.includes(movieId));
+  const swipeOrder = user === 'Aaron' ? (game.aaronSwipeOrder ?? []) : (game.electraSwipeOrder ?? []);
+
+  // Fall back to pool-order search for games that predate swipe order tracking
+  const lastSwipedId =
+    swipeOrder.length > 0
+      ? swipeOrder[swipeOrder.length - 1]
+      : [...game.moviePool].reverse().find((movieId) => getUserSwipedIds(game, user).includes(movieId));
 
   if (!lastSwipedId) {
     return game;
@@ -156,11 +163,13 @@ export const undoMatchmakerSwipe = (game: MatchmakerGame, user: User): Matchmake
           ...game,
           aaronLikes: game.aaronLikes.filter((movieId) => movieId !== lastSwipedId),
           aaronDislikes: game.aaronDislikes.filter((movieId) => movieId !== lastSwipedId),
+          aaronSwipeOrder: swipeOrder.slice(0, -1),
         }
       : {
           ...game,
           electraLikes: game.electraLikes.filter((movieId) => movieId !== lastSwipedId),
           electraDislikes: game.electraDislikes.filter((movieId) => movieId !== lastSwipedId),
+          electraSwipeOrder: swipeOrder.slice(0, -1),
         };
 
   return reconcileMatchmakerStatus(updatedGame);
