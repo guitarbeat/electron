@@ -4,7 +4,8 @@ import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
 import { motion } from '@/theme/tokens';
-import { ShareIcon, MagicWandIcon, PlusIcon, Spinner } from '@/common/icons';
+import { ShareIcon, PlusIcon, Spinner } from '@/common/icons';
+import SurpriseButton from '@/common/SurpriseButton';
 import { MOVIE_TABS, SORT_OPTIONS } from './watchlistConstants';
 import RecommendationComposer from './RecommendationComposer';
 
@@ -151,21 +152,13 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
           )}
         </form>
 
-        <Button
-          type="button"
-          variant="ghost"
+        <SurpriseButton
           onClick={onPickRandom}
-          disabled={isAdding || isSubmittingRecommendation || !canSurprise}
-          title="Surprise me"
-          aria-label="Pick a random movie"
+          isBusy={isAdding || isSubmittingRecommendation}
+          canSurprise={canSurprise}
           className="watchlist-top-controls__surprise"
-          style={{
-            minWidth: '44px',
-            opacity: canSurprise && !isAdding && !isSubmittingRecommendation ? 1 : 0.5,
-          }}
-        >
-          <MagicWandIcon style={{ width: 18, height: 18 }} />
-        </Button>
+          ariaLabel="Pick a random movie"
+        />
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (

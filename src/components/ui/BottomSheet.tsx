@@ -1,21 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  colors,
-  radius,
-  spacing,
-  typography,
-  zIndex,
-  shadows,
-  motion,
-} from '@/theme/tokens';
-import {
-  getModalCloseButtonStyle,
-  getModalOverlayStyle,
-  isFocusWithin,
-  trapFocusOnTab,
-} from './modalPrimitives';
-import { useAudio } from '@/hooks/useAudio';
+import { colors, radius, spacing, typography, zIndex, shadows, motion } from '@/theme/tokens';
+import { getModalCloseButtonStyle, getModalOverlayStyle } from './modalPrimitives';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
+import { CrossIcon } from '@/common/icons';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -34,69 +22,31 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   closeDisabled = false,
   closeDisabledLabel = 'This panel cannot be closed right now.',
 }) => {
-  const { playPop } = useAudio();
   const sheetRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const { handleClose } = useModalBehavior({
+    isOpen,
+    onClose,
+    closeDisabled,
+    containerRef: sheetRef,
+    initialFocusRef: closeButtonRef,
+  });
+
+  // Touch swipe-to-dismiss
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
   const isDraggingHandle = useRef(false);
-  const previousFocusedElement = useRef<HTMLElement | null>(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setPrefersReducedMotion(mediaQuery.matches);
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReducedMotion(mq.matches);
     update();
-    mediaQuery.addEventListener('change', update);
-    return () => mediaQuery.removeEventListener('change', update);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
   }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      previousFocusedElement.current?.focus?.();
-      return undefined;
-    }
-
-    previousFocusedElement.current = document.activeElement as HTMLElement;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const initialFocusTimer = window.setTimeout(() => {
-      if (closeDisabled) {
-        sheetRef.current?.focus();
-        return;
-      }
-      closeButtonRef.current?.focus();
-    }, 0);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isFocusWithin(sheetRef.current)) {
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        if (closeDisabled) {
-          event.preventDefault();
-          return;
-        }
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      trapFocusOnTab(event, sheetRef.current);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.clearTimeout(initialFocusTimer);
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [closeDisabled, isOpen, onClose]);
 
   const handleTouchStart = (event: React.TouchEvent) => {
     isDraggingHandle.current = true;
@@ -105,9 +55,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   };
 
   const handleTouchMove = (event: React.TouchEvent) => {
-    if (!isDraggingHandle.current) {
-      return;
-    }
+    if (!isDraggingHandle.current) return;
     const deltaY = event.touches[0].clientY - startY.current;
     if (deltaY > 0) {
       currentY.current = deltaY;
@@ -118,9 +66,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   };
 
   const handleTouchEnd = () => {
-    if (!isDraggingHandle.current) {
-      return;
-    }
+    if (!isDraggingHandle.current) return;
     if (!closeDisabled && currentY.current > 100) {
       handleClose();
     } else if (sheetRef.current) {
@@ -128,12 +74,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     }
     currentY.current = 0;
     isDraggingHandle.current = false;
-  };
-
-  const handleClose = () => {
-    if (closeDisabled) return;
-    playPop();
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -145,6 +85,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         zIndex: zIndex.modal,
       }}
     >
+      {/* Backdrop */}
       <div
         onClick={closeDisabled ? undefined : handleClose}
         style={{
@@ -154,24 +95,12 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           backgroundImage:
             'radial-gradient(circle at top, rgba(255, 150, 197, 0.12), transparent 32%), radial-gradient(circle at bottom, rgba(149, 220, 255, 0.08), transparent 30%)',
           backdropFilter: 'blur(10px)',
-          animation: prefersReducedMotion ? undefined : 'fade-in 0.2s ease-out',
+          animation: prefersReducedMotion ? undefined : 'overlay-fade-in 0.2s ease-out',
         }}
         aria-hidden="true"
       />
 
-      <style>
-        {`
-          @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes slide-up {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-          }
-        `}
-      </style>
-
+      {/* Sheet */}
       <div
         ref={sheetRef}
         tabIndex={closeDisabled ? -1 : undefined}
@@ -190,9 +119,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           padding: spacing.lg,
           paddingBottom: `calc(${spacing.lg} + env(safe-area-inset-bottom, 0px))`,
           boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 32px rgba(255,127,198,0.14)`,
-          animation: prefersReducedMotion
-            ? undefined
-            : 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          animation: prefersReducedMotion ? undefined : 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
           maxHeight: 'calc(100dvh - max(0.75rem, env(safe-area-inset-top, 0px)))',
           overflowY: 'auto',
@@ -201,6 +128,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Drag handle */}
         <div
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -228,9 +156,11 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           disabled={closeDisabled}
           style={{
             ...getModalCloseButtonStyle(),
-            fontSize: '1rem',
             width: '32px',
             height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             transition: `all ${motion.duration.button} ${motion.easing.ease}`,
             opacity: closeDisabled ? 0.45 : 1,
             cursor: closeDisabled ? 'not-allowed' : 'pointer',
@@ -242,7 +172,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             if (!closeDisabled) e.currentTarget.style.backgroundColor = colors.surface2;
           }}
         >
-          ✕
+          <CrossIcon size={14} />
         </button>
 
         {title && (
@@ -271,4 +201,3 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 };
 
 export default BottomSheet;
-

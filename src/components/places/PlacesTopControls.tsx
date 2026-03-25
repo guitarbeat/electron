@@ -3,7 +3,8 @@ import type { PlaceContentTab, PlaceSortMode } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
 import SubNav from '@/ui/SubNav';
-import { MagicWandIcon, PlusIcon, Spinner } from '@/common/icons';
+import { PlusIcon, Spinner } from '@/common/icons';
+import SurpriseButton from '@/common/SurpriseButton';
 import { PLACE_TABS, PLACE_SORT_OPTIONS } from './placesConstants';
 
 interface PlacesTopControlsProps {
@@ -89,20 +90,13 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
         </form>
 
         {canEdit && (
-          <Button
-            type="button"
-            variant="ghost"
+          <SurpriseButton
             onClick={onPickRandom}
-            disabled={isBusy || !canSurprise}
-            title="Surprise me"
-            aria-label="Pick a random place"
+            isBusy={isBusy}
+            canSurprise={canSurprise}
             className="places-top-controls__surprise"
-            style={{
-              opacity: canSurprise && !isBusy ? 1 : 0.5,
-            }}
-          >
-            <MagicWandIcon style={{ width: 18, height: 18 }} />
-          </Button>
+            ariaLabel="Pick a random place"
+          />
         )}
       </div>
 

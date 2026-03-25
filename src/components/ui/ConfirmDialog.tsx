@@ -112,7 +112,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         style={{
           width: '100%',
           maxWidth: '420px',
-          animation: `confirm-dialog-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+          animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
         }}
       >
         <Card

@@ -2978,7 +2978,8 @@ body {
   }
 }
 
-@keyframes confirm-dialog-pop {
+/* Shared scale-in pop — used by dialogs, modals, and bottom sheets */
+@keyframes ui-pop {
   from {
     transform: scale(0.95);
     opacity: 0;
@@ -2987,6 +2988,18 @@ body {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Backdrop overlay fade — opacity only, no translate */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Bottom sheet slide-up entrance */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
 .animate-fade-in {

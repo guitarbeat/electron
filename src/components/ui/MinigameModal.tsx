@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { colors, spacing, shadows, typography, radius, zIndex, motion } from '@/theme/tokens';
-import { getModalOverlayStyle, isFocusWithin, trapFocusOnTab } from './modalPrimitives';
-import { useAudio } from '@/hooks/useAudio';
+import { getModalOverlayStyle } from './modalPrimitives';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface MinigameModalProps {
@@ -38,65 +38,19 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   closeDisabled = false,
   closeDisabledLabel = 'Please wait for the current action to finish.',
 }) => {
-  const { playPop } = useAudio();
   const isMobileShell = useMediaQuery(mediaBreakpoints.sm);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const previousFocusedElement = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    if (!isOpen) {
-      previousFocusedElement.current?.focus?.();
-      return undefined;
-    }
-
-    previousFocusedElement.current = document.activeElement as HTMLElement;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const initialFocusTimer = window.setTimeout(() => {
-      if (closeDisabled) {
-        dialogRef.current?.focus();
-        return;
-      }
-
-      closeButtonRef.current?.focus();
-    }, 0);
-
-    return () => {
-      window.clearTimeout(initialFocusTimer);
-      document.body.style.overflow = prev;
-    };
-  }, [closeDisabled, isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return undefined;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isFocusWithin(dialogRef.current)) {
-        return;
-      }
-
-      if (event.key === 'Escape' && !closeDisabled) {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      trapFocusOnTab(event, dialogRef.current);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeDisabled, isOpen, onClose]);
+  const { handleClose } = useModalBehavior({
+    isOpen,
+    onClose,
+    closeDisabled,
+    containerRef: dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
 
   if (!isOpen) return null;
-
-  const handleClose = () => {
-    if (closeDisabled) return;
-    playPop();
-    onClose();
-  };
 
   const overlayAlign = isMobileShell ? ('flex-end' as const) : ('center' as const);
   const surfaceStyles: CSSProperties = isMobileShell
@@ -119,7 +73,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        animation: `minigame-modal-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+        animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
       }
     : {
         position: 'relative',
@@ -137,14 +91,14 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        animation: `minigame-modal-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+        animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
       };
 
   return createPortal(
     <div
       style={{
         ...getModalOverlayStyle('rgba(10, 6, 14, 0.64)', overlayAlign, isMobileShell ? 0 : 0),
-        zIndex: zIndex.modal + 100, // Higher than other modals
+        zIndex: zIndex.modal + 100,
         width: '100%',
         minWidth: '100%',
         maxWidth: '100%',
@@ -170,15 +124,6 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         style={surfaceStyles}
         onClick={(e) => e.stopPropagation()}
       >
-        <style>
-          {`
-            @keyframes minigame-modal-pop {
-              from { transform: scale(0.95); opacity: 0; }
-              to { transform: scale(1); opacity: 1; }
-            }
-          `}
-        </style>
-
         {/* Header: optional title + close */}
         <div
           style={{
@@ -247,14 +192,10 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
               }
             }}
             onMouseDown={(e) => {
-              if (!closeDisabled) {
-                e.currentTarget.style.transform = 'scale(0.95)';
-              }
+              if (!closeDisabled) e.currentTarget.style.transform = 'scale(0.95)';
             }}
             onMouseUp={(e) => {
-              if (!closeDisabled) {
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }
+              if (!closeDisabled) e.currentTarget.style.transform = 'scale(1.05)';
             }}
           >
             <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,4 +232,3 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
 };
 
 export default MinigameModal;
-
