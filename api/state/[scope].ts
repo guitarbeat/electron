@@ -1,5 +1,6 @@
 import { jsonResponse, methodNotAllowedResponse } from '../_lib/http.ts';
 import { createReadHandler } from '../_lib/state.ts';
+import { withWebHandler } from '../_lib/webHandler.ts';
 import { isStateScope } from '../../src/services/stateTypes.ts';
 
 const resolveScope = (req: Request): string => {
@@ -9,7 +10,7 @@ const resolveScope = (req: Request): string => {
   return segments.at(-1) || '';
 };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   const scope = resolveScope(req);
 
   if (!isStateScope(scope)) {
@@ -22,3 +23,5 @@ export default async function handler(req: Request): Promise<Response> {
 
   return createReadHandler(scope)(req);
 }
+
+export default withWebHandler(handler);

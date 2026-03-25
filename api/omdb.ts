@@ -1,4 +1,5 @@
 import { fetchWithRetry } from './_lib/retryFetch.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
 
 const resolveConfig = (value: string | undefined, fallback: string) => {
   const cleanedValue = (value || '').trim();
@@ -162,7 +163,7 @@ const getClientIp = (req: Request): string => {
   return req.headers.get('x-real-ip') || 'unknown';
 };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   try {
     if (req.method !== 'GET') {
       return methodNotAllowedResponse();
@@ -247,3 +248,5 @@ export default async function handler(req: Request): Promise<Response> {
     return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), 500);
   }
 }
+
+export default withWebHandler(handler);

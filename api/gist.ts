@@ -4,11 +4,12 @@ import {
   methodNotAllowedResponse,
   serverErrorResponse,
 } from './_lib/http.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
 
 const GONE_MESSAGE =
   'The generic Gist proxy is disabled. Use /api/session and /api/state/:scope instead.';
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   try {
     if (req.method === 'OPTIONS') {
       return new Response(null, {
@@ -40,3 +41,5 @@ export default async function handler(req: Request): Promise<Response> {
     return serverErrorResponse();
   }
 }
+
+export default withWebHandler(handler);
