@@ -1,4 +1,4 @@
-import type { FC, MouseEvent, PointerEvent, RefObject } from 'react';
+import { useEffect, type FC, type MouseEvent, type PointerEvent, type RefObject } from 'react';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import type { ActionBubbleMenuPosition, ActionBubblePosition, ActionBubbleTogglePosition } from '@/app/actionBubble';
 import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
@@ -53,18 +53,41 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     item.action();
   };
 
+  useEffect(() => {
+    if (!showActionBubbleMenu) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+        actionBubbleRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showActionBubbleMenu]);
+
+  const bubbleClasses = [
+    'action-bubble',
+    `action-bubble--docked-${actionBubbleToggleSide}`,
+    isDraggingActionBubble ? 'is-dragging' : '',
+    showActionBubbleMenu ? 'is-open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <>
       <button
         ref={actionBubbleRef}
         type="button"
-        className={`action-bubble action-bubble--docked-${actionBubbleToggleSide}${isDraggingActionBubble ? ' is-dragging' : ''}`}
+        className={bubbleClasses}
         onClick={onActionBubbleClick}
         onPointerDown={onActionBubblePointerDown}
         onPointerMove={onActionBubblePointerMove}
         onPointerUp={onFinishActionBubbleDrag}
         onPointerCancel={onFinishActionBubbleDrag}
-        aria-label="Open messages and extras"
+        aria-label={showActionBubbleMenu ? 'Close quick actions' : 'Open quick actions'}
         aria-haspopup="menu"
         aria-expanded={showActionBubbleMenu}
         aria-controls={isMobile ? 'action-bubble-sheet' : 'action-bubble-menu'}
@@ -81,7 +104,8 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
             draggable="false"
           />
         </span>
-        <span className="sr-only">Messages and extras</span>
+        <span className="action-bubble__open-ring" aria-hidden="true" />
+        <span className="sr-only">{showActionBubbleMenu ? 'Close' : 'Open'} quick actions</span>
       </button>
       <ThemeToggle
         activeTab={activeTab}
@@ -97,14 +121,27 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
           id="action-bubble-menu"
           ref={actionBubbleMenuRef}
           className="action-bubble-menu"
+          role="menu"
+          aria-label="Quick actions"
           style={actionBubbleMenuStyle}
         >
+          <div className="action-bubble-menu__header">
+            <span className="action-bubble-menu__title">Quick Actions</span>
+            <button
+              type="button"
+              className="action-bubble-menu__close-btn"
+              onClick={closeMenu}
+              aria-label="Close menu"
+            >
+              ✕
+            </button>
+          </div>
           <UserSelection variant="inline" className="action-bubble-menu__profiles" />
           <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
         </div>
       ) : null}
 
-      <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick actions">
+      <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick Actions">
         <div id="action-bubble-sheet">
           <UserSelection variant="inline" className="action-bubble-menu__profiles" />
           <CommandDeck items={actionItems} variant="compact" onItemSelect={runItem} />
