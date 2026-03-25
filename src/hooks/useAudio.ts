@@ -2,82 +2,117 @@ import { useCallback, useEffect, useRef } from 'react';
 
 /**
  * Shared audio hook for standard UI interactions.
+ * All sounds are synthesized via Web Audio API — no external files.
  */
 export const useAudio = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    // Only initialize on the client side
     if (typeof window === 'undefined') return;
-    
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AudioContextClass && !audioContextRef.current) {
       audioContextRef.current = new AudioContextClass();
     }
   }, []);
 
+  const getCtx = useCallback((): AudioContext | null => {
+    if (!audioContextRef.current) {
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      } else {
+        return null;
+      }
+    }
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') {
+      void ctx.resume();
+    }
+    return ctx;
+  }, []);
+
+  /**
+   * Play a single synthesized tone with a soft attack and smooth decay.
+   * @param frequency     Start frequency in Hz
+   * @param endFrequency  Optional end frequency for a pitch glide
+   * @param type          Oscillator wave type
+   * @param duration      Total duration in seconds
+   * @param volume        Peak gain (0–1)
+   * @param attackTime    Linear ramp-up time in seconds (default 0.004)
+   */
   const playTone = useCallback(
-    (frequency: number, type: OscillatorType, duration: number, volume: number = 0.1) => {
-      if (!audioContextRef.current) {
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-        if (AudioContextClass) {
-          audioContextRef.current = new AudioContextClass();
-        } else {
-          return;
-        }
-      }
+    (
+      frequency: number,
+      endFrequency: number | null,
+      type: OscillatorType,
+      duration: number,
+      volume: number,
+      attackTime = 0.004
+    ) => {
+      const ctx = getCtx();
+      if (!ctx) return;
 
-      const ctx = audioContextRef.current;
-
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
+      const now = ctx.currentTime;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
       osc.type = type;
-      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+      osc.frequency.setValueAtTime(frequency, now);
+      if (endFrequency !== null) {
+        osc.frequency.linearRampToValueAtTime(endFrequency, now + duration);
+      }
 
-      gain.gain.setValueAtTime(volume, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(volume, now + attackTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
+      osc.start(now);
+      osc.stop(now + duration);
     },
-    []
+    [getCtx]
   );
 
+  /** Soft, short keyboard-tap click */
   const playClick = useCallback(() => {
-    playTone(800, 'sine', 0.05, 0.05);
+    playTone(1100, 900, 'sine', 0.038, 0.032, 0.002);
   }, [playTone]);
 
+  /** Light descending pop — used for modals and bottom sheets */
   const playPop = useCallback(() => {
-    playTone(400, 'sine', 0.1, 0.08);
+    playTone(480, 210, 'sine', 0.09, 0.055, 0.003);
   }, [playTone]);
 
+  /** Subtle two-step tone for tab and workspace switches */
   const playSwitch = useCallback(() => {
-    playTone(600, 'triangle', 0.08, 0.04);
+    playTone(460, null, 'sine', 0.055, 0.038, 0.003);
+    setTimeout(() => playTone(600, null, 'sine', 0.07, 0.038, 0.003), 60);
   }, [playTone]);
 
+  /** Three-note rising arpeggio — C5 → E5 → G5 */
   const playSuccess = useCallback(() => {
-    playTone(523.25, 'sine', 0.1, 0.08);
-    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.08), 100);
+    playTone(523.25, null, 'sine', 0.11, 0.065, 0.004);
+    setTimeout(() => playTone(659.25, null, 'sine', 0.13, 0.065, 0.004), 90);
+    setTimeout(() => playTone(783.99, null, 'sine', 0.18, 0.06, 0.004), 180);
   }, [playTone]);
 
+  /** Soft descending two-tone — triangle instead of harsh square */
   const playError = useCallback(() => {
-    playTone(220, 'square', 0.15, 0.06);
-    setTimeout(() => playTone(146.83, 'square', 0.25, 0.06), 150);
+    playTone(300, 180, 'triangle', 0.18, 0.05, 0.005);
+    setTimeout(() => playTone(210, 140, 'triangle', 0.15, 0.04, 0.005), 160);
   }, [playTone]);
 
+  /** Gentle double-pulse warning */
   const playWarning = useCallback(() => {
-    playTone(293.66, 'triangle', 0.1, 0.06);
-    setTimeout(() => playTone(293.66, 'triangle', 0.1, 0.06), 150);
+    playTone(360, 320, 'sine', 0.09, 0.048, 0.004);
+    setTimeout(() => playTone(340, 300, 'sine', 0.09, 0.04, 0.004), 130);
   }, [playTone]);
 
   return { playTone, playClick, playPop, playSwitch, playSuccess, playError, playWarning };
 };
-
