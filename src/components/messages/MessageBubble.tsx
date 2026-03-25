@@ -3,7 +3,7 @@ import type { Message, User } from '@/shared/types';
 import { TrashIcon } from '@/common/icons';
 import { spacing, typography } from '@/theme/tokens';
 import { formatMessageTimestamp } from '@/utils/date';
-import { IOS_BLUE, IOS_GRAY, IOS_TIMESTAMP, isMessageFromCurrentUser } from './messageUtils';
+import { getBubbleColor, getBubbleTextColor, IOS_TIMESTAMP, isMessageFromCurrentUser } from './messageUtils';
 
 interface MessageBubbleProps {
   message: Message;
@@ -22,6 +22,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const isCurrentUser = isMessageFromCurrentUser(message, currentUser);
   const timestamp = formatMessageTimestamp(message.createdAt);
+  const bubbleColor = getBubbleColor(message.author);
+  const bubbleTextColor = getBubbleTextColor(message.author);
 
   return (
     <div
@@ -76,10 +78,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div
         className={`ios-message-bubble${isCurrentUser ? ' ios-message-bubble--me' : ' ios-message-bubble--them'}`}
         aria-label={`Message from ${message.author}`}
+        style={{ ['--bubble-color' as string]: bubbleColor }}
       >
         <p
           style={{
-            color: isCurrentUser ? '#ffffff' : '#000000',
+            color: bubbleTextColor,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
             overflowWrap: 'break-word',
@@ -139,13 +142,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         }
 
         .ios-message-bubble--me {
-          background-color: ${IOS_BLUE};
+          background-color: var(--bubble-color);
           border-bottom-right-radius: 4px;
           animation: ios-message-slide-right 0.2s ease-out;
         }
 
         .ios-message-bubble--them {
-          background-color: ${IOS_GRAY};
+          background-color: var(--bubble-color);
           border-bottom-left-radius: 4px;
           animation: ios-message-slide-left 0.2s ease-out;
         }
@@ -159,7 +162,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           height: 0;
           border-style: solid;
           border-width: 0 0 12px 10px;
-          border-color: transparent transparent ${IOS_BLUE} transparent;
+          border-color: transparent transparent var(--bubble-color) transparent;
         }
 
         .ios-message-bubble--them::before {
@@ -171,7 +174,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           height: 0;
           border-style: solid;
           border-width: 0 10px 12px 0;
-          border-color: transparent ${IOS_GRAY} transparent transparent;
+          border-color: transparent var(--bubble-color) transparent transparent;
         }
 
         .ios-message-bubble__actions {
