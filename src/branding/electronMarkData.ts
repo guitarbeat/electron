@@ -1,6 +1,7 @@
 export const ELECTRON_MARK_VARIANTS = [
   'pulse-ae',
   'orbit-e',
+  'orbit-a',
   'static-gem',
   'split-spark',
 ] as const;
@@ -71,6 +72,12 @@ export const ELECTRON_MARK_META: Record<ElectronMarkVariant, ElectronMarkMeta> =
     label: 'Electra emblem',
     eyebrow: 'Rounded orbit',
     description: 'A rounded E core wrapped by an off-center spark ring for a softer Electra feel.',
+  },
+  'orbit-a': {
+    name: 'Orbit A',
+    label: 'Aaron emblem',
+    eyebrow: 'Warm orbit',
+    description: 'A bold A glyph wrapped by the same off-center spark ring, tuned for Aaron.',
   },
   'static-gem': {
     name: 'Static Gem',
@@ -154,6 +161,15 @@ ${paint.glow ? `<circle cx="32" cy="32" r="24" fill="${paint.glow}" opacity="0.4
 <circle cx="47.5" cy="18.5" r="2" fill="${paint.highlight}" fill-opacity="0.92" />
 `;
 
+const buildOrbitA = (paint: ElectronMarkPaint) => `
+${paint.glow ? `<circle cx="32" cy="32" r="24" fill="${paint.glow}" opacity="0.4" />` : ''}
+<path d="M41.5 13.5C49.8 17.5 53.8 27.2 51.3 36.2C48.4 46.4 38.3 52.3 28 50.7C17.8 49.1 10.3 40.2 11.2 29.8C11.8 22.4 16 16.4 22.3 13.5" stroke="${paint.secondary}" stroke-width="5.2" stroke-linecap="round" fill="none" />
+<path d="M45.5 16.5L50.5 12L53 18.8" stroke="${paint.highlight}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+<path d="M22 45.5L32 19L42 45.5" stroke="${paint.primary}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+<path d="M25.5 33.5H38.5" stroke="${paint.secondary}" stroke-width="6" stroke-linecap="round" />
+<circle cx="47.5" cy="18.5" r="2" fill="${paint.highlight}" fill-opacity="0.92" />
+`;
+
 const buildStaticGem = (paint: ElectronMarkPaint) => `
 ${paint.glow ? `<circle cx="32" cy="32" r="24" fill="${paint.glow}" opacity="0.42" />` : ''}
 <path fill-rule="evenodd" d="M32 7.5L49.5 18.5L44.5 46.5L32 56.5L19.5 46.5L14.5 18.5L32 7.5ZM32 20C38.63 20 44 25.37 44 32C44 38.63 38.63 44 32 44C25.37 44 20 38.63 20 32C20 25.37 25.37 20 32 20ZM31.5 29H47V35H31.5V29Z" fill="${paint.primary}" />
@@ -179,6 +195,8 @@ const buildVariantMarkup = (variant: ElectronMarkVariant, paint: ElectronMarkPai
       return buildPulseAe(paint);
     case 'orbit-e':
       return buildOrbitE(paint);
+    case 'orbit-a':
+      return buildOrbitA(paint);
     case 'static-gem':
       return buildStaticGem(paint);
     case 'split-spark':
