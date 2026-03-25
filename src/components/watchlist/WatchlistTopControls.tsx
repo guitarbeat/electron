@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type RefObject } from 'react';
 import type { ContentTab, SortMode, User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
@@ -9,6 +9,7 @@ import { MOVIE_TABS, SORT_OPTIONS } from './watchlistConstants';
 import RecommendationComposer from './RecommendationComposer';
 
 interface WatchlistTopControlsProps {
+  searchInputRef?: RefObject<HTMLInputElement | null>;
   currentUser: User | null;
   contentTab: ContentTab;
   setContentTab: (tab: ContentTab) => void;
@@ -37,6 +38,7 @@ interface WatchlistTopControlsProps {
 }
 
 const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
+  searchInputRef,
   currentUser,
   contentTab,
   setContentTab,
@@ -97,6 +99,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         >
           <div className="watchlist-top-controls__search-shell">
             <Input
+              ref={searchInputRef}
               className="watchlist-top-controls__search-field"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}

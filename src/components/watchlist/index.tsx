@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   buildSharedSuggestionUrl,
   clearCurrentSharedSuggestionParams,
@@ -20,9 +20,83 @@ import { normalizeMovieTitle, shareSuggestionLink } from './watchlistShare';
 import WatchlistTopControls from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
+import Button from '@/ui/Button';
+
+interface WatchlistEmptyStateProps {
+  isMobile: boolean;
+  searchQuery: string;
+  currentUser: ReturnType<typeof useUser>['currentUser'];
+  isAdding: boolean;
+  isSubmittingRecommendation: boolean;
+  isSharing: boolean;
+  onAddMovie: () => Promise<void> | void;
+  onFocusSearch: () => void;
+}
+
+const WatchlistEmptyState: React.FC<WatchlistEmptyStateProps> = ({
+  isMobile,
+  searchQuery,
+  currentUser,
+  isAdding,
+  isSubmittingRecommendation,
+  isSharing,
+  onAddMovie,
+  onFocusSearch,
+}) => {
+  const trimmedQuery = searchQuery.trim();
+  const hasQuery = trimmedQuery.length > 0;
+  const canAddCurrentQuery = hasQuery && Boolean(currentUser);
+
+  const eyebrow = hasQuery ? 'No exact match yet' : 'Fresh queue';
+  const title = hasQuery ? `No saved match for "${trimmedQuery}"` : 'Your watchlist is ready for its first pick';
+  const body = hasQuery
+    ? currentUser
+      ? 'You can still add this title to the shared queue, even if it is not already listed.'
+      : 'Pick Aaron or Electra from quick actions first, then add this title to the shared queue.'
+    : currentUser
+      ? 'Search for a movie title above to add a first pick, or share a suggestion link to collect ideas together.'
+      : 'Open quick actions to choose Aaron or Electra, then search for a movie title to start the shared queue.';
+
+  return (
+    <CollectionEmptyState
+      padding={isMobile ? spacing.md : spacing['2xl']}
+      className={`watchlist-empty-state ${isMobile ? 'collection-empty-state--tight' : ''}`.trim()}
+      style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+      aria-live="polite"
+    >
+      <span className="watchlist-empty-state__eyebrow">{eyebrow}</span>
+      <h2 className="watchlist-empty-state__title">{title}</h2>
+      <p>{body}</p>
+      <div className="watchlist-empty-state__actions">
+        {canAddCurrentQuery ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            onClick={() => void onAddMovie()}
+            disabled={isAdding || isSubmittingRecommendation || isSharing}
+            isLoading={isAdding}
+          >
+            Add &ldquo;{trimmedQuery}&rdquo;
+          </Button>
+        ) : null}
+        <Button
+          type="button"
+          variant="ghost"
+          size="md"
+          onClick={onFocusSearch}
+          disabled={isAdding || isSubmittingRecommendation || isSharing}
+        >
+          Focus title field
+        </Button>
+      </div>
+    </CollectionEmptyState>
+  );
+};
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [sharedSuggestion, setSharedSuggestion] = useState<SharedSuggestionIntent | null>(() =>
     typeof window === 'undefined' ? null : parseSharedSuggestionIntent(window.location.search)
   );
@@ -264,6 +338,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       setSearchQuery(randomTitle);
     }
   }, [filteredMovies, filteredSuggestions, setSearchQuery]);
+
+  const handleFocusSearch = useCallback(() => {
+    searchInputRef.current?.focus();
+  }, []);
 
   const handleSubmitRecommendation = useCallback(async () => {
     const title = searchQuery.trim();
@@ -519,13 +597,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           />
         ))
       ) : (
-        <CollectionEmptyState
-          padding={isMobile ? spacing.md : spacing['2xl']}
-          className={isMobile ? 'collection-empty-state--tight' : undefined}
-          style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
-        >
-          {searchQuery ? 'No matching movies found' : 'Your watchlist is empty'}
-        </CollectionEmptyState>
+        <WatchlistEmptyState
+          isMobile={isMobile}
+          searchQuery={searchQuery}
+          currentUser={currentUser}
+          isAdding={isAdding}
+          isSubmittingRecommendation={isSubmittingRecommendation}
+          isSharing={isSharing}
+          onAddMovie={handleAddAction}
+          onFocusSearch={handleFocusSearch}
+        />
       )}
     </CollectionGrid>
   );
@@ -548,6 +629,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       )}
 
       <WatchlistTopControls
+        searchInputRef={searchInputRef}
         currentUser={currentUser}
         contentTab={contentTab}
         setContentTab={setContentTab}
