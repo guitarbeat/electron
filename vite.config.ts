@@ -3,6 +3,26 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const resolveFromRoot = (subpath: string): string => path.resolve(__dirname, subpath);
+
+const aliasEntries = {
+  '@/app': resolveFromRoot('src/app'),
+  '@/branding': resolveFromRoot('src/branding'),
+  '@/common': resolveFromRoot('src/components/common'),
+  '@/components': resolveFromRoot('src/components'),
+  '@/effects': resolveFromRoot('src/components/effects'),
+  '@/hooks': resolveFromRoot('src/hooks'),
+  '@/matchmaker': resolveFromRoot('src/components/matchmaker'),
+  '@/memories': resolveFromRoot('src/components/memories'),
+  '@/quiz': resolveFromRoot('src/components/quiz'),
+  '@/services': resolveFromRoot('src/services'),
+  '@/shared': resolveFromRoot('src/shared'),
+  '@/theme': resolveFromRoot('src/theme'),
+  '@/ui': resolveFromRoot('src/components/ui'),
+  '@/utils': resolveFromRoot('src/utils'),
+  '@': resolveFromRoot('src'),
+} satisfies Record<string, string>;
+
 const resolveApiModulePath = (apiPath: string): string => {
   const exactFilePath = path.resolve(__dirname, `.${apiPath}.ts`);
   if (fs.existsSync(exactFilePath)) {
@@ -109,21 +129,7 @@ export default defineConfig(({ mode }) => {
       },
     ],
     resolve: {
-      alias: {
-        '@/common': path.resolve(__dirname, 'src/components/common'),
-        '@/effects': path.resolve(__dirname, 'src/components/effects'),
-        '@/matchmaker': path.resolve(__dirname, 'src/components/matchmaker'),
-        '@/memories': path.resolve(__dirname, 'src/components/memories'),
-        '@/quiz': path.resolve(__dirname, 'src/components/quiz'),
-        '@/ui': path.resolve(__dirname, 'src/components/ui'),
-        '@/hooks': path.resolve(__dirname, 'src/hooks'),
-        '@/app': path.resolve(__dirname, 'src/app'),
-        '@/shared': path.resolve(__dirname, 'src/shared'),
-        '@/theme': path.resolve(__dirname, 'src/theme'),
-        '@/services': path.resolve(__dirname, 'src/services'),
-        '@/utils': path.resolve(__dirname, 'src/utils'),
-        '@': path.resolve(__dirname, 'src'),
-      },
+      alias: aliasEntries,
     },
     build: {
       rollupOptions: {
