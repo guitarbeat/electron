@@ -18,7 +18,10 @@ const resolveConfig = (value: string | undefined, fallback: string) => {
 const OMDB_BASE = resolveConfig(env.VITE_OMDB_API_URL, OMDB_DEFAULT_BASE_URL);
 const TVMAZE_BASE = resolveConfig(env.VITE_TVMAZE_API_URL, TVMAZE_DEFAULT_BASE_URL);
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
+export const AUTOCOMPLETE_REQUEST_TIMEOUT_MS = 2500;
 export const MOVIE_AUTOCOMPLETE_RESULT_LIMIT = 6;
+const OMDB_AUTH_FAILURE_CODE = 'omdb_auth';
+const OMDB_CONFIG_FAILURE_CODE = 'omdb_config';
 
 const stripHtml = (value?: string | null): string | undefined => {
   if (!value) return undefined;
@@ -82,22 +85,118 @@ const buildTvMazeUrl = (
 export const shouldRetryResponseStatus = (status: number): boolean =>
   status === 408 || status === 425 || status === 429 || status >= 500;
 
-const sleep = async (durationMs: number): Promise<void> => {
-  await new Promise((resolve) => {
-    setTimeout(resolve, durationMs);
+const createNamedError = (message: string, name: 'AbortError' | 'TimeoutError'): Error => {
+  if (typeof DOMException === 'function') {
+    return new DOMException(message, name);
+  }
+
+  const error = new Error(message);
+  error.name = name;
+  return error;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error ?? '');
+
+const isAbortLikeError = (error: unknown): boolean => {
+  if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
+    return true;
+  }
+
+  if (error instanceof Error && error.name === 'AbortError') {
+    return true;
+  }
+
+  return getErrorMessage(error).toLowerCase().includes('aborted');
+};
+
+const isTimeoutLikeError = (error: unknown): boolean => {
+  if (
+    typeof DOMException !== 'undefined' &&
+    error instanceof DOMException &&
+    error.name === 'TimeoutError'
+  ) {
+    return true;
+  }
+
+  if (error instanceof Error && error.name === 'TimeoutError') {
+    return true;
+  }
+
+  const message = getErrorMessage(error).toLowerCase();
+  return message.includes('timed out') || message.includes('timeout');
+};
+
+const isExpectedMetadataFallbackError = (error: unknown): boolean => {
+  const message = getErrorMessage(error).toLowerCase();
+  return (
+    isAbortLikeError(error) ||
+    isTimeoutLikeError(error) ||
+    message.includes('omdb rejected the configured api key') ||
+    message.includes('omdb is not configured')
+  );
+};
+
+const sleep = async (durationMs: number, signal?: AbortSignal): Promise<void> => {
+  await new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason ?? createNamedError('Request was aborted.', 'AbortError'));
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      if (signal && onAbort) {
+        signal.removeEventListener('abort', onAbort);
+      }
+      resolve();
+    }, durationMs);
+
+    const onAbort = () => {
+      clearTimeout(timeoutId);
+      signal?.removeEventListener('abort', onAbort);
+      reject(signal?.reason ?? createNamedError('Request was aborted.', 'AbortError'));
+    };
+
+    signal?.addEventListener('abort', onAbort, { once: true });
   });
 };
 
-const fetchWithTimeout = async (url: string, timeoutMs: number): Promise<Response> => {
+const fetchWithTimeout = async (
+  url: string,
+  timeoutMs: number,
+  signal?: AbortSignal
+): Promise<Response> => {
   const controller = new AbortController();
+  const abortWithReason = (reason: unknown) => {
+    controller.abort(reason ?? createNamedError('Request was aborted.', 'AbortError'));
+  };
+
+  const onAbort = () => {
+    abortWithReason(signal?.reason);
+  };
+
+  if (signal?.aborted) {
+    onAbort();
+  } else if (signal) {
+    signal.addEventListener('abort', onAbort, { once: true });
+  }
+
   const timeoutId = setTimeout(() => {
-    controller.abort();
+    controller.abort(
+      createNamedError(`Request timed out after ${timeoutMs}ms.`, 'TimeoutError')
+    );
   }, timeoutMs);
 
   try {
     return await fetch(url, { signal: controller.signal });
+  } catch (error) {
+    if (controller.signal.aborted && controller.signal.reason !== undefined) {
+      throw controller.signal.reason;
+    }
+    throw error;
   } finally {
     clearTimeout(timeoutId);
+    signal?.removeEventListener('abort', onAbort);
   }
 };
 
@@ -105,19 +204,20 @@ export const fetchWithRetry = async (
   url: string,
   retries = 3,
   backoff = 1000,
-  timeoutMs = METADATA_REQUEST_TIMEOUT_MS
+  timeoutMs = METADATA_REQUEST_TIMEOUT_MS,
+  signal?: AbortSignal
 ): Promise<Response> => {
   try {
-    const response = await fetchWithTimeout(url, timeoutMs);
+    const response = await fetchWithTimeout(url, timeoutMs, signal);
     if (!response.ok && retries > 0 && shouldRetryResponseStatus(response.status)) {
-      await sleep(backoff);
-      return fetchWithRetry(url, retries - 1, backoff * 2, timeoutMs);
+      await sleep(backoff, signal);
+      return fetchWithRetry(url, retries - 1, backoff * 2, timeoutMs, signal);
     }
     return response;
   } catch (error) {
-    if (retries > 0) {
-      await sleep(backoff);
-      return fetchWithRetry(url, retries - 1, backoff * 2, timeoutMs);
+    if (!isAbortLikeError(error) && retries > 0) {
+      await sleep(backoff, signal);
+      return fetchWithRetry(url, retries - 1, backoff * 2, timeoutMs, signal);
     }
     throw error;
   }
@@ -239,7 +339,12 @@ export interface MovieAutocompleteResult {
   title: string;
   year?: string;
   posterUrl?: string;
-  type: 'movie';
+  type: 'movie' | 'series';
+}
+
+interface ProxyErrorResponse {
+  error?: string;
+  code?: string;
 }
 
 const toMetadataResultFromOmdb = (omdbData: OmdbMovieResponse): MetadataResult => ({
@@ -273,8 +378,76 @@ const toMovieAutocompleteResultFromOmdb = (
   };
 };
 
+const toMovieAutocompleteResultFromTvMaze = (
+  searchResult: TvMazeSearchResultItem
+): MovieAutocompleteResult | null => {
+  const title = sanitizeInput(searchResult.show.name);
+  if (!title) {
+    return null;
+  }
+
+  return {
+    imdbID: `tv-${searchResult.show.id}`,
+    title,
+    year: searchResult.show.premiered ? searchResult.show.premiered.split('-')[0] : undefined,
+    posterUrl: normalizePosterUrl(
+      searchResult.show.image?.medium || searchResult.show.image?.original
+    ),
+    type: 'series',
+  };
+};
+
+const readJsonSafely = async <T>(response: Response): Promise<T | null> => {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+};
+
+const getOmdbAutocompleteFailureMessage = (
+  errorBody: ProxyErrorResponse | null
+): string | null => {
+  if (errorBody?.code === OMDB_AUTH_FAILURE_CODE) {
+    return 'Movie suggestions are unavailable because the OMDb key was rejected.';
+  }
+
+  if (errorBody?.code === OMDB_CONFIG_FAILURE_CODE) {
+    return 'Movie suggestions are unavailable because OMDb is not configured.';
+  }
+
+  return null;
+};
+
+const searchTvMazeAutocomplete = async (
+  query: string,
+  signal?: AbortSignal
+): Promise<MovieAutocompleteResult[]> => {
+  const tvmazeRes = await fetchWithRetry(
+    buildTvMazeUrl('search', query),
+    0,
+    250,
+    AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
+    signal
+  );
+  if (!tvmazeRes.ok) {
+    throw new Error(`TVMaze search failed with status ${tvmazeRes.status}`);
+  }
+
+  const tvmazeData = await readJsonSafely<TvMazeSearchResultItem[]>(tvmazeRes);
+  if (!Array.isArray(tvmazeData)) {
+    return [];
+  }
+
+  return tvmazeData
+    .map(toMovieAutocompleteResultFromTvMaze)
+    .filter((result): result is MovieAutocompleteResult => result !== null)
+    .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+};
+
 export const searchMovieAutocomplete = async (
-  query: string
+  query: string,
+  options: { signal?: AbortSignal } = {}
 ): Promise<MovieAutocompleteResult[]> => {
   const cleanQuery = sanitizeInput(query);
   if (cleanQuery.length < 2) {
@@ -286,29 +459,64 @@ export const searchMovieAutocomplete = async (
     return [];
   }
 
+  let omdbFailureMessage: string | null = null;
+  let omdbResults: MovieAutocompleteResult[] = [];
+
   try {
-    const omdbRes = await fetchWithRetry(omdbSearchUrl);
+    const omdbRes = await fetchWithRetry(
+      omdbSearchUrl,
+      0,
+      250,
+      AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
+      options.signal
+    );
     if (!omdbRes.ok) {
-      throw new Error(`OMDb search failed with status ${omdbRes.status}`);
+      const errorBody = await readJsonSafely<ProxyErrorResponse>(omdbRes);
+      omdbFailureMessage = getOmdbAutocompleteFailureMessage(errorBody);
+      if (!omdbFailureMessage) {
+        throw new Error(`OMDb search failed with status ${omdbRes.status}`);
+      }
+    } else {
+      const omdbData: OmdbSearchResponse = await omdbRes.json();
+      if (omdbData.Response === 'True' && Array.isArray(omdbData.Search)) {
+        omdbResults = omdbData.Search
+          .map(toMovieAutocompleteResultFromOmdb)
+          .filter((result): result is MovieAutocompleteResult => result !== null)
+          .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+      }
     }
-
-    const omdbData: OmdbSearchResponse = await omdbRes.json();
-    if (omdbData.Response !== 'True' || !Array.isArray(omdbData.Search)) {
-      return [];
-    }
-
-    return omdbData.Search
-      .map(toMovieAutocompleteResultFromOmdb)
-      .filter((result): result is MovieAutocompleteResult => result !== null)
-      .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
   } catch (error) {
-    if (error instanceof Error && error.message && !error.message.includes('timeout')) {
+    if (isAbortLikeError(error)) {
+      throw error;
+    }
+
+    if (error instanceof Error && error.message && !isTimeoutLikeError(error)) {
       console.warn(`OMDb autocomplete failed for "${cleanQuery}": ${error.message}`);
     }
-    throw new Error('Movie suggestions are unavailable right now.', {
-      cause: error,
-    });
+    omdbFailureMessage = 'Movie suggestions are unavailable right now.';
   }
+
+  if (omdbResults.length > 0) {
+    return omdbResults;
+  }
+
+  try {
+    return await searchTvMazeAutocomplete(cleanQuery, options.signal);
+  } catch (error) {
+    if (isAbortLikeError(error)) {
+      throw error;
+    }
+
+    if (error instanceof Error && error.message && !isTimeoutLikeError(error)) {
+      console.warn(`TVMaze autocomplete failed for "${cleanQuery}": ${error.message}`);
+    }
+  }
+
+  if (omdbFailureMessage) {
+    throw new Error(omdbFailureMessage);
+  }
+
+  return [];
 };
 
 export const fetchMovieMetadata = async (
@@ -361,9 +569,9 @@ export const fetchMovieMetadata = async (
             console.error(`OMDb ID lookup failed for "${id}" with unknown error`);
           }
         } catch (error) {
-          if (error instanceof Error && error.message) {
+          if (!isExpectedMetadataFallbackError(error) && error instanceof Error && error.message) {
             console.error(`OMDb ID lookup failed for "${id}": ${error.message}`);
-          } else {
+          } else if (!isExpectedMetadataFallbackError(error)) {
             console.error(`OMDb ID lookup failed for "${id}" with unknown error`);
           }
         }
@@ -376,6 +584,10 @@ export const fetchMovieMetadata = async (
       try {
         const omdbRes = await fetchWithRetry(omdbByTitleUrl);
         if (!omdbRes.ok) {
+          const errorBody = await readJsonSafely<ProxyErrorResponse>(omdbRes);
+          if (errorBody?.error) {
+            throw new Error(errorBody.error);
+          }
           throw new Error(`OMDb title lookup failed with status ${omdbRes.status}`);
         }
 
@@ -384,8 +596,7 @@ export const fetchMovieMetadata = async (
           return toMetadataResultFromOmdb(omdbData);
         }
       } catch (error) {
-        // Only log meaningful errors, not empty objects or network timeouts
-        if (error instanceof Error && error.message && !error.message.includes('timeout')) {
+        if (!isExpectedMetadataFallbackError(error) && error instanceof Error && error.message) {
           console.warn(`OMDb title lookup failed for "${title}":`, error.message);
         }
       }
@@ -414,16 +625,19 @@ export const fetchMovieMetadata = async (
         };
       }
     } catch (error) {
-        // Only log meaningful errors from TVMaze
-        if (error instanceof Error && error.message && !error.message.includes('timeout')) {
-          console.warn(`TVMaze search failed for "${title}":`, error.message);
-        }
+      if (!isExpectedMetadataFallbackError(error) && error instanceof Error && error.message) {
+        console.warn(`TVMaze search failed for "${title}":`, error.message);
       }
+    }
 
     return {};
   } catch (error) {
-    // Only log critical errors at the top level
-    if (error instanceof Error && error.message && !error.message.includes('timeout') && !error.message.includes('fetch')) {
+    if (
+      !isExpectedMetadataFallbackError(error) &&
+      error instanceof Error &&
+      error.message &&
+      !error.message.includes('fetch')
+    ) {
       console.error('Critical metadata fetch error:', error.message);
     }
     return {};
