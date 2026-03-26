@@ -43,7 +43,8 @@ Command behavior:
 - Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and Gist persistence in `api/_lib/gistStore.ts`.
 - Profile selection and PIN login are handled through signed cookies in `api/session.ts`, `api/session/profile.ts`, and `api/_lib/session.ts`.
 - `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
-- In development, `src/services/metadataService.ts` defaults OMDb reads to `https://www.omdbapi.com` unless `VITE_OMDB_API_URL` is set.
+- In development, `src/services/metadataService.ts` defaults metadata reads to the local `/api/omdb` and `/api/tvmaze` proxies. Set `VITE_OMDB_API_URL` or `VITE_TVMAZE_API_URL` only when intentionally bypassing those proxies.
+- Watchlist autocomplete tries OMDb movie search first, then falls back to TVMaze show search when OMDb has no usable match.
 - In local Vite development, `VITE_GIST_ID` is accepted as a fallback when `GIST_ID` is not set.
 - If Gist configuration is missing or GitHub write auth is unavailable, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
 
@@ -53,7 +54,7 @@ Client-side variables used by the app:
 
 - `VITE_GIST_ID`
 - `VITE_OMDB_API_URL`
-- `VITE_OMDB_API_KEY`
+- `VITE_OMDB_API_KEY` only when `VITE_OMDB_API_URL` points directly to OMDb
 - `VITE_TVMAZE_API_URL`
 - `VITE_GOOGLE_PLACES_API_KEY`
 
@@ -63,7 +64,7 @@ Server-side variables used by deployed handlers:
 - `GITHUB_TOKEN`
 - `SESSION_SIGNING_SECRET`
 - `OMDB_API_URL`
-- `OMDB_API_KEY`
+- `OMDB_API_KEY` for the default `/api/omdb` proxy path
 - `TVMAZE_API_URL`
 - `ALLOWED_ORIGINS` for `api/omdb.ts` origin allowlisting
 

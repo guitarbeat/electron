@@ -501,7 +501,10 @@ export const searchMovieAutocomplete = async (
   }
 
   try {
-    return await searchTvMazeAutocomplete(cleanQuery, options.signal);
+    const tvMazeResults = await searchTvMazeAutocomplete(cleanQuery, options.signal);
+    if (tvMazeResults.length > 0) {
+      return tvMazeResults;
+    }
   } catch (error) {
     if (isAbortLikeError(error)) {
       throw error;
@@ -557,6 +560,10 @@ export const fetchMovieMetadata = async (
         try {
           const omdbRes = await fetchWithRetry(omdbByIdUrl);
           if (!omdbRes.ok) {
+            const errorBody = await readJsonSafely<ProxyErrorResponse>(omdbRes);
+            if (errorBody?.error) {
+              throw new Error(errorBody.error);
+            }
             throw new Error(`OMDb ID lookup failed with status ${omdbRes.status}`);
           }
 

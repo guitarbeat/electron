@@ -155,7 +155,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
     if (!currentUser) {
       setToast({
-        message: 'Pick Aaron or Electra to add movies to the shared watchlist.',
+        message: 'Pick Aaron or Electra to add titles to the shared watchlist.',
         type: 'info',
       });
       return;
