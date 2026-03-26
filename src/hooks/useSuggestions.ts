@@ -27,18 +27,8 @@ export const useSuggestions = (isPaused: boolean = false) => {
     [suggestions]
   );
 
-  const acceptedSuggestions = useMemo(
-    () => suggestions.filter((s) => s.status === 'accepted'),
-    [suggestions]
-  );
-
-  const rejectedSuggestions = useMemo(
-    () => suggestions.filter((s) => s.status === 'rejected'),
-    [suggestions]
-  );
-
   const addSuggestion = useCallback(
-    async (title: string, _suggestedBy: string, reason?: string): Promise<MovieSuggestion> => {
+    async (title: string, reason?: string): Promise<MovieSuggestion> => {
       if (!currentUser) {
         throw new Error('Profile required');
       }
@@ -136,8 +126,6 @@ export const useSuggestions = (isPaused: boolean = false) => {
   return {
     suggestions,
     pendingSuggestions,
-    acceptedSuggestions,
-    rejectedSuggestions,
     isLoading,
     error,
     isDegraded: snapshot?.degraded ?? false,

@@ -1,11 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
-import { buildSharedSuggestionUrl } from '@/app/sharedSuggestion';
 import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/app/providers';
-import { trackMetric } from '@/services/analyticsService';
-import { shareSuggestionLink } from '@/utils/browser';
-import { ShareIcon } from '@/common/icons';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
 import {
@@ -32,7 +28,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('queue');
-  const [isSharing, setIsSharing] = useState(false);
   const spinTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -65,42 +60,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     () => movies.find((movie) => movie.id === selectedMovieId) || null,
     [movies, selectedMovieId]
   );
-
-  const handleSharePick = useCallback(async () => {
-    if (!selectedMovie || !currentUser || typeof window === 'undefined') {
-      return;
-    }
-
-    setIsSharing(true);
-    try {
-      const shareUrl = buildSharedSuggestionUrl(window.location.href, {
-        title: selectedMovie.title,
-        suggestedBy: currentUser,
-      });
-      const shareMethod = await shareSuggestionLink(
-        selectedMovie.title,
-        currentUser,
-        shareUrl
-      );
-      trackMetric('spin_pick_share_clicked');
-      showToast({
-        message:
-          shareMethod === 'native'
-            ? `Share sheet opened for "${selectedMovie.title}".`
-            : `Share link copied for "${selectedMovie.title}".`,
-        type: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return;
-      }
-
-      showToast({ message: 'Failed to share movie link', type: 'error' });
-    } finally {
-      setIsSharing(false);
-    }
-  }, [currentUser, selectedMovie, showToast]);
 
   const gradient = useMemo(() => buildSpinWheelGradient(candidates.length), [candidates.length]);
   const segmentAngle = candidates.length > 0 ? 360 / candidates.length : 0;
@@ -374,26 +333,11 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               variant="secondary"
               size="sm"
               onClick={() => setSelectedMovieId(null)}
-              disabled={isSpinning || isSharing || !selectedMovieId}
+              disabled={isSpinning || !selectedMovieId}
               className="spin-wheel-action"
             >
               Clear Result
             </Button>
-            {selectedMovie && currentUser ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => void handleSharePick()}
-                disabled={isSpinning || isSharing}
-                isLoading={isSharing}
-                title="Share movie suggestion link"
-                aria-label="Share this pick as a shared suggestion link"
-                className="spin-wheel-action"
-              >
-                <ShareIcon size={14} /> Share pick
-              </Button>
-            ) : null}
           </div>
 
           {todaySpins.length > 0 && (

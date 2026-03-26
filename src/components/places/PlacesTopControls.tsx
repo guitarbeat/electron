@@ -1,64 +1,29 @@
 import React from 'react';
-import type { PlaceContentTab, PlaceSortMode } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
-import SubNav from '@/ui/SubNav';
 import { PlusIcon, Spinner } from '@/common/icons';
-import SurpriseButton from '@/common/SurpriseButton';
-import { PLACE_TABS, PLACE_SORT_OPTIONS } from './placesConstants';
 
 interface PlacesTopControlsProps {
-  contentTab: PlaceContentTab;
-  setContentTab: (tab: PlaceContentTab) => void;
-  sortMode: PlaceSortMode;
-  setSortMode: (mode: PlaceSortMode) => void;
-  tabCounts: Record<PlaceContentTab, number>;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   onSubmit: () => Promise<void> | void;
-  onPickRandom: () => void;
-  canSurprise: boolean;
   isAdding: boolean;
-  isSuggesting: boolean;
   suggestionError: string | null;
   canEdit: boolean;
 }
 
 const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
-  contentTab,
-  setContentTab,
-  sortMode,
-  setSortMode,
-  tabCounts,
   searchQuery,
   setSearchQuery,
   onSubmit,
-  onPickRandom,
-  canSurprise,
   isAdding,
-  isSuggesting,
   suggestionError,
   canEdit,
 }) => {
-  const isBusy = isAdding || isSuggesting;
+  const isBusy = isAdding;
 
   return (
     <section className="workspace-control-panel ui-control-surface places-top-controls">
-      <SubNav
-        tabs={PLACE_TABS.map((tab) => ({
-          id: tab.id,
-          label: tab.label,
-          count: tabCounts[tab.id] ?? 0,
-        }))}
-        activeTabId={contentTab}
-        onTabChange={(id) => setContentTab(id as PlaceContentTab)}
-        chips={PLACE_SORT_OPTIONS}
-        activeChipId={sortMode}
-        onChipChange={(id) => setSortMode(id as PlaceSortMode)}
-        variant="underlined"
-        mode="segmented"
-      />
-
       <div className="places-top-controls__toolbar">
         <form
           className="places-top-controls__search-form"
@@ -70,7 +35,7 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
           <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Place name"
+            placeholder="Add a place"
             aria-label="Place name"
             fullWidth
           />
@@ -88,16 +53,6 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
             </Button>
           )}
         </form>
-
-        {canEdit && (
-          <SurpriseButton
-            onClick={onPickRandom}
-            isBusy={isBusy}
-            canSurprise={canSurprise}
-            className="places-top-controls__surprise"
-            ariaLabel="Pick a random place"
-          />
-        )}
       </div>
 
       {suggestionError && (

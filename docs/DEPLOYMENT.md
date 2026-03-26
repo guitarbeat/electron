@@ -58,5 +58,4 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
   Canonical project: `guitarbeats-projects / electra-and-aaron-movies`  
   Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`  
   If a local checkout is not linked, run `vercel link --project electra-and-aaron-movies` before `vercel env pull`
-- **Deprecated route**: `/api/gist` is retained only as a `410 Gone` compatibility endpoint and should not be used for new clients or docs
 - **Netlify**: `netlify.toml` builds the app; `/api/*` must target a real backend unless you add compatible functions — see `DEVELOPMENT.md`

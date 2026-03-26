@@ -83,10 +83,8 @@ Workspace switching uses the **`ThemeToggle` on the floating action bubble** (no
 
 Primary control stack:
 
-- content tabs (`All`, `Queue`, `Watched`, `Suggestions`)
-- sort controls
-- search/add input
-- random pick action
+- add/recommend input
+- always-visible section stack (`Suggestions`, `Queue`, `Watched`)
 - small memory summary pills
 
 Content area:
@@ -112,10 +110,8 @@ Other surfaces:
 
 Primary control stack:
 
-- content tabs (`All`, `Queue`, `Visited`)
-- sort controls
-- search/add input
-- random pick action
+- add input
+- always-visible section stack (`Queue`, `Visited`)
 - queue / visited summary pills
 
 Supporting panel:
