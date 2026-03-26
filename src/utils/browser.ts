@@ -1,5 +1,5 @@
 /**
- * Browser-specific utilities for clipboard and native share.
+ * Browser-specific utilities for clipboard access.
  */
 
 export const copyTextToClipboard = async (value: string): Promise<void> => {
@@ -25,33 +25,4 @@ export const copyTextToClipboard = async (value: string): Promise<void> => {
   if (!didCopy) {
     throw new Error('Clipboard unavailable');
   }
-};
-
-export const shareSuggestionLink = async (
-  title: string,
-  suggestedBy: string,
-  url: string
-): Promise<'native' | 'copy'> => {
-  const shareData = {
-    title: `Movie night pick: ${title}`,
-    text:
-      suggestedBy === 'Someone'
-        ? `Save "${title}" into the watchlist suggestions.`
-        : `${suggestedBy} wants to save "${title}" into the watchlist.`,
-    url,
-  };
-
-  if (typeof navigator.share === 'function') {
-    try {
-      await navigator.share(shareData);
-      return 'native';
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw error;
-      }
-    }
-  }
-
-  await copyTextToClipboard(url);
-  return 'copy';
 };

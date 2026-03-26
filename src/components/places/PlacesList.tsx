@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/usePlaces';
 import Card from '@/ui/Card';
@@ -6,11 +6,12 @@ import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
 import SyncBanner from '@/components/ui/SyncBanner';
+import { colors, spacing, typography } from '@/theme/tokens';
+import type { Place } from '@/shared/types';
 import PlacesMap from './PlacesMap';
 import PlaceCard from './PlaceCard';
 import PlacesTopControls from './PlacesTopControls';
-import { spacing, colors } from '@/theme/tokens';
-import type { Place, PlaceContentTab, PlaceSortMode } from '@/shared/types';
+import { buildPlaceSections } from './placeSections';
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
@@ -29,43 +30,18 @@ const PlacesList: React.FC = () => {
     retrySync,
   } = usePlaces(currentUser);
 
-  const [contentTab, setContentTab] = useState<PlaceContentTab>('queue');
-  const [sortMode, setSortMode] = useState<PlaceSortMode>('recent');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
 
-  const tabCounts: Record<PlaceContentTab, number> = {
-    all: places.length,
-    queue: places.filter((p) => !p.visitedAt).length,
-    visited: places.filter((p) => p.visitedAt).length,
-  };
-
-  const filteredByTab =
-    contentTab === 'all'
-      ? places
-      : contentTab === 'queue'
-        ? places.filter((p) => !p.visitedAt)
-        : places.filter((p) => p.visitedAt);
-
-  const filtered = searchQuery.trim()
-    ? filteredByTab.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.notes?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : filteredByTab;
-
-  const sorted = [...filtered].sort((a, b) => {
-    if (sortMode === 'name') return a.name.localeCompare(b.name);
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const sections = useMemo(() => buildPlaceSections(places), [places]);
 
   const handleAddAction = useCallback(async () => {
     const query = searchQuery.trim();
-    if (!query || isAdding) return;
+    if (!query || isAdding) {
+      return;
+    }
 
     if (!currentUser) {
       showToast({ message: 'Pick Aaron or Electra to edit shared places.', type: 'info' });
@@ -84,24 +60,14 @@ const PlacesList: React.FC = () => {
       showToast({ message: 'Failed to add place', type: 'error' });
     } finally {
       setIsAdding(false);
-      setIsSuggesting(false);
     }
-  }, [searchQuery, isAdding, currentUser, addPlace, showToast]);
-
-  const handleRandomPlacePick = useCallback(() => {
-    const pool =
-      contentTab === 'visited'
-        ? places.filter((p) => p.visitedAt)
-        : places.filter((p) => !p.visitedAt);
-
-    if (pool.length === 0) return;
-
-    const randomPlace = pool[Math.floor(Math.random() * pool.length)];
-    showToast({ message: `🎲 How about "${randomPlace.name}"?`, type: 'info' });
-  }, [contentTab, places, showToast]);
+  }, [addPlace, currentUser, isAdding, searchQuery, showToast]);
 
   const confirmDelete = useCallback(async () => {
-    if (!placeToDelete) return;
+    if (!placeToDelete) {
+      return;
+    }
+
     const deleted = placeToDelete;
     try {
       await removePlace(deleted.id);
@@ -113,13 +79,77 @@ const PlacesList: React.FC = () => {
     }
   }, [placeToDelete, removePlace, showToast]);
 
-  const canSurprise =
-    contentTab === 'visited'
-      ? places.some((p) => p.visitedAt)
-      : places.some((p) => !p.visitedAt);
+  const renderPlaceSection = useCallback(
+    ({
+      title,
+      placesToRender,
+      emptyState,
+    }: {
+      title: string;
+      placesToRender: Place[];
+      emptyState: string;
+    }) => (
+      <section
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.md,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            justifyContent: 'space-between',
+            gap: spacing.sm,
+            paddingInline: spacing.xs,
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+            <span style={{ ...typography.presets.eyebrow, color: colors.accentLight }}>
+              {title}
+            </span>
+            <h2
+              style={{
+                margin: 0,
+                color: colors.textPrimary,
+                fontFamily: typography.fontFamily.heading.join(', '),
+                fontSize: typography.fontSize.xl,
+                lineHeight: typography.lineHeight.snug,
+              }}
+            >
+              {placesToRender.length} {placesToRender.length === 1 ? 'place' : 'places'}
+            </h2>
+          </div>
+        </div>
+        <CollectionGrid
+          className="places-grid"
+          minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
+          style={{ gap: spacing.lg }}
+        >
+          {placesToRender.length > 0 ? (
+            placesToRender.map((place) => (
+              <PlaceCard
+                key={place.id}
+                place={place}
+                canEdit={Boolean(currentUser)}
+                isSubmitting={isSubmitting}
+                onMarkVisited={markVisited}
+                onMarkUnvisited={markUnvisited}
+                onDelete={setPlaceToDelete}
+              />
+            ))
+          ) : (
+            <CollectionEmptyState>{emptyState}</CollectionEmptyState>
+          )}
+        </CollectionGrid>
+      </section>
+    ),
+    [currentUser, isSubmitting, markUnvisited, markVisited]
+  );
 
   return (
-    <div className="places-container">
+    <div className="places-container" style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
       <WorkspacePanels
         className="places-workspace"
         desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
@@ -137,18 +167,10 @@ const PlacesList: React.FC = () => {
               />
             )}
             <PlacesTopControls
-              contentTab={contentTab}
-              setContentTab={setContentTab}
-              sortMode={sortMode}
-              setSortMode={setSortMode}
-              tabCounts={tabCounts}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               onSubmit={handleAddAction}
-              onPickRandom={handleRandomPlacePick}
-              canSurprise={canSurprise}
               isAdding={isAdding}
-              isSuggesting={isSuggesting}
               suggestionError={suggestionError}
               canEdit={Boolean(currentUser)}
             />
@@ -173,42 +195,33 @@ const PlacesList: React.FC = () => {
       />
 
       {isLoading && places.length === 0 ? (
-        <>{[1, 2, 3, 4, 5, 6].map((i) => <MovieCardSkeleton key={i} />)}</>
-      ) : (
         <CollectionGrid
           className="places-grid"
           minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
-          style={{ gap: spacing.lg, marginTop: spacing.md }}
+          style={{ gap: spacing.lg }}
         >
-          {sorted.length > 0 ? (
-            sorted.map((place) => (
-              <PlaceCard
-                key={place.id}
-                place={place}
-                canEdit={Boolean(currentUser)}
-                isSubmitting={isSubmitting}
-                onMarkVisited={markVisited}
-                onMarkUnvisited={markUnvisited}
-                onDelete={setPlaceToDelete}
-              />
-            ))
-          ) : (
-            <CollectionEmptyState>
-              {searchQuery.trim()
-                ? 'No places found matching your search'
-                : contentTab === 'visited'
-                  ? 'No visited places yet'
-                  : contentTab === 'queue'
-                    ? 'No places in queue'
-                    : 'No places added yet'}
-            </CollectionEmptyState>
-          )}
+          {[1, 2, 3, 4, 5, 6].map((index) => (
+            <MovieCardSkeleton key={index} />
+          ))}
         </CollectionGrid>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
+          {renderPlaceSection({
+            title: 'Queue',
+            placesToRender: sections.queue,
+            emptyState: 'No places in queue',
+          })}
+          {renderPlaceSection({
+            title: 'Visited',
+            placesToRender: sections.visited,
+            emptyState: 'No visited places yet',
+          })}
+        </div>
       )}
 
       {placeToDelete && (
         <ConfirmDialog
-          isOpen={!!placeToDelete}
+          isOpen={Boolean(placeToDelete)}
           title="Remove place"
           message={`Are you sure you want to remove "${placeToDelete.name}" from your list?`}
           onConfirm={confirmDelete}

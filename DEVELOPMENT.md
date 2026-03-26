@@ -45,7 +45,6 @@ Command behavior:
 - `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
 - In development, `src/services/metadataService.ts` defaults OMDb reads to `https://www.omdbapi.com` unless `VITE_OMDB_API_URL` is set.
 - In local Vite development, `VITE_GIST_ID` is accepted as a fallback when `GIST_ID` is not set.
-- `api/gist.ts` still exists only as a deprecated `410 Gone` route for older clients; it is not the supported sync path.
 - If Gist configuration is missing or GitHub write auth is unavailable, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
 
 ## Environment Variables

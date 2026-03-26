@@ -11,7 +11,7 @@ import { Movie, MovieSuggestion, User } from '@/shared/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/app/providers';
-import { areDeeplyEqual, sanitizeInput } from '@/utils';
+import { areDeeplyEqual } from '@/utils';
 import { trackMetric } from '@/services/analyticsService';
 import { readScope, retryScopeSync } from '@/services/stateClient';
 
@@ -31,26 +31,8 @@ interface WatchlistToast {
 
 interface SubmitRecommendationInput {
   title: string;
-  suggestedBy?: string;
   reason?: string;
-  preserveSuggestedBy?: boolean;
 }
-
-const normalizeRecommendationAuthor = (
-  currentUser: User | null,
-  suggestedBy?: string,
-  preserveSuggestedBy = false
-): string => {
-  if (preserveSuggestedBy) {
-    return sanitizeInput(suggestedBy || '') || currentUser || 'Anonymous';
-  }
-
-  if (currentUser) {
-    return currentUser;
-  }
-
-  return sanitizeInput(suggestedBy || '') || 'Anonymous';
-};
 
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -188,27 +170,18 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   }
 
   const submitRecommendation = useCallback(
-    async ({
-      title,
-      suggestedBy,
-      reason,
-      preserveSuggestedBy = false,
-    }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
+    async ({ title, reason }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
       setIsSubmittingRecommendation(true);
 
       try {
-        const suggestion = await addSuggestion(
-          title,
-          normalizeRecommendationAuthor(currentUser, suggestedBy, preserveSuggestedBy),
-          reason
-        );
+        const suggestion = await addSuggestion(title, reason);
         trackMetric('suggestion_submitted');
         return suggestion;
       } finally {
         setIsSubmittingRecommendation(false);
       }
     },
-    [addSuggestion, currentUser]
+    [addSuggestion]
   );
 
   const acceptSuggestionToWatchlist = useCallback(
