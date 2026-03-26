@@ -457,18 +457,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
           {renderSection({
-            title: 'Suggestions',
-            count: sections.suggestions.length,
-            content: isSuggestionsLoading && sections.suggestions.length === 0 ? (
-              <CollectionGrid
-                className="watchlist-content"
-                minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-              >
-                {skeletonKeys.slice(0, Math.min(skeletonKeys.length, 4)).map((key) => (
-                  <MovieCardSkeleton key={key} />
-                ))}
-              </CollectionGrid>
-            ) : (
+            title: 'Queue',
+            count: sections.suggestions.length + sections.queue.length,
+            content: (
               <CollectionGrid
                 className="watchlist-content"
                 minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
@@ -476,7 +467,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
                 }}
               >
-                {sections.suggestions.length > 0 ? (
+                {isSuggestionsLoading && sections.suggestions.length === 0 ? (
+                  skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
+                ) : (
                   sections.suggestions.map((suggestion, index) => (
                     <SuggestionCard
                       key={suggestion.id}
@@ -489,23 +482,47 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                       animationDelay={`${index * 0.05}s`}
                     />
                   ))
-                ) : (
+                )}
+                {sections.queue.length > 0 ? (
+                  sections.queue.map((movie, index) => (
+                    <MovieCard
+                      key={movie.id}
+                      movie={movie}
+                      currentUser={currentUser}
+                      onToggle={() => toggleWatched(movie.id)}
+                      onDelete={() => setMovieToDelete(movie)}
+                      animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
+                      isHighlighted={successMovieId === movie.id}
+                      memories={movieMemories.get(movie.id) ?? []}
+                      onAddMemory={
+                        currentUser
+                          ? async (note) => {
+                              await addMemory(movie.id, movie.title, currentUser, note);
+                            }
+                          : undefined
+                      }
+                      onUpdateMemory={async (memoryId, note) => {
+                        await updateMemory(memoryId, { note });
+                      }}
+                      onDeleteMemory={async (memoryId) => {
+                        await deleteMemoryRecord(memoryId);
+                      }}
+                      onTogglePin={async (memoryId) => {
+                        await toggleMemoryPin(memoryId);
+                      }}
+                    />
+                  ))
+                ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
                   <CollectionEmptyState
                     padding={isMobile ? spacing.md : spacing['2xl']}
                     className={isMobile ? 'collection-empty-state--tight' : undefined}
                     style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
                   >
-                    No pending suggestions right now
+                    No movies in queue
                   </CollectionEmptyState>
-                )}
+                ) : null}
               </CollectionGrid>
             ),
-          })}
-
-          {renderSection({
-            title: 'Queue',
-            count: sections.queue.length,
-            content: renderMovieGrid(sections.queue, 'No movies in queue'),
           })}
 
           {renderSection({
