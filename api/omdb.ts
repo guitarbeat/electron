@@ -6,12 +6,14 @@ const OMDB_API_BASE_URL = resolveConfig(
   process.env.OMDB_API_URL || process.env.VITE_OMDB_API_URL,
   'https://www.omdbapi.com'
 );
-const OMDB_API_KEY = (process.env.OMDB_API_KEY || process.env.VITE_OMDB_API_KEY || '').trim();
+const OMDB_API_KEY = (process.env.OMDB_API_KEY || '').trim();
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 30;
 const MAX_RATE_LIMIT_ENTRIES = 10_000;
+const OMDB_AUTH_FAILURE_CODE = 'omdb_auth';
+const OMDB_CONFIG_FAILURE_CODE = 'omdb_config';
 
 interface CachedResponse {
   body: string;
@@ -35,7 +37,10 @@ const toJsonResponse = (body: string, status: number): Response =>
   });
 
 const badConfigResponse = (message: string) =>
-  toJsonResponse(JSON.stringify({ error: message }), 500);
+  toJsonResponse(
+    JSON.stringify({ error: message, code: OMDB_CONFIG_FAILURE_CODE }),
+    500
+  );
 const badRequestResponse = (message: string) =>
   toJsonResponse(JSON.stringify({ error: message }), 400);
 const methodNotAllowedResponse = () =>
@@ -44,6 +49,11 @@ const rateLimitResponse = () =>
   toJsonResponse(JSON.stringify({ error: 'Too many requests.' }), 429);
 const forbiddenResponse = (message: string) =>
   toJsonResponse(JSON.stringify({ error: message }), 403);
+const omdbAuthResponse = (message: string) =>
+  toJsonResponse(
+    JSON.stringify({ error: message, code: OMDB_AUTH_FAILURE_CODE }),
+    502
+  );
 
 const getCachedResponse = (cacheKey: string): CachedResponse | null => {
   const cached = omdbCache.get(cacheKey);
@@ -159,6 +169,9 @@ const getClientIp = (req: Request): string => {
   return req.headers.get('x-real-ip') || 'unknown';
 };
 
+const isOmdbCredentialFailure = (body: string): boolean =>
+  /invalid api key|incorrect imdb id|no api key provided/i.test(body);
+
 async function handler(req: Request): Promise<Response> {
   try {
     if (req.method !== 'GET') {
@@ -177,6 +190,10 @@ async function handler(req: Request): Promise<Response> {
 
     if (!isAbsoluteUrl(OMDB_API_BASE_URL)) {
       return badConfigResponse('Invalid OMDB_API_URL configuration.');
+    }
+
+    if (OMDB_API_KEY.length === 0) {
+      return badConfigResponse('OMDb is not configured. Set OMDB_API_KEY for the /api/omdb proxy.');
     }
 
     // Vercel may pass a relative `req.url` which requires a base.
@@ -219,6 +236,14 @@ async function handler(req: Request): Promise<Response> {
     );
     const body = await upstreamResponse.text();
     const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
+
+    if (
+      upstreamResponse.status === 401 ||
+      upstreamResponse.status === 403 ||
+      isOmdbCredentialFailure(body)
+    ) {
+      return omdbAuthResponse('OMDb rejected the configured API key.');
+    }
 
     if (upstreamResponse.ok) {
       cacheResponse(cacheKey, {
