@@ -6888,7 +6888,7 @@ body.grabbing * {
   display: flex;
   align-items: stretch;
   gap: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--chrome-border-color);
   border-radius: var(--chrome-radius-lg);
   background:
@@ -6925,6 +6925,7 @@ body.grabbing * {
   min-width: 0;
   display: flex;
   align-items: stretch;
+  position: relative;
 }
 
 .watchlist-top-controls__search-shell .ui-input {
@@ -6945,14 +6946,130 @@ body.grabbing * {
 
 .watchlist-top-controls__search-button.ui-button {
   min-height: 2.75rem;
-  min-width: 3rem;
+  min-width: 5.25rem;
   border-radius: 0;
   border-left: 1px solid color-mix(in srgb, var(--color-border-subtle) 44%, transparent);
   box-shadow: none;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
 }
 
 .watchlist-top-controls__search-actions .ui-button {
   min-height: 2.75rem;
+}
+
+.watchlist-top-controls__autocomplete {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  max-height: 20rem;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 74%, transparent);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 228, 0.12) 0%, transparent 24%),
+    linear-gradient(165deg, rgba(94, 69, 42, 0.98) 0%, rgba(46, 32, 19, 0.99) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 219, 0.08),
+    0 18px 34px rgba(15, 10, 6, 0.34);
+}
+
+.watchlist-top-controls__autocomplete-option {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.72rem 0.82rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.watchlist-top-controls__autocomplete-option + .watchlist-top-controls__autocomplete-option {
+  border-top: 1px solid rgba(201, 165, 111, 0.12);
+}
+
+.watchlist-top-controls__autocomplete-option:hover,
+.watchlist-top-controls__autocomplete-option.is-active {
+  background: linear-gradient(90deg, rgba(214, 179, 117, 0.12) 0%, rgba(255, 247, 228, 0.04) 100%);
+}
+
+.watchlist-top-controls__autocomplete-option:focus-visible {
+  outline: none;
+  background: linear-gradient(90deg, rgba(214, 179, 117, 0.16) 0%, rgba(255, 247, 228, 0.06) 100%);
+}
+
+.watchlist-top-controls__autocomplete-poster {
+  flex: 0 0 2.6rem;
+  width: 2.6rem;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: rgba(255, 247, 228, 0.08);
+  border: 1px solid rgba(201, 165, 111, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 219, 0.06);
+}
+
+.watchlist-top-controls__autocomplete-poster-image,
+.watchlist-top-controls__autocomplete-poster-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.watchlist-top-controls__autocomplete-poster-image {
+  display: block;
+  object-fit: cover;
+}
+
+.watchlist-top-controls__autocomplete-poster-fallback {
+  display: grid;
+  place-items: center;
+  font-family: var(--type-heading-family);
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-bold);
+  color: rgba(255, 247, 228, 0.82);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 247, 228, 0.16) 0%, transparent 36%),
+    linear-gradient(165deg, rgba(126, 93, 56, 0.9) 0%, rgba(70, 50, 30, 0.96) 100%);
+}
+
+.watchlist-top-controls__autocomplete-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.watchlist-top-controls__autocomplete-title {
+  color: var(--color-text-primary);
+  font-family: var(--type-body-md-family);
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+}
+
+.watchlist-top-controls__autocomplete-meta {
+  color: color-mix(in srgb, var(--color-text-secondary) 86%, var(--color-secondary) 14%);
+  font-family: var(--type-caption-family);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.watchlist-top-controls__autocomplete-status {
+  padding: 0.9rem 1rem;
+  color: color-mix(in srgb, var(--color-text-secondary) 86%, var(--color-secondary) 14%);
+  font-family: var(--type-body-sm-family);
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .watchlist-top-controls__search-empty {
