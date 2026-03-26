@@ -33,8 +33,8 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
 | Variable | Purpose |
 | --- | --- |
 | `VITE_GIST_ID` | Local Vite-development fallback for the shared Gist id |
-| `VITE_OMDB_API_URL` | Override default `/api/omdb` |
-| `VITE_OMDB_API_KEY` | OMDb key if calling OMDb directly from the client |
+| `VITE_OMDB_API_URL` | Override default `/api/omdb` only when intentionally bypassing the proxy |
+| `VITE_OMDB_API_KEY` | Optional client OMDb key when `VITE_OMDB_API_URL` points directly at OMDb |
 | `VITE_TVMAZE_API_URL` | Override default `/api/tvmaze` or the public TVMaze API |
 | `VITE_GOOGLE_PLACES_API_KEY` | Map / Places features |
 
@@ -46,11 +46,13 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
 | `GITHUB_TOKEN` | GitHub token for Gist API writes (`GITHUB_PERSONAL_ACCESS_TOKEN` and `GH_TOKEN` are fallback names) |
 | `SESSION_SIGNING_SECRET` | Session cookies and PIN-related auth (`api/_lib/session.ts`) |
 | `OMDB_API_URL` | Base URL for OMDb proxy |
-| `OMDB_API_KEY` | OMDb API key for proxy |
+| `OMDB_API_KEY` | Required OMDb API key for the default `/api/omdb` proxy |
 | `TVMAZE_API_URL` | Base URL for TVMaze proxy |
 | `ALLOWED_ORIGINS` | Origin allowlist for `api/omdb.ts` where applicable |
 
 `SESSION_SIGNING_SECRET` should always be set for deployed/shared environments; otherwise profile cookies fall back to a process-local secret and will be invalidated on restarts.
+
+Watchlist autocomplete uses OMDb movie search first and falls back to TVMaze show search when OMDb has no usable result.
 
 ## Host notes
 

@@ -83,12 +83,75 @@ test('searchMovieAutocomplete normalizes OMDb movie results and caps the list si
 test('searchMovieAutocomplete returns an empty array when OMDb reports no results', async () => {
   setTestWindow('https://watch.example');
 
-  globalThis.fetch = async () =>
-    new Response(
-      JSON.stringify({
-        Response: 'False',
-        Error: 'Movie not found!',
-      }),
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname === '/api/omdb') {
+      return new Response(
+        JSON.stringify({
+          Response: 'False',
+          Error: 'Movie not found!',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        }
+      );
+    }
+
+    assert.equal(url.pathname, '/api/tvmaze');
+    return new Response('[]', {
+      status: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+  };
+
+  const results = await searchMovieAutocomplete('Nope');
+
+  assert.deepEqual(results, []);
+});
+
+test('searchMovieAutocomplete falls back to TVMaze results when OMDb has no matches', async () => {
+  setTestWindow('https://watch.example');
+
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname === '/api/omdb') {
+      return new Response(
+        JSON.stringify({
+          Response: 'False',
+          Error: 'Movie not found!',
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        }
+      );
+    }
+
+    assert.equal(url.pathname, '/api/tvmaze');
+    assert.equal(url.searchParams.get('mode'), 'search');
+    assert.equal(url.searchParams.get('q'), 'The Bear');
+    return new Response(
+      JSON.stringify([
+        {
+          score: 1,
+          show: {
+            id: 11,
+            name: 'The Bear',
+            premiered: '2022-06-23',
+            image: {
+              medium: 'http://images.example/the-bear.jpg',
+              original: 'http://images.example/the-bear-large.jpg',
+            },
+          },
+        },
+      ]),
       {
         status: 200,
         headers: {
@@ -96,25 +159,52 @@ test('searchMovieAutocomplete returns an empty array when OMDb reports no result
         },
       }
     );
+  };
 
-  const results = await searchMovieAutocomplete('Nope');
+  const results = await searchMovieAutocomplete('The Bear');
 
-  assert.deepEqual(results, []);
+  assert.deepEqual(results, [
+    {
+      imdbID: 'tv-11',
+      posterUrl: 'https://images.example/the-bear.jpg',
+      title: 'The Bear',
+      type: 'series',
+      year: '2022',
+    },
+  ]);
 });
 
-test('searchMovieAutocomplete throws a friendly error when OMDb search fails', async () => {
+test('searchMovieAutocomplete surfaces a precise OMDb auth/config message when fallback is empty', async () => {
   setTestWindow('https://watch.example');
 
-  globalThis.fetch = async () =>
-    new Response('{"error":"upstream down"}', {
-      status: 500,
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname === '/api/omdb') {
+      return new Response(
+        JSON.stringify({
+          error: 'OMDb rejected the configured API key.',
+          code: 'omdb_auth',
+        }),
+        {
+          status: 502,
+          headers: {
+            'content-type': 'application/json',
+          },
+        }
+      );
+    }
+
+    assert.equal(url.pathname, '/api/tvmaze');
+    return new Response('[]', {
+      status: 200,
       headers: {
         'content-type': 'application/json',
       },
     });
+  };
 
   await assert.rejects(
     () => searchMovieAutocomplete('Heat'),
-    /Movie suggestions are unavailable right now\./i
+    /OMDb key was rejected/i
   );
 });

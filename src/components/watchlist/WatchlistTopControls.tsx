@@ -112,6 +112,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       return;
     }
 
+    const abortController = new AbortController();
     const requestId = autocompleteRequestIdRef.current + 1;
     autocompleteRequestIdRef.current = requestId;
     setIsAutocompleteOpen(true);
@@ -120,15 +121,17 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
 
     const timeoutId = window.setTimeout(async () => {
       try {
-        const nextResults = await searchMovieAutocomplete(trimmedSearchQuery);
-        if (autocompleteRequestIdRef.current !== requestId) {
+        const nextResults = await searchMovieAutocomplete(trimmedSearchQuery, {
+          signal: abortController.signal,
+        });
+        if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) {
           return;
         }
 
         setAutocompleteResults(nextResults);
         setActiveAutocompleteIndex(nextResults.length > 0 ? 0 : -1);
       } catch (error) {
-        if (autocompleteRequestIdRef.current !== requestId) {
+        if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) {
           return;
         }
 
@@ -140,7 +143,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
             : 'Movie suggestions are unavailable right now.'
         );
       } finally {
-        if (autocompleteRequestIdRef.current === requestId) {
+        if (autocompleteRequestIdRef.current === requestId && !abortController.signal.aborted) {
           setIsAutocompleteLoading(false);
         }
       }
@@ -148,6 +151,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
 
     return () => {
       window.clearTimeout(timeoutId);
+      abortController.abort();
     };
   }, [closeAutocomplete, hasAutocompleteFocus, selectedAutocompleteResult, trimmedSearchQuery]);
 
@@ -247,8 +251,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                   selectAutocompleteResult(autocompleteResults[activeAutocompleteIndex]);
                 }
               }}
-              placeholder="Add a movie title"
-              aria-label="Movie title"
+              placeholder="Add a movie or show title"
+              aria-label="Movie or show title"
               role="combobox"
               aria-autocomplete="list"
               aria-expanded={isAutocompleteOpen}
@@ -266,11 +270,11 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                 id={autocompleteListId}
                 className="watchlist-top-controls__autocomplete"
                 role="listbox"
-                aria-label="Movie suggestions"
+                aria-label="Movie and show suggestions"
               >
                 {isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status" role="status">
-                    Searching movies...
+                    Searching titles...
                   </div>
                 ) : autocompleteError ? (
                   <div className="watchlist-top-controls__autocomplete-status" role="alert">
@@ -306,14 +310,15 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                       <span className="watchlist-top-controls__autocomplete-copy">
                         <span className="watchlist-top-controls__autocomplete-title">{result.title}</span>
                         <span className="watchlist-top-controls__autocomplete-meta">
-                          {result.year || 'Release year unavailable'}
+                          {result.type === 'series' ? 'TV series' : 'Movie'}
+                          {result.year ? ` • ${result.year}` : ''}
                         </span>
                       </span>
                     </button>
                   ))
                 ) : (
                   <div className="watchlist-top-controls__autocomplete-status">
-                    No movies found for “{trimmedSearchQuery}”
+                    No titles found for “{trimmedSearchQuery}”
                   </div>
                 )}
               </div>
@@ -328,8 +333,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
                 isLoading={isAdding}
                 loadingText="Adding"
                 disabled={isSubmittingRecommendation}
-                title="Add movie to watchlist"
-                aria-label="Add movie to watchlist"
+                title="Add title to watchlist"
+                aria-label="Add title to watchlist"
                 className="watchlist-top-controls__search-button"
                 style={{ minWidth: '84px' }}
               >

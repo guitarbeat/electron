@@ -2,11 +2,6 @@ import { fetchWithRetry } from './_lib/retryFetch.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
 import { resolveConfig } from './_lib/config.ts';
 
-const OMDB_API_BASE_URL = resolveConfig(
-  process.env.OMDB_API_URL || process.env.VITE_OMDB_API_URL,
-  'https://www.omdbapi.com'
-);
-const OMDB_API_KEY = (process.env.OMDB_API_KEY || '').trim();
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -26,6 +21,14 @@ interface CachedResponse {
 const isAbsoluteUrl = (value: string) => /^[a-z][a-z\d+\-.]*:\/\//i.test(value);
 const omdbCache = new Map<string, CachedResponse>();
 const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
+
+const getOmdbApiBaseUrl = (): string =>
+  resolveConfig(
+    process.env.OMDB_API_URL || process.env.VITE_OMDB_API_URL,
+    'https://www.omdbapi.com'
+  );
+
+const getOmdbApiKey = (): string => (process.env.OMDB_API_KEY || '').trim();
 
 const toJsonResponse = (body: string, status: number): Response =>
   new Response(body, {
@@ -188,11 +191,14 @@ async function handler(req: Request): Promise<Response> {
       return rateLimitResponse();
     }
 
-    if (!isAbsoluteUrl(OMDB_API_BASE_URL)) {
+    const omdbApiBaseUrl = getOmdbApiBaseUrl();
+    const omdbApiKey = getOmdbApiKey();
+
+    if (!isAbsoluteUrl(omdbApiBaseUrl)) {
       return badConfigResponse('Invalid OMDB_API_URL configuration.');
     }
 
-    if (OMDB_API_KEY.length === 0) {
+    if (omdbApiKey.length === 0) {
       return badConfigResponse('OMDb is not configured. Set OMDB_API_KEY for the /api/omdb proxy.');
     }
 
@@ -202,12 +208,12 @@ async function handler(req: Request): Promise<Response> {
       return badRequestResponse('At least one OMDb lookup parameter is required.');
     }
 
-    const targetUrl = new URL(OMDB_API_BASE_URL);
+    const targetUrl = new URL(omdbApiBaseUrl);
     sourceUrl.searchParams.forEach((value, key) => {
       targetUrl.searchParams.set(key, value);
     });
-    if (!targetUrl.searchParams.has('apikey') && OMDB_API_KEY.length > 0) {
-      targetUrl.searchParams.set('apikey', OMDB_API_KEY);
+    if (!targetUrl.searchParams.has('apikey') && omdbApiKey.length > 0) {
+      targetUrl.searchParams.set('apikey', omdbApiKey);
     }
 
     const cacheKey = targetUrl.toString();
