@@ -1,4 +1,4 @@
-import { isValidUrl, sanitizeInput } from '../utils';
+import { isValidUrl, sanitizeInput } from '../utils/shared.ts';
 
 const env = (import.meta.env ?? {}) as ImportMetaEnv & {
   VITE_OMDB_API_URL?: string;
@@ -18,6 +18,7 @@ const resolveConfig = (value: string | undefined, fallback: string) => {
 const OMDB_BASE = resolveConfig(env.VITE_OMDB_API_URL, OMDB_DEFAULT_BASE_URL);
 const TVMAZE_BASE = resolveConfig(env.VITE_TVMAZE_API_URL, TVMAZE_DEFAULT_BASE_URL);
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
+export const MOVIE_AUTOCOMPLETE_RESULT_LIMIT = 6;
 
 const stripHtml = (value?: string | null): string | undefined => {
   if (!value) return undefined;
@@ -42,10 +43,18 @@ const normalizePosterUrl = (value?: string | null): string | undefined => {
   }
 };
 
-const buildOmdbUrl = (params: Record<string, string>): string | null => {
-  const url = new URL(OMDB_BASE, window.location.origin);
+const getLocationOrigin = (): string =>
+  typeof window !== 'undefined' && window.location?.origin
+    ? window.location.origin
+    : 'http://localhost';
 
-  if (OMDB_API_KEY && !url.searchParams.has('apikey')) {
+const shouldAttachClientOmdbApiKey = (url: URL): boolean =>
+  OMDB_API_KEY.length > 0 && /(^|\.)omdbapi\.com$/i.test(url.hostname);
+
+const buildOmdbUrl = (params: Record<string, string>): string | null => {
+  const url = new URL(OMDB_BASE, getLocationOrigin());
+
+  if (shouldAttachClientOmdbApiKey(url) && !url.searchParams.has('apikey')) {
     url.searchParams.set('apikey', OMDB_API_KEY);
   }
 
@@ -60,7 +69,7 @@ const buildTvMazeUrl = (
   mode: 'show' | 'search',
   value: string
 ): string => {
-  const url = new URL(TVMAZE_BASE, window.location.origin);
+  const url = new URL(TVMAZE_BASE, getLocationOrigin());
   url.searchParams.set('mode', mode);
   if (mode === 'show') {
     url.searchParams.set('id', value);
@@ -146,6 +155,21 @@ interface OmdbMovieResponse {
   Error?: string;
 }
 
+interface OmdbSearchResult {
+  Title: string;
+  Year: string;
+  imdbID: string;
+  Type: string;
+  Poster: string;
+}
+
+interface OmdbSearchResponse {
+  Search?: OmdbSearchResult[];
+  totalResults?: string;
+  Response: 'True' | 'False';
+  Error?: string;
+}
+
 interface TvMazeImage {
   medium: string;
   original: string;
@@ -210,6 +234,14 @@ export interface MetadataResult {
   type?: 'movie' | 'series';
 }
 
+export interface MovieAutocompleteResult {
+  imdbID: string;
+  title: string;
+  year?: string;
+  posterUrl?: string;
+  type: 'movie';
+}
+
 const toMetadataResultFromOmdb = (omdbData: OmdbMovieResponse): MetadataResult => ({
   posterUrl: normalizePosterUrl(omdbData.Poster),
   year: omdbData.Year !== 'N/A' ? omdbData.Year : undefined,
@@ -221,6 +253,63 @@ const toMetadataResultFromOmdb = (omdbData: OmdbMovieResponse): MetadataResult =
   title: omdbData.Title !== 'N/A' ? sanitizeInput(omdbData.Title) : undefined,
   type: omdbData.Type === 'series' ? 'series' : 'movie',
 });
+
+const toMovieAutocompleteResultFromOmdb = (
+  omdbData: OmdbSearchResult
+): MovieAutocompleteResult | null => {
+  const title = sanitizeInput(omdbData.Title);
+  const imdbID = sanitizeInput(omdbData.imdbID);
+
+  if (!title || !imdbID || omdbData.Type !== 'movie') {
+    return null;
+  }
+
+  return {
+    imdbID,
+    title,
+    year: omdbData.Year !== 'N/A' ? sanitizeInput(omdbData.Year) : undefined,
+    posterUrl: normalizePosterUrl(omdbData.Poster),
+    type: 'movie',
+  };
+};
+
+export const searchMovieAutocomplete = async (
+  query: string
+): Promise<MovieAutocompleteResult[]> => {
+  const cleanQuery = sanitizeInput(query);
+  if (cleanQuery.length < 2) {
+    return [];
+  }
+
+  const omdbSearchUrl = buildOmdbUrl({ s: cleanQuery, type: 'movie' });
+  if (!omdbSearchUrl) {
+    return [];
+  }
+
+  try {
+    const omdbRes = await fetchWithRetry(omdbSearchUrl);
+    if (!omdbRes.ok) {
+      throw new Error(`OMDb search failed with status ${omdbRes.status}`);
+    }
+
+    const omdbData: OmdbSearchResponse = await omdbRes.json();
+    if (omdbData.Response !== 'True' || !Array.isArray(omdbData.Search)) {
+      return [];
+    }
+
+    return omdbData.Search
+      .map(toMovieAutocompleteResultFromOmdb)
+      .filter((result): result is MovieAutocompleteResult => result !== null)
+      .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+  } catch (error) {
+    if (error instanceof Error && error.message && !error.message.includes('timeout')) {
+      console.warn(`OMDb autocomplete failed for "${cleanQuery}": ${error.message}`);
+    }
+    throw new Error('Movie suggestions are unavailable right now.', {
+      cause: error,
+    });
+  }
+};
 
 export const fetchMovieMetadata = async (
   title: string,

@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Movie, User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
-import { fetchMovieMetadata, MetadataResult } from '@/services/metadataService';
+import {
+  fetchMovieMetadata,
+  MetadataResult,
+  type MovieAutocompleteResult,
+} from '@/services/metadataService';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import {
   areDeeplyEqual,
@@ -108,7 +112,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const addMovie = useCallback(
-    async (title: string) => {
+    async (
+      title: string,
+      selectedResult?: Pick<MovieAutocompleteResult, 'imdbID' | 'type'>
+    ) => {
       if (!currentUser) {
         throw new Error('Profile required');
       }
@@ -143,7 +150,11 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
       void (async () => {
         try {
-          const metadata = await fetchMovieMetadata(cleanTitle);
+          const metadata = await fetchMovieMetadata(
+            cleanTitle,
+            selectedResult?.type,
+            selectedResult?.imdbID
+          );
           const safeMetadata = extractSafeMetadata(metadata);
           if (Object.keys(safeMetadata).length === 0) {
             return;

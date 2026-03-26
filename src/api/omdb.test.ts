@@ -63,3 +63,28 @@ test('OMDb proxy rejects requests without any lookup parameters', async () => {
   assert.equal(response.status, 400);
   assert.match(await response.text(), /lookup parameter/i);
 });
+
+test('OMDb proxy forwards search-style autocomplete queries', async () => {
+  globalThis.fetch = async (input) => {
+    assert.equal(
+      String(input),
+      'https://www.omdbapi.com/?s=Heat&type=movie'
+    );
+
+    return new Response(
+      '{"Response":"True","Search":[{"Title":"Heat","Year":"1995","imdbID":"tt0113277","Type":"movie","Poster":"N/A"}]}',
+      {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }
+    );
+  };
+
+  const response = await handler(new Request('https://example.com/api/omdb?s=Heat&type=movie'));
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-Cache'), 'MISS');
+  assert.match(await response.text(), /"Search":\[/);
+});
