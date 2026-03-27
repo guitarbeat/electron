@@ -12,13 +12,11 @@ const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.j
 interface PlacesMapProps {
   places: Place[];
   canEdit?: boolean;
-  // Search / add a place
   searchQuery: string;
   setSearchQuery: (v: string) => void;
   onSubmitSearch: () => Promise<void> | void;
   isAdding: boolean;
   suggestionError: string | null;
-  // Pin-drop callbacks
   onUpdatePlace?: (id: string, updates: Partial<Pick<Place, 'lat' | 'lng'>>) => Promise<void>;
   onAddPlace?: (name: string, notes?: string, lat?: number, lng?: number) => Promise<void>;
   style?: React.CSSProperties;
@@ -47,6 +45,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const markersRef = useRef<MapLibreGL.Marker[]>([]);
   const pendingMarkerRef = useRef<MapLibreGL.Marker | null>(null);
+  const dragCounterRef = useRef(0);
 
   const [isDropMode, setIsDropMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<PendingPin | null>(null);
@@ -54,6 +53,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   const [selectedPlaceId, setSelectedPlaceId] = useState('');
   const [newPlaceName, setNewPlaceName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const unmappedPlaces = places.filter(
     (p) => typeof p.lat !== 'number' || typeof p.lng !== 'number'
@@ -67,6 +67,30 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
     setNewPlaceName('');
     setPinMode('assign');
     setIsDropMode(false);
+  }, []);
+
+  const createPendingMarker = useCallback((map: MapLibreGL.Map, lng: number, lat: number) => {
+    pendingMarkerRef.current?.remove();
+
+    const el = document.createElement('div');
+    el.style.cssText = `
+      width: 18px; height: 18px; border-radius: 50%;
+      background: ${colors.accentLight};
+      border: 2.5px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      cursor: grab;
+    `;
+
+    const marker = new MapLibreGL.Marker({ element: el, draggable: true })
+      .setLngLat([lng, lat])
+      .addTo(map);
+
+    marker.on('dragend', () => {
+      const pos = marker.getLngLat();
+      setPendingPin({ lng: pos.lng, lat: pos.lat });
+    });
+
+    pendingMarkerRef.current = marker;
   }, []);
 
   // Init map
@@ -92,7 +116,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
     };
   }, []);
 
-  // Drop-mode cursor + click handler
+  // Click-to-drop mode
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -102,28 +126,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
     const handleMapClick = (e: MapLibreGL.MapMouseEvent) => {
       if (!isDropMode) return;
       const { lng, lat } = e.lngLat;
-
-      pendingMarkerRef.current?.remove();
-
-      const el = document.createElement('div');
-      el.style.cssText = `
-        width: 18px; height: 18px; border-radius: 50%;
-        background: ${colors.accentLight};
-        border: 2.5px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.6);
-        cursor: grab;
-      `;
-
-      const marker = new MapLibreGL.Marker({ element: el, draggable: true })
-        .setLngLat([lng, lat])
-        .addTo(map);
-
-      marker.on('dragend', () => {
-        const pos = marker.getLngLat();
-        setPendingPin({ lng: pos.lng, lat: pos.lat });
-      });
-
-      pendingMarkerRef.current = marker;
+      createPendingMarker(map, lng, lat);
       setPendingPin({ lng, lat });
       setSelectedPlaceId(unmappedPlaces[0]?.id ?? '');
     };
@@ -139,9 +142,9 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
       map.off('click', handleMapClick);
       if (!isDropMode) canvas.style.cursor = '';
     };
-  }, [isDropMode, unmappedPlaces]);
+  }, [isDropMode, unmappedPlaces, createPendingMarker]);
 
-  // Render saved-place markers
+  // Saved-place markers
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -204,6 +207,47 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
     }
   }, [pendingPin, pinMode, selectedPlaceId, newPlaceName, onUpdatePlace, onAddPlace, cancelPin]);
 
+  // ── Drag-and-drop from cards ──
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    if (!canEdit || !e.dataTransfer.types.includes('placeid')) return;
+    e.preventDefault();
+    dragCounterRef.current += 1;
+    if (dragCounterRef.current === 1) setIsDragOver(true);
+  }, [canEdit]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    if (!canEdit || !e.dataTransfer.types.includes('placeid')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'link';
+  }, [canEdit]);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current === 0) setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current = 0;
+    setIsDragOver(false);
+
+    const placeId = e.dataTransfer.getData('placeId');
+    if (!placeId || !mapRef.current || !containerRef.current) return;
+
+    const map = mapRef.current;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const lngLat = map.unproject([x, y]);
+
+    createPendingMarker(map, lngLat.lng, lngLat.lat);
+    setPendingPin({ lng: lngLat.lng, lat: lngLat.lat });
+    setPinMode('assign');
+    setSelectedPlaceId(placeId);
+    setIsDropMode(false);
+  }, [createPendingMarker]);
+
   const canSave =
     pendingPin &&
     !isSaving &&
@@ -219,19 +263,68 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
 
   return (
     <div style={{ position: 'relative', width: '100%', ...style }}>
-      {/* Map */}
+      {/* Map canvas */}
       <div
         ref={containerRef}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         style={{
           width: '100%',
           height: 'clamp(360px, 52vh, 580px)',
           borderRadius: radius.xl,
           overflow: 'hidden',
-          border: `1px solid ${colors.borderSecondary}35`,
+          border: isDragOver
+            ? `2px solid ${colors.accent}`
+            : `1px solid ${colors.borderSecondary}35`,
           background: colors.surface,
+          transition: `border-color ${motion.duration.fast}`,
         }}
         aria-label="Map of saved places"
       />
+
+      {/* ── Drag-over overlay ── */}
+      {isDragOver && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: radius.xl,
+            background: `${colors.accent}22`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }}
+        >
+          <div
+            style={{
+              ...glassStyle,
+              background: `rgba(18,11,6,0.82)`,
+              border: `1.5px solid ${colors.accent}`,
+              padding: `${spacing.md} ${spacing.xl}`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: spacing.xs,
+            }}
+          >
+            <span style={{ fontSize: '2rem', lineHeight: 1 }}>📍</span>
+            <span
+              style={{
+                fontFamily: typography.fontFamily.heading.join(', '),
+                fontSize: typography.fontSize.sm,
+                color: colors.accentLight,
+                letterSpacing: '0.06em',
+              }}
+            >
+              Drop to pin this place
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ── Floating search bar ── */}
       <div
@@ -335,7 +428,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
         </button>
       )}
 
-      {/* ── Pin assignment panel (floats at bottom of map) ── */}
+      {/* ── Pin assignment panel ── */}
       {pendingPin && canEdit && (
         <div
           style={{
@@ -349,7 +442,6 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
             display: 'flex',
             flexDirection: 'column',
             gap: spacing.sm,
-            animation: `fade-in ${motion.duration.fast} ${motion.easing.easeOut}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -380,7 +472,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
           </div>
 
           {pinMode === 'assign' ? (
-            unmappedPlaces.length > 0 ? (
+            places.length > 0 ? (
               <select
                 value={selectedPlaceId}
                 onChange={(e) => setSelectedPlaceId(e.target.value)}
@@ -397,13 +489,13 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
                 }}
               >
                 <option value="">Select a place to pin…</option>
-                {unmappedPlaces.map((p) => (
+                {places.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             ) : (
               <p style={{ ...typography.presets.bodySm, color: colors.textTertiary, margin: 0 }}>
-                All places already have pins. Switch to "New place" to add one here.
+                No places yet. Switch to "New place" to create one here.
               </p>
             )
           ) : (
