@@ -1,166 +1,93 @@
 import React, { useEffect, useRef } from 'react';
+import MapLibreGL from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 
-const DEFAULT_CENTER = { lat: 30.27, lng: -97.74 };
-const DEFAULT_ZOOM = 4;
-const GOOGLE_PLACES_API_KEY =
-  ((import.meta.env || {}) as Record<string, string | undefined>).VITE_GOOGLE_PLACES_API_KEY || '';
+const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
+const DEFAULT_ZOOM = 3;
+const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 
 interface PlacesMapProps {
   places: Place[];
   style?: React.CSSProperties;
 }
 
-type LatLng = { lat: number; lng: number };
-
-interface GoogleMarkerInstance {
-  setMap: (map: GoogleMapInstance | null) => void;
-}
-
-interface GoogleLatLngBoundsInstance {
-  extend: (position: LatLng) => void;
-}
-
-interface GoogleMapInstance {
-  setCenter: (position: LatLng) => void;
-  setZoom: (zoom: number) => void;
-  fitBounds: (
-    bounds: GoogleLatLngBoundsInstance,
-    padding?: number | { top: number; right: number; bottom: number; left: number }
-  ) => void;
-}
-
-interface GoogleMapsApi {
-  maps: {
-    Map: new (container: HTMLElement, options: Record<string, unknown>) => GoogleMapInstance;
-    Marker: new (options: { position: LatLng; map: GoogleMapInstance; title?: string }) => GoogleMarkerInstance;
-    LatLngBounds: new () => GoogleLatLngBoundsInstance;
-  };
-}
-
-type WindowWithGoogle = Window & { google?: GoogleMapsApi };
-
-const getGoogleApi = (): GoogleMapsApi | null => {
-  const candidate = (window as WindowWithGoogle).google;
-  return candidate?.maps ? candidate : null;
-};
-
-/**
- * Renders a Google Map with markers for places that have lat/lng.
- * Uses the same API key as Places autocomplete; script may already be loaded.
- */
 const PlacesMap: React.FC<PlacesMapProps> = ({ places, style }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const mapRef = useRef<GoogleMapInstance | null>(null);
-
-  const markersRef = useRef<GoogleMarkerInstance[]>([]);
+  const mapRef = useRef<MapLibreGL.Map | null>(null);
+  const markersRef = useRef<MapLibreGL.Marker[]>([]);
 
   useEffect(() => {
-    if (!GOOGLE_PLACES_API_KEY || !containerRef.current) return;
+    if (!containerRef.current || mapRef.current) return;
+
+    mapRef.current = new MapLibreGL.Map({
+      container: containerRef.current,
+      style: MAP_STYLE,
+      center: DEFAULT_CENTER,
+      zoom: DEFAULT_ZOOM,
+      renderWorldCopies: false,
+      attributionControl: { compact: true },
+    });
+
+    return () => {
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
 
     const placesWithCoords = places.filter(
       (p): p is Place & { lat: number; lng: number } =>
         typeof p.lat === 'number' && typeof p.lng === 'number'
     );
 
-    const updateMarkersAndBounds = (map: GoogleMapInstance) => {
-      markersRef.current.forEach((m) => m.setMap(null));
+    const updateMarkers = () => {
+      markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
 
       if (placesWithCoords.length === 0) return;
 
-      const googleApi = getGoogleApi();
-      if (!googleApi) return;
-      const bounds = new googleApi.maps.LatLngBounds();
       placesWithCoords.forEach((place) => {
-        const position = { lat: place.lat, lng: place.lng };
-        const marker = new googleApi.maps.Marker({
-          position,
-          map,
-          title: place.name,
-        });
+        const el = document.createElement('div');
+        el.style.cssText = `
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: ${colors.accent};
+          border: 2px solid rgba(255,255,255,0.8);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+          cursor: pointer;
+        `;
+        el.title = place.name;
+
+        const marker = new MapLibreGL.Marker({ element: el })
+          .setLngLat([place.lng, place.lat])
+          .addTo(map);
+
         markersRef.current.push(marker);
-        bounds.extend(position);
       });
 
       if (placesWithCoords.length === 1) {
-        map.setCenter({ lat: placesWithCoords[0].lat, lng: placesWithCoords[0].lng });
-        map.setZoom(12);
+        map.flyTo({ center: [placesWithCoords[0].lng, placesWithCoords[0].lat], zoom: 12 });
       } else {
-        map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
+        const bounds = new MapLibreGL.LngLatBounds();
+        placesWithCoords.forEach((p) => bounds.extend([p.lng, p.lat]));
+        map.fitBounds(bounds, { padding: 48, maxZoom: 14 });
       }
     };
 
-    const initMap = () => {
-      const googleApi = getGoogleApi();
-      if (!containerRef.current || !googleApi) return;
-
-      const map = new googleApi.maps.Map(containerRef.current, {
-        center: DEFAULT_CENTER,
-        zoom: DEFAULT_ZOOM,
-        styles: [
-          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-          { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-        ],
-        zoomControl: true,
-        mapTypeControl: false,
-        scaleControl: true,
-        streetViewControl: false,
-        fullscreenControl: true,
-      });
-
-      mapRef.current = map;
-      updateMarkersAndBounds(map);
-    };
-
-    if (getGoogleApi()?.maps.Map) {
-      if (mapRef.current) {
-        updateMarkersAndBounds(mapRef.current);
-      } else {
-        initMap();
-      }
-      return;
+    if (map.isStyleLoaded()) {
+      updateMarkers();
+    } else {
+      map.once('load', updateMarkers);
     }
-
-    const existing = document.querySelector('script[src*="maps.googleapis.com"]');
-    if (existing) {
-      existing.addEventListener('load', initMap);
-      return () => existing.removeEventListener('load', initMap);
-    }
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_API_KEY}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = initMap;
-    document.head.appendChild(script);
-
-    return () => {
-      markersRef.current.forEach((m) => m.setMap(null));
-      markersRef.current = [];
-      mapRef.current = null;
-    };
   }, [places]);
-
-  if (!GOOGLE_PLACES_API_KEY) {
-    return (
-      <div
-        style={{
-          padding: spacing.lg,
-          background: colors.surface,
-          borderRadius: radius.lg,
-          border: `1px solid ${colors.borderSecondary}35`,
-          color: colors.textTertiary,
-          fontSize: typography.fontSize.sm,
-          ...style,
-        }}
-      >
-        Map unavailable.
-      </div>
-    );
-  }
 
   return (
     <div
