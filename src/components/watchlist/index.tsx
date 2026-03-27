@@ -9,7 +9,9 @@ import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
 import { useWatchlist } from './useWatchlist';
-import WatchlistTopControls from './WatchlistTopControls';
+import WatchlistTopControls, {
+  type WatchlistTopControlsHandle,
+} from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 import { buildWatchlistSections } from './watchlistSections';
@@ -22,7 +24,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [recommendationReason, setRecommendationReason] = useState('');
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const watchlistTopControlsRef = useRef<WatchlistTopControlsHandle | null>(null);
 
   const {
     isMobile,
@@ -127,13 +129,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, []);
 
   const focusSearchInput = useCallback(() => {
-    window.requestAnimationFrame(() => {
-      searchInputRef.current?.focus();
-      searchInputRef.current?.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      });
-    });
+    watchlistTopControlsRef.current?.focusSearchInput();
   }, []);
 
   useEffect(() => {
@@ -429,10 +425,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       )}
 
       <WatchlistTopControls
+        ref={watchlistTopControlsRef}
         currentUser={currentUser}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        externalSearchInputRef={searchInputRef}
         selectedAutocompleteResult={selectedAutocompleteResult}
         setSelectedAutocompleteResult={setSelectedAutocompleteResult}
         onSubmit={handleAddAction}
@@ -547,7 +543,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                       onClick={focusSearchInput}
                       className="watchlist-empty-queue-state__action"
                     >
-                      Focus title field
+                      Jump to search
                     </Button>
                   </CollectionEmptyState>
                 ) : null}
