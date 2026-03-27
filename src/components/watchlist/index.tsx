@@ -1,10 +1,11 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser } from '@/app/providers';
 import type { Movie, MovieSuggestion, SharedMemory, WatchlistProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
+import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
 import { useWatchlist } from './useWatchlist';
@@ -21,6 +22,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [recommendationReason, setRecommendationReason] = useState('');
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     isMobile,
@@ -121,6 +123,16 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const handleRecommendationReasonChange = useCallback((value: string) => {
     setSuggestionError(null);
     setRecommendationReason(value);
+  }, []);
+
+  const focusSearchInput = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      });
+    });
   }, []);
 
   useEffect(() => {
@@ -417,6 +429,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         currentUser={currentUser}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        externalSearchInputRef={searchInputRef}
         selectedAutocompleteResult={selectedAutocompleteResult}
         setSelectedAutocompleteResult={setSelectedAutocompleteResult}
         onSubmit={handleAddAction}
@@ -515,10 +528,23 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
                   <CollectionEmptyState
                     padding={isMobile ? spacing.md : spacing['2xl']}
-                    className={isMobile ? 'collection-empty-state--tight' : undefined}
+                    className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
                     style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
                   >
-                    No movies in queue
+                    <span className="watchlist-empty-queue-state__eyebrow">Your next movie night starts here</span>
+                    <strong className="watchlist-empty-queue-state__title">Add the first title to build the queue.</strong>
+                    <span className="watchlist-empty-queue-state__copy">
+                      Search for a movie or series above, then add it to the shared list in one step.
+                    </span>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={focusSearchInput}
+                      className="watchlist-empty-queue-state__action"
+                    >
+                      Focus title field
+                    </Button>
                   </CollectionEmptyState>
                 ) : null}
               </CollectionGrid>

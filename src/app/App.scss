@@ -10333,6 +10333,41 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   filter: none;
 }
 
+.watchlist-empty-queue-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.watchlist-empty-queue-state__eyebrow {
+  color: color-mix(in srgb, var(--color-accent-light) 84%, white 16%);
+  font-family: var(--type-caption-family);
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.watchlist-empty-queue-state__title {
+  max-width: 24rem;
+  color: var(--color-text-primary);
+  font-family: var(--type-heading-family);
+  font-size: clamp(1.1rem, 0.98rem + 0.4vw, 1.35rem);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+}
+
+.watchlist-empty-queue-state__copy {
+  max-width: 28rem;
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, white 8%);
+}
+
+.watchlist-empty-queue-state__action.ui-button {
+  min-width: 11rem;
+  margin-top: 0.2rem;
+}
+
 .movie-item-card,
 .place-item-card {
   border-radius: 0;
