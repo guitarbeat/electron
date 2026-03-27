@@ -178,6 +178,72 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     [currentUser, movies, performMutation]
   );
 
+  const renameMovie = useCallback(
+    async (movieId: string, title: string) => {
+      if (!currentUser) {
+        throw new Error('Profile required');
+      }
+
+      const currentMovie = movies.find((entry) => entry.id === movieId);
+      if (!currentMovie) {
+        throw new Error('Movie not found');
+      }
+
+      const cleanTitle = sanitizeInput(title);
+      if (!cleanTitle) {
+        throw new Error('Movie title cannot be empty');
+      }
+
+      if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
+        throw new Error(
+          `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`
+        );
+      }
+
+      const optimisticMovies = movies.map((movie) =>
+        movie.id === movieId ? { ...movie, title: cleanTitle } : movie
+      );
+
+      await performMutation(
+        'rename_movie',
+        {
+          movieId,
+          title: cleanTitle,
+        },
+        optimisticMovies
+      );
+
+      void (async () => {
+        try {
+          const metadata = await fetchMovieMetadata(cleanTitle);
+          const safeMetadata = extractSafeMetadata(metadata);
+          if (Object.keys(safeMetadata).length === 0) {
+            return;
+          }
+
+          await performMutation(
+            'update_metadata',
+            {
+              movieId,
+              metadata: safeMetadata,
+            },
+            optimisticMovies.map((movie) =>
+              movie.id === movieId
+                ? {
+                    ...movie,
+                    ...safeMetadata,
+                  }
+                : movie
+            )
+          );
+        } catch (metadataError) {
+          console.warn('Metadata refresh failed after rename:', metadataError);
+        }
+      })();
+    },
+    [currentUser, movies, performMutation]
+  );
+
   const toggleWatched = useCallback(
     async (movieId: string) => {
       if (!currentUser) {
@@ -328,6 +394,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     isSyncBlocked: snapshot?.blocked ?? false,
     syncWarning: snapshot?.warning,
     addMovie,
+    renameMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,
