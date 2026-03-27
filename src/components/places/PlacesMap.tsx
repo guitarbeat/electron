@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import MapLibreGL from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { colors, spacing, radius, typography } from '@/theme/tokens';
+import { colors, radius } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];

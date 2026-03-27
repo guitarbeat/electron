@@ -21,6 +21,7 @@ interface WatchlistTopControlsProps {
   currentUser: User | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
+  externalSearchInputRef?: React.RefObject<HTMLInputElement | null>;
   selectedAutocompleteResult: MovieAutocompleteResult | null;
   setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
   onSubmit: () => Promise<void> | void;
@@ -40,6 +41,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   currentUser,
   searchQuery,
   setSearchQuery,
+  externalSearchInputRef,
   selectedAutocompleteResult,
   setSelectedAutocompleteResult,
   onSubmit,
@@ -57,7 +59,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   const hasSearchQuery = Boolean(searchQuery.trim());
   const isBusy = isAdding || isSubmittingRecommendation;
   const searchFormRef = useRef<HTMLFormElement | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRequestIdRef = useRef(0);
   const autocompleteListId = useId();
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
@@ -82,7 +84,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       setSelectedAutocompleteResult(result);
       setSearchQuery(result.title);
       closeAutocomplete();
-      searchInputRef.current?.focus();
+      internalSearchInputRef.current?.focus();
     },
     [closeAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
   );
@@ -182,7 +184,12 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         >
           <div className="watchlist-top-controls__search-shell">
             <Input
-              ref={searchInputRef}
+              ref={(node) => {
+                internalSearchInputRef.current = node;
+                if (externalSearchInputRef) {
+                  externalSearchInputRef.current = node;
+                }
+              }}
               className="watchlist-top-controls__search-field"
               value={searchQuery}
               onChange={(event) => {
