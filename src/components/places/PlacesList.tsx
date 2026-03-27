@@ -9,6 +9,7 @@ import { colors, spacing, typography } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 import PlacesMap from './PlacesMap';
 import PlaceCard from './PlaceCard';
+import PlaceEditModal from './PlaceEditModal';
 import { buildPlaceSections } from './placeSections';
 
 const PlacesList: React.FC = () => {
@@ -33,6 +34,7 @@ const PlacesList: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
+  const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
 
   const sections = useMemo(() => buildPlaceSections(places), [places]);
 
@@ -136,6 +138,7 @@ const PlacesList: React.FC = () => {
                 onMarkVisited={markVisited}
                 onMarkUnvisited={markUnvisited}
                 onDelete={setPlaceToDelete}
+                onEdit={setPlaceToEdit}
               />
             ))
           ) : (
@@ -207,6 +210,14 @@ const PlacesList: React.FC = () => {
           onCancel={() => setPlaceToDelete(null)}
           confirmText="Remove"
           variant="danger"
+        />
+      )}
+
+      {placeToEdit && (
+        <PlaceEditModal
+          place={placeToEdit}
+          onSave={async (id, updates) => { await updatePlace(id, updates); }}
+          onClose={() => setPlaceToEdit(null)}
         />
       )}
     </div>

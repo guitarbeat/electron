@@ -112,7 +112,7 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const updatePlace = useCallback(
-    async (id: string, updates: Partial<Pick<Place, 'name' | 'notes' | 'lat' | 'lng'>>) => {
+    async (id: string, updates: Partial<Pick<Place, 'name' | 'notes' | 'lat' | 'lng' | 'category'>>) => {
       if (updates.name !== undefined || updates.notes !== undefined) {
         validateAndThrow(validatePlace, {
           name: updates.name ?? places.find((p) => p.id === id)?.name ?? '',

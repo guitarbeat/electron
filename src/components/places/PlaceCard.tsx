@@ -32,6 +32,7 @@ interface PlaceCardProps {
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
+  onEdit: (place: Place) => void;
 }
 
 const PlaceCard: React.FC<PlaceCardProps> = ({
@@ -41,6 +42,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
+  onEdit,
 }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -66,6 +68,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(place);
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(place);
   };
 
   const visitedDate = place.visitedAt
@@ -153,6 +160,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                   }
                 >
                   {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
+                </button>
+                <button
+                  type="button"
+                  className="place-item-delete-btn"
+                  onClick={handleEdit}
+                  disabled={isSubmitting}
+                  aria-label={`Edit ${place.name}`}
+                  title="Edit place"
+                  style={{ fontSize: '0.85em' }}
+                >
+                  ✏️
                 </button>
                 <button
                   type="button"
