@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { applyFetchResponseHeaders } from './api/_lib/nodeResponse.ts';
 
 const resolveFromRoot = (subpath: string): string => path.resolve(__dirname, subpath);
 
@@ -110,9 +111,7 @@ export default defineConfig(({ mode }) => {
                   const response = await handler(request);
 
                   res.statusCode = response.status;
-                  response.headers.forEach((value: string, key: string) => {
-                    res.setHeader(key, value);
-                  });
+                  applyFetchResponseHeaders(res, response);
 
                   const responseBody = await response.arrayBuffer();
                   res.end(Buffer.from(responseBody));
