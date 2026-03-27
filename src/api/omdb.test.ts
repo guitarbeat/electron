@@ -95,13 +95,38 @@ test('OMDb proxy forwards search-style autocomplete queries', async () => {
 
 test('OMDb proxy reports missing OMDB_API_KEY as a config failure', async () => {
   delete process.env.OMDB_API_KEY;
+  delete process.env.VITE_OMDB_API_KEY;
 
   const response = await handler(new Request('https://example.com/api/omdb?t=Heat'));
   const body = JSON.parse(await response.text()) as { error: string; code: string };
 
   assert.equal(response.status, 500);
   assert.equal(body.code, 'omdb_config');
-  assert.match(body.error, /OMDB_API_KEY/i);
+  assert.match(body.error, /OMDB_API_KEY|VITE_OMDB_API_KEY/i);
+});
+
+test('OMDb proxy falls back to VITE_OMDB_API_KEY when the server key is missing', async () => {
+  delete process.env.OMDB_API_KEY;
+  process.env.VITE_OMDB_API_KEY = 'client-omdb-key';
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.equal(url.origin, 'https://www.omdbapi.com');
+    assert.equal(url.searchParams.get('t'), 'Heat');
+    assert.equal(url.searchParams.get('apikey'), 'client-omdb-key');
+
+    return new Response('{"Response":"True","Title":"Heat"}', {
+      status: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+  };
+
+  const response = await handler(new Request('https://example.com/api/omdb?t=Heat'));
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-Cache'), 'MISS');
+  assert.match(await response.text(), /"Title":"Heat"/);
 });
 
 test('OMDb proxy translates upstream credential failures into a stable auth error', async () => {

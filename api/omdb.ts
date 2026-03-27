@@ -28,7 +28,8 @@ const getOmdbApiBaseUrl = (): string =>
     'https://www.omdbapi.com'
   );
 
-const getOmdbApiKey = (): string => (process.env.OMDB_API_KEY || '').trim();
+const getOmdbApiKey = (): string =>
+  (process.env.OMDB_API_KEY || process.env.VITE_OMDB_API_KEY || '').trim();
 
 const toJsonResponse = (body: string, status: number): Response =>
   new Response(body, {
@@ -199,7 +200,9 @@ async function handler(req: Request): Promise<Response> {
     }
 
     if (omdbApiKey.length === 0) {
-      return badConfigResponse('OMDb is not configured. Set OMDB_API_KEY for the /api/omdb proxy.');
+      return badConfigResponse(
+        'OMDb is not configured. Set OMDB_API_KEY or VITE_OMDB_API_KEY for the /api/omdb proxy.'
+      );
     }
 
     // Vercel may pass a relative `req.url` which requires a base.
