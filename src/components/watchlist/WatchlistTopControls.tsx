@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
@@ -36,7 +44,14 @@ interface WatchlistTopControlsProps {
   canRecommend: boolean;
 }
 
-const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
+export interface WatchlistTopControlsHandle {
+  focusSearchInput: () => void;
+}
+
+const WatchlistTopControls = React.forwardRef<
+  WatchlistTopControlsHandle,
+  WatchlistTopControlsProps
+>(({
   currentUser,
   searchQuery,
   setSearchQuery,
@@ -53,11 +68,11 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   isSubmittingRecommendation,
   suggestionError,
   canRecommend,
-}) => {
+}, forwardedRef) => {
   const hasSearchQuery = Boolean(searchQuery.trim());
   const isBusy = isAdding || isSubmittingRecommendation;
   const searchFormRef = useRef<HTMLFormElement | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRequestIdRef = useRef(0);
   const autocompleteListId = useId();
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
@@ -67,6 +82,28 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
   const [hasAutocompleteFocus, setHasAutocompleteFocus] = useState(false);
   const trimmedSearchQuery = searchQuery.trim();
+
+  useImperativeHandle(
+    forwardedRef,
+    () => ({
+      focusSearchInput: () => {
+        const input = internalSearchInputRef.current;
+        if (!input) {
+          return;
+        }
+
+        if (document.activeElement !== input) {
+          input.focus();
+        }
+
+        input.scrollIntoView({
+          block: 'center',
+          behavior: 'smooth',
+        });
+      },
+    }),
+    []
+  );
 
   const closeAutocomplete = useCallback(() => {
     autocompleteRequestIdRef.current += 1;
@@ -82,7 +119,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       setSelectedAutocompleteResult(result);
       setSearchQuery(result.title);
       closeAutocomplete();
-      searchInputRef.current?.focus();
+      internalSearchInputRef.current?.focus();
     },
     [closeAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
   );
@@ -182,7 +219,7 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
         >
           <div className="watchlist-top-controls__search-shell">
             <Input
-              ref={searchInputRef}
+              ref={internalSearchInputRef}
               className="watchlist-top-controls__search-field"
               value={searchQuery}
               onChange={(event) => {
@@ -380,6 +417,8 @@ const WatchlistTopControls: React.FC<WatchlistTopControlsProps> = ({
       )}
     </section>
   );
-};
+});
+
+WatchlistTopControls.displayName = 'WatchlistTopControls';
 
 export default WatchlistTopControls;

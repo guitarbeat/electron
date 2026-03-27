@@ -321,6 +321,40 @@ const scopes: {
             ],
           };
         }
+        case 'rename_movie': {
+          const nextPayload = payload as {
+            movieId?: unknown;
+            title?: unknown;
+          };
+          const movieId =
+            typeof nextPayload.movieId === 'string'
+              ? sanitizeInput(nextPayload.movieId)
+              : '';
+          const title =
+            typeof nextPayload.title === 'string'
+              ? sanitizeInput(nextPayload.title)
+              : '';
+
+          if (!movieId || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
+            return { ok: false, conflict: 'Invalid movie title.' };
+          }
+
+          if (!movies.some((movie) => movie.id === movieId)) {
+            return { ok: false, conflict: 'Movie not found.' };
+          }
+
+          return {
+            ok: true,
+            data: movies.map((movie) =>
+              movie.id === movieId
+                ? {
+                    ...movie,
+                    title,
+                  }
+                : movie
+            ),
+          };
+        }
         case 'toggle_watched': {
           const movieId =
             typeof (payload as { movieId?: unknown }).movieId === 'string'

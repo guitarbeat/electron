@@ -11,7 +11,7 @@ import { Movie, MovieSuggestion, User } from '@/shared/types';
 import { useMovies } from '@/hooks/useMovies';
 import { useSuggestions } from '@/hooks/useSuggestions';
 import { useToast } from '@/app/providers';
-import { areDeeplyEqual } from '@/utils';
+import { areDeeplyEqual, normalizeMovieTitle, sanitizeInput } from '@/utils';
 import { trackMetric } from '@/services/analyticsService';
 import { readScope, retryScopeSync } from '@/services/stateClient';
 
@@ -76,6 +76,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isSyncBlocked: isMoviesSyncBlocked,
     syncWarning: moviesSyncWarning,
     addMovie,
+    renameMovie: renameMovieService,
     toggleWatched,
     deleteMovie,
     restoreMovie,
@@ -209,6 +210,49 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     [acceptSuggestion, addMovie, currentUser, pendingSuggestions]
   );
 
+  const renameMovie = useCallback(
+    async (movieId: string, title: string): Promise<void> => {
+      const movie = movies.find((entry) => entry.id === movieId);
+      if (!movie) {
+        throw new Error('Movie not found');
+      }
+
+      await renameMovieService(movieId, title);
+
+      const cleanTitle = sanitizeInput(title);
+      const previousTitle = normalizeMovieTitle(movie.title);
+      const relatedMemories = memories.filter(
+        (memory) =>
+          memory.movieId === movieId ||
+          (!memory.movieId && normalizeMovieTitle(memory.movieTitle) === previousTitle)
+      );
+
+      if (relatedMemories.length === 0 || !cleanTitle) {
+        return;
+      }
+
+      try {
+        await Promise.all(
+          relatedMemories.map(async (memory) => {
+            const nextMovieId = memory.movieId ?? movieId;
+            if (memory.movieTitle === cleanTitle && memory.movieId === nextMovieId) {
+              return;
+            }
+
+            await updateMemoryService(memory.id, {
+              movieId: nextMovieId,
+              movieTitle: cleanTitle,
+            });
+          })
+        );
+        refreshMemories();
+      } catch (error) {
+        console.warn('Failed to sync related memory titles after rename:', error);
+      }
+    },
+    [memories, movies, refreshMemories, renameMovieService]
+  );
+
   const rejectPendingSuggestion = useCallback(
     async (suggestionId: string): Promise<void> => {
       if (!currentUser) {
@@ -276,6 +320,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     isWatchlistSyncBlocked,
     watchlistSyncWarning,
     addMovie,
+    renameMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,

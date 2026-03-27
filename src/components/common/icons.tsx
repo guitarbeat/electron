@@ -53,6 +53,13 @@ export const EyeIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
+export const EditIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path('M16.862 4.487a2.1 2.1 0 113.03 2.91L9.65 18.001l-4.15 1.12 1.267-4.018L16.862 4.487z')}
+    {path('M15.5 5.75l2.75 2.75')}
+  </StrokeIcon>
+);
+
 export const EyeOffIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     {path('M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21')}
