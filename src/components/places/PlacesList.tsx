@@ -25,6 +25,7 @@ const PlacesList: React.FC = () => {
     syncWarning,
     addPlace,
     removePlace,
+    updatePlace,
     markVisited,
     markUnvisited,
     retrySync,
@@ -189,7 +190,12 @@ const PlacesList: React.FC = () => {
               overflow: 'hidden',
             }}
           >
-            <PlacesMap places={places} />
+            <PlacesMap
+              places={places}
+              canEdit={Boolean(currentUser)}
+              onUpdatePlace={updatePlace}
+              onAddPlace={addPlace}
+            />
           </Card>
         }
       />
