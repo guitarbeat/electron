@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type FC,
   type MouseEvent,
@@ -62,6 +63,9 @@ const ActionMenuBody: FC<ActionMenuBodyProps> = ({
   </>
 );
 
+const HOVER_OPEN_DELAY_MS = 80;
+const HOVER_CLOSE_DELAY_MS = 180;
+
 const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   actionBubbleRef,
   actionBubbleMenuRef,
@@ -83,6 +87,63 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   const [failedPhotoUser, setFailedPhotoUser] = useState<string | null>(null);
   const photoError = Boolean(currentUser && failedPhotoUser === currentUser);
   const closeMenu = useCallback(() => onToggleMenu(false), [onToggleMenu]);
+  const openMenu = useCallback(() => onToggleMenu(true), [onToggleMenu]);
+
+  const hoverOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearHoverTimers = () => {
+    if (hoverOpenTimerRef.current !== null) {
+      clearTimeout(hoverOpenTimerRef.current);
+      hoverOpenTimerRef.current = null;
+    }
+    if (hoverCloseTimerRef.current !== null) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => () => clearHoverTimers(), []);
+
+  const handleBubbleMouseEnter = () => {
+    if (isMobile || isDraggingActionBubble) return;
+    if (hoverCloseTimerRef.current !== null) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+    hoverOpenTimerRef.current = setTimeout(() => {
+      hoverOpenTimerRef.current = null;
+      openMenu();
+    }, HOVER_OPEN_DELAY_MS);
+  };
+
+  const handleBubbleMouseLeave = () => {
+    if (isMobile) return;
+    if (hoverOpenTimerRef.current !== null) {
+      clearTimeout(hoverOpenTimerRef.current);
+      hoverOpenTimerRef.current = null;
+    }
+    hoverCloseTimerRef.current = setTimeout(() => {
+      hoverCloseTimerRef.current = null;
+      closeMenu();
+    }, HOVER_CLOSE_DELAY_MS);
+  };
+
+  const handleMenuMouseEnter = () => {
+    if (isMobile) return;
+    if (hoverCloseTimerRef.current !== null) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  };
+
+  const handleMenuMouseLeave = () => {
+    if (isMobile) return;
+    hoverCloseTimerRef.current = setTimeout(() => {
+      hoverCloseTimerRef.current = null;
+      closeMenu();
+    }, HOVER_CLOSE_DELAY_MS);
+  };
 
   const runItem = (item: CommandActionItem) => {
     closeMenu();
@@ -133,6 +194,8 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         onPointerMove={onActionBubblePointerMove}
         onPointerUp={onFinishActionBubbleDrag}
         onPointerCancel={onFinishActionBubbleDrag}
+        onMouseEnter={handleBubbleMouseEnter}
+        onMouseLeave={handleBubbleMouseLeave}
         aria-label={showActionBubbleMenu ? 'Close quick actions' : 'Open quick actions'}
         aria-haspopup="menu"
         aria-expanded={showActionBubbleMenu}
@@ -172,6 +235,8 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
           role="menu"
           aria-label="Quick actions"
           style={actionBubbleMenuStyle}
+          onMouseEnter={handleMenuMouseEnter}
+          onMouseLeave={handleMenuMouseLeave}
         >
           <div className="action-bubble-menu__header">
             <span className="action-bubble-menu__title" aria-hidden="true">Quick Actions</span>
