@@ -74,6 +74,7 @@ const WatchlistTopControls = React.forwardRef<
   const searchFormRef = useRef<HTMLFormElement | null>(null);
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRequestIdRef = useRef(0);
+  const suppressAutocompleteReopenRef = useRef(false);
   const autocompleteListId = useId();
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
   const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
@@ -116,10 +117,14 @@ const WatchlistTopControls = React.forwardRef<
 
   const selectAutocompleteResult = useCallback(
     (result: MovieAutocompleteResult) => {
+      suppressAutocompleteReopenRef.current = true;
       setSelectedAutocompleteResult(result);
       setSearchQuery(result.title);
       closeAutocomplete();
       internalSearchInputRef.current?.focus();
+      Promise.resolve().then(() => {
+        suppressAutocompleteReopenRef.current = false;
+      });
     },
     [closeAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
   );
@@ -166,7 +171,7 @@ const WatchlistTopControls = React.forwardRef<
         }
 
         setAutocompleteResults(nextResults);
-        setActiveAutocompleteIndex(nextResults.length > 0 ? 0 : -1);
+        setActiveAutocompleteIndex(-1);
       } catch (error) {
         if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) {
           return;
@@ -232,6 +237,7 @@ const WatchlistTopControls = React.forwardRef<
               onFocus={() => {
                 setHasAutocompleteFocus(true);
                 if (
+                  !suppressAutocompleteReopenRef.current &&
                   trimmedSearchQuery.length >= MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH &&
                   hasAutocompleteFeedback
                 ) {
