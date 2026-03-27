@@ -429,16 +429,17 @@ export const readScope = async <TScope extends StateScope>(
     }
 
     const parsed = await parseJsonResponse<StateEnvelope<StateScopeDataMap[TScope]>>(response);
+
+    if (outbox?.pendingOps.length) {
+      return replayOutbox(scope, parsed);
+    }
+
     writeSnapshot(scope, {
       data: parsed.data,
       version: parsed.version,
       degraded: parsed.degraded,
       warning: parsed.warning,
     });
-
-    if (outbox?.pendingOps.length) {
-      return replayOutbox(scope, parsed);
-    }
 
     return {
       data: parsed.data,
