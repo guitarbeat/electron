@@ -201,12 +201,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   const applySessionState = useCallback((nextState: SessionState) => {
+    console.debug('[session] Applying state:', {
+      hasAccess: nextState.hasAccess,
+      currentUser: nextState.currentUser,
+      pinProtectedUsers: nextState.pinProtectedUsers,
+    });
     setHasAccess(nextState.hasAccess);
     setCurrentUserState(nextState.currentUser);
     setPinProtectedUsers(nextState.pinProtectedUsers);
   }, []);
 
   const refreshSession = useCallback(async () => {
+    console.debug('[session] Refreshing session…');
     setIsSessionLoading(true);
     try {
       const response = await fetch('/api/session', {
@@ -216,6 +222,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (!response.ok) {
+        console.debug('[session] Refresh failed — status', response.status, '— clearing state');
         setHasAccess(false);
         setCurrentUserState(null);
         setPinProtectedUsers([]);
@@ -223,6 +230,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const session = (await response.json()) as SessionState;
+      console.debug('[session] Refresh succeeded:', session);
       applySessionState(session);
     } finally {
       setIsSessionLoading(false);
@@ -239,6 +247,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     const handleSessionInvalid = () => {
+      console.debug('[session] Session invalidation event received — refreshing');
       void refreshSession();
     };
 
@@ -254,6 +263,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isSessionLoading,
       currentUser,
       setCurrentUser: async (user: User | null) => {
+        if (user) {
+          console.debug('[session] Logging in as:', user);
+        } else {
+          console.debug('[session] Logging out');
+        }
         try {
           const response = await fetch('/api/session/profile', {
             method: user ? 'POST' : 'DELETE',
@@ -268,6 +282,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
 
           if (response.status === 401 || response.status === 403) {
+            console.debug('[session] Profile update rejected (status', response.status, ') — refreshing session');
             await refreshSession();
             return false;
           }
@@ -279,9 +294,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
 
           const session = (await response.json()) as SessionState;
+          console.debug('[session] Profile update succeeded:', session);
           applySessionState(session);
           return true;
         } catch (error) {
+          console.debug('[session] Profile update error:', error);
           throw new Error(
             getErrorMessage(error, 'Profile login is unavailable right now.'),
             { cause: error }
