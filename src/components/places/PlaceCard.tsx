@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@/common/icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
+import { colors, radius, spacing, typography } from '@/theme/tokens';
 
 export function getPlaceIcon(name: string): string {
   const lower = name.toLowerCase();
@@ -42,6 +43,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   onDelete,
 }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const isVisited = Boolean(place.visitedAt);
   const icon = getPlaceIcon(place.name);
   const hasCoords = typeof place.lat === 'number' && typeof place.lng === 'number';
@@ -71,58 +73,102 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     : null;
 
   return (
-    <MediaCard
-      variant={isVisited ? 'visited' : 'default'}
-      className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
+    <div
+      draggable={canEdit}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = 'link';
+        e.dataTransfer.setData('placeId', place.id);
+        e.dataTransfer.setData('placeName', place.name);
+        setIsDragging(true);
+      }}
+      onDragEnd={() => setIsDragging(false)}
+      style={{
+        cursor: canEdit ? (isDragging ? 'grabbing' : 'grab') : undefined,
+        opacity: isDragging ? 0.5 : 1,
+        transition: 'opacity 0.15s',
+        position: 'relative',
+      }}
+      title={canEdit ? 'Drag onto map to pin location' : undefined}
     >
-      <MediaCard.PosterWrap className="place-item-poster-wrap">
-        <MediaCard.Cover className="place-item-cover" aria-hidden="true">
-          <span className="place-item-cover__icon">{icon}</span>
-          {hasCoords && <span className="place-item-cover__pin">📍</span>}
-        </MediaCard.Cover>
+      {/* Drag hint badge */}
+      {canEdit && !hasCoords && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: spacing.xs,
+            left: spacing.xs,
+            zIndex: 4,
+            background: 'rgba(18,11,6,0.72)',
+            backdropFilter: 'blur(6px)',
+            border: `1px solid ${colors.border}`,
+            borderRadius: radius.sm,
+            padding: '2px 5px',
+            fontSize: '9px',
+            fontFamily: typography.fontFamily.heading.join(', '),
+            letterSpacing: '0.06em',
+            color: colors.textTertiary,
+            pointerEvents: 'none',
+            lineHeight: 1.4,
+          }}
+        >
+          drag to pin
+        </div>
+      )}
 
-        {isVisited && (
-          <div className="place-item-visited-badge" aria-label="Visited">
-            <CheckIcon style={{ width: 10, height: 10 }} />
-            {visitedDate ?? 'Visited'}
-          </div>
-        )}
+      <MediaCard
+        variant={isVisited ? 'visited' : 'default'}
+        className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
+      >
+        <MediaCard.PosterWrap className="place-item-poster-wrap">
+          <MediaCard.Cover className="place-item-cover" aria-hidden="true">
+            <span className="place-item-cover__icon">{icon}</span>
+            {hasCoords && <span className="place-item-cover__pin">📍</span>}
+          </MediaCard.Cover>
 
-        <MediaCard.Overlay className="place-item-overlay">
-          <MediaCard.Info className="place-item-info">
-            <MediaCard.Title className="place-item-title">{place.name}</MediaCard.Title>
-            {place.notes && <MediaCard.Subtext className="place-item-notes">{place.notes}</MediaCard.Subtext>}
-          </MediaCard.Info>
-
-          {canEdit && (
-            <MediaCard.Actions className="place-item-actions">
-              <button
-                type="button"
-                className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
-                onClick={handleVisitToggle}
-                disabled={isSubmitting || isActionLoading}
-                aria-label={
-                  isVisited
-                    ? `Mark ${place.name} as not visited`
-                    : `Mark ${place.name} as visited`
-                }
-              >
-                {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
-              </button>
-              <button
-                type="button"
-                className="place-item-delete-btn"
-                onClick={handleDelete}
-                disabled={isSubmitting}
-                aria-label={`Remove ${place.name}`}
-              >
-                <TrashIcon style={{ width: 13, height: 13 }} />
-              </button>
-            </MediaCard.Actions>
+          {isVisited && (
+            <div className="place-item-visited-badge" aria-label="Visited">
+              <CheckIcon style={{ width: 10, height: 10 }} />
+              {visitedDate ?? 'Visited'}
+            </div>
           )}
-        </MediaCard.Overlay>
-      </MediaCard.PosterWrap>
-    </MediaCard>
+
+          <MediaCard.Overlay className="place-item-overlay">
+            <MediaCard.Info className="place-item-info">
+              <MediaCard.Title className="place-item-title">{place.name}</MediaCard.Title>
+              {place.notes && <MediaCard.Subtext className="place-item-notes">{place.notes}</MediaCard.Subtext>}
+            </MediaCard.Info>
+
+            {canEdit && (
+              <MediaCard.Actions className="place-item-actions">
+                <button
+                  type="button"
+                  className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
+                  onClick={handleVisitToggle}
+                  disabled={isSubmitting || isActionLoading}
+                  aria-label={
+                    isVisited
+                      ? `Mark ${place.name} as not visited`
+                      : `Mark ${place.name} as visited`
+                  }
+                >
+                  {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
+                </button>
+                <button
+                  type="button"
+                  className="place-item-delete-btn"
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  aria-label={`Remove ${place.name}`}
+                >
+                  <TrashIcon style={{ width: 13, height: 13 }} />
+                </button>
+              </MediaCard.Actions>
+            )}
+          </MediaCard.Overlay>
+        </MediaCard.PosterWrap>
+      </MediaCard>
+    </div>
   );
 };
 
