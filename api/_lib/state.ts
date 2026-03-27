@@ -688,7 +688,7 @@ const scopes: {
         case 'update_place': {
           const nextPayload = payload as {
             placeId?: unknown;
-            updates?: { name?: unknown; notes?: unknown };
+            updates?: { name?: unknown; notes?: unknown; category?: unknown; lat?: unknown; lng?: unknown };
           };
           const placeId =
             typeof nextPayload.placeId === 'string'
@@ -700,6 +700,7 @@ const scopes: {
             return { ok: false, conflict: 'Place not found.' };
           }
 
+          const upd = nextPayload.updates ?? {};
           return {
             ok: true,
             data: places.map((place) =>
@@ -707,13 +708,25 @@ const scopes: {
                 ? {
                     ...place,
                     name:
-                      typeof nextPayload.updates?.name === 'string'
-                        ? sanitizeInput(nextPayload.updates.name)
+                      typeof upd.name === 'string'
+                        ? sanitizeInput(upd.name)
                         : place.name,
                     notes:
-                      typeof nextPayload.updates?.notes === 'string'
-                        ? sanitizeInput(nextPayload.updates.notes)
+                      typeof upd.notes === 'string'
+                        ? sanitizeInput(upd.notes) || undefined
                         : place.notes,
+                    category:
+                      typeof upd.category === 'string'
+                        ? sanitizeInput(upd.category) || undefined
+                        : place.category,
+                    lat:
+                      typeof upd.lat === 'number'
+                        ? upd.lat
+                        : place.lat,
+                    lng:
+                      typeof upd.lng === 'number'
+                        ? upd.lng
+                        : place.lng,
                   }
                 : place
             ),
