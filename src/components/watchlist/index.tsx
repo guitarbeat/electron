@@ -43,6 +43,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     movies,
     isLoading,
     addMovie,
+    renameMovie,
     toggleWatched,
     deleteMovie,
     pendingSuggestions,
@@ -303,6 +304,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               movie={movie}
               currentUser={currentUser}
               onToggle={() => toggleWatched(movie.id)}
+              onRename={(title) => renameMovie(movie.id, title)}
               onDelete={() => setMovieToDelete(movie)}
               animationDelay={`${index * 0.05}s`}
               isHighlighted={successMovieId === movie.id}
@@ -342,6 +344,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       deleteMemoryRecord,
       isMobile,
       movieMemories,
+      renameMovie,
       setMovieToDelete,
       successMovieId,
       toggleMemoryPin,
@@ -503,6 +506,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                       movie={movie}
                       currentUser={currentUser}
                       onToggle={() => toggleWatched(movie.id)}
+                      onRename={(title) => renameMovie(movie.id, title)}
                       onDelete={() => setMovieToDelete(movie)}
                       animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
                       isHighlighted={successMovieId === movie.id}
