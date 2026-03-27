@@ -1,14 +1,17 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser } from '@/app/providers';
 import type { Movie, MovieSuggestion, SharedMemory, WatchlistProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
+import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
 import { useWatchlist } from './useWatchlist';
-import WatchlistTopControls from './WatchlistTopControls';
+import WatchlistTopControls, {
+  type WatchlistTopControlsHandle,
+} from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 import { buildWatchlistSections } from './watchlistSections';
@@ -21,6 +24,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [recommendationReason, setRecommendationReason] = useState('');
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
+  const watchlistTopControlsRef = useRef<WatchlistTopControlsHandle | null>(null);
 
   const {
     isMobile,
@@ -41,6 +45,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     movies,
     isLoading,
     addMovie,
+    renameMovie,
     toggleWatched,
     deleteMovie,
     pendingSuggestions,
@@ -121,6 +126,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const handleRecommendationReasonChange = useCallback((value: string) => {
     setSuggestionError(null);
     setRecommendationReason(value);
+  }, []);
+
+  const focusSearchInput = useCallback(() => {
+    watchlistTopControlsRef.current?.focusSearchInput();
   }, []);
 
   useEffect(() => {
@@ -291,6 +300,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               movie={movie}
               currentUser={currentUser}
               onToggle={() => toggleWatched(movie.id)}
+              onRename={(title) => renameMovie(movie.id, title)}
               onDelete={() => setMovieToDelete(movie)}
               animationDelay={`${index * 0.05}s`}
               isHighlighted={successMovieId === movie.id}
@@ -330,6 +340,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       deleteMemoryRecord,
       isMobile,
       movieMemories,
+      renameMovie,
       setMovieToDelete,
       successMovieId,
       toggleMemoryPin,
@@ -414,6 +425,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       )}
 
       <WatchlistTopControls
+        ref={watchlistTopControlsRef}
         currentUser={currentUser}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -490,6 +502,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                       movie={movie}
                       currentUser={currentUser}
                       onToggle={() => toggleWatched(movie.id)}
+                      onRename={(title) => renameMovie(movie.id, title)}
                       onDelete={() => setMovieToDelete(movie)}
                       animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
                       isHighlighted={successMovieId === movie.id}
@@ -515,10 +528,23 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
                   <CollectionEmptyState
                     padding={isMobile ? spacing.md : spacing['2xl']}
-                    className={isMobile ? 'collection-empty-state--tight' : undefined}
+                    className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
                     style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
                   >
-                    No movies in queue
+                    <span className="watchlist-empty-queue-state__eyebrow">Your next movie night starts here</span>
+                    <strong className="watchlist-empty-queue-state__title">Add the first title to build the queue.</strong>
+                    <span className="watchlist-empty-queue-state__copy">
+                      Search for a movie or series above, then add it to the shared list in one step.
+                    </span>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={focusSearchInput}
+                      className="watchlist-empty-queue-state__action"
+                    >
+                      Jump to search
+                    </Button>
                   </CollectionEmptyState>
                 ) : null}
               </CollectionGrid>

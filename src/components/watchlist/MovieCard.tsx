@@ -8,14 +8,16 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, EyeIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EditIcon, EyeIcon, TrashIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
+import MovieTitleEditModal from './MovieTitleEditModal';
 
 interface MovieCardProps {
   movie: Movie;
   currentUser: User | null;
   onToggle: () => void | Promise<void>;
   onDelete: () => void;
+  onRename?: (title: string) => Promise<void>;
   animationDelay: string;
   memories?: SharedMemory[];
   onAddMemory?: (note: string) => Promise<void>;
@@ -101,6 +103,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   currentUser,
   onToggle,
   onDelete,
+  onRename,
   animationDelay,
   memories = [],
   onAddMemory,
@@ -110,6 +113,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   isHighlighted = false,
 }) => {
   const [showMemories, setShowMemories] = React.useState(false);
+  const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
@@ -198,6 +202,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               watchedByCurrentUser={watchedByCurrentUser}
               isUpdating={isUpdating}
               onToggle={handleToggle}
+              onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
               onDelete={onDelete}
             />
           </MediaCard.Overlay>
@@ -215,6 +220,16 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onUpdateMemory={onUpdateMemory}
           onDeleteMemory={onDeleteMemory}
           onTogglePin={onTogglePin}
+        />
+      )}
+
+      {onRename && (
+        <MovieTitleEditModal
+          movie={movie}
+          isOpen={isTitleEditorOpen}
+          isMobile={isMobile}
+          onClose={() => setIsTitleEditorOpen(false)}
+          onSubmit={onRename}
         />
       )}
     </>
@@ -289,6 +304,7 @@ interface MovieActionsProps {
   watchedByCurrentUser: boolean;
   isUpdating: boolean;
   onToggle: () => void;
+  onEdit?: () => void;
   onDelete: () => void;
 }
 
@@ -298,11 +314,14 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   watchedByCurrentUser,
   isUpdating,
   onToggle,
+  onEdit,
   onDelete,
 }) => {
   const isGuest = !currentUser;
   const primaryActionLabel = watchedByCurrentUser ? 'Watched' : 'Mark watched';
   const primaryActionLabelShort = watchedByCurrentUser ? 'Watched ✓' : 'Watch';
+  const iconActionClassName = (modifierClassName: string) =>
+    `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
 
   const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -318,6 +337,12 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     stopActionPropagation(event);
     if (isGuest) return;
     executeAction(onDelete);
+  };
+
+  const handleEditAction = (event: React.MouseEvent<HTMLButtonElement>) => {
+    stopActionPropagation(event);
+    if (isGuest || !onEdit) return;
+    executeAction(onEdit);
   };
 
   const primaryButton = (
@@ -372,15 +397,31 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     <div className="movie-actions">
       {primaryButton}
 
-      <button
-        type="button"
-        onClick={handleDeleteAction}
-        title={`Remove "${movie.title}"`}
-        aria-label={`Remove "${movie.title}" from list`}
-        className="movie-item-remove-link"
-      >
-        <TrashIcon style={{ width: '15px', height: '15px' }} />
-      </button>
+      <div className="movie-secondary-actions">
+        {onEdit && (
+          <button
+            type="button"
+            onClick={handleEditAction}
+            title={`Edit title for "${movie.title}"`}
+            aria-label={`Edit title for "${movie.title}"`}
+            className={iconActionClassName('movie-icon-action--edit')}
+            disabled={isUpdating}
+          >
+            <EditIcon style={{ width: '15px', height: '15px' }} />
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={handleDeleteAction}
+          title={`Remove "${movie.title}"`}
+          aria-label={`Remove "${movie.title}" from list`}
+          className={iconActionClassName('movie-icon-action--delete')}
+          disabled={isUpdating}
+        >
+          <TrashIcon style={{ width: '15px', height: '15px' }} />
+        </button>
+      </div>
     </div>
   );
 };

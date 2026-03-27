@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
+import { hashPin } from '../../api/_lib/session.ts';
 import profileHandler, {
   computeNextPinAttemptState,
   profilePinRateLimitConfig,
@@ -21,6 +22,56 @@ const withUnsetGistId = async (run: () => Promise<void>) => {
     } else {
       delete process.env.GIST_ID;
     }
+    invalidateGistCache();
+  }
+};
+
+const withPinsStore = async (
+  pins: Record<string, string>,
+  run: () => Promise<void>
+) => {
+  const previousGistId = process.env.GIST_ID;
+  const previousGitHubToken = process.env.GITHUB_TOKEN;
+  const originalFetch = globalThis.fetch;
+
+  process.env.GIST_ID = 'test-gist-id';
+  process.env.GITHUB_TOKEN = 'ghp_testToken';
+  invalidateGistCache();
+
+  globalThis.fetch = (async () =>
+    new Response(
+      JSON.stringify({
+        files: {
+          'pins.json': {
+            content: JSON.stringify(pins),
+          },
+        },
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )) as typeof fetch;
+
+  try {
+    await run();
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (typeof previousGistId === 'string') {
+      process.env.GIST_ID = previousGistId;
+    } else {
+      delete process.env.GIST_ID;
+    }
+
+    if (typeof previousGitHubToken === 'string') {
+      process.env.GITHUB_TOKEN = previousGitHubToken;
+    } else {
+      delete process.env.GITHUB_TOKEN;
+    }
+
     invalidateGistCache();
   }
 };
@@ -45,24 +96,71 @@ test('session endpoint always reports app access even without a profile cookie',
   });
 });
 
-test('profile endpoint explains when the shared pin store is missing', async () => {
+test('profile endpoint allows selecting an unprotected user when the shared pin store is missing', async () => {
   await withUnsetGistId(async () => {
-    const response = await profileHandler(
-      new Request('https://example.com/api/session/profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user: 'Aaron' }),
-      })
-    );
+    const originalWarn = console.warn;
+    console.warn = () => {};
 
-    assert.equal(response.status, 500);
-    assert.match(
-      await response.text(),
-      /shared pin store is not configured.*GIST_ID/i
-    );
+    try {
+      const response = await profileHandler(
+        new Request('https://example.com/api/session/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user: 'Aaron' }),
+        })
+      );
+
+      assert.equal(response.status, 200);
+      assert.deepEqual(await response.json(), {
+        hasAccess: true,
+        currentUser: 'Aaron',
+        pinProtectedUsers: [],
+      });
+    } finally {
+      console.warn = originalWarn;
+    }
   });
+});
+
+test('profile endpoint still requires a PIN for protected users', async () => {
+  await withPinsStore(
+    {
+      Aaron: hashPin('1234'),
+    },
+    async () => {
+      const missingPinResponse = await profileHandler(
+        new Request('https://example.com/api/session/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user: 'Aaron' }),
+        })
+      );
+
+      assert.equal(missingPinResponse.status, 401);
+      assert.match(await missingPinResponse.text(), /Incorrect PIN/i);
+
+      const validPinResponse = await profileHandler(
+        new Request('https://example.com/api/session/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user: 'Aaron', pin: '1234' }),
+        })
+      );
+
+      assert.equal(validPinResponse.status, 200);
+      assert.deepEqual(await validPinResponse.json(), {
+        hasAccess: true,
+        currentUser: 'Aaron',
+        pinProtectedUsers: ['Aaron'],
+      });
+    }
+  );
 });
 
 test('PIN lockout state only starts after configured max failures', () => {

@@ -1,3 +1,5 @@
+import { writeFetchResponse, type NodeLikeResponse } from './nodeResponse.ts';
+
 type WebHandler = (req: Request) => Promise<Response> | Response;
 
 type HeaderValue = string | string[] | undefined;
@@ -7,12 +9,6 @@ type NodeLikeRequest = {
   url?: string;
   headers?: Headers | Record<string, HeaderValue>;
   on?: (event: 'data' | 'end' | 'error', listener: (...args: unknown[]) => void) => void;
-};
-
-type NodeLikeResponse = {
-  statusCode: number;
-  setHeader: (name: string, value: string | string[]) => void;
-  end: (chunk?: Uint8Array | Buffer | string | null) => void;
 };
 
 const isWebRequest = (value: unknown): value is Request =>
@@ -84,40 +80,6 @@ const toWebRequest = async (req: NodeLikeRequest): Promise<Request> => {
   });
 };
 
-const writeWebResponse = async (res: NodeLikeResponse, response: Response): Promise<void> => {
-  res.statusCode = response.status;
-
-  const responseHeaders = response.headers as Headers & {
-    getSetCookie?: () => string[];
-  };
-
-  const setCookies = responseHeaders.getSetCookie?.() || [];
-  if (setCookies.length > 0) {
-    res.setHeader('set-cookie', setCookies);
-  } else {
-    const setCookie = response.headers.get('set-cookie');
-    if (setCookie) {
-      res.setHeader('set-cookie', setCookie);
-    }
-  }
-
-  response.headers.forEach((value, key) => {
-    if (key.toLowerCase() === 'set-cookie') {
-      return;
-    }
-
-    res.setHeader(key, value);
-  });
-
-  if (response.status === 204 || response.status === 304) {
-    res.end();
-    return;
-  }
-
-  const body = Buffer.from(await response.arrayBuffer());
-  res.end(body);
-};
-
 type DualModeHandler = {
   (req: Request): Promise<Response>;
   (req: NodeLikeRequest, res: NodeLikeResponse): Promise<void>;
@@ -136,6 +98,6 @@ export function withWebHandler(handler: WebHandler) {
       return response;
     }
 
-    await writeWebResponse(res, response);
+    await writeFetchResponse(res, response);
   }) as DualModeHandler;
 }

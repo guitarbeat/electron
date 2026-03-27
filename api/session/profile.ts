@@ -6,6 +6,7 @@ import {
   serverErrorResponse,
 } from '../_lib/http.ts';
 import {
+  buildClearPinAttemptCookie,
   buildClearProfileCookie,
   buildPinAttemptCookie,
   buildProfileCookie,
@@ -16,8 +17,6 @@ import { getPinProtectedUsers, verifyProfilePin } from '../_lib/state.ts';
 import { withWebHandler } from '../_lib/webHandler.ts';
 import { isUser } from '../../src/utils/shared.ts';
 
-const PROFILE_STORE_CONFIG_ERROR =
-  'Profile login is unavailable because the shared pin store is not configured. Set GIST_ID on the server, or VITE_GIST_ID during local Vite development, to enable profile PINs.';
 const SESSION_SECRET_CONFIG_ERROR = [
   'Profile login is unavailable because SESSION_SIGNING_SECRET is not configured.',
   '',
@@ -28,8 +27,6 @@ const SESSION_SECRET_CONFIG_ERROR = [
   'action=Set SESSION_SIGNING_SECRET in .env.local and restart pnpm dev',
 ].join('\n');
 
-const isMissingPinStoreConfigError = (error: unknown): boolean =>
-  error instanceof Error && error.message === 'GIST_ID is not configured.';
 const isMissingSessionSecretError = (error: unknown): boolean =>
   error instanceof Error && error.message === 'SESSION_SIGNING_SECRET is not configured.';
 
@@ -72,9 +69,14 @@ async function handler(req: Request): Promise<Response> {
           pinProtectedUsers,
         },
         {
-          headers: mergeHeaders({
-            'Set-Cookie': buildClearProfileCookie(req),
-          }),
+          headers: mergeHeaders(
+            {
+              'Set-Cookie': buildClearProfileCookie(req),
+            },
+            {
+              'Set-Cookie': buildClearPinAttemptCookie(req),
+            }
+          ),
         }
       );
     }
@@ -100,66 +102,70 @@ async function handler(req: Request): Promise<Response> {
       return badRequestResponse('A valid user is required.');
     }
 
-    const now = Date.now();
-    const attemptState = getPinAttemptState(req);
-    const failuresForUser = attemptState?.user === user ? attemptState.failures : 0;
-    const lockUntil = attemptState?.user === user ? attemptState.lockUntil : null;
-    if (lockUntil && lockUntil > now) {
-      const retryAfter = getLockoutRemainingSeconds(lockUntil, now);
-      return jsonResponse(
-        {
-          error: `Too many incorrect PIN attempts. Try again in ${retryAfter} seconds.`,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(retryAfter),
-          },
-        }
-      );
-    }
+    const pinProtectedUsers = await getPinProtectedUsers();
+    const requiresPin = pinProtectedUsers.includes(user);
 
-    const isValid = await verifyProfilePin(user, pin);
-    if (!isValid) {
-      const failedState = computeNextPinAttemptState(failuresForUser, now);
-      if (failedState.lockedUntil) {
-        const retryAfter = getLockoutRemainingSeconds(failedState.lockedUntil, now);
+    if (requiresPin) {
+      const now = Date.now();
+      const attemptState = getPinAttemptState(req);
+      const failuresForUser = attemptState?.user === user ? attemptState.failures : 0;
+      const lockUntil = attemptState?.user === user ? attemptState.lockUntil : null;
+      if (lockUntil && lockUntil > now) {
+        const retryAfter = getLockoutRemainingSeconds(lockUntil, now);
         return jsonResponse(
           {
             error: `Too many incorrect PIN attempts. Try again in ${retryAfter} seconds.`,
           },
           {
             status: 429,
-            headers: mergeHeaders(
-              { 'Retry-After': String(retryAfter) },
-              {
-                'Set-Cookie': buildPinAttemptCookie(req, {
-                  user,
-                  failures: failedState.failures,
-                  lockUntil: failedState.lockedUntil,
-                }),
-              }
-            ),
+            headers: {
+              'Retry-After': String(retryAfter),
+            },
           }
         );
       }
-      return jsonResponse(
-        { error: 'Incorrect PIN.' },
-        {
-          status: 401,
-          headers: {
-            'Set-Cookie': buildPinAttemptCookie(req, {
-              user,
-              failures: failedState.failures,
-              lockUntil: failedState.lockedUntil,
-            }),
-          },
+
+      const isValid = await verifyProfilePin(user, pin);
+      if (!isValid) {
+        const failedState = computeNextPinAttemptState(failuresForUser, now);
+        if (failedState.lockedUntil) {
+          const retryAfter = getLockoutRemainingSeconds(failedState.lockedUntil, now);
+          return jsonResponse(
+            {
+              error: `Too many incorrect PIN attempts. Try again in ${retryAfter} seconds.`,
+            },
+            {
+              status: 429,
+              headers: mergeHeaders(
+                { 'Retry-After': String(retryAfter) },
+                {
+                  'Set-Cookie': buildPinAttemptCookie(req, {
+                    user,
+                    failures: failedState.failures,
+                    lockUntil: failedState.lockedUntil,
+                  }),
+                }
+              ),
+            }
+          );
         }
-      );
+        return jsonResponse(
+          { error: 'Incorrect PIN.' },
+          {
+            status: 401,
+            headers: {
+              'Set-Cookie': buildPinAttemptCookie(req, {
+                user,
+                failures: failedState.failures,
+                lockUntil: failedState.lockedUntil,
+              }),
+            },
+          }
+        );
+      }
     }
 
     const currentSession = getSessionState(req);
-    const pinProtectedUsers = await getPinProtectedUsers();
 
     return jsonResponse(
       {
@@ -168,15 +174,17 @@ async function handler(req: Request): Promise<Response> {
         pinProtectedUsers,
       },
       {
-        headers: mergeHeaders({
-          'Set-Cookie': buildProfileCookie(req, user),
-        }),
+        headers: mergeHeaders(
+          {
+            'Set-Cookie': buildProfileCookie(req, user),
+          },
+          {
+            'Set-Cookie': buildClearPinAttemptCookie(req),
+          }
+        ),
       }
     );
   } catch (error) {
-    if (isMissingPinStoreConfigError(error)) {
-      return serverErrorResponse(PROFILE_STORE_CONFIG_ERROR);
-    }
     if (isMissingSessionSecretError(error)) {
       return serverErrorResponse(SESSION_SECRET_CONFIG_ERROR);
     }
