@@ -1,16 +1,15 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/usePlaces';
-import Card from '@/ui/Card';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
-import { CollectionEmptyState, CollectionGrid, WorkspacePanels } from '@/ui/CollectionLayout';
+import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, spacing, typography } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 import PlacesMap from './PlacesMap';
 import PlaceCard from './PlaceCard';
-import PlacesTopControls from './PlacesTopControls';
+import PlaceEditModal from './PlaceEditModal';
 import { buildPlaceSections } from './placeSections';
 
 const PlacesList: React.FC = () => {
@@ -25,6 +24,7 @@ const PlacesList: React.FC = () => {
     syncWarning,
     addPlace,
     removePlace,
+    updatePlace,
     markVisited,
     markUnvisited,
     retrySync,
@@ -34,6 +34,7 @@ const PlacesList: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
+  const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
 
   const sections = useMemo(() => buildPlaceSections(places), [places]);
 
@@ -137,6 +138,7 @@ const PlacesList: React.FC = () => {
                 onMarkVisited={markVisited}
                 onMarkUnvisited={markUnvisited}
                 onDelete={setPlaceToDelete}
+                onEdit={setPlaceToEdit}
               />
             ))
           ) : (
@@ -150,48 +152,28 @@ const PlacesList: React.FC = () => {
 
   return (
     <div className="places-container" style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
-      <WorkspacePanels
-        className="places-workspace"
-        desktopColumns="repeat(auto-fit, minmax(320px, 1fr))"
-        first={
-          <div className="places-controls-column">
-            {isDegraded && (
-              <SyncBanner
-                isBlocked={isSyncBlocked}
-                onRetry={() => void retrySync()}
-                label={
-                  isSyncBlocked
-                    ? 'A shared places update conflicted with local edits. Refresh and retry.'
-                    : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
-                }
-              />
-            )}
-            <PlacesTopControls
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              onSubmit={handleAddAction}
-              isAdding={isAdding}
-              suggestionError={suggestionError}
-              canEdit={Boolean(currentUser)}
-            />
-          </div>
-        }
-        second={
-          <Card
-            variant="default"
-            className="places-map-card places-map-card--height"
-            style={{
-              padding: spacing.md,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: spacing.sm,
-              border: `1px solid ${colors.borderSubtle}`,
-              overflow: 'hidden',
-            }}
-          >
-            <PlacesMap places={places} />
-          </Card>
-        }
+      {isDegraded && (
+        <SyncBanner
+          isBlocked={isSyncBlocked}
+          onRetry={() => void retrySync()}
+          label={
+            isSyncBlocked
+              ? 'A shared places update conflicted with local edits. Refresh and retry.'
+              : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
+          }
+        />
+      )}
+
+      <PlacesMap
+        places={places}
+        canEdit={Boolean(currentUser)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmitSearch={handleAddAction}
+        isAdding={isAdding}
+        suggestionError={suggestionError}
+        onUpdatePlace={updatePlace}
+        onAddPlace={addPlace}
       />
 
       {isLoading && places.length === 0 ? (
@@ -228,6 +210,14 @@ const PlacesList: React.FC = () => {
           onCancel={() => setPlaceToDelete(null)}
           confirmText="Remove"
           variant="danger"
+        />
+      )}
+
+      {placeToEdit && (
+        <PlaceEditModal
+          place={placeToEdit}
+          onSave={async (id, updates) => { await updatePlace(id, updates); }}
+          onClose={() => setPlaceToEdit(null)}
         />
       )}
     </div>
