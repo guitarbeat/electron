@@ -53,24 +53,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
           aria-labelledby="places-section-title"
           style={{ minWidth: 0 }}
         >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.45rem',
-              marginBottom: isMobile ? '0.9rem' : '1.15rem',
-              paddingInline: isMobile ? '0.15rem' : '0.25rem',
-            }}
-          >
-            <span className="workspace-header__active">
-              <span className="workspace-header__active-icon" aria-hidden="true">📍</span>
-              Places
-            </span>
-            <h2 id="places-section-title" className="workspace-header__title">
-              <span className="workspace-header__title-icon" aria-hidden="true">📍</span>
-              Date ideas
-            </h2>
-          </div>
+          <h2 id="places-section-title" className="sr-only">Places</h2>
           <React.Suspense fallback={null}>
             <PlacesList />
           </React.Suspense>

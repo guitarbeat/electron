@@ -2765,6 +2765,32 @@ body {
 }
 
 /* Narrow phones (~320–360px): header toggle + More must share one row */
+@media (max-width: 420px) {
+  .app-shell--viewport {
+    --app-shell-gutter: 0.75rem;
+    padding-top: max(env(safe-area-inset-top, 0px), 0.35rem);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.35rem);
+  }
+
+  .app-workspace-stack {
+    padding: 0.4rem 0;
+  }
+
+  .workspace-stage {
+    gap: 0.7rem;
+  }
+
+  .workspace-stage--mobile-shell {
+    gap: 0.5rem;
+    padding-top: 0.1rem;
+  }
+
+  .workspace-surface {
+    padding: 0.45rem;
+    border-radius: 1rem;
+  }
+}
+
 @media (max-width: 380px) {
   .app-workspace-stack {
     padding: 0.65rem 0;
@@ -7162,6 +7188,65 @@ body.grabbing * {
 @media (max-width: 640px) {
   .watchlist-content {
     gap: 0.65rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .watchlist-top-controls {
+    gap: 0.42rem;
+  }
+
+  .watchlist-top-controls__toolbar {
+    gap: 0.35rem;
+  }
+
+  .watchlist-top-controls__search-form {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.22rem;
+    border-radius: 1rem;
+  }
+
+  .watchlist-top-controls__search-shell {
+    flex-basis: 100%;
+  }
+
+  .watchlist-top-controls__search-field {
+    min-height: 2.5rem;
+    padding-left: 0.8rem !important;
+    padding-right: 0.6rem !important;
+  }
+
+  .watchlist-top-controls__search-actions {
+    width: 100%;
+    gap: 0.3rem;
+  }
+
+  .watchlist-top-controls__search-actions .ui-button {
+    flex: 1 1 calc(50% - 0.15rem);
+    min-width: 0;
+  }
+
+  .watchlist-top-controls__search-button.ui-button {
+    min-width: 0;
+    border-left: none;
+  }
+
+  .watchlist-top-controls__helper {
+    margin-top: 0;
+    max-width: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .watchlist-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .watchlist-content > .movie-item-card {
+    max-width: min(100%, 18rem);
+    justify-self: center;
   }
 }
 
