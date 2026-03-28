@@ -21,9 +21,8 @@ import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import UserSelection from '@/components/common/UserSelection';
 import { CrossIcon } from '@/common/icons';
 import CommandDeck, { type CommandActionItem } from '@/components/ui/CommandDeck';
-import ThemeToggle from '@/components/ui/ThemeToggle';
 import { BottomSheet } from '@/components/ui/modals';
-import type { MainTab, User } from '@/shared/types';
+import type { User } from '@/shared/types';
 import { USER_PHOTOS } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
@@ -32,10 +31,8 @@ interface ActionBubbleLayerProps {
   actionBubblePosition: ActionBubblePosition;
   isDraggingActionBubble: boolean;
   isMobile: boolean;
-  activeTab: MainTab;
   showActionBubbleMenu: boolean;
   onToggleMenu: (open: boolean) => void;
-  onTabChange: (tab: MainTab) => void;
   actionItems: CommandActionItem[];
   onActionBubbleClick: (event: MouseEvent<HTMLButtonElement>) => void;
   onActionBubblePointerDown: (event: PointerEvent<HTMLButtonElement>) => void;
@@ -44,20 +41,13 @@ interface ActionBubbleLayerProps {
 }
 
 interface ActionPanelContentProps {
-  activeTab: MainTab;
   currentUser: User | null;
   actionItems: CommandActionItem[];
   firstActionRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
   onItemSelect: (item: CommandActionItem) => void;
-  onTabChange: (tab: MainTab) => void;
   showCloseButton: boolean;
 }
-
-const WORKSPACE_LABELS: Record<MainTab, string> = {
-  queue: 'Movies',
-  places: 'Places',
-};
 
 const USER_MONOGRAMS: Record<User, string> = {
   Aaron: 'AR',
@@ -76,16 +66,13 @@ const getViewportSize = () => {
 };
 
 const ActionPanelContent: FC<ActionPanelContentProps> = ({
-  activeTab,
   currentUser,
   actionItems,
   firstActionRef,
   onClose,
   onItemSelect,
-  onTabChange,
   showCloseButton,
 }) => {
-  const workspaceLabel = WORKSPACE_LABELS[activeTab];
   const statusLabel = currentUser ? `${currentUser} active` : 'Guest mode';
 
   return (
@@ -94,7 +81,7 @@ const ActionPanelContent: FC<ActionPanelContentProps> = ({
         <div className="action-bubble-panel__header-row">
           <div className="action-bubble-panel__context-copy">
             <span className="action-bubble-panel__eyebrow">Launcher</span>
-            <span className="action-bubble-panel__workspace">{workspaceLabel} workspace</span>
+            <span className="action-bubble-panel__workspace">Movies + Places</span>
             <span className="action-bubble-panel__status">{statusLabel}</span>
           </div>
           {showCloseButton ? (
@@ -118,15 +105,6 @@ const ActionPanelContent: FC<ActionPanelContentProps> = ({
           firstItemRef={firstActionRef}
         />
       </div>
-
-      <div className="action-bubble-panel__footer">
-        <span className="action-bubble-panel__footer-label">Workspace</span>
-        <ThemeToggle
-          activeTab={activeTab}
-          onChange={onTabChange}
-          label="Switch between Movies and Places"
-        />
-      </div>
     </>
   );
 };
@@ -137,10 +115,8 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   actionBubblePosition,
   isDraggingActionBubble,
   isMobile,
-  activeTab,
   showActionBubbleMenu,
   onToggleMenu,
-  onTabChange,
   actionItems,
   onActionBubbleClick,
   onActionBubblePointerDown,
@@ -404,13 +380,11 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
             transition={{ type: 'spring', damping: 24, stiffness: 310 }}
           >
             <ActionPanelContent
-              activeTab={activeTab}
               currentUser={currentUser}
               actionItems={actionItems}
               firstActionRef={firstActionRef}
               onClose={() => closeMenu(true)}
               onItemSelect={runItem}
-              onTabChange={onTabChange}
               showCloseButton
             />
           </motion.div>
@@ -424,13 +398,11 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
       >
         <div id="action-bubble-sheet" className="action-bubble-sheet">
           <ActionPanelContent
-            activeTab={activeTab}
             currentUser={currentUser}
             actionItems={actionItems}
             firstActionRef={firstActionRef}
             onClose={() => closeMenu(true)}
             onItemSelect={runItem}
-            onTabChange={onTabChange}
             showCloseButton={false}
           />
         </div>
