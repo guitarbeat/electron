@@ -60,6 +60,15 @@ export const EditIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
+export const NoteIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path('M8 4h8a2 2 0 012 2v8l-4 4H8a2 2 0 01-2-2V6a2 2 0 012-2z')}
+    {path('M14 18v-4h4')}
+    {path('M9 9h6')}
+    {path('M9 12h4')}
+  </StrokeIcon>
+);
+
 export const EyeOffIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     {path('M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21')}
