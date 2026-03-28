@@ -11,12 +11,15 @@ import {
   updateMemory,
 } from '@/services/memoryService';
 import { readScope } from '@/services/stateClient';
+import type { ScopeSnapshot } from '@/services/stateTypes';
 import { formatMemoryTimestamp } from '@/utils/date';
 import { sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';
 import { colors, spacing, radius } from '@/theme/tokens';
+
+const MEMORIES_POLLING_INTERVAL = 30000;
 
 const memoryLaneInputStyle: React.CSSProperties = {
   borderRadius: '18px',
@@ -40,10 +43,13 @@ const memoryLaneAccentActionStyle: React.CSSProperties = {
 const FloatingMemoriesPanel: React.FC = () => {
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser, false);
-  const readMemories = useCallback(() => readScope('memories'), []);
+  const readMemories = useCallback(
+    (): Promise<ScopeSnapshot<SharedMemory[]>> => readScope('memories'),
+    []
+  );
   const { data: snapshot, isLoading, error, refresh } = usePolling(
     readMemories,
-    30000,
+    MEMORIES_POLLING_INTERVAL,
     areDeeplyEqual,
     {
       key: 'memories',
