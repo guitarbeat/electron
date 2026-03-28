@@ -134,8 +134,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           style={{
-            width: '40px',
-            height: '4px',
+            width: '60px',
+            height: '6px',
             background:
               'linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.18) 100%)',
             borderRadius: radius.full,
@@ -143,6 +143,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             marginBottom: spacing.md,
             opacity: 0.85,
             boxShadow: shadows.glowStrong,
+            cursor: 'grab',
+            border: '10px solid transparent',
+            backgroundClip: 'padding-box',
           }}
           aria-hidden="true"
         />
@@ -156,14 +159,15 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           disabled={closeDisabled}
           style={{
             ...getModalCloseButtonStyle(),
-            width: '32px',
-            height: '32px',
+            width: '44px',
+            height: '44px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             transition: `all ${motion.duration.button} ${motion.easing.ease}`,
             opacity: closeDisabled ? 0.45 : 1,
             cursor: closeDisabled ? 'not-allowed' : 'pointer',
+            padding: '12px',
           }}
           onMouseEnter={(e) => {
             if (!closeDisabled) e.currentTarget.style.backgroundColor = colors.surface3;

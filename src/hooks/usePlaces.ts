@@ -1,56 +1,27 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Place, User } from '@/shared/types';
-import { usePolling } from '@/services/polling';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import {
-  areDeeplyEqual,
   sanitizeInput,
   validateAndThrow,
   validatePlace,
 } from '@/utils';
+import { useCollection } from './useCollection';
 
 const POLLING_INTERVAL = 15000;
 
 export const usePlaces = (currentUser: User | null, isPaused: boolean = false) => {
-  const readPlaces = useCallback(() => readScope('places'), []);
   const {
-    data: snapshot,
-    error,
+    data: places,
     isLoading,
+    isSubmitting,
+    error,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
-  } = usePolling(readPlaces, POLLING_INTERVAL, areDeeplyEqual, {
-    key: 'places',
-    isPaused,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const places = useMemo(() => snapshot?.data ?? [], [snapshot]);
-
-  const performMutation = useCallback(
-    async (
-      op: string,
-      payload: unknown,
-      optimisticData: Place[]
-    ) => {
-      if (!currentUser) {
-        throw new Error('Profile required');
-      }
-
-      setIsSubmitting(true);
-      try {
-        await mutateScope('places', {
-          op,
-          payload,
-          optimisticData,
-        });
-        refresh();
-        return true;
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [currentUser, refresh]
-  );
+    retrySync,
+    performMutation,
+  } = useCollection<Place>('places', currentUser, { pollingInterval: POLLING_INTERVAL, isPaused });
 
   const addPlace = useCallback(
     async (name: string, notes?: string, lat?: number, lng?: number) => {
@@ -151,19 +122,14 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     [performMutation, places]
   );
 
-  const retrySync = useCallback(async () => {
-    await retryScopeSync('places');
-    refresh();
-  }, [refresh]);
-
   return {
     places,
     isLoading,
     isSubmitting,
     error,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
     retrySync,
     addPlace,

@@ -142,6 +142,10 @@ export default defineConfig(({ mode }) => {
               return 'graphics-vendor';
             }
 
+            if (id.includes('node_modules/maplibre-gl')) {
+              return 'map-vendor';
+            }
+
             if (id.includes('node_modules')) {
               return 'vendor';
             }

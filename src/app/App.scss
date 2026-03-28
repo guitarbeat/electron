@@ -1461,11 +1461,11 @@ body {
   width: 78px;
   height: 78px;
   border-radius: 999px;
-  border: 1px solid rgba(223, 236, 255, 0.38);
+  border: 1px solid rgba(223, 236, 255, 0.44);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.12) 18%, transparent 40%),
-    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 48%),
-    radial-gradient(circle at 76% 80%, rgba(255, 203, 223, 0.14) 0%, transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.16) 18%, transparent 40%),
+    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.1) 28%, transparent 48%),
+    radial-gradient(circle at 76% 80%, rgba(255, 203, 223, 0.18) 0%, transparent 28%),
     conic-gradient(
       from 208deg at 50% 50%,
       #ffffff 0deg,
@@ -1484,22 +1484,19 @@ body {
   place-items: center;
   z-index: 650;
   box-shadow:
-    0 0 0 4px rgba(152, 209, 255, 0.1),
-    0 20px 38px rgba(0, 0, 0, 0.46),
-    0 0 32px rgba(152, 209, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -10px 16px rgba(0, 0, 0, 0.26);
-  transition:
-    transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 150ms ease,
-    border-color 150ms ease;
+    0 0 0 4px rgba(152, 209, 255, 0.12),
+    0 24px 48px rgba(0, 0, 0, 0.52),
+    0 0 38px rgba(152, 209, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -12px 20px rgba(0, 0, 0, 0.32);
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   appearance: none;
   font: inherit;
   user-select: none;
   isolation: isolate;
-  animation: action-bubble-float 4s ease-in-out infinite;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .action-bubble::before,
@@ -1537,14 +1534,13 @@ body {
 }
 
 .action-bubble:hover {
-  transform: scale(1.08) translateY(-2px);
+  // Styles handled by framer-motion but keeping these for non-JS fallback
   box-shadow:
-    0 0 0 4px rgba(152, 209, 255, 0.14),
-    0 24px 42px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(190, 225, 255, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.54),
-    inset 0 -10px 18px rgba(0, 0, 0, 0.22);
-  animation: none;
+    0 0 0 4px rgba(152, 209, 255, 0.18),
+    0 28px 48px rgba(0, 0, 0, 0.58),
+    0 0 44px rgba(190, 225, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -12px 22px rgba(0, 0, 0, 0.28);
 }
 
 .action-bubble__icon {
@@ -1676,28 +1672,27 @@ body {
 .action-bubble-menu {
   position: fixed;
   z-index: 649;
-  width: 300px;
-  max-width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
-  max-height: calc(100vh - 1.25rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  border-radius: calc(var(--chrome-radius) + 0.15rem);
-  border: 1px solid rgba(211, 230, 255, 0.24);
+  width: 320px;
+  max-width: calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+  max-height: calc(100vh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  border-radius: 1.25rem;
+  border: 1px solid rgba(211, 230, 255, 0.32);
   background-clip: padding-box;
   background:
-    var(--chrome-highlight-top),
-    radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.16) 0%, transparent 28%),
-    radial-gradient(circle at 84% 84%, color-mix(in srgb, var(--color-secondary) 14%, transparent) 0%, transparent 30%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.12) 0%, rgba(92, 116, 150, 0.1) 12%, rgba(15, 20, 31, 0.92) 40%, rgba(4, 7, 12, 0.98) 100%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+    linear-gradient(110deg, rgba(255, 255, 255, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.18) 0%, transparent 28%),
+    radial-gradient(circle at 84% 84%, color-mix(in srgb, var(--color-secondary) 18%, transparent) 0%, transparent 32%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, rgba(92, 116, 150, 0.06) 12%, rgba(15, 22, 36, 0.94) 40%, rgba(5, 8, 14, 0.99) 100%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   box-shadow:
-    0 0 0 4px rgba(151, 212, 255, 0.08),
-    0 30px 58px rgba(0, 0, 0, 0.54),
-    0 0 42px rgba(151, 212, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+    0 0 0 1px rgba(151, 212, 255, 0.12),
+    0 32px 64px rgba(0, 0, 0, 0.62),
+    0 0 48px rgba(151, 212, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.24);
   padding: 0;
   overflow: hidden;
-  animation: action-bubble-menu-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 
@@ -6832,6 +6827,12 @@ body.grabbing * {
   align-items: start;
 }
 
+@media (max-width: 640px) {
+  .watchlist-content {
+    gap: 0.65rem;
+  }
+}
+
 .watchlist-content > .movie-item-card {
   width: 100%;
   max-width: none;
@@ -6855,7 +6856,7 @@ body.grabbing * {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .watchlist-top-controls__search-actions {
@@ -7977,6 +7978,13 @@ body.grabbing * {
 .movie-item-icon-action > svg {
   width: 14px;
   height: 14px;
+}
+
+@media (max-width: 640px) {
+  .movie-item-icon-action > svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -9802,11 +9810,11 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     box-shadow:
       0 0 0 5px rgba(214, 177, 115, 0.06),
       0 4px 12px rgba(12, 7, 3, 0.22),
-      0 22px 42px rgba(12, 7, 3, 0.42),
-      0 0 28px rgba(180, 138, 72, 0.1),
-      inset 0 1.5px 0 rgba(255, 240, 210, 0.3),
-      inset 0 -14px 22px rgba(38, 16, 8, 0.36);
-    animation: action-bubble-drift 5.6s ease-in-out infinite;
+      0 26px 48px rgba(12, 7, 3, 0.48),
+      0 0 32px rgba(180, 138, 72, 0.12),
+      inset 0 1.5px 0 rgba(255, 240, 210, 0.34),
+      inset 0 -16px 26px rgba(38, 16, 8, 0.42);
+    // Animation and transition handled by framer-motion in ActionBubbleLayer.tsx
   }
 
   .action-bubble::before {
@@ -9830,14 +9838,14 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   }
 
   .action-bubble:hover {
-    transform: translateY(-4px) rotate(2deg) scale(1.06);
+    // scale and translate are handled by framer-motion
     box-shadow:
-      0 0 0 6px rgba(214, 177, 115, 0.18),
-      0 4px 14px rgba(12, 7, 3, 0.24),
-      0 28px 48px rgba(12, 7, 3, 0.46),
-      0 0 36px rgba(190, 148, 82, 0.14),
-      inset 0 1.5px 0 rgba(255, 242, 214, 0.36),
-      inset 0 -16px 26px rgba(38, 16, 8, 0.32);
+      0 0 0 6px rgba(214, 177, 115, 0.22),
+      0 4px 16px rgba(12, 7, 3, 0.26),
+      0 32px 58px rgba(12, 7, 3, 0.52),
+      0 0 42px rgba(190, 148, 82, 0.18),
+      inset 0 1.5px 0 rgba(255, 242, 214, 0.4),
+      inset 0 -18px 32px rgba(38, 16, 8, 0.38);
   }
 
   .action-bubble.is-dragging {
@@ -9845,14 +9853,13 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   }
 
   .action-bubble.is-open {
-    animation: none;
-    transform: scale(1.06);
+    // scale is handled by framer-motion
     border-color: rgba(214, 177, 115, 0.72);
     box-shadow:
       0 0 0 3px rgba(214, 177, 115, 0.28),
       0 0 0 6px rgba(214, 177, 115, 0.1),
-      0 22px 42px rgba(12, 7, 3, 0.48),
-      0 0 42px rgba(190, 148, 82, 0.22),
+      0 26px 48px rgba(12, 7, 3, 0.52),
+      0 0 48px rgba(190, 148, 82, 0.26),
       inset 0 1.5px 0 rgba(255, 242, 214, 0.36),
       inset 0 -14px 22px rgba(38, 16, 8, 0.32);
   }

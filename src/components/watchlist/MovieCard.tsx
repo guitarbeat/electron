@@ -11,6 +11,7 @@ import { colors, spacing, typography } from '@/theme/tokens';
 import { CheckIcon, EditIcon, EyeIcon, TrashIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 import MovieTitleEditModal from './MovieTitleEditModal';
+import MovieDetailsModal from './MovieDetailsModal';
 
 interface MovieCardProps {
   movie: Movie;
@@ -114,6 +115,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
   const [showMemories, setShowMemories] = React.useState(false);
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
@@ -127,6 +129,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const handleToggleMemories = (event?: React.MouseEvent) => {
     event?.stopPropagation();
     setShowMemories((current) => !current);
+  };
+
+  const handleOpenDetails = () => {
+    setIsDetailsOpen(true);
   };
 
   const handleToggle = async () => {
@@ -173,7 +179,20 @@ const MovieCard: React.FC<MovieCardProps> = ({
             </div>
           )}
 
-          <MediaCard.Overlay className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}>
+          <MediaCard.Overlay
+            className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}
+            onClick={handleOpenDetails}
+            style={{ cursor: 'pointer' }}
+            title={`Click for more details about "${movie.title}"`}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleOpenDetails();
+              }
+            }}
+          >
             <MediaCard.Info>
               <MediaCard.Title className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}>
                 {movie.title}
@@ -232,6 +251,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onSubmit={onRename}
         />
       )}
+
+      <MovieDetailsModal
+        movie={movie}
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+      />
     </>
   );
 };

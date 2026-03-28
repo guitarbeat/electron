@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { X } from "lucide-react";
 
 interface NavItem {
@@ -65,7 +64,7 @@ export default function CircularNavigation({
                       transform: `rotate(${angle}deg) translate(150px) rotate(-${angle}deg)`,
                     }}
                   >
-                    <Link
+                    <a
                       href={item.href}
                       className={`flex flex-col items-center justify-center w-20 h-20 aspect-square rounded-full transition-colors duration-200 no-decoration ${
                         hoveredItem === item.name
@@ -74,7 +73,10 @@ export default function CircularNavigation({
                       }`}
                       onMouseEnter={() => setHoveredItem(item.name)}
                       onMouseLeave={() => setHoveredItem(null)}
-                      onClick={toggleMenu}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleMenu();
+                      }}
                     >
                       <Icon className="w-6 h-6 mb-1" />
                       <span
@@ -83,7 +85,7 @@ export default function CircularNavigation({
                       >
                         {item.name}
                       </span>
-                    </Link>
+                    </a>
                   </div>
                 );
               })}

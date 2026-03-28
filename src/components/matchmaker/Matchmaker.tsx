@@ -5,6 +5,7 @@ import { useMovies } from '@/hooks/useMovies';
 import { useToast } from '@/app/providers';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
+import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { randomUtils } from '@/utils/random';
@@ -37,6 +38,7 @@ interface SwipeCardHandle {
 interface SwipeCardProps {
   movie: Movie;
   onSwipe: (direction: 'left' | 'right') => void;
+  onPosterClick?: (movie: Movie) => void;
   active: boolean;
 }
 
@@ -73,7 +75,7 @@ const MatchmakerConfetti: React.FC = () => {
   );
 };
 
-const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, onSwipe, active }, ref) => {
+const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, onSwipe, onPosterClick, active }, ref) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
   const swipeTimeoutRef = useRef<number | null>(null);
@@ -165,6 +167,7 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
             <img
               src={movie.posterUrl}
               alt={movie.title}
+              onClick={() => onPosterClick?.(movie)}
               style={{
                 width: 92,
                 height: 132,
@@ -172,10 +175,13 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
                 borderRadius: radius.md,
                 border: `1px solid ${colors.borderSecondary}35`,
                 flexShrink: 0,
+                cursor: onPosterClick ? 'pointer' : 'default',
               }}
+              title={onPosterClick ? `Click for more details about "${movie.title}"` : undefined}
             />
           ) : (
             <div
+              onClick={() => onPosterClick?.(movie)}
               style={{
                 width: 92,
                 height: 132,
@@ -188,7 +194,9 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
                 color: colors.textTertiary,
                 fontSize: typography.fontSize.xs,
                 flexShrink: 0,
+                cursor: onPosterClick ? 'pointer' : 'default',
               }}
+              title={onPosterClick ? `Click for more details about "${movie.title}"` : undefined}
             >
               No poster
             </div>
@@ -274,6 +282,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   } = useMatchmaker(currentUser);
 
   const [isPickingRandom, setIsPickingRandom] = useState(false);
+  const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
 
   const unwatchedMovies = useMemo(
@@ -588,6 +597,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
               <img
                 src={lastMatchedMovie.posterUrl}
                 alt={lastMatchedMovie.title}
+                onClick={() => setModalMovie(lastMatchedMovie)}
                 style={{
                   width: '180px',
                   height: '270px',
@@ -595,7 +605,9 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
                   objectFit: 'cover',
                   marginBottom: spacing.md,
                   border: `1px solid ${colors.textPrimary}40`,
+                  cursor: 'pointer',
                 }}
+                title={`Click for more details about "${lastMatchedMovie.title}"`}
               />
               <h3
                 style={{
@@ -675,6 +687,7 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
               key={remainingMovies[0].id}
               movie={remainingMovies[0]}
               onSwipe={handleSwipe}
+              onPosterClick={setModalMovie}
               active
             />
           </>
@@ -850,7 +863,12 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
             }}
           >
             {matches.map((movie) => (
-              <div key={movie.id} style={{ flexShrink: 0, width: '100px', textAlign: 'center' }}>
+              <div
+                key={movie.id}
+                style={{ flexShrink: 0, width: '100px', textAlign: 'center', cursor: 'pointer' }}
+                onClick={() => setModalMovie(movie)}
+                title={`Click for more details about "${movie.title}"`}
+              >
                 {movie.posterUrl ? (
                   <img
                     src={movie.posterUrl}
@@ -916,6 +934,14 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
         }}
         onCancel={() => setShowEndSessionConfirm(false)}
       />
+
+      {modalMovie && (
+        <MovieDetailsModal
+          movie={modalMovie}
+          isOpen={!!modalMovie}
+          onClose={() => setModalMovie(null)}
+        />
+      )}
     </div>
   );
 };

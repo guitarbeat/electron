@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useMovies } from '@/hooks/useMovies';
 import { useUser } from '@/app/providers';
 import type { Movie } from '@/shared/types';
+import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
@@ -23,6 +24,7 @@ function MovieCard({
   onPointerDown,
   onPointerMove,
   onPointerUp,
+  onDetailsClick,
 }: {
   movie: Movie;
   dragX: number;
@@ -30,10 +32,17 @@ function MovieCard({
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: (e: React.PointerEvent) => void;
+  onDetailsClick?: (movie: Movie) => void;
 }) {
   const tilt = isDragging ? dragX * 0.07 : 0;
   const keepOpacity = Math.max(0, Math.min(1, dragX / 60));
   const skipOpacity = Math.max(0, Math.min(1, -dragX / 60));
+
+  const handleDetailsClick = () => {
+    if (dragX === 0) {
+      onDetailsClick?.(movie);
+    }
+  };
 
   return (
     <div
@@ -41,6 +50,7 @@ function MovieCard({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onClick={handleDetailsClick}
       style={{
         position: 'absolute',
         width: 220,
@@ -53,10 +63,11 @@ function MovieCard({
         boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
         transform: `translateX(${dragX}px) rotate(${tilt}deg)`,
         transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-        cursor: isDragging ? 'grabbing' : 'grab',
+        cursor: isDragging ? 'grabbing' : 'pointer',
         touchAction: 'none',
         userSelect: 'none',
       }}
+      title={`Click for details or swipe to choose`}
     >
       {!movie.posterUrl && (
         <span
@@ -290,7 +301,15 @@ function SpinWheel({
   );
 }
 
-function ResultScreen({ winner, onReset }: { winner: Movie; onReset: () => void }) {
+function ResultScreen({ 
+  winner, 
+  onReset, 
+  onWinnerClick 
+}: { 
+  winner: Movie; 
+  onReset: () => void;
+  onWinnerClick?: (movie: Movie) => void;
+}) {
   return (
     <div
       style={{
@@ -314,6 +333,7 @@ function ResultScreen({ winner, onReset }: { winner: Movie; onReset: () => void 
       </p>
 
       <div
+        onClick={() => onWinnerClick?.(winner)}
         style={{
           width: 190,
           height: 270,
@@ -324,6 +344,16 @@ function ResultScreen({ winner, onReset }: { winner: Movie; onReset: () => void 
           background: winner.posterUrl
             ? `url(${winner.posterUrl}) center / cover`
             : 'var(--color-surface-2)',
+          cursor: onWinnerClick ? 'pointer' : 'default'
+        }}
+        title={onWinnerClick ? `Click for more details about "${winner.title}"` : undefined}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onWinnerClick?.(winner);
+          }
         }}
       >
         {!winner.posterUrl && (
@@ -401,6 +431,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const [winner, setWinner] = useState<Movie | null>(null);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [modalMovie, setModalMovie] = useState<Movie | null>(null);
 
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -499,7 +530,19 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   }
 
   if (phase === 'result' && winner) {
-    return <ResultScreen winner={winner} onReset={handleReset} />;
+    return (
+      <>
+        <ResultScreen winner={winner} onReset={handleReset} onWinnerClick={setModalMovie} />
+        {modalMovie && (
+          <MovieDetailsModal
+            movie={modalMovie}
+            isOpen={!!modalMovie}
+            onClose={() => setModalMovie(null)}
+            currentUser={currentUser}
+          />
+        )}
+      </>
+    );
   }
 
   if (phase === 'spin') {
@@ -522,6 +565,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
         gap: '0.85rem',
         padding: '0.75rem 1rem 1rem',
         userSelect: 'none',
+        position: 'relative'
       }}
     >
       <ProgressBar
@@ -570,6 +614,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
+                onDetailsClick={setModalMovie}
               />
             )}
           </>
@@ -614,6 +659,14 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
         >
           Swipe right to keep, left to skip
         </p>
+      )}
+
+      {modalMovie && (
+        <MovieDetailsModal
+          movie={modalMovie}
+          isOpen={!!modalMovie}
+          onClose={() => setModalMovie(null)}
+        />
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import chroma from "chroma-js"; // Import the chroma-js library from the specifi
 import * as ogl from "ogl";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
-import { debounce, throttle } from '@/utils/commonUtils';
+import { debounce, throttle } from '@/utils';
 import RippleEffect from "./RippleEffect";
 import "./Moire.css";
 

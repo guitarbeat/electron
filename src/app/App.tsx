@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ActionBubbleLayer from '@/app/ActionBubbleLayer';
-import AppWorkspaceShell from '@/app/AppWorkspaceShell';
 import {
   ACTION_BUBBLE_DRAG_THRESHOLD,
   clampActionBubblePosition,
@@ -13,7 +12,7 @@ import {
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
-import MagicComponent from '@/components/effects/Moire/Moire';
+const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 import RetroEffects from '@/components/effects/RetroEffects';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
@@ -24,6 +23,8 @@ import type { MainTab } from '@/shared/types';
 import type { CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
+
+const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
 
 const getViewportSize = () => {
   if (typeof window === 'undefined') {
@@ -348,7 +349,9 @@ const App: React.FC = () => {
       <ThemeProvider activeTab={activeTab}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
         <div className="app-shell app-shell--viewport bg-main">
-          {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
+          <React.Suspense fallback={null}>
+            {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
+          </React.Suspense>
           <VignetteOverlay />
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
@@ -360,7 +363,9 @@ const App: React.FC = () => {
     <ThemeProvider activeTab={activeTab}>
       <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell app-shell--viewport bg-main">
-        {!prefersReducedMotion ? <MagicComponent isVisible={isMoireVisible} opacity={0.2} /> : null}
+        <React.Suspense fallback={null}>
+          {!prefersReducedMotion ? <MagicComponent isVisible={isMoireVisible} opacity={0.2} /> : null}
+        </React.Suspense>
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
@@ -387,12 +392,14 @@ const App: React.FC = () => {
             />
           </div>
           <div className="app-workspace-stack">
-            <AppWorkspaceShell
-              isMobile={isMobile}
-              activeTab={activeTab}
-              workspaceMeta={workspaceMeta}
-              workspaceControlsRef={workspaceControlsRef}
-            />
+            <React.Suspense fallback={null}>
+              <AppWorkspaceShell
+                isMobile={isMobile}
+                activeTab={activeTab}
+                workspaceMeta={workspaceMeta}
+                workspaceControlsRef={workspaceControlsRef}
+              />
+            </React.Suspense>
           </div>
         </div>
 
@@ -408,7 +415,9 @@ const App: React.FC = () => {
             closeDisabled={modal.closeDisabled}
             closeDisabledLabel={modal.closeDisabledLabel}
           >
-            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>{modal.content}</div>
+            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
+              {modal.isOpen ? modal.content : null}
+            </div>
           </MinigameModal>
         ))}
       </div>

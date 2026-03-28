@@ -26,6 +26,7 @@ import {
   normalizeSpinHistoryParsed,
   normalizeStoredPins,
   normalizeSuggestionRecord,
+  normalizePlaceSuggestionRecord,
 } from '../../src/services/stateSchemas.ts';
 import type {
   DailySpinRecord,
@@ -39,6 +40,7 @@ import type {
   Movie,
   MovieSuggestion,
   Place,
+  PlaceSuggestion,
   SharedMemory,
   User,
 } from '../../src/shared/types.ts';
@@ -891,6 +893,96 @@ const scopes: {
         }
         default:
           return { ok: false, conflict: `Unsupported suggestions operation: ${op}` };
+      }
+    },
+  },
+  placeSuggestions: {
+    filename: 'placesuggestions.json',
+    parse: (content) =>
+      parseArrayScope<PlaceSuggestion>(
+        content,
+        'placeSuggestions',
+        normalizePlaceSuggestionRecord
+      ),
+    serialize: (value) => JSON.stringify(value, null, 2),
+    toClient: (value) => value as StateScopeDataMap['placeSuggestions'],
+    mutate: (current, op, payload, context) => {
+      const suggestions = current as PlaceSuggestion[];
+
+      switch (op) {
+        case 'add_place_suggestion': {
+          const nextPayload = payload as {
+            id?: unknown;
+            name?: unknown;
+            notes?: unknown;
+            category?: unknown;
+            rating?: unknown;
+            description?: unknown;
+            imageUrl?: unknown;
+          };
+          const id =
+            typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
+          const name =
+            typeof nextPayload.name === 'string'
+              ? sanitizeInput(nextPayload.name)
+              : '';
+
+          if (!id || !name) {
+            return { ok: false, conflict: 'Invalid place suggestion payload.' };
+          }
+
+          if (suggestions.some((suggestion) => suggestion.id === id)) {
+            return { ok: false, conflict: 'Suggestion already exists.' };
+          }
+
+          return {
+            ok: true,
+            data: [
+              ...suggestions,
+              {
+                id,
+                name,
+                suggestedBy: context.currentUser,
+                notes: typeof nextPayload.notes === 'string' ? sanitizeInput(nextPayload.notes) : undefined,
+                category: typeof nextPayload.category === 'string' ? sanitizeInput(nextPayload.category) : undefined,
+                rating: typeof nextPayload.rating === 'string' ? sanitizeInput(nextPayload.rating) : undefined,
+                description: typeof nextPayload.description === 'string' ? sanitizeInput(nextPayload.description) : undefined,
+                imageUrl: typeof nextPayload.imageUrl === 'string' ? sanitizeInput(nextPayload.imageUrl) : undefined,
+                status: 'pending',
+                createdAt: context.now,
+              },
+            ],
+          };
+        }
+        case 'accept_place_suggestion':
+        case 'reject_place_suggestion': {
+          const suggestionId =
+            typeof (payload as { suggestionId?: unknown }).suggestionId === 'string'
+              ? sanitizeInput(
+                  (payload as { suggestionId?: string }).suggestionId || ''
+                )
+              : '';
+
+          if (!suggestions.some((suggestion) => suggestion.id === suggestionId)) {
+            return { ok: false, conflict: 'Suggestion not found.' };
+          }
+
+          return {
+            ok: true,
+            data: suggestions.map((suggestion) =>
+              suggestion.id === suggestionId
+                ? {
+                    ...suggestion,
+                    status: op === 'accept_place_suggestion' ? 'accepted' : 'rejected',
+                    respondedAt: context.now,
+                    respondedBy: context.currentUser,
+                  }
+                : suggestion
+            ),
+          };
+        }
+        default:
+          return { ok: false, conflict: `Unsupported placeSuggestions operation: ${op}` };
       }
     },
   },

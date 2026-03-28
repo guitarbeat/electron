@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { Place } from '@/shared/types';
+import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import { buildPlaceSections } from './placeSections.ts';
 
 const PLACES: Place[] = [
@@ -18,9 +18,19 @@ const PLACES: Place[] = [
   },
 ];
 
-test('buildPlaceSections groups queue and visited places for inline rendering', () => {
-  const sections = buildPlaceSections(PLACES);
+const PENDING_SUGGESTIONS: PlaceSuggestion[] = [
+  {
+    id: 'ps1',
+    name: 'New Restaurant',
+    suggestedBy: 'Aaron',
+    createdAt: '2026-03-23T10:00:00.000Z',
+  },
+];
+
+test('buildPlaceSections groups queue, visited, and suggestions for inline rendering', () => {
+  const sections = buildPlaceSections(PLACES, PENDING_SUGGESTIONS);
 
   assert.deepEqual(sections.queue.map((place) => place.name), ['Museum Cafe']);
   assert.deepEqual(sections.visited.map((place) => place.name), ['Sunset Pier']);
+  assert.deepEqual(sections.suggestions.map((ps) => ps.name), ['New Restaurant']);
 });
