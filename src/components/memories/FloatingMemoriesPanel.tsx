@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import { useMovies } from '@/hooks/useMovies';
@@ -7,10 +7,10 @@ import { useUser } from '@/app/providers';
 import {
   addMemory,
   deleteMemory,
-  getMemories,
   toggleMemoryPin,
   updateMemory,
 } from '@/services/memoryService';
+import { readScope } from '@/services/stateClient';
 import { formatMemoryTimestamp } from '@/utils/date';
 import { sortMemories } from './memoryUtils';
 import type { SharedMemory } from '@/shared/types';
@@ -40,8 +40,9 @@ const memoryLaneAccentActionStyle: React.CSSProperties = {
 const FloatingMemoriesPanel: React.FC = () => {
   const { currentUser } = useUser();
   const { movies } = useMovies(currentUser, false);
-  const { data, isLoading, error, refresh } = usePolling<SharedMemory[]>(
-    getMemories,
+  const readMemories = useCallback(() => readScope('memories'), []);
+  const { data: snapshot, isLoading, error, refresh } = usePolling(
+    readMemories,
     30000,
     areDeeplyEqual,
     {
@@ -59,7 +60,8 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'scrapbook'>('list');
   const [imageUrl, setImageUrl] = useState('');
 
-  const sorted = useMemo(() => sortMemories(data || [], 'newest'), [data]);
+  const memories = snapshot?.data ?? [];
+  const sorted = useMemo(() => sortMemories(memories, 'newest'), [memories]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
