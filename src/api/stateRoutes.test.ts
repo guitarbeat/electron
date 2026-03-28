@@ -6,7 +6,7 @@ import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
 import { buildProfileCookie } from '../../api/_lib/session.ts';
 import mutateHandler from '../../api/state/[scope]/mutate.ts';
 import readHandler from '../../api/state/[scope].ts';
-import type { Movie, MovieSuggestion } from '../shared/types.ts';
+import type { Movie, MovieSuggestion, SharedMemory } from '../shared/types.ts';
 
 const withUnsetGistId = async (run: () => Promise<void>) => {
   const previousGistId = process.env.GIST_ID;
@@ -197,6 +197,92 @@ const withSuggestionStore = async (
   }
 };
 
+const withMemoryStore = async (
+  seedMemories: SharedMemory[],
+  run: (context: { getMemories: () => SharedMemory[]; patchBodies: unknown[] }) => Promise<void>
+) => {
+  const previousGistId = process.env.GIST_ID;
+  const previousGitHubToken = process.env.GITHUB_TOKEN;
+  const originalFetch = globalThis.fetch;
+  const patchBodies: unknown[] = [];
+  let memories = [...seedMemories];
+
+  process.env.GIST_ID = 'test-gist-id';
+  process.env.GITHUB_TOKEN = 'ghp_testToken';
+  invalidateGistCache();
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const request = input instanceof Request ? input : new Request(String(input), init);
+
+    if (request.method === 'GET') {
+      return new Response(
+        JSON.stringify({
+          files: {
+            'memories.json': {
+              content: JSON.stringify(memories),
+            },
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
+    if (request.method === 'PATCH') {
+      const body = JSON.parse(await request.text()) as {
+        files?: Record<string, { content?: string } | undefined>;
+      };
+      patchBodies.push(body);
+
+      const nextContent = body.files?.['memories.json']?.content;
+      if (typeof nextContent === 'string') {
+        memories = JSON.parse(nextContent) as SharedMemory[];
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
+      status: 405,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }) as typeof fetch;
+
+  try {
+    await run({
+      getMemories: () => memories,
+      patchBodies,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (typeof previousGistId === 'string') {
+      process.env.GIST_ID = previousGistId;
+    } else {
+      delete process.env.GIST_ID;
+    }
+
+    if (typeof previousGitHubToken === 'string') {
+      process.env.GITHUB_TOKEN = previousGitHubToken;
+    } else {
+      delete process.env.GITHUB_TOKEN;
+    }
+
+    invalidateGistCache();
+  }
+};
+
 test('dynamic state read route returns 404 for unknown scopes', async () => {
   const response = await readHandler(new Request('https://example.com/api/state/nope'));
 
@@ -357,4 +443,117 @@ test('dynamic state mutate route lets guests create movie suggestions', async ()
     assert.equal(getSuggestions()[0]?.suggestedBy, 'Movie Night Guest');
     assert.equal(patchBodies.length, 1);
   });
+});
+
+test('dynamic state mutate route rejects editing another user memory', async () => {
+  await withMemoryStore(
+    [
+      {
+        id: 'memory-1',
+        movieId: 'movie-1',
+        movieTitle: 'Moonlight',
+        author: 'Aaron',
+        note: 'Original note',
+        createdAt: new Date('2026-03-27T12:00:00.000Z').toISOString(),
+      },
+    ],
+    async ({ getMemories, patchBodies }) => {
+      const cookie = buildProfileCookie(
+        new Request('https://example.com/api/session/profile'),
+        'Electra'
+      );
+
+      const readResponse = await readHandler(
+        new Request('https://example.com/api/state/memories', {
+          headers: {
+            cookie,
+          },
+        })
+      );
+      assert.equal(readResponse.status, 200);
+
+      const readPayload = (await readResponse.json()) as { version: string };
+
+      const response = await mutateHandler(
+        new Request('https://example.com/api/state/memories/mutate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie,
+          },
+          body: JSON.stringify({
+            baseVersion: readPayload.version,
+            op: 'update_memory',
+            payload: {
+              memoryId: 'memory-1',
+              updates: {
+                note: 'Rewritten by someone else',
+              },
+            },
+          }),
+        })
+      );
+
+      assert.equal(response.status, 409);
+      const payload = (await response.json()) as { conflict: string };
+      assert.match(payload.conflict, /only the author can edit/i);
+      assert.equal(getMemories()[0]?.note, 'Original note');
+      assert.equal(patchBodies.length, 0);
+    }
+  );
+});
+
+test('dynamic state mutate route rejects deleting another user memory', async () => {
+  await withMemoryStore(
+    [
+      {
+        id: 'memory-1',
+        movieId: 'movie-1',
+        movieTitle: 'Moonlight',
+        author: 'Aaron',
+        note: 'Original note',
+        createdAt: new Date('2026-03-27T12:00:00.000Z').toISOString(),
+      },
+    ],
+    async ({ getMemories, patchBodies }) => {
+      const cookie = buildProfileCookie(
+        new Request('https://example.com/api/session/profile'),
+        'Electra'
+      );
+
+      const readResponse = await readHandler(
+        new Request('https://example.com/api/state/memories', {
+          headers: {
+            cookie,
+          },
+        })
+      );
+      assert.equal(readResponse.status, 200);
+
+      const readPayload = (await readResponse.json()) as { version: string };
+
+      const response = await mutateHandler(
+        new Request('https://example.com/api/state/memories/mutate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie,
+          },
+          body: JSON.stringify({
+            baseVersion: readPayload.version,
+            op: 'delete_memory',
+            payload: {
+              memoryId: 'memory-1',
+            },
+          }),
+        })
+      );
+
+      assert.equal(response.status, 409);
+      const payload = (await response.json()) as { conflict: string };
+      assert.match(payload.conflict, /only the author can delete/i);
+      assert.equal(getMemories().length, 1);
+      assert.equal(patchBodies.length, 0);
+    }
+  );
 });

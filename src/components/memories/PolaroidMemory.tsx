@@ -6,20 +6,21 @@ import { typography } from '@/theme/tokens';
 interface PolaroidMemoryProps {
   memory: SharedMemory;
   onPin: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete }) => {
   const rotation = getStickyNoteRotation(memory);
   const hoverRotation = rotation + (rotation > 0 ? 2 : -2);
-  
+
   return (
     <div
       className="polaroid-card"
       style={{
         ['--polaroid-rotation' as string]: `${rotation}deg`,
         ['--polaroid-hover-rotation' as string]: `${hoverRotation}deg`,
-        ['--polaroid-shadow' as string]: '0 8px 16px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1)',
+        ['--polaroid-shadow' as string]:
+          '0 8px 16px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1)',
         width: '100%',
         maxWidth: '260px',
         background: '#fff',
@@ -34,7 +35,6 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
         border: '1px solid rgba(0,0,0,0.05)',
       }}
     >
-      {/* Tape Effect */}
       <div
         style={{
           position: 'absolute',
@@ -65,11 +65,11 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
           justifyContent: 'center',
         }}
       >
-        {!memory.imageUrl && (
+        {!memory.imageUrl ? (
           <span style={{ fontSize: '2rem', opacity: 0.3 }}>🎞️</span>
-        )}
-        
-        {memory.isPinned && (
+        ) : null}
+
+        {memory.isPinned ? (
           <div
             style={{
               position: 'absolute',
@@ -81,7 +81,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
           >
             📌
           </div>
-        )}
+        ) : null}
       </div>
 
       <div style={{ padding: '4px' }}>
@@ -123,7 +123,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
               fontWeight: 600,
             }}
           >
-            — {memory.author}
+            - {memory.author}
           </span>
           <span
             style={{
@@ -136,7 +136,6 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
         </div>
       </div>
 
-      {/* Action Buttons (visible on hover) */}
       <div
         className="polaroid-actions"
         style={{
@@ -151,19 +150,29 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
         }}
       >
         <button
-          onClick={(e) => { e.stopPropagation(); onPin(); }}
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onPin();
+          }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
           title={memory.isPinned ? 'Unpin' : 'Pin'}
         >
           {memory.isPinned ? '📍' : '📌'}
         </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
-          title="Delete"
-        >
-          🗑️
-        </button>
+        {onDelete ? (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+            title="Delete"
+          >
+            🗑️
+          </button>
+        ) : null}
       </div>
 
       <style>{`

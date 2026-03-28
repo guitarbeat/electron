@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   colors,
@@ -90,6 +90,7 @@ const Modal: React.FC<ModalProps> = ({
   variant = 'centered',
 }) => {
   const { dialogRef, closeButtonRef, playPop } = useModalBase(isOpen, onClose, closeDisabled);
+  const titleId = useId();
 
   if (!isOpen) return null;
 
@@ -125,7 +126,7 @@ const Modal: React.FC<ModalProps> = ({
       onClick={closeDisabled ? undefined : onClose}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
+      aria-labelledby={title ? titleId : undefined}
       aria-label={ariaLabel}
     >
       <div
@@ -152,7 +153,7 @@ const Modal: React.FC<ModalProps> = ({
           >
             {title && (
               <h2
-                id="modal-title"
+                id={titleId}
                 style={{
                   margin: 0,
                   fontSize: typography.fontSize.lg,

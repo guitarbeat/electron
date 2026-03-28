@@ -98,6 +98,10 @@ const MemoryList: React.FC<MemoryListProps> = ({
 
   const confirmDeleteMemory = async () => {
     if (!memoryToDelete) return;
+    if (!currentUser || memoryToDelete.author !== currentUser) {
+      setMemoryToDelete(null);
+      return;
+    }
 
     setIsBusyMemoryId(memoryToDelete.id);
     try {
@@ -242,6 +246,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
           const noteRotation = getStickyNoteRotation(memory);
           const isEditing = editingMemoryId === memory.id;
           const isBusy = isBusyMemoryId === memory.id;
+          const isMemoryOwner = currentUser === memory.author;
 
           return (
             <div
@@ -414,14 +419,14 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     </Button>
                   )}
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={!canManageMemories || isBusy}
-                    onClick={async () => {
-                      setIsBusyMemoryId(memory.id);
-                      try {
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={!canManageMemories || isBusy}
+                      onClick={async () => {
+                        setIsBusyMemoryId(memory.id);
+                        try {
                         await onTogglePin(memory);
                       } finally {
                         setIsBusyMemoryId(null);
@@ -432,30 +437,40 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     {memory.isPinned ? 'Unpin note' : 'Keep pinned'}
                   </Button>
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={!canManageMemories || isBusy}
-                    onClick={() => {
-                      setEditingMemoryId(memory.id);
-                      setDraftNote(memory.note);
-                    }}
-                    style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
-                  >
-                    Edit note
-                  </Button>
+                  {isMemoryOwner ? (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        disabled={!canManageMemories || isBusy}
+                        onClick={() => {
+                          setEditingMemoryId(memory.id);
+                          setDraftNote(memory.note);
+                        }}
+                        style={{
+                          border: '1px solid rgba(106, 77, 40, 0.45)',
+                          color: '#4e2d11',
+                        }}
+                      >
+                        Edit note
+                      </Button>
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={!canManageMemories || isBusy}
-                    onClick={() => setMemoryToDelete(memory)}
-                    style={{ border: '1px solid rgba(153, 66, 58, 0.45)', color: '#7a261f' }}
-                  >
-                    Delete note
-                  </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        disabled={!canManageMemories || isBusy}
+                        onClick={() => setMemoryToDelete(memory)}
+                        style={{
+                          border: '1px solid rgba(153, 66, 58, 0.45)',
+                          color: '#7a261f',
+                        }}
+                      >
+                        Delete note
+                      </Button>
+                    </>
+                  ) : null}
                 </div>
               )}
             </div>

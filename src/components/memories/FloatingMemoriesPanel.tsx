@@ -102,11 +102,19 @@ const FloatingMemoriesPanel: React.FC = () => {
   };
 
   const startEditing = (memory: SharedMemory) => {
+    if (!currentUser || memory.author !== currentUser) {
+      return;
+    }
     setEditingId(memory.id);
     setEditingNote(memory.note);
   };
 
   const saveEdit = async (memory: SharedMemory) => {
+    if (!currentUser || memory.author !== currentUser) {
+      setEditingId(null);
+      setEditingNote('');
+      return;
+    }
     const trimmed = editingNote.trim();
     if (!trimmed) return;
     await updateMemory(memory.id, { note: trimmed });
@@ -244,12 +252,16 @@ const FloatingMemoriesPanel: React.FC = () => {
                   await toggleMemoryPin(memory.id);
                   refresh();
                 }}
-                onDelete={async () => {
-                  if (window.confirm('Delete this memory forever?')) {
-                    await deleteMemory(memory.id);
-                    refresh();
-                  }
-                }}
+                onDelete={
+                  currentUser === memory.author
+                    ? async () => {
+                        if (window.confirm('Delete this memory forever?')) {
+                          await deleteMemory(memory.id);
+                          refresh();
+                        }
+                      }
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -323,7 +335,7 @@ const FloatingMemoriesPanel: React.FC = () => {
                         >
                           {memory.isPinned ? 'Unpin' : 'Pin'}
                         </Button>
-                        {currentUser ? (
+                        {currentUser === memory.author ? (
                           <>
                             <Button
                               size="sm"

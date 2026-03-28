@@ -1,19 +1,36 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { Place } from '@/shared/types';
+import { Modal } from '@/ui/modals';
+import { useMediaQuery, mediaBreakpoints } from '@/hooks/useMediaQuery';
 import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
 
 const CATEGORIES = [
-  '', 'Restaurant', 'Cafe', 'Bar', 'Park', 'Museum', 'Theater',
-  'Shop', 'Hotel', 'Beach', 'Landmark', 'Nature', 'Other',
+  '',
+  'Restaurant',
+  'Cafe',
+  'Bar',
+  'Park',
+  'Museum',
+  'Theater',
+  'Shop',
+  'Hotel',
+  'Beach',
+  'Landmark',
+  'Nature',
+  'Other',
 ];
 
 interface PlaceEditModalProps {
   place: Place;
-  onSave: (id: string, updates: Partial<Pick<Place, 'name' | 'notes' | 'category'>>) => Promise<void>;
+  onSave: (
+    id: string,
+    updates: Partial<Pick<Place, 'name' | 'notes' | 'category'>>
+  ) => Promise<void>;
   onClose: () => void;
 }
 
 const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose }) => {
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const [name, setName] = useState(place.name);
   const [notes, setNotes] = useState(place.notes ?? '');
   const [category, setCategory] = useState(place.category ?? '');
@@ -22,43 +39,18 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    nameRef.current?.focus();
-    nameRef.current?.select();
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed) { setError('Name is required.'); return; }
-    setIsSaving(true);
+    setName(place.name);
+    setNotes(place.notes ?? '');
+    setCategory(place.category ?? '');
     setError('');
-    try {
-      await onSave(place.id, {
-        name: trimmed,
-        notes: notes.trim() || undefined,
-        category: category || undefined,
-      });
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
-  const glass: React.CSSProperties = {
-    background: 'rgba(22, 14, 8, 0.94)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: `1px solid ${colors.border}`,
-    borderRadius: radius.xl,
-  };
+    const focusTimer = window.setTimeout(() => {
+      nameRef.current?.focus();
+      nameRef.current?.select();
+    }, 40);
+
+    return () => window.clearTimeout(focusTimer);
+  }, [place.category, place.id, place.name, place.notes]);
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -83,155 +75,168 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
     marginBottom: spacing.xs,
   };
 
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError('Name is required.');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      await onSave(place.id, {
+        name: trimmed,
+        notes: notes.trim() || undefined,
+        category: category || undefined,
+      });
+      onClose();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Failed to save.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Edit ${place.name}`}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: spacing.lg,
-        background: 'rgba(0,0,0,0.6)',
-        backdropFilter: 'blur(4px)',
-      }}
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Edit Place"
+      ariaLabel={`Edit ${place.name}`}
+      maxWidth={420}
+      closeDisabled={isSaving}
+      closeDisabledLabel="Saving place"
+      variant={isMobile ? 'bottom-sheet' : 'centered'}
     >
-      <div style={{ ...glass, width: '100%', maxWidth: '420px', padding: spacing.xl }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
-          <h2 style={{
-            margin: 0,
-            fontFamily: typography.fontFamily.heading.join(', '),
-            fontSize: typography.fontSize.lg,
-            color: colors.textPrimary,
-            letterSpacing: '0.02em',
-          }}>
-            Edit place
-          </h2>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: colors.textTertiary,
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-              lineHeight: 1,
-              padding: spacing.xs,
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.md,
+          padding: spacing.xl,
+        }}
+      >
+        <div>
+          <label style={labelStyle}>Name *</label>
+          <input
+            ref={nameRef}
+            value={name}
+            onChange={(event) => {
+              setName(event.target.value);
+              setError('');
             }}
-          >
-            ×
-          </button>
+            placeholder="Place name"
+            required
+            disabled={isSaving}
+            style={{
+              ...inputStyle,
+              borderColor: error ? 'rgba(220,80,60,0.7)' : colors.border,
+            }}
+          />
+          {error ? (
+            <p
+              style={{
+                margin: `${spacing.xs} 0 0`,
+                fontSize: typography.fontSize.xs,
+                color: '#f87171',
+              }}
+            >
+              {error}
+            </p>
+          ) : null}
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-          {/* Name */}
-          <div>
-            <label style={labelStyle}>Name *</label>
-            <input
-              ref={nameRef}
-              value={name}
-              onChange={(e) => { setName(e.target.value); setError(''); }}
-              placeholder="Place name"
-              required
-              style={{
-                ...inputStyle,
-                borderColor: error ? 'rgba(220,80,60,0.7)' : colors.border,
-              }}
-            />
-            {error && (
-              <p style={{ margin: `${spacing.xs} 0 0`, fontSize: typography.fontSize.xs, color: '#f87171' }}>
-                {error}
-              </p>
-            )}
-          </div>
+        <div>
+          <label style={labelStyle}>Category</label>
+          <select
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+            disabled={isSaving}
+            style={{
+              ...inputStyle,
+              cursor: isSaving ? 'not-allowed' : 'pointer',
+              appearance: 'none',
+              backgroundImage:
+                'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23888\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              paddingRight: '32px',
+            }}
+          >
+            {CATEGORIES.map((entry) => (
+              <option key={entry} value={entry} style={{ background: '#1a0e08' }}>
+                {entry === '' ? 'No category' : entry}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {/* Category */}
-          <div>
-            <label style={labelStyle}>Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              style={{
-                ...inputStyle,
-                cursor: 'pointer',
-                appearance: 'none',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-                paddingRight: '32px',
-              }}
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c} style={{ background: '#1a0e08' }}>
-                  {c === '' ? 'No category' : c}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <label style={labelStyle}>Notes</label>
+          <textarea
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            placeholder="Any notes..."
+            rows={3}
+            disabled={isSaving}
+            style={{
+              ...inputStyle,
+              resize: 'vertical',
+              minHeight: '72px',
+              lineHeight: typography.lineHeight.relaxed,
+            }}
+          />
+        </div>
 
-          {/* Notes */}
-          <div>
-            <label style={labelStyle}>Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any notes…"
-              rows={3}
-              style={{
-                ...inputStyle,
-                resize: 'vertical',
-                minHeight: '72px',
-                lineHeight: typography.lineHeight.relaxed,
-              }}
-            />
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: spacing.sm, justifyContent: 'flex-end', paddingTop: spacing.xs }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: `${spacing.sm} ${spacing.md}`,
-                background: 'transparent',
-                color: colors.textSecondary,
-                border: `1px solid ${colors.border}`,
-                borderRadius: radius.md,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.sm,
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving || !name.trim()}
-              style={{
-                padding: `${spacing.sm} ${spacing.lg}`,
-                background: name.trim() && !isSaving ? colors.accent : colors.border,
-                color: name.trim() && !isSaving ? '#fff' : colors.textTertiary,
-                border: 'none',
-                borderRadius: radius.md,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.sm,
-                cursor: name.trim() && !isSaving ? 'pointer' : 'not-allowed',
-                transition: `all ${motion.duration.fast}`,
-              }}
-            >
-              {isSaving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div
+          style={{
+            display: 'flex',
+            gap: spacing.sm,
+            justifyContent: 'flex-end',
+            paddingTop: spacing.xs,
+          }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSaving}
+            style={{
+              padding: `${spacing.sm} ${spacing.md}`,
+              background: 'transparent',
+              color: colors.textSecondary,
+              border: `1px solid ${colors.border}`,
+              borderRadius: radius.md,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              fontSize: typography.fontSize.sm,
+              cursor: isSaving ? 'not-allowed' : 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSaving || !name.trim()}
+            style={{
+              padding: `${spacing.sm} ${spacing.lg}`,
+              background: name.trim() && !isSaving ? colors.accent : colors.border,
+              color: name.trim() && !isSaving ? '#fff' : colors.textTertiary,
+              border: 'none',
+              borderRadius: radius.md,
+              fontFamily: typography.fontFamily.heading.join(', '),
+              fontSize: typography.fontSize.sm,
+              cursor: name.trim() && !isSaving ? 'pointer' : 'not-allowed',
+              transition: `all ${motion.duration.fast}`,
+            }}
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
