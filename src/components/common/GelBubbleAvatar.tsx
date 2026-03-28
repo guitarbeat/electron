@@ -136,6 +136,7 @@ interface GelBubbleAvatarProps extends React.ButtonHTMLAttributes<HTMLButtonElem
   accentColor?: string;
   haloColor?: string;
   enableImageRefresh?: boolean;
+  disablePhotoHoverPreview?: boolean;
 }
 
 const SIZES: Record<BubbleSize, { bubble: string; name: string }> = {
@@ -165,6 +166,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
       accentColor: customAccent,
       haloColor: customHalo,
       enableImageRefresh = false,
+      disablePhotoHoverPreview = false,
       style: customStyle,
       className: externalClassName,
       disabled,
@@ -211,7 +213,13 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
   const isTinyFullBleed = size === 'tiny' && !icon && !isActionBubble;
   const hasPhotoFill = Boolean(user && !icon && !isActionBubble);
   /** Inline full-bleed: skip photo "preview" mode (1.88× + name hide) — use dedicated hover scale on the button instead */
-  const isHoverPreview = Boolean(hasPhotoFill && isHovered && !disabled && !isTinyFullBleed);
+  const isHoverPreview = Boolean(
+    hasPhotoFill &&
+    isHovered &&
+    !disabled &&
+    !isTinyFullBleed &&
+    !disablePhotoHoverPreview
+  );
 
   const bubbleClasses = [
     'gel-bubble',

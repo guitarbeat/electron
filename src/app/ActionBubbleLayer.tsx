@@ -95,7 +95,7 @@ const ActionPanelContent: FC<ActionPanelContentProps> = ({
             </button>
           ) : null}
         </div>
-        <UserSelection variant="inline" className="action-bubble-panel__profiles" />
+        <UserSelection variant="launcher" className="action-bubble-panel__profiles" />
       </div>
 
       <div className="action-bubble-panel__body">
