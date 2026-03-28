@@ -1,6 +1,7 @@
 import React, { type CSSProperties, type ReactNode } from 'react';
 
 const MessageBoard = React.lazy(() => import('@/components/messages/MessageBoard'));
+const FloatingMemoriesPanel = React.lazy(() => import('@/components/memories/FloatingMemoriesPanel'));
 const SpinSwipeGame = React.lazy(() => import('@/components/spinMatch/SpinSwipeGame'));
 const QuizEditor = React.lazy(() => import('@/components/quiz/QuizEditor'));
 const QuizFlowModalContent = React.lazy(() => import('@/app/QuizFlowModalContent'));
@@ -29,6 +30,7 @@ const paddedScrollContentStyle: CSSProperties = {
 
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
+  showMemoriesPanel: boolean;
   showQuizEditor: boolean;
   showQuizFlow: boolean;
   showSpinWheel: boolean;
@@ -36,6 +38,7 @@ export interface BuildFeatureModalsParams {
   isSpinWheelLocked: boolean;
   currentUser: User | null;
   setShowMessages: (open: boolean) => void;
+  setShowMemoriesPanel: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
@@ -46,6 +49,7 @@ export interface BuildFeatureModalsParams {
 export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
   const {
     showMessages,
+    showMemoriesPanel,
     showQuizEditor,
     showQuizFlow,
     showSpinWheel,
@@ -53,6 +57,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     isSpinWheelLocked,
     currentUser,
     setShowMessages,
+    setShowMemoriesPanel,
     setShowQuizEditor,
     setShowQuizFlow,
     setShowSpinWheel,
@@ -77,6 +82,25 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       content: (
         <React.Suspense fallback={null}>
           <MessageBoard />
+        </React.Suspense>
+      ),
+    },
+    {
+      key: 'memories',
+      isOpen: showMemoriesPanel,
+      onClose: () => setShowMemoriesPanel(false),
+      title: 'Notes',
+      ariaLabel: 'Shared movie notes',
+      maxWidth: 980,
+      maxHeight: 920,
+      contentStyle: {
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+      },
+      content: (
+        <React.Suspense fallback={null}>
+          <FloatingMemoriesPanel />
         </React.Suspense>
       ),
     },

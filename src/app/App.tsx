@@ -48,6 +48,7 @@ const App: React.FC = () => {
     () => localStorage.getItem('quizCompleted') === 'true'
   );
   const [showMessages, setShowMessages] = useState(false);
+  const [showMemoriesPanel, setShowMemoriesPanel] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
@@ -192,6 +193,7 @@ const App: React.FC = () => {
     () =>
       buildFeatureModals({
         showMessages,
+        showMemoriesPanel,
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
@@ -199,6 +201,7 @@ const App: React.FC = () => {
         isSpinWheelLocked,
         currentUser,
         setShowMessages,
+        setShowMemoriesPanel,
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
@@ -210,6 +213,7 @@ const App: React.FC = () => {
       handleQuizComplete,
       isSpinWheelLocked,
       quizCompleted,
+      showMemoriesPanel,
       showMessages,
       showQuizEditor,
       showQuizFlow,
@@ -317,6 +321,12 @@ const App: React.FC = () => {
         icon: '💬',
         description: 'Chat with each other',
         action: () => setShowMessages(true),
+      },
+      {
+        label: 'Notes',
+        icon: '📝',
+        description: 'Browse and add shared movie notes',
+        action: () => setShowMemoriesPanel(true),
       },
       {
         label: quizLaunch.label,

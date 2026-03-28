@@ -7650,6 +7650,7 @@ body.grabbing * {
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
 }
 
 .movie-item-watchers .watcher-badge--default {
@@ -7705,6 +7706,7 @@ body.grabbing * {
     0 8px 18px rgba(4, 14, 8, 0.38),
     0 0 16px rgba(83, 221, 127, 0.28);
   animation: movie-success-badge-enter 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
 }
 
 .watcher-badge {
@@ -7804,6 +7806,27 @@ body.grabbing * {
   color: var(--color-text-secondary);
 }
 
+.movie-item-details-hit-area {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.movie-item-details-hit-area:focus-visible {
+  outline: none;
+}
+
+.movie-item-details-hit-area:focus-visible + .movie-item-overlay {
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 245, 220, 0.78),
+    inset 0 0 0 5px rgba(255, 245, 220, 0.18);
+}
+
 .movie-item-overlay {
   position: absolute;
   inset: 0;
@@ -7821,6 +7844,7 @@ body.grabbing * {
     rgba(11, 8, 18, 0.38) 70%,
     transparent 100%
   );
+  pointer-events: none;
   transition: background 0.22s ease;
 }
 
@@ -7902,7 +7926,10 @@ body.grabbing * {
 }
 
 .movie-item-memory-toggle {
-  align-self: flex-start;
+  align-self: stretch;
+  width: 100%;
+  min-height: 44px;
+  min-width: 0;
   border: 1px solid color-mix(in srgb, var(--color-secondary) 34%, rgba(255, 255, 255, 0.34));
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 42%),
@@ -7921,6 +7948,7 @@ body.grabbing * {
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   backdrop-filter: blur(10px) saturate(115%);
   -webkit-backdrop-filter: blur(10px) saturate(115%);
@@ -7929,6 +7957,38 @@ body.grabbing * {
     border-color 0.18s ease,
     background 0.18s ease,
     box-shadow 0.18s ease;
+}
+
+.movie-item-note-action {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.movie-item-note-action__icon {
+  flex-shrink: 0;
+}
+
+.movie-item-note-action__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.movie-item-note-action__count {
+  flex-shrink: 0;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 248, 210, 0.14);
+  color: rgba(255, 248, 210, 0.9);
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: 0.04em;
 }
 
 .movie-item-icon-action {
@@ -8010,13 +8070,39 @@ body.grabbing * {
     0 10px 24px rgba(0, 0, 0, 0.28);
 }
 
+.movie-item-action-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.78rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 24%),
+    linear-gradient(180deg, rgba(7, 12, 22, 0.94) 0%, rgba(7, 10, 18, 0.98) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.movie-item-action-rail--guest {
+  padding-top: 0.72rem;
+}
+
 .movie-actions {
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
   width: 100%;
   min-width: 0;
+}
+
+.movie-actions__row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.movie-actions__row--secondary {
+  align-items: stretch;
 }
 
 .movie-item-primary-action {
@@ -8045,36 +8131,6 @@ body.grabbing * {
   filter: none !important;
 }
 
-.movie-item-remove-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.85rem;
-  cursor: pointer;
-  color: rgba(255, 160, 140, 0.75);
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.movie-item-remove-link:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.18);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-}
-
-.movie-item-remove-link:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 .movie-item-primary-action .movie-item-primary-action-label {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -8093,6 +8149,10 @@ body.grabbing * {
 
   .movie-item-primary-action-label--short {
     display: inline;
+  }
+
+  .movie-item-note-action__label {
+    display: none;
   }
 }
 
@@ -8144,52 +8204,11 @@ body.grabbing * {
 }
 
 .movie-secondary-actions {
-  position: static;
   display: flex;
   align-items: stretch;
   gap: 0.3rem;
-  padding: 0;
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
-  background: none;
-  border-radius: 0;
+  flex: 0 0 auto;
   margin-left: auto;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .movie-item-card:hover .movie-actions,
-  .movie-item-card:focus-within .movie-actions {
-    padding-right: 0;
-  }
-
-  .movie-item-card:hover .movie-secondary-actions,
-  .movie-item-card:focus-within .movie-secondary-actions {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0);
-  }
-}
-
-.movie-item-card:focus-within .movie-secondary-actions,
-.movie-item-card:hover .movie-secondary-actions {
-  opacity: 1;
-}
-
-/* Touch/tablet: no hover, keep actions tappable without overlapping primary. */
-@media (hover: none) and (pointer: coarse) {
-  .movie-actions {
-    padding-right: 0;
-  }
-
-  .movie-secondary-actions {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0);
-  }
 }
 
 .movie-memory-panel {
@@ -8201,13 +8220,7 @@ body.grabbing * {
 }
 
 @media (max-width: 640px) {
-  .movie-actions,
-  .movie-actions--touch {
-    gap: 0.5rem;
-  }
-
   .movie-secondary-actions {
-    width: 100%;
     justify-content: flex-end;
   }
 
@@ -8217,6 +8230,16 @@ body.grabbing * {
 
   .movie-meta-item {
     font-size: var(--type-badge-size);
+  }
+
+  .movie-item-action-rail {
+    padding: 0.68rem;
+  }
+
+  .movie-item-note-action__count {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding-inline: 0.3rem;
   }
 }
 
@@ -10494,6 +10517,13 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     rgba(52, 37, 23, 0.26) 70%,
     transparent 100%
   );
+}
+
+.movie-item-action-rail {
+  background:
+    linear-gradient(180deg, rgba(255, 247, 228, 0.08) 0%, transparent 18%),
+    linear-gradient(180deg, rgba(39, 28, 18, 0.98) 0%, rgba(24, 16, 10, 0.98) 100%);
+  border-top-color: rgba(203, 168, 112, 0.16);
 }
 
 .movie-item-title,

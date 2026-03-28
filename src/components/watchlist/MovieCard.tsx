@@ -8,8 +8,9 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EditIcon, EyeIcon, NoteIcon, TrashIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
+import { getMovieActionState, type MovieActionState } from './movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
 
@@ -54,7 +55,9 @@ const WatcherBadgePhoto: React.FC<{ user: string }> = ({ user }) => {
   const sources = USER_PHOTOS[user] ?? [];
 
   const handleError = () => {
-    if (index < sources.length - 1) setIndex((i) => i + 1);
+    if (index < sources.length - 1) {
+      setIndex((current) => current + 1);
+    }
   };
 
   if (sources.length === 0 || index >= sources.length) {
@@ -94,7 +97,7 @@ const WatcherBadge: React.FC<WatcherBadgeProps> = ({
       <div className="watcher-badge__avatar">
         <WatcherBadgePhoto user={user} />
       </div>
-      {showLabel && <span className="watcher-badge__label">{user}</span>}
+      {showLabel ? <span className="watcher-badge__label">{user}</span> : null}
     </div>
   );
 };
@@ -119,15 +122,18 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isUpdating, setIsUpdating] = React.useState(false);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
-
-  const watchedByCurrentUser = currentUser ? movie.watchedBy.includes(currentUser) : false;
   const watchedByBoth = movie.watchedBy.length === 2;
-  const hasSharedMemories = memories.length > 0;
-  const canOpenNotes = hasSharedMemories || Boolean(currentUser);
-  const memoryCountText = `${memories.length} note${memories.length === 1 ? '' : 's'}`;
+  const actionState = React.useMemo(
+    () =>
+      getMovieActionState({
+        movie,
+        currentUser,
+        memoriesCount: memories.length,
+      }),
+    [currentUser, memories.length, movie]
+  );
 
-  const handleToggleMemories = (event?: React.MouseEvent) => {
-    event?.stopPropagation();
+  const handleToggleMemories = () => {
     setShowMemories((current) => !current);
   };
 
@@ -136,7 +142,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
   };
 
   const handleToggle = async () => {
-    if (isGuest) return;
+    if (isGuest) {
+      return;
+    }
+
     setIsUpdating(true);
     try {
       await onToggle();
@@ -166,69 +175,60 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <MediaCard.PosterWrap className="movie-item-poster-wrap">
           <MoviePoster movie={movie} />
 
-          {movie.watchedBy.length > 0 && (
+          {movie.watchedBy.length > 0 ? (
             <div className="movie-item-watchers">
-              {movie.watchedBy.includes('Aaron') && <WatcherBadge user="Aaron" size="md" />}
-              {movie.watchedBy.includes('Electra') && <WatcherBadge user="Electra" size="md" />}
+              {movie.watchedBy.includes('Aaron') ? <WatcherBadge user="Aaron" size="md" /> : null}
+              {movie.watchedBy.includes('Electra') ? <WatcherBadge user="Electra" size="md" /> : null}
             </div>
-          )}
+          ) : null}
 
-          {isHighlighted && (
+          {isHighlighted ? (
             <div className="movie-item-success-badge" aria-hidden>
               Added
             </div>
-          )}
+          ) : null}
+
+          <button
+            type="button"
+            className="movie-item-details-hit-area"
+            onClick={handleOpenDetails}
+            aria-label={`View details for "${movie.title}"`}
+          >
+            <span className="sr-only">{`View details for "${movie.title}"`}</span>
+          </button>
 
           <MediaCard.Overlay
             className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}
-            onClick={handleOpenDetails}
-            style={{ cursor: 'pointer' }}
-            title={`Click for more details about "${movie.title}"`}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleOpenDetails();
-              }
-            }}
           >
             <MediaCard.Info>
-              <MediaCard.Title className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}>
+              <MediaCard.Title
+                className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}
+              >
                 {movie.title}
               </MediaCard.Title>
               <MovieMetadata movie={movie} />
             </MediaCard.Info>
+          </MediaCard.Overlay>
+        </MediaCard.PosterWrap>
 
-            {canOpenNotes && (
-              <button
-                type="button"
-                onClick={handleToggleMemories}
-                className="movie-item-memory-toggle"
-                aria-label={
-                  hasSharedMemories
-                    ? `View notes for "${movie.title}"`
-                    : `Add note to "${movie.title}"`
-                }
-              >
-                {hasSharedMemories ? memoryCountText : 'Add note'}
-              </button>
-            )}
-
+        {actionState.showActionRail ? (
+          <div
+            className={`movie-item-action-rail ${actionState.isGuest ? 'movie-item-action-rail--guest' : ''}`.trim()}
+          >
             <MovieActions
               movie={movie}
-              currentUser={currentUser}
-              watchedByCurrentUser={watchedByCurrentUser}
+              actionState={actionState}
               isUpdating={isUpdating}
               onToggle={handleToggle}
+              onToggleNotes={handleToggleMemories}
               onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
               onDelete={onDelete}
             />
-          </MediaCard.Overlay>
-        </MediaCard.PosterWrap>
+          </div>
+        ) : null}
       </Card>
 
-      {showMemories && (
+      {showMemories ? (
         <MovieMemories
           movie={movie}
           memories={memories}
@@ -240,9 +240,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onDeleteMemory={onDeleteMemory}
           onTogglePin={onTogglePin}
         />
-      )}
+      ) : null}
 
-      {onRename && (
+      {onRename ? (
         <MovieTitleEditModal
           movie={movie}
           isOpen={isTitleEditorOpen}
@@ -250,13 +250,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onClose={() => setIsTitleEditorOpen(false)}
           onSubmit={onRename}
         />
-      )}
+      ) : null}
 
-      <MovieDetailsModal
-        movie={movie}
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-      />
+      <MovieDetailsModal movie={movie} isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} />
     </>
   );
 };
@@ -286,7 +282,7 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
             <h3 className="movie-poster-fallback__title">{movie.title}</h3>
-            {movie.year && <span className="movie-poster-fallback__year">{movie.year}</span>}
+            {movie.year ? <span className="movie-poster-fallback__year">{movie.year}</span> : null}
           </div>
         </div>
       )}
@@ -294,10 +290,7 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
   );
 };
 
-const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({
-  movie,
-  className = '',
-}) => {
+const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
   const metadataItems = [
     movie.year,
     movie.runtime,
@@ -309,15 +302,15 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({
       <div className="movie-meta-row">
         {metadataItems.map((item, index) => (
           <React.Fragment key={`${movie.id}-meta-${item}`}>
-            {index > 0 && <span className="movie-meta-separator">•</span>}
+            {index > 0 ? <span className="movie-meta-separator">&bull;</span> : null}
             <span className="movie-meta-item">{item}</span>
           </React.Fragment>
         ))}
-        {movie.category && (
+        {movie.category ? (
           <span className="movie-category" aria-label={`Category: ${movie.category}`}>
             {movie.category}
           </span>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -325,127 +318,150 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({
 
 interface MovieActionsProps {
   movie: Movie;
-  currentUser: User | null;
-  watchedByCurrentUser: boolean;
+  actionState: MovieActionState;
   isUpdating: boolean;
   onToggle: () => void;
+  onToggleNotes: () => void;
   onEdit?: () => void;
   onDelete: () => void;
 }
 
 const MovieActions: React.FC<MovieActionsProps> = ({
   movie,
-  currentUser,
-  watchedByCurrentUser,
+  actionState,
   isUpdating,
   onToggle,
+  onToggleNotes,
   onEdit,
   onDelete,
 }) => {
-  const isGuest = !currentUser;
-  const primaryActionLabel = watchedByCurrentUser ? 'Watched' : 'Mark watched';
-  const primaryActionLabelShort = watchedByCurrentUser ? 'Watched ✓' : 'Watch';
   const iconActionClassName = (modifierClassName: string) =>
     `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
 
-  const stopActionPropagation = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const handlePrimaryAction = (event: React.MouseEvent<HTMLButtonElement>) => {
-    stopActionPropagation(event);
+  const handlePrimaryAction = () => {
     executeAction(onToggle);
   };
 
-  const handleDeleteAction = (event: React.MouseEvent<HTMLButtonElement>) => {
-    stopActionPropagation(event);
-    if (isGuest) return;
+  const handleToggleNotes = () => {
+    executeAction(onToggleNotes);
+  };
+
+  const handleDeleteAction = () => {
+    if (actionState.isGuest) {
+      return;
+    }
+
     executeAction(onDelete);
   };
 
-  const handleEditAction = (event: React.MouseEvent<HTMLButtonElement>) => {
-    stopActionPropagation(event);
-    if (isGuest || !onEdit) return;
+  const handleEditAction = () => {
+    if (actionState.isGuest || !onEdit) {
+      return;
+    }
+
     executeAction(onEdit);
   };
 
-  const primaryButton = (
-    <Button
-      type="button"
-      onClick={handlePrimaryAction}
-      variant={watchedByCurrentUser ? 'primary' : 'secondary'}
-      size="sm"
-      isLoading={isUpdating}
-      loadingText="Updating..."
-      aria-pressed={watchedByCurrentUser}
-      aria-label={
-        watchedByCurrentUser
-          ? `Mark "${movie.title}" as unwatched`
-          : `Mark "${movie.title}" as watched`
-      }
-      className={`movie-item-primary-action ${watchedByCurrentUser ? 'movie-item-primary-action--watched' : 'movie-item-primary-action--unwatched'}`}
-      style={
-        watchedByCurrentUser
-          ? {
-              background: 'linear-gradient(180deg, rgba(30,50,36,0.88) 0%, rgba(18,32,22,0.92) 100%)',
-              color: 'rgba(220,240,225,0.9)',
-              border: '1px solid rgba(74,160,96,0.35)',
-            }
-          : {
-              background: 'linear-gradient(135deg, #22c55e 0%, #059669 100%)',
-              color: '#fff',
-              border: '1px solid rgba(34,197,94,0.5)',
-              boxShadow: '0 6px 18px rgba(5,150,105,0.4), inset 0 1px 0 rgba(255,255,255,0.18)',
-            }
-      }
-    >
-      {watchedByCurrentUser ? (
-        <CheckIcon style={{ width: '15px' }} />
-      ) : (
-        <EyeIcon style={{ width: '15px' }} />
-      )}
-      <span className="movie-item-primary-action-label">
-        <span className="movie-item-primary-action-label--long">
-          {primaryActionLabel}
-        </span>
-        <span className="movie-item-primary-action-label--short" aria-hidden>
-          {primaryActionLabelShort}
-        </span>
-      </span>
-    </Button>
-  );
-
-  if (isGuest) return null;
+  if (!actionState.showActionRail) {
+    return null;
+  }
 
   return (
     <div className="movie-actions">
-      {primaryButton}
+      {actionState.showWatchedAction ? (
+        <div className="movie-actions__row movie-actions__row--primary">
+          <Button
+            type="button"
+            onClick={handlePrimaryAction}
+            variant={actionState.watchedByCurrentUser ? 'primary' : 'secondary'}
+            size="sm"
+            isLoading={isUpdating}
+            loadingText="Updating..."
+            aria-pressed={actionState.watchedByCurrentUser}
+            aria-label={actionState.primaryActionAriaLabel ?? undefined}
+            className={`movie-item-primary-action ${
+              actionState.watchedByCurrentUser
+                ? 'movie-item-primary-action--watched'
+                : 'movie-item-primary-action--unwatched'
+            }`}
+            style={
+              actionState.watchedByCurrentUser
+                ? {
+                    background: 'linear-gradient(180deg, rgba(30,50,36,0.88) 0%, rgba(18,32,22,0.92) 100%)',
+                    color: 'rgba(220,240,225,0.9)',
+                    border: '1px solid rgba(74,160,96,0.35)',
+                  }
+                : {
+                    background: 'linear-gradient(135deg, #22c55e 0%, #059669 100%)',
+                    color: '#fff',
+                    border: '1px solid rgba(34,197,94,0.5)',
+                    boxShadow: '0 6px 18px rgba(5,150,105,0.4), inset 0 1px 0 rgba(255,255,255,0.18)',
+                  }
+            }
+          >
+            {actionState.watchedByCurrentUser ? (
+              <CheckIcon style={{ width: '15px' }} />
+            ) : (
+              <EyeIcon style={{ width: '15px' }} />
+            )}
+            <span className="movie-item-primary-action-label">
+              <span className="movie-item-primary-action-label--long">
+                {actionState.primaryActionLabel}
+              </span>
+              <span className="movie-item-primary-action-label--short" aria-hidden>
+                {actionState.primaryActionCompactLabel}
+              </span>
+            </span>
+          </Button>
+        </div>
+      ) : null}
 
-      <div className="movie-secondary-actions">
-        {onEdit && (
+      <div className="movie-actions__row movie-actions__row--secondary">
+        {actionState.showNotesAction ? (
           <button
             type="button"
-            onClick={handleEditAction}
-            title={`Edit title for "${movie.title}"`}
-            aria-label={`Edit title for "${movie.title}"`}
-            className={iconActionClassName('movie-icon-action--edit')}
+            onClick={handleToggleNotes}
+            className="movie-item-memory-toggle movie-item-note-action"
+            aria-label={actionState.notesButtonAriaLabel ?? undefined}
             disabled={isUpdating}
           >
-            <EditIcon style={{ width: '15px', height: '15px' }} />
+            <NoteIcon className="movie-item-note-action__icon" style={{ width: '15px', height: '15px' }} />
+            <span className="movie-item-note-action__label">{actionState.notesButtonLabel}</span>
+            {actionState.notesBadgeText ? (
+              <span className="movie-item-note-action__count" aria-hidden>
+                {actionState.notesBadgeText}
+              </span>
+            ) : null}
           </button>
-        )}
+        ) : null}
 
-        <button
-          type="button"
-          onClick={handleDeleteAction}
-          title={`Remove "${movie.title}"`}
-          aria-label={`Remove "${movie.title}" from list`}
-          className={iconActionClassName('movie-icon-action--delete')}
-          disabled={isUpdating}
-        >
-          <TrashIcon style={{ width: '15px', height: '15px' }} />
-        </button>
+        {!actionState.isGuest ? (
+          <div className="movie-secondary-actions">
+            {onEdit ? (
+              <button
+                type="button"
+                onClick={handleEditAction}
+                title={`Edit title for "${movie.title}"`}
+                aria-label={`Edit title for "${movie.title}"`}
+                className={iconActionClassName('movie-icon-action--edit')}
+                disabled={isUpdating}
+              >
+                <EditIcon style={{ width: '15px', height: '15px' }} />
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={handleDeleteAction}
+              title={`Remove "${movie.title}"`}
+              aria-label={`Remove "${movie.title}" from list`}
+              className={iconActionClassName('movie-icon-action--delete')}
+              disabled={isUpdating}
+            >
+              <TrashIcon style={{ width: '15px', height: '15px' }} />
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -480,13 +496,19 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
   const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
   const memoriesListRef = React.useRef<HTMLDivElement>(null);
   const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
-  const canSubmitNote = !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
+  const canSubmitNote =
+    !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
 
   const handleMemorySubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!onAddMemory) return;
+    if (!onAddMemory) {
+      return;
+    }
+
     const trimmedNote = draftNote.trim();
-    if (!trimmedNote) return;
+    if (!trimmedNote) {
+      return;
+    }
 
     setIsSubmittingMemory(true);
     try {
@@ -517,8 +539,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         marginBottom: spacing.md,
         padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
         borderRadius: '0 0 16px 16px',
-        background:
-          `linear-gradient(180deg, ${colors.surface2} 0%, ${colors.surface1} 42%, ${colors.surface0} 100%)`,
+        background: `linear-gradient(180deg, ${colors.surface2} 0%, ${colors.surface1} 42%, ${colors.surface0} 100%)`,
         border: `1px solid ${colors.borderSubtle}`,
         borderTop: 'none',
         borderLeft: `3px solid ${colors.accentMuted}`,
@@ -549,10 +570,10 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
           padding: 0,
         }}
       >
-        ×
+        &times;
       </button>
 
-      {currentUser && onAddMemory && (
+      {currentUser && onAddMemory ? (
         <div style={{ marginBottom: spacing.md }}>
           <MemoryComposer
             watchedMovieOptions={[movie]}
@@ -573,38 +594,44 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
             noteInputRef={noteInputRef}
           />
         </div>
-      )}
+      ) : null}
 
       {memories.length > 0 ? (
         <div ref={memoriesListRef}>
-        <MemoryList
-          memories={memories}
-          visibleMemories={memories}
-          sortedMemories={memories}
-          contextMovieTitle={movie.title}
-          currentUser={currentUser}
-          isMobile={isMobile}
-          onEditMemory={async (memory, note) => {
-            if (onUpdateMemory) await onUpdateMemory(memory.id, note);
-          }}
-          onDeleteMemory={async (memory) => {
-            if (onDeleteMemory) await onDeleteMemory(memory.id);
-          }}
-          onTogglePin={async (memory) => {
-            if (onTogglePin) await onTogglePin(memory.id);
-          }}
-          movieFilterOptions={[]}
-          activeMovieFilter={movie.id}
-          onActiveMovieFilterChange={() => {}}
-          sortMode="newest"
-          onSortModeChange={() => {}}
-          onShowMore={() => {}}
-          onShowLess={() => {}}
-          visibleCount={100}
-          isLoading={false}
-          memoriesError={null}
-          onJumpToMovie={() => {}}
-        />
+          <MemoryList
+            memories={memories}
+            visibleMemories={memories}
+            sortedMemories={memories}
+            contextMovieTitle={movie.title}
+            currentUser={currentUser}
+            isMobile={isMobile}
+            onEditMemory={async (memory, note) => {
+              if (onUpdateMemory) {
+                await onUpdateMemory(memory.id, note);
+              }
+            }}
+            onDeleteMemory={async (memory) => {
+              if (onDeleteMemory) {
+                await onDeleteMemory(memory.id);
+              }
+            }}
+            onTogglePin={async (memory) => {
+              if (onTogglePin) {
+                await onTogglePin(memory.id);
+              }
+            }}
+            movieFilterOptions={[]}
+            activeMovieFilter={movie.id}
+            onActiveMovieFilterChange={() => {}}
+            sortMode="newest"
+            onSortModeChange={() => {}}
+            onShowMore={() => {}}
+            onShowLess={() => {}}
+            visibleCount={100}
+            isLoading={false}
+            memoriesError={null}
+            onJumpToMovie={() => {}}
+          />
         </div>
       ) : (
         <p
