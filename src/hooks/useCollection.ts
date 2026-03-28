@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { usePolling } from '@/services/polling';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
+import type { StateScope, StateScopeDataMap } from '@/services/stateTypes';
 import { areDeeplyEqual } from '@/utils';
 import { User } from '@/shared/types';
 
@@ -9,8 +10,12 @@ interface CollectionOptions {
   isPaused?: boolean;
 }
 
+type CollectionScope = {
+  [K in StateScope]: StateScopeDataMap[K] extends Array<unknown> ? K : never;
+}[StateScope];
+
 export const useCollection = <T>(
-  scope: string,
+  scope: CollectionScope,
   currentUser: User | null | undefined,
   options: CollectionOptions = {}
 ) => {
@@ -42,7 +47,7 @@ export const useCollection = <T>(
         await mutateScope(scope, {
           op,
           payload,
-          optimisticData,
+          optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
         });
         refresh();
         return true;

@@ -8,7 +8,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useSpring } from 'framer-motion';
 import { useUser } from '@/app/providers';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import type { ActionBubbleMenuPosition, ActionBubblePosition } from '@/app/actionBubble';

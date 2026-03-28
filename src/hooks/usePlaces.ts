@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Place, User } from '@/shared/types';
 import {
   sanitizeInput,

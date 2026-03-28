@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Movie, User } from '@/shared/types';
 import {
   fetchMovieMetadata,
@@ -60,6 +60,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   } = useCollection<Movie>('movies', currentUser, { pollingInterval: POLLING_INTERVAL, isPaused });
 
   const hasAutoSyncedRef = useRef(false);
+  const isRefreshingMetadataRef = useRef(false);
 
   const updateMovieMetadata = useCallback(
     async (movie: Movie, searchTerm?: string) => {
@@ -278,9 +279,11 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   );
 
   const refreshAllMetadata = useCallback(async () => {
-    if (isSubmitting) return false;
+    if (!currentUser || isSubmitting || isRefreshingMetadataRef.current) {
+      return false;
+    }
 
-    setIsSubmitting(true);
+    isRefreshingMetadataRef.current = true;
     try {
       const latestMovies = [...movies];
       const refreshed = await concurrentMap(latestMovies, 5, async (movie) => {
@@ -302,22 +305,18 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           movie.id === update.movieId ? { ...movie, ...update.metadata } : movie
         );
 
-        await mutateScope('movies', {
-          op: 'update_metadata',
-          payload: {
-            movieId: update.movieId,
-            metadata: update.metadata,
-          },
-          optimisticData: optimisticMovies,
-        });
+        await performMutation('update_metadata', {
+          movieId: update.movieId,
+          metadata: update.metadata,
+        }, optimisticMovies);
       }
 
       refresh();
       return true;
     } finally {
-      setIsSubmitting(false);
+      isRefreshingMetadataRef.current = false;
     }
-  }, [isSubmitting, movies, refresh]);
+  }, [currentUser, isSubmitting, movies, performMutation, refresh]);
 
   const autoSyncMetadata = useCallback(async () => {
     if (!currentUser || hasAutoSyncedRef.current || movies.length === 0 || isSubmitting) {
@@ -344,7 +343,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         console.warn(`Auto-sync failed for ${movie.title}:`, error);
       }
     }
-  }, [isSubmitting, movies, updateMovieMetadata]);
+  }, [currentUser, isSubmitting, movies, updateMovieMetadata]);
 
   useEffect(() => {
     if (currentUser && !isLoading && movies.length > 0 && !hasAutoSyncedRef.current) {

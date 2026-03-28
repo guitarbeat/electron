@@ -5,6 +5,7 @@ import type {
   Movie,
   MovieSuggestion,
   Place,
+  PlaceSuggestion,
   SharedMemory,
   User,
 } from '../shared/types.ts';

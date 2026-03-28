@@ -24,6 +24,7 @@ const PENDING_SUGGESTIONS: PlaceSuggestion[] = [
     name: 'New Restaurant',
     suggestedBy: 'Aaron',
     createdAt: '2026-03-23T10:00:00.000Z',
+    status: 'pending',
   },
 ];
 
