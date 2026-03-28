@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '@/app/providers';
 import type { User } from '@/shared/types';
@@ -8,7 +8,7 @@ import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
 
-type UserSelectionVariant = 'inline' | 'panel';
+type UserSelectionVariant = 'inline' | 'panel' | 'launcher';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
@@ -44,7 +44,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const users: User[] = [...USER_OPTIONS];
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
-  const showBubbleName = true;
+  const showBubbleName = variant !== 'launcher';
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   useEffect(() => {
@@ -192,6 +192,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             aria-label="Select profile"
           >
             {users.map((profile) => {
+              const isLauncher = variant === 'launcher';
               const isActive = currentUser === profile;
               const selectionState =
                 !currentUser || !isSelectionAnimating || !selectionAnimatedUser
@@ -199,13 +200,31 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   : profile === selectionAnimatedUser
                     ? 'active'
                     : 'inactive';
-              const isHovered = hoveredUser === profile || focusedUser === profile || isActive;
+              const isHovered =
+                hoveredUser === profile || focusedUser === profile || (!isLauncher && isActive);
               const hasPin = userHasPin(profile);
+              const bubbleSize =
+                variant === 'panel'
+                  ? (isMobile ? 'compact' : 'default')
+                  : isLauncher
+                    ? 'compact'
+                    : 'tiny';
+              const launcherBubbleStyle: CSSProperties | undefined = isLauncher
+                ? {
+                    ['--gel-bubble-size' as string]: isMobile ? '74px' : '82px',
+                  }
+                : undefined;
+              const profileCardVariantClass =
+                variant === 'panel'
+                  ? ' user-selection__profile-card--panel'
+                  : isLauncher
+                    ? ' user-selection__profile-card--launcher'
+                    : '';
 
               return (
                 <div
                   key={profile}
-                  className={`user-selection__profile-card${variant === 'panel' ? ' user-selection__profile-card--panel' : ''}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
+                  className={`user-selection__profile-card${profileCardVariantClass}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
                 >
                   <GelBubbleAvatar
                     user={profile}
@@ -214,7 +233,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     showName={showBubbleName}
                     selectionState={selectionState}
                     isSelectionAnimating={isSelectionAnimating}
-                    size={variant === 'panel' ? (isMobile ? 'compact' : 'default') : 'tiny'}
+                    size={bubbleSize}
                     onClick={() => selectProfile(profile)}
                     onMouseEnter={() => setHoveredUser(profile)}
                     onMouseLeave={() =>
@@ -226,9 +245,27 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     animationOffset={profile === 'Electra'}
                     aria-label={isActive ? 'Log out' : undefined}
                     aria-pressed={isActive}
+                    style={launcherBubbleStyle}
+                    disablePhotoHoverPreview={isLauncher}
                   />
 
-                  {variant === 'panel' && (isActive || hasPin) ? (
+                  {isLauncher ? (
+                    <div className="user-selection__profile-caption user-selection__profile-caption--launcher">
+                      <span className="user-selection__profile-name">{profile}</span>
+                      <div className="user-selection__profile-meta user-selection__profile-meta--launcher">
+                        {isActive ? (
+                          <span className="user-selection__meta-pill user-selection__meta-pill--active">
+                            Active
+                          </span>
+                        ) : null}
+                        {hasPin ? (
+                          <span className="user-selection__meta-pill user-selection__meta-pill--pin" aria-hidden="true">
+                            PIN Locked
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : variant === 'panel' && (isActive || hasPin) ? (
                     <div className="user-selection__profile-caption">
                       <div className="user-selection__profile-meta">
                         {isActive ? (

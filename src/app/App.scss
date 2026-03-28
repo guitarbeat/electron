@@ -1021,6 +1021,113 @@ body {
   animation-delay: 0.15s, 0s;
 }
 
+.user-selection--launcher {
+  width: 100%;
+  padding: 0;
+}
+
+.user-selection--launcher .user-selection__profiles {
+  gap: 0;
+}
+
+.user-selection__bubble-cluster--launcher {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.user-selection__bubble-row--launcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.72rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.user-selection__profile-card--launcher {
+  min-width: 0;
+  height: 100%;
+  padding: 0.74rem 0.62rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(212, 177, 115, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 228, 0.1) 0%, transparent 22%),
+    radial-gradient(circle at 18% 14%, rgba(244, 223, 188, 0.1) 0%, transparent 32%),
+    linear-gradient(160deg, rgba(44, 27, 12, 0.72) 0%, rgba(16, 9, 4, 0.9) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 217, 0.08),
+    0 14px 26px rgba(8, 4, 2, 0.2);
+  gap: 0.58rem;
+  justify-content: flex-start;
+  cursor: default;
+}
+
+.user-selection__profile-card--launcher:hover,
+.user-selection__profile-card--launcher:focus-within {
+  transform: translateY(-2px);
+  border-color: rgba(212, 177, 115, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 217, 0.12),
+    0 18px 32px rgba(8, 4, 2, 0.24),
+    0 0 18px rgba(180, 138, 72, 0.12);
+}
+
+.user-selection__profile-card--launcher.is-active {
+  border-color: rgba(212, 177, 115, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 228, 0.12) 0%, transparent 22%),
+    radial-gradient(circle at 18% 14%, rgba(244, 223, 188, 0.12) 0%, transparent 36%),
+    linear-gradient(160deg, rgba(58, 35, 14, 0.8) 0%, rgba(18, 10, 4, 0.94) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 217, 0.14),
+    0 18px 34px rgba(8, 4, 2, 0.28),
+    0 0 22px rgba(180, 138, 72, 0.16);
+}
+
+.user-selection__profile-card--launcher .gel-bubble {
+  width: 100%;
+  justify-content: center;
+}
+
+.user-selection__profile-card--launcher .gel-avatar-shell {
+  margin-inline: auto;
+}
+
+.user-selection__profile-caption--launcher {
+  width: 100%;
+  align-items: center;
+  gap: 0.42rem;
+  text-align: center;
+}
+
+.user-selection__profile-name {
+  display: block;
+  font-family: var(--type-heading-family);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--color-text-primary) 92%, rgba(244, 223, 188, 0.9) 8%);
+}
+
+.user-selection__profile-meta--launcher {
+  min-height: 1.35rem;
+  gap: 0.28rem;
+}
+
+.user-selection--launcher.is-mobile .user-selection__bubble-row--launcher {
+  gap: 0.58rem;
+}
+
+.user-selection--launcher.is-mobile .user-selection__profile-card--launcher {
+  padding: 0.68rem 0.48rem 0.74rem;
+}
+
+.user-selection--launcher.is-mobile .user-selection__profile-name {
+  font-size: 0.8rem;
+}
+
 /* Hover: show full API image (contain); name hidden via TSX + this wins over inline name styles */
 .user-selection--inline .gel-bubble--photo-hover-preview .gel-avatar-name--inside {
   opacity: 0 !important;
@@ -2002,22 +2109,13 @@ body {
 
 .action-bubble-panel__profiles {
   padding: 0;
+}
 
-  .user-selection__bubble-row--inline {
-    justify-content: flex-start;
-    gap: 0.6rem;
-    flex-wrap: nowrap;
-  }
-
-  .user-selection__profile-card:not(.user-selection__profile-card--actions) {
-    flex: 0 1 auto;
-    min-width: 0;
-    max-width: none;
-  }
-
-  .user-selection__profile-card:not(.user-selection__profile-card--actions) > .gel-bubble--inline {
-    width: auto;
-  }
+.action-bubble-panel__profiles.user-selection--launcher,
+.action-bubble-panel__profiles.user-selection--launcher .user-selection__profiles,
+.action-bubble-panel__profiles.user-selection--launcher .user-selection__bubble-cluster--launcher,
+.action-bubble-panel__profiles.user-selection--launcher .user-selection__bubble-row--launcher {
+  width: 100%;
 }
 
 .action-bubble-panel__body {
@@ -2048,8 +2146,11 @@ body {
   padding-inline: 0;
 }
 
-.action-bubble-sheet .action-bubble-panel__profiles .user-selection__bubble-row--inline {
-  justify-content: center;
+.action-bubble-sheet .action-bubble-panel__profiles.user-selection--launcher,
+.action-bubble-sheet .action-bubble-panel__profiles.user-selection--launcher .user-selection__profiles,
+.action-bubble-sheet .action-bubble-panel__profiles.user-selection--launcher .user-selection__bubble-cluster--launcher,
+.action-bubble-sheet .action-bubble-panel__profiles.user-selection--launcher .user-selection__bubble-row--launcher {
+  width: 100%;
 }
 
 
@@ -2535,28 +2636,15 @@ body {
 }
 
 .workspace-surface--places {
-  border-color: color-mix(in srgb, var(--color-secondary) 42%, var(--chrome-border-color) 58%);
-  background:
-    radial-gradient(circle at 84% 9%, rgba(255, 223, 154, 0.2) 0%, transparent 22%),
-    radial-gradient(ellipse 110% 46% at 50% -10%, rgba(173, 216, 247, 0.16) 0%, transparent 65%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 16%),
-    linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--color-secondary) 14%, transparent) 82%, transparent 100%),
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--color-surface-2) 93%, transparent) 0%,
-      color-mix(in srgb, var(--color-surface-0) 97%, transparent) 100%
-    );
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.22),
-    0 0 0 1px color-mix(in srgb, var(--color-secondary) 16%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .workspace-surface--places::before {
-  background:
-    linear-gradient(118deg, transparent 0%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 30%, transparent 42%),
-    radial-gradient(circle at 84% 10%, rgba(255, 255, 255, 0.1) 0%, transparent 30%),
-    linear-gradient(180deg, rgba(193, 230, 255, 0.05) 0%, transparent 30%);
+  display: none;
 }
 
 .tab-panel {
@@ -9844,7 +9932,8 @@ body {
 }
 
 /* Queue workspace: no tinted panel — list sits on the shell background */
-.workspace-surface.workspace-surface--queue {
+.workspace-surface.workspace-surface--queue,
+.workspace-surface.workspace-surface--places {
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -9852,7 +9941,8 @@ body {
   -webkit-backdrop-filter: none !important;
 }
 
-.workspace-surface.workspace-surface--queue::before {
+.workspace-surface.workspace-surface--queue::before,
+.workspace-surface.workspace-surface--places::before {
   display: none !important;
 }
 
