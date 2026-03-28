@@ -52,6 +52,15 @@ const PlacesList: React.FC = () => {
   const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
 
   const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
+  const placesSummary = useMemo(
+    () => ({
+      toTry: sections.queue.length,
+      pinned: places.filter((place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
+      visited: sections.visited.length,
+      pendingSuggestions: sections.suggestions.length,
+    }),
+    [places, sections.queue.length, sections.suggestions.length, sections.visited.length]
+  );
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
@@ -291,19 +300,52 @@ const PlacesList: React.FC = () => {
         />
       )}
 
-      <PlacesMap
-        places={places}
-        canEdit={Boolean(currentUser)}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSubmitSearch={handleAddAction}
-        onSuggestPlace={handleSuggestAction}
-        isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        suggestionError={suggestionError}
-        onUpdatePlace={updatePlace}
-        onAddPlace={addPlace}
-      />
+      <div className="places-map-shell">
+        <div className="places-overview">
+          <div className="places-overview__copy">
+            <div className="places-overview__heading">
+              <p className="places-overview__title">Places</p>
+              {placesSummary.pendingSuggestions > 0 ? (
+                <span className="places-overview__badge">
+                  {placesSummary.pendingSuggestions} suggestion{placesSummary.pendingSuggestions === 1 ? '' : 's'} waiting
+                </span>
+              ) : null}
+            </div>
+            <p className="places-overview__description">
+              Search, pin, and track spots you want to try or revisit.
+            </p>
+          </div>
+
+          <div className="places-overview__stats" aria-label="Places summary">
+            <div className="places-overview__stat">
+              <span className="places-overview__stat-value">{placesSummary.toTry}</span>
+              <span className="places-overview__stat-label">To try</span>
+            </div>
+            <div className="places-overview__stat">
+              <span className="places-overview__stat-value">{placesSummary.pinned}</span>
+              <span className="places-overview__stat-label">Pinned</span>
+            </div>
+            <div className="places-overview__stat">
+              <span className="places-overview__stat-value">{placesSummary.visited}</span>
+              <span className="places-overview__stat-label">Visited</span>
+            </div>
+          </div>
+        </div>
+
+        <PlacesMap
+          places={places}
+          canEdit={Boolean(currentUser)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onSubmitSearch={handleAddAction}
+          onSuggestPlace={handleSuggestAction}
+          isAdding={isAdding}
+          isSuggesting={isSuggesting}
+          suggestionError={suggestionError}
+          onUpdatePlace={updatePlace}
+          onAddPlace={addPlace}
+        />
+      </div>
 
       {isLoading && places.length === 0 ? (
         <CollectionGrid
@@ -319,9 +361,9 @@ const PlacesList: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
           {sections.suggestions.length > 0 && renderSuggestionSection(sections.suggestions)}
           {renderPlaceSection({
-            title: 'Queue',
+            title: 'To try',
             placesToRender: sections.queue,
-            emptyState: 'No places in queue',
+            emptyState: 'No places saved to try yet',
           })}
           {renderPlaceSection({
             title: 'Visited',

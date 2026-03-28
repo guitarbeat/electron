@@ -9,6 +9,7 @@ export interface MovieActionState {
   showNotesAction: boolean;
   memoryCountText: string;
   notesButtonLabel: string;
+  notesButtonCompactLabel: string;
   notesButtonAriaLabel: string | null;
   notesBadgeText: string | null;
   primaryActionLabel: string;
@@ -44,6 +45,7 @@ export const getMovieActionState = ({
     showNotesAction,
     memoryCountText,
     notesButtonLabel: hasMemories ? memoryCountText : 'Add note',
+    notesButtonCompactLabel: hasMemories ? 'Notes' : 'Note',
     notesButtonAriaLabel: showNotesAction
       ? hasMemories
         ? `View notes for "${movie.title}"`

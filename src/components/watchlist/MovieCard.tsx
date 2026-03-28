@@ -432,7 +432,14 @@ const MovieActions: React.FC<MovieActionsProps> = ({
             disabled={isUpdating}
           >
             <NoteIcon className="movie-item-note-action__icon" style={{ width: '15px', height: '15px' }} />
-            <span className="movie-item-note-action__label">{actionState.notesButtonLabel}</span>
+            <span className="movie-item-note-action__label">
+              <span className="movie-item-note-action__label--long">
+                {actionState.notesButtonLabel}
+              </span>
+              <span className="movie-item-note-action__label--short" aria-hidden>
+                {actionState.notesButtonCompactLabel}
+              </span>
+            </span>
             {actionState.notesBadgeText ? (
               <span className="movie-item-note-action__count" aria-hidden>
                 {actionState.notesBadgeText}
