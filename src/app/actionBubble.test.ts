@@ -4,6 +4,9 @@ import {
   ACTION_BUBBLE_DOCK_GAP,
   ACTION_BUBBLE_EDGE_MARGIN,
   ACTION_BUBBLE_EDGE_MARGIN_MOBILE,
+  ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT,
+  ACTION_BUBBLE_PANEL_GAP,
+  ACTION_BUBBLE_PANEL_WIDTH,
   ACTION_BUBBLE_SIZE,
   ACTION_BUBBLE_SIZE_MOBILE,
   ACTION_BUBBLE_TOGGLE_OUTER_HEIGHT,
@@ -12,7 +15,7 @@ import {
   ACTION_BUBBLE_TOGGLE_OVERLAP,
   clampActionBubblePosition,
   getDockedActionBubblePosition,
-  getActionBubbleMenuPosition,
+  getActionBubblePanelPosition,
   getActionBubbleTogglePosition,
   getDefaultActionBubblePosition,
   snapActionBubbleToEdge,
@@ -43,19 +46,38 @@ test('getDefaultActionBubblePosition', async (t) => {
   });
 });
 
-test('getActionBubbleMenuPosition', async (t) => {
-  await t.test('opens below the bubble when there is enough space', () => {
-    const menuPosition = getActionBubbleMenuPosition({ x: 24, y: 400 }, 1280, 900, false);
+test('getActionBubblePanelPosition', async (t) => {
+  await t.test('opens on the preferred side when there is room', () => {
+    const panelPosition = getActionBubblePanelPosition(
+      { x: 24, y: 400 },
+      1280,
+      900,
+      ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT,
+      false
+    );
 
-    assert.equal(menuPosition.left, '12px');
-    assert.equal(menuPosition.top, '488px');
+    assert.equal(panelPosition.side, 'right');
+    assert.equal(panelPosition.left, `${24 + ACTION_BUBBLE_SIZE + ACTION_BUBBLE_PANEL_GAP}px`);
+    assert.equal(
+      panelPosition.top,
+      `${400 + ACTION_BUBBLE_SIZE / 2 - ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT / 2}px`
+    );
+    assert.equal(panelPosition.transformOrigin, 'left center');
   });
 
-  await t.test('opens above the bubble when there is not enough space below', () => {
-    const menuPosition = getActionBubbleMenuPosition({ x: 320, y: 720 }, 390, 844, false);
+  await t.test('flips sides when the preferred side would overflow', () => {
+    const panelPosition = getActionBubblePanelPosition({ x: 390, y: 320 }, 800, 900, 280, false);
 
-    assert.equal(menuPosition.left, '118px');
-    assert.equal(menuPosition.top, '448px');
+    assert.equal(panelPosition.side, 'left');
+    assert.equal(panelPosition.left, `${390 - ACTION_BUBBLE_PANEL_WIDTH - ACTION_BUBBLE_PANEL_GAP}px`);
+    assert.equal(panelPosition.transformOrigin, 'right center');
+  });
+
+  await t.test('clamps the drawer vertically inside the viewport', () => {
+    const panelPosition = getActionBubblePanelPosition({ x: 620, y: 760 }, 1280, 820, 360, false);
+
+    assert.equal(panelPosition.side, 'left');
+    assert.equal(panelPosition.top, `${820 - 360 - ACTION_BUBBLE_EDGE_MARGIN}px`);
   });
 });
 

@@ -32,6 +32,7 @@ interface WatchlistToast {
 interface SubmitRecommendationInput {
   title: string;
   reason?: string;
+  suggestedBy?: string;
 }
 
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
@@ -171,11 +172,15 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   }
 
   const submitRecommendation = useCallback(
-    async ({ title, reason }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
+    async ({
+      title,
+      reason,
+      suggestedBy,
+    }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
       setIsSubmittingRecommendation(true);
 
       try {
-        const suggestion = await addSuggestion(title, reason);
+        const suggestion = await addSuggestion(title, reason, suggestedBy);
         trackMetric('suggestion_submitted');
         return suggestion;
       } finally {

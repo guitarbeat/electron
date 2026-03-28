@@ -22,6 +22,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] = useState(false);
   const [recommendationReason, setRecommendationReason] = useState('');
+  const [guestName, setGuestName] = useState('');
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
   const watchlistTopControlsRef = useRef<WatchlistTopControlsHandle | null>(null);
@@ -153,17 +154,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       return;
     }
 
-    if (!currentUser) {
-      setToast({
-        message: 'Pick Aaron or Electra to add to shared suggestions.',
-        type: 'info',
-      });
-      return;
-    }
-
     setSuggestionError(null);
     setIsRecommendationComposerOpen(true);
-  }, [currentUser, searchQuery, setToast]);
+  }, [searchQuery]);
 
   const handleAddAction = useCallback(async () => {
     const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
@@ -172,10 +165,26 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
 
     if (!currentUser) {
-      setToast({
-        message: 'Pick Aaron or Electra to add titles to the shared watchlist.',
-        type: 'info',
-      });
+      setIsAdding(true);
+      try {
+        const suggestion = await submitRecommendation({
+          title,
+          suggestedBy: guestName.trim() || undefined,
+        });
+        setSearchQuery('');
+        setSelectedAutocompleteResult(null);
+        setToast({
+          message: `"${title}" sent to suggestions as ${suggestion.suggestedBy}.`,
+          type: 'success',
+        });
+      } catch (error) {
+        setToast({
+          message: error instanceof Error ? error.message : 'Failed to send suggestion',
+          type: 'error',
+        });
+      } finally {
+        setIsAdding(false);
+      }
       return;
     }
 
@@ -198,6 +207,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, [
     addMovie,
     currentUser,
+    guestName,
     searchQuery,
     selectedAutocompleteResult,
     setIsAdding,
@@ -205,19 +215,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     setSelectedAutocompleteResult,
     setSuccessMovieId,
     setToast,
+    submitRecommendation,
   ]);
 
   const handleSubmitRecommendation = useCallback(async () => {
     const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
-      return;
-    }
-
-    if (!currentUser) {
-      setToast({
-        message: 'Pick Aaron or Electra to add to shared suggestions.',
-        type: 'info',
-      });
       return;
     }
 
@@ -227,17 +230,24 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       await submitRecommendation({
         title,
         reason: recommendationReason,
+        suggestedBy: guestName.trim() || undefined,
       });
       resetRecommendationComposer();
       setSearchQuery('');
       setSelectedAutocompleteResult(null);
-      setToast({ message: `"${title}" suggested for review!`, type: 'success' });
+      setToast({
+        message: currentUser
+          ? `"${title}" suggested for review!`
+          : `"${title}" sent to suggestions${guestName.trim() ? ` as ${guestName.trim()}` : ''}!`,
+        type: 'success',
+      });
     } catch (error) {
       setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
       setToast({ message: 'Failed to add suggestion', type: 'error' });
     }
   }, [
     currentUser,
+    guestName,
     recommendationReason,
     resetRecommendationComposer,
     searchQuery,
@@ -440,6 +450,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         setSearchQuery={setSearchQuery}
         selectedAutocompleteResult={selectedAutocompleteResult}
         setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+        guestName={guestName}
+        setGuestName={setGuestName}
         onSubmit={handleAddAction}
         onRecommend={openRecommendationComposer}
         onSubmitRecommendation={handleSubmitRecommendation}
@@ -450,7 +462,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         isAdding={isAdding}
         isSubmittingRecommendation={isSubmittingRecommendation}
         suggestionError={suggestionError}
-        canRecommend={Boolean(currentUser)}
+        canRecommend={true}
       />
 
       {showInitialLoading ? (
