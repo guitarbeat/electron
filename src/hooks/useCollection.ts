@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePolling } from '@/services/polling';
 import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import type { StateScope, StateScopeDataMap } from '@/services/stateTypes';
@@ -34,7 +34,12 @@ export const useCollection = <T>(
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const data = useMemo(() => (snapshot?.data as T[]) ?? [], [snapshot]);
+  const polledData = useMemo(() => (snapshot?.data as T[]) ?? [], [snapshot]);
+  const [data, setData] = useState<T[]>(polledData);
+
+  useEffect(() => {
+    setData(polledData);
+  }, [polledData]);
 
   const performMutation = useCallback(
     async (op: string, payload: unknown, optimisticData: T[]) => {
@@ -44,11 +49,12 @@ export const useCollection = <T>(
 
       setIsSubmitting(true);
       try {
-        await mutateScope(scope, {
+        const nextSnapshot = await mutateScope(scope, {
           op,
           payload,
           optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
         });
+        setData(nextSnapshot.data as T[]);
         refresh();
         return true;
       } finally {

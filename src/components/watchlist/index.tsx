@@ -303,6 +303,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     }
   }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
 
+  const handleToggleError = useCallback(
+    (message: string) => {
+      setToast({ message, type: 'error' });
+    },
+    [setToast]
+  );
+
   const renderMovieGrid = useCallback(
     (moviesToRender: Movie[], emptyState: string) => (
       <CollectionGrid
@@ -319,6 +326,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               movie={movie}
               currentUser={currentUser}
               onToggle={() => toggleWatched(movie.id)}
+              onToggleError={handleToggleError}
               onRename={(title) => renameMovie(movie.id, title)}
               onDelete={() => setMovieToDelete(movie)}
               animationDelay={`${index * 0.05}s`}
@@ -362,6 +370,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       renameMovie,
       setMovieToDelete,
       successMovieId,
+      handleToggleError,
       toggleMemoryPin,
       toggleWatched,
       updateMemory,
@@ -523,6 +532,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                       movie={movie}
                       currentUser={currentUser}
                       onToggle={() => toggleWatched(movie.id)}
+                      onToggleError={handleToggleError}
                       onRename={(title) => renameMovie(movie.id, title)}
                       onDelete={() => setMovieToDelete(movie)}
                       animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}

@@ -600,6 +600,10 @@ const scopes: {
           }
 
           const currentMemory = memories[index];
+          if (currentMemory.author !== context.currentUser!) {
+            return { ok: false, conflict: 'Only the author can edit this memory.' };
+          }
+
           const updatedMemory: SharedMemory = {
             ...currentMemory,
             note:
@@ -630,8 +634,12 @@ const scopes: {
               ? sanitizeInput((payload as { memoryId?: string }).memoryId || '')
               : '';
 
-          if (!memories.some((memory) => memory.id === memoryId)) {
+          const memory = memories.find((entry) => entry.id === memoryId);
+          if (!memory) {
             return { ok: false, conflict: 'Memory not found.' };
+          }
+          if (memory.author !== context.currentUser!) {
+            return { ok: false, conflict: 'Only the author can delete this memory.' };
           }
 
           return {
