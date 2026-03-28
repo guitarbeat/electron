@@ -34,9 +34,9 @@ const PlacesList: React.FC = () => {
 
   const {
     pendingSuggestions,
+    addPlaceSuggestion,
     acceptPlaceSuggestion,
     rejectPlaceSuggestion,
-    isLoading: isSuggestionsLoading,
     isDegraded: isSuggestionsDegraded,
     isSyncBlocked: isSuggestionsSyncBlocked,
     syncWarning: suggestionsSyncWarning,

@@ -538,7 +538,6 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
             movie={modalMovie}
             isOpen={!!modalMovie}
             onClose={() => setModalMovie(null)}
-            currentUser={currentUser}
           />
         )}
       </>

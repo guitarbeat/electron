@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { normalizePlaceSuggestionRecord, normalizePlaceSuggestions } from './stateSchemas.ts';
-import type { PlaceSuggestion } from '../shared/types.ts';
 
 test('normalizePlaceSuggestionRecord', async (t) => {
   await t.test('accepts valid record', () => {

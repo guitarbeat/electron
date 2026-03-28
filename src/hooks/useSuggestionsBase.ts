@@ -10,7 +10,7 @@ export interface BaseSuggestion {
 }
 
 export const useSuggestionsBase = <T extends BaseSuggestion>(
-  scope: string,
+  scope: 'suggestions' | 'placeSuggestions',
   currentUser: User | null | undefined,
   isPaused: boolean = false
 ) => {

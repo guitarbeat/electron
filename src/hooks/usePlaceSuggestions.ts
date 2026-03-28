@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { sanitizeInput } from '../utils/index.ts';
 import type { PlaceSuggestion, User } from '../shared/types.ts';
-import { useUser } from '../app/providers/UserProvider.tsx';
+import { useUser } from '@/app/providers';
 import { useSuggestionsBase } from './useSuggestionsBase';
 
 export const usePlaceSuggestions = (isPaused: boolean = false) => {

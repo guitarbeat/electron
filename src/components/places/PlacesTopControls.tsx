@@ -2,6 +2,7 @@ import React from 'react';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon, Spinner } from '@/common/icons';
+import { colors } from '@/theme/tokens';
 
 interface PlacesTopControlsProps {
   searchQuery: string;
