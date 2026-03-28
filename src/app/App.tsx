@@ -10,16 +10,14 @@ import {
 } from '@/app/actionBubble';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import { getQuizLaunchState, getWorkspaceMeta } from '@/app/shellState';
+import { getQuizLaunchState } from '@/app/shellState';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 import RetroEffects from '@/components/effects/RetroEffects';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
 import { BrainIcon, MessageIcon, NoteIcon, SpinIcon } from '@/common/icons';
-import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import type { MainTab } from '@/shared/types';
 import type { CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
@@ -39,11 +37,10 @@ const getViewportSize = () => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const activeTab = 'queue';
   const [quizCompleted, setQuizCompleted] = useState<boolean>(
     () => localStorage.getItem('quizCompleted') === 'true'
   );
@@ -110,8 +107,8 @@ const App: React.FC = () => {
   }, [isMobile]);
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
-  }, [activeTab]);
+    document.body.setAttribute('data-theme', 'movies');
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -144,18 +141,6 @@ const App: React.FC = () => {
 
     setShowQuizEditor(true);
   }, [currentUser]);
-
-  const handleTabChange = useCallback(
-    (tab: MainTab) => {
-      if (tab === activeTab) {
-        return;
-      }
-
-      playSwitch();
-      setActiveTab(tab);
-    },
-    [activeTab, playSwitch]
-  );
 
   const handleQuizComplete = useCallback(() => {
     setQuizCompleted(true);
@@ -317,8 +302,6 @@ const App: React.FC = () => {
     ],
     [openQuizExperience, quizLaunch.label]
   );
-  const workspaceMeta = useMemo(() => getWorkspaceMeta(activeTab), [activeTab]);
-
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
@@ -356,10 +339,8 @@ const App: React.FC = () => {
               actionBubblePosition={actionBubblePosition}
               isDraggingActionBubble={isDraggingActionBubble}
               isMobile={isMobile}
-              activeTab={activeTab}
               showActionBubbleMenu={showActionBubbleMenu}
               onToggleMenu={setShowActionBubbleMenu}
-              onTabChange={handleTabChange}
               actionItems={actionItems}
               onActionBubbleClick={handleActionBubbleClick}
               onActionBubblePointerDown={handleActionBubblePointerDown}
@@ -371,8 +352,6 @@ const App: React.FC = () => {
             <React.Suspense fallback={null}>
               <AppWorkspaceShell
                 isMobile={isMobile}
-                activeTab={activeTab}
-                workspaceMeta={workspaceMeta}
                 workspaceControlsRef={workspaceControlsRef}
               />
             </React.Suspense>
