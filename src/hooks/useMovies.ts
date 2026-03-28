@@ -1,19 +1,17 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Movie, User } from '@/shared/types';
-import { usePolling } from '@/services/polling';
 import {
   fetchMovieMetadata,
   MetadataResult,
   type MovieAutocompleteResult,
 } from '@/services/metadataService';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
 import {
-  areDeeplyEqual,
   concurrentMap,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
   sanitizeInput,
 } from '@/utils';
+import { useCollection } from './useCollection';
 
 const POLLING_INTERVAL = 15000;
 
@@ -48,45 +46,20 @@ const sortMovies = (movies: Movie[]): Movie[] =>
   });
 
 export const useMovies = (currentUser: User | null, isPaused: boolean = false) => {
-  const readMovies = useCallback(() => readScope('movies'), []);
   const {
-    data: snapshot,
-    error,
+    data: movies,
     isLoading,
+    isSubmitting,
+    error,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
-  } = usePolling(readMovies, POLLING_INTERVAL, areDeeplyEqual, {
-    key: 'movies',
-    isPaused,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    retrySync,
+    performMutation,
+  } = useCollection<Movie>('movies', currentUser, { pollingInterval: POLLING_INTERVAL, isPaused });
+
   const hasAutoSyncedRef = useRef(false);
-
-  const movies = useMemo(() => snapshot?.data ?? [], [snapshot]);
-
-  const performMutation = useCallback(
-    async (
-      op: string,
-      payload: unknown,
-      optimisticMovies: Movie[]
-    ) => {
-      if (!currentUser) {
-        throw new Error('Profile required');
-      }
-
-      setIsSubmitting(true);
-      try {
-        await mutateScope('movies', {
-          op,
-          payload,
-          optimisticData: optimisticMovies,
-        });
-        refresh();
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [currentUser, refresh]
-  );
 
   const updateMovieMetadata = useCallback(
     async (movie: Movie, searchTerm?: string) => {
@@ -347,7 +320,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   }, [isSubmitting, movies, refresh]);
 
   const autoSyncMetadata = useCallback(async () => {
-    if (hasAutoSyncedRef.current || movies.length === 0 || isSubmitting) {
+    if (!currentUser || hasAutoSyncedRef.current || movies.length === 0 || isSubmitting) {
       return;
     }
 
@@ -364,6 +337,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     });
 
     for (const movie of moviesMissingMetadata) {
+      if (!currentUser) break;
       try {
         await updateMovieMetadata(movie);
       } catch (error) {
@@ -373,15 +347,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   }, [isSubmitting, movies, updateMovieMetadata]);
 
   useEffect(() => {
-    if (!isLoading && movies.length > 0 && !hasAutoSyncedRef.current) {
+    if (currentUser && !isLoading && movies.length > 0 && !hasAutoSyncedRef.current) {
       void autoSyncMetadata();
     }
-  }, [autoSyncMetadata, isLoading, movies]);
-
-  const retrySync = useCallback(async () => {
-    await retryScopeSync('movies');
-    refresh();
-  }, [refresh]);
+  }, [autoSyncMetadata, currentUser, isLoading, movies]);
 
   const sortedMovies = useMemo(() => sortMovies(movies), [movies]);
 
@@ -390,9 +359,9 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     isLoading,
     error,
     isSubmitting,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     addMovie,
     renameMovie,
     toggleWatched,

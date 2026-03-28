@@ -8,10 +8,11 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
+import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { useUser } from '@/app/providers';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import type { ActionBubbleMenuPosition, ActionBubblePosition } from '@/app/actionBubble';
-import CommandDeck, { type CommandActionItem } from '@/ui/CommandDeck';
+import CommandDeck, { type CommandActionItem } from '@/components/ui/CommandDeck';
 import { BottomSheet } from '@/components/ui/modals';
 import ThemeToggle from '@/ui/ThemeToggle';
 import UserSelection from '@/components/common/UserSelection';
@@ -50,7 +51,11 @@ const ActionMenuBody: FC<ActionMenuBodyProps> = ({
   actionItems,
   onItemSelect,
 }) => (
-  <>
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.1, duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+  >
     <UserSelection variant="inline" className="action-bubble-menu__profiles" />
     <div className="action-bubble-menu__tab-row">
       <ThemeToggle
@@ -60,7 +65,7 @@ const ActionMenuBody: FC<ActionMenuBodyProps> = ({
       />
     </div>
     <CommandDeck items={actionItems} onItemSelect={onItemSelect} />
-  </>
+  </motion.div>
 );
 
 const HOVER_OPEN_DELAY_MS = 80;
@@ -183,9 +188,18 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     onItemSelect: runItem,
   };
 
+  const springConfig = { damping: 25, stiffness: 250 };
+  const xSpring = useSpring(actionBubblePosition.x, springConfig);
+  const ySpring = useSpring(actionBubblePosition.y, springConfig);
+
+  useEffect(() => {
+    xSpring.set(actionBubblePosition.x);
+    ySpring.set(actionBubblePosition.y);
+  }, [actionBubblePosition.x, actionBubblePosition.y, xSpring, ySpring]);
+
   return (
     <>
-      <button
+      <motion.button
         ref={actionBubbleRef}
         type="button"
         className={bubbleClasses}
@@ -201,8 +215,23 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         aria-expanded={showActionBubbleMenu}
         aria-controls={isMobile ? 'action-bubble-sheet' : 'action-bubble-menu'}
         style={{
-          top: `${actionBubblePosition.y}px`,
-          left: `${actionBubblePosition.x}px`,
+          left: isDraggingActionBubble ? actionBubblePosition.x : xSpring,
+          top: isDraggingActionBubble ? actionBubblePosition.y : ySpring,
+        }}
+        animate={{
+          scale: showActionBubbleMenu ? 1.15 : 1,
+          y: isDraggingActionBubble || showActionBubbleMenu ? 0 : [0, -4, 0],
+        }}
+        whileHover={{ scale: 1.08, rotate: 2 }}
+        whileTap={{ scale: 0.94, rotate: -1 }}
+        transition={{ 
+          y: {
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          },
+          scale: { type: 'spring', damping: 20, stiffness: 300 },
+          rotate: { type: 'spring', damping: 20, stiffness: 300 }
         }}
       >
         <span className="action-bubble__icon" aria-hidden="true">
@@ -225,33 +254,39 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         </span>
         <span className="action-bubble__open-ring" aria-hidden="true" />
         <span className="sr-only">{showActionBubbleMenu ? 'Close' : 'Open'} quick actions</span>
-      </button>
+      </motion.button>
 
-      {showActionBubbleMenu && !isMobile ? (
-        <div
-          id="action-bubble-menu"
-          ref={actionBubbleMenuRef}
-          className="action-bubble-menu"
-          role="menu"
-          aria-label="Quick actions"
-          style={actionBubbleMenuStyle}
-          onMouseEnter={handleMenuMouseEnter}
-          onMouseLeave={handleMenuMouseLeave}
-        >
-          <div className="action-bubble-menu__header">
-            <span className="action-bubble-menu__title" aria-hidden="true">Quick Actions</span>
-            <button
-              type="button"
-              className="action-bubble-menu__close-btn"
-              onClick={closeMenu}
-              aria-label="Close menu"
-            >
-              <CrossIcon size={10} />
-            </button>
-          </div>
-          <ActionMenuBody {...menuBodyProps} />
-        </div>
-      ) : null}
+      <AnimatePresence>
+        {showActionBubbleMenu && !isMobile ? (
+          <motion.div
+            id="action-bubble-menu"
+            ref={actionBubbleMenuRef}
+            className="action-bubble-menu"
+            role="menu"
+            aria-label="Quick actions"
+            style={actionBubbleMenuStyle}
+            onMouseEnter={handleMenuMouseEnter}
+            onMouseLeave={handleMenuMouseLeave}
+            initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)', transition: { duration: 0.15 } }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          >
+            <div className="action-bubble-menu__header">
+              <span className="action-bubble-menu__title" aria-hidden="true">Quick Actions</span>
+              <button
+                type="button"
+                className="action-bubble-menu__close-btn"
+                onClick={closeMenu}
+                aria-label="Close menu"
+              >
+                <CrossIcon size={10} />
+              </button>
+            </div>
+            <ActionMenuBody {...menuBodyProps} />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick Actions">
         <div id="action-bubble-sheet">

@@ -15,7 +15,9 @@ interface PlacesMapProps {
   searchQuery: string;
   setSearchQuery: (v: string) => void;
   onSubmitSearch: () => Promise<void> | void;
+  onSuggestPlace?: () => Promise<void> | void;
   isAdding: boolean;
+  isSuggesting?: boolean;
   suggestionError: string | null;
   onUpdatePlace?: (id: string, updates: Partial<Pick<Place, 'lat' | 'lng'>>) => Promise<void>;
   onAddPlace?: (name: string, notes?: string, lat?: number, lng?: number) => Promise<void>;
@@ -35,7 +37,9 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   searchQuery = '',
   setSearchQuery = () => undefined,
   onSubmitSearch = () => undefined,
+  onSuggestPlace,
   isAdding = false,
+  isSuggesting = false,
   suggestionError = null,
   onUpdatePlace,
   onAddPlace,
@@ -359,24 +363,49 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
             }}
           />
           {searchQuery.trim() && canEdit && (
-            <button
-              type="submit"
-              disabled={isAdding}
-              style={{
-                ...glassStyle,
-                padding: `${spacing.sm} ${spacing.md}`,
-                color: isAdding ? colors.textTertiary : colors.accentLight,
-                cursor: isAdding ? 'not-allowed' : 'pointer',
-                border: `1px solid ${colors.accent}66`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-              aria-label="Add place"
-            >
-              {isAdding ? <Spinner /> : <PlusIcon />}
-            </button>
+            <div style={{ display: 'flex', gap: spacing.xs }}>
+              <button
+                type="submit"
+                disabled={isAdding || isSuggesting}
+                style={{
+                  ...glassStyle,
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  color: isAdding ? colors.textTertiary : colors.accentLight,
+                  cursor: isAdding ? 'not-allowed' : 'pointer',
+                  border: `1px solid ${colors.accent}66`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+                aria-label="Add place"
+                title="Add directly to queue"
+              >
+                {isAdding ? <Spinner /> : <PlusIcon />}
+              </button>
+              {onSuggestPlace && (
+                <button
+                  type="button"
+                  onClick={() => void onSuggestPlace()}
+                  disabled={isAdding || isSuggesting}
+                  style={{
+                    ...glassStyle,
+                    padding: `${spacing.sm} ${spacing.md}`,
+                    color: isSuggesting ? colors.textTertiary : colors.accentLight,
+                    cursor: isSuggesting ? 'not-allowed' : 'pointer',
+                    border: `1px dashed ${colors.accent}44`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                  aria-label="Suggest place"
+                  title="Suggest for review"
+                >
+                  {isSuggesting ? <Spinner /> : '💡'}
+                </button>
+              )}
+            </div>
           )}
         </form>
 

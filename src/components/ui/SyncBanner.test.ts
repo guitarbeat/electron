@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   SYNC_WARNING_CLIENT_NETWORK,
   SYNC_WARNING_OUTBOX,
-} from '@/services/stateClient';
+} from '../../services/stateClient.ts';
 import { getSyncBannerContent } from './syncBannerContent.ts';
 
 test('getSyncBannerContent', async (t) => {

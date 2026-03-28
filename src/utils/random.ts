@@ -107,3 +107,46 @@ export const randomUtils = {
     fruit: randomUtils.randomItem(fruitList.slice(0, maxIndex)),
   }),
 };
+
+/**
+ * Math and array utilities
+ */
+
+/**
+ * Clamps a number between a min and max value.
+ */
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
+/**
+ * Returns a random number between min (inclusive) and max (exclusive).
+ */
+export const randomBetween = (min: number, max: number): number =>
+  min + Math.random() * (max - min);
+
+/**
+ * Returns a shallow clone of an array of objects.
+ */
+export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
+  arr.map((item) => ({ ...item }));
+
+/**
+ * Returns a shuffled copy of the input without mutating the source array.
+ * Accepts an injectable RNG so tests can verify exact ordering.
+ */
+export const shuffleArray = <T>(
+  items: readonly T[],
+  random: () => number = Math.random,
+): T[] => {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+};

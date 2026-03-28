@@ -70,19 +70,28 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
-
+    const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
+    
     movies.forEach((movie) => {
-      const normalizedTitle = movie.title.trim().toLowerCase();
-      const relatedMemories = memories.filter((memory) => {
-        if (memory.movieId === movie.id) {
-          return true;
+      movieLookupByTitle.set(movie.title.trim().toLowerCase(), movie.id);
+    });
+
+    memories.forEach((memory) => {
+      let targetMovieId: string | undefined;
+      
+      if (memory.movieId) {
+        targetMovieId = memory.movieId;
+      } else {
+        targetMovieId = movieLookupByTitle.get(memory.movieTitle.trim().toLowerCase());
+      }
+      
+      if (targetMovieId) {
+        let movieGroup = memoriesByMovieId.get(targetMovieId);
+        if (!movieGroup) {
+          movieGroup = [];
+          memoriesByMovieId.set(targetMovieId, movieGroup);
         }
-
-        return !memory.movieId && memory.movieTitle.trim().toLowerCase() === normalizedTitle;
-      });
-
-      if (relatedMemories.length > 0) {
-        memoriesByMovieId.set(movie.id, relatedMemories);
+        movieGroup.push(memory);
       }
     });
 

@@ -4,6 +4,7 @@ import { useMovies } from '@/hooks/useMovies';
 import { useUser, useToast } from '@/app/providers';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
+import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
@@ -26,6 +27,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
+  const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('queue');
   const spinTimeoutRef = useRef<number | null>(null);
@@ -117,14 +119,45 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     }
   };
 
-  const renderPoster = (movie: Movie, className: string) =>
-    movie.posterUrl ? (
+  const handleOpenDetails = (movie: Movie) => {
+    if (isSpinning) return;
+    setModalMovie(movie);
+  };
+
+  const renderPoster = (movie: Movie, className: string, clickable = true) => {
+    const isActuallyClickable = clickable && !isSpinning;
+    const posterContent = movie.posterUrl ? (
       <img src={movie.posterUrl} alt={`${movie.title} poster`} className={className} />
     ) : (
       <div className={`${className} ${className}--fallback`}>
         <span>{movie.title.slice(0, 2).toUpperCase()}</span>
       </div>
     );
+
+    if (!isActuallyClickable) return posterContent;
+
+    return (
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          handleOpenDetails(movie);
+        }}
+        className={`${className}-click-wrapper`}
+        style={{ cursor: 'pointer' }}
+        title={`Click for more details about "${movie.title}"`}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleOpenDetails(movie);
+          }
+        }}
+      >
+        {posterContent}
+      </div>
+    );
+  };
 
   const selectedMovieStatus =
     selectedMovie?.watchedBy.length === 2
@@ -368,6 +401,14 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           )}
         </div>
       </div>
+
+      {modalMovie && (
+        <MovieDetailsModal
+          movie={modalMovie}
+          isOpen={!!modalMovie}
+          onClose={() => setModalMovie(null)}
+        />
+      )}
     </div>
   );
 };

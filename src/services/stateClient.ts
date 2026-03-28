@@ -74,6 +74,7 @@ const getDefaultScopeData = <TScope extends StateScope>(
     case 'memories':
     case 'places':
     case 'suggestions':
+    case 'placeSuggestions':
       return [] as unknown as StateScopeDataMap[TScope];
     case 'quiz':
       return cloneQuizData(defaultQuizData) as StateScopeDataMap[TScope];

@@ -15,6 +15,7 @@ export const STATE_SCOPES = [
   'memories',
   'places',
   'suggestions',
+  'placeSuggestions',
   'quiz',
   'matchmaker',
   'pins',
@@ -57,6 +58,7 @@ export interface StateScopeDataMap {
   memories: SharedMemory[];
   places: Place[];
   suggestions: MovieSuggestion[];
+  placeSuggestions: PlaceSuggestion[];
   quiz: QuizData;
   matchmaker: MatchmakerGame | null;
   pins: PinsState;

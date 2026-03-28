@@ -1,4 +1,4 @@
-import { shuffleArray } from '../../utils/shared.ts';
+import { shuffleArray } from '../../utils/index.ts';
 import type { MatchmakerGame, Movie, User } from '@/shared/types';
 
 export const MATCHMAKER_POOL_SIZE = 10;

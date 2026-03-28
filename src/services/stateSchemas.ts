@@ -15,11 +15,12 @@ import type {
   Message,
   MovieSuggestion,
   Place,
+  PlaceSuggestion,
   SharedMemory,
 } from '../shared/types.ts';
 import type { DailySpinRecord, SpinEntry } from './stateTypes.ts';
 import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../utils/shared.ts';
-import type { PinsState, QuizData } from './stateTypes';
+import type { PinsState, QuizData } from './stateTypes.ts';
 
 const normalizeRequiredString = (value: unknown): string | null => {
   if (typeof value !== 'string') {
@@ -234,6 +235,48 @@ export const normalizeSuggestions = (value: unknown): MovieSuggestion[] =>
   Array.isArray(value)
     ? value.flatMap((entry) => {
         const normalized = normalizeSuggestionRecord(entry);
+        return normalized ? [normalized] : [];
+      })
+    : [];
+
+const isPlaceSuggestionStatus = (value: unknown): value is PlaceSuggestion['status'] =>
+  value === 'pending' || value === 'accepted' || value === 'rejected';
+
+export const normalizePlaceSuggestionRecord = (value: unknown): PlaceSuggestion | null => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const suggestion = value as Partial<PlaceSuggestion>;
+  const id = normalizeRequiredString(suggestion.id);
+  const name = normalizeRequiredString(suggestion.name);
+  const suggestedBy = isUser(suggestion.suggestedBy) ? suggestion.suggestedBy : undefined;
+  const createdAt = normalizeCreatedAt(suggestion.createdAt);
+
+  if (!id || !name || !suggestedBy || !createdAt || !isPlaceSuggestionStatus(suggestion.status)) {
+    return null;
+  }
+
+  return {
+    id,
+    name,
+    suggestedBy,
+    status: suggestion.status,
+    createdAt,
+    notes: normalizeOptionalString(suggestion.notes),
+    category: normalizeOptionalString(suggestion.category),
+    rating: normalizeOptionalString(suggestion.rating),
+    description: normalizeOptionalString(suggestion.description),
+    imageUrl: normalizeOptionalUrl(suggestion.imageUrl),
+    respondedAt: normalizeOptionalDate(suggestion.respondedAt),
+    respondedBy: isUser(suggestion.respondedBy) ? suggestion.respondedBy : undefined,
+  };
+};
+
+export const normalizePlaceSuggestions = (value: unknown): PlaceSuggestion[] =>
+  Array.isArray(value)
+    ? value.flatMap((entry) => {
+        const normalized = normalizePlaceSuggestionRecord(entry);
         return normalized ? [normalized] : [];
       })
     : [];

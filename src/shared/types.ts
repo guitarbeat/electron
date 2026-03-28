@@ -32,6 +32,9 @@ export interface PlaceSuggestion {
   rating?: string;
   description?: string;
   imageUrl?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  respondedAt?: string;
+  respondedBy?: User; // Aaron or Electra
 }
 
 export interface Movie {

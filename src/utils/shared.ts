@@ -256,49 +256,6 @@ export const concurrentMap = async <T, R>(
   return results;
 };
 
-/**
- * Clamps a number between a min and max value.
- */
-export const clamp = (value: number, min: number, max: number): number =>
-  Math.min(max, Math.max(min, value));
-
-/**
- * Returns a random number between min (inclusive) and max (exclusive).
- */
-export const randomBetween = (min: number, max: number): number =>
-  min + Math.random() * (max - min);
-
-/**
- * Returns a shallow clone of an array of objects.
- */
-export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
-  arr.map((item) => ({ ...item }));
-
-/**
- * Returns a shuffled copy of the input without mutating the source array.
- * Accepts an injectable RNG so tests can verify exact ordering.
- */
-export const shuffleArray = <T>(
-  items: readonly T[],
-  random: () => number = Math.random,
-): T[] => {
-  const shuffled = [...items];
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [
-      shuffled[swapIndex],
-      shuffled[index],
-    ];
-  }
-
-  return shuffled;
-};
-
-/**
- * Builds a secure Google Maps script URL with URL-encoded parameters.
- * Mitigates XSS vulnerabilities when injecting environment variables into the DOM.
- */
 export const buildGoogleMapsUrl = (
   apiKey: string,
   libraries: string[],
@@ -310,3 +267,41 @@ export const buildGoogleMapsUrl = (
  * Normalizes a movie title for comparison purposes (trim + lowercase).
  */
 export const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
+
+/**
+ * Debounce / throttle helpers
+ */
+export const throttle = <T extends (...args: unknown[]) => unknown>(func: T, limit: number) => {
+  let inThrottle = false;
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => {
+        inThrottle = false;
+      }, limit);
+    }
+  };
+};
+
+export const debounce = <T extends (...args: unknown[]) => unknown>(
+  func: T,
+  wait: number,
+  immediate = false,
+) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return function (this: unknown, ...args: Parameters<T>) {
+    const later = () => {
+      timeout = null;
+      if (!immediate) func.apply(this, args);
+    };
+
+    const callNow = immediate && !timeout;
+
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+
+    if (callNow) func.apply(this, args);
+  };
+};

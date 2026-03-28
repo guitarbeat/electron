@@ -1,5 +1,6 @@
-import type { FC, RefObject } from 'react';
-import PlacesList from '@/components/places/PlacesList';
+import React, { type FC, type RefObject } from 'react';
+
+const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
 import Watchlist from '@/components/watchlist';
 import type { MainTab } from '@/shared/types';
 import type { WorkspaceMeta } from '@/app/shellState';
@@ -55,7 +56,9 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
             isMobile={isMobile}
           />
         ) : (
-          <PlacesList />
+          <React.Suspense fallback={null}>
+            <PlacesList />
+          </React.Suspense>
         )}
       </section>
     </main>

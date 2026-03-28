@@ -1,31 +1,25 @@
-import { useCallback, useMemo } from 'react';
-import { usePolling } from '@/services/polling';
-import { areDeeplyEqual, sanitizeInput } from '@/utils';
+import { useCallback } from 'react';
+import { sanitizeInput } from '@/utils';
 import { MovieSuggestion, User } from '@/shared/types';
 import { useUser } from '@/app/providers';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
-
-const POLLING_INTERVAL = 60000;
+import { useSuggestionsBase } from './useSuggestionsBase';
 
 export const useSuggestions = (isPaused: boolean = false) => {
   const { currentUser } = useUser();
-  const readSuggestions = useCallback(() => readScope('suggestions'), []);
   const {
-    data: snapshot,
+    suggestions,
+    pendingSuggestions,
     isLoading,
+    isSubmitting,
     error,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
-  } = usePolling(readSuggestions, POLLING_INTERVAL, areDeeplyEqual, {
-    key: 'suggestions',
-    isPaused,
-  });
-
-  const suggestions = useMemo(() => snapshot?.data ?? [], [snapshot]);
-
-  const pendingSuggestions = useMemo(
-    () => suggestions.filter((s) => s.status === 'pending'),
-    [suggestions]
-  );
+    retrySync,
+    respondToSuggestion,
+    performMutation,
+  } = useSuggestionsBase<MovieSuggestion>('suggestions', currentUser, isPaused);
 
   const addSuggestion = useCallback(
     async (title: string, reason?: string): Promise<MovieSuggestion> => {
@@ -42,95 +36,46 @@ export const useSuggestions = (isPaused: boolean = false) => {
         createdAt: new Date().toISOString(),
       };
 
-      await mutateScope('suggestions', {
-        op: 'add_suggestion',
-        payload: {
+      await performMutation(
+        'add_suggestion',
+        {
           id: nextSuggestion.id,
           title: nextSuggestion.title,
           reason: nextSuggestion.reason,
         },
-        optimisticData: [...suggestions, nextSuggestion],
-      });
+        [...suggestions, nextSuggestion],
+      );
       refresh();
       return nextSuggestion;
     },
-    [currentUser, refresh, suggestions]
+    [currentUser, refresh, suggestions, performMutation]
   );
 
   const acceptSuggestion = useCallback(
     async (suggestionId: string, respondedBy: User): Promise<void> => {
-      if (!currentUser) {
-        throw new Error('Profile required');
-      }
-
-      const suggestion = suggestions.find((entry) => entry.id === suggestionId);
-      if (!suggestion) {
-        throw new Error('Suggestion not found');
-      }
-
-      await mutateScope('suggestions', {
-        op: 'accept_suggestion',
-        payload: { suggestionId },
-        optimisticData: suggestions.map((entry) =>
-          entry.id === suggestionId
-            ? {
-                ...entry,
-                status: 'accepted',
-                respondedAt: new Date().toISOString(),
-                respondedBy,
-              }
-            : entry
-        ),
-      });
-
+      await respondToSuggestion(suggestionId, 'accepted', respondedBy, 'accept_suggestion');
       refresh();
     },
-    [currentUser, refresh, suggestions]
+    [refresh, respondToSuggestion]
   );
 
   const rejectSuggestion = useCallback(
     async (suggestionId: string, respondedBy: User): Promise<void> => {
-      if (!currentUser) {
-        throw new Error('Profile required');
-      }
-
-      const suggestion = suggestions.find((entry) => entry.id === suggestionId);
-      if (!suggestion) {
-        throw new Error('Suggestion not found');
-      }
-
-      await mutateScope('suggestions', {
-        op: 'reject_suggestion',
-        payload: { suggestionId },
-        optimisticData: suggestions.map((entry) =>
-          entry.id === suggestionId
-            ? {
-                ...entry,
-                status: 'rejected',
-                respondedAt: new Date().toISOString(),
-                respondedBy,
-              }
-            : entry
-        ),
-      });
+      await respondToSuggestion(suggestionId, 'rejected', respondedBy, 'reject_suggestion');
       refresh();
     },
-    [currentUser, refresh, suggestions]
+    [refresh, respondToSuggestion]
   );
-
-  const retrySync = useCallback(async () => {
-    await retryScopeSync('suggestions');
-    refresh();
-  }, [refresh]);
 
   return {
     suggestions,
     pendingSuggestions,
     isLoading,
+    isSubmitting,
     error,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
     retrySync,
     addSuggestion,
