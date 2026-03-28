@@ -225,6 +225,13 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 <div
                   key={profile}
                   className={`user-selection__profile-card${profileCardVariantClass}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
+                  onClick={isLauncher ? () => selectProfile(profile) : undefined}
+                  onMouseEnter={isLauncher ? () => setHoveredUser(profile) : undefined}
+                  onMouseLeave={
+                    isLauncher
+                      ? () => setHoveredUser((value) => (value === profile ? null : value))
+                      : undefined
+                  }
                 >
                   <GelBubbleAvatar
                     user={profile}
@@ -234,10 +241,17 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     selectionState={selectionState}
                     isSelectionAnimating={isSelectionAnimating}
                     size={bubbleSize}
-                    onClick={() => selectProfile(profile)}
-                    onMouseEnter={() => setHoveredUser(profile)}
-                    onMouseLeave={() =>
-                      setHoveredUser((value) => (value === profile ? null : value))
+                    onClick={(event) => {
+                      if (isLauncher) {
+                        event.stopPropagation();
+                      }
+                      selectProfile(profile);
+                    }}
+                    onMouseEnter={isLauncher ? undefined : () => setHoveredUser(profile)}
+                    onMouseLeave={
+                      isLauncher
+                        ? undefined
+                        : () => setHoveredUser((value) => (value === profile ? null : value))
                     }
                     onFocus={() => setFocusedUser(profile)}
                     onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
