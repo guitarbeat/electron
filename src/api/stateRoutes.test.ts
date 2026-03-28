@@ -6,7 +6,7 @@ import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
 import { buildProfileCookie } from '../../api/_lib/session.ts';
 import mutateHandler from '../../api/state/[scope]/mutate.ts';
 import readHandler from '../../api/state/[scope].ts';
-import type { Movie } from '../shared/types.ts';
+import type { Movie, MovieSuggestion } from '../shared/types.ts';
 
 const withUnsetGistId = async (run: () => Promise<void>) => {
   const previousGistId = process.env.GIST_ID;
@@ -90,6 +90,92 @@ const withMovieStore = async (
   try {
     await run({
       getMovies: () => movies,
+      patchBodies,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (typeof previousGistId === 'string') {
+      process.env.GIST_ID = previousGistId;
+    } else {
+      delete process.env.GIST_ID;
+    }
+
+    if (typeof previousGitHubToken === 'string') {
+      process.env.GITHUB_TOKEN = previousGitHubToken;
+    } else {
+      delete process.env.GITHUB_TOKEN;
+    }
+
+    invalidateGistCache();
+  }
+};
+
+const withSuggestionStore = async (
+  seedSuggestions: MovieSuggestion[],
+  run: (context: { getSuggestions: () => MovieSuggestion[]; patchBodies: unknown[] }) => Promise<void>
+) => {
+  const previousGistId = process.env.GIST_ID;
+  const previousGitHubToken = process.env.GITHUB_TOKEN;
+  const originalFetch = globalThis.fetch;
+  const patchBodies: unknown[] = [];
+  let suggestions = [...seedSuggestions];
+
+  process.env.GIST_ID = 'test-gist-id';
+  process.env.GITHUB_TOKEN = 'ghp_testToken';
+  invalidateGistCache();
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const request = input instanceof Request ? input : new Request(String(input), init);
+
+    if (request.method === 'GET') {
+      return new Response(
+        JSON.stringify({
+          files: {
+            'suggestions.json': {
+              content: JSON.stringify(suggestions),
+            },
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
+    if (request.method === 'PATCH') {
+      const body = JSON.parse(await request.text()) as {
+        files?: Record<string, { content?: string } | undefined>;
+      };
+      patchBodies.push(body);
+
+      const nextContent = body.files?.['suggestions.json']?.content;
+      if (typeof nextContent === 'string') {
+        suggestions = JSON.parse(nextContent) as MovieSuggestion[];
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
+      status: 405,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }) as typeof fetch;
+
+  try {
+    await run({
+      getSuggestions: () => suggestions,
       patchBodies,
     });
   } finally {
@@ -228,4 +314,47 @@ test('dynamic state mutate route renames a movie when a profile session is prese
       assert.equal(patchBodies.length, 1);
     }
   );
+});
+
+test('dynamic state mutate route lets guests create movie suggestions', async () => {
+  await withSuggestionStore([], async ({ getSuggestions, patchBodies }) => {
+    const readResponse = await readHandler(new Request('https://example.com/api/state/suggestions'));
+    assert.equal(readResponse.status, 200);
+
+    const readPayload = (await readResponse.json()) as {
+      version: string;
+    };
+
+    const response = await mutateHandler(
+      new Request('https://example.com/api/state/suggestions/mutate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          baseVersion: readPayload.version,
+          op: 'add_suggestion',
+          payload: {
+            id: 'suggestion-1',
+            title: 'The Nice Guys',
+            reason: 'Sharp, funny, and easy to throw on.',
+            suggestedBy: 'Movie Night Guest',
+          },
+        }),
+      })
+    );
+
+    assert.equal(response.status, 200);
+
+    const payload = (await response.json()) as {
+      data: MovieSuggestion[];
+      applied: boolean;
+    };
+
+    assert.equal(payload.applied, true);
+    assert.equal(payload.data[0]?.title, 'The Nice Guys');
+    assert.equal(payload.data[0]?.suggestedBy, 'Movie Night Guest');
+    assert.equal(getSuggestions()[0]?.suggestedBy, 'Movie Night Guest');
+    assert.equal(patchBodies.length, 1);
+  });
 });

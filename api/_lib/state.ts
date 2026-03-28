@@ -65,7 +65,7 @@ import { patchGistFile, readGistFile } from './gistStore.ts';
 import { hashPin, requireProfileUser, hasAccessSession, verifyStoredPin } from './session.ts';
 
 interface MutationContext {
-  currentUser: User;
+  currentUser: User | null;
   now: string;
 }
 
@@ -91,6 +91,7 @@ interface ScopeDefinition<
   serialize: (value: TStored) => string;
   toClient: (value: TStored) => TClient;
   strictVersion?: boolean;
+  allowAnonymousMutation?: (op: string, payload: unknown) => boolean;
   mutate?: (
     current: TStored,
     op: string,
@@ -316,7 +317,7 @@ const scopes: {
               {
                 id,
                 title,
-                addedBy: context.currentUser,
+                addedBy: context.currentUser!,
                 watchedBy: [],
                 createdAt: context.now,
               },
@@ -375,9 +376,9 @@ const scopes: {
                 return movie;
               }
 
-              const watchedBy = movie.watchedBy.includes(context.currentUser)
-                ? movie.watchedBy.filter((user: User) => user !== context.currentUser)
-                : [...movie.watchedBy, context.currentUser];
+              const watchedBy = movie.watchedBy.includes(context.currentUser!)
+                ? movie.watchedBy.filter((user: User) => user !== context.currentUser!)
+                : [...movie.watchedBy, context.currentUser!];
 
               return {
                 ...movie,
@@ -490,7 +491,7 @@ const scopes: {
               ...messages,
               {
                 id,
-                author: context.currentUser,
+                author: context.currentUser!,
                 content,
                 createdAt: context.now,
               },
@@ -508,7 +509,7 @@ const scopes: {
             return { ok: false, conflict: 'Message not found.' };
           }
 
-          if (message.author !== context.currentUser) {
+          if (message.author !== context.currentUser!) {
             return { ok: false, conflict: 'Only the author can delete this message.' };
           }
 
@@ -571,7 +572,7 @@ const scopes: {
                     ? sanitizeInput(nextPayload.movieId)
                     : undefined,
                 movieTitle,
-                author: context.currentUser,
+                author: context.currentUser!,
                 note,
                 createdAt: context.now,
                 imageUrl:
@@ -707,7 +708,7 @@ const scopes: {
               {
                 id,
                 name,
-                addedBy: context.currentUser,
+                addedBy: context.currentUser!,
                 notes:
                   typeof nextPayload.notes === 'string'
                     ? sanitizeInput(nextPayload.notes)
@@ -821,6 +822,7 @@ const scopes: {
       ),
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['suggestions'],
+    allowAnonymousMutation: (op) => op === 'add_suggestion',
     mutate: (current, op, payload, context) => {
       const suggestions = current as MovieSuggestion[];
 
@@ -830,6 +832,7 @@ const scopes: {
             id?: unknown;
             title?: unknown;
             reason?: unknown;
+            suggestedBy?: unknown;
           };
           const id =
             typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
@@ -837,6 +840,11 @@ const scopes: {
             typeof nextPayload.title === 'string'
               ? sanitizeInput(nextPayload.title)
               : '';
+          const suggestedBy =
+            context.currentUser ??
+            ((typeof nextPayload.suggestedBy === 'string'
+              ? sanitizeInput(nextPayload.suggestedBy)
+              : '') || 'Guest');
 
           if (!id || !title) {
             return { ok: false, conflict: 'Invalid suggestion payload.' };
@@ -853,7 +861,7 @@ const scopes: {
               {
                 id,
                 title,
-                suggestedBy: context.currentUser,
+                suggestedBy,
                 reason:
                   typeof nextPayload.reason === 'string'
                     ? sanitizeInput(nextPayload.reason)
@@ -885,7 +893,7 @@ const scopes: {
                     ...suggestion,
                     status: op === 'accept_suggestion' ? 'accepted' : 'rejected',
                     respondedAt: context.now,
-                    respondedBy: context.currentUser,
+                    respondedBy: context.currentUser!,
                   }
                 : suggestion
             ),
@@ -942,7 +950,7 @@ const scopes: {
               {
                 id,
                 name,
-                suggestedBy: context.currentUser,
+                suggestedBy: context.currentUser!,
                 notes: typeof nextPayload.notes === 'string' ? sanitizeInput(nextPayload.notes) : undefined,
                 category: typeof nextPayload.category === 'string' ? sanitizeInput(nextPayload.category) : undefined,
                 rating: typeof nextPayload.rating === 'string' ? sanitizeInput(nextPayload.rating) : undefined,
@@ -975,7 +983,7 @@ const scopes: {
                     ...suggestion,
                     status: op === 'accept_place_suggestion' ? 'accepted' : 'rejected',
                     respondedAt: context.now,
-                    respondedBy: context.currentUser,
+                    respondedBy: context.currentUser!,
                   }
                 : suggestion
             ),
@@ -1052,7 +1060,7 @@ const scopes: {
               electraSwipeOrder: [],
               status: 'active',
               createdAt: context.now,
-              startedBy: context.currentUser,
+              startedBy: context.currentUser!,
             },
           };
         }
@@ -1073,7 +1081,7 @@ const scopes: {
 
           return {
             ok: true,
-            data: applyMatchmakerSwipe(game, context.currentUser, movieId, liked),
+            data: applyMatchmakerSwipe(game, context.currentUser!, movieId, liked),
           };
         }
         case 'undo': {
@@ -1083,7 +1091,7 @@ const scopes: {
 
           return {
             ok: true,
-            data: undoMatchmakerSwipe(game, context.currentUser),
+            data: undoMatchmakerSwipe(game, context.currentUser!),
           };
         }
         case 'end_game':
@@ -1121,7 +1129,7 @@ const scopes: {
             ok: true,
             data: {
               ...pins,
-              [context.currentUser]: hashPin(pin),
+              [context.currentUser!]: hashPin(pin),
             },
           };
         }
@@ -1130,7 +1138,7 @@ const scopes: {
             ok: true,
             data: {
               ...pins,
-              [context.currentUser]: undefined,
+              [context.currentUser!]: undefined,
             },
           };
         default:
@@ -1192,7 +1200,7 @@ const scopes: {
       const next = appendDailySpinEntry(current as DailySpinRecord | null, {
         movieId,
         movieTitle,
-        spunBy: context.currentUser,
+        spunBy: context.currentUser!,
         createdAt: context.now,
       });
 
@@ -1425,11 +1433,6 @@ export const createMutateHandler =
         return unauthorizedResponse();
       }
 
-      const currentUser = requireProfileUser(req);
-      if (!currentUser) {
-        return unauthorizedResponse('Profile session required.');
-      }
-
       const definition = getScopeDefinition(scope);
       if (!definition.mutate) {
         return badRequestResponse(`Mutations are not supported for ${scope}.`);
@@ -1442,6 +1445,15 @@ export const createMutateHandler =
         return badRequestResponse(
           error instanceof Error ? error.message : 'Invalid mutation request.'
         );
+      }
+
+      const currentUser = requireProfileUser(req);
+      const isAnonymousMutationAllowed =
+        !currentUser &&
+        Boolean(definition.allowAnonymousMutation?.(mutation.op, mutation.payload));
+
+      if (!currentUser && !isAnonymousMutationAllowed) {
+        return unauthorizedResponse('Profile session required.');
       }
 
       const latest = await readScopeStoredData(scope, { bypassCache: true });

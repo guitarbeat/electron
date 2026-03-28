@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { sanitizeInput } from '@/utils';
 import { MovieSuggestion, User } from '@/shared/types';
 import { useUser } from '@/app/providers';
+import { mutateScope } from '@/services/stateClient';
 import { useSuggestionsBase } from './useSuggestionsBase';
 
 export const useSuggestions = (isPaused: boolean = false) => {
@@ -22,33 +23,50 @@ export const useSuggestions = (isPaused: boolean = false) => {
   } = useSuggestionsBase<MovieSuggestion>('suggestions', currentUser, isPaused);
 
   const addSuggestion = useCallback(
-    async (title: string, reason?: string): Promise<MovieSuggestion> => {
-      if (!currentUser) {
-        throw new Error('Profile required');
-      }
+    async (
+      title: string,
+      reason?: string,
+      suggestedByOverride?: string
+    ): Promise<MovieSuggestion> => {
+      const cleanSuggestedBy =
+        currentUser ?? (sanitizeInput(suggestedByOverride || '') || 'Guest');
 
       const nextSuggestion: MovieSuggestion = {
         id: crypto.randomUUID(),
         title: sanitizeInput(title),
-        suggestedBy: currentUser,
+        suggestedBy: cleanSuggestedBy,
         reason: reason ? sanitizeInput(reason) : undefined,
         status: 'pending',
         createdAt: new Date().toISOString(),
       };
 
-      await performMutation(
-        'add_suggestion',
-        {
-          id: nextSuggestion.id,
-          title: nextSuggestion.title,
-          reason: nextSuggestion.reason,
-        },
-        [...suggestions, nextSuggestion],
-      );
+      if (currentUser) {
+        await performMutation(
+          'add_suggestion',
+          {
+            id: nextSuggestion.id,
+            title: nextSuggestion.title,
+            reason: nextSuggestion.reason,
+          },
+          [...suggestions, nextSuggestion],
+        );
+      } else {
+        await mutateScope('suggestions', {
+          op: 'add_suggestion',
+          payload: {
+            id: nextSuggestion.id,
+            title: nextSuggestion.title,
+            reason: nextSuggestion.reason,
+            suggestedBy: nextSuggestion.suggestedBy,
+          },
+          optimisticData: [...suggestions, nextSuggestion],
+        });
+      }
+
       refresh();
       return nextSuggestion;
     },
-    [currentUser, refresh, suggestions, performMutation]
+    [currentUser, performMutation, refresh, suggestions]
   );
 
   const acceptSuggestion = useCallback(

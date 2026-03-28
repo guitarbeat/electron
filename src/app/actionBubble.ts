@@ -3,9 +3,11 @@ export interface ActionBubblePosition {
   y: number;
 }
 
-export interface ActionBubbleMenuPosition {
+export interface ActionBubblePanelPosition {
   left: string;
   top: string;
+  side: 'left' | 'right';
+  transformOrigin: string;
 }
 
 export interface ActionBubbleTogglePosition {
@@ -30,9 +32,10 @@ export const ACTION_BUBBLE_EDGE_MARGIN = 12;
 export const ACTION_BUBBLE_EDGE_MARGIN_MOBILE = 16;
 
 export const ACTION_BUBBLE_DRAG_THRESHOLD = 5;
-export const ACTION_BUBBLE_MENU_WIDTH = 260;
-export const ACTION_BUBBLE_MENU_GUESS_HEIGHT = 262;
 export const ACTION_BUBBLE_DOCK_GAP = 12;
+export const ACTION_BUBBLE_PANEL_WIDTH = 336;
+export const ACTION_BUBBLE_PANEL_GAP = 16;
+export const ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT = 312;
 /**
  * Outer size of the floating tab button (`.action-bubble-toggle` padding + `.theme-toggle--icon-btn`).
  * Kept in sync with `App.scss` for the fused dock layout.
@@ -110,31 +113,52 @@ export const snapActionBubbleToEdge = (
   return clampActionBubblePosition(snappedX, position.y, viewportWidth, viewportHeight, isMobile);
 };
 
-export const getActionBubbleMenuPosition = (
+export const getActionBubblePanelPosition = (
   bubblePosition: ActionBubblePosition,
   viewportWidth: number,
   viewportHeight: number,
+  panelHeight: number,
   isMobile: boolean
-): ActionBubbleMenuPosition => {
+): ActionBubblePanelPosition => {
   const { bubbleSize, edgeMargin } = getActionBubbleLayout(isMobile);
   const margin = edgeMargin;
-  const preferredX = bubblePosition.x;
-  const menuMaxX = Math.max(margin, viewportWidth - ACTION_BUBBLE_MENU_WIDTH - margin);
-  const x = Math.min(
-    Math.max(preferredX - Math.floor((ACTION_BUBBLE_MENU_WIDTH - bubbleSize) / 2), margin),
-    menuMaxX
-  );
+  const bubbleCenterX = bubblePosition.x + bubbleSize / 2;
+  const preferredSide: 'left' | 'right' =
+    bubbleCenterX < viewportWidth / 2 ? 'right' : 'left';
 
-  const spaceBelow = viewportHeight - (bubblePosition.y + bubbleSize);
-  const canFitBelow = spaceBelow - 10 >= ACTION_BUBBLE_MENU_GUESS_HEIGHT;
-  const menuY = canFitBelow
-    ? bubblePosition.y + bubbleSize + 10
-    : bubblePosition.y - ACTION_BUBBLE_MENU_GUESS_HEIGHT - 10;
-  const maxY = Math.max(margin, viewportHeight - ACTION_BUBBLE_MENU_GUESS_HEIGHT - margin);
+  const getLeftForSide = (side: 'left' | 'right') =>
+    side === 'right'
+      ? bubblePosition.x + bubbleSize + ACTION_BUBBLE_PANEL_GAP
+      : bubblePosition.x - ACTION_BUBBLE_PANEL_WIDTH - ACTION_BUBBLE_PANEL_GAP;
+
+  const fitsSide = (side: 'left' | 'right') => {
+    const left = getLeftForSide(side);
+    return left >= margin && left + ACTION_BUBBLE_PANEL_WIDTH <= viewportWidth - margin;
+  };
+
+  const side = fitsSide(preferredSide)
+    ? preferredSide
+    : preferredSide === 'right'
+      ? fitsSide('left')
+        ? 'left'
+        : 'right'
+      : fitsSide('right')
+        ? 'right'
+        : 'left';
+
+  const unclampedLeft = getLeftForSide(side);
+  const maxLeft = Math.max(margin, viewportWidth - ACTION_BUBBLE_PANEL_WIDTH - margin);
+  const left = Math.min(Math.max(unclampedLeft, margin), maxLeft);
+
+  const centeredTop = bubblePosition.y + bubbleSize / 2 - panelHeight / 2;
+  const maxTop = Math.max(margin, viewportHeight - panelHeight - margin);
+  const top = Math.min(Math.max(centeredTop, margin), maxTop);
 
   return {
-    left: `${x}px`,
-    top: `${Math.min(Math.max(menuY, margin), maxY)}px`,
+    left: `${left}px`,
+    top: `${top}px`,
+    side,
+    transformOrigin: side === 'right' ? 'left center' : 'right center',
   };
 };
 

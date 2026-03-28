@@ -69,6 +69,30 @@ export const NoteIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
+export const MessageIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path('M7 8h10M7 12h7')}
+    {path('M5 5h14a2 2 0 012 2v8a2 2 0 01-2 2H9l-4 3v-3H5a2 2 0 01-2-2V7a2 2 0 012-2z')}
+  </StrokeIcon>
+);
+
+export const BrainIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path('M9.5 5.5a2.5 2.5 0 015 0V6a2.5 2.5 0 012 4.002V10.5a2.5 2.5 0 01-2 4.45V15a3 3 0 01-6 0')}
+    {path('M9.5 6a2.5 2.5 0 00-2 4.002V10.5a2.5 2.5 0 002 4.45V15a3 3 0 006 0')}
+    {path('M12 4v16')}
+  </StrokeIcon>
+);
+
+export const SpinIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path('M12 3a9 9 0 109 9')}
+    {path('M12 3v5')}
+    {path('M12 12l4.5-2.5')}
+    {path('M18 3v5h-5')}
+  </StrokeIcon>
+);
+
 export const EyeOffIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     {path('M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21')}

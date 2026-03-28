@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, type RefObject } from 'react';
 import { colors } from '@/theme/tokens';
 
 export interface CommandActionItem {
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   description?: string;
   action: () => void;
 }
@@ -11,6 +11,7 @@ export interface CommandActionItem {
 interface CommandDeckProps {
   items: readonly CommandActionItem[];
   onItemSelect: (item: CommandActionItem) => void;
+  firstItemRef?: RefObject<HTMLButtonElement | null>;
 }
 
 const ACTION_PALETTE = [
@@ -21,7 +22,7 @@ const ACTION_PALETTE = [
   colors.success,
 ];
 
-const CommandDeck: React.FC<CommandDeckProps> = ({ items, onItemSelect }) => {
+const CommandDeck: React.FC<CommandDeckProps> = ({ items, onItemSelect, firstItemRef }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
@@ -34,6 +35,7 @@ const CommandDeck: React.FC<CommandDeckProps> = ({ items, onItemSelect }) => {
           <button
             key={item.label}
             type="button"
+            ref={index === 0 ? firstItemRef : undefined}
             className="command-deck__row-item"
             onClick={() => onItemSelect(item)}
             onMouseEnter={() => setHoveredIndex(index)}
@@ -69,7 +71,9 @@ const CommandDeck: React.FC<CommandDeckProps> = ({ items, onItemSelect }) => {
                 <span className="command-deck__row-description">{item.description}</span>
               ) : null}
             </span>
-            <span className="command-deck__row-chevron" aria-hidden="true">›</span>
+            <span className="command-deck__row-chevron" aria-hidden="true">
+              {'>'}
+            </span>
           </button>
         );
       })}

@@ -184,7 +184,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
           {isHighlighted ? (
             <div className="movie-item-success-badge" aria-hidden>
-              Added
+              <span className="movie-item-success-badge__icon">
+                <CheckIcon size={12} />
+              </span>
+              <span className="movie-item-success-badge__copy">
+                <span className="movie-item-success-badge__eyebrow">Queued</span>
+                <span className="movie-item-success-badge__title">Just added</span>
+              </span>
             </div>
           ) : null}
 

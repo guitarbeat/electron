@@ -31,6 +31,8 @@ interface WatchlistTopControlsProps {
   setSearchQuery: (value: string) => void;
   selectedAutocompleteResult: MovieAutocompleteResult | null;
   setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
+  guestName: string;
+  setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
   onRecommend: () => void;
   onSubmitRecommendation: () => Promise<void> | void;
@@ -57,6 +59,8 @@ const WatchlistTopControls = React.forwardRef<
   setSearchQuery,
   selectedAutocompleteResult,
   setSelectedAutocompleteResult,
+  guestName,
+  setGuestName,
   onSubmit,
   onRecommend,
   onSubmitRecommendation,
@@ -83,6 +87,12 @@ const WatchlistTopControls = React.forwardRef<
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
   const [hasAutocompleteFocus, setHasAutocompleteFocus] = useState(false);
   const trimmedSearchQuery = searchQuery.trim();
+  const isGuest = !currentUser;
+  const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
+  const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
+  const helperText = isGuest
+    ? `Not signed in? ${guestName.trim() || 'Guest'} can still send titles to Suggestions for Aaron or Electra to approve.`
+    : 'Add titles straight to the shared queue, or open the composer to leave a note first.';
 
   useImperativeHandle(
     forwardedRef,
@@ -376,12 +386,12 @@ const WatchlistTopControls = React.forwardRef<
                 isLoading={isAdding}
                 loadingText="Adding"
                 disabled={isSubmittingRecommendation}
-                title="Add title to watchlist"
-                aria-label="Add title to watchlist"
+                title={primaryActionTitle}
+                aria-label={primaryActionTitle}
                 className="watchlist-top-controls__search-button"
                 style={{ minWidth: '84px' }}
               >
-                Add
+                {primaryActionLabel}
               </Button>
               <Button
                 type="button"
@@ -392,24 +402,28 @@ const WatchlistTopControls = React.forwardRef<
                   onRecommend();
                 }}
                 disabled={isBusy || !canRecommend}
-                title="Recommend movie"
-                aria-label="Recommend movie"
+                title={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
+                aria-label={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
                 leftIcon={<PlusIcon />}
               >
-                Recommend
+                {isGuest ? 'Add a note' : 'Recommend'}
               </Button>
             </div>
           )}
         </form>
       </div>
 
+      <p className="watchlist-top-controls__helper">{helperText}</p>
+
       {showRecommendationComposer && hasSearchQuery && (
         <RecommendationComposer
           currentUser={currentUser}
           movieTitle={searchQuery.trim()}
+          guestName={guestName}
           reason={recommendationReason}
           error={suggestionError}
           isSubmitting={isSubmittingRecommendation}
+          onGuestNameChange={setGuestName}
           onReasonChange={setRecommendationReason}
           onSubmit={onSubmitRecommendation}
           onCancel={onCancelRecommendation}

@@ -1,6 +1,8 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type FC,
@@ -8,24 +10,27 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { motion, AnimatePresence, useSpring } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion, useSpring } from 'framer-motion';
 import { useUser } from '@/app/providers';
+import {
+  ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT,
+  getActionBubblePanelPosition,
+  type ActionBubblePosition,
+} from '@/app/actionBubble';
 import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
-import type { ActionBubbleMenuPosition, ActionBubblePosition } from '@/app/actionBubble';
-import CommandDeck, { type CommandActionItem } from '@/components/ui/CommandDeck';
-import { BottomSheet } from '@/components/ui/modals';
-import ThemeToggle from '@/ui/ThemeToggle';
 import UserSelection from '@/components/common/UserSelection';
 import { CrossIcon } from '@/common/icons';
-import type { MainTab } from '@/shared/types';
+import CommandDeck, { type CommandActionItem } from '@/components/ui/CommandDeck';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+import { BottomSheet } from '@/components/ui/modals';
+import type { MainTab, User } from '@/shared/types';
 import { USER_PHOTOS } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
   actionBubbleRef: RefObject<HTMLButtonElement | null>;
-  actionBubbleMenuRef: RefObject<HTMLDivElement | null>;
+  actionBubblePanelRef: RefObject<HTMLDivElement | null>;
   actionBubblePosition: ActionBubblePosition;
   isDraggingActionBubble: boolean;
-  actionBubbleMenuStyle: ActionBubbleMenuPosition;
   isMobile: boolean;
   activeTab: MainTab;
   showActionBubbleMenu: boolean;
@@ -38,45 +43,99 @@ interface ActionBubbleLayerProps {
   onFinishActionBubbleDrag: (event: PointerEvent<HTMLButtonElement>) => void;
 }
 
-interface ActionMenuBodyProps {
+interface ActionPanelContentProps {
   activeTab: MainTab;
-  onTabChange: (tab: MainTab) => void;
+  currentUser: User | null;
   actionItems: CommandActionItem[];
+  firstActionRef: RefObject<HTMLButtonElement | null>;
+  onClose: () => void;
   onItemSelect: (item: CommandActionItem) => void;
+  onTabChange: (tab: MainTab) => void;
+  showCloseButton: boolean;
 }
 
-const ActionMenuBody: FC<ActionMenuBodyProps> = ({
-  activeTab,
-  onTabChange,
-  actionItems,
-  onItemSelect,
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.1, duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-  >
-    <UserSelection variant="inline" className="action-bubble-menu__profiles" />
-    <div className="action-bubble-menu__tab-row">
-      <ThemeToggle
-        activeTab={activeTab}
-        onChange={onTabChange}
-        label="Switch between Movies and Places"
-      />
-    </div>
-    <CommandDeck items={actionItems} onItemSelect={onItemSelect} />
-  </motion.div>
-);
+const WORKSPACE_LABELS: Record<MainTab, string> = {
+  queue: 'Movies',
+  places: 'Places',
+};
 
-const HOVER_OPEN_DELAY_MS = 80;
-const HOVER_CLOSE_DELAY_MS = 180;
+const USER_MONOGRAMS: Record<User, string> = {
+  Aaron: 'AR',
+  Electra: 'EL',
+};
+
+const getViewportSize = () => {
+  if (typeof window === 'undefined') {
+    return { width: 1280, height: 800 };
+  }
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+};
+
+const ActionPanelContent: FC<ActionPanelContentProps> = ({
+  activeTab,
+  currentUser,
+  actionItems,
+  firstActionRef,
+  onClose,
+  onItemSelect,
+  onTabChange,
+  showCloseButton,
+}) => {
+  const workspaceLabel = WORKSPACE_LABELS[activeTab];
+  const statusLabel = currentUser ? `${currentUser} active` : 'Guest mode';
+
+  return (
+    <>
+      <div className="action-bubble-panel__header">
+        <div className="action-bubble-panel__header-row">
+          <div className="action-bubble-panel__context-copy">
+            <span className="action-bubble-panel__eyebrow">Launcher</span>
+            <span className="action-bubble-panel__workspace">{workspaceLabel} workspace</span>
+            <span className="action-bubble-panel__status">{statusLabel}</span>
+          </div>
+          {showCloseButton ? (
+            <button
+              type="button"
+              className="action-bubble-panel__close-btn"
+              onClick={onClose}
+              aria-label="Close launcher"
+            >
+              <CrossIcon size={10} />
+            </button>
+          ) : null}
+        </div>
+        <UserSelection variant="inline" className="action-bubble-panel__profiles" />
+      </div>
+
+      <div className="action-bubble-panel__body">
+        <CommandDeck
+          items={actionItems}
+          onItemSelect={onItemSelect}
+          firstItemRef={firstActionRef}
+        />
+      </div>
+
+      <div className="action-bubble-panel__footer">
+        <span className="action-bubble-panel__footer-label">Workspace</span>
+        <ThemeToggle
+          activeTab={activeTab}
+          onChange={onTabChange}
+          label="Switch between Movies and Places"
+        />
+      </div>
+    </>
+  );
+};
 
 const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   actionBubbleRef,
-  actionBubbleMenuRef,
+  actionBubblePanelRef,
   actionBubblePosition,
   isDraggingActionBubble,
-  actionBubbleMenuStyle,
   isMobile,
   activeTab,
   showActionBubbleMenu,
@@ -89,104 +148,130 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   onFinishActionBubbleDrag,
 }) => {
   const { currentUser } = useUser();
-  const [failedPhotoUser, setFailedPhotoUser] = useState<string | null>(null);
-  const photoError = Boolean(currentUser && failedPhotoUser === currentUser);
-  const closeMenu = useCallback(() => onToggleMenu(false), [onToggleMenu]);
-  const openMenu = useCallback(() => onToggleMenu(true), [onToggleMenu]);
+  const prefersReducedMotion = useReducedMotion();
+  const [failedPhotoUser, setFailedPhotoUser] = useState<User | null>(null);
+  const [panelHeight, setPanelHeight] = useState(ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT);
+  const firstActionRef = useRef<HTMLButtonElement | null>(null);
+  const previousOpenRef = useRef(showActionBubbleMenu);
+  const restoreFocusOnCloseRef = useRef(false);
 
-  const hoverOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bubbleHasPhotoError = Boolean(currentUser && failedPhotoUser === currentUser);
 
-  const clearHoverTimers = () => {
-    if (hoverOpenTimerRef.current !== null) {
-      clearTimeout(hoverOpenTimerRef.current);
-      hoverOpenTimerRef.current = null;
+  const panelPosition = useMemo(() => {
+    const viewport = getViewportSize();
+    return getActionBubblePanelPosition(
+      actionBubblePosition,
+      viewport.width,
+      viewport.height,
+      panelHeight,
+      isMobile
+    );
+  }, [actionBubblePosition, isMobile, panelHeight]);
+
+  const closeMenu = useCallback(
+    (restoreFocus: boolean = true) => {
+      restoreFocusOnCloseRef.current = restoreFocus;
+      onToggleMenu(false);
+    },
+    [onToggleMenu]
+  );
+
+  const runItem = useCallback(
+    (item: CommandActionItem) => {
+      closeMenu(false);
+      item.action();
+    },
+    [closeMenu]
+  );
+
+  useLayoutEffect(() => {
+    if (!showActionBubbleMenu || isMobile || !actionBubblePanelRef.current) {
+      return undefined;
     }
-    if (hoverCloseTimerRef.current !== null) {
-      clearTimeout(hoverCloseTimerRef.current);
-      hoverCloseTimerRef.current = null;
+
+    const panelNode = actionBubblePanelRef.current;
+    const measure = () => {
+      setPanelHeight(panelNode.offsetHeight || ACTION_BUBBLE_PANEL_FALLBACK_HEIGHT);
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
     }
-  };
 
-  useEffect(() => () => clearHoverTimers(), []);
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(panelNode);
 
-  const handleBubbleMouseEnter = () => {
-    if (isMobile || isDraggingActionBubble) return;
-    if (hoverCloseTimerRef.current !== null) {
-      clearTimeout(hoverCloseTimerRef.current);
-      hoverCloseTimerRef.current = null;
-    }
-    hoverOpenTimerRef.current = setTimeout(() => {
-      hoverOpenTimerRef.current = null;
-      openMenu();
-    }, HOVER_OPEN_DELAY_MS);
-  };
-
-  const handleBubbleMouseLeave = () => {
-    if (isMobile) return;
-    if (hoverOpenTimerRef.current !== null) {
-      clearTimeout(hoverOpenTimerRef.current);
-      hoverOpenTimerRef.current = null;
-    }
-    hoverCloseTimerRef.current = setTimeout(() => {
-      hoverCloseTimerRef.current = null;
-      closeMenu();
-    }, HOVER_CLOSE_DELAY_MS);
-  };
-
-  const handleMenuMouseEnter = () => {
-    if (isMobile) return;
-    if (hoverCloseTimerRef.current !== null) {
-      clearTimeout(hoverCloseTimerRef.current);
-      hoverCloseTimerRef.current = null;
-    }
-  };
-
-  const handleMenuMouseLeave = () => {
-    if (isMobile) return;
-    hoverCloseTimerRef.current = setTimeout(() => {
-      hoverCloseTimerRef.current = null;
-      closeMenu();
-    }, HOVER_CLOSE_DELAY_MS);
-  };
-
-  const runItem = (item: CommandActionItem) => {
-    closeMenu();
-    item.action();
-  };
+    return () => observer.disconnect();
+  }, [actionBubblePanelRef, isMobile, showActionBubbleMenu]);
 
   useEffect(() => {
-    if (!showActionBubbleMenu) return undefined;
+    const wasOpen = previousOpenRef.current;
+
+    if (showActionBubbleMenu && !wasOpen) {
+      window.requestAnimationFrame(() => {
+        firstActionRef.current?.focus();
+      });
+    }
+
+    if (!showActionBubbleMenu && wasOpen && restoreFocusOnCloseRef.current) {
+      window.requestAnimationFrame(() => {
+        actionBubbleRef.current?.focus();
+      });
+      restoreFocusOnCloseRef.current = false;
+    }
+
+    previousOpenRef.current = showActionBubbleMenu;
+  }, [actionBubbleRef, showActionBubbleMenu]);
+
+  useEffect(() => {
+    if (!showActionBubbleMenu) {
+      return undefined;
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        closeMenu();
-        actionBubbleRef.current?.focus();
+        closeMenu(true);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [actionBubbleRef, closeMenu, showActionBubbleMenu]);
+  }, [closeMenu, showActionBubbleMenu]);
 
-  const actionBubbleSide =
-    actionBubblePosition.x < window.innerWidth / 2 ? 'right' : 'left';
+  useEffect(() => {
+    if (!showActionBubbleMenu || isMobile) {
+      return undefined;
+    }
 
-  const bubbleClasses = [
-    'action-bubble',
-    `action-bubble--docked-${actionBubbleSide}`,
-    isDraggingActionBubble ? 'is-dragging' : '',
-    showActionBubbleMenu ? 'is-open' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    const handlePointerDown = (event: globalThis.PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
 
-  const menuBodyProps: ActionMenuBodyProps = {
-    activeTab,
-    onTabChange,
-    actionItems,
-    onItemSelect: runItem,
-  };
+      if (
+        actionBubblePanelRef.current?.contains(target) ||
+        actionBubbleRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      closeMenu(true);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, {
+        capture: true,
+      });
+    };
+  }, [actionBubblePanelRef, actionBubbleRef, closeMenu, isMobile, showActionBubbleMenu]);
 
   const springConfig = { damping: 25, stiffness: 250 };
   const xSpring = useSpring(actionBubblePosition.x, springConfig);
@@ -196,6 +281,37 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     xSpring.set(actionBubblePosition.x);
     ySpring.set(actionBubblePosition.y);
   }, [actionBubblePosition.x, actionBubblePosition.y, xSpring, ySpring]);
+
+  const bubbleClasses = [
+    'action-bubble',
+    `action-bubble--docked-${panelPosition.side}`,
+    isDraggingActionBubble ? 'is-dragging' : '',
+    showActionBubbleMenu ? 'is-open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const bubbleHoverAnimation = prefersReducedMotion
+    ? undefined
+    : {
+        scale: 1.03,
+        y: -2,
+      };
+
+  const bubbleTapAnimation = prefersReducedMotion
+    ? {
+        scale: 0.98,
+      }
+    : {
+        scale: 0.96,
+        y: 1,
+      };
+
+  const panelMotionDistance = prefersReducedMotion
+    ? 0
+    : panelPosition.side === 'right'
+      ? -12
+      : 12;
 
   return (
     <>
@@ -208,89 +324,115 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         onPointerMove={onActionBubblePointerMove}
         onPointerUp={onFinishActionBubbleDrag}
         onPointerCancel={onFinishActionBubbleDrag}
-        onMouseEnter={handleBubbleMouseEnter}
-        onMouseLeave={handleBubbleMouseLeave}
-        aria-label={showActionBubbleMenu ? 'Close quick actions' : 'Open quick actions'}
-        aria-haspopup="menu"
+        aria-label={showActionBubbleMenu ? 'Close launcher' : 'Open launcher'}
+        aria-haspopup="dialog"
         aria-expanded={showActionBubbleMenu}
-        aria-controls={isMobile ? 'action-bubble-sheet' : 'action-bubble-menu'}
+        aria-controls={isMobile ? 'action-bubble-sheet' : 'action-bubble-panel'}
         style={{
           left: isDraggingActionBubble ? actionBubblePosition.x : xSpring,
           top: isDraggingActionBubble ? actionBubblePosition.y : ySpring,
         }}
         animate={{
-          scale: showActionBubbleMenu ? 1.15 : 1,
-          y: isDraggingActionBubble || showActionBubbleMenu ? 0 : [0, -4, 0],
+          scale: isDraggingActionBubble ? 1.02 : showActionBubbleMenu ? 1.05 : 1,
+          y: 0,
         }}
-        whileHover={{ scale: 1.08, rotate: 2 }}
-        whileTap={{ scale: 0.94, rotate: -1 }}
-        transition={{ 
-          y: {
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut"
-          },
-          scale: { type: 'spring', damping: 20, stiffness: 300 },
-          rotate: { type: 'spring', damping: 20, stiffness: 300 }
+        whileHover={!isDraggingActionBubble ? bubbleHoverAnimation : undefined}
+        whileTap={bubbleTapAnimation}
+        transition={{
+          scale: { type: 'spring', damping: 22, stiffness: 300 },
+          y: { type: 'spring', damping: 24, stiffness: 280 },
         }}
       >
         <span className="action-bubble__icon" aria-hidden="true">
-          {currentUser && !photoError ? (
-            <img
-              src={USER_PHOTOS[currentUser]}
-              alt={currentUser}
-              className="action-bubble__user-photo"
-              draggable="false"
-              onError={() => setFailedPhotoUser(currentUser)}
-            />
-          ) : (
-            <img
-              src={ELECTRON_LOGO_MARK_PATH}
-              alt=""
-              className="action-bubble__icon-image action-bubble__mark"
-              draggable="false"
-            />
-          )}
+          <img
+            src={ELECTRON_LOGO_MARK_PATH}
+            alt=""
+            className="action-bubble__icon-image action-bubble__mark"
+            draggable="false"
+          />
         </span>
-        <span className="action-bubble__open-ring" aria-hidden="true" />
-        <span className="sr-only">{showActionBubbleMenu ? 'Close' : 'Open'} quick actions</span>
+        {currentUser ? (
+          <span className="action-bubble__presence" aria-hidden="true">
+            {bubbleHasPhotoError ? (
+              <span className="action-bubble__presence-fallback">
+                {USER_MONOGRAMS[currentUser]}
+              </span>
+            ) : (
+              <img
+                src={USER_PHOTOS[currentUser]}
+                alt=""
+                className="action-bubble__presence-photo"
+                draggable="false"
+                onError={() => setFailedPhotoUser(currentUser)}
+              />
+            )}
+          </span>
+        ) : null}
+        <span className="sr-only">{showActionBubbleMenu ? 'Close' : 'Open'} launcher</span>
       </motion.button>
 
       <AnimatePresence>
         {showActionBubbleMenu && !isMobile ? (
           <motion.div
-            id="action-bubble-menu"
-            ref={actionBubbleMenuRef}
-            className="action-bubble-menu"
-            role="menu"
-            aria-label="Quick actions"
-            style={actionBubbleMenuStyle}
-            onMouseEnter={handleMenuMouseEnter}
-            onMouseLeave={handleMenuMouseLeave}
-            initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)', transition: { duration: 0.15 } }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            id="action-bubble-panel"
+            ref={actionBubblePanelRef}
+            className={`action-bubble-panel action-bubble-panel--${panelPosition.side}`}
+            role="dialog"
+            aria-modal="false"
+            aria-label="Launcher"
+            style={{
+              left: panelPosition.left,
+              top: panelPosition.top,
+              transformOrigin: panelPosition.transformOrigin,
+            }}
+            initial={{
+              opacity: 0,
+              x: panelMotionDistance,
+              scale: prefersReducedMotion ? 1 : 0.98,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              x: panelMotionDistance,
+              scale: prefersReducedMotion ? 1 : 0.985,
+              transition: { duration: 0.16 },
+            }}
+            transition={{ type: 'spring', damping: 24, stiffness: 310 }}
           >
-            <div className="action-bubble-menu__header">
-              <span className="action-bubble-menu__title" aria-hidden="true">Quick Actions</span>
-              <button
-                type="button"
-                className="action-bubble-menu__close-btn"
-                onClick={closeMenu}
-                aria-label="Close menu"
-              >
-                <CrossIcon size={10} />
-              </button>
-            </div>
-            <ActionMenuBody {...menuBodyProps} />
+            <ActionPanelContent
+              activeTab={activeTab}
+              currentUser={currentUser}
+              actionItems={actionItems}
+              firstActionRef={firstActionRef}
+              onClose={() => closeMenu(true)}
+              onItemSelect={runItem}
+              onTabChange={onTabChange}
+              showCloseButton
+            />
           </motion.div>
         ) : null}
       </AnimatePresence>
 
-      <BottomSheet isOpen={isMobile && showActionBubbleMenu} onClose={closeMenu} title="Quick Actions">
-        <div id="action-bubble-sheet">
-          <ActionMenuBody {...menuBodyProps} />
+      <BottomSheet
+        isOpen={isMobile && showActionBubbleMenu}
+        onClose={() => closeMenu(true)}
+        title="Launcher"
+      >
+        <div id="action-bubble-sheet" className="action-bubble-sheet">
+          <ActionPanelContent
+            activeTab={activeTab}
+            currentUser={currentUser}
+            actionItems={actionItems}
+            firstActionRef={firstActionRef}
+            onClose={() => closeMenu(true)}
+            onItemSelect={runItem}
+            onTabChange={onTabChange}
+            showCloseButton={false}
+          />
         </div>
       </BottomSheet>
     </>

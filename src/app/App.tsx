@@ -4,7 +4,6 @@ import {
   ACTION_BUBBLE_DRAG_THRESHOLD,
   clampActionBubblePosition,
   getDockedActionBubblePosition,
-  getActionBubbleMenuPosition,
   getDefaultActionBubblePosition,
   snapActionBubbleToEdge,
   type ActionBubblePosition,
@@ -17,6 +16,7 @@ import RetroEffects from '@/components/effects/RetroEffects';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
+import { BrainIcon, MessageIcon, NoteIcon, SpinIcon } from '@/common/icons';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
@@ -62,6 +62,7 @@ const App: React.FC = () => {
     return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
   });
   const [isDraggingActionBubble, setIsDraggingActionBubble] = useState(false);
+
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
       return {
@@ -77,7 +78,7 @@ const App: React.FC = () => {
   }, []);
 
   const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
-  const actionBubbleMenuRef = useRef<HTMLDivElement | null>(null);
+  const actionBubblePanelRef = useRef<HTMLDivElement | null>(null);
   const workspaceControlsRef = useRef<HTMLDivElement | null>(null);
   const actionBubbleDragRef = useRef<{
     pointerId: number;
@@ -120,7 +121,13 @@ const App: React.FC = () => {
         }
 
         const viewport = getViewportSize();
-        return clampActionBubblePosition(previous.x, previous.y, viewport.width, viewport.height, isMobile);
+        return clampActionBubblePosition(
+          previous.x,
+          previous.y,
+          viewport.width,
+          viewport.height,
+          isMobile
+        );
       });
     };
 
@@ -128,39 +135,6 @@ const App: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [getDefaultBubblePosition, isMobile]);
-
-  useEffect(() => {
-    if (!showActionBubbleMenu || isMobile) {
-      return undefined;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (
-        actionBubbleMenuRef.current?.contains(target) ||
-        actionBubbleRef.current?.contains(target)
-      ) {
-        return;
-      }
-
-      setShowActionBubbleMenu(false);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown, {
-      capture: true,
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown, {
-        capture: true,
-      });
-    };
-  }, [isMobile, showActionBubbleMenu]);
 
   const openQuizExperience = useCallback(() => {
     if (currentUser) {
@@ -318,40 +292,31 @@ const App: React.FC = () => {
     (): CommandActionItem[] => [
       {
         label: 'Messages',
-        icon: '💬',
+        icon: <MessageIcon size={18} />,
         description: 'Chat with each other',
         action: () => setShowMessages(true),
       },
       {
         label: 'Notes',
-        icon: '📝',
+        icon: <NoteIcon size={18} />,
         description: 'Browse and add shared movie notes',
         action: () => setShowMemoriesPanel(true),
       },
       {
         label: quizLaunch.label,
-        icon: '🧠',
+        icon: <BrainIcon size={18} />,
         description: 'Find your movie personality',
         action: openQuizExperience,
       },
       {
         label: 'Spin & Match',
-        icon: '🎡',
+        icon: <SpinIcon size={18} />,
         description: 'Decide what to watch together',
         action: () => setShowSpinWheel(true),
       },
     ],
     [openQuizExperience, quizLaunch.label]
   );
-  const actionBubbleMenuStyle = useMemo(() => {
-    const viewport = getViewportSize();
-    return getActionBubbleMenuPosition(
-      actionBubblePosition,
-      viewport.width,
-      viewport.height,
-      isMobile
-    );
-  }, [actionBubblePosition, isMobile]);
   const workspaceMeta = useMemo(() => getWorkspaceMeta(activeTab), [activeTab]);
 
   if (logoLabState.enabled) {
@@ -374,7 +339,9 @@ const App: React.FC = () => {
       <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       <div className="app-shell app-shell--viewport bg-main">
         <React.Suspense fallback={null}>
-          {!prefersReducedMotion ? <MagicComponent isVisible={isMoireVisible} opacity={0.2} /> : null}
+          {!prefersReducedMotion ? (
+            <MagicComponent isVisible={isMoireVisible} opacity={0.2} />
+          ) : null}
         </React.Suspense>
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
@@ -385,10 +352,9 @@ const App: React.FC = () => {
           <div className="app-floating-chrome">
             <ActionBubbleLayer
               actionBubbleRef={actionBubbleRef}
-              actionBubbleMenuRef={actionBubbleMenuRef}
+              actionBubblePanelRef={actionBubblePanelRef}
               actionBubblePosition={actionBubblePosition}
               isDraggingActionBubble={isDraggingActionBubble}
-              actionBubbleMenuStyle={actionBubbleMenuStyle}
               isMobile={isMobile}
               activeTab={activeTab}
               showActionBubbleMenu={showActionBubbleMenu}

@@ -1,17 +1,22 @@
 import React from 'react';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { Textarea } from '@/ui/FormFields';
+import { Input, Textarea } from '@/ui/FormFields';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import type { User } from '@/shared/types';
-import { MAX_RECOMMENDATION_REASON_LENGTH } from './watchlistConstants';
+import {
+  MAX_GUEST_SUGGESTER_NAME_LENGTH,
+  MAX_RECOMMENDATION_REASON_LENGTH,
+} from './watchlistConstants';
 
 interface RecommendationComposerProps {
   currentUser: User | null;
   movieTitle: string;
+  guestName: string;
   reason: string;
   error: string | null;
   isSubmitting: boolean;
+  onGuestNameChange: (value: string) => void;
   onReasonChange: (value: string) => void;
   onSubmit: () => Promise<void> | void;
   onCancel: () => void;
@@ -20,9 +25,11 @@ interface RecommendationComposerProps {
 const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
   currentUser,
   movieTitle,
+  guestName,
   reason,
   error,
   isSubmitting,
+  onGuestNameChange,
   onReasonChange,
   onSubmit,
   onCancel,
@@ -67,9 +74,21 @@ const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
         >
           {currentUser
             ? `Send this to Suggestions as ${currentUser}.`
-            : 'Add a name if you want the duo to know who pitched it.'}
+            : 'Guests can send titles to Suggestions too. Add your name if you want credit.'}
         </p>
       </div>
+
+      {!currentUser ? (
+        <Input
+          label="Your Name (Optional)"
+          value={guestName}
+          onChange={(event) =>
+            onGuestNameChange(event.target.value.slice(0, MAX_GUEST_SUGGESTER_NAME_LENGTH))
+          }
+          placeholder="Guest"
+          maxLength={MAX_GUEST_SUGGESTER_NAME_LENGTH}
+        />
+      ) : null}
 
       <Textarea
         label="Why This One? (Optional)"
@@ -105,7 +124,13 @@ const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
           <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="button" variant="primary" size="sm" onClick={() => void onSubmit()} isLoading={isSubmitting}>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={() => void onSubmit()}
+            isLoading={isSubmitting}
+          >
             Send recommendation
           </Button>
         </div>
