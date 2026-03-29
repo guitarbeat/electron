@@ -3,6 +3,7 @@ import { sanitizeInput } from '@/utils';
 import { MovieSuggestion, User } from '@/shared/types';
 import { useUser } from '@/app/providers';
 import { mutateScope } from '@/services/stateClient';
+import type { MovieAutocompleteResult } from '@/services/metadataService';
 import { useSuggestionsBase } from './useSuggestionsBase';
 
 export const useSuggestions = (isPaused: boolean = false) => {
@@ -26,7 +27,8 @@ export const useSuggestions = (isPaused: boolean = false) => {
     async (
       title: string,
       reason?: string,
-      suggestedByOverride?: string
+      suggestedByOverride?: string,
+      selectedResult?: Pick<MovieAutocompleteResult, 'imdbID' | 'type'> | null
     ): Promise<MovieSuggestion> => {
       const cleanSuggestedBy =
         currentUser ?? (sanitizeInput(suggestedByOverride || '') || 'Guest');
@@ -36,6 +38,8 @@ export const useSuggestions = (isPaused: boolean = false) => {
         title: sanitizeInput(title),
         suggestedBy: cleanSuggestedBy,
         reason: reason ? sanitizeInput(reason) : undefined,
+        imdbID: selectedResult?.imdbID,
+        type: selectedResult?.type,
         status: 'pending',
         createdAt: new Date().toISOString(),
       };
@@ -47,6 +51,8 @@ export const useSuggestions = (isPaused: boolean = false) => {
             id: nextSuggestion.id,
             title: nextSuggestion.title,
             reason: nextSuggestion.reason,
+            imdbID: nextSuggestion.imdbID,
+            type: nextSuggestion.type,
           },
           [...suggestions, nextSuggestion],
         );
@@ -58,6 +64,8 @@ export const useSuggestions = (isPaused: boolean = false) => {
             title: nextSuggestion.title,
             reason: nextSuggestion.reason,
             suggestedBy: nextSuggestion.suggestedBy,
+            imdbID: nextSuggestion.imdbID,
+            type: nextSuggestion.type,
           },
           optimisticData: [...suggestions, nextSuggestion],
         });

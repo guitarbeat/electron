@@ -841,6 +841,8 @@ const scopes: {
             title?: unknown;
             reason?: unknown;
             suggestedBy?: unknown;
+            imdbID?: unknown;
+            type?: unknown;
           };
           const id =
             typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
@@ -853,6 +855,14 @@ const scopes: {
             ((typeof nextPayload.suggestedBy === 'string'
               ? sanitizeInput(nextPayload.suggestedBy)
               : '') || 'Guest');
+          const imdbID =
+            typeof nextPayload.imdbID === 'string'
+              ? sanitizeInput(nextPayload.imdbID)
+              : undefined;
+          const type =
+            nextPayload.type === 'movie' || nextPayload.type === 'series'
+              ? nextPayload.type
+              : undefined;
 
           if (!id || !title) {
             return { ok: false, conflict: 'Invalid suggestion payload.' };
@@ -874,6 +884,8 @@ const scopes: {
                   typeof nextPayload.reason === 'string'
                     ? sanitizeInput(nextPayload.reason)
                     : undefined,
+                imdbID: imdbID || undefined,
+                type,
                 status: 'pending',
                 createdAt: context.now,
               },

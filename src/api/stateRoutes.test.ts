@@ -425,6 +425,8 @@ test('dynamic state mutate route lets guests create movie suggestions', async ()
             title: 'The Nice Guys',
             reason: 'Sharp, funny, and easy to throw on.',
             suggestedBy: 'Movie Night Guest',
+            imdbID: 'tt3799694',
+            type: 'movie',
           },
         }),
       })
@@ -440,7 +442,69 @@ test('dynamic state mutate route lets guests create movie suggestions', async ()
     assert.equal(payload.applied, true);
     assert.equal(payload.data[0]?.title, 'The Nice Guys');
     assert.equal(payload.data[0]?.suggestedBy, 'Movie Night Guest');
+    assert.equal(payload.data[0]?.imdbID, 'tt3799694');
+    assert.equal(payload.data[0]?.type, 'movie');
     assert.equal(getSuggestions()[0]?.suggestedBy, 'Movie Night Guest');
+    assert.equal(getSuggestions()[0]?.imdbID, 'tt3799694');
+    assert.equal(getSuggestions()[0]?.type, 'movie');
+    assert.equal(patchBodies.length, 1);
+  });
+});
+
+test('dynamic state mutate route keeps selection metadata for signed-in suggestions', async () => {
+  await withSuggestionStore([], async ({ getSuggestions, patchBodies }) => {
+    const cookie = buildProfileCookie(
+      new Request('https://example.com/api/session/profile'),
+      'Aaron'
+    );
+
+    const readResponse = await readHandler(
+      new Request('https://example.com/api/state/suggestions', {
+        headers: {
+          cookie,
+        },
+      })
+    );
+    assert.equal(readResponse.status, 200);
+
+    const readPayload = (await readResponse.json()) as {
+      version: string;
+    };
+
+    const response = await mutateHandler(
+      new Request('https://example.com/api/state/suggestions/mutate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie,
+        },
+        body: JSON.stringify({
+          baseVersion: readPayload.version,
+          op: 'add_suggestion',
+          payload: {
+            id: 'suggestion-2',
+            title: 'The Bear',
+            reason: 'Series pick',
+            imdbID: 'tv-11',
+            type: 'series',
+          },
+        }),
+      })
+    );
+
+    assert.equal(response.status, 200);
+
+    const payload = (await response.json()) as {
+      data: MovieSuggestion[];
+      applied: boolean;
+    };
+
+    assert.equal(payload.applied, true);
+    assert.equal(payload.data[0]?.suggestedBy, 'Aaron');
+    assert.equal(payload.data[0]?.imdbID, 'tv-11');
+    assert.equal(payload.data[0]?.type, 'series');
+    assert.equal(getSuggestions()[0]?.imdbID, 'tv-11');
+    assert.equal(getSuggestions()[0]?.type, 'series');
     assert.equal(patchBodies.length, 1);
   });
 });

@@ -3,7 +3,10 @@ import test from 'node:test';
 
 import type { MovieAutocompleteResult } from '@/services/metadataService';
 import {
+  getMovieAutocompleteEnterSelectionIndex,
   getNextMovieAutocompleteIndex,
+  hasStoredMovieAutocompleteFeedback,
+  normalizeMovieAutocompleteQuery,
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './watchlistAutocomplete.ts';
@@ -37,6 +40,53 @@ test('shouldClearSelectedMovieResult only clears after the input diverges from t
 
   await t.test('clears the selection after the title changes', () => {
     assert.equal(shouldClearSelectedMovieResult('Collateral', SELECTED_RESULT), true);
+  });
+});
+
+test('hasStoredMovieAutocompleteFeedback only reopens cached feedback for the current query', async (t) => {
+  await t.test('reopens cached results for the exact selected title', () => {
+    assert.equal(
+      hasStoredMovieAutocompleteFeedback(
+        '  Heat  ',
+        normalizeMovieAutocompleteQuery('Heat'),
+        2,
+        null
+      ),
+      true
+    );
+  });
+
+  await t.test('does not reuse cached feedback after the query diverges', () => {
+    assert.equal(
+      hasStoredMovieAutocompleteFeedback(
+        'Collateral',
+        normalizeMovieAutocompleteQuery('Heat'),
+        2,
+        null
+      ),
+      false
+    );
+  });
+
+  await t.test('does not reuse cached feedback for very short queries', () => {
+    assert.equal(
+      hasStoredMovieAutocompleteFeedback('h', normalizeMovieAutocompleteQuery('Heat'), 2, null),
+      false
+    );
+  });
+});
+
+test('getMovieAutocompleteEnterSelectionIndex prefers the active row and falls back to the first result', async (t) => {
+  await t.test('uses the active row when one is highlighted', () => {
+    assert.equal(getMovieAutocompleteEnterSelectionIndex(2, 4), 2);
+  });
+
+  await t.test('defaults to the first result when none is highlighted', () => {
+    assert.equal(getMovieAutocompleteEnterSelectionIndex(-1, 4), 0);
+  });
+
+  await t.test('returns -1 when there are no results', () => {
+    assert.equal(getMovieAutocompleteEnterSelectionIndex(-1, 0), -1);
   });
 });
 

@@ -22,7 +22,8 @@ import UserSelection from '@/components/common/UserSelection';
 import { CrossIcon } from '@/common/icons';
 import CommandDeck, { type CommandActionItem } from '@/components/ui/CommandDeck';
 import { BottomSheet } from '@/components/ui/modals';
-import type { User } from '@/shared/types';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+import type { MainTab, User } from '@/shared/types';
 import { USER_PHOTOS } from '@/shared/types';
 
 interface ActionBubbleLayerProps {
@@ -31,8 +32,10 @@ interface ActionBubbleLayerProps {
   actionBubblePosition: ActionBubblePosition;
   isDraggingActionBubble: boolean;
   isMobile: boolean;
+  activeTab: MainTab;
   showActionBubbleMenu: boolean;
   onToggleMenu: (open: boolean) => void;
+  onTabChange: (tab: MainTab) => void;
   actionItems: CommandActionItem[];
   onActionBubbleClick: (event: MouseEvent<HTMLButtonElement>) => void;
   onActionBubblePointerDown: (event: PointerEvent<HTMLButtonElement>) => void;
@@ -42,10 +45,12 @@ interface ActionBubbleLayerProps {
 
 interface ActionPanelContentProps {
   currentUser: User | null;
+  activeTab: MainTab;
   actionItems: CommandActionItem[];
   firstActionRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
   onItemSelect: (item: CommandActionItem) => void;
+  onTabChange: (tab: MainTab) => void;
   showCloseButton: boolean;
 }
 
@@ -65,12 +70,17 @@ const getViewportSize = () => {
   };
 };
 
+const HOVER_OPEN_DELAY_MS = 80;
+const HOVER_CLOSE_DELAY_MS = 180;
+
 const ActionPanelContent: FC<ActionPanelContentProps> = ({
   currentUser,
+  activeTab,
   actionItems,
   firstActionRef,
   onClose,
   onItemSelect,
+  onTabChange,
   showCloseButton,
 }) => {
   const statusLabel = currentUser ? `${currentUser} active` : 'Guest mode';
@@ -99,6 +109,13 @@ const ActionPanelContent: FC<ActionPanelContentProps> = ({
       </div>
 
       <div className="action-bubble-panel__body">
+        <div className="action-bubble-menu__tab-row">
+          <ThemeToggle
+            activeTab={activeTab}
+            onChange={onTabChange}
+            label="Switch between Movies and Places"
+          />
+        </div>
         <CommandDeck
           items={actionItems}
           onItemSelect={onItemSelect}
@@ -115,8 +132,10 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   actionBubblePosition,
   isDraggingActionBubble,
   isMobile,
+  activeTab,
   showActionBubbleMenu,
   onToggleMenu,
+  onTabChange,
   actionItems,
   onActionBubbleClick,
   onActionBubblePointerDown,
@@ -130,6 +149,9 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
   const firstActionRef = useRef<HTMLButtonElement | null>(null);
   const previousOpenRef = useRef(showActionBubbleMenu);
   const restoreFocusOnCloseRef = useRef(false);
+  const menuOpenModeRef = useRef<'explicit' | 'hover'>('explicit');
+  const hoverOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bubbleHasPhotoError = Boolean(currentUser && failedPhotoUser === currentUser);
 
@@ -144,9 +166,30 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     );
   }, [actionBubblePosition, isMobile, panelHeight]);
 
+  const clearHoverTimers = useCallback(() => {
+    if (hoverOpenTimerRef.current !== null) {
+      clearTimeout(hoverOpenTimerRef.current);
+      hoverOpenTimerRef.current = null;
+    }
+
+    if (hoverCloseTimerRef.current !== null) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const openMenu = useCallback(
+    (mode: 'explicit' | 'hover' = 'explicit') => {
+      menuOpenModeRef.current = mode;
+      onToggleMenu(true);
+    },
+    [onToggleMenu]
+  );
+
   const closeMenu = useCallback(
-    (restoreFocus: boolean = true) => {
-      restoreFocusOnCloseRef.current = restoreFocus;
+    (restoreFocus?: boolean) => {
+      restoreFocusOnCloseRef.current =
+        restoreFocus ?? menuOpenModeRef.current === 'explicit';
       onToggleMenu(false);
     },
     [onToggleMenu]
@@ -158,6 +201,73 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
       item.action();
     },
     [closeMenu]
+  );
+
+  const handleBubbleMouseEnter = useCallback(() => {
+    if (isMobile || isDraggingActionBubble) {
+      return;
+    }
+
+    if (hoverCloseTimerRef.current !== null) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+
+    if (showActionBubbleMenu) {
+      return;
+    }
+
+    hoverOpenTimerRef.current = setTimeout(() => {
+      hoverOpenTimerRef.current = null;
+      openMenu('hover');
+    }, HOVER_OPEN_DELAY_MS);
+  }, [isDraggingActionBubble, isMobile, openMenu, showActionBubbleMenu]);
+
+  const handleBubbleMouseLeave = useCallback(() => {
+    if (isMobile) {
+      return;
+    }
+
+    if (hoverOpenTimerRef.current !== null) {
+      clearTimeout(hoverOpenTimerRef.current);
+      hoverOpenTimerRef.current = null;
+    }
+
+    hoverCloseTimerRef.current = setTimeout(() => {
+      hoverCloseTimerRef.current = null;
+      closeMenu(false);
+    }, HOVER_CLOSE_DELAY_MS);
+  }, [closeMenu, isMobile]);
+
+  const handlePanelMouseEnter = useCallback(() => {
+    if (isMobile || hoverCloseTimerRef.current === null) {
+      return;
+    }
+
+    clearTimeout(hoverCloseTimerRef.current);
+    hoverCloseTimerRef.current = null;
+  }, [isMobile]);
+
+  const handlePanelMouseLeave = useCallback(() => {
+    if (isMobile) {
+      return;
+    }
+
+    hoverCloseTimerRef.current = setTimeout(() => {
+      hoverCloseTimerRef.current = null;
+      closeMenu(false);
+    }, HOVER_CLOSE_DELAY_MS);
+  }, [closeMenu, isMobile]);
+
+  const handleBubbleClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      clearHoverTimers();
+      if (!showActionBubbleMenu) {
+        menuOpenModeRef.current = 'explicit';
+      }
+      onActionBubbleClick(event);
+    },
+    [clearHoverTimers, onActionBubbleClick, showActionBubbleMenu]
   );
 
   useLayoutEffect(() => {
@@ -182,10 +292,12 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
     return () => observer.disconnect();
   }, [actionBubblePanelRef, isMobile, showActionBubbleMenu]);
 
+  useEffect(() => () => clearHoverTimers(), [clearHoverTimers]);
+
   useEffect(() => {
     const wasOpen = previousOpenRef.current;
 
-    if (showActionBubbleMenu && !wasOpen) {
+    if (showActionBubbleMenu && !wasOpen && menuOpenModeRef.current === 'explicit') {
       window.requestAnimationFrame(() => {
         firstActionRef.current?.focus();
       });
@@ -234,7 +346,7 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         return;
       }
 
-      closeMenu(true);
+      closeMenu();
     };
 
     document.addEventListener('pointerdown', handlePointerDown, {
@@ -295,11 +407,13 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         ref={actionBubbleRef}
         type="button"
         className={bubbleClasses}
-        onClick={onActionBubbleClick}
+        onClick={handleBubbleClick}
         onPointerDown={onActionBubblePointerDown}
         onPointerMove={onActionBubblePointerMove}
         onPointerUp={onFinishActionBubbleDrag}
         onPointerCancel={onFinishActionBubbleDrag}
+        onMouseEnter={handleBubbleMouseEnter}
+        onMouseLeave={handleBubbleMouseLeave}
         aria-label={showActionBubbleMenu ? 'Close launcher' : 'Open launcher'}
         aria-haspopup="dialog"
         aria-expanded={showActionBubbleMenu}
@@ -356,6 +470,8 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
             role="dialog"
             aria-modal="false"
             aria-label="Launcher"
+            onMouseEnter={handlePanelMouseEnter}
+            onMouseLeave={handlePanelMouseLeave}
             style={{
               left: panelPosition.left,
               top: panelPosition.top,
@@ -381,10 +497,12 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
           >
             <ActionPanelContent
               currentUser={currentUser}
+              activeTab={activeTab}
               actionItems={actionItems}
               firstActionRef={firstActionRef}
               onClose={() => closeMenu(true)}
               onItemSelect={runItem}
+              onTabChange={onTabChange}
               showCloseButton
             />
           </motion.div>
@@ -399,10 +517,12 @@ const ActionBubbleLayer: FC<ActionBubbleLayerProps> = ({
         <div id="action-bubble-sheet" className="action-bubble-sheet">
           <ActionPanelContent
             currentUser={currentUser}
+            activeTab={activeTab}
             actionItems={actionItems}
             firstActionRef={firstActionRef}
             onClose={() => closeMenu(true)}
             onItemSelect={runItem}
+            onTabChange={onTabChange}
             showCloseButton={false}
           />
         </div>

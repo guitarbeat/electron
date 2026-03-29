@@ -60,6 +60,8 @@ export interface MovieSuggestion {
   title: string;
   suggestedBy: string; // Any name (not restricted to User type)
   reason?: string; // Optional: "You'd love this because..."
+  imdbID?: string;
+  type?: 'movie' | 'series';
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
   respondedAt?: string;

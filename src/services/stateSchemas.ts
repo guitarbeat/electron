@@ -204,6 +204,9 @@ export const normalizeMemories = (value: unknown): SharedMemory[] =>
 const isSuggestionStatus = (value: unknown): value is MovieSuggestion['status'] =>
   value === 'pending' || value === 'accepted' || value === 'rejected';
 
+const isMovieSuggestionType = (value: unknown): value is NonNullable<MovieSuggestion['type']> =>
+  value === 'movie' || value === 'series';
+
 export const normalizeSuggestionRecord = (value: unknown): MovieSuggestion | null => {
   if (!value || typeof value !== 'object') {
     return null;
@@ -223,6 +226,8 @@ export const normalizeSuggestionRecord = (value: unknown): MovieSuggestion | nul
     id,
     title,
     suggestedBy,
+    imdbID: normalizeOptionalString(suggestion.imdbID),
+    type: isMovieSuggestionType(suggestion.type) ? suggestion.type : undefined,
     status: suggestion.status,
     createdAt,
     reason: normalizeOptionalString(suggestion.reason),

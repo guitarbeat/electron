@@ -1,15 +1,18 @@
 import React, { type FC, type RefObject } from 'react';
+import type { MainTab } from '@/shared/types';
 
 const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
 import Watchlist from '@/components/watchlist';
 
 interface AppWorkspaceShellProps {
   isMobile: boolean;
+  activeTab: MainTab;
   workspaceControlsRef: RefObject<HTMLDivElement | null>;
 }
 
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   isMobile,
+  activeTab,
   workspaceControlsRef,
 }) => {
   return (
@@ -36,29 +39,25 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         />
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1rem' : '1.5rem', minWidth: 0, width: '100%' }}>
-        <section
-          className="workspace-surface workspace-surface--queue"
-          aria-labelledby="movies-section-title"
-          style={{ minWidth: 0 }}
-        >
-          <h1 id="movies-section-title" className="sr-only">Movies</h1>
-          <Watchlist
-            isMobile={isMobile}
-          />
-        </section>
-
-        <section
-          className="workspace-surface workspace-surface--places"
-          aria-labelledby="places-section-title"
-          style={{ minWidth: 0 }}
-        >
-          <h2 id="places-section-title" className="sr-only">Places</h2>
-          <React.Suspense fallback={null}>
-            <PlacesList />
-          </React.Suspense>
-        </section>
-      </div>
+      <section
+        className={`workspace-surface workspace-surface--${activeTab}`}
+        aria-labelledby={activeTab === 'queue' ? 'movies-section-title' : 'places-section-title'}
+        style={{ minWidth: 0 }}
+      >
+        {activeTab === 'queue' ? (
+          <>
+            <h1 id="movies-section-title" className="sr-only">Movies</h1>
+            <Watchlist isMobile={isMobile} />
+          </>
+        ) : (
+          <>
+            <h1 id="places-section-title" className="sr-only">Places</h1>
+            <React.Suspense fallback={null}>
+              <PlacesList />
+            </React.Suspense>
+          </>
+        )}
+      </section>
     </main>
   );
 };
