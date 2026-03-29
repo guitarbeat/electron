@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   MOVIE_AUTOCOMPLETE_RESULT_LIMIT,
+  MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   searchMovieAutocomplete,
 } from './metadataService.ts';
 
@@ -37,13 +38,23 @@ test.afterEach(() => {
   resetWindow();
 });
 
-test('searchMovieAutocomplete normalizes OMDb movie results and caps the list size', async () => {
+test('searchMovieAutocomplete normalizes OMDb movie results and caps the per-source list size', async () => {
   setTestWindow('https://watch.example');
 
   globalThis.fetch = async (input) => {
-    assert.match(String(input), /^https:\/\/watch\.example\/api\/omdb\?/);
-    assert.match(String(input), /s=Heat/);
-    assert.match(String(input), /type=movie/);
+    const url = new URL(String(input));
+    if (url.pathname === '/api/tvmaze') {
+      return new Response('[]', {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+    }
+
+    assert.equal(url.pathname, '/api/omdb');
+    assert.equal(url.searchParams.get('s'), 'Heat');
+    assert.equal(url.searchParams.get('type'), 'movie');
 
     const searchResults = Array.from({ length: MOVIE_AUTOCOMPLETE_RESULT_LIMIT + 2 }, (_, index) => ({
       Title: index === 0 ? 'Heat' : `Heat ${index}`,
@@ -69,7 +80,7 @@ test('searchMovieAutocomplete normalizes OMDb movie results and caps the list si
 
   const results = await searchMovieAutocomplete('  Heat ');
 
-  assert.equal(results.length, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+  assert.equal(results.length, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
   assert.deepEqual(results[0], {
     imdbID: 'tt000000',
     posterUrl: 'https://images.example/heat.jpg',
@@ -80,7 +91,7 @@ test('searchMovieAutocomplete normalizes OMDb movie results and caps the list si
   assert.equal(results[1]?.posterUrl, undefined);
 });
 
-test('searchMovieAutocomplete returns an empty array when OMDb reports no results', async () => {
+test('searchMovieAutocomplete returns an empty array when both providers succeed without matches', async () => {
   setTestWindow('https://watch.example');
 
   globalThis.fetch = async (input) => {
@@ -114,7 +125,7 @@ test('searchMovieAutocomplete returns an empty array when OMDb reports no result
   assert.deepEqual(results, []);
 });
 
-test('searchMovieAutocomplete falls back to TVMaze results when OMDb has no matches', async () => {
+test('searchMovieAutocomplete interleaves OMDb movies with TVMaze series results', async () => {
   setTestWindow('https://watch.example');
 
   globalThis.fetch = async (input) => {
@@ -122,8 +133,14 @@ test('searchMovieAutocomplete falls back to TVMaze results when OMDb has no matc
     if (url.pathname === '/api/omdb') {
       return new Response(
         JSON.stringify({
-          Response: 'False',
-          Error: 'Movie not found!',
+          Response: 'True',
+          Search: Array.from({ length: MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT }, (_, index) => ({
+            Title: `Heat ${index + 1}`,
+            Year: `199${index + 1}`,
+            imdbID: `tt-heat-${index + 1}`,
+            Type: 'movie',
+            Poster: 'N/A',
+          })),
         }),
         {
           status: 200,
@@ -136,7 +153,57 @@ test('searchMovieAutocomplete falls back to TVMaze results when OMDb has no matc
 
     assert.equal(url.pathname, '/api/tvmaze');
     assert.equal(url.searchParams.get('mode'), 'search');
-    assert.equal(url.searchParams.get('q'), 'The Bear');
+    assert.equal(url.searchParams.get('q'), 'Heat');
+    return new Response(
+      JSON.stringify(
+        Array.from({ length: MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT }, (_, index) => ({
+          score: 1,
+          show: {
+            id: index + 1,
+            name: `Heat Series ${index + 1}`,
+            premiered: `200${index + 1}-06-23`,
+            image: {
+              medium: `http://images.example/heat-series-${index + 1}.jpg`,
+              original: `http://images.example/heat-series-${index + 1}-large.jpg`,
+            },
+          },
+        }))
+      ),
+      {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+      }
+    );
+  };
+
+  const results = await searchMovieAutocomplete('Heat');
+
+  assert.equal(results.length, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+  assert.deepEqual(
+    results.map((result) => result.type),
+    ['movie', 'series', 'movie', 'series', 'movie', 'series']
+  );
+  assert.equal(results[0]?.title, 'Heat 1');
+  assert.equal(results[1]?.title, 'Heat Series 1');
+});
+
+test('searchMovieAutocomplete returns partial results when one provider fails', async () => {
+  setTestWindow('https://watch.example');
+
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    if (url.pathname === '/api/omdb') {
+      return new Response(JSON.stringify({ error: 'upstream failure' }), {
+        status: 503,
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+    }
+
+    assert.equal(url.pathname, '/api/tvmaze');
     return new Response(
       JSON.stringify([
         {
@@ -174,7 +241,7 @@ test('searchMovieAutocomplete falls back to TVMaze results when OMDb has no matc
   ]);
 });
 
-test('searchMovieAutocomplete surfaces a precise OMDb auth/config message when fallback is empty', async () => {
+test('searchMovieAutocomplete surfaces a precise error when both providers fail', async () => {
   setTestWindow('https://watch.example');
 
   globalThis.fetch = async (input) => {
@@ -195,8 +262,8 @@ test('searchMovieAutocomplete surfaces a precise OMDb auth/config message when f
     }
 
     assert.equal(url.pathname, '/api/tvmaze');
-    return new Response('[]', {
-      status: 200,
+    return new Response(JSON.stringify({ error: 'TVMaze unavailable' }), {
+      status: 503,
       headers: {
         'content-type': 'application/json',
       },

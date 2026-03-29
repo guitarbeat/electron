@@ -1,7 +1,67 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { normalizePlaceSuggestionRecord, normalizePlaceSuggestions } from './stateSchemas.ts';
+import {
+  normalizePlaceSuggestionRecord,
+  normalizePlaceSuggestions,
+  normalizeSuggestionRecord,
+  normalizeSuggestions,
+} from './stateSchemas.ts';
+
+test('normalizeSuggestionRecord', async (t) => {
+  await t.test('accepts valid suggestion records with optional selection metadata', () => {
+    const raw = {
+      id: 's1',
+      title: 'Heat',
+      suggestedBy: 'Aaron',
+      imdbID: 'tt0113277',
+      type: 'movie',
+      status: 'pending',
+      createdAt: '2026-03-27T10:00:00.000Z',
+    };
+
+    const normalized = normalizeSuggestionRecord(raw);
+    assert.notEqual(normalized, null);
+    assert.equal(normalized?.imdbID, 'tt0113277');
+    assert.equal(normalized?.type, 'movie');
+  });
+
+  await t.test('drops invalid selection metadata while keeping the suggestion', () => {
+    const raw = {
+      id: 's1',
+      title: 'Heat',
+      suggestedBy: 'Aaron',
+      imdbID: 42,
+      type: 'unknown',
+      status: 'pending',
+      createdAt: '2026-03-27T10:00:00.000Z',
+    };
+
+    const normalized = normalizeSuggestionRecord(raw);
+    assert.notEqual(normalized, null);
+    assert.equal(normalized?.imdbID, undefined);
+    assert.equal(normalized?.type, undefined);
+  });
+});
+
+test('normalizeSuggestions keeps valid suggestion records', () => {
+  const normalized = normalizeSuggestions([
+    {
+      id: 's1',
+      title: 'Heat',
+      suggestedBy: 'Aaron',
+      imdbID: 'tt0113277',
+      type: 'movie',
+      status: 'pending',
+      createdAt: '2026-03-27T10:00:00.000Z',
+    },
+    { invalid: 'record' },
+  ]);
+
+  assert.equal(normalized.length, 1);
+  assert.equal(normalized[0]?.imdbID, 'tt0113277');
+  assert.equal(normalized[0]?.type, 'movie');
+});
 
 test('normalizePlaceSuggestionRecord', async (t) => {
   await t.test('accepts valid record', () => {

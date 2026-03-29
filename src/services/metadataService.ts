@@ -20,6 +20,7 @@ const TVMAZE_BASE = resolveConfig(env.VITE_TVMAZE_API_URL, TVMAZE_DEFAULT_BASE_U
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
 export const AUTOCOMPLETE_REQUEST_TIMEOUT_MS = 2500;
 export const MOVIE_AUTOCOMPLETE_RESULT_LIMIT = 6;
+export const MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT = 3;
 const OMDB_AUTH_FAILURE_CODE = 'omdb_auth';
 const OMDB_CONFIG_FAILURE_CODE = 'omdb_config';
 
@@ -397,6 +398,45 @@ const toMovieAutocompleteResultFromTvMaze = (
   };
 };
 
+const getMovieAutocompleteResultKey = (result: MovieAutocompleteResult): string =>
+  `${sanitizeInput(result.title).toLowerCase()}|${sanitizeInput(result.year || '').toLowerCase()}|${result.type}`;
+
+export const mergeMovieAutocompleteResults = (
+  movieResults: MovieAutocompleteResult[],
+  seriesResults: MovieAutocompleteResult[]
+): MovieAutocompleteResult[] => {
+  const dedupedResults: MovieAutocompleteResult[] = [];
+  const seen = new Set<string>();
+  const limitedMovieResults = movieResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
+  const limitedSeriesResults = seriesResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
+  const maxLength = Math.max(limitedMovieResults.length, limitedSeriesResults.length);
+
+  const pushResult = (result?: MovieAutocompleteResult) => {
+    if (!result) {
+      return;
+    }
+
+    const key = getMovieAutocompleteResultKey(result);
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    dedupedResults.push(result);
+  };
+
+  for (let index = 0; index < maxLength; index += 1) {
+    pushResult(limitedMovieResults[index]);
+    pushResult(limitedSeriesResults[index]);
+
+    if (dedupedResults.length >= MOVIE_AUTOCOMPLETE_RESULT_LIMIT) {
+      break;
+    }
+  }
+
+  return dedupedResults.slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+};
+
 const readJsonSafely = async <T>(response: Response): Promise<T | null> => {
   try {
     return (await response.json()) as T;
@@ -442,7 +482,45 @@ const searchTvMazeAutocomplete = async (
   return tvmazeData
     .map(toMovieAutocompleteResultFromTvMaze)
     .filter((result): result is MovieAutocompleteResult => result !== null)
-    .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
+    .slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
+};
+
+const searchOmdbMovieAutocomplete = async (
+  query: string,
+  signal?: AbortSignal
+): Promise<MovieAutocompleteResult[]> => {
+  const omdbSearchUrl = buildOmdbUrl({ s: query, type: 'movie' });
+  if (!omdbSearchUrl) {
+    return [];
+  }
+
+  const omdbRes = await fetchWithRetry(
+    omdbSearchUrl,
+    0,
+    250,
+    AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
+    signal
+  );
+
+  if (!omdbRes.ok) {
+    const errorBody = await readJsonSafely<ProxyErrorResponse>(omdbRes);
+    const failureMessage = getOmdbAutocompleteFailureMessage(errorBody);
+    if (failureMessage) {
+      throw new Error(failureMessage);
+    }
+
+    throw new Error(`OMDb search failed with status ${omdbRes.status}`);
+  }
+
+  const omdbData: OmdbSearchResponse = await omdbRes.json();
+  if (omdbData.Response !== 'True' || !Array.isArray(omdbData.Search)) {
+    return [];
+  }
+
+  return omdbData.Search
+    .map(toMovieAutocompleteResultFromOmdb)
+    .filter((result): result is MovieAutocompleteResult => result !== null)
+    .slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
 };
 
 export const searchMovieAutocomplete = async (
@@ -454,72 +532,49 @@ export const searchMovieAutocomplete = async (
     return [];
   }
 
-  const omdbSearchUrl = buildOmdbUrl({ s: cleanQuery, type: 'movie' });
-  if (!omdbSearchUrl) {
-    return [];
+  const [omdbResult, tvMazeResult] = await Promise.allSettled([
+    searchOmdbMovieAutocomplete(cleanQuery, options.signal),
+    searchTvMazeAutocomplete(cleanQuery, options.signal),
+  ]);
+
+  if (omdbResult.status === 'rejected' && !isAbortLikeError(omdbResult.reason)) {
+    const message = omdbResult.reason instanceof Error ? omdbResult.reason.message : String(omdbResult.reason);
+    if (message && !isTimeoutLikeError(omdbResult.reason)) {
+      console.warn(`OMDb autocomplete failed for "${cleanQuery}": ${message}`);
+    }
   }
 
-  let omdbFailureMessage: string | null = null;
-  let omdbResults: MovieAutocompleteResult[] = [];
+  if (tvMazeResult.status === 'rejected' && !isAbortLikeError(tvMazeResult.reason)) {
+    const message = tvMazeResult.reason instanceof Error ? tvMazeResult.reason.message : String(tvMazeResult.reason);
+    if (message && !isTimeoutLikeError(tvMazeResult.reason)) {
+      console.warn(`TVMaze autocomplete failed for "${cleanQuery}": ${message}`);
+    }
+  }
 
-  try {
-    const omdbRes = await fetchWithRetry(
-      omdbSearchUrl,
-      0,
-      250,
-      AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
-      options.signal
+  const allFailures =
+    omdbResult.status === 'rejected' && tvMazeResult.status === 'rejected';
+  if (allFailures) {
+    const firstAbortError = [omdbResult.reason, tvMazeResult.reason].find((error) =>
+      isAbortLikeError(error)
     );
-    if (!omdbRes.ok) {
-      const errorBody = await readJsonSafely<ProxyErrorResponse>(omdbRes);
-      omdbFailureMessage = getOmdbAutocompleteFailureMessage(errorBody);
-      if (!omdbFailureMessage) {
-        throw new Error(`OMDb search failed with status ${omdbRes.status}`);
-      }
-    } else {
-      const omdbData: OmdbSearchResponse = await omdbRes.json();
-      if (omdbData.Response === 'True' && Array.isArray(omdbData.Search)) {
-        omdbResults = omdbData.Search
-          .map(toMovieAutocompleteResultFromOmdb)
-          .filter((result): result is MovieAutocompleteResult => result !== null)
-          .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
-      }
-    }
-  } catch (error) {
-    if (isAbortLikeError(error)) {
-      throw error;
+    if (firstAbortError && [omdbResult.reason, tvMazeResult.reason].every((error) => isAbortLikeError(error))) {
+      throw firstAbortError;
     }
 
-    if (error instanceof Error && error.message && !isTimeoutLikeError(error)) {
-      console.warn(`OMDb autocomplete failed for "${cleanQuery}": ${error.message}`);
-    }
-    omdbFailureMessage = 'Movie suggestions are unavailable right now.';
+    const preferredError = [omdbResult.reason, tvMazeResult.reason].find(
+      (error) => error instanceof Error
+    );
+    throw preferredError instanceof Error
+      ? preferredError
+      : new Error('Movie suggestions are unavailable right now.');
   }
 
-  if (omdbResults.length > 0) {
-    return omdbResults;
-  }
+  const omdbResults =
+    omdbResult.status === 'fulfilled' ? omdbResult.value : [];
+  const tvMazeResults =
+    tvMazeResult.status === 'fulfilled' ? tvMazeResult.value : [];
 
-  try {
-    const tvMazeResults = await searchTvMazeAutocomplete(cleanQuery, options.signal);
-    if (tvMazeResults.length > 0) {
-      return tvMazeResults;
-    }
-  } catch (error) {
-    if (isAbortLikeError(error)) {
-      throw error;
-    }
-
-    if (error instanceof Error && error.message && !isTimeoutLikeError(error)) {
-      console.warn(`TVMaze autocomplete failed for "${cleanQuery}": ${error.message}`);
-    }
-  }
-
-  if (omdbFailureMessage) {
-    throw new Error(omdbFailureMessage);
-  }
-
-  return [];
+  return mergeMovieAutocompleteResults(omdbResults, tvMazeResults);
 };
 
 export const fetchMovieMetadata = async (

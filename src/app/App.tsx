@@ -17,7 +17,9 @@ import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
 import { BrainIcon, MessageIcon, NoteIcon, SpinIcon } from '@/common/icons';
+import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import type { MainTab } from '@/shared/types';
 import type { CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
@@ -37,10 +39,11 @@ const getViewportSize = () => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
+  const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const activeTab = 'queue';
+  const [activeTab, setActiveTab] = useState<MainTab>('queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(
     () => localStorage.getItem('quizCompleted') === 'true'
   );
@@ -107,8 +110,8 @@ const App: React.FC = () => {
   }, [isMobile]);
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', 'movies');
-  }, []);
+    document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
+  }, [activeTab]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -147,6 +150,19 @@ const App: React.FC = () => {
     localStorage.setItem('quizCompleted', 'true');
     setShowQuizFlow(false);
   }, []);
+
+  const handleTabChange = useCallback(
+    (tab: MainTab) => {
+      if (tab === activeTab) {
+        return;
+      }
+
+      playSwitch();
+      setShowActionBubbleMenu(false);
+      setActiveTab(tab);
+    },
+    [activeTab, playSwitch]
+  );
 
   const featureModals = useMemo(
     () =>
@@ -339,8 +355,10 @@ const App: React.FC = () => {
               actionBubblePosition={actionBubblePosition}
               isDraggingActionBubble={isDraggingActionBubble}
               isMobile={isMobile}
+              activeTab={activeTab}
               showActionBubbleMenu={showActionBubbleMenu}
               onToggleMenu={setShowActionBubbleMenu}
+              onTabChange={handleTabChange}
               actionItems={actionItems}
               onActionBubbleClick={handleActionBubbleClick}
               onActionBubblePointerDown={handleActionBubblePointerDown}
@@ -352,6 +370,7 @@ const App: React.FC = () => {
             <React.Suspense fallback={null}>
               <AppWorkspaceShell
                 isMobile={isMobile}
+                activeTab={activeTab}
                 workspaceControlsRef={workspaceControlsRef}
               />
             </React.Suspense>

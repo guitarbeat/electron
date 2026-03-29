@@ -159,6 +159,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, [searchQuery]);
 
   const handleAddAction = useCallback(async () => {
+    if (isAdding || isSubmittingRecommendation) {
+      return;
+    }
+
     const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
       return;
@@ -170,6 +174,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         const suggestion = await submitRecommendation({
           title,
           suggestedBy: guestName.trim() || undefined,
+          selectedResult: selectedAutocompleteResult,
         });
         setSearchQuery('');
         setSelectedAutocompleteResult(null);
@@ -177,6 +182,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           message: `"${title}" sent to suggestions as ${suggestion.suggestedBy}.`,
           type: 'success',
         });
+        window.requestAnimationFrame(focusSearchInput);
       } catch (error) {
         setToast({
           message: error instanceof Error ? error.message : 'Failed to send suggestion',
@@ -199,8 +205,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         message: `"${title}" added to watchlist!`,
         type: 'success',
       });
-    } catch {
-      setToast({ message: 'Failed to add movie', type: 'error' });
+      window.requestAnimationFrame(focusSearchInput);
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to add movie',
+        type: 'error',
+      });
     } finally {
       setIsAdding(false);
     }
@@ -208,6 +218,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     addMovie,
     currentUser,
     guestName,
+    focusSearchInput,
+    isAdding,
+    isSubmittingRecommendation,
     searchQuery,
     selectedAutocompleteResult,
     setIsAdding,
@@ -219,6 +232,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   ]);
 
   const handleSubmitRecommendation = useCallback(async () => {
+    if (isAdding || isSubmittingRecommendation) {
+      return;
+    }
+
     const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
       return;
@@ -231,6 +248,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         title,
         reason: recommendationReason,
         suggestedBy: guestName.trim() || undefined,
+        selectedResult: selectedAutocompleteResult,
       });
       resetRecommendationComposer();
       setSearchQuery('');
@@ -241,13 +259,17 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           : `"${title}" sent to suggestions${guestName.trim() ? ` as ${guestName.trim()}` : ''}!`,
         type: 'success',
       });
+      window.requestAnimationFrame(focusSearchInput);
     } catch (error) {
       setSuggestionError(error instanceof Error ? error.message : 'Failed to add suggestion');
       setToast({ message: 'Failed to add suggestion', type: 'error' });
     }
   }, [
     currentUser,
+    focusSearchInput,
     guestName,
+    isAdding,
+    isSubmittingRecommendation,
     recommendationReason,
     resetRecommendationComposer,
     searchQuery,

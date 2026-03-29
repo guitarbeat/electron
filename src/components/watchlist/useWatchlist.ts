@@ -6,6 +6,7 @@ import {
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
 } from '@/services/memoryService';
+import type { MovieAutocompleteResult } from '@/services/metadataService';
 import { usePolling } from '@/services/polling';
 import { Movie, MovieSuggestion, User } from '@/shared/types';
 import { useMovies } from '@/hooks/useMovies';
@@ -33,7 +34,21 @@ interface SubmitRecommendationInput {
   title: string;
   reason?: string;
   suggestedBy?: string;
+  selectedResult?: Pick<MovieAutocompleteResult, 'imdbID' | 'type'> | null;
 }
+
+export const getMovieSelectionFromSuggestion = (
+  suggestion: Pick<MovieSuggestion, 'imdbID' | 'type'>
+): Pick<MovieAutocompleteResult, 'imdbID' | 'type'> | undefined => {
+  if (!suggestion.imdbID || !suggestion.type) {
+    return undefined;
+  }
+
+  return {
+    imdbID: suggestion.imdbID,
+    type: suggestion.type,
+  };
+};
 
 export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -176,11 +191,12 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
       title,
       reason,
       suggestedBy,
+      selectedResult,
     }: SubmitRecommendationInput): Promise<MovieSuggestion> => {
       setIsSubmittingRecommendation(true);
 
       try {
-        const suggestion = await addSuggestion(title, reason, suggestedBy);
+        const suggestion = await addSuggestion(title, reason, suggestedBy, selectedResult);
         trackMetric('suggestion_submitted');
         return suggestion;
       } finally {
@@ -204,7 +220,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
       setProcessingSuggestionId(suggestionId);
 
       try {
-        await addMovie(suggestion.title);
+        await addMovie(suggestion.title, getMovieSelectionFromSuggestion(suggestion));
         await acceptSuggestion(suggestionId, currentUser);
         trackMetric('suggestion_accepted');
         return suggestion;

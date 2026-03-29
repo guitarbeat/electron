@@ -19,8 +19,11 @@ import {
 import RecommendationComposer from './RecommendationComposer';
 import {
   getNextMovieAutocompleteIndex,
+  getMovieAutocompleteEnterSelectionIndex,
+  hasStoredMovieAutocompleteFeedback,
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
+  normalizeMovieAutocompleteQuery,
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './watchlistAutocomplete';
@@ -75,18 +78,20 @@ const WatchlistTopControls = React.forwardRef<
 }, forwardedRef) => {
   const hasSearchQuery = Boolean(searchQuery.trim());
   const isBusy = isAdding || isSubmittingRecommendation;
-  const searchFormRef = useRef<HTMLFormElement | null>(null);
+  const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
+  const focusBoundaryFrameRef = useRef<number | null>(null);
   const autocompleteRequestIdRef = useRef(0);
-  const suppressAutocompleteReopenRef = useRef(false);
   const autocompleteListId = useId();
+  const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
   const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
-  const [hasAutocompleteFocus, setHasAutocompleteFocus] = useState(false);
+  const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
   const trimmedSearchQuery = searchQuery.trim();
+  const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
@@ -116,8 +121,27 @@ const WatchlistTopControls = React.forwardRef<
     []
   );
 
-  const closeAutocomplete = useCallback(() => {
+  const clearFocusBoundaryCheck = useCallback(() => {
+    if (focusBoundaryFrameRef.current !== null) {
+      window.cancelAnimationFrame(focusBoundaryFrameRef.current);
+      focusBoundaryFrameRef.current = null;
+    }
+  }, []);
+
+  const openAutocomplete = useCallback(() => {
+    setIsAutocompleteOpen(true);
+    setActiveAutocompleteIndex(-1);
+  }, []);
+
+  const hideAutocomplete = useCallback(() => {
+    setIsAutocompleteOpen(false);
+    setActiveAutocompleteIndex(-1);
+    setIsAutocompleteLoading(false);
+  }, []);
+
+  const resetAutocomplete = useCallback(() => {
     autocompleteRequestIdRef.current += 1;
+    setAutocompleteQuery('');
     setAutocompleteResults([]);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(false);
@@ -127,16 +151,11 @@ const WatchlistTopControls = React.forwardRef<
 
   const selectAutocompleteResult = useCallback(
     (result: MovieAutocompleteResult) => {
-      suppressAutocompleteReopenRef.current = true;
       setSelectedAutocompleteResult(result);
       setSearchQuery(result.title);
-      closeAutocomplete();
-      internalSearchInputRef.current?.focus();
-      Promise.resolve().then(() => {
-        suppressAutocompleteReopenRef.current = false;
-      });
+      hideAutocomplete();
     },
-    [closeAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
+    [hideAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
   );
 
   useEffect(() => {
@@ -146,9 +165,9 @@ const WatchlistTopControls = React.forwardRef<
         return;
       }
 
-      if (!searchFormRef.current?.contains(target)) {
-        setHasAutocompleteFocus(false);
-        closeAutocomplete();
+      if (!autocompleteRegionRef.current?.contains(target)) {
+        setIsAutocompleteRegionFocused(false);
+        hideAutocomplete();
       }
     };
 
@@ -156,17 +175,31 @@ const WatchlistTopControls = React.forwardRef<
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
     };
-  }, [closeAutocomplete]);
+  }, [hideAutocomplete]);
+
+  useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
 
   useEffect(() => {
-    if (!hasAutocompleteFocus || !shouldFetchMovieAutocomplete(trimmedSearchQuery, selectedAutocompleteResult)) {
-      closeAutocomplete();
+    if (!isAutocompleteRegionFocused) {
+      hideAutocomplete();
+      return;
+    }
+
+    if (normalizedSearchQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
+      resetAutocomplete();
+      return;
+    }
+
+    if (!shouldFetchMovieAutocomplete(trimmedSearchQuery, selectedAutocompleteResult)) {
       return;
     }
 
     const abortController = new AbortController();
     const requestId = autocompleteRequestIdRef.current + 1;
     autocompleteRequestIdRef.current = requestId;
+    setAutocompleteQuery(normalizedSearchQuery);
+    setAutocompleteResults([]);
+    setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(true);
     setIsAutocompleteLoading(true);
     setAutocompleteError(null);
@@ -180,6 +213,7 @@ const WatchlistTopControls = React.forwardRef<
           return;
         }
 
+        setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults(nextResults);
         setActiveAutocompleteIndex(-1);
       } catch (error) {
@@ -187,6 +221,7 @@ const WatchlistTopControls = React.forwardRef<
           return;
         }
 
+        setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults([]);
         setActiveAutocompleteIndex(-1);
         setAutocompleteError(
@@ -205,14 +240,31 @@ const WatchlistTopControls = React.forwardRef<
       window.clearTimeout(timeoutId);
       abortController.abort();
     };
-  }, [closeAutocomplete, hasAutocompleteFocus, selectedAutocompleteResult, trimmedSearchQuery]);
+  }, [
+    hideAutocomplete,
+    isAutocompleteRegionFocused,
+    normalizedSearchQuery,
+    resetAutocomplete,
+    selectedAutocompleteResult,
+    trimmedSearchQuery,
+  ]);
 
   const hasAutocompleteFeedback = useMemo(
     () =>
       isAutocompleteLoading ||
-      autocompleteError !== null ||
-      autocompleteResults.length > 0,
-    [autocompleteError, autocompleteResults.length, isAutocompleteLoading]
+      hasStoredMovieAutocompleteFeedback(
+        trimmedSearchQuery,
+        autocompleteQuery,
+        autocompleteResults.length,
+        autocompleteError
+      ),
+    [
+      autocompleteError,
+      autocompleteQuery,
+      autocompleteResults.length,
+      isAutocompleteLoading,
+      trimmedSearchQuery,
+    ]
   );
 
   return (
@@ -224,15 +276,36 @@ const WatchlistTopControls = React.forwardRef<
     >
       <div className="watchlist-top-controls__toolbar">
         <form
-          ref={searchFormRef}
           className="watchlist-top-controls__search-form"
           onSubmit={(event) => {
             event.preventDefault();
-            closeAutocomplete();
+            clearFocusBoundaryCheck();
+            hideAutocomplete();
+            internalSearchInputRef.current?.blur();
             void onSubmit();
           }}
         >
-          <div className="watchlist-top-controls__search-shell">
+          <div
+            ref={autocompleteRegionRef}
+            className="watchlist-top-controls__search-shell"
+            onFocusCapture={() => {
+              clearFocusBoundaryCheck();
+              setIsAutocompleteRegionFocused(true);
+            }}
+            onBlurCapture={() => {
+              clearFocusBoundaryCheck();
+              focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
+                focusBoundaryFrameRef.current = null;
+                const nextIsFocused = Boolean(
+                  autocompleteRegionRef.current?.contains(document.activeElement)
+                );
+                setIsAutocompleteRegionFocused(nextIsFocused);
+                if (!nextIsFocused) {
+                  hideAutocomplete();
+                }
+              });
+            }}
+          >
             <Input
               ref={internalSearchInputRef}
               className="watchlist-top-controls__search-field"
@@ -245,16 +318,17 @@ const WatchlistTopControls = React.forwardRef<
                 }
               }}
               onFocus={() => {
-                setHasAutocompleteFocus(true);
                 if (
-                  !suppressAutocompleteReopenRef.current &&
-                  trimmedSearchQuery.length >= MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH &&
                   hasAutocompleteFeedback
                 ) {
-                  setIsAutocompleteOpen(true);
+                  openAutocomplete();
                 }
               }}
               onKeyDown={(event) => {
+                if (event.nativeEvent.isComposing) {
+                  return;
+                }
+
                 if (event.key === 'ArrowDown') {
                   if (autocompleteResults.length === 0) {
                     return;
@@ -284,24 +358,22 @@ const WatchlistTopControls = React.forwardRef<
                 if (event.key === 'Escape') {
                   if (isAutocompleteOpen) {
                     event.preventDefault();
-                    closeAutocomplete();
+                    hideAutocomplete();
                   }
                   return;
                 }
 
-                if (event.key === 'Tab') {
-                  closeAutocomplete();
-                  return;
-                }
+                if (event.key === 'Enter' && isAutocompleteOpen) {
+                  const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
+                    activeAutocompleteIndex,
+                    autocompleteResults.length
+                  );
+                  if (selectedIndex < 0 || !autocompleteResults[selectedIndex]) {
+                    return;
+                  }
 
-                if (
-                  event.key === 'Enter' &&
-                  isAutocompleteOpen &&
-                  activeAutocompleteIndex >= 0 &&
-                  autocompleteResults[activeAutocompleteIndex]
-                ) {
                   event.preventDefault();
-                  selectAutocompleteResult(autocompleteResults[activeAutocompleteIndex]);
+                  selectAutocompleteResult(autocompleteResults[selectedIndex]);
                 }
               }}
               placeholder="Add a movie or show title"
@@ -344,6 +416,9 @@ const WatchlistTopControls = React.forwardRef<
                       className={`watchlist-top-controls__autocomplete-option ${
                         index === activeAutocompleteIndex ? 'is-active' : ''
                       }`}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                      }}
                       onMouseEnter={() => setActiveAutocompleteIndex(index)}
                       onClick={() => selectAutocompleteResult(result)}
                     >
@@ -385,7 +460,7 @@ const WatchlistTopControls = React.forwardRef<
                 size="md"
                 isLoading={isAdding}
                 loadingText="Adding"
-                disabled={isSubmittingRecommendation}
+                disabled={isBusy}
                 title={primaryActionTitle}
                 aria-label={primaryActionTitle}
                 className="watchlist-top-controls__search-button"
@@ -398,7 +473,7 @@ const WatchlistTopControls = React.forwardRef<
                 variant="ghost"
                 size="md"
                 onClick={() => {
-                  closeAutocomplete();
+                  hideAutocomplete();
                   onRecommend();
                 }}
                 disabled={isBusy || !canRecommend}

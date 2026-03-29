@@ -13,6 +13,7 @@ import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 import { getMovieActionState, type MovieActionState } from './movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
+import { INITIAL_VISIBLE_COUNT } from '@/memories/memoryUtils';
 
 interface MovieCardProps {
   movie: Movie;
@@ -509,11 +510,18 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
   const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
   const [draftNote, setDraftNote] = React.useState('');
   const [submitSuccess, setSubmitSuccess] = React.useState(false);
+  const [visibleCount, setVisibleCount] = React.useState(() =>
+    Math.min(INITIAL_VISIBLE_COUNT, memories.length)
+  );
   const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
   const memoriesListRef = React.useRef<HTMLDivElement>(null);
   const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
   const canSubmitNote =
     !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
+
+  React.useEffect(() => {
+    setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+  }, [memories.length, movie.id]);
 
   const handleMemorySubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -616,7 +624,7 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
         <div ref={memoriesListRef}>
           <MemoryList
             memories={memories}
-            visibleMemories={memories}
+            visibleMemories={memories.slice(0, visibleCount)}
             sortedMemories={memories}
             contextMovieTitle={movie.title}
             currentUser={currentUser}
@@ -641,9 +649,15 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
             onActiveMovieFilterChange={() => {}}
             sortMode="newest"
             onSortModeChange={() => {}}
-            onShowMore={() => {}}
-            onShowLess={() => {}}
-            visibleCount={100}
+            onShowMore={() => {
+              setVisibleCount((current) =>
+                Math.min(current + INITIAL_VISIBLE_COUNT, memories.length)
+              );
+            }}
+            onShowLess={() => {
+              setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+            }}
+            visibleCount={visibleCount}
             isLoading={false}
             memoriesError={null}
             onJumpToMovie={() => {}}
