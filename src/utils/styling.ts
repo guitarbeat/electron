@@ -12,6 +12,24 @@ export const breakpoints = {
 /**
  * Theme-aware color utilities
  */
+const normalizeHex = (color: string): string => {
+  // Remove # if present
+  const hex = color.replace('#', '');
+  
+  // Handle 3-digit hex
+  if (hex.length === 3) {
+    return '#' + hex.split('').map(char => char + char).join('');
+  }
+  
+  // Handle 6-digit hex
+  if (hex.length === 6) {
+    return '#' + hex;
+  }
+  
+  // Invalid hex, return as-is (might be a named color)
+  return color;
+};
+
 export const colorUtils = {
   /**
    * Get color with opacity
@@ -76,6 +94,39 @@ export const layouts = {
   inlineStack: (gap: string = spacing.md) => ({
     display: 'flex',
     alignItems: 'center',
+    gap,
+  }),
+
+  /**
+   * Flex row layout
+   */
+  flexRow: (justifyContent: string = 'flex-start', alignItems: string = 'center', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'row' as const,
+    justifyContent,
+    alignItems,
+    gap,
+  }),
+
+  /**
+   * Flex column layout
+   */
+  flexColumn: (justifyContent: string = 'flex-start', alignItems: string = 'stretch', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent,
+    alignItems,
+    gap,
+  }),
+
+  /**
+   * Space between layout
+   */
+  spaceBetween: (direction: 'row' | 'column' = 'row', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: direction,
+    justifyContent: 'space-between',
+    alignItems: direction === 'row' ? 'center' : 'stretch',
     gap,
   }),
 };

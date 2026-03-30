@@ -1,14 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { sanitizeInput } from '../utils/index.ts';
 import type { PlaceSuggestion, User } from '../shared/types.ts';
 import { useUser } from '@/app/providers';
-import { useSuggestionsBase } from './useSuggestionsBase';
+import { useCollection } from './useCollection';
 
 export const usePlaceSuggestions = (isPaused: boolean = false) => {
   const { currentUser } = useUser();
   const {
-    suggestions,
-    pendingSuggestions,
+    data: suggestions,
     isLoading,
     isSubmitting,
     error,
@@ -17,9 +16,38 @@ export const usePlaceSuggestions = (isPaused: boolean = false) => {
     syncWarning,
     refresh,
     retrySync,
-    respondToSuggestion,
     performMutation,
-  } = useSuggestionsBase<PlaceSuggestion>('placeSuggestions', currentUser, isPaused);
+  } = useCollection<PlaceSuggestion>('placeSuggestions', currentUser, { pollingInterval: 60000, isPaused });
+
+  const pendingSuggestions = useMemo(
+    () => suggestions.filter((s) => s.status === 'pending'),
+    [suggestions]
+  );
+
+  const respondToSuggestion = useCallback(
+    async (suggestionId: string, status: 'accepted' | 'rejected', respondedBy: User, op: string) => {
+      const suggestion = suggestions.find((entry) => entry.id === suggestionId);
+      if (!suggestion) {
+        throw new Error('Suggestion not found');
+      }
+
+      await performMutation(
+        op,
+        { suggestionId },
+        suggestions.map((entry) =>
+          entry.id === suggestionId
+            ? {
+                ...entry,
+                status,
+                respondedAt: new Date().toISOString(),
+                respondedBy,
+              }
+            : entry
+        )
+      );
+    },
+    [performMutation, suggestions]
+  );
 
   const addPlaceSuggestion = useCallback(
     async (name: string, notes?: string, metadata?: Partial<PlaceSuggestion>): Promise<PlaceSuggestion> => {
@@ -59,17 +87,15 @@ export const usePlaceSuggestions = (isPaused: boolean = false) => {
   const acceptPlaceSuggestion = useCallback(
     async (suggestionId: string, respondedBy: User): Promise<void> => {
       await respondToSuggestion(suggestionId, 'accepted', respondedBy, 'accept_place_suggestion');
-      refresh();
     },
-    [refresh, respondToSuggestion]
+    [respondToSuggestion]
   );
 
   const rejectPlaceSuggestion = useCallback(
     async (suggestionId: string, respondedBy: User): Promise<void> => {
       await respondToSuggestion(suggestionId, 'rejected', respondedBy, 'reject_place_suggestion');
-      refresh();
     },
-    [refresh, respondToSuggestion]
+    [respondToSuggestion]
   );
 
   return {

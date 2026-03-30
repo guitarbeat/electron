@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback, useImperativeHandle } from 'react';
 import { User, Movie } from '@/shared/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
-import { useMovies } from '@/hooks/useMovies';
+import { useMovies } from '@/hooks/movies';
 import { useToast } from '@/app/providers';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import SyncBanner from '@/components/ui/SyncBanner';
-import { randomUtils } from '@/utils/random';
+import { randomUtils } from '@/utils';
 import {
   colors,
   spacing,
