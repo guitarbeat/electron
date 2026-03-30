@@ -78,7 +78,7 @@ export const getShellActionMeta = ({
     {
       id: 'spin-match',
       label: 'Spin & Match',
-      description: 'Swipe together, then spin for a pick.',
+      description: 'Keep a subset, then spin that pool.',
     },
   ];
 };

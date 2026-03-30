@@ -188,8 +188,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     if (!pendingUser) return false;
     setIsVerifying(true);
     try {
-      const isValid = await verifyUserPin(pendingUser, pin);
-      if (isValid) {
+      const didSet = await setCurrentUser(pendingUser, pin);
+      if (didSet) {
         onUserSelected?.(pendingUser);
         setPendingUser(null);
         return true;

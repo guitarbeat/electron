@@ -3,6 +3,7 @@ import { Spinner } from '@/common/icons';
 import { MAX_MESSAGE_LENGTH } from '@/utils';
 import type { User } from '@/shared/types';
 import { spacing } from '@/theme/tokens';
+import { shouldSubmitMessageOnKeyDown } from './messageKeyboard';
 
 interface MessageInputProps {
   currentUser: User | null;
@@ -61,7 +62,15 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    if (
+      shouldSubmitMessageOnKeyDown({
+        key: event.key,
+        shiftKey: event.shiftKey,
+        metaKey: event.metaKey,
+        ctrlKey: event.ctrlKey,
+        isComposing: event.nativeEvent.isComposing,
+      })
+    ) {
       event.preventDefault();
       event.currentTarget.form?.requestSubmit();
     }
@@ -149,7 +158,19 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 transition: 'border-color 0.2s ease',
                 overflow: 'hidden',
               }}
-            />
+              />
+
+            <div
+              style={{
+                marginTop: '6px',
+                fontSize: '12px',
+                color: '#8e8e93',
+                fontFamily:
+                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+              }}
+            >
+              Enter to send. Shift+Enter for a new line.
+            </div>
 
             {content.length > MAX_MESSAGE_LENGTH * 0.8 ? (
               <div

@@ -7,6 +7,10 @@ import {
   buildSpinWheelGradient,
   computeSpinOutcome,
 } from '@/components/spinWheel/spinWheelEngine';
+import {
+  canSpinFromSubset,
+  getSpinSubsetPrompt,
+} from './spinMatchGame';
 
 type Phase = 'swipe' | 'spin' | 'result';
 
@@ -304,11 +308,13 @@ function SpinWheel({
 function ResultScreen({ 
   winner, 
   onReset, 
-  onWinnerClick 
+  onWinnerClick,
+  subsetCount,
 }: { 
   winner: Movie; 
   onReset: () => void;
   onWinnerClick?: (movie: Movie) => void;
+  subsetCount: number;
 }) {
   return (
     <div
@@ -330,6 +336,18 @@ function ResultScreen({
         }}
       >
         Tonight's pick 🎉
+      </p>
+
+      <p
+        style={{
+          color: 'var(--color-text-secondary)',
+          fontSize: '0.8rem',
+          margin: 0,
+          textAlign: 'center',
+          maxWidth: 220,
+        }}
+      >
+        Picked from a {subsetCount}-movie subset.
       </p>
 
       <div
@@ -446,6 +464,8 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const isDone = currentIndex >= candidates.length;
   const currentMovie = isDone ? null : candidates[currentIndex];
   const nextMovie = candidates[currentIndex + 1] ?? null;
+  const canSpinSubsetNow = canSpinFromSubset(kept.length);
+  const subsetPrompt = getSpinSubsetPrompt(kept.length, isDone);
 
   useEffect(() => {
     onSpinningChange?.(isSpinning);
@@ -492,7 +512,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   };
 
   const handleSpin = useCallback(() => {
-    if (isSpinning || kept.length < 1) return;
+    if (isSpinning || !canSpinFromSubset(kept.length)) return;
     const outcome = computeSpinOutcome(kept, rotation);
     if (!outcome) return;
     setIsSpinning(true);
@@ -532,7 +552,12 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   if (phase === 'result' && winner) {
     return (
       <>
-        <ResultScreen winner={winner} onReset={handleReset} onWinnerClick={setModalMovie} />
+        <ResultScreen
+          winner={winner}
+          subsetCount={kept.length}
+          onReset={handleReset}
+          onWinnerClick={setModalMovie}
+        />
         {modalMovie && (
           <MovieDetailsModal
             movie={modalMovie}
@@ -572,6 +597,104 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
         total={candidates.length}
         kept={kept.length}
       />
+
+      <div
+        style={{
+          width: '100%',
+          padding: '0.75rem 0.9rem',
+          borderRadius: 16,
+          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255,255,255,0.04)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.65rem',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.85rem', alignItems: 'baseline' }}>
+          <div>
+            <p
+              style={{
+                margin: 0,
+                color: 'var(--color-text-secondary)',
+                fontSize: '0.68rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+              }}
+            >
+              Kept subset
+            </p>
+            <p
+              style={{
+                margin: '0.2rem 0 0',
+                color: 'var(--color-text-primary)',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+              }}
+            >
+              {kept.length === 0 ? 'Nothing kept yet' : `${kept.length} movie${kept.length !== 1 ? 's' : ''} ready`}
+            </p>
+          </div>
+          <span
+            style={{
+              color: canSpinSubsetNow ? '#22c55e' : 'var(--color-text-secondary)',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+            }}
+          >
+            {canSpinSubsetNow ? 'Ready to spin' : 'Keep one to start'}
+          </span>
+        </div>
+
+        <p
+          style={{
+            margin: 0,
+            color: 'var(--color-text-secondary)',
+            fontSize: '0.78rem',
+            lineHeight: 1.4,
+          }}
+        >
+          {subsetPrompt}
+        </p>
+
+        {kept.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.45rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            {kept.slice(0, 5).map((movie) => (
+              <span
+                key={movie.id}
+                style={{
+                  padding: '0.34rem 0.55rem',
+                  borderRadius: 999,
+                  background: 'rgba(255,255,255,0.08)',
+                  color: '#fff',
+                  fontSize: '0.74rem',
+                  maxWidth: '100%',
+                }}
+              >
+                {movie.title}
+              </span>
+            ))}
+            {kept.length > 5 && (
+              <span
+                style={{
+                  padding: '0.34rem 0.55rem',
+                  borderRadius: 999,
+                  background: 'rgba(255,255,255,0.06)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '0.74rem',
+                }}
+              >
+                +{kept.length - 5} more
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       <div
         style={{
@@ -627,27 +750,27 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
         </div>
       )}
 
-      {((isDone && kept.length >= 1) || (!isDone && kept.length >= 2)) && (
+      {canSpinSubsetNow && (
         <button
           type="button"
           onClick={() => setPhase('spin')}
           style={{
-            padding: '0.6rem 1.6rem',
+            padding: '0.7rem 1.7rem',
             background: 'var(--color-accent)',
             border: 'none',
             borderRadius: 999,
             color: '#fff',
             fontWeight: 700,
             cursor: 'pointer',
-            fontSize: '0.85rem',
-            letterSpacing: '0.04em',
+            fontSize: '0.88rem',
+            letterSpacing: '0.03em',
           }}
         >
-          🎰 Spin {kept.length} movie{kept.length !== 1 ? 's' : ''}!
+          🎰 Spin subset
         </button>
       )}
 
-      {!isDone && kept.length < 2 && (
+      {!canSpinSubsetNow && (
         <p
           style={{
             color: 'var(--color-text-secondary)',
@@ -656,7 +779,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
             textAlign: 'center',
           }}
         >
-          Swipe right to keep, left to skip
+          Swipe right to keep movies, or stop once the subset feels right.
         </p>
       )}
 

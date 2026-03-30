@@ -123,7 +123,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       isOpen: showSpinWheel,
       onClose: () => setShowSpinWheel(false),
       title: 'Spin & Match',
-      ariaLabel: 'Swipe to pick movies, then spin the wheel',
+      ariaLabel: 'Choose a subset of movies, then spin the wheel',
       maxWidth: 520,
       maxHeight: 820,
       closeDisabled: isSpinWheelLocked,
