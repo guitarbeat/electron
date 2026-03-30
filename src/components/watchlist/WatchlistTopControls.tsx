@@ -274,6 +274,16 @@ const WatchlistTopControls = React.forwardRef<
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
+      <div className="watchlist-top-controls__intro">
+        <p className="watchlist-top-controls__eyebrow">
+          Shared queue
+        </p>
+        <h2 className="watchlist-top-controls__title">
+          {isGuest ? 'Send a title to the queue' : 'Add to the shared watchlist'}
+        </h2>
+        <p className="watchlist-top-controls__lead">{helperText}</p>
+      </div>
+
       <div className="watchlist-top-controls__toolbar">
         <form
           className="watchlist-top-controls__search-form"
@@ -456,8 +466,8 @@ const WatchlistTopControls = React.forwardRef<
             <div className="watchlist-top-controls__search-actions">
               <Button
                 type="submit"
-                variant="secondary"
-                size="md"
+                variant="primary"
+                size="lg"
                 isLoading={isAdding}
                 loadingText="Adding"
                 disabled={isBusy}
@@ -487,8 +497,6 @@ const WatchlistTopControls = React.forwardRef<
           )}
         </form>
       </div>
-
-      <p className="watchlist-top-controls__helper">{helperText}</p>
 
       {showRecommendationComposer && hasSearchQuery && (
         <RecommendationComposer
