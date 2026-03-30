@@ -284,3 +284,73 @@ export const formatMemoryTimestamp = (createdAt: string): string => {
     minute: '2-digit',
   });
 };
+
+// ============================================================================
+// Random Utilities
+// ============================================================================
+
+/**
+ * Utility functions for common random patterns
+ */
+export const randomUtils = {
+  /**
+   * Get random item from array using seeded random for animations
+   */
+  randomItem: <T>(array: T[]): T => {
+    return array[Math.floor(Math.random() * array.length)];
+  },
+
+  /**
+   * Get random number in range
+   */
+  randomRange: (min: number, max: number): number => {
+    return min + Math.random() * (max - min);
+  },
+
+  /**
+   * Get random integer in range
+   */
+  randomInt: (min: number, max: number): number => {
+    return Math.floor(min + Math.random() * (max - min));
+  },
+
+  /**
+   * Get random boolean
+   */
+  randomBool: (): boolean => Math.random() > 0.5,
+
+  /**
+   * Generate confetti particle properties
+   */
+  generateConfettiParticle: (id: number, colors: string[]) => ({
+    id,
+    x: Math.random() * 100,
+    color: randomUtils.randomItem(colors),
+    delay: Math.random() * 0.5,
+    rotation: Math.random() * 360,
+    scale: 0.5 + Math.random() * 0.5,
+    isRounded: randomUtils.randomBool(),
+  }),
+
+  /**
+   * Generate star particle for cursor trail
+   */
+  generateCursorStar: (x: number, y: number, id: number) => ({
+    id,
+    x,
+    y,
+    opacity: 1,
+    scale: 0.5 + Math.random(),
+  }),
+
+  /**
+   * Generate food spawn properties
+   */
+  generateFoodSpawn: (boardWidth: number, foodSize: number, fruitList: string[], maxIndex: number) => ({
+    id: crypto.randomUUID(),
+    x: Math.random() * (boardWidth - foodSize),
+    y: -foodSize,
+    speed: 2 + Math.random() * 2,
+    fruit: randomUtils.randomItem(fruitList.slice(0, maxIndex)),
+  }),
+};
