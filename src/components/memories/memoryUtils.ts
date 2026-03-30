@@ -1,4 +1,4 @@
-import type { Movie, SharedMemory } from '@/shared/types';
+import type { SharedMemory } from '@/shared/types';
 import { normalizeMovieTitle } from '@/utils/shared';
 
 export const INITIAL_VISIBLE_COUNT = 6;
@@ -57,12 +57,6 @@ const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
 ];
 
 const STICKY_NOTE_ROTATIONS = [-2.3, 1.8, -1.2, 2.4, -0.7, 1.1, -1.8, 2.7];
-
-const getFallbackMovieKey = (movieTitle: string): string =>
-  `title:${normalizeMovieTitle(movieTitle)}`;
-
-const getMemoryMovieKey = (memory: SharedMemory): string =>
-  memory.movieId || getFallbackMovieKey(memory.movieTitle);
 
 const getMemorySeed = (memory: SharedMemory): number => {
   const source = `${memory.id}|${memory.movieTitle}|${memory.author}|${memory.createdAt}`;
