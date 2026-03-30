@@ -109,29 +109,29 @@ test('sanitizeInput', async (t) => {
 
 test('validateAndThrow', async (t) => {
   await t.test('returns result when validation passes', () => {
-    const mockValidator = () => ({ isValid: true, errors: {} });
+    const validatorMock = () => ({ isValid: true, errors: {} });
     const data = { field: 'value' };
-    const result = validateAndThrow(mockValidator, data);
+    const result = validateAndThrow(validatorMock, data);
     assert.deepEqual(result, { isValid: true, errors: {} });
   });
 
   await t.test('throws error with first error message when validation fails', () => {
-    const mockValidator = () => ({
+    const validatorMock = () => ({
       isValid: false,
       errors: { field1: 'Error 1', field2: 'Error 2' }
     });
     const data = { field: 'value' };
     assert.throws(
-      () => validateAndThrow(mockValidator, data),
+      () => validateAndThrow(validatorMock, data),
       new Error('Error 1')
     );
   });
 
   await t.test('throws default error message when validation fails with no errors', () => {
-    const mockValidator = () => ({ isValid: false, errors: {} });
+    const validatorMock = () => ({ isValid: false, errors: {} });
     const data = { field: 'value' };
     assert.throws(
-      () => validateAndThrow(mockValidator, data),
+      () => validateAndThrow(validatorMock, data),
       new Error('Validation failed')
     );
   });
