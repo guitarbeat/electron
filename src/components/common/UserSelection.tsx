@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '@/app/providers';
 import type { User } from '@/shared/types';
@@ -46,7 +46,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
   const isPanel = variant === 'panel';
   const isShell = variant === 'shell';
-  const showBubbleName = variant !== 'inline' ? true : variant === 'inline';
+  const showBubbleName = true;
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   useEffect(() => {
@@ -230,7 +230,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     selectionState={selectionState}
                     isSelectionAnimating={isSelectionAnimating}
                     size={bubbleSize}
-                    onClick={(event) => {
+                    onClick={() => {
                       selectProfile(profile);
                     }}
                     onMouseEnter={() => setHoveredUser(profile)}
