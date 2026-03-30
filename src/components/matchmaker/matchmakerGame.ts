@@ -1,7 +1,7 @@
 import { shuffleArray } from '../../utils/index.ts';
 import type { MatchmakerGame, Movie, User } from '@/shared/types';
 
-export const MATCHMAKER_POOL_SIZE = 10;
+const MATCHMAKER_POOL_SIZE = 10;
 export const SHORT_AND_SWEET_VIBE = 'Short & Sweet';
 
 const normalizeTag = (value: string): string => value.trim().toLowerCase();
