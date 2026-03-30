@@ -310,14 +310,6 @@ export const radius = {
   full: '9999px',
 } as const;
 
-// * Border styles (Modernized -- lighter, less aggressive)
-export const borders = {
-  cardOutset: '1px solid',
-  buttonOutset: '1px solid',
-  iconOutset: '1px solid',
-  inputInset: '1px solid',
-} as const;
-
 // * Shadows (Modern depth system)
 export const shadows = {
   // Card shadows
