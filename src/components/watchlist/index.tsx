@@ -454,6 +454,154 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     movies.length === 0 &&
     pendingSuggestions.length === 0;
 
+  const watchlistBody = useMemo(() => {
+    if (showInitialLoading) {
+      return (
+        <CollectionGrid
+          className="watchlist-content"
+          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+          style={{
+            animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
+          }}
+        >
+          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
+            <div className="scanning-overlay" style={{ padding: spacing.xl }}>
+              <div
+                style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite' }}
+              >
+                SCANNING GIST REPOSITORY...
+              </div>
+              <div className="scanning-bar" style={{ maxWidth: '300px', margin: '0 auto' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
+              {skeletonKeys.map((key) => (
+                <MovieCardSkeleton key={key} />
+              ))}
+            </div>
+          </div>
+        </CollectionGrid>
+      );
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
+        {renderSection({
+          title: 'Queue',
+          count: sections.suggestions.length + sections.queue.length,
+          content: (
+            <CollectionGrid
+              className="watchlist-content"
+              minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+              style={{
+                animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
+              }}
+            >
+              {isSuggestionsLoading && sections.suggestions.length === 0 ? (
+                skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
+              ) : (
+                sections.suggestions.map((suggestion, index) => (
+                  <SuggestionCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onAccept={() => void handleAcceptSuggestion(suggestion)}
+                    onReject={() => void handleRejectSuggestion(suggestion)}
+                    canRespond={Boolean(currentUser)}
+                    disableActions={!currentUser}
+                    isProcessing={processingSuggestionId === suggestion.id}
+                    animationDelay={`${index * 0.05}s`}
+                  />
+                ))
+              )}
+              {sections.queue.length > 0 ? (
+                sections.queue.map((movie, index) => (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    currentUser={currentUser}
+                    onToggle={() => toggleWatched(movie.id)}
+                    onToggleError={handleToggleError}
+                    onRename={(title) => renameMovie(movie.id, title)}
+                    onDelete={() => setMovieToDelete(movie)}
+                    animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
+                    isHighlighted={successMovieId === movie.id}
+                    memories={movieMemories.get(movie.id) ?? []}
+                    onAddMemory={
+                      currentUser
+                        ? async (note) => {
+                            await addMemory(movie.id, movie.title, currentUser, note);
+                          }
+                        : undefined
+                    }
+                    onUpdateMemory={async (memoryId, note) => {
+                      await updateMemory(memoryId, { note });
+                    }}
+                    onDeleteMemory={async (memoryId) => {
+                      await deleteMemoryRecord(memoryId);
+                    }}
+                    onTogglePin={async (memoryId) => {
+                      await toggleMemoryPin(memoryId);
+                    }}
+                  />
+                ))
+              ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
+                <CollectionEmptyState
+                  padding={isMobile ? spacing.md : spacing['2xl']}
+                  className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
+                  style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+                >
+                  <span className="watchlist-empty-queue-state__eyebrow">Your next movie night starts here</span>
+                  <strong className="watchlist-empty-queue-state__title">Add the first title to build the queue.</strong>
+                  <span className="watchlist-empty-queue-state__copy">
+                    Search for a movie or series above, then add it to the shared list in one step.
+                  </span>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={focusSearchInput}
+                    className="watchlist-empty-queue-state__action"
+                  >
+                    Jump to search
+                  </Button>
+                </CollectionEmptyState>
+              ) : null}
+            </CollectionGrid>
+          ),
+        })}
+
+        {renderSection({
+          title: 'Watched',
+          count: sections.watched.length,
+          content: renderMovieGrid(sections.watched, 'No watched movies yet'),
+        })}
+      </div>
+    );
+  }, [
+    addMemory,
+    currentUser,
+    deleteMemoryRecord,
+    focusSearchInput,
+    handleAcceptSuggestion,
+    handleRejectSuggestion,
+    handleToggleError,
+    isMobile,
+    isSuggestionsLoading,
+    isWatchlistDegraded,
+    movieMemories,
+    renameMovie,
+    renderMovieGrid,
+    renderSection,
+    sections,
+    showInitialLoading,
+    skeletonKeys,
+    successMovieId,
+    toggleMemoryPin,
+    toggleWatched,
+    updateMemory,
+    setMovieToDelete,
+    processingSuggestionId,
+  ]);
+
   return (
     <div
       className="watchlist-container"
@@ -495,122 +643,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         suggestionError={suggestionError}
         canRecommend={true}
       />
-
-      {showInitialLoading ? (
-        <CollectionGrid
-          className="watchlist-content"
-          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-          style={{
-            animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-          }}
-        >
-          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
-            <div className="scanning-overlay" style={{ padding: spacing.xl }}>
-              <div style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite' }}>
-                SCANNING GIST REPOSITORY...
-              </div>
-              <div className="scanning-bar" style={{ maxWidth: '300px', margin: '0 auto' }} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
-              {skeletonKeys.map((key) => (
-                <MovieCardSkeleton key={key} />
-              ))}
-            </div>
-          </div>
-        </CollectionGrid>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
-          {renderSection({
-            title: 'Queue',
-            count: sections.suggestions.length + sections.queue.length,
-            content: (
-              <CollectionGrid
-                className="watchlist-content"
-                minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                style={{
-                  animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-                }}
-              >
-                {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-                  skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
-                ) : (
-                  sections.suggestions.map((suggestion, index) => (
-                    <SuggestionCard
-                      key={suggestion.id}
-                      suggestion={suggestion}
-                      onAccept={() => void handleAcceptSuggestion(suggestion)}
-                      onReject={() => void handleRejectSuggestion(suggestion)}
-                      canRespond={Boolean(currentUser)}
-                      disableActions={!currentUser}
-                      isProcessing={processingSuggestionId === suggestion.id}
-                      animationDelay={`${index * 0.05}s`}
-                    />
-                  ))
-                )}
-                {sections.queue.length > 0 ? (
-                  sections.queue.map((movie, index) => (
-                    <MovieCard
-                      key={movie.id}
-                      movie={movie}
-                      currentUser={currentUser}
-                      onToggle={() => toggleWatched(movie.id)}
-                      onToggleError={handleToggleError}
-                      onRename={(title) => renameMovie(movie.id, title)}
-                      onDelete={() => setMovieToDelete(movie)}
-                      animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
-                      isHighlighted={successMovieId === movie.id}
-                      memories={movieMemories.get(movie.id) ?? []}
-                      onAddMemory={
-                        currentUser
-                          ? async (note) => {
-                              await addMemory(movie.id, movie.title, currentUser, note);
-                            }
-                          : undefined
-                      }
-                      onUpdateMemory={async (memoryId, note) => {
-                        await updateMemory(memoryId, { note });
-                      }}
-                      onDeleteMemory={async (memoryId) => {
-                        await deleteMemoryRecord(memoryId);
-                      }}
-                      onTogglePin={async (memoryId) => {
-                        await toggleMemoryPin(memoryId);
-                      }}
-                    />
-                  ))
-                ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
-                  <CollectionEmptyState
-                    padding={isMobile ? spacing.md : spacing['2xl']}
-                    className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
-                    style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
-                  >
-                    <span className="watchlist-empty-queue-state__eyebrow">Your next movie night starts here</span>
-                    <strong className="watchlist-empty-queue-state__title">Add the first title to build the queue.</strong>
-                    <span className="watchlist-empty-queue-state__copy">
-                      Search for a movie or series above, then add it to the shared list in one step.
-                    </span>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={focusSearchInput}
-                      className="watchlist-empty-queue-state__action"
-                    >
-                      Jump to search
-                    </Button>
-                  </CollectionEmptyState>
-                ) : null}
-              </CollectionGrid>
-            ),
-          })}
-
-          {renderSection({
-            title: 'Watched',
-            count: sections.watched.length,
-            content: renderMovieGrid(sections.watched, 'No watched movies yet'),
-          })}
-        </div>
-      )}
+      {watchlistBody}
 
       {movieToDelete && (
         <ConfirmDialog

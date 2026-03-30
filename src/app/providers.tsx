@@ -189,7 +189,7 @@ interface UserContextType {
   usersMissingPins: User[];
   isSessionLoading: boolean;
   currentUser: User | null;
-  setCurrentUser: (user: User | null) => Promise<boolean>;
+  setCurrentUser: (user: User | null, pin?: string) => Promise<boolean>;
   refreshSession: () => Promise<void>;
 }
 
@@ -268,7 +268,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       usersMissingPins,
       isSessionLoading,
       currentUser,
-      setCurrentUser: async (user: User | null) => {
+      setCurrentUser: async (user: User | null, pin?: string) => {
         if (user) {
           console.debug('[session] Logging in as:', user);
         } else {
@@ -284,7 +284,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                   'Content-Type': 'application/json',
                 }
               : undefined,
-            body: user ? JSON.stringify({ user }) : undefined,
+            body: user ? JSON.stringify({ user, ...(pin ? { pin } : {}) }) : undefined,
           });
 
           if (response.status === 401 || response.status === 403) {
