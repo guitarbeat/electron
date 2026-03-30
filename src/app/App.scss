@@ -6,11 +6,10 @@
  *
  * Navigate with search (class / comment anchors):
  *   Shell & safe area — .app-shell, .app-shell--viewport, .app-shell__canvas,
- *     .app-floating-chrome, .app-workspace-stack
- *   Workspace — .workspace-stage, .workspace-header, .workspace-surface,
+ *     .shell-control-strip, .app-workspace-stack
+ *   Workspace — .workspace-stage, .workspace-surface,
  *     .workspace-control-panel
- *   Mobile shell — .mobile-shell-header, .workspace-stage--mobile-shell
- *   Action bubble / dock — .action-bubble-, .action-bubble-menu
+ *   Mobile shell — .workspace-stage--mobile-shell
  *   Gel bubbles / profile strip — .gel-bubble, .inline-profile-, .watcher-badge
  *   Watchlist / movies — "Consolidated Watchlist Styles", .watchlist-, .movie-item-
  *   Minigames / modals — "Spin Wheel Modal", modal / overlay rules near end of file
@@ -33,8 +32,6 @@
   background-color: var(--color-surface-0);
   /* Fluid gutters + safe areas (same spirit as personal-website section padding) */
   --app-shell-gutter: clamp(1.5rem, 3vw, 2.5rem);
-  --floating-bubble-size: 78px;
-  --floating-bubble-clearance: calc(var(--floating-bubble-size) + 1.25rem);
   padding-top: max(env(safe-area-inset-top, 0px), clamp(0.5rem, 1.5vw, 1rem));
   padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(0.5rem, 1.5vw, 1rem));
   padding-left: max(env(safe-area-inset-left, 0px), var(--app-shell-gutter));
@@ -57,70 +54,10 @@
   min-height: min(100dvh, 100vh);
 }
 
-/* Draggable bubble + tab toggle: viewport overlay, not a grid child of .app-workspace-stack (avoids stretch width) */
-.app-floating-chrome {
-  position: fixed;
-  inset: 0;
-  z-index: 640;
-  pointer-events: none;
-}
-
-.app-floating-chrome .action-bubble,
-.app-floating-chrome .action-bubble-menu {
-  pointer-events: auto;
-}
-
-.app-floating-chrome .action-bubble {
-  width: fit-content;
-}
-
-
 .workspace-stage--mobile-shell {
   gap: 0.65rem;
   padding-top: 0.25rem;
-  padding-bottom: calc(var(--floating-bubble-clearance) + env(safe-area-inset-bottom, 0px));
-}
-
-.mobile-shell-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.15rem 0 0.35rem;
-}
-
-.mobile-shell-header__user-selection.user-selection {
-  padding: 0;
-}
-
-.mobile-shell-header__facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.55rem;
-  font-family: var(--type-eyebrow-family);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-text-secondary) 82%, var(--color-secondary) 18%);
-}
-
-.mobile-shell-header__fact-icon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.mobile-shell-header__fact-eyebrow {
-  opacity: 0.92;
-}
-
-.mobile-shell-header__fact-title {
-  font-family: var(--type-title-sm-family);
-  font-size: 0.95rem;
-  font-weight: var(--type-title-sm-weight);
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: color-mix(in srgb, var(--color-text-primary) 92%, white 8%);
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 
 .places-map-card--height {
@@ -529,6 +466,115 @@ body {
   width: 100%;
   /* Inner rhythm only; horizontal gutters live on .app-shell--viewport */
   padding: clamp(0.9rem, 0.65rem + 1.1vw, 1.5rem) 0;
+}
+
+.shell-control-strip {
+  position: relative;
+}
+
+.shell-control-strip__grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(0.75rem, 0.55rem + 0.7vw, 1.1rem);
+  align-items: start;
+}
+
+.shell-control-strip__session,
+.shell-control-strip__workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.shell-control-strip__brand {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.shell-control-strip__mark-shell {
+  width: 4rem;
+  height: 4rem;
+}
+
+.shell-control-strip__meta {
+  gap: 0.5rem;
+}
+
+.shell-control-strip__workspace-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.shell-control-strip__workspace-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.shell-control-strip__workspace-title-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--chrome-border-color) 78%, rgba(255, 255, 255, 0.14));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.1) 24%, transparent 100%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.22) 0%, rgba(100, 124, 160, 0.14) 18%, rgba(19, 28, 43, 0.86) 52%, rgba(6, 9, 15, 0.98) 100%);
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  font-size: 1.1rem;
+}
+
+.shell-control-strip__theme-toggle {
+  width: fit-content;
+  justify-self: end;
+}
+
+.shell-control-strip__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.shell-control-strip__action-button {
+  width: 100%;
+  min-height: 4.25rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.shell-control-strip__action-button .ui-button__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.shell-control-strip__action-button .ui-button__icon {
+  margin-top: 0.1rem;
+}
+
+.shell-control-strip__action-label {
+  display: block;
+}
+
+.shell-control-strip__action-description {
+  display: block;
+  color: color-mix(in srgb, var(--color-text-secondary) 90%, white 10%);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  text-transform: none;
 }
 
 /* ==============================

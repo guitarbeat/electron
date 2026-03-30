@@ -30,6 +30,59 @@ export const getQuizLaunchState = ({
   };
 };
 
+export type ShellActionId = 'messages' | 'notes' | 'quiz' | 'spin-match';
+
+export interface ShellActionMeta {
+  id: ShellActionId;
+  label: string;
+  description: string;
+}
+
+interface ShellActionMetaParams extends QuizLaunchStateParams {
+  activeTab: MainTab;
+}
+
+export const getShellActionMeta = ({
+  activeTab,
+  currentUser,
+  quizCompleted,
+}: ShellActionMetaParams): ShellActionMeta[] => {
+  const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
+  const actions: ShellActionMeta[] = [
+    {
+      id: 'messages',
+      label: 'Messages',
+      description: 'Open the shared chat.',
+    },
+    {
+      id: 'quiz',
+      label: quizLaunch.label,
+      description: currentUser
+        ? 'Find your movie personality together.'
+        : 'Edit the quiz before a profile joins.',
+    },
+  ];
+
+  if (activeTab !== 'queue') {
+    return actions;
+  }
+
+  return [
+    actions[0],
+    {
+      id: 'notes',
+      label: 'Notes',
+      description: 'Browse and add shared movie notes.',
+    },
+    actions[1],
+    {
+      id: 'spin-match',
+      label: 'Spin & Match',
+      description: 'Swipe together, then spin for a pick.',
+    },
+  ];
+};
+
 export interface WorkspaceMeta {
   eyebrow: string;
   title: string;
