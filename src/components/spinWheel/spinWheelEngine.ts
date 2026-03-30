@@ -21,6 +21,20 @@ export const getSpinCandidates = (movies: Movie[], mode: SpinMode): Movie[] => {
   return queue.length > 0 ? queue : movies;
 };
 
+export const getSpinPool = (
+  movies: Movie[],
+  mode: SpinMode,
+  selectedMovieIds: ReadonlySet<string> = new Set<string>()
+): Movie[] => {
+  const candidates = getSpinCandidates(movies, mode);
+  if (selectedMovieIds.size === 0) {
+    return candidates;
+  }
+
+  const selected = candidates.filter((movie) => selectedMovieIds.has(movie.id));
+  return selected.length > 0 ? selected : candidates;
+};
+
 export const buildSpinWheelGradient = (
   segmentCount: number,
   segmentColors: readonly string[] = SEGMENT_COLORS
