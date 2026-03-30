@@ -129,6 +129,10 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: aliasEntries,
+      extensionAlias: {
+        '.ts': ['.ts', '.tsx'],
+        '.js': ['.js', '.ts', '.tsx'],
+      },
     },
     build: {
       rollupOptions: {
