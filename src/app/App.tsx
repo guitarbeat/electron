@@ -174,7 +174,11 @@ const App: React.FC = () => {
               onTabChange={handleTabChange}
             />
             <React.Suspense fallback={null}>
-              <AppWorkspaceShell isMobile={isMobile} activeTab={activeTab} />
+              <AppWorkspaceShell
+                isMobile={isMobile}
+                activeTab={activeTab}
+                currentUser={currentUser}
+              />
             </React.Suspense>
           </div>
         </div>
