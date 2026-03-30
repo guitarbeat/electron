@@ -17,11 +17,6 @@ interface StickyNoteTheme {
   pin: string;
 }
 
-interface MovieMemorySummary {
-  count: number;
-  latest?: SharedMemory;
-}
-
 const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
   {
     background: 'linear-gradient(165deg, #fff4a6 0%, #f9e07a 72%, #efd46a 100%)',
@@ -89,45 +84,6 @@ export const getStickyNoteTheme = (memory: SharedMemory): StickyNoteTheme => {
 export const getStickyNoteRotation = (memory: SharedMemory): number => {
   const seed = getMemorySeed(memory);
   return STICKY_NOTE_ROTATIONS[seed % STICKY_NOTE_ROTATIONS.length];
-};
-
-export const buildMovieMemorySummaries = (
-  movies: Movie[],
-  memories: SharedMemory[]
-): Map<string, MovieMemorySummary> => {
-  const groupedByKey = new Map<string, SharedMemory[]>();
-
-  memories.forEach((memory) => {
-    const key = getMemoryMovieKey(memory);
-    const list = groupedByKey.get(key) || [];
-    list.push(memory);
-    groupedByKey.set(key, list);
-  });
-
-  const summaries = new Map<string, MovieMemorySummary>();
-
-  movies.forEach((movie) => {
-    const movieKeys = [movie.id, getFallbackMovieKey(movie.title)];
-    const merged = new Map<string, SharedMemory>();
-
-    movieKeys.forEach((key) => {
-      const memoriesForKey = groupedByKey.get(key) || [];
-      memoriesForKey.forEach((memory) => {
-        merged.set(memory.id, memory);
-      });
-    });
-
-    const allMemories = sortMemories(Array.from(merged.values()), 'newest');
-
-    if (allMemories.length > 0) {
-      summaries.set(movie.id, {
-        count: allMemories.length,
-        latest: allMemories[0],
-      });
-    }
-  });
-
-  return summaries;
 };
 
 export const sortMemories = (
