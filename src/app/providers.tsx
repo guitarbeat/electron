@@ -16,8 +16,8 @@ import React, {
 import type { MainTab, User } from '@/shared/types';
 import { moviesTheme, placesTheme, spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
-import { sessionInvalidationEvent } from '@/services/stateClient';
-import type { SessionState } from '@/services/stateTypes';
+import { sessionInvalidationEvent } from '@/services/state';
+import type { SessionState } from '@/services/state/stateTypes';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
 
 // ============================================================================

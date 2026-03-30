@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { MatchmakerGame, User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
+import { mutateScope, readScope, retryScopeSync } from '@/services/state';
 import { areDeeplyEqual } from '@/utils';
 import {
   applyMatchmakerSwipe,

@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { useUser } from '@/app/providers';
 import type { Message } from '@/shared/types';
 import { areDeeplyEqual, sanitizeInput } from '@/utils';
-import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/messageService';
+import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/content';
 import { usePolling } from '@/services/polling';
-import { readScope, retryScopeSync } from '@/services/stateClient';
+import { readScope, retryScopeSync } from '@/services/state';
 
 const POLLING_INTERVAL = 15000;
 

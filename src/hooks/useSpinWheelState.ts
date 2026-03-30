@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { User } from '@/shared/types';
 import { usePolling } from '@/services/polling';
-import { mutateScope, readScope } from '@/services/stateClient';
-import type { DailySpinRecord, SpinEntry } from '@/services/stateTypes';
+import { mutateScope, readScope } from '@/services/state';
+import type { DailySpinRecord, SpinEntry } from '@/services/state/stateTypes';
 import { appendSpinHistory, SPIN_HISTORY_MAX } from '@/components/spinWheel/spinWheelEngine';
-import { appendDailySpinEntry } from '@/services/stateSchemas';
+import { appendDailySpinEntry } from '@/services/state/stateSchemas';
 import { areDeeplyEqual } from '@/utils';
 
 const POLLING_INTERVAL = 15000;
