@@ -25,7 +25,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
 }) => {
   return (
     <div
-      role="tablist"
+      role="group"
       aria-label={label ?? 'Switch between Movies and Places'}
       className={`theme-toggle theme-toggle--tabs${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
       style={style}
@@ -34,8 +34,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
         <button
           key={tab.id}
           type="button"
-          role="tab"
-          aria-selected={activeTab === tab.id}
+          aria-pressed={activeTab === tab.id}
           onClick={() => onChange(tab.id)}
           className={`theme-toggle__tab${activeTab === tab.id ? ' is-active' : ''}`}
         >
