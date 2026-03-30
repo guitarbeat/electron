@@ -13,7 +13,8 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "test": "node --test src/**/*.test.ts",
-    "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build"
+    "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build",
+    "post-merge": "scripts/post-merge.bat"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

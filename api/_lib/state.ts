@@ -11,8 +11,8 @@ import {
 import {
   normalizeMovieRecord,
   normalizeMovies,
-} from '../../src/services/movieRecords.ts';
-import { type UserPins } from '../../src/services/pinHelpers.ts';
+} from '../../src/services/movieRecords';
+import type { UserPins } from '../../src/services/content/pinHelpers.ts';
 import {
   appendDailySpinEntry,
   cloneQuizData,
@@ -27,14 +27,14 @@ import {
   normalizeStoredPins,
   normalizeSuggestionRecord,
   normalizePlaceSuggestionRecord,
-} from '../../src/services/stateSchemas.ts';
+} from '../../src/services/state/stateSchemas.ts';
 import type {
   DailySpinRecord,
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../src/services/stateTypes.ts';
-import { STATE_SCOPES } from '../../src/services/stateTypes.ts';
+} from '../../src/services/state/stateTypes.ts';
+import { STATE_SCOPES } from '../../src/services/state/stateTypes.ts';
 import type {
   MatchmakerGame,
   Message,

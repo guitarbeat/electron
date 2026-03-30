@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
-import { useMovies } from '@/hooks/useMovies';
+import { useMovies } from '@/hooks/movies/useMovies';
 import { usePolling } from '@/services/polling';
 import { useUser } from '@/app/providers';
 import {
@@ -9,9 +9,9 @@ import {
   deleteMemory,
   toggleMemoryPin,
   updateMemory,
-} from '@/services/memoryService';
-import { readScope } from '@/services/stateClient';
-import type { ScopeSnapshot } from '@/services/stateTypes';
+} from '@/services/content/memoryService';
+import { readScope } from '@/services/state';
+import type { ScopeSnapshot } from '@/services/state/stateTypes';
 import { formatMemoryTimestamp } from '@/utils';
 import { sortMemories, type MemorySortMode } from './memoryUtils';
 import type { SharedMemory } from '@/shared/types';

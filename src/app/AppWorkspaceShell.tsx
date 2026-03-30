@@ -4,7 +4,7 @@ import type { MainTab } from '@/shared/types';
 import { getWorkspaceMeta } from '@/app/shellState';
 
 const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
-import Watchlist from '@/components/watchlist';
+import WatchlistComponent from '@/components/watchlist/index';
 
 interface AppWorkspaceShellProps {
   isMobile: boolean;
@@ -66,7 +66,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({ isMobile, activeTab, cu
         style={{ minWidth: 0 }}
       >
         {activeTab === 'queue' ? (
-          <Watchlist isMobile={isMobile} />
+          <WatchlistComponent isMobile={isMobile} />
         ) : (
           <React.Suspense fallback={null}>
             <PlacesList />

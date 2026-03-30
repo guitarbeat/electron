@@ -2,14 +2,14 @@ import {
   CHARACTERS,
   type QuizCharacter,
   type QuizQuestion,
-} from '../components/quiz/types.ts';
+} from '../../components/quiz/types.ts';
 import {
   characterDescriptions as defaultDescriptions,
   neitherDescription as defaultNeither,
   quizQuestions as defaultQuestions,
-} from '../components/quiz/data.ts';
-import { reconcileMatchmakerStatus } from '../components/matchmaker/matchmakerGame.ts';
-import { normalizeUserPins, type UserPins } from './pinHelpers.ts';
+} from '../../components/quiz/data.ts';
+import { reconcileMatchmakerStatus } from '../../components/matchmaker/matchmakerGame.ts';
+import { normalizeUserPins, type UserPins } from '../content/pinHelpers';
 import type {
   MatchmakerGame,
   Message,
@@ -17,9 +17,9 @@ import type {
   Place,
   PlaceSuggestion,
   SharedMemory,
-} from '../shared/types.ts';
+} from '../../shared/types.ts';
 import type { DailySpinRecord, SpinEntry } from './stateTypes.ts';
-import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../utils/shared.ts';
+import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../../utils/shared.ts';
 import type { PinsState, QuizData } from './stateTypes.ts';
 
 const normalizeRequiredString = (value: unknown): string | null => {

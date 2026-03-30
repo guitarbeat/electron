@@ -8,14 +8,14 @@ import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
 import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
-import { useWatchlist } from './useWatchlist';
+import { useWatchlist } from "@/hooks/movies/useWatchlist";
 import WatchlistTopControls, {
   type WatchlistTopControlsHandle,
 } from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 import { buildWatchlistSections } from './watchlistSections';
-import type { MovieAutocompleteResult } from '@/services/metadataService';
+import type { MovieAutocompleteResult } from '@/services/metadata';
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
