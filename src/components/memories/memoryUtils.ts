@@ -1,5 +1,4 @@
 import type { SharedMemory } from '@/shared/types';
-import { normalizeMovieTitle } from '@/utils/shared';
 
 export const INITIAL_VISIBLE_COUNT = 6;
 export const ALL_MOVIES_FILTER = 'all';
