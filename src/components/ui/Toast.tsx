@@ -77,19 +77,69 @@ const Toast: React.FC<ToastProps> = ({
     switch (type) {
       case 'success':
         return (
-          <CheckIcon
+          <span
+            aria-hidden
             style={{
+              width: '2rem',
+              height: '2rem',
+              borderRadius: '999px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: '0 0 auto',
               color: styles.iconColor,
-              flexShrink: 0,
-              filter: `drop-shadow(0 0 4px ${colors.success}60)`,
+              background: `linear-gradient(180deg, ${colors.success}26 0%, ${colors.success}12 100%)`,
+              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.18), 0 0 16px ${colors.success}24`,
             }}
-          />
+          >
+            <CheckIcon
+              size={18}
+              style={{
+                color: styles.iconColor,
+                filter: `drop-shadow(0 0 4px ${colors.success}60)`,
+              }}
+            />
+          </span>
         );
       case 'error':
-        return <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>;
+        return (
+          <span
+            aria-hidden
+            style={{
+              width: '2rem',
+              height: '2rem',
+              borderRadius: '999px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: '0 0 auto',
+              fontSize: '1rem',
+              background: `linear-gradient(180deg, ${colors.error}20 0%, ${colors.error}10 100%)`,
+            }}
+          >
+            ⚠️
+          </span>
+        );
       case 'info':
       default:
-        return <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>ℹ️</span>;
+        return (
+          <span
+            aria-hidden
+            style={{
+              width: '2rem',
+              height: '2rem',
+              borderRadius: '999px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: '0 0 auto',
+              fontSize: '1rem',
+              background: `linear-gradient(180deg, ${colors.secondary}20 0%, ${colors.secondary}10 100%)`,
+            }}
+          >
+            ℹ️
+          </span>
+        );
     }
   }, [styles.iconColor, type]);
 
@@ -100,7 +150,7 @@ const Toast: React.FC<ToastProps> = ({
       aria-live={type === 'error' ? 'assertive' : 'polite'}
       className={`toast-notification toast--${type}`}
       style={{
-        width: 'min(560px, calc(100vw - 1.5rem))',
+        width: 'min(34rem, calc(100vw - 1.5rem))',
         maxWidth: '100%',
         height: 'auto',
         minHeight: 'unset',
@@ -120,7 +170,7 @@ const Toast: React.FC<ToastProps> = ({
       <div
         style={{
           display: 'flex',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           gap: spacing.sm,
           color: colors.textPrimary,
           width: '100%',
@@ -133,13 +183,12 @@ const Toast: React.FC<ToastProps> = ({
           style={{
             fontSize: typography.fontSize.sm,
             fontWeight: typography.fontWeight.medium,
-            lineHeight: typography.lineHeight.normal,
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
+            lineHeight: 1.35,
+            wordBreak: 'normal',
+            overflowWrap: 'anywhere',
             flex: '1 1 auto',
             minWidth: 0,
             textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-            marginTop: '0.1rem',
           }}
         >
           {message}
@@ -211,4 +260,3 @@ const Toast: React.FC<ToastProps> = ({
 };
 
 export default Toast;
-

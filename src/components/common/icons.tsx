@@ -10,7 +10,30 @@ const getIconStyles = (
   size?: number | string,
   style?: React.CSSProperties
 ): React.CSSProperties => {
-  if (!size) return style || {};
+  if (!size) {
+    const nextStyle = { ...(style || {}) };
+    const hasWidth = nextStyle.width !== undefined;
+    const hasHeight = nextStyle.height !== undefined;
+
+    if (!hasWidth && !hasHeight) {
+      nextStyle.width = '1.25rem';
+      nextStyle.height = '1.25rem';
+      return nextStyle;
+    }
+
+    if (hasWidth && !hasHeight) {
+      nextStyle.height = nextStyle.width;
+      return nextStyle;
+    }
+
+    if (!hasWidth && hasHeight) {
+      nextStyle.width = nextStyle.height;
+      return nextStyle;
+    }
+
+    return nextStyle;
+  }
+
   const sizePx = typeof size === 'number' ? `${size}px` : size;
   return { width: sizePx, height: sizePx, ...style };
 };
@@ -19,7 +42,7 @@ interface StrokeIconProps extends IconProps {
   children: React.ReactNode;
 }
 
-const StrokeIcon: React.FC<StrokeIconProps> = ({ className = 'w-6 h-6', style, size, children }) => (
+const StrokeIcon: React.FC<StrokeIconProps> = ({ className = '', style, size, children }) => (
   <svg
     className={className}
     style={getIconStyles(size, style)}
