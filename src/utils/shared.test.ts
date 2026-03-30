@@ -160,17 +160,17 @@ test('areDeeplyEqual', async (t) => {
   });
 
   await t.test('returns true for identical cyclical references', () => {
-    const objA: any = { a: 1 };
+    const objA: Record<string, unknown> = { a: 1 };
     objA.self = objA;
 
-    const objB: any = { a: 1 };
+    const objB: Record<string, unknown> = { a: 1 };
     objB.self = objB;
 
     assert.equal(areDeeplyEqual(objA, objB), true);
   });
 
   await t.test('returns false for cyclical reference against normal object', () => {
-    const objA: any = { a: 1 };
+    const objA: Record<string, unknown> = { a: 1 };
     objA.self = objA;
 
     const objB = { a: 1, self: null };

@@ -45,8 +45,6 @@ export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
     }
     visited.set(leftObjOrArr, rightObjOrArr);
 
-    let result = false;
-
     if (Array.isArray(left) && Array.isArray(right)) {
       if (left.length !== right.length) {
         visited.delete(leftObjOrArr);
