@@ -125,7 +125,7 @@ test('shallowCloneArray', async (t) => {
   });
 
   await t.test('handles an empty array', () => {
-    const original: any[] = [];
+    const original: Record<string, unknown>[] = [];
     const cloned = shallowCloneArray(original);
 
     assert.notEqual(cloned, original);
