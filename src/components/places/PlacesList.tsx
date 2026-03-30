@@ -55,7 +55,7 @@ const PlacesList: React.FC = () => {
   const placesSummary = useMemo(
     () => ({
       toTry: sections.queue.length,
-      pinned: places.filter((place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
+      pinned: places.filter((place: Place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
       visited: sections.visited.length,
       pendingSuggestions: sections.suggestions.length,
     }),
