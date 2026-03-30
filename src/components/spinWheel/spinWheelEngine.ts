@@ -2,7 +2,7 @@ import type { Movie } from '@/shared/types';
 
 export const SEGMENT_COLORS = ['#ff7ea8', '#6ad6ff', '#ffd166', '#7ee08c', '#c7a0ff', '#ff9f68'];
 export const SPIN_HISTORY_MAX = 10;
-export const SPIN_TURNS = 6;
+const SPIN_TURNS = 6;
 
 export type SpinMode = 'queue' | 'all';
 
