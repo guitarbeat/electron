@@ -1,4 +1,4 @@
-import type { QuizCharacter, QuizQuestion } from '../components/quiz/types.ts';
+import type { QuizCharacter, QuizQuestion } from '../../components/quiz/types';
 import type {
   MatchmakerGame,
   Message,
@@ -8,7 +8,7 @@ import type {
   PlaceSuggestion,
   SharedMemory,
   User,
-} from '../shared/types.ts';
+} from '../../shared/types';
 
 export const STATE_SCOPES = [
   'movies',

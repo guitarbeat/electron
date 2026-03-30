@@ -112,3 +112,5 @@ export const fetchOmdbMetadata = async (
     throw new Error(`OMDb metadata fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
+
+export { fetchOmdbMetadata as fetchMovieMetadata };

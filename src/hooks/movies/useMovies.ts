@@ -1,29 +1,29 @@
 import { useEffect, useCallback, useMemo, useRef } from 'react';
 import type { Movie, User } from '@/shared/types';
 import {
-  fetchMovieMetadata,
-  MetadataResult,
+  fetchOmdbMetadata as fetchMovieMetadata,
+  MovieMetadata,
   type MovieAutocompleteResult,
-} from '@/services/metadataService';
+} from '@/services/metadata';
 import {
   concurrentMap,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
   sanitizeInput,
 } from '@/utils';
-import { useCollection } from './useCollection';
+import { useCollection } from '../useCollection';
 
 const POLLING_INTERVAL = 15000;
 
-const extractSafeMetadata = (metadata: MetadataResult): Partial<Movie> => {
-  const { posterUrl, year, plot, imdbRating, runtime, genre, director } = metadata;
+const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
+  const { poster, year, plot, imdbID, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
-  if (posterUrl && isValidUrl(posterUrl)) result.posterUrl = posterUrl;
+  if (poster && isValidUrl(poster)) result.posterUrl = poster;
   if (year) result.year = year;
   if (plot) result.plot = sanitizeInput(plot);
-  if (imdbRating) result.imdbRating = imdbRating;
+  if (imdbID) result.imdbRating = imdbID;
   if (runtime) result.runtime = runtime;
-  if (genre) result.genre = sanitizeInput(genre);
+  if (genre && Array.isArray(genre)) result.genre = sanitizeInput(genre.join(', '));
   if (director) result.director = sanitizeInput(director);
   return result;
 };

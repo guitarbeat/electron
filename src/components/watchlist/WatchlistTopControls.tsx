@@ -15,7 +15,7 @@ import { PlusIcon } from '@/common/icons';
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
-} from '@/services/metadataService';
+} from '@/services/metadata';
 import RecommendationComposer from './RecommendationComposer';
 import {
   getNextMovieAutocompleteIndex,

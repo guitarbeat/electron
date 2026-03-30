@@ -11,9 +11,9 @@ import { usePolling } from '../../services/polling';
 import { Movie, MovieSuggestion, User } from '../../shared/types';
 import { useMovies } from './useMovies';
 import { useSuggestions } from '../suggestions/useSuggestions';
-import { useToast } from '../../../app/providers';
+import { useToast } from '@/app/providers';
 import { areDeeplyEqual, normalizeMovieTitle, sanitizeInput } from '../../utils';
-import { trackMetric } from '../../services/content/analyticsService';
+import { trackMetric } from '../../services/analyticsService';
 import { readScope, retryScopeSync } from '../../services/state';
 
 const POLLING_INTERVAL = 30000;
