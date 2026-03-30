@@ -196,29 +196,45 @@ export const getElectronMarkSvgMarkup = (
   options: ElectronMarkSvgOptions = {}
 ) => {
   const resolvedTitle = options.title?.trim() || '';
-  const resolvedSize = getResolvedSize(options.size);
+  const resolvedSize = escapeXml(getResolvedSize(options.size));
   const palette = getResolvedPalette(options.palette);
-  const idPrefix = options.idPrefix ?? `${variant}-${options.monochrome ? 'mono' : 'color'}`;
+
+  const escapedPalette: ElectronMarkPalette = {
+    accent: escapeXml(palette.accent),
+    accentLight: escapeXml(palette.accentLight),
+    secondary: escapeXml(palette.secondary),
+    tertiary: escapeXml(palette.tertiary),
+    highlight: escapeXml(palette.highlight),
+    shadow: escapeXml(palette.shadow),
+    mono: escapeXml(palette.mono),
+  };
+
+  const idPrefix = escapeXml(
+    options.idPrefix ?? `${variant}-${options.monochrome ? 'mono' : 'color'}`
+  );
   const ids = getMarkIds(idPrefix);
   const titleId = `${idPrefix}-title`;
+
   const paint: ElectronMarkPaint = options.monochrome
     ? {
-        primary: palette.mono,
-        secondary: palette.mono,
-        highlight: palette.mono,
+        primary: escapedPalette.mono,
+        secondary: escapedPalette.mono,
+        highlight: escapedPalette.mono,
       }
     : {
         primary: `url(#${ids.primaryGradient})`,
         secondary: `url(#${ids.secondaryGradient})`,
-        highlight: palette.highlight,
+        highlight: escapedPalette.highlight,
         glow: `url(#${ids.glowGradient})`,
       };
 
   const a11yAttributes = resolvedTitle
     ? `role="img" aria-labelledby="${titleId}"`
     : 'aria-hidden="true"';
-  const titleMarkup = resolvedTitle ? `<title id="${titleId}">${escapeXml(resolvedTitle)}</title>` : '';
-  const defsMarkup = options.monochrome ? '' : buildSharedDefs(palette, ids);
+  const titleMarkup = resolvedTitle
+    ? `<title id="${titleId}">${escapeXml(resolvedTitle)}</title>`
+    : '';
+  const defsMarkup = options.monochrome ? '' : buildSharedDefs(escapedPalette, ids);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${resolvedSize}" height="${resolvedSize}" viewBox="0 0 64 64" fill="none" ${a11yAttributes}>${titleMarkup}${defsMarkup}${buildVariantMarkup(variant, paint)}</svg>`;
 };
