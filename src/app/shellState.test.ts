@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getQuizLaunchState, getWorkspaceMeta } from './shellState.ts';
+import { getQuizLaunchState, getShellActionMeta, getWorkspaceMeta } from './shellState.ts';
 
 test('getQuizLaunchState', async (t) => {
   await t.test('falls back to edit mode when no profile is active', () => {
@@ -49,5 +49,41 @@ test('getWorkspaceMeta', async (t) => {
     assert.equal(meta.title, 'Date Ideas');
     assert.equal(meta.icon, '📍');
     assert.equal('description' in meta, false);
+  });
+});
+
+test('getShellActionMeta', async (t) => {
+  await t.test('returns all four shell actions for the movie workspace', () => {
+    const actions = getShellActionMeta({
+      activeTab: 'queue',
+      currentUser: 'Aaron',
+      quizCompleted: false,
+    });
+
+    assert.deepEqual(
+      actions.map((action) => action.id),
+      ['messages', 'notes', 'quiz', 'spin-match']
+    );
+    assert.deepEqual(
+      actions.map((action) => action.label),
+      ['Messages', 'Notes', 'Start Quiz', 'Spin & Match']
+    );
+  });
+
+  await t.test('limits places to global actions only', () => {
+    const actions = getShellActionMeta({
+      activeTab: 'places',
+      currentUser: 'Electra',
+      quizCompleted: true,
+    });
+
+    assert.deepEqual(
+      actions.map((action) => action.id),
+      ['messages', 'quiz']
+    );
+    assert.deepEqual(
+      actions.map((action) => action.label),
+      ['Messages', 'Retake Quiz']
+    );
   });
 });

@@ -1,41 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ActionBubbleLayer from '@/app/ActionBubbleLayer';
-import {
-  ACTION_BUBBLE_DRAG_THRESHOLD,
-  clampActionBubblePosition,
-  getDockedActionBubblePosition,
-  getDefaultActionBubblePosition,
-  snapActionBubbleToEdge,
-  type ActionBubblePosition,
-} from '@/app/actionBubble';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import { getQuizLaunchState } from '@/app/shellState';
+import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
+import ShellControlStrip from '@/app/ShellControlStrip';
+import { type ShellActionId } from '@/app/shellState';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 import RetroEffects from '@/components/effects/RetroEffects';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
-import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
-import { BrainIcon, MessageIcon, NoteIcon, SpinIcon } from '@/common/icons';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
-import type { CommandActionItem } from '@/ui/CommandDeck';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
-
-const getViewportSize = () => {
-  if (typeof window === 'undefined') {
-    return { width: 1280, height: 800 };
-  }
-
-  return {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
-};
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -52,16 +31,10 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [showActionBubbleMenu, setShowActionBubbleMenu] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
-  const [actionBubblePosition, setActionBubblePosition] = useState<ActionBubblePosition>(() => {
-    const viewport = getViewportSize();
-    return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
-  });
-  const [isDraggingActionBubble, setIsDraggingActionBubble] = useState(false);
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -77,64 +50,9 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const actionBubbleRef = useRef<HTMLButtonElement | null>(null);
-  const actionBubblePanelRef = useRef<HTMLDivElement | null>(null);
-  const workspaceControlsRef = useRef<HTMLDivElement | null>(null);
-  const actionBubbleDragRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    origin: ActionBubblePosition;
-  } | null>(null);
-  const didActionBubbleDragRef = useRef(false);
-  const suppressActionBubbleClickRef = useRef(false);
-  const hasCustomActionBubblePositionRef = useRef(false);
-
-  const getDefaultBubblePosition = useCallback(() => {
-    const viewport = getViewportSize();
-    if (isMobile || !workspaceControlsRef.current) {
-      return getDefaultActionBubblePosition(viewport.width, viewport.height, isMobile);
-    }
-
-    const bounds = workspaceControlsRef.current.getBoundingClientRect();
-    return getDockedActionBubblePosition(
-      {
-        left: bounds.left,
-        top: bounds.top,
-        width: bounds.width,
-        height: bounds.height,
-      },
-      viewport.width,
-      viewport.height
-    );
-  }, [isMobile]);
-
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setActionBubblePosition((previous) => {
-        if (!hasCustomActionBubblePositionRef.current) {
-          return getDefaultBubblePosition();
-        }
-
-        const viewport = getViewportSize();
-        return clampActionBubblePosition(
-          previous.x,
-          previous.y,
-          viewport.width,
-          viewport.height,
-          isMobile
-        );
-      });
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [getDefaultBubblePosition, isMobile]);
 
   const openQuizExperience = useCallback(() => {
     if (currentUser) {
@@ -158,10 +76,31 @@ const App: React.FC = () => {
       }
 
       playSwitch();
-      setShowActionBubbleMenu(false);
       setActiveTab(tab);
     },
     [activeTab, playSwitch]
+  );
+
+  const handleShellAction = useCallback(
+    (action: ShellActionId) => {
+      switch (action) {
+        case 'messages':
+          setShowMessages(true);
+          return;
+        case 'notes':
+          setShowMemoriesPanel(true);
+          return;
+        case 'quiz':
+          openQuizExperience();
+          return;
+        case 'spin-match':
+          setShowSpinWheel(true);
+          return;
+        default:
+          action satisfies never;
+      }
+    },
+    [openQuizExperience]
   );
 
   const featureModals = useMemo(
@@ -196,128 +135,6 @@ const App: React.FC = () => {
     ]
   );
 
-  const handleActionBubblePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) {
-      return;
-    }
-
-    actionBubbleDragRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      origin: actionBubblePosition,
-    };
-    didActionBubbleDragRef.current = false;
-    suppressActionBubbleClickRef.current = false;
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleActionBubblePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const dragState = actionBubbleDragRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const deltaX = event.clientX - dragState.startX;
-    const deltaY = event.clientY - dragState.startY;
-
-    if (
-      !didActionBubbleDragRef.current &&
-      (Math.abs(deltaX) > ACTION_BUBBLE_DRAG_THRESHOLD ||
-        Math.abs(deltaY) > ACTION_BUBBLE_DRAG_THRESHOLD)
-    ) {
-      didActionBubbleDragRef.current = true;
-      setIsDraggingActionBubble(true);
-    }
-
-    if (!didActionBubbleDragRef.current) {
-      return;
-    }
-
-    const viewport = getViewportSize();
-    setActionBubblePosition(
-      clampActionBubblePosition(
-        dragState.origin.x + deltaX,
-        dragState.origin.y + deltaY,
-        viewport.width,
-        viewport.height,
-        isMobile
-      )
-    );
-  };
-
-  const handleActionBubbleDragEnd = () => {
-    if (didActionBubbleDragRef.current) {
-      const viewport = getViewportSize();
-      suppressActionBubbleClickRef.current = true;
-      hasCustomActionBubblePositionRef.current = true;
-      setActionBubblePosition((previous) =>
-        snapActionBubbleToEdge(previous, viewport.width, viewport.height, isMobile)
-      );
-      setShowActionBubbleMenu(false);
-    }
-
-    setIsDraggingActionBubble(false);
-    actionBubbleDragRef.current = null;
-    didActionBubbleDragRef.current = false;
-  };
-
-  const finishActionBubbleDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const dragState = actionBubbleDragRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    handleActionBubbleDragEnd();
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Ignore capture errors from canceled pointer interactions.
-    }
-  };
-
-  const handleActionBubbleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (suppressActionBubbleClickRef.current) {
-      suppressActionBubbleClickRef.current = false;
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-
-    setShowActionBubbleMenu((current) => !current);
-  };
-
-  const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
-  const isMoireVisible = !prefersReducedMotion;
-  const actionItems = useMemo(
-    (): CommandActionItem[] => [
-      {
-        label: 'Messages',
-        icon: <MessageIcon size={18} />,
-        description: 'Chat with each other',
-        action: () => setShowMessages(true),
-      },
-      {
-        label: 'Notes',
-        icon: <NoteIcon size={18} />,
-        description: 'Browse and add shared movie notes',
-        action: () => setShowMemoriesPanel(true),
-      },
-      {
-        label: quizLaunch.label,
-        icon: <BrainIcon size={18} />,
-        description: 'Find your movie personality',
-        action: openQuizExperience,
-      },
-      {
-        label: 'Spin & Match',
-        icon: <SpinIcon size={18} />,
-        description: 'Decide what to watch together',
-        action: () => setShowSpinWheel(true),
-      },
-    ],
-    [openQuizExperience, quizLaunch.label]
-  );
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
@@ -339,7 +156,7 @@ const App: React.FC = () => {
       <div className="app-shell app-shell--viewport bg-main">
         <React.Suspense fallback={null}>
           {!prefersReducedMotion ? (
-            <MagicComponent isVisible={isMoireVisible} opacity={0.2} />
+            <MagicComponent isVisible opacity={0.2} />
           ) : null}
         </React.Suspense>
         <VignetteOverlay />
@@ -348,31 +165,16 @@ const App: React.FC = () => {
         </a>
 
         <div className="app-shell__canvas app-shell__canvas--main">
-          <div className="app-floating-chrome">
-            <ActionBubbleLayer
-              actionBubbleRef={actionBubbleRef}
-              actionBubblePanelRef={actionBubblePanelRef}
-              actionBubblePosition={actionBubblePosition}
-              isDraggingActionBubble={isDraggingActionBubble}
-              isMobile={isMobile}
-              activeTab={activeTab}
-              showActionBubbleMenu={showActionBubbleMenu}
-              onToggleMenu={setShowActionBubbleMenu}
-              onTabChange={handleTabChange}
-              actionItems={actionItems}
-              onActionBubbleClick={handleActionBubbleClick}
-              onActionBubblePointerDown={handleActionBubblePointerDown}
-              onActionBubblePointerMove={handleActionBubblePointerMove}
-              onFinishActionBubbleDrag={finishActionBubbleDrag}
-            />
-          </div>
           <div className="app-workspace-stack">
+            <ShellControlStrip
+              activeTab={activeTab}
+              currentUser={currentUser}
+              quizCompleted={quizCompleted}
+              onAction={handleShellAction}
+              onTabChange={handleTabChange}
+            />
             <React.Suspense fallback={null}>
-              <AppWorkspaceShell
-                isMobile={isMobile}
-                activeTab={activeTab}
-                workspaceControlsRef={workspaceControlsRef}
-              />
+              <AppWorkspaceShell isMobile={isMobile} activeTab={activeTab} />
             </React.Suspense>
           </div>
         </div>

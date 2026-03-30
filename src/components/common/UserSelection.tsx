@@ -8,7 +8,7 @@ import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
 
-type UserSelectionVariant = 'inline' | 'panel' | 'launcher';
+type UserSelectionVariant = 'inline' | 'panel' | 'shell';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
@@ -44,7 +44,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const users: User[] = [...USER_OPTIONS];
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
-  const showBubbleName = variant !== 'launcher';
+  const isPanel = variant === 'panel';
+  const isShell = variant === 'shell';
+  const showBubbleName = variant !== 'inline' ? true : variant === 'inline';
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   useEffect(() => {
@@ -172,7 +174,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
       <div className="user-selection__profiles">
-        {variant === 'panel' && (
+        {isPanel && (
           <>
             <h3 className="user-selection__title">{title}</h3>
           </>
@@ -181,7 +183,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         <div
           className={`user-selection__bubble-cluster user-selection__bubble-cluster--${variant}`}
         >
-          {variant === 'panel' ? (
+          {isPanel ? (
             <div className="user-selection__bubble-cluster-header" role="status" aria-live="polite">
               <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
             </div>
@@ -192,7 +194,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             aria-label="Select profile"
           >
             {users.map((profile) => {
-              const isLauncher = variant === 'launcher';
               const isActive = currentUser === profile;
               const selectionState =
                 !currentUser || !isSelectionAnimating || !selectionAnimatedUser
@@ -201,37 +202,25 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     ? 'active'
                     : 'inactive';
               const isHovered =
-                hoveredUser === profile || focusedUser === profile || (!isLauncher && isActive);
+                hoveredUser === profile || focusedUser === profile || (variant !== 'shell' && isActive);
               const hasPin = userHasPin(profile);
               const bubbleSize =
-                variant === 'panel'
+                isPanel
                   ? (isMobile ? 'compact' : 'default')
-                  : isLauncher
+                  : isShell
                     ? 'compact'
                     : 'tiny';
-              const launcherBubbleStyle: CSSProperties | undefined = isLauncher
-                ? {
-                    ['--gel-bubble-size' as string]: isMobile ? '74px' : '82px',
-                  }
-                : undefined;
               const profileCardVariantClass =
-                variant === 'panel'
+                isPanel
                   ? ' user-selection__profile-card--panel'
-                  : isLauncher
-                    ? ' user-selection__profile-card--launcher'
+                  : isShell
+                    ? ' user-selection__profile-card--shell'
                     : '';
 
               return (
                 <div
                   key={profile}
                   className={`user-selection__profile-card${profileCardVariantClass}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
-                  onClick={isLauncher ? () => selectProfile(profile) : undefined}
-                  onMouseEnter={isLauncher ? () => setHoveredUser(profile) : undefined}
-                  onMouseLeave={
-                    isLauncher
-                      ? () => setHoveredUser((value) => (value === profile ? null : value))
-                      : undefined
-                  }
                 >
                   <GelBubbleAvatar
                     user={profile}
@@ -242,16 +231,11 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     isSelectionAnimating={isSelectionAnimating}
                     size={bubbleSize}
                     onClick={(event) => {
-                      if (isLauncher) {
-                        event.stopPropagation();
-                      }
                       selectProfile(profile);
                     }}
-                    onMouseEnter={isLauncher ? undefined : () => setHoveredUser(profile)}
+                    onMouseEnter={() => setHoveredUser(profile)}
                     onMouseLeave={
-                      isLauncher
-                        ? undefined
-                        : () => setHoveredUser((value) => (value === profile ? null : value))
+                      () => setHoveredUser((value) => (value === profile ? null : value))
                     }
                     onFocus={() => setFocusedUser(profile)}
                     onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
@@ -259,27 +243,10 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     animationOffset={profile === 'Electra'}
                     aria-label={isActive ? 'Log out' : undefined}
                     aria-pressed={isActive}
-                    style={launcherBubbleStyle}
-                    disablePhotoHoverPreview={isLauncher}
+                    disablePhotoHoverPreview={isShell}
                   />
 
-                  {isLauncher ? (
-                    <div className="user-selection__profile-caption user-selection__profile-caption--launcher">
-                      <span className="user-selection__profile-name">{profile}</span>
-                      <div className="user-selection__profile-meta user-selection__profile-meta--launcher">
-                        {isActive ? (
-                          <span className="user-selection__meta-pill user-selection__meta-pill--active">
-                            Active
-                          </span>
-                        ) : null}
-                        {hasPin ? (
-                          <span className="user-selection__meta-pill user-selection__meta-pill--pin" aria-hidden="true">
-                            PIN Locked
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : variant === 'panel' && (isActive || hasPin) ? (
+                  {((isPanel || isShell) && (isActive || hasPin)) ? (
                     <div className="user-selection__profile-caption">
                       <div className="user-selection__profile-meta">
                         {isActive ? (
@@ -321,7 +288,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           </div>
         </div>
 
-        {variant === 'panel' && (
+        {(isPanel || isShell) && (
           <div className="user-selection__account-actions">
             {selectedNamedUser ? (
               <>
