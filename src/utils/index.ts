@@ -24,8 +24,6 @@ export {
   debounce,
 } from './shared.ts';
 export {
-  SeededRandom,
-  animationRandom,
   randomUtils,
   clamp,
   randomBetween,
