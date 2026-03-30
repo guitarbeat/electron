@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput } from './shared.ts';
+import { executeAction, isValidUrl, sanitizeInput, validateAndThrow } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -104,5 +104,35 @@ test('sanitizeInput', async (t) => {
 
   await t.test('returns empty string for control characters and whitespace only', () => {
     assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
+  });
+});
+
+test('validateAndThrow', async (t) => {
+  await t.test('returns result when validation passes', () => {
+    const mockValidator = () => ({ isValid: true, errors: {} });
+    const data = { field: 'value' };
+    const result = validateAndThrow(mockValidator, data);
+    assert.deepEqual(result, { isValid: true, errors: {} });
+  });
+
+  await t.test('throws error with first error message when validation fails', () => {
+    const mockValidator = () => ({
+      isValid: false,
+      errors: { field1: 'Error 1', field2: 'Error 2' }
+    });
+    const data = { field: 'value' };
+    assert.throws(
+      () => validateAndThrow(mockValidator, data),
+      new Error('Error 1')
+    );
+  });
+
+  await t.test('throws default error message when validation fails with no errors', () => {
+    const mockValidator = () => ({ isValid: false, errors: {} });
+    const data = { field: 'value' };
+    assert.throws(
+      () => validateAndThrow(mockValidator, data),
+      new Error('Validation failed')
+    );
   });
 });
