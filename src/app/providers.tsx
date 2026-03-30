@@ -186,6 +186,7 @@ export const useToast = (): ToastContextType => {
 interface UserContextType {
   hasAccess: boolean;
   pinProtectedUsers: User[];
+  usersMissingPins: User[];
   isSessionLoading: boolean;
   currentUser: User | null;
   setCurrentUser: (user: User | null) => Promise<boolean>;
@@ -198,6 +199,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [hasAccess, setHasAccess] = useState(false);
   const [pinProtectedUsers, setPinProtectedUsers] = useState<User[]>([]);
+  const [usersMissingPins, setUsersMissingPins] = useState<User[]>([]);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   const applySessionState = useCallback((nextState: SessionState) => {
@@ -205,10 +207,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       hasAccess: nextState.hasAccess,
       currentUser: nextState.currentUser,
       pinProtectedUsers: nextState.pinProtectedUsers,
+      usersMissingPins: nextState.usersMissingPins,
     });
     setHasAccess(nextState.hasAccess);
     setCurrentUserState(nextState.currentUser);
     setPinProtectedUsers(nextState.pinProtectedUsers);
+    setUsersMissingPins(nextState.usersMissingPins);
   }, []);
 
   const refreshSession = useCallback(async () => {
@@ -226,6 +230,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setHasAccess(false);
         setCurrentUserState(null);
         setPinProtectedUsers([]);
+        setUsersMissingPins([]);
         return;
       }
 
@@ -260,6 +265,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     () => ({
       hasAccess,
       pinProtectedUsers,
+      usersMissingPins,
       isSessionLoading,
       currentUser,
       setCurrentUser: async (user: User | null) => {
@@ -313,6 +319,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       hasAccess,
       isSessionLoading,
       pinProtectedUsers,
+      usersMissingPins,
       refreshSession,
     ]
   );
@@ -330,12 +337,13 @@ export const useUser = (): UserContextType => {
 
 export const useAppSession = (): Pick<
   UserContextType,
-  'hasAccess' | 'pinProtectedUsers' | 'isSessionLoading' | 'refreshSession'
+  'hasAccess' | 'pinProtectedUsers' | 'usersMissingPins' | 'isSessionLoading' | 'refreshSession'
 > => {
   const context = useUser();
   return {
     hasAccess: context.hasAccess,
     pinProtectedUsers: context.pinProtectedUsers,
+    usersMissingPins: context.usersMissingPins,
     isSessionLoading: context.isSessionLoading,
     refreshSession: context.refreshSession,
   };

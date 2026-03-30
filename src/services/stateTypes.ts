@@ -111,4 +111,5 @@ export interface SessionState {
   hasAccess: boolean;
   currentUser: User | null;
   pinProtectedUsers: User[];
+  usersMissingPins: User[];
 }

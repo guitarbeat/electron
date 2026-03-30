@@ -18,6 +18,11 @@ interface CachedGist {
 
 let gistCache: CachedGist | null = null;
 
+export interface GistFileRecord {
+  exists: boolean;
+  content: string | null;
+}
+
 const cleanEnvValue = (value: string | undefined): string => {
   let normalized = (value || '').trim();
 
@@ -64,6 +69,8 @@ const getGitHubToken = (): string =>
   cleanEnvValue(
     process.env.GITHUB_TOKEN || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || process.env.GH_TOKEN
   );
+
+export const isGitHubTokenConfigured = (): boolean => Boolean(getGitHubToken());
 
 const getGitHubHeaders = (options: { includeAuthorization?: boolean } = {}): Headers => {
   const headers = new Headers({
@@ -151,8 +158,35 @@ export const readGistFile = async (
   filename: string,
   options: { bypassCache?: boolean } = {}
 ): Promise<string | null> => {
+  const file = await readGistFileRecord(filename, options);
+  return file.content;
+};
+
+export const readGistFileRecord = async (
+  filename: string,
+  options: { bypassCache?: boolean } = {}
+): Promise<GistFileRecord> => {
   const gist = await fetchGist(options.bypassCache);
-  return gist.files?.[filename]?.content ?? null;
+  const file = gist.files?.[filename];
+
+  if (!file) {
+    return {
+      exists: false,
+      content: null,
+    };
+  }
+
+  return {
+    exists: true,
+    content: file.content ?? null,
+  };
+};
+
+export const listGistFiles = async (
+  options: { bypassCache?: boolean } = {}
+): Promise<string[]> => {
+  const gist = await fetchGist(options.bypassCache);
+  return Object.keys(gist.files ?? {});
 };
 
 export const patchGistFile = async (

@@ -34,6 +34,7 @@ import type {
   StateScope,
   StateScopeDataMap,
 } from '../../src/services/stateTypes.ts';
+import { STATE_SCOPES } from '../../src/services/stateTypes.ts';
 import type {
   MatchmakerGame,
   Message,
@@ -47,6 +48,7 @@ import type {
 import {
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
+  USER_OPTIONS,
   isValidUrl,
   parseJsonContent,
   sanitizeInput,
@@ -61,12 +63,28 @@ import {
   toQuotedEtag,
   unauthorizedResponse,
 } from './http.ts';
-import { patchGistFile, readGistFile } from './gistStore.ts';
+import {
+  isGitHubTokenConfigured,
+  listGistFiles,
+  patchGistFile,
+  readGistFileRecord,
+} from './gistStore.ts';
 import { hashPin, requireProfileUser, hasAccessSession, verifyStoredPin } from './session.ts';
 
 interface MutationContext {
   currentUser: User | null;
   now: string;
+}
+
+export interface PinCoverageState {
+  pinProtectedUsers: User[];
+  usersMissingPins: User[];
+  pinCoverageComplete: boolean;
+}
+
+export interface StateScopeDiagnostics {
+  expectedScopes: StateScope[];
+  missingScopes: StateScope[];
 }
 
 type MutationFailure = {
@@ -281,6 +299,17 @@ const ensureFourDigitPin = (value: unknown): string | null => {
 
 const ensureBoolean = (value: unknown): boolean | null =>
   typeof value === 'boolean' ? value : null;
+
+const buildPinCoverageState = (pinProtectedUsers: readonly User[]): PinCoverageState => {
+  const protectedSet = new Set<User>(pinProtectedUsers);
+  const usersMissingPins = USER_OPTIONS.filter((user) => !protectedSet.has(user));
+
+  return {
+    pinProtectedUsers: [...pinProtectedUsers],
+    usersMissingPins,
+    pinCoverageComplete: usersMissingPins.length === 0,
+  };
+};
 
 const scopes: {
   [K in StateScope]: ScopeDefinition<K, unknown>;
@@ -1237,6 +1266,22 @@ const getScopeDefinition = <TScope extends StateScope>(
 ): ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]> =>
   scopes[scope] as ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]>;
 
+const repairMissingScopeFile = async <TScope extends StateScope>(
+  scope: TScope,
+  definition: ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]>,
+  stored: unknown
+): Promise<void> => {
+  if (!isGitHubTokenConfigured()) {
+    return;
+  }
+
+  try {
+    await patchGistFile(definition.filename, definition.serialize(stored));
+  } catch (error) {
+    console.warn(`Failed to bootstrap missing ${scope} scope file.`, error);
+  }
+};
+
 const readScopeStoredData = async <TScope extends StateScope>(
   scope: TScope,
   options: { bypassCache?: boolean } = {}
@@ -1244,10 +1289,16 @@ const readScopeStoredData = async <TScope extends StateScope>(
   stored: unknown;
   clientData: StateScopeDataMap[TScope];
   version: string;
+  fileMissing: boolean;
 }> => {
   const definition = getScopeDefinition(scope);
-  const content = await readGistFile(definition.filename, options);
-  const stored = definition.parse(content);
+  const file = await readGistFileRecord(definition.filename, options);
+  const stored = definition.parse(file.content);
+
+  if (!file.exists) {
+    await repairMissingScopeFile(scope, definition, stored);
+  }
+
   const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
   const version = computeVersion(clientData);
 
@@ -1255,6 +1306,7 @@ const readScopeStoredData = async <TScope extends StateScope>(
     stored,
     clientData,
     version,
+    fileMissing: !file.exists,
   };
 };
 
@@ -1267,6 +1319,15 @@ const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
   return {
     clientData,
     version,
+  };
+};
+
+export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics> => {
+  const files = new Set(await listGistFiles());
+
+  return {
+    expectedScopes: [...STATE_SCOPES],
+    missingScopes: STATE_SCOPES.filter((scope) => !files.has(getScopeDefinition(scope).filename)),
   };
 };
 
@@ -1356,14 +1417,13 @@ const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
 };
 
 export const getPinProtectedUsers = async (): Promise<User[]> => {
-  try {
-    const { stored } = await readScopeStoredData('pins');
-    const pins = stored as UserPins;
-    return (['Aaron', 'Electra'] as const).filter((user) => Boolean(pins[user]));
-  } catch (error) {
-    console.warn('Falling back to no protected users.', error);
-    return [];
-  }
+  return (await getPinCoverageState()).pinProtectedUsers;
+};
+
+export const getPinCoverageState = async (): Promise<PinCoverageState> => {
+  const { stored } = await readScopeStoredData('pins');
+  const pins = stored as UserPins;
+  return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user])));
 };
 
 export const verifyProfilePin = async (

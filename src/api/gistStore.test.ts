@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { invalidateGistCache, readGistFile } from '../../api/_lib/gistStore.ts';
+import {
+  invalidateGistCache,
+  readGistFile,
+  readGistFileRecord,
+} from '../../api/_lib/gistStore.ts';
 
 const GIST_ID = 'ba250f944e3e9e71c0d669060254eab2';
 
@@ -304,6 +308,50 @@ test('readGistFile preserves auth rejection details when anonymous retry also fa
           () => readGistFile('movielist.json'),
           /Failed to read gist \(auth rejected: 401; anonymous retry: 404\)\./
         );
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    }
+  );
+});
+
+test('readGistFileRecord distinguishes missing files from present empty files', async () => {
+  await withGistEnv(
+    {
+      GIST_ID,
+    },
+    async () => {
+      const originalFetch = globalThis.fetch;
+
+      globalThis.fetch = (async () =>
+        new Response(
+          JSON.stringify({
+            files: {
+              'empty.json': {
+                content: '',
+              },
+            },
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )) as typeof fetch;
+
+      try {
+        const presentEmpty = await readGistFileRecord('empty.json');
+        const missing = await readGistFileRecord('missing.json');
+
+        assert.deepEqual(presentEmpty, {
+          exists: true,
+          content: '',
+        });
+        assert.deepEqual(missing, {
+          exists: false,
+          content: null,
+        });
       } finally {
         globalThis.fetch = originalFetch;
       }

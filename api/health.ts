@@ -1,9 +1,6 @@
 import { jsonResponse, mergeHeaders, methodNotAllowedResponse } from './_lib/http.ts';
-import { readGistFile } from './_lib/gistStore.ts';
+import { getPinCoverageState, getStateScopeDiagnostics } from './_lib/state.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
-
-/** Known scope file; used only to verify the gist read path (may be null if not created yet). */
-const READINESS_PROBE_FILE = 'movielist.json';
 
 async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
@@ -28,8 +25,21 @@ async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    await readGistFile(READINESS_PROBE_FILE, { bypassCache: false });
-    return jsonResponse({ ok: true, liveness: true, readiness: true });
+    const [scopeDiagnostics, pinCoverage] = await Promise.all([
+      getStateScopeDiagnostics(),
+      getPinCoverageState(),
+    ]);
+
+    return jsonResponse({
+      ok: true,
+      liveness: true,
+      readiness: true,
+      expectedScopes: scopeDiagnostics.expectedScopes,
+      missingScopes: scopeDiagnostics.missingScopes,
+      pinProtectedUsers: pinCoverage.pinProtectedUsers,
+      usersMissingPins: pinCoverage.usersMissingPins,
+      pinCoverageComplete: pinCoverage.pinCoverageComplete,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return jsonResponse(

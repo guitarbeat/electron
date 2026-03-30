@@ -89,6 +89,7 @@ test('session endpoint always reports app access even without a profile cookie',
         hasAccess: true,
         currentUser: null,
         pinProtectedUsers: [],
+        usersMissingPins: [],
       });
     } finally {
       console.warn = originalWarn;
@@ -117,6 +118,7 @@ test('profile endpoint allows selecting an unprotected user when the shared pin 
         hasAccess: true,
         currentUser: 'Aaron',
         pinProtectedUsers: [],
+        usersMissingPins: [],
       });
     } finally {
       console.warn = originalWarn;
@@ -158,9 +160,24 @@ test('profile endpoint still requires a PIN for protected users', async () => {
         hasAccess: true,
         currentUser: 'Aaron',
         pinProtectedUsers: ['Aaron'],
+        usersMissingPins: ['Electra'],
       });
     }
   );
+});
+
+test('session endpoint reports both users as missing PINs when pins.json is empty', async () => {
+  await withPinsStore({}, async () => {
+    const response = await sessionHandler(new Request('https://example.com/api/session'));
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+      hasAccess: true,
+      currentUser: null,
+      pinProtectedUsers: [],
+      usersMissingPins: ['Aaron', 'Electra'],
+    });
+  });
 });
 
 test('PIN lockout state only starts after configured max failures', () => {
