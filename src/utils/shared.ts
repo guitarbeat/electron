@@ -54,6 +54,10 @@ export const executeAction = (action?: () => void, onComplete?: () => void): voi
   onComplete?.();
 };
 
+/**
+ * Extracts and sanitizes an error message from an unknown error object,
+ * returning a fallback string if no valid message is found.
+ */
 export const getErrorMessage = (
   error: unknown,
   fallback: string = "Something went wrong.",
