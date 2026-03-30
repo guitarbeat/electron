@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput } from './shared.ts';
+import { executeAction, isValidUrl, sanitizeInput, parseJsonContent } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -104,5 +104,22 @@ test('sanitizeInput', async (t) => {
 
   await t.test('returns empty string for control characters and whitespace only', () => {
     assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
+  });
+});
+
+test('parseJsonContent', async (t) => {
+  await t.test('parses valid JSON string correctly', () => {
+    const json = '{"key": "value", "number": 42}';
+    assert.deepEqual(parseJsonContent(json, 'TestContext'), { key: 'value', number: 42 });
+  });
+
+  await t.test('throws an error with context for invalid JSON', () => {
+    const invalidJson = '{key: "value"}';
+    assert.throws(
+      () => parseJsonContent(invalidJson, 'TestContext'),
+      (err) => {
+        return err instanceof Error && err.message === 'Failed to parse TestContext JSON.' && err.cause instanceof SyntaxError;
+      }
+    );
   });
 });
