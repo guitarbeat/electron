@@ -302,6 +302,243 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
 
-    if (callNow) func.apply(this, args);
+  if (callNow) func.apply(this, args);
   };
+};
+
+/**
+ * Browser-specific utilities for clipboard access.
+ */
+export const copyTextToClipboard = async (value: string): Promise<void> => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const fallbackField = document.createElement('textarea');
+  fallbackField.value = value;
+  fallbackField.setAttribute('readonly', 'true');
+  fallbackField.style.position = 'fixed';
+  fallbackField.style.opacity = '0';
+  fallbackField.style.pointerEvents = 'none';
+
+  document.body.appendChild(fallbackField);
+  fallbackField.focus();
+  fallbackField.select();
+
+  const didCopy = document.execCommand('copy');
+  document.body.removeChild(fallbackField);
+
+  if (!didCopy) {
+    throw new Error('Clipboard unavailable');
+  }
+};
+
+/**
+ * Shared date and timestamp formatting utilities.
+ */
+
+/**
+ * Formats a message timestamp as a short time (e.g. "3:45 PM") for messages sent
+ * today, or as a short date (e.g. "Jan 5") for older messages.
+ */
+export const formatMessageTimestamp = (date: string): string => {
+  try {
+    const timestamp = new Date(date);
+    const now = new Date();
+
+    if (Number.isNaN(timestamp.getTime()) || Number.isNaN(now.getTime())) {
+      return '';
+    }
+
+    const diffSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+    if (diffSeconds < 0) {
+      return '';
+    }
+
+    if (diffSeconds < 86400) {
+      const hours = timestamp.getHours();
+      const minutes = timestamp.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+
+    return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * Formats a memory/record timestamp as a full date-time string
+ * (e.g. "Jan 5, 2025, 3:45 PM").
+ */
+export const formatMemoryTimestamp = (createdAt: string): string => {
+  const parsedDate = new Date(createdAt);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Unknown date';
+  }
+
+  return parsedDate.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+};
+
+/**
+ * Seeded random number generator for consistent results across renders
+ */
+export class SeededRandom {
+  private seed: number;
+
+  constructor(seed: number = Date.now()) {
+    this.seed = seed;
+  }
+
+  next(): number {
+    this.seed = (this.seed * 9301 + 49297) % 233280;
+    return this.seed / 233280;
+  }
+
+  nextFloat(min: number, max: number): number {
+    return min + this.next() * (max - min);
+  }
+
+  nextInt(min: number, max: number): number {
+    return Math.floor(this.nextFloat(min, max));
+  }
+
+  nextBoolean(): boolean {
+    return this.next() > 0.5;
+  }
+
+  nextArrayItem<T>(array: T[]): T {
+    return array[this.nextInt(0, array.length)];
+  }
+
+  shuffle<T>(array: T[]): T[] {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = this.nextInt(0, i + 1);
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+}
+
+// Global seeded random instance for consistent animations
+export const animationRandom = new SeededRandom(12345);
+
+/**
+ * Utility functions for common random patterns
+ */
+export const randomUtils = {
+  /**
+   * Get random item from array using seeded random for animations
+   */
+  randomItem: <T>(array: T[]): T => {
+    return array[Math.floor(Math.random() * array.length)];
+  },
+
+  /**
+   * Get random number in range
+   */
+  randomRange: (min: number, max: number): number => {
+    return min + Math.random() * (max - min);
+  },
+
+  /**
+   * Get random integer in range
+   */
+  randomInt: (min: number, max: number): number => {
+    return Math.floor(min + Math.random() * (max - min));
+  },
+
+  /**
+   * Get random boolean
+   */
+  randomBool: (): boolean => Math.random() > 0.5,
+
+  /**
+   * Generate confetti particle properties
+   */
+  generateConfettiParticle: (id: number, colors: string[]) => ({
+    id,
+    x: Math.random() * 100,
+    color: randomUtils.randomItem(colors),
+    delay: Math.random() * 0.5,
+    rotation: Math.random() * 360,
+    scale: 0.5 + Math.random() * 0.5,
+    isRounded: randomUtils.randomBool(),
+  }),
+
+  /**
+   * Generate star particle for cursor trail
+   */
+  generateCursorStar: (x: number, y: number, id: number) => ({
+    id,
+    x,
+    y,
+    opacity: 1,
+    scale: 0.5 + Math.random(),
+  }),
+
+  /**
+   * Generate food spawn properties
+   */
+  generateFoodSpawn: (boardWidth: number, foodSize: number, fruitList: string[], maxIndex: number) => ({
+    id: crypto.randomUUID(),
+    x: Math.random() * (boardWidth - foodSize),
+    y: -foodSize,
+    speed: 2 + Math.random() * 2,
+    fruit: randomUtils.randomItem(fruitList.slice(0, maxIndex)),
+  }),
+};
+
+/**
+ * Math and array utilities
+ */
+
+/**
+ * Clamps a number between a min and max value.
+ */
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
+/**
+ * Returns a random number between min (inclusive) and max (exclusive).
+ */
+export const randomBetween = (min: number, max: number): number =>
+  min + Math.random() * (max - min);
+
+/**
+ * Returns a shallow clone of an array of objects.
+ */
+export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
+  arr.map((item) => ({ ...item }));
+
+/**
+ * Returns a shuffled copy of the input without mutating the source array.
+ * Accepts an injectable RNG so tests can verify exact ordering.
+ */
+export const shuffleArray = <T>(
+  items: readonly T[],
+  random: () => number = Math.random,
+): T[] => {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
 };
