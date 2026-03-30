@@ -26,7 +26,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   className,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
-  const { userHasPin, verifyUserPin, setUserPin, removeUserPin, isLoading } = usePins();
+  const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } = usePins();
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPinSettings, setIsSavingPinSettings] = useState(false);
@@ -44,6 +44,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const users: User[] = [...USER_OPTIONS];
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
+  const selectedUserNeedsPin = selectedNamedUser ? userNeedsPin(selectedNamedUser) : false;
   const isPanel = variant === 'panel';
   const isShell = variant === 'shell';
   const showBubbleName = true;
@@ -65,6 +66,20 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     return () => window.clearTimeout(timer);
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!currentUser) {
+      setPinSettingsUser(null);
+      return;
+    }
+
+    if (!userNeedsPin(currentUser)) {
+      return;
+    }
+
+    setSelectionError(null);
+    setPinSettingsUser((existing) => (existing === currentUser ? existing : currentUser));
+  }, [currentUser, userNeedsPin]);
+
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
     if (profile === currentUser) {
@@ -82,6 +97,9 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           const didSet = await setCurrentUser(profile);
           if (didSet) {
             onUserSelected?.(profile);
+            if (userNeedsPin(profile)) {
+              setPinSettingsUser(profile);
+            }
           }
         } catch (error) {
           console.error('Profile selection failed:', error);
@@ -131,6 +149,16 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     setPinSettingsUser(selectedNamedUser);
   };
 
+  const handlePinSettingsCancel = () => {
+    const requiredSetupUser = pinSettingsUser && userNeedsPin(pinSettingsUser) ? pinSettingsUser : null;
+    setPinSettingsUser(null);
+    setSelectionError(null);
+
+    if (requiredSetupUser) {
+      handleLogout();
+    }
+  };
+
   const handlePinSettingsSubmit = async (pin: string, newPin?: string): Promise<boolean> => {
     if (!pinSettingsUser) return false;
 
@@ -152,18 +180,6 @@ const UserSelection: React.FC<UserSelectionProps> = ({
       const saved = await setUserPin(pinSettingsUser, newPin);
       if (saved) setPinSettingsUser(null);
       return saved;
-    } finally {
-      setIsSavingPinSettings(false);
-    }
-  };
-
-  const handleRemovePin = async () => {
-    if (!pinSettingsUser) return;
-
-    setIsSavingPinSettings(true);
-    try {
-      const removed = await removeUserPin(pinSettingsUser);
-      if (removed) setPinSettingsUser(null);
     } finally {
       setIsSavingPinSettings(false);
     }
@@ -204,6 +220,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
               const isHovered =
                 hoveredUser === profile || focusedUser === profile || (variant !== 'shell' && isActive);
               const hasPin = userHasPin(profile);
+              const needsPin = userNeedsPin(profile);
               const bubbleSize =
                 isPanel
                   ? (isMobile ? 'compact' : 'default')
@@ -241,17 +258,30 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                     onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
                     disabled={isDisabled}
                     animationOffset={profile === 'Electra'}
-                    aria-label={isActive ? 'Log out' : undefined}
+                    aria-label={
+                      isActive
+                        ? 'Log out'
+                        : needsPin
+                          ? `Select ${profile} (PIN required)`
+                          : hasPin
+                            ? `Select ${profile} (PIN protected)`
+                            : undefined
+                    }
                     aria-pressed={isActive}
                     disablePhotoHoverPreview={isShell}
                   />
 
-                  {((isPanel || isShell) && (isActive || hasPin)) ? (
+                  {((isPanel || isShell) && (isActive || hasPin || needsPin)) ? (
                     <div className="user-selection__profile-caption">
                       <div className="user-selection__profile-meta">
                         {isActive ? (
                           <span className="user-selection__meta-pill user-selection__meta-pill--active">
                             Active
+                          </span>
+                        ) : null}
+                        {needsPin ? (
+                          <span className="user-selection__meta-pill user-selection__meta-pill--pin-required">
+                            PIN Required
                           </span>
                         ) : null}
                         {hasPin ? (
@@ -298,10 +328,18 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   onClick={openPinSettings}
                   disabled={isDisabled || isSavingPinSettings}
                   aria-label={
-                    userHasPin(selectedNamedUser) ? 'Change profile PIN' : 'Set profile PIN'
+                    selectedUserNeedsPin
+                      ? 'Finish required profile PIN setup'
+                      : userHasPin(selectedNamedUser)
+                        ? 'Change profile PIN'
+                        : 'Set profile PIN'
                   }
                 >
-                  {userHasPin(selectedNamedUser) ? 'Change PIN' : 'Set PIN'}
+                  {selectedUserNeedsPin
+                    ? 'Finish PIN Setup'
+                    : userHasPin(selectedNamedUser)
+                      ? 'Change PIN'
+                      : 'Set PIN'}
                 </button>
                 <button
                   type="button"
@@ -344,14 +382,11 @@ const UserSelection: React.FC<UserSelectionProps> = ({
         <PinDialog
           isOpen={!!pinSettingsUser}
           user={pinSettingsUser}
-          onCancel={() => {
-            setPinSettingsUser(null);
-            setSelectionError(null);
-          }}
+          onCancel={handlePinSettingsCancel}
           onSubmit={handlePinSettingsSubmit}
-          onRemove={pinSettingsMode === 'change' ? handleRemovePin : undefined}
           mode={pinSettingsMode}
           isLoading={isSavingPinSettings}
+          isRequiredSetup={pinSettingsMode === 'set' && (pinSettingsUser ? userNeedsPin(pinSettingsUser) : false)}
         />
       )}
     </div>

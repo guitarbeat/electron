@@ -11,6 +11,7 @@ export const usePins = (isPaused: boolean = false) => {
   const {
     hasAccess,
     pinProtectedUsers,
+    usersMissingPins,
     isSessionLoading,
     refreshSession,
   } = useAppSession();
@@ -32,6 +33,11 @@ export const usePins = (isPaused: boolean = false) => {
     [pinProtectedUsers]
   );
 
+  const userNeedsPin = useCallback(
+    (user: User): boolean => usersMissingPins.includes(user),
+    [usersMissingPins]
+  );
+
   const setUserPin = useCallback(
     async (user: User, pin: string): Promise<boolean> => {
       if (!hasAccess || !currentUser || currentUser !== user) {
@@ -51,31 +57,6 @@ export const usePins = (isPaused: boolean = false) => {
         return true;
       } catch (error) {
         console.error('Error setting PIN:', error);
-        return false;
-      }
-    },
-    [currentUser, hasAccess, pinProtectedUsers, refreshSession]
-  );
-
-  const removeUserPin = useCallback(
-    async (user: User): Promise<boolean> => {
-      if (!hasAccess || !currentUser || currentUser !== user) {
-        return false;
-      }
-
-      try {
-        await mutateScope('pins', {
-          op: 'remove_pin',
-          payload: {},
-          optimisticData: {
-            Aaron: user === 'Aaron' ? false : pinProtectedUsers.includes('Aaron'),
-            Electra: user === 'Electra' ? false : pinProtectedUsers.includes('Electra'),
-          },
-        });
-        await refreshSession();
-        return true;
-      } catch (error) {
-        console.error('Error removing PIN:', error);
         return false;
       }
     },
@@ -127,10 +108,11 @@ export const usePins = (isPaused: boolean = false) => {
       Aaron: pinProtectedUsers.includes('Aaron'),
       Electra: pinProtectedUsers.includes('Electra'),
     },
+    usersMissingPins,
     isLoading: isSessionLoading,
     userHasPin,
+    userNeedsPin,
     setUserPin,
-    removeUserPin,
     verifyUserPin,
     refresh: refreshSession,
   };

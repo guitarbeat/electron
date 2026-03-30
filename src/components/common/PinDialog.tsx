@@ -13,8 +13,8 @@ interface PinDialogProps {
   mode: 'enter' | 'set' | 'change';
   onSubmit: (pin: string, newPin?: string) => Promise<boolean>;
   onCancel: () => void;
-  onRemove?: () => void;
   isLoading?: boolean;
+  isRequiredSetup?: boolean;
 }
 
 const PIN_LENGTH = 4;
@@ -25,8 +25,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
   mode,
   onSubmit,
   onCancel,
-  onRemove,
   isLoading = false,
+  isRequiredSetup = false,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const focusTimerRef = useRef<number | null>(null);
@@ -195,7 +195,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   const getTitle = () => {
     if (mode === 'enter') return `Unlock ${user}'s Profile`;
-    if (mode === 'set') return `Create a PIN for ${user}`;
+    if (mode === 'set') {
+      return isRequiredSetup ? `Secure ${user}'s Profile` : `Create a PIN for ${user}`;
+    }
     if (mode === 'change') {
       if (step === 'current') return 'Confirm Current PIN';
       if (step === 'new') return 'Create New PIN';
@@ -422,7 +424,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     currentValue.length === PIN_LENGTH && !isLoading ? shadows.glow : 'none',
                 }}
               >
-                {mode === 'enter' ? 'Unlock' : step === 'confirm' ? 'Save' : 'Next'}
+                {mode === 'enter'
+                  ? 'Unlock'
+                  : step === 'confirm'
+                    ? (isRequiredSetup ? 'Save PIN' : 'Save')
+                    : 'Next'}
               </Button>
 
               <div style={{ display: 'flex', gap: spacing.sm }}>
@@ -434,20 +440,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   disabled={isLoading}
                   style={{ flex: 1, color: colors.textSecondary, fontSize: typography.fontSize.xs }}
                 >
-                  Cancel
+                  {isRequiredSetup ? 'Log out' : 'Cancel'}
                 </Button>
-                {mode === 'change' && onRemove && step === 'current' && (
-                  <Button
-                    type="button"
-                    variant="danger"
-                    size="sm"
-                    onClick={onRemove}
-                    disabled={isLoading}
-                    style={{ flex: 1, fontSize: typography.fontSize.xs }}
-                  >
-                    Remove
-                  </Button>
-                )}
               </div>
             </div>
           </form>

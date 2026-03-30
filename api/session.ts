@@ -1,6 +1,6 @@
 import { jsonResponse, methodNotAllowedResponse, serverErrorResponse } from './_lib/http.ts';
 import { getSessionState } from './_lib/session.ts';
-import { getPinProtectedUsers } from './_lib/state.ts';
+import { getPinCoverageState } from './_lib/state.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
 import type { User } from '../src/shared/types.ts';
 
@@ -12,17 +12,21 @@ async function handler(req: Request): Promise<Response> {
 
     const session = getSessionState(req);
     let pinProtectedUsers: User[] = [];
+    let usersMissingPins: User[] = [];
 
     try {
-      pinProtectedUsers = await getPinProtectedUsers();
+      const pinCoverage = await getPinCoverageState();
+      pinProtectedUsers = pinCoverage.pinProtectedUsers;
+      usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      console.warn('Failed to read pin-protected users for session state.', error);
+      console.warn('Failed to read PIN coverage for session state.', error);
     }
 
     return jsonResponse({
       hasAccess: session.hasAccess,
       currentUser: session.currentUser,
       pinProtectedUsers,
+      usersMissingPins,
     });
   } catch (error) {
     console.error('Failed to read session state', error);

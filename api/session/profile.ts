@@ -13,7 +13,7 @@ import {
   getPinAttemptState,
   getSessionState,
 } from '../_lib/session.ts';
-import { getPinProtectedUsers, verifyProfilePin } from '../_lib/state.ts';
+import { getPinCoverageState, verifyProfilePin } from '../_lib/state.ts';
 import { withWebHandler } from '../_lib/webHandler.ts';
 import { isUser } from '../../src/utils/shared.ts';
 
@@ -55,11 +55,14 @@ export const computeNextPinAttemptState = (
 async function handler(req: Request): Promise<Response> {
   try {
     if (req.method === 'DELETE') {
-      let pinProtectedUsers: Awaited<ReturnType<typeof getPinProtectedUsers>> = [];
+      let pinProtectedUsers: string[] = [];
+      let usersMissingPins: string[] = [];
       try {
-        pinProtectedUsers = await getPinProtectedUsers();
+        const pinCoverage = await getPinCoverageState();
+        pinProtectedUsers = pinCoverage.pinProtectedUsers;
+        usersMissingPins = pinCoverage.usersMissingPins;
       } catch (error) {
-        console.warn('Failed to read pin-protected users during logout.', error);
+        console.warn('Failed to read PIN coverage during logout.', error);
       }
 
       return jsonResponse(
@@ -67,6 +70,7 @@ async function handler(req: Request): Promise<Response> {
           hasAccess: true,
           currentUser: null,
           pinProtectedUsers,
+          usersMissingPins,
         },
         {
           headers: mergeHeaders(
@@ -102,7 +106,15 @@ async function handler(req: Request): Promise<Response> {
       return badRequestResponse('A valid user is required.');
     }
 
-    const pinProtectedUsers = await getPinProtectedUsers();
+    let pinProtectedUsers: string[] = [];
+    let usersMissingPins: string[] = [];
+    try {
+      const pinCoverage = await getPinCoverageState();
+      pinProtectedUsers = pinCoverage.pinProtectedUsers;
+      usersMissingPins = pinCoverage.usersMissingPins;
+    } catch (error) {
+      console.warn('Failed to read PIN coverage during profile update.', error);
+    }
     const requiresPin = pinProtectedUsers.includes(user);
 
     if (requiresPin) {
@@ -172,6 +184,7 @@ async function handler(req: Request): Promise<Response> {
         hasAccess: currentSession.hasAccess,
         currentUser: user,
         pinProtectedUsers,
+        usersMissingPins,
       },
       {
         headers: mergeHeaders(

@@ -1321,6 +1321,15 @@ body {
   border-color: color-mix(in srgb, var(--color-accent) 24%, rgba(255, 255, 255, 0.08));
 }
 
+.user-selection__meta-pill--pin-required {
+  color: color-mix(in srgb, #fff0bc 78%, white 22%);
+  border-color: color-mix(in srgb, #f0c96f 34%, rgba(255, 255, 255, 0.08));
+  background:
+    linear-gradient(180deg, rgba(255, 249, 220, 0.18) 0%, transparent 100%),
+    color-mix(in srgb, #8a6433 36%, rgba(255, 255, 255, 0.04));
+  box-shadow: 0 0 10px rgba(240, 201, 111, 0.12);
+}
+
 .user-selection__profile-note {
   font-size: 0.64rem;
   color: color-mix(in srgb, var(--color-text-secondary) 82%, white 18%);
