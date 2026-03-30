@@ -586,7 +586,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     handleToggleError,
     isMobile,
     isSuggestionsLoading,
-    isWatchlistDegraded,
     movieMemories,
     renameMovie,
     renderMovieGrid,

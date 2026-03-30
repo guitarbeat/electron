@@ -66,8 +66,7 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'scrapbook'>('list');
   const [imageUrl, setImageUrl] = useState('');
 
-  const memories = snapshot?.data ?? [];
-  const sorted = useMemo(() => sortMemories(memories, 'newest'), [memories]);
+  const sorted = useMemo(() => sortMemories(snapshot?.data ?? [], 'newest'), [snapshot?.data]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

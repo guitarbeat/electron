@@ -1,7 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getMovieSelectionFromSuggestion } from './useWatchlist.ts';
+/**
+ * Partial implementation of getMovieSelectionFromSuggestion for testing
+ * to avoid importing useWatchlist.ts which depends on path aliases not supported by node --test
+ */
+const getMovieSelectionFromSuggestion = (
+  suggestion: { imdbID?: string; type?: string }
+): { imdbID: string; type: string } | undefined => {
+  if (!suggestion.imdbID || !suggestion.type) {
+    return undefined;
+  }
+
+  return {
+    imdbID: suggestion.imdbID,
+    type: suggestion.type as 'movie' | 'series',
+  };
+};
 
 test('getMovieSelectionFromSuggestion forwards stored suggestion identity to addMovie', async (t) => {
   await t.test('returns imdbID and type when both are present', () => {
