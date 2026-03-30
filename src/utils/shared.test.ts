@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput } from './shared.ts';
+import { executeAction, getErrorMessage, isValidUrl, sanitizeInput } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -104,5 +104,36 @@ test('sanitizeInput', async (t) => {
 
   await t.test('returns empty string for control characters and whitespace only', () => {
     assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
+  });
+});
+
+
+test('getErrorMessage', async (t) => {
+  await t.test('returns message from Error instance', () => {
+    const error = new Error('Database connection failed');
+    assert.equal(getErrorMessage(error), 'Database connection failed');
+  });
+
+  await t.test('returns sanitized message from Error instance', () => {
+    const error = new Error('  Error with \x00control chars  ');
+    assert.equal(getErrorMessage(error), 'Error with control chars');
+  });
+
+  await t.test('returns fallback if Error message is empty after sanitization', () => {
+    const error = new Error('   \n\t  ');
+    assert.equal(getErrorMessage(error), 'Something went wrong.');
+    assert.equal(getErrorMessage(error, 'Custom fallback'), 'Custom fallback');
+  });
+
+  await t.test('returns default fallback for non-Error types', () => {
+    assert.equal(getErrorMessage('Just a string error'), 'Something went wrong.');
+    assert.equal(getErrorMessage({ message: 'Object error' }), 'Something went wrong.');
+    assert.equal(getErrorMessage(null), 'Something went wrong.');
+    assert.equal(getErrorMessage(undefined), 'Something went wrong.');
+  });
+
+  await t.test('returns custom fallback for non-Error types', () => {
+    assert.equal(getErrorMessage('Just a string error', 'Custom fallback'), 'Custom fallback');
+    assert.equal(getErrorMessage(null, 'Custom fallback'), 'Custom fallback');
   });
 });
