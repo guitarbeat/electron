@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput } from './shared.ts';
+import { executeAction, isValidUrl, sanitizeInput, shallowCloneArray } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -104,5 +104,45 @@ test('sanitizeInput', async (t) => {
 
   await t.test('returns empty string for control characters and whitespace only', () => {
     assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
+  });
+});
+
+test('shallowCloneArray', async (t) => {
+
+  await t.test('creates a new array with cloned objects', () => {
+    const original = [{ id: 1 }, { id: 2 }];
+    const cloned = shallowCloneArray(original);
+
+    // Should not be the same array reference
+    assert.notEqual(cloned, original);
+
+    // Should have the same deep values
+    assert.deepEqual(cloned, original);
+
+    // Should not have the same object references
+    assert.notEqual(cloned[0], original[0]);
+    assert.notEqual(cloned[1], original[1]);
+  });
+
+  await t.test('handles an empty array', () => {
+    const original: any[] = [];
+    const cloned = shallowCloneArray(original);
+
+    assert.notEqual(cloned, original);
+    assert.deepEqual(cloned, []);
+  });
+
+  await t.test('preserves object properties', () => {
+    const original = [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25, active: true }];
+    const cloned = shallowCloneArray(original);
+
+    assert.deepEqual(cloned, original);
+    assert.notEqual(cloned[0], original[0]);
+    assert.notEqual(cloned[1], original[1]);
+
+    // Modifying the cloned object should not affect the original
+    cloned[0].name = 'Charlie';
+    assert.equal(original[0].name, 'Alice');
+    assert.equal(cloned[0].name, 'Charlie');
   });
 });

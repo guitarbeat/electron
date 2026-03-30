@@ -232,6 +232,12 @@ export const validateAndThrow = (
 // ============================================================================
 
 /**
+ * Returns a shallow clone of an array of objects.
+ */
+export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
+  arr.map((item) => ({ ...item }));
+
+/**
  * Helper to control concurrency when processing array items
  * @param items The array of items to process
  * @param concurrency The maximum number of concurrent operations

@@ -22,6 +22,7 @@ export {
   normalizeMovieTitle,
   throttle,
   debounce,
+  shallowCloneArray,
 } from './shared.ts';
 export {
   SeededRandom,
@@ -29,7 +30,6 @@ export {
   randomUtils,
   clamp,
   randomBetween,
-  shallowCloneArray,
   shuffleArray,
 } from './random.ts';
 export * from './styling.ts';

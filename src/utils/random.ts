@@ -125,12 +125,6 @@ export const randomBetween = (min: number, max: number): number =>
   min + Math.random() * (max - min);
 
 /**
- * Returns a shallow clone of an array of objects.
- */
-export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
-  arr.map((item) => ({ ...item }));
-
-/**
  * Returns a shuffled copy of the input without mutating the source array.
  * Accepts an injectable RNG so tests can verify exact ordering.
  */
