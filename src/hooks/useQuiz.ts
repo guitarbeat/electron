@@ -8,8 +8,8 @@ import { useState, useCallback } from 'react';
 import { usePolling } from '@/services/polling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
 import { areDeeplyEqual } from '@/utils';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
-import type { QuizData } from '@/services/stateTypes';
+import { mutateScope, readScope, retryScopeSync } from '@/services/state';
+import type { QuizData } from '@/services/state/stateTypes';
 
 const POLLING_INTERVAL = 30000;
 

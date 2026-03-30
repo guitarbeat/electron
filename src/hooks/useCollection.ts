@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePolling } from '@/services/polling';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
-import type { StateScope, StateScopeDataMap } from '@/services/stateTypes';
+import { mutateScope, readScope, retryScopeSync } from '@/services/state';
+import type { StateScope, StateScopeDataMap } from '@/services/state/stateTypes';
 import { areDeeplyEqual } from '@/utils';
 import { User } from '@/shared/types';
 

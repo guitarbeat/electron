@@ -2,9 +2,9 @@ import { useCallback, useMemo } from 'react';
 import { sanitizeInput } from '@/utils';
 import { MovieSuggestion, User } from '@/shared/types';
 import { useUser } from '@/app/providers';
-import { mutateScope } from '@/services/stateClient';
-import type { MovieAutocompleteResult } from '@/services/metadataService';
-import { useCollection } from './useCollection';
+import { mutateScope } from '@/services/state';
+import type { MovieAutocompleteResult } from '@/services/metadata/types';
+import { useCollection } from '../useCollection';
 
 export interface BaseSuggestion {
   id: string;

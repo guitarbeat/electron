@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useAppSession, useUser } from '@/app/providers';
-import { mutateScope } from '@/services/stateClient';
+import { mutateScope } from '@/services/state';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
 import type { User } from '../shared/types.ts';
 

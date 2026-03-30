@@ -1,20 +1,20 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import { mediaBreakpoints, useMediaQuery } from '../useMediaQuery';
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
-} from '@/services/memoryService';
-import type { MovieAutocompleteResult } from '@/services/metadataService';
-import { usePolling } from '@/services/polling';
-import { Movie, MovieSuggestion, User } from '@/shared/types';
-import { useMovies } from '@/hooks/useMovies';
-import { useSuggestions } from '@/hooks/useSuggestions';
-import { useToast } from '@/app/providers';
-import { areDeeplyEqual, normalizeMovieTitle, sanitizeInput } from '@/utils';
-import { trackMetric } from '@/services/analyticsService';
-import { readScope, retryScopeSync } from '@/services/stateClient';
+} from '../../services/content/memoryService';
+import type { MovieAutocompleteResult } from '../../services/metadata/types';
+import { usePolling } from '../../services/polling';
+import { Movie, MovieSuggestion, User } from '../../shared/types';
+import { useMovies } from './useMovies';
+import { useSuggestions } from '../suggestions/useSuggestions';
+import { useToast } from '../../../app/providers';
+import { areDeeplyEqual, normalizeMovieTitle, sanitizeInput } from '../../utils';
+import { trackMetric } from '../../services/content/analyticsService';
+import { readScope, retryScopeSync } from '../../services/state';
 
 const POLLING_INTERVAL = 30000;
 interface UseWatchlistProps {
