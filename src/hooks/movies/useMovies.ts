@@ -335,14 +335,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       window.setTimeout(resolve, 2000);
     });
 
-    for (const movie of moviesMissingMetadata) {
-      if (!currentUser) break;
+    await concurrentMap(moviesMissingMetadata, 5, async (movie) => {
+      if (!currentUser) return;
       try {
         await updateMovieMetadata(movie);
       } catch (error) {
         console.warn(`Auto-sync failed for ${movie.title}:`, error);
       }
-    }
+    });
   }, [currentUser, isSubmitting, movies, updateMovieMetadata]);
 
   useEffect(() => {
