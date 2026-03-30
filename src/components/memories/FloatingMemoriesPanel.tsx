@@ -12,8 +12,8 @@ import {
 } from '@/services/memoryService';
 import { readScope } from '@/services/stateClient';
 import type { ScopeSnapshot } from '@/services/stateTypes';
-import { formatMemoryTimestamp } from '@/utils/date';
-import { sortMemories } from './memoryUtils';
+import { formatMemoryTimestamp } from '@/utils';
+import { sortMemories, type MemorySortMode } from './memoryUtils';
 import type { SharedMemory } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';
@@ -64,9 +64,10 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'scrapbook'>('list');
+  const [sortMode, setSortMode] = useState<MemorySortMode>('newest');
   const [imageUrl, setImageUrl] = useState('');
 
-  const sorted = useMemo(() => sortMemories(snapshot?.data ?? [], 'newest'), [snapshot?.data]);
+  const sorted = useMemo(() => sortMemories(snapshot?.data ?? [], sortMode), [snapshot?.data, sortMode]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -207,6 +208,26 @@ const FloatingMemoriesPanel: React.FC = () => {
           >
             {showPinnedOnly ? 'Showing Pinned' : 'Show Pinned Only'}
           </Button>
+          <div style={{ display: 'flex', gap: spacing.xs, background: colors.surface2, padding: '4px', borderRadius: radius.md }}>
+            <Button
+              size="sm"
+              variant={sortMode === 'newest' ? 'primary' : 'ghost'}
+              onClick={() => setSortMode('newest')}
+              style={{ padding: '4px 8px', minWidth: '40px' }}
+              title="Sort by Newest"
+            >
+              🕐
+            </Button>
+            <Button
+              size="sm"
+              variant={sortMode === 'oldest' ? 'primary' : 'ghost'}
+              onClick={() => setSortMode('oldest')}
+              style={{ padding: '4px 8px', minWidth: '40px' }}
+              title="Sort by Oldest"
+            >
+              🕰️
+            </Button>
+          </div>
           <div style={{ display: 'flex', gap: spacing.xs, background: colors.surface2, padding: '4px', borderRadius: radius.md }}>
             <Button
               size="sm"

@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useUser, useToast } from '@/app/providers';
-import { usePlaces } from '@/hooks/usePlaces';
+import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
@@ -12,7 +12,7 @@ import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
 import { buildPlaceSections } from './placeSections.ts';
-import { usePlaceSuggestions } from '../../hooks/usePlaceSuggestions.ts';
+import { usePlaceSuggestions } from '@/hooks/places';
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();

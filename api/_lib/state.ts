@@ -46,13 +46,13 @@ import type {
   User,
 } from '../../src/shared/types.ts';
 import {
-  MAX_MESSAGE_LENGTH,
-  MAX_MOVIE_TITLE_LENGTH,
   USER_OPTIONS,
   isValidUrl,
   parseJsonContent,
   sanitizeInput,
-} from '../../src/utils/shared.ts';
+  MAX_MESSAGE_LENGTH,
+  MAX_MOVIE_TITLE_LENGTH,
+} from '../../src/utils';
 import {
   badRequestResponse,
   conflictResponse,
