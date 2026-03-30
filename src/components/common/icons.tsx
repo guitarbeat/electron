@@ -146,12 +146,6 @@ export const QuickActionsIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const FilmIcon: React.FC<IconProps> = (props) => (
-  <StrokeIcon {...props}>
-    {path('M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0V1m10 3V1m0 3l1 1v16a2 2 0 01-2 2H6a2 2 0 01-2-2V5l1-1z')}
-  </StrokeIcon>
-);
-
 export const PlusIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>{path('M12 6v6m0 0v6m0-6h6m-6 0H6')}</StrokeIcon>
 );
