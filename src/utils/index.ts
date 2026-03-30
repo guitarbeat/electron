@@ -34,4 +34,3 @@ export {
 } from './random.ts';
 export * from './styling.ts';
 export * from './date.ts';
-export * from './browser.ts';
