@@ -9,6 +9,7 @@ import {
   buildSpinWheelGradient,
   computeSpinOutcome,
   getSpinCandidates,
+  getSpinPool,
   type SpinMode,
 } from './spinWheelEngine.ts';
 import { useSpinWheelState } from '@/hooks/useSpinWheelState';
@@ -30,6 +31,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('queue');
+  const [selectedPoolIds, setSelectedPoolIds] = useState<string[]>([]);
   const spinTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -57,20 +59,31 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   }, [movies, selectedMovieId]);
 
   const candidates = useMemo(() => getSpinCandidates(movies, mode), [mode, movies]);
+  const selectedPoolIdSet = useMemo(() => new Set(selectedPoolIds), [selectedPoolIds]);
+  const spinPool = useMemo(
+    () => getSpinPool(movies, mode, selectedPoolIdSet),
+    [mode, movies, selectedPoolIdSet]
+  );
+  const isSubsetActive = selectedPoolIdSet.size > 0;
+
+  useEffect(() => {
+    const candidateIds = new Set(candidates.map((movie) => movie.id));
+    setSelectedPoolIds((current) => current.filter((id) => candidateIds.has(id)));
+  }, [candidates]);
 
   const selectedMovie = useMemo(
     () => movies.find((movie) => movie.id === selectedMovieId) || null,
     [movies, selectedMovieId]
   );
 
-  const gradient = useMemo(() => buildSpinWheelGradient(candidates.length), [candidates.length]);
-  const segmentAngle = candidates.length > 0 ? 360 / candidates.length : 0;
-  const previewMovies = useMemo(() => candidates.slice(0, 3), [candidates]);
+  const gradient = useMemo(() => buildSpinWheelGradient(spinPool.length), [spinPool.length]);
+  const segmentAngle = spinPool.length > 0 ? 360 / spinPool.length : 0;
+  const candidatePreviewMovies = useMemo(() => candidates, [candidates]);
 
   const handleSpin = () => {
-    if (isSpinning || candidates.length === 0 || !currentUser) return;
+    if (isSpinning || spinPool.length === 0 || !currentUser) return;
 
-    const outcome = computeSpinOutcome(candidates, rotation);
+    const outcome = computeSpinOutcome(spinPool, rotation);
     if (!outcome) {
       return;
     }
@@ -107,6 +120,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
       spinTimeoutRef.current = null;
     }, 4200);
+  };
+
+  const togglePoolSelection = (movieId: string) => {
+    setSelectedPoolIds((current) =>
+      current.includes(movieId) ? current.filter((id) => id !== movieId) : [...current, movieId]
+    );
   };
 
   const toggleWatchedForCurrentUser = async () => {
@@ -178,7 +197,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     ? '...'
     : !currentUser
       ? 'Pick'
-      : candidates.length === 0
+      : spinPool.length === 0
         ? 'Wait'
         : 'Spin';
 
@@ -199,7 +218,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         <div className="spin-wheel-summary__item">
           <span className="spin-wheel-summary__label">Candidates</span>
           <strong className="spin-wheel-summary__value">
-            {candidates.length} title{candidates.length === 1 ? '' : 's'}
+            {spinPool.length} title{spinPool.length === 1 ? '' : 's'}
           </strong>
         </div>
         <div className="spin-wheel-summary__item">
@@ -245,10 +264,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         >
           <div className="spin-marker" />
           <div className="spin-wheel-container">
-            <div
-              className="spin-wheel-rotor"
-              style={{
-                transform: `rotate(${rotation}deg)`,
+          <div
+            className="spin-wheel-rotor"
+            style={{
+              transform: `rotate(${rotation}deg)`,
                 transition: isSpinning
                   ? 'transform 4.2s cubic-bezier(0.12, 0.85, 0.18, 1)'
                   : 'transform 0.4s ease',
@@ -256,7 +275,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             >
               <div className="spin-wheel" style={{ background: gradient }} />
               <div className="spin-wheel-gloss" />
-              {candidates.map((movie, index) => {
+              {spinPool.map((movie, index) => {
                 const angle = segmentAngle * index + segmentAngle / 2;
                 const isFlipped = angle > 90 && angle < 270;
 
@@ -267,7 +286,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                     style={
                       {
                         '--segment-angle': `${angle}deg`,
-                        '--segment-count': `${Math.max(candidates.length, 1)}`,
+                        '--segment-count': `${Math.max(spinPool.length, 1)}`,
                       } as React.CSSProperties
                     }
                   >
@@ -291,7 +310,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                 type="button"
                 className="spin-wheel-trigger"
                 onClick={handleSpin}
-                disabled={isSpinning || isLoading || candidates.length === 0}
+                disabled={isSpinning || isLoading || spinPool.length === 0}
                 aria-label={isSpinning ? 'Spinning' : emptyStateMessage ?? 'Spin the wheel'}
               >
                 <span className="spin-wheel-trigger__label">{triggerLabel}</span>
@@ -343,19 +362,63 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               </h3>
               <p className="spin-wheel-panel__copy">
                 {emptyStateMessage ??
-                  `The wheel is loaded with ${candidates.length} ${
+                  `The wheel is loaded with ${spinPool.length} ${
                     mode === 'queue' ? 'queue' : 'total'
                   } titles. Tap the center button and let it decide.`}
               </p>
 
-              {previewMovies.length > 0 ? (
-                <div className="spin-wheel-preview-strip" aria-label="Candidate preview">
-                  {previewMovies.map((movie) => (
-                    <div key={movie.id} className="spin-wheel-preview-strip__item">
-                      {renderPoster(movie, 'spin-wheel-preview-strip__poster')}
-                      <span className="spin-wheel-preview-strip__title">{movie.title}</span>
-                    </div>
-                  ))}
+              {candidatePreviewMovies.length > 0 ? (
+                <div
+                  className="spin-wheel-preview-strip"
+                  aria-label="Candidate preview"
+                  style={{
+                    display: 'grid',
+                    gridAutoFlow: 'column',
+                    gridAutoColumns: '4.5rem',
+                    gap: '0.5rem',
+                    overflowX: 'auto',
+                    paddingBottom: '0.15rem',
+                  }}
+                >
+                  {candidatePreviewMovies.map((movie) => {
+                    const isSelected = selectedPoolIdSet.has(movie.id);
+
+                    return (
+                      <button
+                        key={movie.id}
+                        type="button"
+                        onClick={() => togglePoolSelection(movie.id)}
+                        onDoubleClick={() => setModalMovie(movie)}
+                        aria-label={movie.title}
+                        aria-pressed={isSelected}
+                        title={movie.title}
+                      style={{
+                        appearance: 'none',
+                        border: 'none',
+                        padding: 0,
+                        background: 'transparent',
+                        cursor: 'pointer',
+                          opacity: isSelected || !isSubsetActive ? 1 : 0.5,
+                        transform: isSelected ? 'translateY(-2px) scale(1.02)' : 'scale(0.98)',
+                        transition: 'transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease',
+                      }}
+                      >
+                        <div
+                          style={{
+                            width: '4.5rem',
+                            aspectRatio: '2 / 3',
+                            borderRadius: 12,
+                            overflow: 'hidden',
+                            boxShadow: isSelected
+                              ? '0 0 0 2px var(--color-accent), 0 14px 24px rgba(0,0,0,0.35)'
+                              : '0 10px 18px rgba(0,0,0,0.25)',
+                          }}
+                        >
+                          {renderPoster(movie, 'spin-wheel-preview-strip__poster', false)}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : null}
             </div>

@@ -6,6 +6,7 @@ import {
   buildSpinWheelGradient,
   computeSpinOutcome,
   getSpinCandidates,
+  getSpinPool,
 } from './spinWheelEngine.ts';
 
 const movies: Movie[] = [
@@ -86,5 +87,34 @@ test('computeSpinOutcome', async (t) => {
 
   await t.test('returns null when there are no candidates', () => {
     assert.equal(computeSpinOutcome([], 0, () => 0), null);
+  });
+});
+
+test('getSpinPool', async (t) => {
+  await t.test('uses the selected subset when selections exist', () => {
+    const pool = getSpinPool(movies, 'all', new Set(['m-1', 'm-3']));
+
+    assert.deepEqual(
+      pool.map((movie) => movie.id),
+      ['m-1', 'm-3']
+    );
+  });
+
+  await t.test('falls back to the base candidate pool when the selection is empty', () => {
+    const pool = getSpinPool(movies, 'queue', new Set());
+
+    assert.deepEqual(
+      pool.map((movie) => movie.id),
+      ['m-1', 'm-3']
+    );
+  });
+
+  await t.test('falls back to the base candidate pool when selected ids do not match', () => {
+    const pool = getSpinPool(movies, 'all', new Set(['missing']));
+
+    assert.deepEqual(
+      pool.map((movie) => movie.id),
+      ['m-1', 'm-2', 'm-3']
+    );
   });
 });
