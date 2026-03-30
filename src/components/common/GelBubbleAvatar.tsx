@@ -3,9 +3,6 @@ import { User } from '@/shared/types';
 
 type BubbleSize = 'default' | 'compact' | 'tiny' | 'action';
 
-const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=3';
-const CATAAS_RANDOM = 'https://cataas.com/cat';
-
 const userImageSources: Record<User, string[]> = {
   Aaron: [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
@@ -71,56 +68,6 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   return <img {...props} src={validSources[currentIndex]} alt={alt} onError={handleError} />;
 };
 
-function useRandomCatImageLocal(enabled: boolean) {
-  const [sources, setSources] = React.useState<string[]>([]);
-  const [isLoading, setIsLoading] = React.useState(enabled);
-  const [refetchKey, setRefetchKey] = React.useState(0);
-
-  const refetch = React.useCallback(() => {
-    if (!enabled) return;
-    setRefetchKey((key) => key + 1);
-  }, [enabled]);
-
-  React.useEffect(() => {
-    if (!enabled) {
-      setSources([]);
-      setIsLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setIsLoading(true);
-
-    async function fetchCatUrls() {
-      try {
-        const response = await fetch(CAT_API);
-        if (!response.ok) throw new Error('Cat API error');
-        const data = await response.json();
-        if (!Array.isArray(data) || data.length === 0) throw new Error('No images');
-        const urls = data
-          .map((item: { url?: string }) => item.url)
-          .filter((url): url is string => Boolean(url));
-        if (!cancelled) {
-          setSources(urls.length > 0 ? urls : [CATAAS_RANDOM]);
-        }
-      } catch {
-        if (!cancelled) {
-          setSources([CATAAS_RANDOM]);
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }
-
-    fetchCatUrls();
-    return () => {
-      cancelled = true;
-    };
-  }, [enabled, refetchKey]);
-
-  return { sources, refetch, isLoading };
-}
-
 interface GelBubbleAvatarProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   user?: User;
   icon?: React.ReactNode;
@@ -175,18 +122,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     ref
   ) => {
   const isActionBubble = size === 'action';
-  const shouldFetchCatImages = Boolean(user);
-  const {
-    sources: catSources,
-    refetch: refetchCat,
-    isLoading: isCatLoading,
-  } = useRandomCatImageLocal(shouldFetchCatImages);
-
-  const sources = user
-    ? catSources.length > 0
-      ? [...catSources, ...userImageSources[user]]
-      : userImageSources[user]
-    : [];
+  const sources = user ? userImageSources[user] : [];
 
   const sizeTokens = SIZES[size];
   const accentColor =
@@ -207,7 +143,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           : 'var(--color-secondary)');
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
-  const canRefreshImage = Boolean(enableImageRefresh && user && !disabled);
+  const canRefreshImage = Boolean(enableImageRefresh && user && !disabled && false);
   const shouldPlaceNameInsideBubble = true;
   /** Inline profile avatars: photo fills shell; chrome / gloss / name stack above */
   const isTinyFullBleed = size === 'tiny' && !icon && !isActionBubble;
@@ -346,7 +282,6 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     }
     e.preventDefault();
     e.stopPropagation();
-    refetchCat();
   };
 
   let opacityValue = 1;
@@ -566,7 +501,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
                 height: '100%',
                 objectFit: isHoverPreview ? 'contain' : 'cover',
                 transition: 'opacity 0.25s ease',
-                opacity: isCatLoading ? 0.7 : 1,
+                opacity: 1,
                 fontFamily: 'Papyrus',
                 verticalAlign: 'middle',
               }}
@@ -592,32 +527,6 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
               transition: 'opacity 0.28s ease',
             }}
           />
-          {isCatLoading && user && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(0,0,0,0.35)',
-                borderRadius: isTinyFullBleed || size === 'tiny' ? 'inherit' : '50%',
-                pointerEvents: 'none',
-              }}
-              aria-hidden
-            >
-              <span
-                style={{
-                  width: 28,
-                  height: 28,
-                  border: `3px solid color-mix(in srgb, ${accentColor} 52%, transparent)`,
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'gel-avatar-spin 0.8s linear infinite',
-                }}
-              />
-            </div>
-          )}
         </div>
 
         {showName && shouldPlaceNameInsideBubble ? (

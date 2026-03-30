@@ -94,25 +94,24 @@ const MessageInput: React.FC<MessageInputProps> = ({
             alignItems: 'flex-end',
           }}
         >
-          <button
-            type="button"
+          <span
             aria-hidden="true"
-            tabIndex={-1}
             style={{
               width: '44px',
               height: '44px',
               borderRadius: '50%',
               backgroundColor: 'transparent',
-              border: 'none',
               color: '#8e8e93',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
+              pointerEvents: 'none',
+              userSelect: 'none',
             }}
           >
             <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>+</span>
-          </button>
+          </span>
 
           <div style={{ flex: 1, position: 'relative' }}>
             <label htmlFor="message-content" className="sr-only">

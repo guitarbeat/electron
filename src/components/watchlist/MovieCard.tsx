@@ -54,15 +54,24 @@ interface WatcherBadgeProps {
 
 const WatcherBadgePhoto: React.FC<{ user: string }> = ({ user }) => {
   const [index, setIndex] = React.useState(0);
+  const [hasImageError, setHasImageError] = React.useState(false);
   const sources = USER_PHOTOS[user] ?? [];
+
+  React.useEffect(() => {
+    setIndex(0);
+    setHasImageError(false);
+  }, [user]);
 
   const handleError = () => {
     if (index < sources.length - 1) {
       setIndex((current) => current + 1);
+      return;
     }
+
+    setHasImageError(true);
   };
 
-  if (sources.length === 0 || index >= sources.length) {
+  if (hasImageError || sources.length === 0 || index >= sources.length) {
     return <span className="watcher-badge__avatar-initial">{user.charAt(0).toUpperCase()}</span>;
   }
 

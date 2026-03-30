@@ -1,4 +1,35 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
+
+let sharedAudioContext: AudioContext | null = null;
+let audioContextUnavailable = false;
+
+const getAudioContextClass = () =>
+  window.AudioContext ||
+  (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+const getSharedAudioContext = (): AudioContext | null => {
+  if (typeof window === 'undefined' || audioContextUnavailable) {
+    return null;
+  }
+
+  if (sharedAudioContext) {
+    return sharedAudioContext;
+  }
+
+  const AudioContextClass = getAudioContextClass();
+  if (!AudioContextClass) {
+    audioContextUnavailable = true;
+    return null;
+  }
+
+  try {
+    sharedAudioContext = new AudioContextClass();
+    return sharedAudioContext;
+  } catch {
+    audioContextUnavailable = true;
+    return null;
+  }
+};
 
 /**
  * Shared audio hook — Y2K aesthetic.
@@ -6,30 +37,12 @@ import { useCallback, useEffect, useRef } from 'react';
  * for that warm early-2000s Windows/AIM/Nokia digital chime feel.
  */
 export const useAudio = () => {
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const AudioContextClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (AudioContextClass && !audioContextRef.current) {
-      audioContextRef.current = new AudioContextClass();
-    }
-  }, []);
-
   const getCtx = useCallback((): AudioContext | null => {
-    if (!audioContextRef.current) {
-      const AudioContextClass =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) {
-        audioContextRef.current = new AudioContextClass();
-      } else {
-        return null;
-      }
+    const ctx = getSharedAudioContext();
+    if (!ctx) {
+      return null;
     }
-    const ctx = audioContextRef.current;
+
     if (ctx.state === 'suspended') {
       void ctx.resume();
     }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import MapLibreGL from 'maplibre-gl';
+import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
@@ -7,7 +7,29 @@ import { PlusIcon, Spinner } from '@/common/icons';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+const MAP_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    cartoDarkMatter: {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© CARTO, © OpenStreetMap contributors',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-dark-matter',
+      type: 'raster',
+      source: 'cartoDarkMatter',
+    },
+  ],
+};
 
 interface PlacesMapProps {
   places: Place[];
