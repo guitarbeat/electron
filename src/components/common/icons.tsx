@@ -173,10 +173,6 @@ export const CrossIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>{path('M6 18L18 6M6 6l12 12')}</StrokeIcon>
 );
 
-export const SearchIcon: React.FC<IconProps> = (props) => (
-  <StrokeIcon {...props}>{path('M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z')}</StrokeIcon>
-);
-
 export const Spinner: React.FC<IconProps> = ({ className = 'w-6 h-6', style, size }) => (
   <svg
     className={`animate-spin ${className}`}
