@@ -112,6 +112,8 @@ test('validateAndThrow', async (t) => {
     const validatorMock = () => ({ isValid: true, errors: {} });
     const data = { field: 'value' };
     const result = validateAndThrow(validatorMock, data);
+    assert.equal(result.isValid, true);
+    assert.deepEqual(result.isValid, true);
     assert.deepEqual(result, { isValid: true, errors: {} });
   });
 
