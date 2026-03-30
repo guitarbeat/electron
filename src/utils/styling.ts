@@ -1,4 +1,4 @@
-import { colors, spacing, typography, radius, shadows } from '../theme/tokens.ts';
+import { spacing } from '../theme/tokens.ts';
 
 /**
  * Responsive breakpoints utility
