@@ -26,11 +26,6 @@ const ACTION_ICONS: Record<ShellActionId, ReactNode> = {
   'spin-match': <SpinIcon size={18} />,
 };
 
-const WORKSPACE_COPY: Record<MainTab, string> = {
-  queue: 'Switch between spaces or jump straight into the movie rituals tied to the watchlist.',
-  places: 'Keep the shared chat and quiz close while you plan date spots together.',
-};
-
 const ShellControlStrip: FC<ShellControlStripProps> = ({
   activeTab,
   currentUser,
@@ -44,13 +39,15 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
     currentUser,
     quizCompleted,
   });
-  const sessionLabel = currentUser ? `${currentUser} active` : 'Guest mode';
 
   return (
     <section className="shell-control-strip" aria-label="App controls">
-      <div className="shell-control-strip__grid">
-        <section className="shell-control-strip__session ui-control-surface" aria-label="Profiles">
-          <div className="shell-control-strip__brand">
+      <div
+        className={`shell-control-strip__bar shell-control-strip__bar--${activeTab}`}
+        aria-label={`${workspaceMeta.title} controls`}
+      >
+        <div className="shell-control-strip__cluster shell-control-strip__cluster--session">
+          <div className="shell-control-strip__brand" aria-hidden="true">
             <span className="workspace-header__brand-mark-shell shell-control-strip__mark-shell">
               <img
                 src={ELECTRON_LOGO_MARK_PATH}
@@ -59,69 +56,46 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
                 draggable="false"
               />
             </span>
-            <div className="workspace-control-panel__header">
-              <p className="workspace-control-panel__eyebrow">Shared Session</p>
-              <h2 className="workspace-control-panel__title">Profiles</h2>
-              <p className="workspace-control-panel__copy">
-                Switch profiles, manage PINs, and keep the shared space aligned.
-              </p>
-            </div>
-          </div>
-
-          <div className="workspace-control-panel__meta shell-control-strip__meta">
-            <span className="workspace-control-panel__pill">{sessionLabel}</span>
-            <span className="workspace-control-panel__pill">{workspaceMeta.title}</span>
           </div>
 
           <UserSelection variant="shell" className="shell-control-strip__profiles" />
-        </section>
+        </div>
 
-        <section
-          className={`shell-control-strip__workspace workspace-control-panel ui-control-surface shell-control-strip__workspace--${activeTab}`}
-          aria-label={`${workspaceMeta.title} controls`}
-        >
-          <div className="shell-control-strip__workspace-header">
-            <div className="workspace-control-panel__header">
-              <p className="workspace-control-panel__eyebrow">{workspaceMeta.eyebrow}</p>
-              <h2 className="workspace-control-panel__title shell-control-strip__workspace-title">
-                <span className="shell-control-strip__workspace-title-icon" aria-hidden="true">
-                  {workspaceMeta.icon}
-                </span>
-                {workspaceMeta.title}
-              </h2>
-              <p className="workspace-control-panel__copy">{WORKSPACE_COPY[activeTab]}</p>
-            </div>
+        <div className="shell-control-strip__cluster shell-control-strip__cluster--context">
+          <span className="shell-control-strip__cluster-label">
+            <span className="shell-control-strip__cluster-label-icon" aria-hidden="true">
+              {workspaceMeta.icon}
+            </span>
+            {workspaceMeta.eyebrow}
+          </span>
+          <ThemeToggle
+            activeTab={activeTab}
+            onChange={onTabChange}
+            compact
+            className="shell-control-strip__theme-toggle"
+            label="Switch between Movies and Places"
+          />
+        </div>
 
-            <ThemeToggle
-              activeTab={activeTab}
-              onChange={onTabChange}
-              className="shell-control-strip__theme-toggle"
-              label="Switch between Movies and Places"
-            />
-          </div>
-
+        <div className="shell-control-strip__cluster shell-control-strip__cluster--actions">
           <div className="shell-control-strip__actions" role="group" aria-label="Quick actions">
             {actions.map((action) => (
               <Button
                 key={action.id}
                 type="button"
-                size="md"
-                variant={action.id === 'quiz' ? 'secondary' : 'ghost'}
-                className="shell-control-strip__action-button"
+                size="sm"
+                variant="ghost"
+                className={`shell-control-strip__action-button${action.id === 'quiz' ? ' shell-control-strip__action-button--priority' : ''}`}
                 leftIcon={ACTION_ICONS[action.id]}
                 title={action.description}
+                aria-label={`${action.label}. ${action.description}`}
                 onClick={() => onAction(action.id)}
               >
-                <>
-                  <span className="shell-control-strip__action-label">{action.label}</span>
-                  <span className="shell-control-strip__action-description">
-                    {action.description}
-                  </span>
-                </>
+                <span className="shell-control-strip__action-label">{action.label}</span>
               </Button>
             ))}
           </div>
-        </section>
+        </div>
       </div>
     </section>
   );

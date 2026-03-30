@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '@/app/providers';
-import type { User } from '@/shared/types';
+import { USER_PHOTOS, type User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
 import { getErrorMessage, USER_OPTIONS } from '@/utils';
 import PinDialog from './PinDialog';
@@ -17,6 +17,24 @@ interface UserSelectionProps {
   title?: string;
   className?: string;
 }
+
+const ShellProfileAvatar: React.FC<{ user: User }> = ({ user }) => {
+  const [hasImageError, setHasImageError] = useState(false);
+
+  if (hasImageError || !USER_PHOTOS[user]) {
+    return <span className="user-selection__shell-chip-avatar-initial">{user.charAt(0)}</span>;
+  }
+
+  return (
+    <img
+      src={USER_PHOTOS[user]}
+      alt=""
+      className="user-selection__shell-chip-avatar-image"
+      onError={() => setHasImageError(true)}
+      draggable="false"
+    />
+  );
+};
 
 const UserSelection: React.FC<UserSelectionProps> = ({
   onUserSelected,
@@ -49,6 +67,45 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const isShell = variant === 'shell';
   const showBubbleName = true;
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
+
+  const renderAccountActions = (shellMode = false) => {
+    if (!selectedNamedUser) {
+      return null;
+    }
+
+    return (
+      <div className={`user-selection__account-actions${shellMode ? ' user-selection__account-actions--shell' : ''}`}>
+        <button
+          type="button"
+          className="user-selection__pin-button"
+          onClick={openPinSettings}
+          disabled={isDisabled || isSavingPinSettings}
+          aria-label={
+            selectedUserNeedsPin
+              ? 'Finish required profile PIN setup'
+              : userHasPin(selectedNamedUser)
+                ? 'Change profile PIN'
+                : 'Set profile PIN'
+          }
+        >
+          {selectedUserNeedsPin
+            ? 'Finish PIN Setup'
+            : userHasPin(selectedNamedUser)
+              ? 'Change PIN'
+              : 'Set PIN'}
+        </button>
+        <button
+          type="button"
+          className="user-selection__pin-button user-selection__logout-button"
+          onClick={handleLogout}
+          disabled={isDisabled}
+          aria-label="Log out"
+        >
+          Log out
+        </button>
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (!currentUser || previousUserRef.current === currentUser) {
@@ -189,180 +246,203 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     <div
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
-      <div className="user-selection__profiles">
-        {isPanel && (
-          <>
-            <h3 className="user-selection__title">{title}</h3>
-          </>
-        )}
-
-        <div
-          className={`user-selection__bubble-cluster user-selection__bubble-cluster--${variant}`}
-        >
-          {isPanel ? (
-            <div className="user-selection__bubble-cluster-header" role="status" aria-live="polite">
-              <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
-            </div>
-          ) : null}
+      {isShell ? (
+        <div className="user-selection__shell-layout">
           <div
-            className={`user-selection__bubble-row user-selection__bubble-row--${variant}`}
+            className="user-selection__shell-profile-list"
             role="group"
             aria-label="Select profile"
           >
             {users.map((profile) => {
               const isActive = currentUser === profile;
-              const selectionState =
-                !currentUser || !isSelectionAnimating || !selectionAnimatedUser
-                  ? 'neutral'
-                  : profile === selectionAnimatedUser
-                    ? 'active'
-                    : 'inactive';
-              const isHovered =
-                hoveredUser === profile || focusedUser === profile || (variant !== 'shell' && isActive);
               const hasPin = userHasPin(profile);
               const needsPin = userNeedsPin(profile);
-              const bubbleSize =
-                isPanel
-                  ? (isMobile ? 'compact' : 'default')
-                  : isShell
-                    ? 'compact'
-                    : 'tiny';
-              const profileCardVariantClass =
-                isPanel
-                  ? ' user-selection__profile-card--panel'
-                  : isShell
-                    ? ' user-selection__profile-card--shell'
-                    : '';
 
               return (
-                <div
+                <button
                   key={profile}
-                  className={`user-selection__profile-card${profileCardVariantClass}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
-                >
-                  <GelBubbleAvatar
-                    user={profile}
-                    hasPin={hasPin}
-                    isHovered={isHovered}
-                    showName={showBubbleName}
-                    selectionState={selectionState}
-                    isSelectionAnimating={isSelectionAnimating}
-                    size={bubbleSize}
-                    onClick={() => {
+                  type="button"
+                  className={`user-selection__shell-chip${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
+                  onClick={() => {
+                    if (!isActive) {
                       selectProfile(profile);
-                    }}
-                    onMouseEnter={() => setHoveredUser(profile)}
-                    onMouseLeave={
-                      () => setHoveredUser((value) => (value === profile ? null : value))
                     }
-                    onFocus={() => setFocusedUser(profile)}
-                    onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
-                    disabled={isDisabled}
-                    animationOffset={profile === 'Electra'}
-                    aria-label={
-                      isActive
-                        ? 'Log out'
-                        : needsPin
-                          ? `Select ${profile} (PIN required)`
-                          : hasPin
-                            ? `Select ${profile} (PIN protected)`
-                            : undefined
-                    }
-                    aria-pressed={isActive}
-                    disablePhotoHoverPreview={isShell}
-                  />
-
-                  {((isPanel || isShell) && (isActive || hasPin || needsPin)) ? (
-                    <div className="user-selection__profile-caption">
-                      <div className="user-selection__profile-meta">
+                  }}
+                  disabled={isDisabled}
+                  aria-label={
+                    isActive
+                      ? `${profile} active`
+                      : needsPin
+                        ? `Select ${profile} (PIN required)`
+                        : hasPin
+                          ? `Select ${profile} (PIN protected)`
+                          : `Select ${profile}`
+                  }
+                  aria-pressed={isActive}
+                >
+                  <span className="user-selection__shell-chip-avatar" aria-hidden="true">
+                    <ShellProfileAvatar user={profile} />
+                  </span>
+                  <span className="user-selection__shell-chip-copy">
+                    <span className="user-selection__shell-chip-name">{profile}</span>
+                    {(isActive || hasPin || needsPin) ? (
+                      <span className="user-selection__shell-chip-status-row">
                         {isActive ? (
-                          <span className="user-selection__meta-pill user-selection__meta-pill--active">
+                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--active">
                             Active
                           </span>
                         ) : null}
                         {needsPin ? (
-                          <span className="user-selection__meta-pill user-selection__meta-pill--pin-required">
+                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--pin-required">
                             PIN Required
                           </span>
                         ) : null}
                         {hasPin ? (
-                          <span className="user-selection__meta-pill user-selection__meta-pill--pin" aria-hidden="true">
+                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--pin">
                             PIN Locked
                           </span>
                         ) : null}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
+                      </span>
+                    ) : null}
+                  </span>
+                </button>
               );
             })}
-
-            {variant === 'inline' && onActionsClick && (
-              <div className="user-selection__profile-card user-selection__profile-card--actions">
-                <GelBubbleAvatar
-                  icon={<QuickActionsIcon />}
-                  label="Actions"
-                  isHovered={isActionsHovered || isActionsFocused}
-                  showName={showBubbleName}
-                  size="tiny"
-                  onClick={onActionsClick}
-                  onMouseEnter={() => setIsActionsHovered(true)}
-                  onMouseLeave={() => setIsActionsHovered(false)}
-                  onFocus={() => setIsActionsFocused(true)}
-                  onBlur={() => setIsActionsFocused(false)}
-                  disabled={isDisabled}
-                  accentColor="var(--color-accent)"
-                  haloColor="var(--color-secondary)"
-                />
-              </div>
-            )}
           </div>
+
+          {renderAccountActions(true)}
         </div>
+      ) : (
+        <div className="user-selection__profiles">
+          {isPanel && (
+            <>
+              <h3 className="user-selection__title">{title}</h3>
+            </>
+          )}
 
-        {(isPanel || isShell) && (
-          <div className="user-selection__account-actions">
-            {selectedNamedUser ? (
-              <>
-                <button
-                  type="button"
-                  className="user-selection__pin-button"
-                  onClick={openPinSettings}
-                  disabled={isDisabled || isSavingPinSettings}
-                  aria-label={
-                    selectedUserNeedsPin
-                      ? 'Finish required profile PIN setup'
-                      : userHasPin(selectedNamedUser)
-                        ? 'Change profile PIN'
-                        : 'Set profile PIN'
-                  }
-                >
-                  {selectedUserNeedsPin
-                    ? 'Finish PIN Setup'
-                    : userHasPin(selectedNamedUser)
-                      ? 'Change PIN'
-                      : 'Set PIN'}
-                </button>
-                <button
-                  type="button"
-                  className="user-selection__pin-button user-selection__logout-button"
-                  onClick={handleLogout}
-                  disabled={isDisabled}
-                  aria-label="Log out"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              null
-            )}
+          <div
+            className={`user-selection__bubble-cluster user-selection__bubble-cluster--${variant}`}
+          >
+            {isPanel ? (
+              <div className="user-selection__bubble-cluster-header" role="status" aria-live="polite">
+                <span className="user-selection__panel-status-pill">{panelStatusTitle}</span>
+              </div>
+            ) : null}
+            <div
+              className={`user-selection__bubble-row user-selection__bubble-row--${variant}`}
+              role="group"
+              aria-label="Select profile"
+            >
+              {users.map((profile) => {
+                const isActive = currentUser === profile;
+                const selectionState =
+                  !currentUser || !isSelectionAnimating || !selectionAnimatedUser
+                    ? 'neutral'
+                    : profile === selectionAnimatedUser
+                      ? 'active'
+                      : 'inactive';
+                const isHovered = hoveredUser === profile || focusedUser === profile || isActive;
+                const hasPin = userHasPin(profile);
+                const needsPin = userNeedsPin(profile);
+                const bubbleSize =
+                  isPanel
+                    ? (isMobile ? 'compact' : 'default')
+                    : 'tiny';
+                const profileCardVariantClass = isPanel ? ' user-selection__profile-card--panel' : '';
+
+                return (
+                  <div
+                    key={profile}
+                    className={`user-selection__profile-card${profileCardVariantClass}${isActive ? ' is-active' : ''}${selectionState !== 'neutral' ? ` is-${selectionState}` : ''}`}
+                  >
+                    <GelBubbleAvatar
+                      user={profile}
+                      hasPin={hasPin}
+                      isHovered={isHovered}
+                      showName={showBubbleName}
+                      selectionState={selectionState}
+                      isSelectionAnimating={isSelectionAnimating}
+                      size={bubbleSize}
+                      onClick={() => {
+                        selectProfile(profile);
+                      }}
+                      onMouseEnter={() => setHoveredUser(profile)}
+                      onMouseLeave={
+                        () => setHoveredUser((value) => (value === profile ? null : value))
+                      }
+                      onFocus={() => setFocusedUser(profile)}
+                      onBlur={() => setFocusedUser((value) => (value === profile ? null : value))}
+                      disabled={isDisabled}
+                      animationOffset={profile === 'Electra'}
+                      aria-label={
+                        isActive
+                          ? 'Log out'
+                          : needsPin
+                            ? `Select ${profile} (PIN required)`
+                            : hasPin
+                              ? `Select ${profile} (PIN protected)`
+                              : undefined
+                      }
+                      aria-pressed={isActive}
+                      disablePhotoHoverPreview={false}
+                    />
+
+                    {((isPanel || isShell) && (isActive || hasPin || needsPin)) ? (
+                      <div className="user-selection__profile-caption">
+                        <div className="user-selection__profile-meta">
+                          {isActive ? (
+                            <span className="user-selection__meta-pill user-selection__meta-pill--active">
+                              Active
+                            </span>
+                          ) : null}
+                          {needsPin ? (
+                            <span className="user-selection__meta-pill user-selection__meta-pill--pin-required">
+                              PIN Required
+                            </span>
+                          ) : null}
+                          {hasPin ? (
+                            <span className="user-selection__meta-pill user-selection__meta-pill--pin" aria-hidden="true">
+                              PIN Locked
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+
+              {variant === 'inline' && onActionsClick && (
+                <div className="user-selection__profile-card user-selection__profile-card--actions">
+                  <GelBubbleAvatar
+                    icon={<QuickActionsIcon />}
+                    label="Actions"
+                    isHovered={isActionsHovered || isActionsFocused}
+                    showName={showBubbleName}
+                    size="tiny"
+                    onClick={onActionsClick}
+                    onMouseEnter={() => setIsActionsHovered(true)}
+                    onMouseLeave={() => setIsActionsHovered(false)}
+                    onFocus={() => setIsActionsFocused(true)}
+                    onBlur={() => setIsActionsFocused(false)}
+                    disabled={isDisabled}
+                    accentColor="var(--color-accent)"
+                    haloColor="var(--color-secondary)"
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        )}
 
-        {selectionError ? (
-          <p className="user-selection__error" role="alert">
-            {selectionError}
-          </p>
-        ) : null}
-      </div>
+          {isPanel ? renderAccountActions() : null}
+        </div>
+      )}
+
+      {selectionError ? (
+        <p className="user-selection__error" role="alert">
+          {selectionError}
+        </p>
+      ) : null}
 
       {pendingUser && (
         <PinDialog
