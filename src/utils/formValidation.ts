@@ -73,32 +73,6 @@ export class FormValidator {
   }
 }
 
-/**
- * Pre-built validators for common form patterns
- */
-export const validators = {
-  pin: (length: number = 4) => 
-    new FormValidator()
-      .addRule(FormValidator.exactLengthRule(length))
-      .addRule(FormValidator.numericRule()),
-
-  email: () =>
-    new FormValidator()
-      .addRule(FormValidator.requiredRule())
-      .addRule(FormValidator.emailRule()),
-
-  required: () =>
-    new FormValidator()
-      .addRule(FormValidator.requiredRule()),
-
-  minLength: (min: number) =>
-    new FormValidator()
-      .addRule(FormValidator.lengthRule(min)),
-
-  range: (min: number, max: number) =>
-    new FormValidator()
-      .addRule(FormValidator.lengthRule(min, max)),
-};
 
 /**
  * Hook-like utility for managing form state with validation
