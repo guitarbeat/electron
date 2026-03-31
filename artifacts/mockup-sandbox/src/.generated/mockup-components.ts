@@ -6,6 +6,7 @@ export const modules: ModuleMap = {
   "./components/mockups/movie-card/HierarchyFirst.tsx": () => import("../components/mockups/movie-card/HierarchyFirst.tsx"),
   "./components/mockups/workspace-reimagine/BrutalistCinema.tsx": () => import("../components/mockups/workspace-reimagine/BrutalistCinema.tsx"),
   "./components/mockups/workspace-reimagine/MidnightCinema.tsx": () => import("../components/mockups/workspace-reimagine/MidnightCinema.tsx"),
+  "./components/mockups/workspace-reimagine/MoireBlend.tsx": () => import("../components/mockups/workspace-reimagine/MoireBlend.tsx"),
   "./components/mockups/workspace-reimagine/NeonNoir.tsx": () => import("../components/mockups/workspace-reimagine/NeonNoir.tsx"),
   "./components/mockups/workspace-reimagine/SoftEditorial.tsx": () => import("../components/mockups/workspace-reimagine/SoftEditorial.tsx"),
   "./components/mockups/workspace-reimagine/UnifiedPanel.tsx": () => import("../components/mockups/workspace-reimagine/UnifiedPanel.tsx")
