@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMovies } from '@/hooks/useMovies';
+import { useMovies } from '@/hooks/movies/useMovies';
 import { useUser } from '@/app/providers';
 import type { Movie } from '@/shared/types';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';

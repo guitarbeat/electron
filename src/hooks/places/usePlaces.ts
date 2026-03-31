@@ -5,7 +5,7 @@ import {
   validateAndThrow,
   validatePlace,
 } from '@/utils';
-import { useCollection } from './useCollection';
+import { useCollection } from '../useCollection';
 
 const POLLING_INTERVAL = 15000;
 
