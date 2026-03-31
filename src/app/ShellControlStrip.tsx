@@ -4,7 +4,6 @@ import {
   getWorkspaceMeta,
   type ShellActionId,
 } from '@/app/shellState';
-import { ELECTRON_LOGO_MARK_PATH } from '@/branding/logoAssets';
 import UserSelection from '@/common/UserSelection';
 import { BrainIcon, MessageIcon, NoteIcon, SpinIcon } from '@/common/icons';
 import type { MainTab, User } from '@/shared/types';
@@ -47,17 +46,6 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
         aria-label={`${workspaceMeta.title} controls`}
       >
         <div className="shell-control-strip__cluster shell-control-strip__cluster--session">
-          <div className="shell-control-strip__brand" aria-hidden="true">
-            <span className="workspace-header__brand-mark-shell shell-control-strip__mark-shell">
-              <img
-                src={ELECTRON_LOGO_MARK_PATH}
-                alt=""
-                className="workspace-header__brand-mark shell-control-strip__mark"
-                draggable="false"
-              />
-            </span>
-          </div>
-
           <UserSelection variant="shell" className="shell-control-strip__profiles" />
 
           {!currentUser && (

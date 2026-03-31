@@ -1825,24 +1825,7 @@ body {
     display: none;
   }
 
-  /* Flatten the workspace hero within the unified card — no divider, merges into queue */
-  .workspace-unified-card .workspace-hero {
-    border-radius: 0;
-    border: none;
-    border-bottom: none;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    overflow: visible;
-    padding-bottom: 0.6rem;
-  }
-
-  .workspace-unified-card .workspace-hero::before {
-    display: none;
-  }
-
-  /* Flatten the workspace surface within the unified card */
+  /* Flatten the workspace surface — remove card styling, tighten top gap */
   .workspace-unified-card .workspace-surface {
     border-radius: 0;
     border: none;
@@ -1850,28 +1833,25 @@ body {
     box-shadow: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    overflow: visible;
+    min-height: unset;
+    padding: 0;
+    padding-bottom: clamp(1.5rem, 1.2rem + 1vw, 2.2rem);
   }
 
   .workspace-unified-card .workspace-surface::before {
     display: none;
   }
 
-  /* Flatten the queue composer card — it flows as one surface with the hero */
-  .workspace-unified-card .workspace-control-panel.ui-control-surface {
-    border: none;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    padding-inline: clamp(1rem, 0.85rem + 0.8vw, 1.4rem);
-    padding-top: 0;
+  /* Align input and movie grid to match nav horizontal padding */
+  .workspace-unified-card .workspace-control-panel,
+  .workspace-unified-card .watchlist-container {
+    padding-inline: clamp(0.85rem, 0.65rem + 0.9vw, 1.2rem);
   }
 
-  /* A single visible divider above the queue heading to separate from hero copy */
-  .workspace-unified-card .watchlist-top-controls__intro {
-    padding-top: 1rem;
-    border-top: 1px solid rgba(200, 141, 89, 0.1);
-    margin-top: 0.4rem;
+  /* Hide the decorative separator line under the input */
+  .workspace-unified-card .workspace-control-panel::after {
+    display: none;
   }
 }
 
