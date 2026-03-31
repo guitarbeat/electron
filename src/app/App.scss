@@ -1796,73 +1796,79 @@ body {
    Unified Workspace Card
    Wraps the nav strip, workspace hero, and queue surface
    into one single rounded card surface.
+   Desktop only (≥641px); mobile keeps original per-section layout.
    ============================== */
 
 .workspace-unified-card {
   display: flex;
   flex-direction: column;
-  border-radius: 1.5rem;
-  border: 1px solid rgba(200, 141, 89, 0.2);
-  background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.1) 0%, rgba(255, 247, 228, 0.02) 20%, transparent 100%),
-    linear-gradient(165deg, rgba(88, 61, 36, 0.76) 0%, rgba(44, 30, 18, 0.92) 54%, rgba(20, 13, 7, 0.97) 100%);
-  box-shadow:
-    0 24px 56px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 245, 220, 0.09);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  overflow: hidden;
 }
 
-/* Flatten the nav strip bar — no individual card, just a top section with divider */
-.workspace-unified-card .shell-control-strip__bar {
-  border-radius: 0;
-  border: none;
-  border-bottom: 1px solid rgba(200, 141, 89, 0.12);
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
+@media (min-width: 641px) {
+  .workspace-unified-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(200, 141, 89, 0.2);
+    background:
+      linear-gradient(180deg, rgba(255, 247, 228, 0.1) 0%, rgba(255, 247, 228, 0.02) 20%, transparent 100%),
+      linear-gradient(165deg, rgba(88, 61, 36, 0.76) 0%, rgba(44, 30, 18, 0.92) 54%, rgba(20, 13, 7, 0.97) 100%);
+    box-shadow:
+      0 24px 56px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 245, 220, 0.09);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    overflow: hidden;
+  }
 
-/* Remove stage padding-top and gap so sections sit flush */
-.workspace-unified-card .workspace-stage {
-  padding-top: 0;
-  gap: 0;
-}
+  /* Flatten the nav strip bar — no individual card, just a top section with divider */
+  .workspace-unified-card .shell-control-strip__bar {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(200, 141, 89, 0.12);
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 
-.workspace-unified-card .workspace-stage--simplified::before {
-  display: none;
-}
+  /* Remove stage padding-top and gap so sections sit flush */
+  .workspace-unified-card .workspace-stage {
+    padding-top: 0;
+    gap: 0;
+  }
 
-/* Flatten the workspace hero within the unified card */
-.workspace-unified-card .workspace-hero {
-  border-radius: 0;
-  border: none;
-  border-bottom: 1px solid rgba(200, 141, 89, 0.10);
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  overflow: visible;
-}
+  .workspace-unified-card .workspace-stage--simplified::before {
+    display: none;
+  }
 
-.workspace-unified-card .workspace-hero::before {
-  display: none;
-}
+  /* Flatten the workspace hero within the unified card */
+  .workspace-unified-card .workspace-hero {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(200, 141, 89, 0.10);
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    overflow: visible;
+  }
 
-/* Flatten the workspace surface within the unified card */
-.workspace-unified-card .workspace-surface {
-  border-radius: 0;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
+  .workspace-unified-card .workspace-hero::before {
+    display: none;
+  }
 
-.workspace-unified-card .workspace-surface::before {
-  display: none;
+  /* Flatten the workspace surface within the unified card */
+  .workspace-unified-card .workspace-surface {
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .workspace-unified-card .workspace-surface::before {
+    display: none;
+  }
 }
 
 .workspace-hero {
