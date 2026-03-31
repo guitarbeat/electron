@@ -166,20 +166,22 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">
-            <ShellControlStrip
-              activeTab={activeTab}
-              currentUser={currentUser}
-              quizCompleted={quizCompleted}
-              onAction={handleShellAction}
-              onTabChange={handleTabChange}
-            />
-            <React.Suspense fallback={null}>
-              <AppWorkspaceShell
-                isMobile={isMobile}
+            <div className="workspace-unified-card">
+              <ShellControlStrip
                 activeTab={activeTab}
                 currentUser={currentUser}
+                quizCompleted={quizCompleted}
+                onAction={handleShellAction}
+                onTabChange={handleTabChange}
               />
-            </React.Suspense>
+              <React.Suspense fallback={null}>
+                <AppWorkspaceShell
+                  isMobile={isMobile}
+                  activeTab={activeTab}
+                  currentUser={currentUser}
+                />
+              </React.Suspense>
+            </div>
           </div>
         </div>
 
