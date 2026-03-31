@@ -9,7 +9,7 @@ A two-person collaborative movie watchlist and date-planning SPA titled "electro
 - iMessage-style message board
 - Spin wheel for movie selection
 - Matchmaker swipe game
-- Compatibility quiz
+- Compatibility quiz (styled as a retro 1990s internet advertisement — Comic Sans, blinking marquee banners, rainbow borders, Windows 98-style progress bar)
 - Date spots/places workspace (Google Places integration)
 - Y2K-inspired UI with gel bubbles, retro chrome, and visual effects
 - Draggable floating action bubble for navigation (profile switching lives exclusively in this menu — no duplicate session bar)

@@ -1,8 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { QuizResult, QuizCharacter } from './types';
-import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import { spacing, typography, colors } from '@/theme/tokens';
+import { BlinkText } from './QuizFlow';
 
 interface ResultsScreenProps {
   result: QuizResult;
@@ -21,12 +19,14 @@ const characterEmojis: Record<string, string> = {
 };
 
 const characterColors: Record<string, string> = {
-  Electra: colors.accent,
-  Aaron: colors.secondary,
-  Madeleine: colors.tertiary,
-  'Nosferatu/Smeemo': colors.yellow,
-  Neither: colors.textSecondary,
+  Electra: '#ff69b4',
+  Aaron: '#00bfff',
+  Madeleine: '#ffd700',
+  'Nosferatu/Smeemo': '#9400d3',
+  Neither: '#888888',
 };
+
+const BLINK_COLORS = ['#ff0000', '#ff7700', '#ffff00', '#00cc00', '#0000ff', '#8b00ff'];
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
@@ -35,209 +35,155 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
   characterDescriptions,
   neitherDescription,
 }) => {
-  const characterColor = characterColors[result.character];
-  const characterEmoji = characterEmojis[result.character];
+  const [starAngle, setStarAngle] = useState(0);
+  const characterColor = characterColors[result.character] || '#888888';
+  const characterEmoji = characterEmojis[result.character] || '🤷';
   const description =
     result.character === 'Neither'
       ? neitherDescription
       : characterDescriptions[result.character as QuizCharacter];
 
+  useEffect(() => {
+    const id = setInterval(() => setStarAngle(a => (a + 8) % 360), 40);
+    return () => clearInterval(id);
+  }, []);
+
+  const sortedChars = (Object.keys(result.percentages) as QuizCharacter[])
+    .sort((a, b) => result.percentages[b] - result.percentages[a]);
+
   return (
-    <div
-      style={{
-        maxWidth: '36rem',
-        margin: '0 auto',
-        textAlign: 'center',
-      }}
-      className="animate-fade-in"
-    >
-      <Card variant="elevated">
-        <div style={{ padding: spacing['2xl'] }}>
-          {/* Celebration emoji */}
-          <div
-            style={{
-              fontSize: '5rem',
-              marginBottom: spacing.lg,
-              animation: 'bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55)',
-            }}
+    <div className="quiz-retro-wrapper">
+      {/* Top marquee */}
+      <div className="quiz-retro-marquee-bar">
+        <span className="quiz-retro-marquee-inner">
+          🎉 CONGRATULATIONS!!! YOUR RESULTS ARE IN!!! 🎉 SHARE WITH YOUR FRIENDS!!! 🎉 YOU ARE AMAZING!!! 🎉
+        </span>
+      </div>
+
+      <div className="quiz-retro-rainbow-border">
+        <div className="quiz-retro-header-bar">
+          <span>★ YOUR OFFICIAL PERSONALITY RESULTS - CERTIFIED 100% ACCURATE!!! ★</span>
+        </div>
+      </div>
+
+      <div className="quiz-retro-main">
+        {/* Win banner */}
+        <div className="quiz-retro-results-win">
+          <span
+            className="quiz-retro-results-star"
+            style={{ transform: `rotate(${starAngle}deg)`, display: 'inline-block', fontSize: 36 }}
           >
-            {characterEmoji}
+            ⭐
+          </span>
+          <div>
+            <BlinkText style={{ fontSize: '18px' }}>CONGRATULATIONS!!!</BlinkText>
+          </div>
+          <div className="quiz-retro-results-sub">YOUR RESULTS ARE IN!!!</div>
+        </div>
+
+        {/* Results body */}
+        <div className="quiz-retro-results-body">
+          <div className="quiz-retro-results-sci">
+            🔬 SCIENTIFIC ANALYSIS COMPLETE!!! 🔬
+          </div>
+          <div className="quiz-retro-results-you-are">YOU ARE...</div>
+          <div
+            className="quiz-retro-results-name"
+            style={{ fontSize: '26px', color: characterColor }}
+          >
+            {characterEmoji} {result.character.toUpperCase()}!!!
           </div>
 
-          <h2
-            style={{
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.medium,
-              color: colors.textSecondary,
-              marginBottom: spacing.md,
-              marginTop: 0,
-            }}
-          >
-            You are...
-          </h2>
-
-          <h1
-            style={{
-              fontSize: typography.fontSize['4xl'],
-              fontWeight: typography.fontWeight.bold,
-              color: characterColor,
-              marginBottom: spacing.xl,
-              marginTop: 0,
-              textShadow: `0 2px 6px rgba(0, 0, 0, 0.5), 0 0 20px ${characterColor}80`,
-              letterSpacing: typography.letterSpacing.wide,
-            }}
-          >
-            {result.character}
-          </h1>
-
           <div
             style={{
-              backgroundColor: `${characterColor}20`,
+              background: characterColor + '22',
               border: `3px solid ${characterColor}`,
-              borderRadius: '12px',
-              padding: spacing.xl,
-              marginBottom: spacing.xl,
-              boxShadow: `0 0 20px ${characterColor}40`,
+              padding: '8px',
+              marginBottom: '12px',
             }}
           >
-            <p
-              style={{
-                fontSize: typography.fontSize.lg,
-                color: colors.textPrimary,
-                margin: 0,
-                lineHeight: typography.lineHeight.relaxed,
-              }}
-            >
-              {description}
-            </p>
+            <p className="quiz-retro-results-desc">{description}</p>
           </div>
 
           {/* Score breakdown */}
-          <div
-            style={{
-              marginBottom: spacing.xl,
-            }}
-          >
-            <h3
-              style={{
-                fontSize: typography.fontSize.base,
-                fontWeight: typography.fontWeight.semibold,
-                color: colors.textSecondary,
-                marginBottom: spacing.md,
-                marginTop: 0,
-              }}
-            >
-              Your Match Breakdown
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: spacing.sm,
-              }}
-            >
-              {(Object.keys(result.percentages) as QuizCharacter[])
-                .sort((a, b) => result.percentages[b] - result.percentages[a])
-                .map((char) => (
+          <div style={{ marginBottom: '12px' }}>
+            <div className="quiz-retro-results-breakdown-title">
+              📊 YOUR MATCH BREAKDOWN (100% ACCURATE!!!):
+            </div>
+            {sortedChars.map((char) => {
+              const isWinner = char === result.character;
+              const pct = result.percentages[char];
+              const color = characterColors[char] || '#888888';
+              return (
+                <div key={char} className="quiz-retro-results-bar-row">
                   <div
-                    key={char}
+                    className="quiz-retro-results-bar-label"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: spacing.md,
+                      fontWeight: isWinner ? 'bold' : 'normal',
+                      color: isWinner ? color : '#444444',
                     }}
                   >
-                    <div
-                      style={{
-                        width: '120px',
-                        textAlign: 'right',
-                        fontSize: typography.fontSize.sm,
-                        color: colors.textSecondary,
-                        fontWeight:
-                          char === result.character
-                            ? typography.fontWeight.bold
-                            : typography.fontWeight.normal,
-                      }}
-                    >
-                      {char}
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: '24px',
-                        backgroundColor: colors.surface,
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        border: `2px solid ${characterColors[char]}40`,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: `${result.percentages[char]}%`,
-                          height: '100%',
-                          backgroundColor: characterColors[char],
-                          transition: 'width 1s ease-out',
-                          boxShadow:
-                            char === result.character
-                              ? `0 0 10px ${characterColors[char]}`
-                              : 'none',
-                        }}
-                        className="slide-up"
-                      />
-                    </div>
-                    <div
-                      style={{
-                        width: '50px',
-                        fontSize: typography.fontSize.sm,
-                        color: colors.textPrimary,
-                        fontWeight:
-                          char === result.character
-                            ? typography.fontWeight.bold
-                            : typography.fontWeight.normal,
-                      }}
-                    >
-                      {result.percentages[char]}%
-                    </div>
+                    {characterEmojis[char]} {char}
                   </div>
-                ))}
-            </div>
+                  <div className="quiz-retro-results-bar-track">
+                    <div
+                      className="quiz-retro-results-bar-fill"
+                      style={{
+                        width: `${pct}%`,
+                        background: color,
+                        boxShadow: isWinner ? `0 0 6px ${color}` : 'none',
+                      }}
+                    />
+                  </div>
+                  <div
+                    className="quiz-retro-results-bar-pct"
+                    style={{
+                      fontWeight: isWinner ? 'bold' : 'normal',
+                      color: isWinner ? color : '#444444',
+                    }}
+                  >
+                    {pct}%
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: spacing.md,
-            }}
-          >
-            <Button
-              variant="primary"
-              size="lg"
+          {/* Action buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <button
+              className="quiz-retro-btn"
               onClick={onContinue}
-              style={{
-                width: '100%',
-                fontSize: typography.fontSize.xl,
-              }}
+              style={{ width: '100%', fontSize: '14px' }}
               aria-label="Continue to movie watchlist"
             >
-              Continue to Watchlist →
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="md"
+              {'🎬 CONTINUE TO WATCHLIST >>>'}
+            </button>
+            <button
+              className="quiz-retro-btn quiz-retro-btn--secondary"
               onClick={onRetake}
-              style={{
-                width: '100%',
-                fontSize: typography.fontSize.base,
-              }}
+              style={{ width: '100%' }}
               aria-label="Retake the quiz"
             >
-              Retake Quiz
-            </Button>
+              🔄 RETAKE QUIZ - GET NEW RESULTS!!!
+            </button>
           </div>
         </div>
-      </Card>
+
+        {/* Share strip */}
+        <div className="quiz-retro-results-share">
+          <BlinkText style={{ fontSize: '13px' }}>
+            *** SHARE YOUR RESULTS WITH FRIENDS!!! ***
+          </BlinkText>
+          <p>THEY NEED TO KNOW YOUR TRUE PERSONALITY!!!</p>
+        </div>
+      </div>
+
+      <div className="quiz-retro-marquee-bar" style={{ marginTop: 4, marginBottom: 0 }}>
+        <span className="quiz-retro-marquee-inner" style={{ animationDelay: '-5s' }}>
+          🌟 AMAZING RESULTS!!! TELL EVERYONE!!! 🌟 YOU ARE TRULY SPECIAL!!! 🌟 TAKE THE QUIZ AGAIN FOR MORE FUN!!! 🌟
+        </span>
+      </div>
     </div>
   );
 };
