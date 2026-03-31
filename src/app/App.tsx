@@ -87,9 +87,6 @@ const App: React.FC = () => {
         case 'messages':
           setShowMessages(true);
           return;
-        case 'notes':
-          setShowMemoriesPanel(true);
-          return;
         case 'quiz':
           openQuizExperience();
           return;

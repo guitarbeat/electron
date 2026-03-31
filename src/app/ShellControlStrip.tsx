@@ -5,7 +5,7 @@ import {
   type ShellActionId,
 } from '@/app/shellState';
 import UserSelection from '@/common/UserSelection';
-import { BrainIcon, MessageIcon, NoteIcon, SpinIcon } from '@/common/icons';
+import { BrainIcon, MessageIcon, SpinIcon } from '@/common/icons';
 import type { MainTab, User } from '@/shared/types';
 import Button from '@/ui/Button';
 import ThemeToggle from '@/ui/ThemeToggle';
@@ -20,7 +20,6 @@ interface ShellControlStripProps {
 
 const ACTION_ICONS: Record<ShellActionId, ReactNode> = {
   messages: <MessageIcon size={18} />,
-  notes: <NoteIcon size={18} />,
   quiz: <BrainIcon size={18} />,
   'spin-match': <SpinIcon size={18} />,
 };

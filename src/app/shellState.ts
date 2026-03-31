@@ -30,7 +30,7 @@ export const getQuizLaunchState = ({
   };
 };
 
-export type ShellActionId = 'messages' | 'notes' | 'quiz' | 'spin-match';
+export type ShellActionId = 'messages' | 'quiz' | 'spin-match';
 
 export interface ShellActionMeta {
   id: ShellActionId;
@@ -69,11 +69,6 @@ export const getShellActionMeta = ({
 
   return [
     actions[0],
-    {
-      id: 'notes',
-      label: 'Notes',
-      description: 'Browse and add shared movie notes.',
-    },
     actions[1],
     {
       id: 'spin-match',
