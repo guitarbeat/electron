@@ -31,6 +31,7 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
   return (
     <Card
       variant="default"
+      className="suggestion-item-card"
       style={{
         padding: spacing.md,
         display: 'flex',
@@ -39,8 +40,6 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
         animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut} ${animationDelay} both`,
         position: 'relative',
         overflow: 'hidden',
-        border: `1px dashed ${colors.border}`,
-        background: 'rgba(255, 255, 255, 0.02)',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
@@ -101,22 +100,22 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
           onClick={onAccept}
           isLoading={isProcessing}
           disabled={actionsDisabled || !canRespond}
-          fullWidth
-          style={{ gap: spacing.xs }}
+          className="suggestion-item-card__button is-accept"
+          aria-label="Accept suggestion"
+          style={{ padding: 0 }}
         >
-          <CheckIcon style={{ width: 14, height: 14 }} />
-          Accept
+          <CheckIcon style={{ width: 16, height: 16 }} />
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onReject}
           disabled={actionsDisabled || !canRespond}
-          fullWidth
-          style={{ gap: spacing.xs, color: colors.error }}
+          className="suggestion-item-card__button is-reject"
+          aria-label="Reject suggestion"
+          style={{ padding: 0 }}
         >
-          <CrossIcon style={{ width: 14, height: 14 }} />
-          Reject
+          <CrossIcon style={{ width: 16, height: 16 }} />
         </Button>
       </div>
 
