@@ -4,7 +4,6 @@ import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
 import ShellControlStrip from '@/app/ShellControlStrip';
-import { type ShellActionId } from '@/app/shellState';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 import RetroEffects from '@/components/effects/RetroEffects';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
@@ -82,18 +81,9 @@ const App: React.FC = () => {
     [activeTab, playSwitch]
   );
 
-  const handleShellAction = useCallback(
-    (action: ShellActionId) => {
-      switch (action) {
-        case 'spin-match':
-          setShowSpinWheel(true);
-          return;
-        default:
-          action satisfies never;
-      }
-    },
-    []
-  );
+  const openSpinMatch = useCallback(() => {
+    setShowSpinWheel(true);
+  }, []);
 
   const featureModals = useMemo(
     () =>
@@ -170,7 +160,6 @@ const App: React.FC = () => {
             <div className="workspace-unified-card">
               <ShellControlStrip
                 activeTab={activeTab}
-                onAction={handleShellAction}
                 onTabChange={handleTabChange}
               />
               <React.Suspense fallback={null}>
@@ -179,6 +168,7 @@ const App: React.FC = () => {
                   activeTab={activeTab}
                   onOpenQuiz={openQuizExperience}
                   quizCompleted={quizCompleted}
+                  onOpenSpin={openSpinMatch}
                 />
               </React.Suspense>
             </div>

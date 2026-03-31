@@ -1,32 +1,19 @@
-import type { FC, ReactNode } from 'react';
-import {
-  getShellActionMeta,
-  getWorkspaceMeta,
-  type ShellActionId,
-} from '@/app/shellState';
+import type { FC } from 'react';
+import { getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/common/UserSelection';
-import { SpinIcon } from '@/common/icons';
 import type { MainTab } from '@/shared/types';
-import Button from '@/ui/Button';
 import ThemeToggle from '@/ui/ThemeToggle';
 
 interface ShellControlStripProps {
   activeTab: MainTab;
-  onAction: (action: ShellActionId) => void;
   onTabChange: (tab: MainTab) => void;
 }
 
-const ACTION_ICONS: Record<ShellActionId, ReactNode> = {
-  'spin-match': <SpinIcon size={18} />,
-};
-
 const ShellControlStrip: FC<ShellControlStripProps> = ({
   activeTab,
-  onAction,
   onTabChange,
 }) => {
   const workspaceMeta = getWorkspaceMeta(activeTab);
-  const actions = getShellActionMeta({ activeTab });
 
   return (
     <section className="shell-control-strip" aria-label="App controls">
@@ -48,25 +35,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
           />
         </div>
 
-        <div className="shell-control-strip__cluster shell-control-strip__cluster--actions">
-          <div className="shell-control-strip__actions" role="group" aria-label="Quick actions">
-            {actions.map((action) => (
-              <Button
-                key={action.id}
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="shell-control-strip__action-button"
-                leftIcon={ACTION_ICONS[action.id]}
-                title={action.description}
-                aria-label={`${action.label}. ${action.description}`}
-                onClick={() => onAction(action.id)}
-              >
-                <span className="shell-control-strip__action-label">{action.label}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
+        <div className="shell-control-strip__cluster shell-control-strip__cluster--actions" />
       </div>
     </section>
   );
