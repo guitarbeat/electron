@@ -85,9 +85,6 @@ const App: React.FC = () => {
   const handleShellAction = useCallback(
     (action: ShellActionId) => {
       switch (action) {
-        case 'quiz':
-          openQuizExperience();
-          return;
         case 'spin-match':
           setShowSpinWheel(true);
           return;
@@ -95,7 +92,7 @@ const App: React.FC = () => {
           action satisfies never;
       }
     },
-    [openQuizExperience]
+    []
   );
 
   const featureModals = useMemo(
@@ -173,8 +170,6 @@ const App: React.FC = () => {
             <div className="workspace-unified-card">
               <ShellControlStrip
                 activeTab={activeTab}
-                currentUser={currentUser}
-                quizCompleted={quizCompleted}
                 onAction={handleShellAction}
                 onTabChange={handleTabChange}
               />
@@ -182,6 +177,8 @@ const App: React.FC = () => {
                 <AppWorkspaceShell
                   isMobile={isMobile}
                   activeTab={activeTab}
+                  onOpenQuiz={openQuizExperience}
+                  quizCompleted={quizCompleted}
                 />
               </React.Suspense>
             </div>
