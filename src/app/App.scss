@@ -10722,8 +10722,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.72),
     0 10px 28px rgba(0, 0, 0, 0.30) !important;
-  backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
-  -webkit-backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+  backdrop-filter: brightness(1.2) blur(4px) url(#glassFilter) !important;
+  -webkit-backdrop-filter: brightness(1.2) blur(4px) !important;
 }
 
 .watchlist-top-controls__search-field,
@@ -11009,8 +11009,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.72),
     0 14px 32px rgba(0, 0, 0, 0.36) !important;
-  backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
-  -webkit-backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+  backdrop-filter: brightness(1.2) blur(4px) url(#glassFilter) !important;
+  -webkit-backdrop-filter: brightness(1.2) blur(4px) !important;
 }
 
 .shell-control-strip__brand,
@@ -11028,8 +11028,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
       rgba(255, 250, 238, 0.48) 0%,
       rgba(255, 244, 225, 0.30) 50%,
       rgba(255, 238, 210, 0.18) 100%) !important;
-  backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
-  -webkit-backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+  backdrop-filter: brightness(1.2) blur(4px) url(#glassFilter) !important;
+  -webkit-backdrop-filter: brightness(1.2) blur(4px) !important;
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.78),
     inset 0 -1px 0 rgba(100, 60, 20, 0.12),
@@ -11071,8 +11071,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px) brightness(1.1);
-  -webkit-backdrop-filter: blur(4px) brightness(1.1);
+  backdrop-filter: brightness(1.2) blur(4px) url(#glassFilter);
+  -webkit-backdrop-filter: brightness(1.2) blur(4px);
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
