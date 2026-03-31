@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { buildGoogleMapsUrl } from "../utils";
+import { buildGoogleMapsUrl } from "@/utils";
 
 const GOOGLE_PLACES_API_KEY =
   ((import.meta.env || {}) as Record<string, string | undefined>)
