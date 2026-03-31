@@ -1,38 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getQuizLaunchState, getShellActionMeta, getWorkspaceMeta } from './shellState.ts';
-
-test('getQuizLaunchState', async (t) => {
-  await t.test('falls back to edit mode when no profile is active', () => {
-    const state = getQuizLaunchState({
-      currentUser: null,
-      quizCompleted: false,
-    });
-
-    assert.equal(state.label, 'Take Quiz');
-    assert.equal('description' in state, false);
-  });
-
-  await t.test('starts quiz for an active user who has not completed it', () => {
-    const state = getQuizLaunchState({
-      currentUser: 'Aaron',
-      quizCompleted: false,
-    });
-
-    assert.equal(state.label, 'Start Quiz');
-    assert.equal('description' in state, false);
-  });
-
-  await t.test('retakes quiz for an active user with a completed run', () => {
-    const state = getQuizLaunchState({
-      currentUser: 'Electra',
-      quizCompleted: true,
-    });
-
-    assert.equal(state.label, 'Retake Quiz');
-    assert.equal('description' in state, false);
-  });
-});
+import { getShellActionMeta, getWorkspaceMeta } from './shellState.ts';
 
 test('getWorkspaceMeta', async (t) => {
   await t.test('returns movie workspace copy', () => {
@@ -53,37 +21,22 @@ test('getWorkspaceMeta', async (t) => {
 });
 
 test('getShellActionMeta', async (t) => {
-  await t.test('returns two shell actions for the movie workspace', () => {
-    const actions = getShellActionMeta({
-      activeTab: 'queue',
-      currentUser: 'Aaron',
-      quizCompleted: false,
-    });
+  await t.test('returns only spin-match for the movie workspace', () => {
+    const actions = getShellActionMeta({ activeTab: 'queue' });
 
     assert.deepEqual(
       actions.map((action) => action.id),
-      ['quiz', 'spin-match']
+      ['spin-match']
     );
     assert.deepEqual(
       actions.map((action) => action.label),
-      ['Start Quiz', 'Spin & Match']
+      ['Spin & Match']
     );
   });
 
-  await t.test('limits places to global actions only', () => {
-    const actions = getShellActionMeta({
-      activeTab: 'places',
-      currentUser: 'Electra',
-      quizCompleted: true,
-    });
+  await t.test('returns no actions for the places workspace', () => {
+    const actions = getShellActionMeta({ activeTab: 'places' });
 
-    assert.deepEqual(
-      actions.map((action) => action.id),
-      ['quiz']
-    );
-    assert.deepEqual(
-      actions.map((action) => action.label),
-      ['Retake Quiz']
-    );
+    assert.deepEqual(actions, []);
   });
 });
