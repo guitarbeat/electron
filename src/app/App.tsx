@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { MessageIcon } from '@/common/icons';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
@@ -84,9 +85,6 @@ const App: React.FC = () => {
   const handleShellAction = useCallback(
     (action: ShellActionId) => {
       switch (action) {
-        case 'messages':
-          setShowMessages(true);
-          return;
         case 'quiz':
           openQuizExperience();
           return;
@@ -160,6 +158,15 @@ const App: React.FC = () => {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
+
+        <button
+          type="button"
+          className="messages-fab"
+          aria-label="Open messages"
+          onClick={() => setShowMessages(true)}
+        >
+          <MessageIcon size={22} />
+        </button>
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">

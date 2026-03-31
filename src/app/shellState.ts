@@ -30,7 +30,7 @@ export const getQuizLaunchState = ({
   };
 };
 
-export type ShellActionId = 'messages' | 'quiz' | 'spin-match';
+export type ShellActionId = 'quiz' | 'spin-match';
 
 export interface ShellActionMeta {
   id: ShellActionId;
@@ -50,11 +50,6 @@ export const getShellActionMeta = ({
   const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
   const actions: ShellActionMeta[] = [
     {
-      id: 'messages',
-      label: 'Messages',
-      description: 'Open the shared chat.',
-    },
-    {
       id: 'quiz',
       label: quizLaunch.label,
       description: currentUser
@@ -69,7 +64,6 @@ export const getShellActionMeta = ({
 
   return [
     actions[0],
-    actions[1],
     {
       id: 'spin-match',
       label: 'Spin & Match',
