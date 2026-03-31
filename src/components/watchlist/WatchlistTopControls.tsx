@@ -266,7 +266,7 @@ const WatchlistTopControls = React.forwardRef<
 
   return (
     <section
-      className="workspace-control-panel ui-control-surface watchlist-top-controls"
+      className="workspace-control-panel watchlist-top-controls"
       style={{
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
