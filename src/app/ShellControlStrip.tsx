@@ -61,21 +61,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
           <UserSelection variant="shell" className="shell-control-strip__profiles" />
         </div>
 
-        <div className="shell-control-strip__cluster shell-control-strip__cluster--context">
-          <span className="shell-control-strip__cluster-label">
-            <span className="shell-control-strip__cluster-label-icon" aria-hidden="true">
-              {workspaceMeta.icon}
-            </span>
-            {workspaceMeta.eyebrow}
-          </span>
-          <div className="shell-control-strip__status" aria-live="polite">
-            <span className="shell-control-strip__status-title">
-              {currentUser ?? 'Guest mode'}
-            </span>
-            <span className="shell-control-strip__status-copy">
-              {workspaceMeta.title} is ready for shared actions.
-            </span>
-          </div>
+        <div className="shell-control-strip__cluster shell-control-strip__cluster--center">
           <ThemeToggle
             activeTab={activeTab}
             onChange={onTabChange}
@@ -91,7 +77,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
               <Button
                 key={action.id}
                 type="button"
-                size="md"
+                size="sm"
                 variant="ghost"
                 className={`shell-control-strip__action-button${action.id === 'quiz' ? ' shell-control-strip__action-button--priority' : ''}`}
                 leftIcon={ACTION_ICONS[action.id]}
@@ -99,10 +85,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
                 aria-label={`${action.label}. ${action.description}`}
                 onClick={() => onAction(action.id)}
               >
-                <span className="shell-control-strip__action-copy">
-                  <span className="shell-control-strip__action-label">{action.label}</span>
-                  <span className="shell-control-strip__action-description">{action.description}</span>
-                </span>
+                <span className="shell-control-strip__action-label">{action.label}</span>
               </Button>
             ))}
           </div>
