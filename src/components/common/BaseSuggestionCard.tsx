@@ -49,7 +49,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
+          <div className="suggestion-item-card__eyebrow" style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
             Suggestion from {suggestedBy}
           </div>
           {icon && <span style={{ fontSize: '1.2rem' }}>{icon}</span>}
