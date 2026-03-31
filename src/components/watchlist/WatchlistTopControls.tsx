@@ -95,9 +95,6 @@ const WatchlistTopControls = React.forwardRef<
   const isGuest = !currentUser;
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
-  const helperText = isGuest
-    ? `Not signed in? ${guestName.trim() || 'Guest'} can still send titles to Suggestions for Aaron or Electra to approve.`
-    : 'Add titles straight to the shared queue, or open the composer to leave a note first.';
 
   useImperativeHandle(
     forwardedRef,
@@ -274,16 +271,6 @@ const WatchlistTopControls = React.forwardRef<
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
-      <div className="watchlist-top-controls__intro">
-        <p className="watchlist-top-controls__eyebrow">
-          Shared queue
-        </p>
-        <h2 className="watchlist-top-controls__title">
-          {isGuest ? 'Send a title to the queue' : 'Add to the shared watchlist'}
-        </h2>
-        <p className="watchlist-top-controls__lead">{helperText}</p>
-      </div>
-
       <div className="watchlist-top-controls__toolbar">
         <form
           className="watchlist-top-controls__search-form"
