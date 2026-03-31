@@ -11,7 +11,7 @@ import {
 import {
   normalizeMovieRecord,
   normalizeMovies,
-} from '../../src/services/movieRecords';
+} from '../../src/services/movieRecords.ts';
 import type { UserPins } from '../../src/services/content/pinHelpers.ts';
 import {
   appendDailySpinEntry,
@@ -52,7 +52,7 @@ import {
   sanitizeInput,
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
-} from '../../src/utils';
+} from '../../src/utils/index.ts';
 import {
   badRequestResponse,
   conflictResponse,
