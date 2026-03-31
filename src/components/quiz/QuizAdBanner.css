@@ -1,0 +1,208 @@
+/* QuizAdBanner — Y2K internet ad aesthetic, fits inside the app's dark chrome shell */
+
+@keyframes qab-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes qab-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes qab-glow-pulse {
+  0%, 100% { box-shadow: 0 0 6px 2px #ff0, 0 0 14px 4px #f80, inset 0 0 8px rgba(255, 200, 0, 0.15); }
+  50%       { box-shadow: 0 0 12px 5px #f0f, 0 0 24px 8px #80f, inset 0 0 12px rgba(255, 0, 255, 0.2); }
+}
+
+@keyframes qab-rainbow-border {
+  0%   { border-color: #f00; }
+  14%  { border-color: #ff7700; }
+  28%  { border-color: #ff0; }
+  42%  { border-color: #0f0; }
+  57%  { border-color: #0ff; }
+  71%  { border-color: #00f; }
+  85%  { border-color: #f0f; }
+  100% { border-color: #f00; }
+}
+
+@keyframes qab-starburst-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes qab-cta-bounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.06); }
+}
+
+.quiz-ad-banner {
+  width: 100%;
+  padding: 0 0 0.75rem 0;
+}
+
+.quiz-ad-banner__rainbow-border {
+  border: 3px solid #ff0;
+  border-radius: 4px;
+  animation: qab-rainbow-border 1.2s linear infinite, qab-glow-pulse 2s ease-in-out infinite;
+  background: #0a0a14;
+  overflow: hidden;
+}
+
+.quiz-ad-banner__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: linear-gradient(135deg, #0d0d22 0%, #15082a 50%, #0d0d22 100%);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  outline: none;
+}
+
+.quiz-ad-banner__inner:focus-visible {
+  outline: 2px solid #ff0;
+  outline-offset: -2px;
+}
+
+/* ── Marquee strip ── */
+.quiz-ad-banner__marquee-wrap {
+  overflow: hidden;
+  background: #000080;
+  border-bottom: 2px solid #ff0;
+  padding: 3px 0;
+  white-space: nowrap;
+}
+
+.quiz-ad-banner__marquee {
+  display: inline-block;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #ff0;
+  letter-spacing: 0.04em;
+  animation: qab-marquee 14s linear infinite;
+  white-space: nowrap;
+}
+
+/* ── Main body ── */
+.quiz-ad-banner__body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+}
+
+/* ── Starburst ── */
+.quiz-ad-banner__starburst {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quiz-ad-banner__starburst::before {
+  content: '★';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.2rem;
+  color: #ff0;
+  animation: qab-starburst-spin 4s linear infinite;
+  line-height: 1;
+}
+
+.quiz-ad-banner__starburst-text {
+  position: relative;
+  z-index: 1;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+  margin-top: 2px;
+}
+
+/* ── Center text ── */
+.quiz-ad-banner__center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quiz-ad-banner__headline {
+  margin: 0;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  font-weight: 900;
+  color: #ff0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  animation: qab-blink 1s step-end infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quiz-ad-banner__sub {
+  margin: 0;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: clamp(0.6rem, 1.1vw, 0.72rem);
+  color: #0ff;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── CTA button ── */
+.quiz-ad-banner__right {
+  flex-shrink: 0;
+}
+
+.quiz-ad-banner__cta {
+  display: inline-block;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  font-weight: 900;
+  color: #000;
+  background: linear-gradient(180deg, #ff0 0%, #f80 100%);
+  border: 2px outset #ff0;
+  border-radius: 2px;
+  padding: 0.35em 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  animation: qab-cta-bounce 1.4s ease-in-out infinite;
+  cursor: pointer;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .quiz-ad-banner__marquee,
+  .quiz-ad-banner__headline,
+  .quiz-ad-banner__starburst::before,
+  .quiz-ad-banner__cta,
+  .quiz-ad-banner__rainbow-border {
+    animation: none;
+  }
+  .quiz-ad-banner__rainbow-border {
+    border-color: #ff0;
+    box-shadow: 0 0 6px 2px #f80;
+  }
+}

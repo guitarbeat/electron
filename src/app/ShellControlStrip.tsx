@@ -5,37 +5,28 @@ import {
   type ShellActionId,
 } from '@/app/shellState';
 import UserSelection from '@/common/UserSelection';
-import { BrainIcon, SpinIcon } from '@/common/icons';
-import type { MainTab, User } from '@/shared/types';
+import { SpinIcon } from '@/common/icons';
+import type { MainTab } from '@/shared/types';
 import Button from '@/ui/Button';
 import ThemeToggle from '@/ui/ThemeToggle';
 
 interface ShellControlStripProps {
   activeTab: MainTab;
-  currentUser: User | null;
-  quizCompleted: boolean;
   onAction: (action: ShellActionId) => void;
   onTabChange: (tab: MainTab) => void;
 }
 
 const ACTION_ICONS: Record<ShellActionId, ReactNode> = {
-  quiz: <BrainIcon size={18} />,
   'spin-match': <SpinIcon size={18} />,
 };
 
 const ShellControlStrip: FC<ShellControlStripProps> = ({
   activeTab,
-  currentUser,
-  quizCompleted,
   onAction,
   onTabChange,
 }) => {
   const workspaceMeta = getWorkspaceMeta(activeTab);
-  const actions = getShellActionMeta({
-    activeTab,
-    currentUser,
-    quizCompleted,
-  });
+  const actions = getShellActionMeta({ activeTab });
 
   return (
     <section className="shell-control-strip" aria-label="App controls">
@@ -65,7 +56,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
                 type="button"
                 size="sm"
                 variant="ghost"
-                className={`shell-control-strip__action-button${action.id === 'quiz' ? ' shell-control-strip__action-button--priority' : ''}`}
+                className="shell-control-strip__action-button"
                 leftIcon={ACTION_ICONS[action.id]}
                 title={action.description}
                 aria-label={`${action.label}. ${action.description}`}

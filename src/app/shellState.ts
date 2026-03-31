@@ -1,36 +1,6 @@
-import type { MainTab, User } from '@/shared/types';
+import type { MainTab } from '@/shared/types';
 
-export interface QuizLaunchState {
-  label: string;
-}
-
-interface QuizLaunchStateParams {
-  currentUser: User | null;
-  quizCompleted: boolean;
-}
-
-export const getQuizLaunchState = ({
-  currentUser,
-  quizCompleted,
-}: QuizLaunchStateParams): QuizLaunchState => {
-  if (!currentUser) {
-    return {
-      label: 'Take Quiz',
-    };
-  }
-
-  if (quizCompleted) {
-    return {
-      label: 'Retake Quiz',
-    };
-  }
-
-  return {
-    label: 'Start Quiz',
-  };
-};
-
-export type ShellActionId = 'quiz' | 'spin-match';
+export type ShellActionId = 'spin-match';
 
 export interface ShellActionMeta {
   id: ShellActionId;
@@ -38,32 +8,18 @@ export interface ShellActionMeta {
   description: string;
 }
 
-interface ShellActionMetaParams extends QuizLaunchStateParams {
+interface ShellActionMetaParams {
   activeTab: MainTab;
 }
 
 export const getShellActionMeta = ({
   activeTab,
-  currentUser,
-  quizCompleted,
 }: ShellActionMetaParams): ShellActionMeta[] => {
-  const quizLaunch = getQuizLaunchState({ currentUser, quizCompleted });
-  const actions: ShellActionMeta[] = [
-    {
-      id: 'quiz',
-      label: quizLaunch.label,
-      description: currentUser
-        ? 'Find your movie personality together.'
-        : 'Take the personality quiz.',
-    },
-  ];
-
   if (activeTab !== 'queue') {
-    return actions;
+    return [];
   }
 
   return [
-    actions[0],
     {
       id: 'spin-match',
       label: 'Spin & Match',
