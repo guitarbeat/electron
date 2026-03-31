@@ -16,17 +16,6 @@ export interface OmdbSearchResult {
   }>;
 }
 
-export interface TvMazeSearchResult {
-  show?: {
-    id: number;
-    name: string;
-    premiered?: string;
-    genres?: string[];
-    image?: string;
-    summary?: string;
-  };
-}
-
 export interface MovieMetadata {
   title: string;
   year?: string;
