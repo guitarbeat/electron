@@ -61,6 +61,21 @@ const PinDialog: React.FC<PinDialogProps> = ({
     }
   }, [isShaking]);
 
+  // Auto-submit when the 4th digit is entered in unlock mode
+  useEffect(() => {
+    if (mode !== 'enter' || pin.length !== PIN_LENGTH || isLoading) return;
+    const timer = window.setTimeout(async () => {
+      setError('');
+      const success = await onSubmit(pin);
+      if (!success) {
+        setError('Incorrect PIN');
+        setIsShaking(true);
+        setPin('');
+      }
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [pin, mode, isLoading, onSubmit]);
+
   useEffect(() => {
     if (isOpen) {
       const handleKeyDown = (event: KeyboardEvent) => {
