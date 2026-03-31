@@ -1,179 +1,238 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { 
-  Film, 
-  MapPin, 
-  MessageSquare, 
-  StickyNote, 
-  Gamepad2, 
-  Dices,
-  Lock,
-  Send,
-  Clapperboard,
-  Search
-} from "lucide-react";
+import React from 'react';
+import {
+  MessageCircle,
+  StickyNote,
+  Brain,
+  RefreshCw,
+  Search,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
 
-export function NeonNoir() {
+export default function NeonNoir() {
   return (
-    <div className="min-h-screen bg-[#03050f] text-slate-50 font-sans selection:bg-violet-500/30 overflow-hidden relative flex flex-col">
-      {/* Ambient background glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          animate={{ 
-            opacity: [0.1, 0.2, 0.1],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-violet-600/20 blur-[120px]"
-        />
-        <motion.div 
-          animate={{ 
-            opacity: [0.15, 0.25, 0.15],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[120px]"
-        />
-        <motion.div 
-          animate={{ 
-            opacity: [0.05, 0.1, 0.05],
-          }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/10 blur-[100px]"
-        />
-        
-        {/* Subtle noise texture overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
-        />
-      </div>
+    <div 
+      className="min-h-screen w-full flex flex-col items-center p-4 md:p-8 font-sans text-gray-200 overflow-hidden relative"
+      style={{
+        backgroundColor: '#080810',
+        backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(255, 45, 120, 0.08) 0%, transparent 60%)',
+        fontFamily: '"Inter", sans-serif'
+      }}
+    >
+      {/* Background glow effects */}
+      <div 
+        className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full pointer-events-none opacity-20 blur-[120px]"
+        style={{ background: '#ff2d78' }}
+      />
+      <div 
+        className="absolute top-[30%] -right-[10%] w-[40%] h-[40%] rounded-full pointer-events-none opacity-10 blur-[120px]"
+        style={{ background: '#00d4ff' }}
+      />
 
-      {/* Top Navigation */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/[0.05] bg-[#03050f]/60 backdrop-blur-md">
-        {/* Left Cluster: Logo + Avatars */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-violet-400">
-            <Clapperboard className="w-6 h-6" />
-            <span className="font-bold tracking-tight text-lg hidden sm:block">MovieNight</span>
-          </div>
-          
-          <div className="w-px h-6 bg-white/[0.1]" />
-          
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              <div className="w-8 h-8 rounded-full bg-slate-800 border-2 border-[#03050f] flex items-center justify-center text-xs font-medium ring-1 ring-white/10 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                A
-              </div>
-              <div className="w-8 h-8 rounded-full bg-slate-800 border-2 border-[#03050f] flex items-center justify-center text-xs font-medium ring-1 ring-cyan-500/30 relative overflow-hidden group shadow-[0_0_10px_rgba(6,182,212,0.3)]">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-transparent" />
+      <div className="w-full max-w-5xl flex flex-col gap-12 relative z-10">
+        
+        {/* 1. Shell Control Strip (Nav Bar) */}
+        <nav 
+          className="w-full rounded-full px-4 py-3 flex items-center justify-between transition-all"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 45, 120, 0.3)',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 45, 120, 0.05)'
+          }}
+        >
+          {/* Left: Logo & Avatars */}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg"
+                style={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  background: 'linear-gradient(135deg, #ff2d78, #ff0055)',
+                  color: '#fff',
+                  boxShadow: '0 0 15px rgba(255, 45, 120, 0.5)'
+                }}
+              >
                 E
               </div>
+              <div 
+                className="w-2 h-2 rounded-full"
+                style={{
+                  backgroundColor: '#00d4ff',
+                  boxShadow: '0 0 10px #00d4ff'
+                }}
+              />
             </div>
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.05]">
-              <Lock className="w-3 h-3 text-slate-400" />
-              <span className="text-xs font-medium text-slate-300">Pin Locked</span>
+
+            <div className="hidden md:flex items-center -space-x-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-[#080810] z-10 shadow-lg" style={{ backgroundColor: '#ff2d78', color: '#fff' }}>A</div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-[#080810] z-20 shadow-lg" style={{ backgroundColor: '#00d4ff', color: '#080810' }}>E</div>
             </div>
           </div>
-        </div>
 
-        {/* Center Cluster: Context Switcher */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 hidden md:flex">
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse" />
-            Guest mode — Watchlist is ready
+          {/* Center: Toggle */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
+            <div 
+              className="flex items-center rounded-full p-1"
+              style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgba(255, 255, 255, 0.05)' }}
+            >
+              <button 
+                className="px-5 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={{ 
+                  backgroundColor: 'rgba(255, 45, 120, 0.15)',
+                  color: '#ff2d78',
+                  textShadow: '0 0 10px rgba(255, 45, 120, 0.5)',
+                  boxShadow: 'inset 0 0 10px rgba(255, 45, 120, 0.2), 0 0 15px rgba(255, 45, 120, 0.2)'
+                }}
+              >
+                Movies
+              </button>
+              <button className="px-5 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:text-gray-300 transition-all">
+                Places
+              </button>
+            </div>
           </div>
-          <div className="flex p-1 rounded-full bg-white/[0.03] border border-white/[0.05] backdrop-blur-md">
-            <button className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] text-white shadow-sm transition-all border border-white/10">
-              <Film className="w-4 h-4 text-violet-400" />
-              <span className="text-sm font-medium">Movies</span>
-            </button>
-            <button className="flex items-center gap-2 px-4 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.05] transition-all">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm font-medium">Places</span>
-            </button>
-          </div>
-        </div>
 
-        {/* Right Cluster: Actions */}
-        <div className="flex items-center gap-2 relative z-10">
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] transition-all text-slate-300 hover:text-white group">
-            <MessageSquare className="w-4 h-4 group-hover:text-cyan-400 transition-colors" />
-            <span className="text-sm font-medium hidden lg:block">Messages</span>
-          </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] transition-all text-slate-300 hover:text-white group">
-            <StickyNote className="w-4 h-4 group-hover:text-yellow-400 transition-colors" />
-            <span className="text-sm font-medium hidden lg:block">Notes</span>
-          </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] transition-all text-slate-300 hover:text-white group">
-            <Gamepad2 className="w-4 h-4 group-hover:text-fuchsia-400 transition-colors" />
-            <span className="text-sm font-medium hidden lg:block">Edit Quiz</span>
-          </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)] border border-violet-400/30 transition-all">
-            <Dices className="w-4 h-4" />
-            <span className="text-sm font-medium hidden lg:block">Spin & Match</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 relative z-10 flex flex-col max-w-5xl w-full mx-auto px-6 py-12 lg:py-24">
-        {/* Hero Section */}
-        <div className="flex flex-col items-center text-center space-y-6 mb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-semibold tracking-widest uppercase">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-            </span>
-            Movies Workspace
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1.5">
+            {[
+              { icon: MessageCircle, label: 'Messages' },
+              { icon: StickyNote, label: 'Notes' },
+              { icon: Brain, label: 'Edit Quiz' },
+              { icon: RefreshCw, label: 'Spin & Match' }
+            ].map((action, i) => (
+              <button 
+                key={i}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all group relative"
+                title={action.label}
+              >
+                <action.icon className="w-4 h-4 group-hover:scale-110 transition-transform relative z-10" />
+                <div 
+                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{ backgroundColor: 'rgba(0, 212, 255, 0.1)', boxShadow: '0 0 15px rgba(0, 212, 255, 0.3)' }}
+                />
+              </button>
+            ))}
           </div>
+        </nav>
+
+        <main className="w-full max-w-4xl mx-auto flex flex-col gap-12 mt-8">
           
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
-            Watchlist
-          </h1>
-          
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light">
-            Guest mode can still add titles and send suggestions. The host will review them before they hit the main queue.
-          </p>
-        </div>
-
-        {/* Queue Input Section */}
-        <div className="mt-auto pb-12 w-full max-w-3xl mx-auto">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
-            
-            <div className="relative bg-[#050714] border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl overflow-hidden">
-              {/* Internal subtle glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
-              
-              <div className="relative z-10 space-y-2 mb-6">
-                <h2 className="text-xl font-medium text-white flex items-center gap-2">
-                  Send a title to the queue
-                  <span className="px-2 py-0.5 rounded-md bg-white/5 text-xs text-slate-400 border border-white/10">Shared</span>
+          {/* 2. Workspace Hero */}
+          <section className="flex flex-col gap-5">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4" style={{ color: '#00d4ff' }} />
+                <h2 
+                  className="text-xs font-bold tracking-[0.2em] uppercase"
+                  style={{ color: '#00d4ff', textShadow: '0 0 10px rgba(0, 212, 255, 0.5)' }}
+                >
+                  Movies Workspace
                 </h2>
-                <p className="text-sm text-slate-400">
-                  Drop a movie or show here. We'll automatically fetch the poster and details.
-                </p>
               </div>
               
-              <div className="relative z-10 flex items-center">
-                <div className="absolute left-4 text-slate-500">
-                  <Search className="w-5 h-5" />
-                </div>
-                <input 
-                  type="text" 
-                  placeholder="Add a movie or show title..." 
-                  className="w-full bg-[#0a0c1a] border border-white/10 focus:border-violet-500/50 rounded-xl py-4 pl-12 pr-16 text-white placeholder:text-slate-600 outline-none transition-all shadow-inner focus:ring-1 focus:ring-violet-500/50 text-lg"
-                />
-                <button className="absolute right-2 p-2.5 rounded-lg bg-white/5 hover:bg-violet-600 text-slate-400 hover:text-white transition-all border border-transparent hover:border-violet-400/30">
-                  <Send className="w-5 h-5" />
+              <div 
+                className="self-start md:self-auto px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-2 shadow-lg"
+                style={{ 
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#aaa',
+                  backdropFilter: 'blur(10px)'
+                }}
+              >
+                <div className="w-2 h-2 rounded-full bg-gray-500 shadow-[0_0_5px_rgba(255,255,255,0.3)]" />
+                Guest mode
+              </div>
+            </div>
+            
+            <h1 
+              className="text-6xl md:text-7xl font-black tracking-tight"
+              style={{ 
+                fontFamily: '"Space Grotesk", sans-serif',
+                color: '#ffffff',
+                textShadow: '0 0 40px rgba(255, 45, 120, 0.4), 0 2px 10px rgba(0,0,0,0.8)'
+              }}
+            >
+              Watchlist
+            </h1>
+            
+            <p className="text-gray-400 text-lg md:text-xl max-w-2xl font-light leading-relaxed">
+              Queue titles, notes, and spin-off rituals from one shared movie space.
+            </p>
+          </section>
+
+          {/* 3. Shared Queue Card */}
+          <section 
+            className="relative rounded-2xl overflow-hidden p-8 flex flex-col gap-6 mt-4"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              backdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              borderLeft: '4px solid #ff2d78',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+            }}
+          >
+            {/* Inner top glow */}
+            <div 
+              className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none"
+              style={{
+                background: 'linear-gradient(90deg, rgba(255,45,120,0.8) 0%, rgba(255,45,120,0) 100%)',
+                boxShadow: '0 0 20px rgba(255,45,120,0.6)'
+              }}
+            />
+
+            <div className="flex flex-col gap-3">
+              <h3 
+                className="text-xs font-bold tracking-[0.2em] uppercase"
+                style={{ color: 'rgba(255, 255, 255, 0.4)' }}
+              >
+                Shared Queue
+              </h3>
+              <h2 
+                className="text-3xl font-bold text-white"
+                style={{ fontFamily: '"Space Grotesk", sans-serif' }}
+              >
+                Send a title to the queue
+              </h2>
+              <p className="text-base text-gray-400">
+                Not signed in? Guest can still send titles to Suggestions.
+              </p>
+            </div>
+
+            <div className="relative group mt-2">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                <Search className="w-5 h-5 text-gray-500 group-focus-within:text-[#00d4ff] transition-colors duration-300" />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Add a movie or show title..."
+                className="w-full bg-[#040408]/60 border border-white/5 rounded-xl pl-12 pr-14 py-5 text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:border-transparent transition-all shadow-inner text-lg"
+                style={{
+                  '--tw-ring-color': '#00d4ff',
+                  boxShadow: 'inset 0 2px 15px rgba(0,0,0,0.8)'
+                }}
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button 
+                  className="p-3 bg-[#ff2d78] hover:bg-[#ff0055] text-white rounded-lg transition-all"
+                  style={{
+                    boxShadow: '0 0 20px rgba(255, 45, 120, 0.5), inset 0 1px 0 rgba(255,255,255,0.3)'
+                  }}
+                >
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
+              
+              {/* Custom focus ring effect */}
+              <style dangerouslySetInnerHTML={{__html: `
+                input:focus {
+                  box-shadow: 0 0 0 1px #00d4ff, 0 0 25px rgba(0, 212, 255, 0.2), inset 0 2px 15px rgba(0,0,0,0.8) !important;
+                }
+              `}} />
             </div>
-          </div>
-        </div>
-      </main>
+          </section>
+        </main>
+      </div>
     </div>
   );
 }
