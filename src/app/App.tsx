@@ -178,7 +178,6 @@ const App: React.FC = () => {
                 <AppWorkspaceShell
                   isMobile={isMobile}
                   activeTab={activeTab}
-                  currentUser={currentUser}
                 />
               </React.Suspense>
             </div>

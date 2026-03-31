@@ -59,6 +59,12 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
           </div>
 
           <UserSelection variant="shell" className="shell-control-strip__profiles" />
+
+          {!currentUser && (
+            <span className="shell-control-strip__guest-badge" aria-label="Browsing as guest">
+              Guest mode
+            </span>
+          )}
         </div>
 
         <div className="shell-control-strip__cluster shell-control-strip__cluster--center">
