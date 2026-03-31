@@ -9,7 +9,7 @@ test('getQuizLaunchState', async (t) => {
       quizCompleted: false,
     });
 
-    assert.equal(state.label, 'Edit Quiz');
+    assert.equal(state.label, 'Take Quiz');
     assert.equal('description' in state, false);
   });
 

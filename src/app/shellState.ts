@@ -15,7 +15,7 @@ export const getQuizLaunchState = ({
 }: QuizLaunchStateParams): QuizLaunchState => {
   if (!currentUser) {
     return {
-      label: 'Edit Quiz',
+      label: 'Take Quiz',
     };
   }
 
@@ -59,7 +59,7 @@ export const getShellActionMeta = ({
       label: quizLaunch.label,
       description: currentUser
         ? 'Find your movie personality together.'
-        : 'Edit the quiz before a profile joins.',
+        : 'Take the personality quiz.',
     },
   ];
 
