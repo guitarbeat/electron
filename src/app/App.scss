@@ -500,7 +500,7 @@ body {
 
 .shell-control-strip__cluster--session {
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .shell-control-strip__cluster--center {
@@ -1203,17 +1203,16 @@ body {
 
 .user-selection__shell-layout {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 0.55rem 0.85rem;
-  width: 100%;
   min-width: 0;
 }
 
 .user-selection__shell-profile-list {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.52rem;
   min-width: 0;
 }
