@@ -8,7 +8,7 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, NoteIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 import { getMovieActionState, type MovieActionState } from './movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -268,6 +268,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           isMobile={isMobile}
           onClose={() => setIsTitleEditorOpen(false)}
           onSubmit={onRename}
+          onDelete={onDelete}
         />
       ) : null}
 
@@ -363,14 +364,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
   const handleToggleNotes = () => {
     executeAction(onToggleNotes);
-  };
-
-  const handleDeleteAction = () => {
-    if (actionState.isGuest) {
-      return;
-    }
-
-    executeAction(onDelete);
   };
 
   const handleEditAction = () => {
@@ -476,16 +469,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
               </button>
             ) : null}
 
-            <button
-              type="button"
-              onClick={handleDeleteAction}
-              title={`Remove "${movie.title}"`}
-              aria-label={`Remove "${movie.title}" from list`}
-              className={iconActionClassName('movie-icon-action--delete')}
-              disabled={isUpdating}
-            >
-              <TrashIcon style={{ width: '15px', height: '15px' }} />
-            </button>
           </div>
         ) : null}
       </div>
