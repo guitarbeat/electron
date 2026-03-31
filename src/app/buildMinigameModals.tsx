@@ -108,8 +108,8 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       key: 'quiz-editor',
       isOpen: showQuizEditor,
       onClose: () => setShowQuizEditor(false),
-      title: 'Quiz Editor',
-      ariaLabel: 'Quiz editor',
+      title: 'Personality Quiz',
+      ariaLabel: 'Personality quiz',
       maxWidth: 1200,
       maxHeight: 900,
       content: (
