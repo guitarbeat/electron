@@ -302,19 +302,11 @@ const PlacesList: React.FC = () => {
 
       <div className="places-map-shell">
         <div className="places-overview">
-          <div className="places-overview__copy">
-            <div className="places-overview__heading">
-              <p className="places-overview__title">Places</p>
-              {placesSummary.pendingSuggestions > 0 ? (
-                <span className="places-overview__badge">
-                  {placesSummary.pendingSuggestions} suggestion{placesSummary.pendingSuggestions === 1 ? '' : 's'} waiting
-                </span>
-              ) : null}
-            </div>
-            <p className="places-overview__description">
-              Search, pin, and track spots you want to try or revisit.
-            </p>
-          </div>
+          {placesSummary.pendingSuggestions > 0 && (
+            <span className="places-overview__badge">
+              {placesSummary.pendingSuggestions} suggestion{placesSummary.pendingSuggestions === 1 ? '' : 's'} waiting
+            </span>
+          )}
 
           <div className="places-overview__stats" aria-label="Places summary">
             <div className="places-overview__stat">
