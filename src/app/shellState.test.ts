@@ -53,7 +53,7 @@ test('getWorkspaceMeta', async (t) => {
 });
 
 test('getShellActionMeta', async (t) => {
-  await t.test('returns three shell actions for the movie workspace', () => {
+  await t.test('returns two shell actions for the movie workspace', () => {
     const actions = getShellActionMeta({
       activeTab: 'queue',
       currentUser: 'Aaron',
@@ -62,11 +62,11 @@ test('getShellActionMeta', async (t) => {
 
     assert.deepEqual(
       actions.map((action) => action.id),
-      ['messages', 'quiz', 'spin-match']
+      ['quiz', 'spin-match']
     );
     assert.deepEqual(
       actions.map((action) => action.label),
-      ['Messages', 'Start Quiz', 'Spin & Match']
+      ['Start Quiz', 'Spin & Match']
     );
   });
 
@@ -79,11 +79,11 @@ test('getShellActionMeta', async (t) => {
 
     assert.deepEqual(
       actions.map((action) => action.id),
-      ['messages', 'quiz']
+      ['quiz']
     );
     assert.deepEqual(
       actions.map((action) => action.label),
-      ['Messages', 'Retake Quiz']
+      ['Retake Quiz']
     );
   });
 });
