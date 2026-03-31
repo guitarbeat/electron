@@ -308,20 +308,6 @@ const PlacesList: React.FC = () => {
             </span>
           )}
 
-          <div className="places-overview__stats" aria-label="Places summary">
-            <div className="places-overview__stat">
-              <span className="places-overview__stat-value">{placesSummary.toTry}</span>
-              <span className="places-overview__stat-label">To try</span>
-            </div>
-            <div className="places-overview__stat">
-              <span className="places-overview__stat-value">{placesSummary.pinned}</span>
-              <span className="places-overview__stat-label">Pinned</span>
-            </div>
-            <div className="places-overview__stat">
-              <span className="places-overview__stat-value">{placesSummary.visited}</span>
-              <span className="places-overview__stat-label">Visited</span>
-            </div>
-          </div>
         </div>
 
         <PlacesMap
