@@ -538,6 +538,20 @@ body {
   min-width: 0;
 }
 
+.shell-control-strip__guest-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 171, 118, 0.18);
+  background: rgba(44, 30, 19, 0.44);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 /* Nav strip: hide the tiny status pills — name + avatar is sufficient */
 .shell-control-strip .user-selection__shell-chip-status-row {
   display: none;
