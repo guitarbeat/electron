@@ -10711,16 +10711,29 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 .watchlist-top-controls__search-form,
 .places-top-controls__search-form,
 .ui-control-input-shell {
-  border-color: rgba(189, 153, 100, 0.24) !important;
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.10) !important;
   border-radius: 1.15rem;
   background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.14) 0%, transparent 24%),
-    linear-gradient(165deg, rgba(92, 67, 41, 0.92) 0%, rgba(52, 37, 23, 0.98) 100%) !important;
+    linear-gradient(175deg,
+      rgba(255, 250, 238, 0.44) 0%,
+      rgba(255, 244, 225, 0.26) 50%,
+      rgba(255, 238, 210, 0.14) 100%) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 244, 219, 0.08),
-    0 12px 22px rgba(15, 10, 6, 0.16);
-  backdrop-filter: blur(8px) saturate(118%) !important;
-  -webkit-backdrop-filter: blur(8px) saturate(118%) !important;
+    inset 0 2px 0 rgba(255, 255, 255, 0.72),
+    0 10px 28px rgba(0, 0, 0, 0.30) !important;
+  backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+  -webkit-backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+}
+
+.watchlist-top-controls__search-field,
+.places-add-input {
+  color: rgba(28, 15, 4, 0.88) !important;
+}
+
+.watchlist-top-controls__search-field::placeholder,
+.places-add-input::placeholder {
+  color: rgba(80, 50, 20, 0.48) !important;
 }
 
 .watchlist-top-controls__search-form:focus-within,
@@ -10985,24 +10998,50 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   color: rgba(230, 155, 100, 0.92);
 }
 
+.shell-control-strip__bar {
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.10) !important;
+  background:
+    linear-gradient(175deg,
+      rgba(255, 250, 238, 0.44) 0%,
+      rgba(255, 244, 225, 0.26) 50%,
+      rgba(255, 238, 210, 0.14) 100%) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.72),
+    0 14px 32px rgba(0, 0, 0, 0.36) !important;
+  backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+  -webkit-backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+}
+
+.shell-control-strip__brand,
+.shell-control-strip__mark-shell,
+.shell-control-strip__status-title {
+  color: rgba(28, 15, 4, 0.88) !important;
+}
+
 .suggestion-item-card {
-  border: 1px solid rgba(255, 255, 255, 0.32) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
   border-radius: 14px !important;
   background:
     linear-gradient(175deg,
-      rgba(255, 252, 245, 0.44) 0%,
-      rgba(255, 248, 235, 0.28) 38%,
-      rgba(255, 244, 224, 0.16) 100%) !important;
-  backdrop-filter: blur(20px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
+      rgba(255, 250, 238, 0.48) 0%,
+      rgba(255, 244, 225, 0.30) 50%,
+      rgba(255, 238, 210, 0.18) 100%) !important;
+  backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
+  -webkit-backdrop-filter: blur(4px) brightness(1.18) saturate(115%) !important;
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.72),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1),
-    inset 1px 0 0 rgba(255, 255, 255, 0.22),
-    inset -1px 0 0 rgba(255, 255, 255, 0.08),
-    0 20px 48px rgba(0, 0, 0, 0.44),
-    0 6px 16px rgba(0, 0, 0, 0.28) !important;
+    inset 0 2px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -1px 0 rgba(100, 60, 20, 0.12),
+    inset 1px 0 0 rgba(255, 255, 255, 0.28),
+    inset -1px 0 0 rgba(255, 255, 255, 0.1),
+    0 16px 40px rgba(0, 0, 0, 0.42),
+    0 4px 12px rgba(0, 0, 0, 0.24) !important;
+}
+
+.suggestion-item-card__eyebrow {
+  color: rgba(100, 58, 18, 0.82) !important;
+  opacity: 1 !important;
 }
 
 .suggestion-item-card__meta {
@@ -11011,8 +11050,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 .suggestion-item-card h3 {
-  color: rgba(255, 250, 238, 0.96) !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color: rgba(28, 15, 4, 0.90) !important;
+  text-shadow: none !important;
 }
 
 .suggestion-item-card__actions {
