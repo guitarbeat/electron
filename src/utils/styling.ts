@@ -23,33 +23,6 @@ const normalizeHex = (color: string): string => {
   return color;
 };
 
-export const colorUtils = {
-  /**
-   * Get color with opacity
-   */
-  withOpacity: (color: string, opacity: number) => {
-    // Simple opacity conversion (for hex colors)
-    if (color.startsWith('#')) {
-      const alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
-      return color + alpha;
-    }
-    return color;
-  },
-
-  /**
-   * Get contrasting text color
-   */
-  getContrastColor: (bgColor: string) => {
-    // Simple contrast calculation
-    const color = bgColor.replace('#', '');
-    const r = parseInt(color.substr(0, 2), 16);
-    const g = parseInt(color.substr(2, 2), 16);
-    const b = parseInt(color.substr(4, 2), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 128 ? '#000000' : '#ffffff';
-  },
-};
-
 /**
  * Common layout patterns
  */
