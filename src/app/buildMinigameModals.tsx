@@ -70,7 +70,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       key: 'messages',
       isOpen: showMessages,
       onClose: () => setShowMessages(false),
-      title: 'Messages',
       ariaLabel: 'Shared messages',
       maxWidth: 820,
       maxHeight: 920,
