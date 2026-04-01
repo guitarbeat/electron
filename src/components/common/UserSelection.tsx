@@ -262,7 +262,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 <button
                   key={profile}
                   type="button"
-                  className={`user-selection__shell-chip${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
+                  className={`user-selection__shell-avatar-btn${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
                   onClick={() => {
                     if (!isActive) {
                       selectProfile(profile);
@@ -280,31 +280,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   }
                   aria-pressed={isActive}
                 >
-                  <span className="user-selection__shell-chip-avatar" aria-hidden="true">
-                    <ShellProfileAvatar user={profile} />
-                  </span>
-                  <span className="user-selection__shell-chip-copy">
-                    <span className="user-selection__shell-chip-name">{profile}</span>
-                    {(isActive || hasPin || needsPin) ? (
-                      <span className="user-selection__shell-chip-status-row">
-                        {isActive ? (
-                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--active">
-                            Active
-                          </span>
-                        ) : null}
-                        {needsPin ? (
-                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--pin-required">
-                            PIN Required
-                          </span>
-                        ) : null}
-                        {hasPin ? (
-                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--pin">
-                            PIN Locked
-                          </span>
-                        ) : null}
-                      </span>
-                    ) : null}
-                  </span>
+                  <ShellProfileAvatar user={profile} />
                 </button>
               );
             })}
