@@ -1,11 +1,14 @@
 import React, { type FC } from 'react';
-import type { MainTab } from '@/shared/types';
+import type { MainTab, Movie } from '@/shared/types';
 import QuizAdBanner from '@/components/quiz/QuizAdBanner';
 import SpinAdBanner from '@/components/spinMatch/SpinAdBanner';
-import PosterExploreAdBanner from '@/components/posterExplore/PosterExploreAdBanner';
 import WatchlistComponent from '@/components/watchlist/index';
+import PosterCarouselInline from '@/components/posterExplore/PosterCarouselInline';
+import './AppWorkspaceShell.css';
 
 const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
+
+export type ViewMode = 'grid' | 'carousel';
 
 interface AppWorkspaceShellProps {
   isMobile: boolean;
@@ -13,7 +16,9 @@ interface AppWorkspaceShellProps {
   onOpenQuiz: () => void;
   quizCompleted: boolean;
   onOpenSpin: () => void;
-  onOpenPosterExplore: () => void;
+  viewMode: ViewMode;
+  onSetViewMode: (mode: ViewMode) => void;
+  movies: Movie[];
 }
 
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
@@ -22,7 +27,9 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   onOpenQuiz,
   quizCompleted,
   onOpenSpin,
-  onOpenPosterExplore,
+  viewMode,
+  onSetViewMode,
+  movies,
 }) => {
   return (
     <main
@@ -31,7 +38,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       tabIndex={-1}
     >
       <section
-        className={`workspace-surface workspace-surface--${activeTab}`}
+        className={`workspace-surface workspace-surface--${activeTab}${viewMode === 'carousel' ? ' workspace-surface--carousel-mode' : ''}`}
         style={{ minWidth: 0 }}
       >
         {activeTab === 'queue' ? (
@@ -43,11 +50,34 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
               <div className="ad-banners-row__item">
                 <SpinAdBanner onOpen={onOpenSpin} />
               </div>
-              <div className="ad-banners-row__item">
-                <PosterExploreAdBanner onOpen={onOpenPosterExplore} />
-              </div>
             </div>
-            <WatchlistComponent isMobile={isMobile} />
+
+            <div className="view-toggle-bar">
+              <button
+                className={`view-toggle-btn${viewMode === 'grid' ? ' view-toggle-btn--active' : ''}`}
+                onClick={() => onSetViewMode('grid')}
+                aria-pressed={viewMode === 'grid'}
+                title="Grid view"
+              >
+                <span className="view-toggle-btn__icon">▤</span>
+                <span className="view-toggle-btn__label">List</span>
+              </button>
+              <button
+                className={`view-toggle-btn${viewMode === 'carousel' ? ' view-toggle-btn--active' : ''}`}
+                onClick={() => onSetViewMode('carousel')}
+                aria-pressed={viewMode === 'carousel'}
+                title="Poster view"
+              >
+                <span className="view-toggle-btn__icon">🎬</span>
+                <span className="view-toggle-btn__label">Posters</span>
+              </button>
+            </div>
+
+            {viewMode === 'carousel' ? (
+              <PosterCarouselInline movies={movies} />
+            ) : (
+              <WatchlistComponent isMobile={isMobile} />
+            )}
           </>
         ) : (
           <React.Suspense fallback={null}>
