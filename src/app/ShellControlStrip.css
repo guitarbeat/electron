@@ -10,16 +10,45 @@
 .shell-control-strip--retro {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 
-/* ── Bar: fully transparent — only avatars + toggle float over background ── */
+/* ── Bar: fully transparent, stacks toggle + profiles vertically ── */
 .shell-control-strip--retro .shell-control-strip__bar {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem 0.8rem;
   background: transparent;
   border: none;
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+/* ── Toggle row: centered ── */
+.shell-control-strip__toggle-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ── Profiles row: two big circles filling full width ── */
+.shell-control-strip__profiles-row {
+  display: flex;
+  width: 100%;
+}
+
+.shell-control-strip__profiles-row .user-selection,
+.shell-control-strip__profiles-row .user-selection__shell-layout,
+.shell-control-strip__profiles-row .user-selection__shell-profile-list {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  gap: 0;
 }
 
 
@@ -47,31 +76,13 @@
   text-transform: uppercase;
 }
 
-/* ── Mobile: keep single-row chrome layout ── */
-@media (max-width: 640px) {
-  /* Override the default 1-column stacked layout; stay in one row */
-  .shell-control-strip--retro .shell-control-strip__bar {
-    grid-template-columns: auto 1fr;
-    gap: 0.4rem;
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .shell-control-strip__profiles-row .user-selection__shell-avatar-btn {
+    width: 4.5rem;
+    height: 4.5rem;
+    flex: 0 0 4.5rem;
   }
-
-  /* Undo full-width stretching that the base mobile rules apply */
-  .shell-control-strip--retro .shell-control-strip__cluster--session {
-    width: auto;
-  }
-
-  /* Tab toggle: don't stretch full-width; let the center column size it */
-  .shell-control-strip--retro .shell-control-strip__theme-toggle,
-  .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle {
-    width: auto;
-  }
-
-  /* Scale tabs down on small screens */
-  .shell-control-strip--retro .win98-tab {
-    font-size: 0.65rem;
-    padding: 3px 7px 4px;
-  }
-
 }
 
 /* ── Reduced motion ── */
