@@ -33,7 +33,15 @@
 .shell-control-strip__toggle-row {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
+}
+
+/* Override mobile rule that forces toggle to full width */
+.shell-control-strip--retro .shell-control-strip__theme-toggle,
+.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle {
+  width: auto !important;
+  align-self: center;
 }
 
 /* ── Profiles row: two big circles filling full width ── */
