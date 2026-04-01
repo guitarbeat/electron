@@ -7141,6 +7141,7 @@ body.grabbing * {
   display: flex;
   align-items: stretch;
   position: relative;
+  z-index: 50;
 }
 
 .watchlist-top-controls__search-shell .ui-input {
