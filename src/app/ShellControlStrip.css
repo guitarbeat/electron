@@ -13,34 +13,13 @@
   overflow: hidden;
 }
 
-/* ── Chrome metallic bar ── */
+/* ── Bar: fully transparent — only avatars + toggle float over background ── */
 .shell-control-strip--retro .shell-control-strip__bar {
-  background:
-    linear-gradient(
-      180deg,
-      #f0f0f0 0%,
-      #d8d8d8 30%,
-      #c0c0c0 50%,
-      #d0d0d0 70%,
-      #e8e8e8 100%
-    );
+  background: transparent;
   border: none;
-  border-top: 1px solid #e8e8e8;
-  border-left: 1px solid #e0e0e0;
-  border-right: 1px solid #909090;
-  border-bottom: 1px solid #909090;
-  border-radius: 0;
-  box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.7),
-    0 2px 8px rgba(0, 0, 0, 0.18);
+  box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-}
-
-/* ── Color text on the chrome bar ── */
-.shell-control-strip--retro .shell-control-strip__bar *,
-.shell-control-strip--retro .shell-control-strip__bar {
-  color: #111;
 }
 
 
