@@ -3,18 +3,10 @@ import { User } from '@/shared/types';
 
 type BubbleSize = 'default' | 'compact' | 'tiny' | 'action';
 
-const userImageSources: Record<User, string[]> = {
-  Aaron: [
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
-    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
-    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
-  ],
-  Electra: [
-    'https://i.redd.it/vkmos70wqw641.jpg',
-    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
-    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
-  ],
-};
+const getCatSources = (user: User, seed: number): string[] => [
+  `https://cataas.com/cat?width=320&height=320&v=${seed}`,
+  `https://cataas.com/cat/says/${user}?width=320&height=320&fontSize=22&v=${seed}`,
+];
 
 interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   sources: (string | undefined | null)[];
@@ -122,7 +114,8 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     ref
   ) => {
   const isActionBubble = size === 'action';
-  const sources = user ? userImageSources[user] : [];
+  const [catSeed, setCatSeed] = React.useState(() => Date.now());
+  const sources = user ? getCatSources(user, catSeed) : [];
 
   const sizeTokens = SIZES[size];
   const accentColor =
@@ -143,7 +136,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
           : 'var(--color-secondary)');
   const accentGlowOpacity = isHovered ? '52%' : '36%';
   const haloGlowOpacity = isHovered ? '45%' : '28%';
-  const canRefreshImage = Boolean(enableImageRefresh && user && !disabled && false);
+  const canRefreshImage = Boolean(enableImageRefresh && user && !disabled);
   const shouldPlaceNameInsideBubble = true;
   /** Inline profile avatars: photo fills shell; chrome / gloss / name stack above */
   const isTinyFullBleed = size === 'tiny' && !icon && !isActionBubble;
@@ -282,6 +275,7 @@ const GelBubbleAvatar = React.forwardRef<HTMLButtonElement, GelBubbleAvatarProps
     }
     e.preventDefault();
     e.stopPropagation();
+    setCatSeed(Date.now());
   };
 
   let opacityValue = 1;
