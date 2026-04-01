@@ -106,14 +106,13 @@
   color: #111;
 }
 
-/* ── Movies/Places toggle — Glassmorphic Rocker Switch ── */
+/* ── Movies/Places toggle — Glassmorphic Vertical Rocker ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
   display: block;
   position: relative;
-  height: 2.1rem;
-  min-width: 9.5rem;
+  width: 2.7rem;
+  height: 3.5rem;
   border-radius: 10px;
-  /* Frosted glass */
   background: rgba(255, 255, 255, 0.13);
   backdrop-filter: blur(14px) saturate(1.6);
   -webkit-backdrop-filter: blur(14px) saturate(1.6);
@@ -125,7 +124,7 @@
   padding: 0;
 }
 
-/* ── Hide Win98 protrusion shadows — not used in glass ── */
+/* ── Hide unused shadow protrusion spans ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__shadow {
   display: none;
 }
@@ -137,17 +136,18 @@
   background: rgba(0, 0, 0, 0.12);
   border-radius: 7px;
   display: block;
-  perspective: 220px;
+  perspective: 160px;
   box-shadow:
     0 1px 4px rgba(0, 0, 0, 0.35) inset,
     0 0 0 1px rgba(0, 0, 0, 0.08) inset;
   overflow: hidden;
 }
 
-/* ── Options strip — tilts on Y axis ── */
+/* ── Options column — this element tilts on the X axis ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options {
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
   align-items: center;
   width: 100%;
@@ -159,68 +159,66 @@
     transform 0.28s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* Shadow overlays — darken the "pressed" side of the tilt */
+/* Shadow overlays — top half and bottom half */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before,
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
   content: '';
   display: block;
   position: absolute;
-  top: 0;
-  width: 46%;
-  height: 100%;
+  left: 0;
+  width: 100%;
+  height: 46%;
   pointer-events: none;
   transition: opacity 0.28s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
+/* Top-half shadow (active when Movies/queue is pressed) */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before {
-  border-radius: 7px 0 0 7px;
+  border-radius: 7px 7px 0 0;
   box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.45) inset,
+    1px 0 1px rgba(0, 0, 0, 0.45) inset,
     2px 2px 5px rgba(0, 0, 0, 0.22) inset;
-  mask-image: linear-gradient(-90deg, transparent, rgba(0, 0, 0, 0.5));
-  left: 0;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
+  top: 0;
 }
 
+/* Bottom-half shadow (active when Places is pressed) */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
-  border-radius: 0 7px 7px 0;
+  border-radius: 0 0 7px 7px;
   box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.45) inset,
-    -2px 2px 5px rgba(0, 0, 0, 0.22) inset;
-  mask-image: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.5));
-  right: 0;
+    1px 0 1px rgba(0, 0, 0, 0.45) inset,
+    2px -2px 5px rgba(0, 0, 0, 0.22) inset;
+  mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent);
+  bottom: 0;
   opacity: 0;
 }
 
-/* ── Option labels ── */
+/* ── Icons ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__option {
-  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.1rem;
+  line-height: 1;
   text-align: center;
   width: 100%;
-  padding: 0 0.25rem;
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.45),
-    0 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
   user-select: none;
-  transition: color 0.28s, text-shadow 0.28s, opacity 0.28s;
+  transition: opacity 0.28s, filter 0.28s;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
 }
 
-/* ── Separator bar ── */
+/* ── Horizontal separator bar ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__sep {
   background: rgba(255, 255, 255, 0.28);
-  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.15);
-  width: 1px;
-  min-width: 1px;
-  height: 1rem;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+  width: 60%;
+  height: 1px;
+  min-height: 1px;
   flex-shrink: 0;
   transition: background-color 0.28s;
 }
 
-/* ── State: queue (Movies) active — left side tilts down ── */
+/* ── State: queue (Movies) active — top tilts toward viewer ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options {
-  transform: translateX(-2px) rotateY(-15deg);
+  transform: translateY(-2px) rotateX(15deg);
 }
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options::before {
   opacity: 1;
@@ -228,15 +226,15 @@
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options::after {
   opacity: 0;
 }
-/* Dim the inactive (right/Places) label */
+/* Dim the inactive (bottom/Places) icon */
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__option:last-of-type {
-  color: rgba(255, 255, 255, 0.35);
-  text-shadow: none;
+  opacity: 0.35;
+  filter: none;
 }
 
-/* ── State: places active — right side tilts down ── */
+/* ── State: places active — bottom tilts toward viewer ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options {
-  transform: translateX(2px) rotateY(15deg);
+  transform: translateY(2px) rotateX(-15deg);
 }
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options::before {
   opacity: 0;
@@ -244,28 +242,28 @@
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options::after {
   opacity: 1;
 }
-/* Dim the inactive (left/Movies) label */
+/* Dim the inactive (top/Movies) icon */
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__option:first-of-type {
-  color: rgba(255, 255, 255, 0.35);
-  text-shadow: none;
+  opacity: 0.35;
+  filter: none;
 }
 
-/* ── Transparent hit-area buttons layered on top ── */
+/* ── Transparent hit-area buttons (top / bottom halves) ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
+  left: 0;
+  right: 0;
+  height: 50%;
   background: transparent;
   border: none;
   cursor: pointer;
   z-index: 2;
 }
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--left {
-  left: 0;
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--top {
+  top: 0;
 }
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--right {
-  right: 0;
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--bottom {
+  bottom: 0;
 }
 
 
@@ -312,14 +310,14 @@
     width: auto;
   }
 
-  /* Compact rocker on small screens */
+  /* Compact vertical rocker on small screens */
   .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
-    height: 1.9rem;
-    min-width: 8rem;
+    width: 2.3rem;
+    height: 3rem;
   }
 
   .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__option {
-    font-size: 0.68rem;
+    font-size: 0.95rem;
   }
 
   /* Shrink the title bar text on narrow screens */
