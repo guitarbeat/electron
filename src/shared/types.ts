@@ -1,8 +1,8 @@
 export type User = 'Aaron' | 'Electra';
 
 export const USER_PHOTOS: Record<User, string> = {
-  Aaron: 'https://cataas.com/cat/says/Aaron?fontSize=20&width=80&height=80',
-  Electra: 'https://cataas.com/cat/says/Electra?fontSize=16&width=80&height=80',
+  Aaron: 'https://cataas.com/cat/black?width=200&height=200',
+  Electra: 'https://cataas.com/cat/cute?width=200&height=200',
 };
 
 export type MainTab = 'queue' | 'places';
