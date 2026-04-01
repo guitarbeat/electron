@@ -11030,3 +11030,339 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     min-width: 2.75rem;
   }
 }
+
+/* ================================================
+   Y2K / WINDOWS 98 SKIN — Search Bar, Cards & UI
+   ================================================ */
+
+/* ── Y2K palette tokens ── */
+:root {
+  --y2k-silver: #c0c0c0;
+  --y2k-silver-light: #d4d0c8;
+  --y2k-silver-lighter: #e8e4e0;
+  --y2k-dark: #404040;
+  --y2k-mid: #808080;
+  --y2k-white: #ffffff;
+  --y2k-navy: #000080;
+  --y2k-blue-sel: #0000aa;
+  --y2k-font: system-ui, 'Segoe UI', Tahoma, Arial, sans-serif;
+  --y2k-mono: 'Courier New', Courier, monospace;
+}
+
+/* ── Section eyebrow: monospaced label ── */
+.watchlist-top-controls__eyebrow {
+  font-family: var(--y2k-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #86b4d8;
+}
+
+/* ── Section title: bold system font ── */
+.watchlist-top-controls__title {
+  font-family: var(--y2k-font);
+  font-weight: 700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* ── Search form: Win98 raised dialog box surface ── */
+.watchlist-top-controls__search-form {
+  border-radius: 0;
+  border-top: 2px solid var(--y2k-silver-lighter);
+  border-left: 2px solid var(--y2k-silver-lighter);
+  border-right: 2px solid var(--y2k-dark);
+  border-bottom: 2px solid var(--y2k-dark);
+  background: var(--y2k-silver);
+  box-shadow:
+    inset 1px 1px 0 var(--y2k-white),
+    inset -1px -1px 0 var(--y2k-mid),
+    0 6px 18px rgba(0, 0, 0, 0.4);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 5px;
+  gap: 4px;
+  transition: none;
+}
+
+.watchlist-top-controls__search-form:focus-within {
+  border-top-color: var(--y2k-silver-lighter);
+  border-left-color: var(--y2k-silver-lighter);
+  border-right-color: var(--y2k-dark);
+  border-bottom-color: var(--y2k-dark);
+  box-shadow:
+    inset 1px 1px 0 var(--y2k-white),
+    inset -1px -1px 0 var(--y2k-mid),
+    0 6px 18px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(0, 0, 180, 0.5);
+}
+
+/* ── Search text field: Win98 sunken text box ── */
+.watchlist-top-controls__search-field {
+  background: var(--y2k-white) !important;
+  color: #000000 !important;
+  font-family: var(--y2k-mono) !important;
+  font-size: 0.88rem !important;
+  border-top: 2px solid var(--y2k-mid) !important;
+  border-left: 2px solid var(--y2k-mid) !important;
+  border-right: 2px solid var(--y2k-silver-lighter) !important;
+  border-bottom: 2px solid var(--y2k-silver-lighter) !important;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.22) !important;
+  border-radius: 0 !important;
+  caret-color: #000000;
+}
+
+.watchlist-top-controls__search-field::placeholder {
+  color: #999999 !important;
+  font-style: italic;
+  font-family: var(--y2k-mono) !important;
+}
+
+/* ── Add / Suggest button: Win98 raised pushbutton ── */
+.watchlist-top-controls__search-button.ui-button {
+  background: var(--y2k-silver) !important;
+  color: #000000 !important;
+  font-family: var(--y2k-font) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  border-radius: 0 !important;
+  border-top: 2px solid var(--y2k-white) !important;
+  border-left: 2px solid var(--y2k-white) !important;
+  border-right: 2px solid var(--y2k-dark) !important;
+  border-bottom: 2px solid var(--y2k-dark) !important;
+  box-shadow:
+    inset 1px 1px 0 var(--y2k-silver-lighter),
+    inset -1px -1px 0 var(--y2k-mid) !important;
+  min-height: 2.6rem !important;
+  min-width: 5.5rem !important;
+  text-shadow: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.watchlist-top-controls__search-button.ui-button:hover {
+  background: var(--y2k-silver-light) !important;
+}
+
+.watchlist-top-controls__search-button.ui-button:active {
+  border-top: 2px solid var(--y2k-dark) !important;
+  border-left: 2px solid var(--y2k-dark) !important;
+  border-right: 2px solid var(--y2k-white) !important;
+  border-bottom: 2px solid var(--y2k-white) !important;
+  box-shadow: inset 1px 1px 0 var(--y2k-mid) !important;
+  padding-top: calc(0.4rem + 1px) !important;
+  padding-left: calc(0.75rem + 1px) !important;
+}
+
+/* ── Surprise / icon buttons in the toolbar: Win98 raised ── */
+.watchlist-top-controls__surprise .ui-button,
+.watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+  background: var(--y2k-silver) !important;
+  color: #000000 !important;
+  font-family: var(--y2k-font) !important;
+  font-weight: 700 !important;
+  border-radius: 0 !important;
+  border-top: 2px solid var(--y2k-white) !important;
+  border-left: 2px solid var(--y2k-white) !important;
+  border-right: 2px solid var(--y2k-dark) !important;
+  border-bottom: 2px solid var(--y2k-dark) !important;
+  box-shadow: inset 1px 1px 0 var(--y2k-silver-lighter) !important;
+  text-shadow: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.watchlist-top-controls__surprise .ui-button:active,
+.watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button):active {
+  border-top: 2px solid var(--y2k-dark) !important;
+  border-left: 2px solid var(--y2k-dark) !important;
+  border-right: 2px solid var(--y2k-white) !important;
+  border-bottom: 2px solid var(--y2k-white) !important;
+  box-shadow: inset 1px 1px 0 var(--y2k-mid) !important;
+}
+
+/* ── Autocomplete dropdown: Win98 listbox ── */
+.watchlist-top-controls__autocomplete {
+  border-radius: 0;
+  border: 2px solid;
+  border-top-color: var(--y2k-mid);
+  border-left-color: var(--y2k-mid);
+  border-right-color: var(--y2k-white);
+  border-bottom-color: var(--y2k-white);
+  background: var(--y2k-white);
+  box-shadow:
+    2px 2px 0 var(--y2k-dark),
+    4px 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.watchlist-top-controls__autocomplete-option {
+  background: var(--y2k-white);
+  color: #000000;
+  font-family: var(--y2k-font);
+  transition: none;
+}
+
+.watchlist-top-controls__autocomplete-option + .watchlist-top-controls__autocomplete-option {
+  border-top: 1px solid #d0d0d0;
+}
+
+.watchlist-top-controls__autocomplete-option:hover,
+.watchlist-top-controls__autocomplete-option.is-active {
+  background: var(--y2k-navy);
+  color: var(--y2k-white);
+}
+
+.watchlist-top-controls__autocomplete-option:hover *,
+.watchlist-top-controls__autocomplete-option.is-active * {
+  color: var(--y2k-white) !important;
+}
+
+.watchlist-top-controls__autocomplete-title {
+  font-family: var(--y2k-font);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.watchlist-top-controls__autocomplete-meta {
+  font-family: var(--y2k-mono);
+  font-size: 0.72rem;
+  color: #555555;
+}
+
+.watchlist-top-controls__autocomplete-poster {
+  border-radius: 0;
+  border: 1px solid var(--y2k-mid);
+  background: var(--y2k-silver);
+}
+
+.watchlist-top-controls__autocomplete-status {
+  font-family: var(--y2k-mono);
+  color: #555555;
+}
+
+/* ── Movie cards: Win98 outset raised frame ── */
+.movie-item-card {
+  border-radius: 0;
+  border-top: 3px solid var(--y2k-silver-lighter);
+  border-left: 3px solid var(--y2k-silver-lighter);
+  border-right: 3px solid var(--y2k-dark);
+  border-bottom: 3px solid var(--y2k-dark);
+  box-shadow:
+    inset 1px 1px 0 var(--y2k-white),
+    inset -1px -1px 0 var(--y2k-mid),
+    0 4px 12px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .movie-item-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow:
+      inset 1px 1px 0 var(--y2k-white),
+      inset -1px -1px 0 var(--y2k-mid),
+      0 0 0 2px #0000cc,
+      0 14px 32px rgba(0, 0, 0, 0.55);
+  }
+
+  .movie-item-card:hover:active {
+    transform: translateY(-1px) scale(0.99);
+    box-shadow:
+      inset 1px 1px 0 var(--y2k-white),
+      inset -1px -1px 0 var(--y2k-mid),
+      0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ── Movie title text: bold system font, bitmap-like ── */
+.movie-item-title,
+.movie-title {
+  font-family: var(--y2k-font);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 #000000;
+}
+
+/* ── Movie meta items ── */
+.movie-meta-item {
+  font-family: var(--y2k-mono);
+  font-size: 0.68rem;
+}
+
+/* ── Movie genre badge: retro terminal look ── */
+.movie-category {
+  border-radius: 0;
+  font-family: var(--y2k-mono);
+  font-size: 0.6rem;
+  background: rgba(0, 0, 100, 0.6);
+  border: 1px solid rgba(120, 160, 255, 0.55);
+  color: #cce0ff;
+  letter-spacing: 0.04em;
+}
+
+/* ── Movie "Add memory / Notes" toggle: Win98 button ── */
+.movie-item-memory-toggle {
+  border-radius: 0;
+  font-family: var(--y2k-font);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  border-left: 1px solid rgba(255, 255, 255, 0.45);
+  border-right: 1px solid rgba(0, 0, 0, 0.45);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+  transition: none;
+}
+
+/* ── Watched card: neon-green retro highlight ── */
+.movie-item-card--watched {
+  border-top-color: rgba(80, 220, 110, 0.6);
+  border-left-color: rgba(80, 220, 110, 0.6);
+  box-shadow:
+    inset 1px 1px 0 rgba(180, 255, 195, 0.4),
+    inset -1px -1px 0 var(--y2k-mid),
+    0 0 0 1px rgba(74, 222, 128, 0.3),
+    0 0 16px rgba(74, 222, 128, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Highlighted card: blue Win98 selection ── */
+.movie-item-card--highlighted {
+  box-shadow:
+    inset 1px 1px 0 var(--y2k-white),
+    inset -1px -1px 0 var(--y2k-mid),
+    0 0 0 2px #0000cc,
+    0 0 20px rgba(0, 0, 200, 0.35);
+}
+
+/* ── "Lead" description text under title ── */
+.watchlist-top-controls__lead {
+  font-family: var(--y2k-mono);
+  font-size: 0.78rem;
+}
+
+/* ── Empty state and error text ── */
+.watchlist-top-controls__suggestion-error {
+  font-family: var(--y2k-mono);
+}
+
+/* ── Mobile: keep Win98 style on smaller screens ── */
+@media (max-width: 420px) {
+  .watchlist-top-controls__search-form {
+    border-radius: 0;
+    padding: 4px;
+  }
+
+  .watchlist-top-controls__search-button.ui-button {
+    min-height: 2.4rem !important;
+  }
+}
