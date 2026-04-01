@@ -4,6 +4,7 @@ import {
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   AUTOCOMPLETE_REQUEST_TIMEOUT_MS 
 } from './config';
+export { MOVIE_AUTOCOMPLETE_RESULT_LIMIT, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT };
 import { searchOmdbMovies } from './omdb';
 import { searchTvMazeShows } from './tvmaze';
 import type { MovieAutocompleteResult } from './types';
