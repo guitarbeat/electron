@@ -134,13 +134,6 @@ export default defineConfig(({ mode }) => {
         '.js': ['.js', '.ts', '.tsx'],
       },
     },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: 'modern-compiler' as const,
-        },
-      },
-    },
     build: {
       rollupOptions: {
         output: {
