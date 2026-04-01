@@ -187,24 +187,11 @@
   line-height: 1;
 }
 
-.y2k-online-badge__label {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  line-height: 1.15;
-}
-
 .y2k-online-badge__top {
   font-size: 0.6rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   color: #006000;
-}
-
-.y2k-online-badge__bottom {
-  font-size: 0.55rem;
-  color: #555;
-  letter-spacing: 0.02em;
 }
 
 /* ── Ticker strip ── */

@@ -11,7 +11,7 @@ interface ShellControlStripProps {
 }
 
 const TICKER_TEXT =
-  '\u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · ★ BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 · \u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · ★ BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 ·';
+  '\u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER · \u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER ·';
 
 const ShellControlStrip: FC<ShellControlStripProps> = ({
   activeTab,
@@ -55,10 +55,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
         <div className="shell-control-strip__cluster shell-control-strip__cluster--actions">
           <div className="y2k-online-badge" aria-label="Online status">
             <span className="y2k-online-badge__dot" aria-hidden="true">●</span>
-            <span className="y2k-online-badge__label">
-              <span className="y2k-online-badge__top">ONLINE</span>
-              <span className="y2k-online-badge__bottom">56K</span>
-            </span>
+            <span className="y2k-online-badge__top">ONLINE</span>
           </div>
         </div>
       </div>
