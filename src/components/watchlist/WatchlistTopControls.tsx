@@ -57,6 +57,18 @@ export interface WatchlistTopControlsHandle {
   focusSearchInput: () => void;
 }
 
+function AutocompletePosterImage({ src }: { src: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt=""
+      className={`watchlist-top-controls__autocomplete-poster-image${loaded ? ' is-loaded' : ''}`}
+      onLoad={() => setLoaded(true)}
+    />
+  );
+}
+
 const WatchlistTopControls = React.forwardRef<
   WatchlistTopControlsHandle,
   WatchlistTopControlsProps
@@ -91,6 +103,8 @@ const WatchlistTopControls = React.forwardRef<
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
   const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+  const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
+  const autocompleteCloseTimerRef = useRef<number | null>(null);
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
   const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
@@ -130,6 +144,11 @@ const WatchlistTopControls = React.forwardRef<
   }, []);
 
   const openAutocomplete = useCallback(() => {
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
+    setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
     setActiveAutocompleteIndex(-1);
   }, []);
@@ -138,6 +157,13 @@ const WatchlistTopControls = React.forwardRef<
     setIsAutocompleteOpen(false);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteLoading(false);
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+    }
+    autocompleteCloseTimerRef.current = window.setTimeout(() => {
+      autocompleteCloseTimerRef.current = null;
+      setIsAutocompleteMounted(false);
+    }, 200);
   }, []);
 
   const resetAutocomplete = useCallback(() => {
@@ -146,6 +172,11 @@ const WatchlistTopControls = React.forwardRef<
     setAutocompleteResults([]);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(false);
+    setIsAutocompleteMounted(false);
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
     setIsAutocompleteLoading(false);
     setAutocompleteError(null);
   }, []);
@@ -180,6 +211,12 @@ const WatchlistTopControls = React.forwardRef<
 
   useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
 
+  useEffect(() => () => {
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isAutocompleteRegionFocused) {
       hideAutocomplete();
@@ -199,8 +236,12 @@ const WatchlistTopControls = React.forwardRef<
     const requestId = autocompleteRequestIdRef.current + 1;
     autocompleteRequestIdRef.current = requestId;
     setAutocompleteQuery(normalizedSearchQuery);
-    setAutocompleteResults([]);
     setActiveAutocompleteIndex(-1);
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
+    setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
     setIsAutocompleteLoading(true);
     setAutocompleteError(null);
@@ -392,18 +433,21 @@ const WatchlistTopControls = React.forwardRef<
               autoComplete="off"
               fullWidth
             />
-            {isAutocompleteOpen && hasAutocompleteFeedback && (
+            {isAutocompleteMounted && hasAutocompleteFeedback && (
               <div
                 id={autocompleteListId}
-                className="watchlist-top-controls__autocomplete"
+                className={`watchlist-top-controls__autocomplete${isAutocompleteOpen ? ' is-open' : ''}`}
                 role="listbox"
                 aria-label="Movie and show suggestions"
               >
-                {isAutocompleteLoading ? (
-                  <div className="watchlist-top-controls__autocomplete-status" role="status">
-                    Searching titles...
+                {isAutocompleteLoading && (
+                  <div className="watchlist-top-controls__autocomplete-loading" role="status" aria-label="Searching">
+                    <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                    <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                    <span className="watchlist-top-controls__autocomplete-loading-dot" />
                   </div>
-                ) : autocompleteError ? (
+                )}
+                {autocompleteError ? (
                   <div className="watchlist-top-controls__autocomplete-status" role="alert">
                     {autocompleteError}
                   </div>
@@ -426,11 +470,7 @@ const WatchlistTopControls = React.forwardRef<
                     >
                       <span className="watchlist-top-controls__autocomplete-poster">
                         {result.poster ? (
-                          <img
-                            src={result.poster}
-                            alt=""
-                            className="watchlist-top-controls__autocomplete-poster-image"
-                          />
+                          <AutocompletePosterImage src={result.poster} />
                         ) : (
                           <span className="watchlist-top-controls__autocomplete-poster-fallback" aria-hidden>
                             {result.title.charAt(0).toUpperCase()}
@@ -446,11 +486,11 @@ const WatchlistTopControls = React.forwardRef<
                       </span>
                     </button>
                   ))
-                ) : (
+                ) : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
-                    No titles found for “{trimmedSearchQuery}”
+                    No titles found for "{trimmedSearchQuery}"
                   </div>
-                )}
+                ) : null}
               </div>
             )}
           </div>
