@@ -16,6 +16,7 @@ import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 import { buildWatchlistSections } from './watchlistSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
+import './WatchlistPhotoMode.css';
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
