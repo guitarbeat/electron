@@ -25,11 +25,7 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
         className={`shell-control-strip__bar shell-control-strip__bar--${activeTab}`}
         aria-label={`${workspaceMeta.title} controls`}
       >
-        <div className="shell-control-strip__cluster shell-control-strip__cluster--session">
-          <UserSelection variant="shell" className="shell-control-strip__profiles" />
-        </div>
-
-        <div className="shell-control-strip__cluster shell-control-strip__cluster--center">
+        <div className="shell-control-strip__toggle-row">
           <ThemeToggle
             activeTab={activeTab}
             onChange={onTabChange}
@@ -39,6 +35,9 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
           />
         </div>
 
+        <div className="shell-control-strip__profiles-row">
+          <UserSelection variant="shell" className="shell-control-strip__profiles" />
+        </div>
       </div>
     </section>
   );
