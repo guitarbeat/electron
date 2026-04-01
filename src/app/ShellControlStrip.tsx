@@ -52,12 +52,6 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
           />
         </div>
 
-        <div className="shell-control-strip__cluster shell-control-strip__cluster--actions">
-          <div className="y2k-online-badge" aria-label="Online status">
-            <span className="y2k-online-badge__dot" aria-hidden="true">●</span>
-            <span className="y2k-online-badge__top">ONLINE</span>
-          </div>
-        </div>
       </div>
 
       <div className="y2k-ticker" aria-hidden="true">

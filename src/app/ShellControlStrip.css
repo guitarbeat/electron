@@ -6,10 +6,6 @@
   100% { transform: translateX(-50%); }
 }
 
-@keyframes y2k-pulse-online {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
-}
 
 @keyframes y2k-title-shimmer {
   0%, 100% { background-position: 0% 50%; }
@@ -163,36 +159,6 @@
   color: #000;
 }
 
-/* ── ONLINE status badge ── */
-.y2k-online-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px 3px 6px;
-  background: #c0c0c0;
-  border: 1px solid #909090;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #111;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.y2k-online-badge__dot {
-  display: inline-block;
-  font-size: 0.7rem;
-  color: #3a9a50;
-  animation: y2k-pulse-online 3s ease-in-out infinite;
-  line-height: 1;
-}
-
-.y2k-online-badge__top {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #2a6a38;
-}
 
 /* ── Ticker strip ── */
 .y2k-ticker {
@@ -222,13 +188,12 @@
 @media (max-width: 640px) {
   /* Override the default 1-column stacked layout; stay in one row */
   .shell-control-strip--retro .shell-control-strip__bar {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr;
     gap: 0.4rem;
   }
 
   /* Undo full-width stretching that the base mobile rules apply */
-  .shell-control-strip--retro .shell-control-strip__cluster--session,
-  .shell-control-strip--retro .shell-control-strip__cluster--actions {
+  .shell-control-strip--retro .shell-control-strip__cluster--session {
     width: auto;
   }
 
@@ -250,28 +215,16 @@
     font-size: 0.62rem;
     letter-spacing: 0.04em;
   }
-
-  /* Compact ONLINE badge */
-  .y2k-online-badge {
-    padding: 3px 6px;
-  }
-
-  .y2k-online-badge__top {
-    font-size: 0.55rem;
-  }
 }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .y2k-title-bar,
-  .y2k-online-badge__dot,
   .y2k-ticker__inner {
     animation: none;
   }
   .y2k-title-bar {
     background: #1a2a4a;
-  }
-  .y2k-online-badge__dot {
-    opacity: 1;
+    animation: none;
   }
 }

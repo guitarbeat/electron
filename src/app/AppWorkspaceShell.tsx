@@ -23,11 +23,11 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({ isMobile, activeTab, on
       >
         {activeTab === 'queue' ? (
           <>
-            <div style={{ display: 'flex', gap: '0.75rem', paddingBottom: '0.75rem' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="ad-banners-row">
+              <div className="ad-banners-row__item">
                 <QuizAdBanner onOpen={onOpenQuiz} quizCompleted={quizCompleted} />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="ad-banners-row__item">
                 <SpinAdBanner onOpen={onOpenSpin} />
               </div>
             </div>
