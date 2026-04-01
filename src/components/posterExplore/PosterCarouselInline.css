@@ -1,0 +1,185 @@
+/* ── Root container ── */
+.pci-root {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 220px);
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: 14px;
+  /* Transparent — lets the workspace-surface background show through */
+  background: transparent;
+}
+
+/* ── Custom scroller (needed for GSAP scrollerProxy) ── */
+.pci-scroller {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+}
+.pci-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Scroll track (provides the scroll distance GSAP consumes) ── */
+.pci-track {
+  width: 100%;
+  position: relative;
+}
+
+/* ── Stage (pinned by GSAP, perspective container) ── */
+.pci-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 300px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* ── Cards ── */
+.pci-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(300px, 82vw);
+  height: min(430px, 68vh);
+  border-radius: 16px;
+  overflow: hidden;
+  /* Glass-morphism matching the site */
+  background: color-mix(in srgb, var(--card-color, #7b3fc8) 55%, rgba(20, 10, 40, 0.7));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(255, 60, 220, 0.25),
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform-origin: 50% 999px -100px;
+}
+
+.pci-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pci-card__fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: clamp(3rem, 12vw, 5.5rem);
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow:
+    0 0 28px rgba(255, 255, 255, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.pci-card__info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 28px 16px 16px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.75) 60%);
+  pointer-events: none;
+}
+
+.pci-card__title {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 3px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  line-height: 1.2;
+}
+
+.pci-card__year,
+.pci-card__director {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+/* ── Scroll hint arrow ── */
+.pci-arrow {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 10;
+}
+
+.pci-arrow__text {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pci-arrow__icon {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.4);
+  animation: pci-bounce 1.6s ease-in-out infinite;
+}
+
+@keyframes pci-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+
+/* ── Film count badge ── */
+.pci-count {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.38);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Empty state ── */
+.pci-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+}
+
+.pci-empty__icon { font-size: 2.4rem; }
+
+.pci-empty__text {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .pci-arrow__icon { animation: none; }
+}
