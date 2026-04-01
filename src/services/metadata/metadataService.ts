@@ -14,28 +14,38 @@ const getMovieAutocompleteResultKey = (result: MovieAutocompleteResult): string 
 
 export const mergeMovieAutocompleteResults = (
   movieResults: MovieAutocompleteResult[],
-  seriesResults: MovieAutocompleteResult[]
+  seriesResults: MovieAutocompleteResult[],
+  query?: string
 ): MovieAutocompleteResult[] => {
   const allResults = [...movieResults, ...seriesResults];
   
-  // Remove duplicates based on title, year, and type
   const uniqueResults = allResults.filter((result, index, arr) => 
     arr.findIndex(item => 
       getMovieAutocompleteResultKey(item) === getMovieAutocompleteResultKey(result)
     ) === index
   );
 
+  const normalizedQuery = query ? query.trim().toLowerCase() : '';
+
   return uniqueResults
     .sort((a, b) => {
-      // Prioritize exact title matches
-      const aScore = a.title.toLowerCase() === a.title.toLowerCase() ? 2 : 1;
-      const bScore = b.title.toLowerCase() === b.title.toLowerCase() ? 2 : 1;
-      
+      const aNorm = a.title.toLowerCase();
+      const bNorm = b.title.toLowerCase();
+
+      const getScore = (norm: string): number => {
+        if (!normalizedQuery) return 0;
+        if (norm === normalizedQuery) return 2;
+        if (norm.startsWith(normalizedQuery)) return 1;
+        return 0;
+      };
+
+      const aScore = getScore(aNorm);
+      const bScore = getScore(bNorm);
+
       if (aScore !== bScore) {
         return bScore - aScore;
       }
-      
-      // Then sort by title
+
       return a.title.localeCompare(b.title);
     })
     .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
@@ -61,7 +71,7 @@ export const searchMovieAutocomplete = async (
     const omdbLimited = successfulOmdbResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
     const tvMazeLimited = successfulTvMazeResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
 
-    return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited);
+    return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
   } catch (error) {
     throw new Error(`Movie autocomplete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
