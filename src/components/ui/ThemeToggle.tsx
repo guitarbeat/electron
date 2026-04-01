@@ -10,11 +10,6 @@ interface ThemeToggleProps {
   style?: React.CSSProperties;
 }
 
-const TABS: { id: MainTab; icon: string; label: string }[] = [
-  { id: 'queue', icon: '🎬', label: 'Movies' },
-  { id: 'places', icon: '📍', label: 'Places' },
-];
-
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
   activeTab,
   onChange,
@@ -27,24 +22,33 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <div
       role="group"
       aria-label={label ?? 'Switch between Movies and Places'}
-      className={`theme-toggle theme-toggle--tabs${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`theme-toggle theme-toggle--rocker${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      data-active={activeTab}
       style={style}
     >
-      {TABS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          aria-pressed={activeTab === tab.id}
-          onClick={() => onChange(tab.id)}
-          className={`theme-toggle__tab${activeTab === tab.id ? ' is-active' : ''}`}
-        >
-          <span className="theme-toggle__tab-icon" aria-hidden>{tab.icon}</span>
-          <span className="theme-toggle__tab-label">{tab.label}</span>
-          {activeTab === tab.id && (
-            <span className="theme-toggle__tab-indicator" aria-hidden />
-          )}
-        </button>
-      ))}
+      <span className="rocker__shadow" aria-hidden="true" />
+      <span className="rocker__shadow" aria-hidden="true" />
+      <span className="rocker__inner" aria-hidden="true">
+        <span className="rocker__options">
+          <span className="rocker__option">🎬 Movies</span>
+          <span className="rocker__sep" />
+          <span className="rocker__option">📍 Places</span>
+        </span>
+      </span>
+      <button
+        type="button"
+        className="rocker__hit rocker__hit--left"
+        onClick={() => onChange('queue')}
+        aria-pressed={activeTab === 'queue'}
+        aria-label="Movies"
+      />
+      <button
+        type="button"
+        className="rocker__hit rocker__hit--right"
+        onClick={() => onChange('places')}
+        aria-pressed={activeTab === 'places'}
+        aria-label="Places"
+      />
     </div>
   );
 };
