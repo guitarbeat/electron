@@ -363,6 +363,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                       selectionState={selectionState}
                       isSelectionAnimating={isSelectionAnimating}
                       size={bubbleSize}
+                      enableImageRefresh
                       onClick={() => {
                         selectProfile(profile);
                       }}
