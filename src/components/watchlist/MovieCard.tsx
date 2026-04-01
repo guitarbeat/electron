@@ -289,7 +289,7 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
   }, [movie.posterUrl]);
 
   const shouldShowPoster = Boolean(movie.posterUrl) && !hasImageError;
-  const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || 'No Poster')}?fontSize=16&width=300&height=450`;
+  const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(movie.id || movie.title || 'cat')}`;
 
   return (
     <div className={`movie-poster-wrap ${className}`}>
@@ -302,13 +302,18 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
           onError={() => setHasImageError(true)}
         />
       ) : !hasCatError ? (
-        <img
-          src={catUrl}
-          alt={`A cat representing ${movie.title}`}
-          loading="lazy"
-          className="movie-poster movie-poster--cat-fallback"
-          onError={() => setHasCatError(true)}
-        />
+        <>
+          <img
+            src={catUrl}
+            alt={`A cat representing ${movie.title}`}
+            loading="lazy"
+            className="movie-poster movie-poster--cat-fallback"
+            onError={() => setHasCatError(true)}
+          />
+          <div className="movie-poster-cat-title" aria-hidden="true">
+            {movie.title}
+          </div>
+        </>
       ) : (
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
