@@ -60,6 +60,11 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
 
     scroller.scrollTop = 0;
 
+    // Stage must be exactly as tall as the scroller's visible area — NOT the
+    // full track height — so the cards are centred in the visible viewport.
+    const viewH = scroller.clientHeight;
+    stage.style.height = `${viewH}px`;
+
     gsap.set(cards, {
       transformOrigin: '50% 999px -100px',
       x: '-50%',
