@@ -26,6 +26,7 @@ export const isUserPinsRecord = (value: unknown): value is UserPins => {
     return false;
   }
 
-  const keys = Object.keys(value) as (keyof UserPins)[];
-  return keys.length > 0 && keys.every(key => typeof value[key] === 'string' && value[key].trim().length > 0);
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record);
+  return keys.length > 0 && keys.every(key => typeof record[key] === 'string' && (record[key] as string).trim().length > 0);
 };

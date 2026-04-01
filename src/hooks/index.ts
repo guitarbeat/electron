@@ -4,7 +4,6 @@ export * from './useCollection';
 export * from './useMatchmaker';
 export * from './useMediaQuery';
 export * from './useMessages';
-export * from './useModal';
 export * from './useModalBehavior';
 export * from './usePins';
 export * from './useQuiz';

@@ -425,9 +425,9 @@ const WatchlistTopControls = React.forwardRef<
                       onClick={() => selectAutocompleteResult(result)}
                     >
                       <span className="watchlist-top-controls__autocomplete-poster">
-                        {result.posterUrl ? (
+                        {result.poster ? (
                           <img
-                            src={result.posterUrl}
+                            src={result.poster}
                             alt=""
                             className="watchlist-top-controls__autocomplete-poster-image"
                           />
