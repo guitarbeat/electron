@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
-import Button from '@/ui/Button';
-import Card from '@/ui/Card';
 import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/modalPrimitives';
-import { colors, spacing, typography, radius, shadows } from '@/theme/tokens';
 import { getErrorMessage } from '@/utils';
 
 interface PinDialogProps {
@@ -18,6 +15,198 @@ interface PinDialogProps {
 }
 
 const PIN_LENGTH = 4;
+
+const styles = {
+  overlay: {
+    background: 'rgba(30, 0, 40, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+  },
+  card: {
+    maxWidth: '320px',
+    width: '100%',
+    borderRadius: '24px',
+    padding: '28px 24px 22px',
+    background: 'linear-gradient(160deg, #2a0a3e 0%, #1a0628 60%, #2d0a40 100%)',
+    boxShadow: '0 0 0 2px rgba(255,255,255,0.08), 0 0 40px rgba(200,80,255,0.25), 0 24px 48px rgba(0,0,0,0.6)',
+    position: 'relative' as const,
+    overflow: 'hidden' as const,
+  },
+  rainbowTop: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #ff6eb4, #c964e8, #7dd3fc, #86efac, #fde68a, #ff6eb4)',
+    backgroundSize: '200% 100%',
+    animation: 'pin-rainbow-slide 3s linear infinite',
+  },
+  sparkleCorner: {
+    position: 'absolute' as const,
+    fontSize: '18px',
+    opacity: 0.7,
+    pointerEvents: 'none' as const,
+    animation: 'pin-twinkle 2s ease-in-out infinite',
+  },
+  title: {
+    margin: '6px 0 20px',
+    fontSize: '15px',
+    fontWeight: 700,
+    color: '#f0abfc',
+    textAlign: 'center' as const,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase' as const,
+    textShadow: '0 0 12px rgba(200,80,255,0.7), 0 0 24px rgba(255,110,180,0.4)',
+    fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+  },
+  dot: (filled: boolean, active: boolean, hasError: boolean) => ({
+    width: '48px',
+    height: '48px',
+    borderRadius: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '22px',
+    transition: 'all 0.18s ease',
+    background: filled
+      ? 'linear-gradient(135deg, #e040fb 0%, #c026d3 100%)'
+      : active
+      ? 'rgba(200,80,255,0.15)'
+      : 'rgba(255,255,255,0.04)',
+    border: `2px solid ${hasError ? '#f43f5e' : active ? '#e879f9' : filled ? '#c026d3' : 'rgba(255,255,255,0.1)'}`,
+    boxShadow: filled
+      ? '0 0 12px rgba(200,80,255,0.6), inset 0 1px 0 rgba(255,255,255,0.25)'
+      : active
+      ? '0 0 8px rgba(200,80,255,0.3)'
+      : 'none',
+  }),
+  dotInner: (filled: boolean) => ({
+    color: filled ? '#fff' : 'transparent',
+    textShadow: filled ? '0 1px 3px rgba(0,0,0,0.4)' : 'none',
+    fontSize: filled ? '14px' : '0',
+    transition: 'all 0.15s ease',
+  }),
+  keypadGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '8px',
+    marginBottom: '14px',
+  },
+  numBtn: (isPressed: boolean) => ({
+    height: '52px',
+    borderRadius: '16px',
+    border: '1.5px solid rgba(200,80,255,0.25)',
+    background: 'linear-gradient(160deg, rgba(120,40,180,0.45) 0%, rgba(80,10,120,0.55) 100%)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 3px 8px rgba(0,0,0,0.35)',
+    cursor: 'pointer',
+    fontSize: '20px',
+    fontWeight: 700,
+    color: '#f0d4ff',
+    fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+    letterSpacing: '0.02em',
+    textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+    transition: 'all 0.12s ease',
+    transform: isPressed ? 'scale(0.93)' : 'scale(1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    outline: 'none',
+  }),
+  delBtn: {
+    height: '52px',
+    borderRadius: '16px',
+    border: '1.5px solid rgba(255,110,180,0.2)',
+    background: 'linear-gradient(160deg, rgba(80,10,60,0.5) 0%, rgba(60,5,40,0.6) 100%)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 3px 8px rgba(0,0,0,0.35)',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 700,
+    color: '#f9a8d4',
+    letterSpacing: '0.1em',
+    transition: 'all 0.12s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    outline: 'none',
+  },
+  unlockBtn: (active: boolean, loading: boolean) => ({
+    width: '100%',
+    height: '48px',
+    borderRadius: '16px',
+    border: 'none',
+    background: active && !loading
+      ? 'linear-gradient(135deg, #e040fb 0%, #ff6eb4 50%, #e040fb 100%)'
+      : 'rgba(255,255,255,0.06)',
+    backgroundSize: '200% 100%',
+    animation: active && !loading ? 'pin-btn-shimmer 2s linear infinite' : 'none',
+    boxShadow: active && !loading
+      ? '0 0 16px rgba(224,64,251,0.5), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
+      : 'none',
+    cursor: active && !loading ? 'pointer' : 'not-allowed',
+    fontSize: '14px',
+    fontWeight: 700,
+    color: active && !loading ? '#fff' : 'rgba(255,255,255,0.25)',
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase' as const,
+    fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+    textShadow: active && !loading ? '0 1px 3px rgba(0,0,0,0.35)' : 'none',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  }),
+  cancelBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: 'rgba(200,120,240,0.55)',
+    fontSize: '12px',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase' as const,
+    fontStyle: 'italic',
+    padding: '8px 0 0',
+    width: '100%',
+    textAlign: 'center' as const,
+    transition: 'color 0.15s',
+    outline: 'none',
+  },
+  errorMsg: {
+    fontSize: '12px',
+    color: '#fb7185',
+    textAlign: 'center' as const,
+    margin: '6px 0 0',
+    fontWeight: 600,
+    textShadow: '0 0 8px rgba(244,63,94,0.4)',
+    letterSpacing: '0.04em',
+    fontFamily: '"Comic Sans MS", cursive',
+  },
+};
+
+const keyframes = `
+@keyframes pin-rainbow-slide {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pin-twinkle {
+  0%, 100% { opacity: 0.5; transform: scale(1) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(15deg); }
+}
+@keyframes pin-btn-shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-6px); }
+  30% { transform: translateX(5px); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+}
+@keyframes pin-pop-in {
+  0% { opacity: 0; transform: scale(0.85) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+`;
 
 const PinDialog: React.FC<PinDialogProps> = ({
   isOpen,
@@ -35,6 +224,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
+  const [pressedKey, setPressedKey] = useState<number | string | null>(null);
 
   const [step, setStep] = useState<'current' | 'new' | 'confirm'>(() =>
     mode === 'enter' ? 'current' : mode === 'set' ? 'new' : 'current'
@@ -45,7 +235,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
     if (isOpen) {
       focusTimerRef.current = window.setTimeout(() => inputRef.current?.focus(), 100);
     }
-
     return () => {
       if (focusTimerRef.current !== null) {
         window.clearTimeout(focusTimerRef.current);
@@ -61,14 +250,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
     }
   }, [isShaking]);
 
-  // Auto-submit when the 4th digit is entered in unlock mode
   useEffect(() => {
     if (mode !== 'enter' || pin.length !== PIN_LENGTH || isLoading) return;
     const timer = window.setTimeout(async () => {
       setError('');
       const success = await onSubmit(pin);
       if (!success) {
-        setError('Incorrect PIN');
+        setError('Incorrect PIN ✗');
         setIsShaking(true);
         setPin('');
       }
@@ -109,50 +297,37 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
     try {
       if (mode === 'enter') {
-        if (!validatePinLength(pin)) {
-          return;
-        }
+        if (!validatePinLength(pin)) return;
         const success = await onSubmit(pin);
-        if (!success) {
-          triggerError('Incorrect PIN', () => setPin(''));
-        }
+        if (!success) triggerError('Incorrect PIN ✗', () => setPin(''));
         return;
       }
 
       if (mode === 'set') {
         if (step === 'new') {
-          if (!validatePinLength(newPin)) {
-            return;
-          }
+          if (!validatePinLength(newPin)) return;
           setStep('confirm');
           setError('');
           return;
         }
-
         if (step === 'confirm') {
           if (confirmPin !== newPin) {
-            triggerError('PINs do not match', () => setConfirmPin(''));
+            triggerError("PINs don't match!", () => setConfirmPin(''));
             return;
           }
           const success = await onSubmit(newPin);
-          if (!success) {
-            triggerError('Unable to save PIN. Please try again.');
-          }
+          if (!success) triggerError('Unable to save PIN. Try again!');
           return;
         }
       }
 
-      if (mode !== 'change') {
-        return;
-      }
+      if (mode !== 'change') return;
 
       if (step === 'current') {
-        if (!validatePinLength(pin)) {
-          return;
-        }
+        if (!validatePinLength(pin)) return;
         const success = await onSubmit(pin);
         if (!success) {
-          triggerError('Incorrect current PIN', () => setPin(''));
+          triggerError('Incorrect PIN ✗', () => setPin(''));
           return;
         }
         setStep('new');
@@ -161,23 +336,19 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
 
       if (step === 'new') {
-        if (!validatePinLength(newPin)) {
-          return;
-        }
+        if (!validatePinLength(newPin)) return;
         setStep('confirm');
         setError('');
         return;
       }
 
       if (confirmPin !== newPin) {
-        triggerError('PINs do not match', () => setConfirmPin(''));
+        triggerError("PINs don't match!", () => setConfirmPin(''));
         return;
       }
 
       const success = await onSubmit(pin, newPin);
-      if (!success) {
-        triggerError('Unable to update PIN. Please try again.');
-      }
+      if (!success) triggerError('Unable to update PIN. Try again!');
     } catch (submitError) {
       console.error('PIN submit failed:', submitError);
       triggerError(getErrorMessage(submitError, 'Unable to save PIN. Please try again.'));
@@ -191,6 +362,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setter(value + num.toString());
       setError('');
     }
+    setPressedKey(num);
+    setTimeout(() => setPressedKey(null), 120);
   };
 
   const handleBackspace = () => {
@@ -200,6 +373,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
       setter(value.slice(0, -1));
       setError('');
     }
+    setPressedKey('del');
+    setTimeout(() => setPressedKey(null), 120);
   };
 
   const handlePinInput = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
@@ -209,16 +384,14 @@ const PinDialog: React.FC<PinDialogProps> = ({
   };
 
   const getTitle = () => {
-    if (mode === 'enter') return `Unlock ${user}'s Profile`;
-    if (mode === 'set') {
-      return isRequiredSetup ? `Secure ${user}'s Profile` : `Create a PIN for ${user}`;
-    }
+    if (mode === 'enter') return `✨ Unlock ${user}'s Profile ✨`;
+    if (mode === 'set') return isRequiredSetup ? `🔐 Secure ${user}'s Profile` : `🔐 Create a PIN for ${user}`;
     if (mode === 'change') {
-      if (step === 'current') return 'Confirm Current PIN';
-      if (step === 'new') return 'Create New PIN';
-      return 'Verify New PIN';
+      if (step === 'current') return '🔑 Current PIN';
+      if (step === 'new') return '✨ New PIN';
+      return '💖 Confirm New PIN';
     }
-    return 'Security PIN';
+    return '🔐 Security PIN';
   };
 
   const getCurrentValue = () => {
@@ -237,151 +410,92 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   if (!isOpen) return null;
 
+  const canSubmit = currentValue.length === PIN_LENGTH && !isLoading;
+
   return createPortal(
-    <div
-      style={{
-        ...getModalOverlayStyle('rgba(0, 0, 0, 0.15)'), // Very subtle overlay
-        backdropFilter: 'none',
-        transition: 'all 0.3s ease',
-      }}
-      onClick={onCancel}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="pin-dialog-title"
-    >
+    <>
+      <style>{keyframes}</style>
       <div
-        ref={dialogRef}
-        onClick={(e) => e.stopPropagation()}
-        style={{ animation: 'pop-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        style={{ ...getModalOverlayStyle('rgba(0,0,0,0.15)'), ...styles.overlay }}
+        onClick={onCancel}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pin-dialog-title"
       >
-        <Card
-          variant="elevated"
-          style={{
-            maxWidth: '320px', // Slimmer
-            width: '100%',
-            padding: `${spacing.lg} ${spacing.xl}`, // Reduced padding
-            borderRadius: radius.lg,
-            border: `1px solid rgba(255, 255, 255, 0.1)`,
-            background: 'rgba(20, 25, 40, 0.75)', // Glassy
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          }}
+        <div
+          ref={dialogRef}
+          onClick={(e) => e.stopPropagation()}
+          style={{ animation: 'pin-pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
-          <div style={{ textAlign: 'center', marginBottom: spacing.lg }}>
-            <h2
-              id="pin-dialog-title"
-              style={{
-                marginTop: 0,
-                fontSize: typography.fontSize.lg, // Smaller title
-                fontWeight: typography.fontWeight.semibold,
-                color: colors.textPrimary,
-                marginBottom: '4px',
-                letterSpacing: typography.letterSpacing.wide,
-                fontFamily: typography.fontFamilyValue.heading,
-                textTransform: typography.presets.buttonLabel.textTransform,
-              }}
-            >
+          <div style={styles.card}>
+            {/* Rainbow top strip */}
+            <div style={styles.rainbowTop} aria-hidden="true" />
+
+            {/* Corner sparkles */}
+            <span style={{ ...styles.sparkleCorner, top: 10, left: 12, animationDelay: '0s' }} aria-hidden="true">✦</span>
+            <span style={{ ...styles.sparkleCorner, top: 10, right: 12, animationDelay: '0.7s' }} aria-hidden="true">✦</span>
+
+            {/* Title */}
+            <h2 id="pin-dialog-title" style={styles.title}>
               {getTitle()}
             </h2>
-          </div>
 
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: spacing.lg }}>
+            <form onSubmit={handleSubmit}>
+              {/* PIN dots */}
               <div
                 style={{
                   display: 'flex',
-                  gap: spacing.sm,
+                  gap: '10px',
                   justifyContent: 'center',
-                  marginBottom: spacing.md,
-                  animation: isShaking ? 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
+                  marginBottom: '20px',
+                  animation: isShaking ? 'pin-shake 0.5s cubic-bezier(.36,.07,.19,.97) both' : 'none',
                 }}
               >
                 {Array.from({ length: PIN_LENGTH }).map((_, i) => {
-                  const val = currentValue[i];
-                  const isActive = currentValue.length === i;
+                  const filled = i < currentValue.length;
+                  const active = currentValue.length === i;
                   return (
-                    <div
-                      key={i}
-                      style={{
-                        width: '44px', // Smaller dots
-                        height: '52px',
-                        backgroundColor: val ? `${colors.accent}25` : 'rgba(0, 0, 0, 0.2)',
-                        border: `1.5px solid ${
-                          error
-                            ? colors.error
-                            : isActive
-                              ? colors.accent
-                              : val
-                                ? `${colors.accent}40`
-                                : 'rgba(255, 255, 255, 0.1)'
-                        }`,
-                        borderRadius: radius.md,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: typography.fontSize.xl,
-                        fontFamily: typography.fontFamily.heading.join(', '),
-                        color: colors.accent,
-                        boxShadow: isActive ? `0 0 10px ${colors.accent}20` : 'none',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      {val ? '*' : ''}
+                    <div key={i} style={styles.dot(filled, active, !!error)}>
+                      <span style={styles.dotInner(filled)} aria-hidden="true">★</span>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Numeric Keypad */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: spacing.sm,
-                  marginBottom: spacing.md,
-                }}
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'].map((num, i) => {
-                  if (num === '') return <div key={`empty-${i}`} />;
+              {/* Keypad */}
+              <div style={styles.keypadGrid}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, 'del'].map((num, i) => {
+                  if (num === null) return <div key={`empty-${i}`} />;
                   if (num === 'del') {
                     return (
-                      <Button
+                      <button
                         key="del"
-                        variant="ghost"
                         type="button"
                         onClick={handleBackspace}
                         aria-label="Backspace"
                         style={{
-                          height: '48px',
-                          fontSize: typography.fontSize.base,
-                          color: colors.textSecondary,
+                          ...styles.delBtn,
+                          transform: pressedKey === 'del' ? 'scale(0.92)' : 'scale(1)',
                         }}
                       >
                         DEL
-                      </Button>
+                      </button>
                     );
                   }
                   return (
-                    <Button
+                    <button
                       key={num}
-                      variant="ghost"
                       type="button"
                       onClick={() => handleNumberClick(num as number)}
-                      style={{
-                        height: '48px',
-                        fontSize: typography.fontSize.xl,
-                        fontWeight: typography.fontWeight.semibold,
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                      }}
+                      style={styles.numBtn(pressedKey === num)}
                     >
                       {num}
-                    </Button>
+                    </button>
                   );
                 })}
               </div>
 
+              {/* Hidden accessible input */}
               <input
                 ref={inputRef}
                 type="password"
@@ -390,79 +504,45 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 maxLength={PIN_LENGTH}
                 value={currentValue}
                 onChange={(e) => handlePinInput(e.target.value, getCurrentSetter())}
-                style={{
-                  position: 'absolute',
-                  opacity: 0,
-                  pointerEvents: 'none',
-                }}
+                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
                 disabled={isLoading}
                 autoComplete="off"
                 aria-label="PIN entry"
               />
 
               {error && (
-                <div
-                  role="alert"
-                  style={{
-                    marginTop: spacing.md,
-                    padding: '4px 8px',
-                    borderRadius: radius.sm,
-                  }}
-                >
-                  <p
-                    style={{
-                      fontSize: typography.fontSize.xs,
-                      color: colors.error,
-                      textAlign: 'center',
-                      margin: 0,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {error}
-                  </p>
-                </div>
+                <p role="alert" style={styles.errorMsg}>{error}</p>
               )}
-            </div>
 
-            <div style={{ display: 'flex', gap: spacing.md, flexDirection: 'column' }}>
-              <Button
+              {/* Unlock button */}
+              <button
                 type="submit"
-                variant="primary"
-                size="md" // Smaller button
-                isLoading={isLoading}
-                disabled={currentValue.length !== PIN_LENGTH}
-                style={{
-                  width: '100%',
-                  fontSize: typography.fontSize.base,
-                  borderRadius: radius.lg,
-                  boxShadow:
-                    currentValue.length === PIN_LENGTH && !isLoading ? shadows.glow : 'none',
-                }}
+                disabled={!canSubmit}
+                style={{ ...styles.unlockBtn(canSubmit, isLoading), marginTop: error ? '12px' : '16px' }}
               >
-                {mode === 'enter'
-                  ? 'Unlock'
+                {isLoading
+                  ? '✨ ...'
+                  : mode === 'enter'
+                  ? '🔓 Unlock'
                   : step === 'confirm'
-                    ? (isRequiredSetup ? 'Save PIN' : 'Save')
-                    : 'Next'}
-              </Button>
+                  ? (isRequiredSetup ? '💾 Save PIN' : '💾 Save')
+                  : 'Next →'}
+              </button>
 
-              <div style={{ display: 'flex', gap: spacing.sm }}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={onCancel}
-                  disabled={isLoading}
-                  style={{ flex: 1, color: colors.textSecondary, fontSize: typography.fontSize.xs }}
-                >
-                  {isRequiredSetup ? 'Log out' : 'Cancel'}
-                </Button>
-              </div>
-            </div>
-          </form>
-        </Card>
+              {/* Cancel */}
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isLoading}
+                style={styles.cancelBtn}
+              >
+                {isRequiredSetup ? 'log out' : 'cancel'}
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
-    </div>,
+    </>,
     document.body
   );
 };
