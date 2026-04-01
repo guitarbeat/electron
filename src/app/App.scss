@@ -603,10 +603,6 @@ body {
   white-space: nowrap;
 }
 
-/* Nav strip: hide the tiny status pills — name + avatar is sufficient */
-.shell-control-strip .user-selection__shell-chip-status-row {
-  display: none;
-}
 
 .shell-control-strip__status {
   display: flex;
@@ -1287,80 +1283,41 @@ body {
   min-width: 0;
 }
 
-.user-selection__shell-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.62rem;
-  min-width: 0;
-  padding: 0.6rem 1rem 0.6rem 0.54rem;
-  border-radius: 1.2rem;
-  border: 1px solid rgba(190, 154, 100, 0.2);
-  background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.12) 0%, transparent 100%),
-    rgba(52, 37, 23, 0.46);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    color 0.18s ease;
-  box-shadow: inset 0 1px 0 rgba(255, 245, 220, 0.08);
-}
-
-.user-selection__shell-chip:hover:not(:disabled),
-.user-selection__shell-chip:focus-visible {
-  border-color: rgba(212, 177, 115, 0.3);
-  background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.12) 0%, transparent 100%),
-    rgba(60, 42, 27, 0.64);
-  color: var(--color-text-primary);
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 245, 220, 0.1),
-    0 10px 18px rgba(10, 6, 3, 0.12);
-}
-
-.user-selection__shell-chip:focus-visible {
-  outline: none;
-}
-
-.user-selection__shell-chip:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.user-selection__shell-chip.is-active {
-  border-color: rgba(234, 196, 131, 0.42);
-  background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.18) 0%, transparent 100%),
-    rgba(78, 55, 34, 0.76);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 245, 220, 0.14),
-    0 14px 24px rgba(10, 6, 3, 0.16);
-}
-
-.user-selection__shell-chip.is-pin-required:not(.is-active) {
-  border-color: rgba(226, 188, 115, 0.26);
-}
-
-.user-selection__shell-chip-avatar {
+.user-selection__shell-avatar-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
   flex: 0 0 auto;
-  overflow: hidden;
+  padding: 0;
+  border: 2px solid transparent;
   border-radius: 999px;
-  border: 1px solid rgba(255, 240, 210, 0.26);
-  background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.14) 0%, transparent 100%),
-    rgba(22, 14, 8, 0.78);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 245, 220, 0.1),
-    0 6px 12px rgba(10, 6, 3, 0.14);
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.user-selection__shell-avatar-btn:hover:not(:disabled) {
+  border-color: rgba(212, 177, 115, 0.5);
+  box-shadow: 0 0 0 2px rgba(212, 177, 115, 0.18);
+}
+
+.user-selection__shell-avatar-btn:focus-visible {
+  outline: none;
+  border-color: rgba(234, 196, 131, 0.7);
+  box-shadow: 0 0 0 3px rgba(234, 196, 131, 0.22);
+}
+
+.user-selection__shell-avatar-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.user-selection__shell-avatar-btn.is-active {
+  border-color: rgba(234, 196, 131, 0.6);
+  box-shadow: 0 0 0 2px rgba(234, 196, 131, 0.2);
 }
 
 .user-selection__shell-chip-avatar-image {
@@ -1368,6 +1325,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 999px;
 }
 
 .user-selection__shell-chip-avatar-initial {
@@ -1380,62 +1338,6 @@ body {
   font-size: 0.86rem;
   font-weight: 700;
   color: color-mix(in srgb, var(--color-text-primary) 86%, white 14%);
-}
-
-.user-selection__shell-chip-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 0.18rem;
-}
-
-.user-selection__shell-chip-name {
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1.1;
-  color: inherit;
-  white-space: nowrap;
-}
-
-.user-selection__shell-chip-status-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.28rem;
-}
-
-.user-selection__shell-chip-status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.05rem;
-  padding: 0.12rem 0.42rem;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-family: var(--type-eyebrow-family, monospace);
-  font-size: 0.49rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.user-selection__shell-chip-status--active {
-  color: color-mix(in srgb, var(--color-text-primary) 82%, white 18%);
-  background: rgba(255, 247, 228, 0.08);
-  border-color: rgba(255, 239, 205, 0.12);
-}
-
-.user-selection__shell-chip-status--pin {
-  color: color-mix(in srgb, var(--color-text-secondary) 88%, white 12%);
-  background: rgba(255, 247, 228, 0.04);
-  border-color: rgba(205, 171, 118, 0.14);
-}
-
-.user-selection__shell-chip-status--pin-required {
-  color: #ffecb7;
-  background: rgba(134, 94, 33, 0.24);
-  border-color: rgba(226, 188, 115, 0.24);
 }
 
 .user-selection--shell .user-selection__account-actions {
@@ -2525,20 +2427,6 @@ body {
     justify-content: flex-start;
   }
 
-  /* Compact profile chips on mobile */
-  .user-selection__shell-chip {
-    padding: 0.44rem 0.75rem 0.44rem 0.44rem;
-    gap: 0.48rem;
-  }
-
-  .user-selection__shell-chip-avatar {
-    width: 2.1rem;
-    height: 2.1rem;
-  }
-
-  .user-selection__shell-chip-name {
-    font-size: 0.84rem;
-  }
 
   .user-selection__shell-profile-list {
     gap: 0.4rem;
