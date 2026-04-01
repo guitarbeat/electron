@@ -10831,18 +10831,11 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 .shell-control-strip__bar {
-  border: 1px solid rgba(255, 255, 255, 0.34) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.10) !important;
-  background:
-    linear-gradient(175deg,
-      rgba(255, 250, 238, 0.44) 0%,
-      rgba(255, 244, 225, 0.26) 50%,
-      rgba(255, 238, 210, 0.14) 100%) !important;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.72),
-    0 14px 32px rgba(0, 0, 0, 0.36) !important;
-  backdrop-filter: brightness(1.2) blur(4px) url(#glassFilter) !important;
-  -webkit-backdrop-filter: brightness(1.2) blur(4px) !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .shell-control-strip__brand,
