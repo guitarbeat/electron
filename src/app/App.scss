@@ -7024,6 +7024,13 @@ body.grabbing * {
   line-height: var(--type-body-sm-line-height);
 }
 
+.watchlist-top-controls__input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
 .watchlist-top-controls__toolbar {
   display: flex;
   align-items: center;

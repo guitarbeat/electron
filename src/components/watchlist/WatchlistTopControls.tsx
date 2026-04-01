@@ -275,6 +275,7 @@ const WatchlistTopControls = React.forwardRef<
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
+      <div className="watchlist-top-controls__input-block">
       <div className="watchlist-top-controls__toolbar">
         <form
           className="watchlist-top-controls__search-form"
@@ -493,6 +494,7 @@ const WatchlistTopControls = React.forwardRef<
         <div className="y2k-ticker__inner">
           <span className="y2k-ticker__text">{TICKER_TEXT}</span>
         </div>
+      </div>
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (
