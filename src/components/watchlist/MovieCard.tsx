@@ -281,12 +281,15 @@ export default MovieCard;
 
 const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
   const [hasImageError, setHasImageError] = React.useState(false);
+  const [hasCatError, setHasCatError] = React.useState(false);
 
   React.useEffect(() => {
     setHasImageError(false);
+    setHasCatError(false);
   }, [movie.posterUrl]);
 
   const shouldShowPoster = Boolean(movie.posterUrl) && !hasImageError;
+  const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || 'No Poster')}?fontSize=16&width=300&height=450`;
 
   return (
     <div className={`movie-poster-wrap ${className}`}>
@@ -297,6 +300,14 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
           loading="lazy"
           className="movie-poster"
           onError={() => setHasImageError(true)}
+        />
+      ) : !hasCatError ? (
+        <img
+          src={catUrl}
+          alt={`A cat representing ${movie.title}`}
+          loading="lazy"
+          className="movie-poster movie-poster--cat-fallback"
+          onError={() => setHasCatError(true)}
         />
       ) : (
         <div className="movie-poster-fallback">
