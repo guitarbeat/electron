@@ -11,7 +11,7 @@ A two-person collaborative movie watchlist and date-planning SPA titled "electro
 - Matchmaker swipe game
 - Compatibility quiz (styled as a retro 1990s internet advertisement — Comic Sans, blinking marquee banners, rainbow borders, Windows 98-style progress bar)
 - Date spots/places workspace (Google Places integration)
-- Y2K-inspired UI with gel bubbles, retro chrome, and visual effects
+- Y2K / Windows 98 UI throughout: Win98 chrome navbar, silver dialog-box search bar, Win98 outset borders on movie cards, Win98 listbox autocomplete, retro button styling
 - Draggable floating action bubble for navigation (profile switching lives exclusively in this menu — no duplicate session bar)
 
 **Profile/session UX:** Profile selection (Aaron / Electra / Guest) lives only in the action bubble quick-actions menu. A legacy `app-session-bar` header panel that created a duplicate login UI was removed; the `ActionBubble.tsx` and `ActionFanMenu.tsx` UI components are also gone (replaced by `ActionBubbleLayer.tsx`).
