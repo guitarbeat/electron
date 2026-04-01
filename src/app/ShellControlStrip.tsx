@@ -24,16 +24,6 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
       className="shell-control-strip shell-control-strip--retro"
       aria-label="App controls"
     >
-      <div className="y2k-title-bar" aria-hidden="true">
-        <span className="y2k-title-bar__icon">🎬</span>
-        <span className="y2k-title-bar__text">★ ELECTRON MOVIE NIGHT ★</span>
-        <div className="y2k-title-bar__controls">
-          <span className="y2k-title-bar__btn">_</span>
-          <span className="y2k-title-bar__btn">□</span>
-          <span className="y2k-title-bar__btn">✕</span>
-        </div>
-      </div>
-
       <div
         className={`shell-control-strip__bar shell-control-strip__bar--${activeTab}`}
         aria-label={`${workspaceMeta.title} controls`}
