@@ -76,12 +76,12 @@
   text-transform: uppercase;
 }
 
-/* ── Mobile ── */
-@media (max-width: 480px) {
+/* ── Mobile: scale circles up with viewport width ── */
+@media (max-width: 600px) {
   .shell-control-strip__profiles-row .user-selection__shell-avatar-btn {
-    width: 4.5rem;
-    height: 4.5rem;
-    flex: 0 0 4.5rem;
+    width: clamp(6rem, 38vw, 9rem);
+    height: clamp(6rem, 38vw, 9rem);
+    flex: 0 0 clamp(6rem, 38vw, 9rem);
   }
 }
 
