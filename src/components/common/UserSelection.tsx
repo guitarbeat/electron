@@ -21,18 +21,21 @@ interface UserSelectionProps {
 const ShellProfileAvatar: React.FC<{ user: User }> = ({ user }) => {
   const [hasImageError, setHasImageError] = useState(false);
 
-  if (hasImageError || !USER_PHOTOS[user]) {
-    return <span className="user-selection__shell-chip-avatar-initial">{user.charAt(0)}</span>;
-  }
-
   return (
-    <img
-      src={USER_PHOTOS[user]}
-      alt=""
-      className="user-selection__shell-chip-avatar-image"
-      onError={() => setHasImageError(true)}
-      draggable="false"
-    />
+    <span className="user-selection__shell-avatar-inner">
+      {hasImageError || !USER_PHOTOS[user] ? (
+        <span className="user-selection__shell-chip-avatar-initial">{user.charAt(0)}</span>
+      ) : (
+        <img
+          src={USER_PHOTOS[user]}
+          alt=""
+          className="user-selection__shell-chip-avatar-image"
+          onError={() => setHasImageError(true)}
+          draggable="false"
+        />
+      )}
+      <span className="user-selection__shell-avatar-name" aria-hidden="true">{user}</span>
+    </span>
   );
 };
 
