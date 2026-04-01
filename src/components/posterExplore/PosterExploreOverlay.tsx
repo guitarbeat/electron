@@ -185,6 +185,13 @@ const PosterExploreOverlay: React.FC<PosterExploreOverlayProps> = ({
     cleanupRef.current = () => {
       st.kill();
       tl.kill();
+      // Clear the custom scroller proxy so future ScrollTrigger instances
+      // don't accidentally inherit this scroller's configuration
+      try {
+        ScrollTrigger.scrollerProxy(scroller, undefined as never);
+      } catch {
+        // scrollerProxy cleanup is best-effort
+      }
       ScrollTrigger.clearScrollMemory();
       scroller.removeEventListener('scroll', onScrollerScroll);
       document.body.style.overflow = '';
