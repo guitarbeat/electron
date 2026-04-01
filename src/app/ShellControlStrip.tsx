@@ -11,7 +11,7 @@ interface ShellControlStripProps {
 }
 
 const TICKER_TEXT =
-  '\u00a0\u00a0\u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 · \u00a0\u00a0\u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 ·';
+  '\u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · ★ BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 · \u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · ★ BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 ·';
 
 const ShellControlStrip: FC<ShellControlStripProps> = ({
   activeTab,
@@ -24,7 +24,6 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
       className="shell-control-strip shell-control-strip--retro"
       aria-label="App controls"
     >
-      {/* Windows 98-style title bar */}
       <div className="y2k-title-bar" aria-hidden="true">
         <span className="y2k-title-bar__icon">🎬</span>
         <span className="y2k-title-bar__text">★ ELECTRON MOVIE NIGHT ★</span>
@@ -35,7 +34,6 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
         </div>
       </div>
 
-      {/* Chrome metallic toolbar bar */}
       <div
         className={`shell-control-strip__bar shell-control-strip__bar--${activeTab}`}
         aria-label={`${workspaceMeta.title} controls`}
@@ -65,7 +63,6 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
         </div>
       </div>
 
-      {/* Scrolling ticker strip */}
       <div className="y2k-ticker" aria-hidden="true">
         <div className="y2k-ticker__inner">
           <span className="y2k-ticker__text">{TICKER_TEXT}</span>
