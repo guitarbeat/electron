@@ -6,6 +6,8 @@ interface SpinAdBannerProps {
 }
 
 const SpinAdBanner: FC<SpinAdBannerProps> = ({ onOpen }) => {
+  const marqueeText = '🎡 SPIN THE WHEEL!!! 🎡 ⚡ PICK TONIGHT\'S MOVIE IN SECONDS!!! ⚡ 🎯 SWIPE · SPIN · DECIDE!!! 🎯 🎡 SPIN THE WHEEL!!! 🎡 ⚡ PICK TONIGHT\'S MOVIE IN SECONDS!!! ⚡ 🎯 SWIPE · SPIN · DECIDE!!! 🎯 ';
+
   return (
     <div className="spin-ad-banner" role="complementary" aria-label="Launch Spin & Match game">
       <div className="spin-ad-banner__rainbow-border">
@@ -16,22 +18,21 @@ const SpinAdBanner: FC<SpinAdBannerProps> = ({ onOpen }) => {
           aria-label="Open Spin & Match: spin the wheel to pick tonight's movie"
         >
           <div className="spin-ad-banner__marquee-wrap" aria-hidden="true">
-            <span className="spin-ad-banner__marquee">
-              {'🎰 SPIN THE WHEEL!!! 🎰 '}
-              {'⚡ PICK TONIGHT\'S MOVIE IN SECONDS!!! ⚡ '}
-              {'🎰 SPIN THE WHEEL!!! 🎰 '}
-              {'⚡ PICK TONIGHT\'S MOVIE IN SECONDS!!! ⚡ '}
-            </span>
+            <span className="spin-ad-banner__marquee">{marqueeText}</span>
           </div>
 
           <div className="spin-ad-banner__body">
-            <div className="spin-ad-banner__left">
-              <div className="spin-ad-banner__wheel-icon" aria-hidden="true">🎰</div>
+            <div className="spin-ad-banner__left" aria-hidden="true">
+              <div className="spin-ad-banner__wheel-wrap">
+                <div className="spin-ad-banner__wheel-pointer" />
+                <div className="spin-ad-banner__wheel" />
+              </div>
             </div>
 
             <div className="spin-ad-banner__center">
+              <p className="spin-ad-banner__label">🎮 Movie Picker Game</p>
               <p className="spin-ad-banner__headline">
-                ★ CAN&apos;T DECIDE WHAT TO WATCH??? ★ LET THE WHEEL DECIDE!!!
+                ★ SPIN TO PICK TONIGHT&apos;S MOVIE!!! ★
               </p>
               <p className="spin-ad-banner__sub">
                 SWIPE TO KEEP OR SKIP · THEN SPIN FOR YOUR FATE!!!
@@ -39,7 +40,7 @@ const SpinAdBanner: FC<SpinAdBannerProps> = ({ onOpen }) => {
             </div>
 
             <div className="spin-ad-banner__right">
-              <span className="spin-ad-banner__cta">&gt;&gt; SPIN NOW &lt;&lt;</span>
+              <span className="spin-ad-banner__cta">&gt;&gt; PLAY NOW &lt;&lt;</span>
             </div>
           </div>
         </button>
