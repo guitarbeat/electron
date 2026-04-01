@@ -22,27 +22,26 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <div
       role="group"
       aria-label={label ?? 'Switch between Movies and Places'}
-      className={`theme-toggle theme-toggle--rocker${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
-      data-active={activeTab}
+      className={`theme-toggle theme-toggle--tabs${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
       style={style}
     >
       <button
         type="button"
-        className="rocker__side rocker__side--left"
+        className={`win98-tab${activeTab === 'queue' ? ' win98-tab--active' : ''}`}
         onClick={() => onChange('queue')}
         aria-pressed={activeTab === 'queue'}
         aria-label="Movies"
       >
-        🎬
+        🎬 Movies
       </button>
       <button
         type="button"
-        className="rocker__side rocker__side--right"
+        className={`win98-tab${activeTab === 'places' ? ' win98-tab--active' : ''}`}
         onClick={() => onChange('places')}
         aria-pressed={activeTab === 'places'}
         aria-label="Places"
       >
-        📍
+        📍 Places
       </button>
     </div>
   );

@@ -43,140 +43,61 @@
   color: #111;
 }
 
-/* ── Movies/Places toggle — Physical Skewed Rocker ── */
-/*
-  All measurements use em so a single font-size on the container
-  scales the entire switch. Reference: font-size 2em → scale 0.68rem ≈ 34% of original.
-*/
-.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
-  display: inline-block;
-  position: relative;
-  font-size: 0.68rem;
-  font-weight: bold;
-  text-align: center;
-  text-transform: uppercase;
-  color: #888;
-  width: 7em;
-  height: 4em;
-  overflow: hidden;
-  /* The bottom lip of the trough */
-  border-bottom: 0.5em solid #d4d0c8;
-  /* Reset any previous styles */
+/* ── Movies/Places toggle — Win98 Property Sheet Tabs ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--tabs {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
   background: transparent;
-  border-radius: 0;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  padding: 0;
-}
-
-/* Gray trough background */
-.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker::before {
-  content: "";
-  position: absolute;
-  top: 0.5em;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #808080;
-  border: 0.5em solid #d4d0c8;
-  border-bottom: none;
-}
-
-/* ── Shared button base ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side {
-  cursor: pointer;
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
   border: none;
-  font-size: 1.1rem;       /* icon size independent of em scale */
-  line-height: 1;
+  padding: 0;
+  box-shadow: none;
+}
+
+.shell-control-strip--retro .win98-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 4px;
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', system-ui, Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #111;
+  background: #b0aca4;
+  cursor: pointer;
   user-select: none;
-  transition: 0.2s;
+  white-space: nowrap;
+  position: relative;
+  bottom: 0;
+  /* Win98 inactive tab bevel: slightly recessed */
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #404040;
+  border-bottom: none;
+  box-shadow: inset -1px -1px 0 #808080, inset 1px 0 0 #e0dcd8;
+  transition: background 0.1s;
+}
+
+.shell-control-strip--retro .win98-tab:hover:not(.win98-tab--active) {
+  background: #c8c4bc;
+}
+
+.shell-control-strip--retro .win98-tab--active {
+  background: #c0c0c0;
+  color: #000;
+  /* Win98 active tab bevel: fully raised, sits 2px higher */
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: none;
+  box-shadow:
+    inset -1px 0 0 #404040,
+    inset 1px 1px 0 #e0dcd8;
+  padding: 3px 10px 5px;
+  bottom: 2px;
+  font-weight: 700;
   z-index: 1;
 }
-
-/* Side bevel edge (the 3-D face on each button) */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side::before {
-  content: "";
-  position: absolute;
-  width: 0.4em;
-  height: 2.45em;
-  bottom: -0.45em;
-  background-color: #909090;
-  transform: skewY(-65deg);
-}
-
-/* ── Left side (Movies) — default: inactive / tilted back ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--left {
-  height: 2.4em;
-  width: 2.75em;
-  left: 0.85em;
-  bottom: 0.4em;
-  background-color: #c0c0c0;
-  color: #555;
-  transform: rotate(15deg) skewX(15deg);
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--left::before {
-  left: -0.4em;
-}
-
-/* ── Right side (Places) — default: active / flat ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--right {
-  height: 2.5em;
-  width: 3em;
-  right: 0.5em;
-  bottom: 0;
-  background-color: #8b0000;
-  color: #fff;
-  transform: none;
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--right::before {
-  right: -0.375em;
-  background-color: transparent;
-  transform: skewY(65deg);
-}
-
-/* ── State: queue (Movies) active — left flat, right tilted ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--left {
-  background-color: #000080;
-  color: #fff;
-  bottom: 0;
-  left: 0.5em;
-  height: 2.5em;
-  width: 3em;
-  transform: none;
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--left::before {
-  background-color: transparent;
-  width: 3.0833em;
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--right {
-  background-color: #c0c0c0;
-  color: #555;
-  bottom: 0.4em;
-  right: 0.8em;
-  height: 2.4em;
-  width: 2.75em;
-  transform: rotate(-15deg) skewX(-15deg);
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--right::before {
-  background-color: #909090;
-}
-
-/* ── State: places active — right flat, left tilted (default) ── */
-/* (covered by the default styles above) */
 
 
 /* ── Ticker strip ── */
@@ -222,9 +143,10 @@
     width: auto;
   }
 
-  /* Scale rocker down on small screens */
-  .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
-    font-size: 0.58rem;
+  /* Scale tabs down on small screens */
+  .shell-control-strip--retro .win98-tab {
+    font-size: 0.65rem;
+    padding: 3px 7px 4px;
   }
 
 }
