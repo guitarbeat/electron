@@ -26,29 +26,24 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
       data-active={activeTab}
       style={style}
     >
-      <span className="rocker__shadow" aria-hidden="true" />
-      <span className="rocker__shadow" aria-hidden="true" />
-      <span className="rocker__inner" aria-hidden="true">
-        <span className="rocker__options">
-          <span className="rocker__option">🎬</span>
-          <span className="rocker__sep" />
-          <span className="rocker__option">📍</span>
-        </span>
-      </span>
       <button
         type="button"
-        className="rocker__hit rocker__hit--top"
+        className="rocker__side rocker__side--left"
         onClick={() => onChange('queue')}
         aria-pressed={activeTab === 'queue'}
         aria-label="Movies"
-      />
+      >
+        🎬
+      </button>
       <button
         type="button"
-        className="rocker__hit rocker__hit--bottom"
+        className="rocker__side rocker__side--right"
         onClick={() => onChange('places')}
         aria-pressed={activeTab === 'places'}
         aria-label="Places"
-      />
+      >
+        📍
+      </button>
     </div>
   );
 };
