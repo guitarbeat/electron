@@ -10,8 +10,10 @@ import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import ElectronLogoLab from '@/branding/ElectronLogoLab';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import { useMovies } from '@/hooks/movies/useMovies';
 import type { MainTab } from '@/shared/types';
 import MinigameModal from '@/ui/MinigameModal';
+import PosterExploreOverlay from '@/components/posterExplore/PosterExploreOverlay';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
@@ -32,9 +34,12 @@ const App: React.FC = () => {
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
+  const [showPosterExplore, setShowPosterExplore] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
+
+  const { movies } = useMovies(currentUser, activeTab !== 'queue');
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -78,6 +83,14 @@ const App: React.FC = () => {
 
   const openSpinMatch = useCallback(() => {
     setShowSpinWheel(true);
+  }, []);
+
+  const openPosterExplore = useCallback(() => {
+    setShowPosterExplore(true);
+  }, []);
+
+  const closePosterExplore = useCallback(() => {
+    setShowPosterExplore(false);
   }, []);
 
   const featureModals = useMemo(
@@ -163,6 +176,7 @@ const App: React.FC = () => {
                 onOpenQuiz={openQuizExperience}
                 quizCompleted={quizCompleted}
                 onOpenSpin={openSpinMatch}
+                onOpenPosterExplore={openPosterExplore}
               />
             </React.Suspense>
           </div>
@@ -185,6 +199,12 @@ const App: React.FC = () => {
             </div>
           </MinigameModal>
         ))}
+
+        <PosterExploreOverlay
+          isOpen={showPosterExplore}
+          onClose={closePosterExplore}
+          movies={movies}
+        />
       </div>
     </ThemeProvider>
   );
