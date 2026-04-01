@@ -12,12 +12,12 @@
 
 @keyframes qab-border-pulse {
   0%, 100% {
-    border-color: #ff00cc;
-    box-shadow: 0 0 8px 3px #ff00cc, 0 0 20px 6px #aa00ff, inset 0 0 10px rgba(255,0,200,0.15);
+    border-color: #cc0099;
+    box-shadow: 0 0 4px 1px #cc0099, 0 0 8px 2px #7700bb;
   }
   50% {
-    border-color: #ff66ff;
-    box-shadow: 0 0 14px 5px #ff66ff, 0 0 30px 10px #ff00cc, inset 0 0 14px rgba(255,100,255,0.2);
+    border-color: #dd44dd;
+    box-shadow: 0 0 6px 2px #dd44dd, 0 0 12px 3px #cc0099;
   }
 }
 
@@ -203,8 +203,8 @@
     animation: none;
   }
   .quiz-ad-banner__rainbow-border {
-    border-color: #ff00cc;
-    box-shadow: 0 0 8px 3px #aa00ff;
+    border-color: #cc0099;
+    box-shadow: none;
     animation: none;
   }
 }
