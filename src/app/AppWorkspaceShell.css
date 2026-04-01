@@ -5,6 +5,10 @@
   gap: 8px;
   padding: 10px 16px 8px;
   flex-shrink: 0;
+}
+
+/* Higher-specificity rule to guarantee sticky wins over .workspace-surface > * position:relative */
+.workspace-surface--queue > .view-toggle-bar {
   position: sticky;
   top: 0;
   z-index: 30;
