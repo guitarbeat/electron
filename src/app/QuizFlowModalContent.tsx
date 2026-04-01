@@ -18,16 +18,16 @@ const QuizFlowModalContent: FC<QuizFlowModalContentProps> = ({
 }) => {
   const { quizData, isLoading } = useQuiz();
 
-  if (!currentUser || isLoading || !quizData) {
+  if (isLoading || !quizData) {
     return null;
   }
 
   return (
     <QuizFlow
-      key={`${currentUser}-${quizCompleted ? 'completed' : 'fresh'}`}
+      key={`${currentUser ?? 'guest'}-${quizCompleted ? 'completed' : 'fresh'}`}
       quizData={quizData}
       onComplete={onComplete}
-      onEdit={onEdit}
+      onEdit={currentUser ? onEdit : undefined}
       isCompleted={false}
     />
   );
