@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { sanitizeInput } from '@/utils';
-import type { PlaceSuggestion, User } from '../shared/types.ts';
+import type { PlaceSuggestion, User } from '@/shared/types';
 import { useUser } from '@/app/providers';
 import { useCollection } from '../useCollection';
 

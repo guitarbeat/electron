@@ -5,7 +5,7 @@ import {
   MOVIE_AUTOCOMPLETE_RESULT_LIMIT,
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   searchMovieAutocomplete,
-} from './metadataService.ts';
+} from './metadata/metadataService';
 
 const originalFetch = globalThis.fetch;
 const globalWithWindow = globalThis as typeof globalThis & { window?: unknown };
@@ -83,12 +83,12 @@ test('searchMovieAutocomplete normalizes OMDb movie results and caps the per-sou
   assert.equal(results.length, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
   assert.deepEqual(results[0], {
     imdbID: 'tt000000',
-    posterUrl: 'https://images.example/heat.jpg',
+    poster: 'https://images.example/heat.jpg',
     title: 'Heat',
     type: 'movie',
     year: '1995',
   });
-  assert.equal(results[1]?.posterUrl, undefined);
+  assert.equal(results[1]?.poster, undefined);
 });
 
 test('searchMovieAutocomplete returns an empty array when both providers succeed without matches', async () => {
