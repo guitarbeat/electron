@@ -3,11 +3,15 @@ import { getWorkspaceMeta } from '@/app/shellState';
 import UserSelection from '@/common/UserSelection';
 import type { MainTab } from '@/shared/types';
 import ThemeToggle from '@/ui/ThemeToggle';
+import './ShellControlStrip.css';
 
 interface ShellControlStripProps {
   activeTab: MainTab;
   onTabChange: (tab: MainTab) => void;
 }
+
+const TICKER_TEXT =
+  '\u00a0\u00a0\u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 · \u00a0\u00a0\u00a0\u00a0★ NOW ONLINE · VISITORS: 1,337 · BEST VIEWED IN NETSCAPE 4.0 · PLEASE DO NOT HOTLINK · FREE WINAMP SKIN INSIDE · ★ ELECTRON MOVIE NIGHT v2.0 ·';
 
 const ShellControlStrip: FC<ShellControlStripProps> = ({
   activeTab,
@@ -16,7 +20,22 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
   const workspaceMeta = getWorkspaceMeta(activeTab);
 
   return (
-    <section className="shell-control-strip" aria-label="App controls">
+    <section
+      className="shell-control-strip shell-control-strip--retro"
+      aria-label="App controls"
+    >
+      {/* Windows 98-style title bar */}
+      <div className="y2k-title-bar" aria-hidden="true">
+        <span className="y2k-title-bar__icon">🎬</span>
+        <span className="y2k-title-bar__text">★ ELECTRON MOVIE NIGHT ★</span>
+        <div className="y2k-title-bar__controls">
+          <span className="y2k-title-bar__btn">_</span>
+          <span className="y2k-title-bar__btn">□</span>
+          <span className="y2k-title-bar__btn">✕</span>
+        </div>
+      </div>
+
+      {/* Chrome metallic toolbar bar */}
       <div
         className={`shell-control-strip__bar shell-control-strip__bar--${activeTab}`}
         aria-label={`${workspaceMeta.title} controls`}
@@ -35,7 +54,22 @@ const ShellControlStrip: FC<ShellControlStripProps> = ({
           />
         </div>
 
-        <div className="shell-control-strip__cluster shell-control-strip__cluster--actions" />
+        <div className="shell-control-strip__cluster shell-control-strip__cluster--actions">
+          <div className="y2k-online-badge" aria-label="Online status">
+            <span className="y2k-online-badge__dot" aria-hidden="true">●</span>
+            <span className="y2k-online-badge__label">
+              <span className="y2k-online-badge__top">ONLINE</span>
+              <span className="y2k-online-badge__bottom">56K</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrolling ticker strip */}
+      <div className="y2k-ticker" aria-hidden="true">
+        <div className="y2k-ticker__inner">
+          <span className="y2k-ticker__text">{TICKER_TEXT}</span>
+        </div>
       </div>
     </section>
   );

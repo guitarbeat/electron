@@ -1,0 +1,247 @@
+/* ShellControlStrip — Y2K / Windows 98 chrome aesthetic */
+
+/* ── Animations ── */
+@keyframes y2k-ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes y2k-blink-online {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes y2k-title-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* ── Section wrapper ── */
+.shell-control-strip--retro {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Win98 title bar ── */
+.y2k-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 3px 8px;
+  background: linear-gradient(90deg, #000080 0%, #1084d0 60%, #000080 100%);
+  background-size: 200% 100%;
+  animation: y2k-title-shimmer 6s ease-in-out infinite;
+  min-height: 22px;
+  user-select: none;
+}
+
+.y2k-title-bar__icon {
+  font-size: 0.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.y2k-title-bar__text {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  flex: 1;
+  text-align: center;
+}
+
+.y2k-title-bar__controls {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.y2k-title-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 14px;
+  background: #c0c0c0;
+  border: 2px outset #e0e0e0;
+  font-size: 0.55rem;
+  font-weight: 900;
+  color: #000;
+  line-height: 1;
+  cursor: default;
+  font-family: 'Arial', sans-serif;
+}
+
+/* ── Chrome metallic bar ── */
+.shell-control-strip--retro .shell-control-strip__bar,
+.workspace-unified-card .shell-control-strip--retro .shell-control-strip__bar {
+  background:
+    linear-gradient(
+      180deg,
+      #f0f0f0 0%,
+      #d8d8d8 30%,
+      #c0c0c0 50%,
+      #d0d0d0 70%,
+      #e8e8e8 100%
+    );
+  border: none;
+  border-top: 2px solid #f8f8f8;
+  border-left: 2px solid #f0f0f0;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  border-radius: 0;
+  box-shadow:
+    inset 1px 1px 0 #fff,
+    inset -1px -1px 0 #606060,
+    0 4px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ── Color text on the chrome bar ── */
+.shell-control-strip--retro .shell-control-strip__bar *,
+.shell-control-strip--retro .shell-control-strip__bar {
+  color: #111;
+}
+
+/* ── Movies/Places toggle — Win98 tab buttons ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--tabs {
+  background: #c0c0c0;
+  border: 2px outset #e0e0e0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2px;
+  gap: 1px;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab {
+  background: #c0c0c0;
+  border: 2px outset #e0e0e0;
+  border-radius: 0;
+  color: #111;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  min-height: 1.9rem;
+  padding: 0.3rem 0.75rem;
+  gap: 0.3rem;
+  transition: none;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab:first-child {
+  border-right: 2px outset #e0e0e0;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab-label {
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #111;
+  text-transform: none;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab-icon {
+  opacity: 1;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active {
+  background: #fff;
+  border: 2px inset #808080;
+  color: #000;
+  font-weight: 900;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active .theme-toggle__tab-label {
+  color: #000;
+}
+
+/* ── ONLINE status badge ── */
+.y2k-online-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  background: #c0c0c0;
+  border: 2px inset #808080;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.y2k-online-badge__dot {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: #00c800;
+  animation: y2k-blink-online 1.2s step-end infinite;
+  line-height: 1;
+}
+
+.y2k-online-badge__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.15;
+}
+
+.y2k-online-badge__top {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #006000;
+}
+
+.y2k-online-badge__bottom {
+  font-size: 0.55rem;
+  color: #555;
+  letter-spacing: 0.02em;
+}
+
+/* ── Ticker strip ── */
+.y2k-ticker {
+  overflow: hidden;
+  background: #000080;
+  border-top: 2px solid #808080;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+
+.y2k-ticker__inner {
+  display: inline-block;
+  animation: y2k-ticker 28s linear infinite;
+  white-space: nowrap;
+}
+
+.y2k-ticker__text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #00ff00;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .y2k-title-bar,
+  .y2k-online-badge__dot,
+  .y2k-ticker__inner {
+    animation: none;
+  }
+  .y2k-title-bar {
+    background: #000080;
+  }
+  .y2k-online-badge__dot {
+    opacity: 1;
+  }
+}
