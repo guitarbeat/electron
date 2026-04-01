@@ -6,74 +6,11 @@
   100% { transform: translateX(-50%); }
 }
 
-
-@keyframes y2k-title-shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50%       { background-position: 100% 50%; }
-}
-
 /* ── Section wrapper ── */
 .shell-control-strip--retro {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-/* ── Win98 title bar ── */
-.y2k-title-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 3px 8px;
-  background: linear-gradient(90deg, #1a2a4a 0%, #2a4a7a 60%, #1a2a4a 100%);
-  background-size: 200% 100%;
-  animation: y2k-title-shimmer 14s ease-in-out infinite;
-  min-height: 22px;
-  user-select: none;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.y2k-title-bar__icon {
-  font-size: 0.75rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.y2k-title-bar__text {
-  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #d8e4f0;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: none;
-  flex: 1;
-  text-align: center;
-}
-
-.y2k-title-bar__controls {
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.y2k-title-bar__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 14px;
-  background: #3a5070;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-bottom-color: rgba(0, 0, 0, 0.3);
-  font-size: 0.55rem;
-  font-weight: 900;
-  color: #c8d8e8;
-  line-height: 1;
-  cursor: default;
-  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
 }
 
 /* ── Chrome metallic bar ── */
@@ -290,21 +227,11 @@
     font-size: 0.58rem;
   }
 
-  /* Shrink the title bar text on narrow screens */
-  .y2k-title-bar__text {
-    font-size: 0.62rem;
-    letter-spacing: 0.04em;
-  }
 }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .y2k-title-bar,
   .y2k-ticker__inner {
-    animation: none;
-  }
-  .y2k-title-bar {
-    background: #1a2a4a;
     animation: none;
   }
 }
