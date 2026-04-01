@@ -540,12 +540,6 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     setDragX(0);
   }, []);
 
-  if (!currentUser) {
-    return (
-      <EmptyState>Select Aaron or Electra to play.</EmptyState>
-    );
-  }
-
   if (isLoading) {
     return <EmptyState>Loading movies…</EmptyState>;
   }
