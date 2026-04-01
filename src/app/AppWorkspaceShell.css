@@ -1,3 +1,23 @@
+/* ── Collapsible banner wrapper ── */
+.ad-banners-collapsible {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s ease;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.ad-banners-collapsible--closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.ad-banners-collapsible > .ad-banners-row {
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* ── View toggle bar ── */
 .view-toggle-bar {
   display: flex;
@@ -46,6 +66,47 @@
 }
 
 .view-toggle-btn__label {
+  line-height: 1;
+}
+
+/* ── Banners hide/show button — sits at the right of the toggle bar ── */
+.banners-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 5px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.38);
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.banners-toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.banners-toggle-btn__chevron {
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When banners are hidden the chevron points up (›  rotated -90°) */
+.banners-toggle-btn__chevron--up {
+  transform: rotate(-90deg);
+}
+
+.banners-toggle-btn__label {
   line-height: 1;
 }
 

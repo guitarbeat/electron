@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React, { useState, type FC } from 'react';
 import type { MainTab, Movie } from '@/shared/types';
 import QuizAdBanner from '@/components/quiz/QuizAdBanner';
 import SpinAdBanner from '@/components/spinMatch/SpinAdBanner';
@@ -31,6 +31,16 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   onSetViewMode,
   movies,
 }) => {
+  const [bannersOpen, setBannersOpen] = useState<boolean>(
+    () => localStorage.getItem('bannersOpen') !== 'false'
+  );
+
+  const toggleBanners = () => {
+    const next = !bannersOpen;
+    setBannersOpen(next);
+    localStorage.setItem('bannersOpen', String(next));
+  };
+
   return (
     <main
       id="main-content"
@@ -43,12 +53,14 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       >
         {activeTab === 'queue' ? (
           <>
-            <div className="ad-banners-row">
-              <div className="ad-banners-row__item">
-                <QuizAdBanner onOpen={onOpenQuiz} quizCompleted={quizCompleted} />
-              </div>
-              <div className="ad-banners-row__item">
-                <SpinAdBanner onOpen={onOpenSpin} />
+            <div className={`ad-banners-collapsible${bannersOpen ? '' : ' ad-banners-collapsible--closed'}`}>
+              <div className="ad-banners-row">
+                <div className="ad-banners-row__item">
+                  <QuizAdBanner onOpen={onOpenQuiz} quizCompleted={quizCompleted} />
+                </div>
+                <div className="ad-banners-row__item">
+                  <SpinAdBanner onOpen={onOpenSpin} />
+                </div>
               </div>
             </div>
 
@@ -70,6 +82,20 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
               >
                 <span className="view-toggle-btn__icon">🎬</span>
                 <span className="view-toggle-btn__label">Posters</span>
+              </button>
+
+              <button
+                className="banners-toggle-btn"
+                onClick={toggleBanners}
+                aria-label={bannersOpen ? 'Hide banners' : 'Show banners'}
+                title={bannersOpen ? 'Hide banners' : 'Show banners'}
+              >
+                <span className={`banners-toggle-btn__chevron${bannersOpen ? '' : ' banners-toggle-btn__chevron--up'}`}>
+                  ›
+                </span>
+                <span className="banners-toggle-btn__label">
+                  {bannersOpen ? 'Hide' : 'Games'}
+                </span>
               </button>
             </div>
 
