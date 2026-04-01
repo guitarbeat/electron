@@ -10,24 +10,9 @@ interface PosterCarouselInlineProps {
   movies: Movie[];
 }
 
-const FALLBACK_COLORS = [
-  '#7b3fc8',
-  '#c83270',
-  '#287896',
-  '#c86e1e',
-  '#28be78',
-  '#a032d2',
-  '#c84640',
-  '#3c6ec8',
-  '#beaa1e',
-  '#50b4aa',
-];
-
-function getInitials(title: string): string {
-  const words = title.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return '?';
-  if (words.length === 1) return words[0][0].toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
+function getCatUrl(movieId: string, title: string): string {
+  const seed = encodeURIComponent(movieId || title || 'cat');
+  return `https://cataas.com/cat?width=300&height=450&_id=${seed}`;
 }
 
 const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) => {
@@ -151,26 +136,19 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
           style={{ height: `${trackHeight}vh` }}
         >
           <div ref={stageRef} className="pci-stage">
-            {displayMovies.map((movie, i) => {
-              const color = FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+            {displayMovies.map((movie) => {
+              const imgSrc = movie.posterUrl || getCatUrl(movie.id, movie.title);
               return (
                 <div
                   key={movie.id}
                   className="pci-card"
-                  style={{ '--card-color': color } as React.CSSProperties}
                 >
-                  {movie.posterUrl ? (
-                    <img
-                      src={movie.posterUrl}
-                      alt={movie.title}
-                      className="pci-card__img"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="pci-card__fallback">
-                      <span>{getInitials(movie.title)}</span>
-                    </div>
-                  )}
+                  <img
+                    src={imgSrc}
+                    alt={movie.title}
+                    className="pci-card__img"
+                    draggable={false}
+                  />
                   <div className="pci-card__info">
                     <p className="pci-card__title">{movie.title}</p>
                     {movie.year && <p className="pci-card__year">{movie.year}</p>}
