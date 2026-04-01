@@ -137,7 +137,7 @@ export default defineConfig(({ mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          api: 'modern-compiler',
+          api: 'modern-compiler' as const,
         },
       },
     },
