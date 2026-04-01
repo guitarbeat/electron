@@ -218,6 +218,49 @@
   text-transform: uppercase;
 }
 
+/* ── Mobile: keep single-row chrome layout ── */
+@media (max-width: 640px) {
+  /* Override the default 1-column stacked layout; stay in one row */
+  .shell-control-strip--retro .shell-control-strip__bar {
+    grid-template-columns: auto 1fr auto;
+    gap: 0.4rem;
+  }
+
+  /* Undo full-width stretching that the base mobile rules apply */
+  .shell-control-strip--retro .shell-control-strip__cluster--session,
+  .shell-control-strip--retro .shell-control-strip__cluster--actions {
+    width: auto;
+  }
+
+  /* Tab toggle: don't stretch full-width; let the center column size it */
+  .shell-control-strip--retro .shell-control-strip__theme-toggle,
+  .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle {
+    width: auto;
+  }
+
+  /* Compact toggle tabs on small screens */
+  .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.68rem;
+    min-height: 1.7rem;
+  }
+
+  /* Shrink the title bar text on narrow screens */
+  .y2k-title-bar__text {
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Compact ONLINE badge */
+  .y2k-online-badge {
+    padding: 3px 6px;
+  }
+
+  .y2k-online-badge__top {
+    font-size: 0.55rem;
+  }
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .y2k-title-bar,
