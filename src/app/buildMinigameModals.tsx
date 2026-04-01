@@ -144,7 +144,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 920,
       maxHeight: 900,
       contentStyle: paddedScrollContentStyle,
-      content: currentUser ? (
+      content: (
         <React.Suspense fallback={null}>
           <QuizFlowModalContent
             currentUser={currentUser}
@@ -156,7 +156,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
             }}
           />
         </React.Suspense>
-      ) : null,
+      ),
     },
   ];
 }
