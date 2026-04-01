@@ -43,62 +43,6 @@
   color: #111;
 }
 
-/* ── Movies/Places toggle — Win98 Property Sheet Tabs ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--tabs {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 3px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  box-shadow: none;
-}
-
-.shell-control-strip--retro .win98-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px 4px;
-  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', system-ui, Arial, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: #111;
-  background: #b0aca4;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  position: relative;
-  bottom: 0;
-  /* Win98 inactive tab bevel: slightly recessed */
-  border-top: 1px solid #ffffff;
-  border-left: 1px solid #ffffff;
-  border-right: 1px solid #404040;
-  border-bottom: none;
-  box-shadow: inset -1px -1px 0 #808080, inset 1px 0 0 #e0dcd8;
-  transition: background 0.1s;
-}
-
-.shell-control-strip--retro .win98-tab:hover:not(.win98-tab--active) {
-  background: #c8c4bc;
-}
-
-.shell-control-strip--retro .win98-tab--active {
-  background: #c0c0c0;
-  color: #000;
-  /* Win98 active tab bevel: fully raised, sits 2px higher */
-  border-top: 2px solid #ffffff;
-  border-left: 2px solid #ffffff;
-  border-right: 2px solid #808080;
-  border-bottom: none;
-  box-shadow:
-    inset -1px 0 0 #404040,
-    inset 1px 1px 0 #e0dcd8;
-  padding: 3px 10px 5px;
-  bottom: 2px;
-  font-weight: 700;
-  z-index: 1;
-}
-
 
 /* ── Ticker strip ── */
 .y2k-ticker {
