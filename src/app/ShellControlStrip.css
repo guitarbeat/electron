@@ -106,79 +106,194 @@
   color: #111;
 }
 
-/* ── Movies/Places toggle — Win98 3D pushbutton pair ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--tabs {
+/* ── Movies/Places toggle — 3D Rocker Switch ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
+  display: block;
+  position: relative;
+  height: 2.1rem;
+  min-width: 9.5rem;
+  border: none;
+  border-radius: 4px;
+  background: #a0a0a0;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.55) inset,
+    0 -1px 1px rgba(255, 255, 255, 0.45) inset,
+    0 4px 7px rgba(0, 0, 0, 0.32) inset;
+  padding: 0;
+}
+
+/* ── 3D shadow protrusions on each end ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__shadow {
+  position: absolute;
+  border-radius: 3px 7px 3px 3px / 3px 5px 1px 3px;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.65);
+  display: block;
+  top: 5px;
+  left: 5px;
+  width: 11px;
+  height: 7px;
+  transform: rotate(0deg);
+  transform-origin: 9px 3.5px;
+  transition:
+    box-shadow 0.28s cubic-bezier(0.65, 0, 0.35, 1),
+    transform 0.28s cubic-bezier(0.65, 0, 0.35, 1);
+  z-index: -1;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__shadow + .rocker__shadow {
+  border-radius: 7px 3px 3px 3px / 5px 3px 3px 1px;
+  box-shadow: 0 0 3px 1.5px rgba(0, 0, 0, 0.65);
+  right: 5px;
+  left: auto;
+  transform: rotate(7.5deg);
+  transform-origin: 4px 3.5px;
+}
+
+/* ── Inner recessed plate (holds the tilting panel) ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__inner {
+  position: absolute;
+  inset: 3px;
+  background: #c0c0c0;
+  border-radius: 2px;
+  display: block;
+  perspective: 220px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2) inset;
+  overflow: hidden;
+}
+
+/* ── Options strip — this element tilts on the Y axis ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #c0c0c0;
+  border-radius: inherit;
+  box-shadow: 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  transition:
+    background-color 0.28s,
+    transform 0.28s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Gradient shadow overlays — show which side is "down" */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before,
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  width: 46%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before {
+  border-radius: 2px 0 0 2px;
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.6) inset,
+    1.5px 2px 4px rgba(0, 0, 0, 0.28) inset;
+  mask-image: linear-gradient(-90deg, transparent, rgba(150, 150, 150, 0.85));
+  left: 0;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
+  border-radius: 0 2px 2px 0;
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.6) inset,
+    -1.5px 2px 4px rgba(0, 0, 0, 0.28) inset;
+  mask-image: linear-gradient(90deg, transparent, rgba(150, 150, 150, 0.85));
+  right: 0;
+  opacity: 0;
+}
+
+/* ── Option labels ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__option {
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #111111;
+  text-align: center;
+  width: 100%;
+  padding: 0 0.25rem;
+  text-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.85);
+  user-select: none;
+  transition: color 0.28s, text-shadow 0.28s;
+}
+
+/* ── Separator bar ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__sep {
+  background: #909090;
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.65);
+  width: 1px;
+  min-width: 1px;
+  height: 1rem;
+  flex-shrink: 0;
+  transition: background-color 0.28s;
+}
+
+/* ── State: queue (Movies) active — left side tilts down ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options {
+  transform: translateX(-2px) rotateY(-15deg);
+}
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options::before {
+  opacity: 1;
+}
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options::after {
+  opacity: 0;
+}
+/* Dim the inactive (right/Places) label */
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__option:last-of-type {
+  color: #707070;
+  text-shadow: none;
+}
+
+/* ── State: places active — right side tilts down ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options {
+  transform: translateX(2px) rotateY(15deg);
+}
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options::before {
+  opacity: 0;
+}
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options::after {
+  opacity: 1;
+}
+/* Dim the inactive (left/Movies) label */
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__option:first-of-type {
+  color: #707070;
+  text-shadow: none;
+}
+
+/* ── Shadow elements swap on state change ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__shadow {
+  box-shadow: 0 0 3px 1.5px rgba(0, 0, 0, 0.65);
+  transform: rotate(-7.5deg);
+}
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__shadow + .rocker__shadow {
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.65);
+  transform: rotate(0deg);
+}
+
+/* ── Transparent hit-area buttons layered on top ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
   background: transparent;
   border: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
-  gap: 5px;
-  display: inline-flex;
-  align-items: stretch;
-}
-
-/* ── Inactive button: raised / outset ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab {
-  background: #c0c0c0;
-  border-radius: 0;
-  color: #000000;
-  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  min-height: 2.1rem;
-  padding: 0.3rem 1rem;
-  gap: 0.38rem;
-  transition: none;
   cursor: pointer;
-  /* Win98 raised/outset bevel */
-  border-top: 2px solid #ffffff;
-  border-left: 2px solid #ffffff;
-  border-right: 2px solid #404040;
-  border-bottom: 2px solid #404040;
-  box-shadow:
-    inset 1px 1px 0 #e0dcd8,
-    inset -1px -1px 0 #808080;
-  position: relative;
+  z-index: 2;
 }
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab:hover:not(.is-active) {
-  background: #cccccc;
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--left {
+  left: 0;
 }
-
-/* ── Active button: pressed / inset (sunken) ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active {
-  background: #b0b0b0;
-  color: #000000;
-  font-weight: 700;
-  /* Win98 inset/pressed bevel — reversed from raised */
-  border-top: 2px solid #404040;
-  border-left: 2px solid #404040;
-  border-right: 2px solid #e0e0e0;
-  border-bottom: 2px solid #e0e0e0;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.28);
-  /* Nudge content down-right to feel physically pressed */
-  padding-top: calc(0.3rem + 1px);
-  padding-left: calc(1rem + 1px);
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab-label {
-  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: #000000;
-  text-transform: none;
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active .theme-toggle__tab-label {
-  color: #000000;
-}
-
-.shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab-icon {
-  opacity: 1;
-  font-size: 0.9rem;
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--right {
+  right: 0;
 }
 
 
@@ -225,19 +340,14 @@
     width: auto;
   }
 
-  /* Compact toggle tabs on small screens */
-  .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab {
-    padding: 0.22rem 0.6rem;
-    font-size: 0.72rem;
-    min-height: 1.8rem;
+  /* Compact rocker on small screens */
+  .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
+    height: 1.9rem;
+    min-width: 8rem;
   }
 
-  /* Keep 3D press shift on active even when compact */
-  .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active {
-    padding-top: calc(0.22rem + 1px);
-    padding-left: calc(0.6rem + 1px);
-    padding-right: calc(0.6rem - 1px);
-    padding-bottom: calc(0.22rem - 1px);
+  .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__option {
+    font-size: 0.68rem;
   }
 
   /* Shrink the title bar text on narrow screens */
