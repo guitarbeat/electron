@@ -7,7 +7,6 @@ export * from './useMessages';
 export * from './useModalBehavior';
 export * from './usePins';
 export * from './useQuiz';
-export * from './useSpinWheelState';
 
 // Module exports
 export * from './suggestions';
