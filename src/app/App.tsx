@@ -55,13 +55,8 @@ const App: React.FC = () => {
   }, [activeTab]);
 
   const openQuizExperience = useCallback(() => {
-    if (currentUser) {
-      setShowQuizFlow(true);
-      return;
-    }
-
-    setShowQuizEditor(true);
-  }, [currentUser]);
+    setShowQuizFlow(true);
+  }, []);
 
   const handleQuizComplete = useCallback(() => {
     setQuizCompleted(true);
