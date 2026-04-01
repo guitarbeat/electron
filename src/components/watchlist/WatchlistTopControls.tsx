@@ -17,6 +17,7 @@ import {
   type MovieAutocompleteResult,
 } from '@/services/metadata';
 import RecommendationComposer from './RecommendationComposer';
+import '@/app/ShellControlStrip.css';
 import {
   getNextMovieAutocompleteIndex,
   getMovieAutocompleteEnterSelectionIndex,
@@ -27,6 +28,9 @@ import {
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './watchlistAutocomplete';
+
+const TICKER_TEXT =
+  '\u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER · \u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER ·';
 
 interface WatchlistTopControlsProps {
   currentUser: User | null;
@@ -483,6 +487,12 @@ const WatchlistTopControls = React.forwardRef<
             </div>
           )}
         </form>
+      </div>
+
+      <div className="y2k-ticker" aria-hidden="true">
+        <div className="y2k-ticker__inner">
+          <span className="y2k-ticker__text">{TICKER_TEXT}</span>
+        </div>
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (
