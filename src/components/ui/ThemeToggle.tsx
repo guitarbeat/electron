@@ -1,5 +1,6 @@
 import React from 'react';
 import type { MainTab } from '@/shared/types';
+import './ThemeToggle.css';
 
 interface ThemeToggleProps {
   activeTab: MainTab;
@@ -22,26 +23,26 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <div
       role="group"
       aria-label={label ?? 'Switch between Movies and Places'}
-      className={`theme-toggle theme-toggle--tabs${compact ? ' theme-toggle--compact' : ''}${className ? ` ${className}` : ''}`}
+      className={`seg-control${compact ? ' seg-control--compact' : ''}${className ? ` ${className}` : ''}`}
       style={style}
     >
       <button
         type="button"
-        className={`win98-tab${activeTab === 'queue' ? ' win98-tab--active' : ''}`}
+        className={`seg-control__btn${activeTab === 'queue' ? ' seg-control__btn--active' : ''}`}
         onClick={() => onChange('queue')}
         aria-pressed={activeTab === 'queue'}
-        aria-label="Movies"
       >
-        🎬 Movies
+        <span className="seg-control__icon" aria-hidden="true">🎬</span>
+        <span className="seg-control__label">Movies</span>
       </button>
       <button
         type="button"
-        className={`win98-tab${activeTab === 'places' ? ' win98-tab--active' : ''}`}
+        className={`seg-control__btn${activeTab === 'places' ? ' seg-control__btn--active' : ''}`}
         onClick={() => onChange('places')}
         aria-pressed={activeTab === 'places'}
-        aria-label="Places"
       >
-        📍 Places
+        <span className="seg-control__icon" aria-hidden="true">📍</span>
+        <span className="seg-control__label">Places</span>
       </button>
     </div>
   );
