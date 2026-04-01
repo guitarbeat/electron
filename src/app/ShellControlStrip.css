@@ -81,8 +81,7 @@
 }
 
 /* ── Chrome metallic bar ── */
-.shell-control-strip--retro .shell-control-strip__bar,
-.workspace-unified-card .shell-control-strip--retro .shell-control-strip__bar {
+.shell-control-strip--retro .shell-control-strip__bar {
   background:
     linear-gradient(
       180deg,
