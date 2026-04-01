@@ -31,10 +31,10 @@
 }
 
 /* ── Stage (pinned by GSAP, perspective container) ── */
+/* Height is set in JS to scroller.clientHeight — do NOT set height here */
 .pci-stage {
   position: relative;
   width: 100%;
-  height: 100%;
   perspective: 300px;
   opacity: 0;
   overflow: hidden;
