@@ -106,62 +106,45 @@
   color: #111;
 }
 
-/* ── Movies/Places toggle — 3D Rocker Switch ── */
+/* ── Movies/Places toggle — Glassmorphic Rocker Switch ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
   display: block;
   position: relative;
   height: 2.1rem;
   min-width: 9.5rem;
-  border: none;
-  border-radius: 4px;
-  background: #a0a0a0;
+  border-radius: 10px;
+  /* Frosted glass */
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.55) inset,
-    0 -1px 1px rgba(255, 255, 255, 0.45) inset,
-    0 4px 7px rgba(0, 0, 0, 0.32) inset;
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.12) inset;
   padding: 0;
 }
 
-/* ── 3D shadow protrusions on each end ── */
+/* ── Hide Win98 protrusion shadows — not used in glass ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__shadow {
-  position: absolute;
-  border-radius: 3px 7px 3px 3px / 3px 5px 1px 3px;
-  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.65);
-  display: block;
-  top: 5px;
-  left: 5px;
-  width: 11px;
-  height: 7px;
-  transform: rotate(0deg);
-  transform-origin: 9px 3.5px;
-  transition:
-    box-shadow 0.28s cubic-bezier(0.65, 0, 0.35, 1),
-    transform 0.28s cubic-bezier(0.65, 0, 0.35, 1);
-  z-index: -1;
+  display: none;
 }
 
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__shadow + .rocker__shadow {
-  border-radius: 7px 3px 3px 3px / 5px 3px 3px 1px;
-  box-shadow: 0 0 3px 1.5px rgba(0, 0, 0, 0.65);
-  right: 5px;
-  left: auto;
-  transform: rotate(7.5deg);
-  transform-origin: 4px 3.5px;
-}
-
-/* ── Inner recessed plate (holds the tilting panel) ── */
+/* ── Inner recessed well ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__inner {
   position: absolute;
   inset: 3px;
-  background: #c0c0c0;
-  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
   display: block;
   perspective: 220px;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2) inset;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.35) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.08) inset;
   overflow: hidden;
 }
 
-/* ── Options strip — this element tilts on the Y axis ── */
+/* ── Options strip — tilts on Y axis ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options {
   position: relative;
   display: flex;
@@ -169,15 +152,14 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  background: #c0c0c0;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: inherit;
-  box-shadow: 0 0 1px rgba(255, 255, 255, 0.8) inset;
   transition:
     background-color 0.28s,
     transform 0.28s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* Gradient shadow overlays — show which side is "down" */
+/* Shadow overlays — darken the "pressed" side of the tilt */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before,
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
   content: '';
@@ -191,20 +173,20 @@
 }
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before {
-  border-radius: 2px 0 0 2px;
+  border-radius: 7px 0 0 7px;
   box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.6) inset,
-    1.5px 2px 4px rgba(0, 0, 0, 0.28) inset;
-  mask-image: linear-gradient(-90deg, transparent, rgba(150, 150, 150, 0.85));
+    0 1px 1px rgba(0, 0, 0, 0.45) inset,
+    2px 2px 5px rgba(0, 0, 0, 0.22) inset;
+  mask-image: linear-gradient(-90deg, transparent, rgba(0, 0, 0, 0.5));
   left: 0;
 }
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 7px 7px 0;
   box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.6) inset,
-    -1.5px 2px 4px rgba(0, 0, 0, 0.28) inset;
-  mask-image: linear-gradient(90deg, transparent, rgba(150, 150, 150, 0.85));
+    0 1px 1px rgba(0, 0, 0, 0.45) inset,
+    -2px 2px 5px rgba(0, 0, 0, 0.22) inset;
+  mask-image: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.5));
   right: 0;
   opacity: 0;
 }
@@ -214,21 +196,21 @@
   font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   font-size: 0.76rem;
   font-weight: 700;
-  color: #111111;
+  color: rgba(255, 255, 255, 0.92);
   text-align: center;
   width: 100%;
   padding: 0 0.25rem;
   text-shadow:
-    0 -1px 0 rgba(0, 0, 0, 0.25),
-    0 1px 0 rgba(255, 255, 255, 0.85);
+    0 0 8px rgba(255, 255, 255, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.5);
   user-select: none;
-  transition: color 0.28s, text-shadow 0.28s;
+  transition: color 0.28s, text-shadow 0.28s, opacity 0.28s;
 }
 
 /* ── Separator bar ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__sep {
-  background: #909090;
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.15);
   width: 1px;
   min-width: 1px;
   height: 1rem;
@@ -248,7 +230,7 @@
 }
 /* Dim the inactive (right/Places) label */
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__option:last-of-type {
-  color: #707070;
+  color: rgba(255, 255, 255, 0.35);
   text-shadow: none;
 }
 
@@ -264,18 +246,8 @@
 }
 /* Dim the inactive (left/Movies) label */
 .shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__option:first-of-type {
-  color: #707070;
+  color: rgba(255, 255, 255, 0.35);
   text-shadow: none;
-}
-
-/* ── Shadow elements swap on state change ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__shadow {
-  box-shadow: 0 0 3px 1.5px rgba(0, 0, 0, 0.65);
-  transform: rotate(-7.5deg);
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__shadow + .rocker__shadow {
-  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.65);
-  transform: rotate(0deg);
 }
 
 /* ── Transparent hit-area buttons layered on top ── */
