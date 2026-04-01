@@ -6,7 +6,7 @@ import {
   normalizePlaceSuggestions,
   normalizeSuggestionRecord,
   normalizeSuggestions,
-} from './stateSchemas.ts';
+} from './state/stateSchemas';
 
 test('normalizeSuggestionRecord', async (t) => {
   await t.test('accepts valid suggestion records with optional selection metadata', () => {

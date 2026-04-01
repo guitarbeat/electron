@@ -68,6 +68,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
   return [
     {
       key: 'messages',
+      title: 'Messages',
       isOpen: showMessages,
       onClose: () => setShowMessages(false),
       ariaLabel: 'Shared messages',

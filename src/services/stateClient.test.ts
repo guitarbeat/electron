@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { mutateScope, readScope } from './stateClient.ts';
+import { mutateScope, readScope } from './state/stateClient';
 import type { Movie } from '../shared/types.ts';
 
 class MemoryStorage {

@@ -71,9 +71,8 @@ export const getAvailableMatchmakerVibes = (movies: Movie[], limit: number = 8):
 export const createMatchmakerPool = (
   movies: Movie[],
   selectedVibe: string | null,
-  randomSource: () => number = Math.random
 ): string[] =>
-  shuffleArray(filterMoviesByVibe(movies, selectedVibe), randomSource)
+  shuffleArray(filterMoviesByVibe(movies, selectedVibe))
     .slice(0, MATCHMAKER_POOL_SIZE)
     .map((movie) => movie.id);
 

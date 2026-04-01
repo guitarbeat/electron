@@ -13,7 +13,7 @@ import type { QuizData } from '@/services/state/stateTypes';
 
 const POLLING_INTERVAL = 30000;
 
-export type { QuizData } from '@/services/stateTypes';
+export type { QuizData } from '@/services/state/stateTypes';
 
 export const useQuiz = (isPaused: boolean = false) => {
   const readQuiz = useCallback(() => readScope('quiz'), []);
