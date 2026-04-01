@@ -106,165 +106,140 @@
   color: #111;
 }
 
-/* ── Movies/Places toggle — Glassmorphic Vertical Rocker ── */
+/* ── Movies/Places toggle — Physical Skewed Rocker ── */
+/*
+  All measurements use em so a single font-size on the container
+  scales the entire switch. Reference: font-size 2em → scale 0.68rem ≈ 34% of original.
+*/
 .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
-  display: block;
+  display: inline-block;
   position: relative;
-  width: 2.7rem;
-  height: 3.5rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.13);
-  backdrop-filter: blur(14px) saturate(1.6);
-  -webkit-backdrop-filter: blur(14px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.18) inset,
-    0 -1px 0 rgba(0, 0, 0, 0.12) inset;
+  font-size: 0.68rem;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  color: #888;
+  width: 7em;
+  height: 4em;
+  overflow: hidden;
+  /* The bottom lip of the trough */
+  border-bottom: 0.5em solid #d4d0c8;
+  /* Reset any previous styles */
+  background: transparent;
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   padding: 0;
 }
 
-/* ── Hide unused shadow protrusion spans ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__shadow {
-  display: none;
-}
-
-/* ── Inner recessed well ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__inner {
+/* Gray trough background */
+.shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker::before {
+  content: "";
   position: absolute;
-  inset: 3px;
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 7px;
-  display: block;
-  perspective: 160px;
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.35) inset,
-    0 0 0 1px rgba(0, 0, 0, 0.08) inset;
-  overflow: hidden;
-}
-
-/* ── Options column — this element tilts on the X axis ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: inherit;
-  transition:
-    background-color 0.28s,
-    transform 0.28s cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-/* Shadow overlays — top half and bottom half */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before,
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
-  content: '';
-  display: block;
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 46%;
-  pointer-events: none;
-  transition: opacity 0.28s cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-/* Top-half shadow (active when Movies/queue is pressed) */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::before {
-  border-radius: 7px 7px 0 0;
-  box-shadow:
-    1px 0 1px rgba(0, 0, 0, 0.45) inset,
-    2px 2px 5px rgba(0, 0, 0, 0.22) inset;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
-  top: 0;
-}
-
-/* Bottom-half shadow (active when Places is pressed) */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__options::after {
-  border-radius: 0 0 7px 7px;
-  box-shadow:
-    1px 0 1px rgba(0, 0, 0, 0.45) inset,
-    2px -2px 5px rgba(0, 0, 0, 0.22) inset;
-  mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent);
-  bottom: 0;
-  opacity: 0;
-}
-
-/* ── Icons ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__option {
-  font-size: 1.1rem;
-  line-height: 1;
-  text-align: center;
-  width: 100%;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-  user-select: none;
-  transition: opacity 0.28s, filter 0.28s;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
-}
-
-/* ── Horizontal separator bar ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__sep {
-  background: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
-  width: 60%;
-  height: 1px;
-  min-height: 1px;
-  flex-shrink: 0;
-  transition: background-color 0.28s;
-}
-
-/* ── State: queue (Movies) active — top tilts toward viewer ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options {
-  transform: translateY(-2px) rotateX(15deg);
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options::before {
-  opacity: 1;
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__options::after {
-  opacity: 0;
-}
-/* Dim the inactive (bottom/Places) icon */
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__option:last-of-type {
-  opacity: 0.35;
-  filter: none;
-}
-
-/* ── State: places active — bottom tilts toward viewer ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options {
-  transform: translateY(2px) rotateX(-15deg);
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options::before {
-  opacity: 0;
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__options::after {
-  opacity: 1;
-}
-/* Dim the inactive (top/Movies) icon */
-.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="places"] .rocker__option:first-of-type {
-  opacity: 0.35;
-  filter: none;
-}
-
-/* ── Transparent hit-area buttons (top / bottom halves) ── */
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit {
-  position: absolute;
+  top: 0.5em;
   left: 0;
   right: 0;
-  height: 50%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  z-index: 2;
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--top {
-  top: 0;
-}
-.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__hit--bottom {
   bottom: 0;
+  background-color: #808080;
+  border: 0.5em solid #d4d0c8;
+  border-bottom: none;
 }
+
+/* ── Shared button base ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side {
+  cursor: pointer;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  font-size: 1.1rem;       /* icon size independent of em scale */
+  line-height: 1;
+  user-select: none;
+  transition: 0.2s;
+  z-index: 1;
+}
+
+/* Side bevel edge (the 3-D face on each button) */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side::before {
+  content: "";
+  position: absolute;
+  width: 0.4em;
+  height: 2.45em;
+  bottom: -0.45em;
+  background-color: #909090;
+  transform: skewY(-65deg);
+}
+
+/* ── Left side (Movies) — default: inactive / tilted back ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--left {
+  height: 2.4em;
+  width: 2.75em;
+  left: 0.85em;
+  bottom: 0.4em;
+  background-color: #c0c0c0;
+  color: #555;
+  transform: rotate(15deg) skewX(15deg);
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--left::before {
+  left: -0.4em;
+}
+
+/* ── Right side (Places) — default: active / flat ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--right {
+  height: 2.5em;
+  width: 3em;
+  right: 0.5em;
+  bottom: 0;
+  background-color: #8b0000;
+  color: #fff;
+  transform: none;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__side--right::before {
+  right: -0.375em;
+  background-color: transparent;
+  transform: skewY(65deg);
+}
+
+/* ── State: queue (Movies) active — left flat, right tilted ── */
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--left {
+  background-color: #000080;
+  color: #fff;
+  bottom: 0;
+  left: 0.5em;
+  height: 2.5em;
+  width: 3em;
+  transform: none;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--left::before {
+  background-color: transparent;
+  width: 3.0833em;
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--right {
+  background-color: #c0c0c0;
+  color: #555;
+  bottom: 0.4em;
+  right: 0.8em;
+  height: 2.4em;
+  width: 2.75em;
+  transform: rotate(-15deg) skewX(-15deg);
+}
+
+.shell-control-strip--retro .shell-control-strip__theme-toggle[data-active="queue"] .rocker__side--right::before {
+  background-color: #909090;
+}
+
+/* ── State: places active — right flat, left tilted (default) ── */
+/* (covered by the default styles above) */
 
 
 /* ── Ticker strip ── */
@@ -310,14 +285,9 @@
     width: auto;
   }
 
-  /* Compact vertical rocker on small screens */
+  /* Scale rocker down on small screens */
   .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--rocker {
-    width: 2.3rem;
-    height: 3rem;
-  }
-
-  .shell-control-strip--retro .shell-control-strip__theme-toggle .rocker__option {
-    font-size: 0.95rem;
+    font-size: 0.58rem;
   }
 
   /* Shrink the title bar text on narrow screens */
