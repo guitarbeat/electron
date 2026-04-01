@@ -6,9 +6,9 @@
   100% { transform: translateX(-50%); }
 }
 
-@keyframes y2k-blink-online {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+@keyframes y2k-pulse-online {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
 }
 
 @keyframes y2k-title-shimmer {
@@ -30,11 +30,12 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 3px 8px;
-  background: linear-gradient(90deg, #000080 0%, #1084d0 60%, #000080 100%);
+  background: linear-gradient(90deg, #1a2a4a 0%, #2a4a7a 60%, #1a2a4a 100%);
   background-size: 200% 100%;
-  animation: y2k-title-shimmer 6s ease-in-out infinite;
+  animation: y2k-title-shimmer 14s ease-in-out infinite;
   min-height: 22px;
   user-select: none;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .y2k-title-bar__icon {
@@ -44,14 +45,14 @@
 }
 
 .y2k-title-bar__text {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   font-size: 0.72rem;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 600;
+  color: #d8e4f0;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  text-shadow: none;
   flex: 1;
   text-align: center;
 }
@@ -68,14 +69,15 @@
   justify-content: center;
   width: 16px;
   height: 14px;
-  background: #c0c0c0;
-  border: 2px outset #e0e0e0;
+  background: #3a5070;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom-color: rgba(0, 0, 0, 0.3);
   font-size: 0.55rem;
   font-weight: 900;
-  color: #000;
+  color: #c8d8e8;
   line-height: 1;
   cursor: default;
-  font-family: 'Arial', sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
 }
 
 /* ── Chrome metallic bar ── */
@@ -91,15 +93,14 @@
       #e8e8e8 100%
     );
   border: none;
-  border-top: 2px solid #f8f8f8;
-  border-left: 2px solid #f0f0f0;
-  border-right: 2px solid #808080;
-  border-bottom: 2px solid #808080;
+  border-top: 1px solid #e8e8e8;
+  border-left: 1px solid #e0e0e0;
+  border-right: 1px solid #909090;
+  border-bottom: 1px solid #909090;
   border-radius: 0;
   box-shadow:
-    inset 1px 1px 0 #fff,
-    inset -1px -1px 0 #606060,
-    0 4px 16px rgba(0, 0, 0, 0.35);
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7),
+    0 2px 8px rgba(0, 0, 0, 0.18);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -113,7 +114,7 @@
 /* ── Movies/Places toggle — Win98 tab buttons ── */
 .shell-control-strip--retro .shell-control-strip__theme-toggle.theme-toggle--tabs {
   background: #c0c0c0;
-  border: 2px outset #e0e0e0;
+  border: 1px solid #909090;
   border-radius: 0;
   box-shadow: none;
   padding: 2px;
@@ -122,12 +123,12 @@
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab {
   background: #c0c0c0;
-  border: 2px outset #e0e0e0;
+  border: 1px solid #a0a0a0;
   border-radius: 0;
   color: #111;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   min-height: 1.9rem;
   padding: 0.3rem 0.75rem;
@@ -136,13 +137,13 @@
 }
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab:first-child {
-  border-right: 2px outset #e0e0e0;
+  border-right: 1px solid #a0a0a0;
 }
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab-label {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
   color: #111;
   text-transform: none;
@@ -154,9 +155,9 @@
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active {
   background: #fff;
-  border: 2px inset #808080;
+  border: 1px solid #808080;
   color: #000;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .shell-control-strip--retro .shell-control-strip__theme-toggle .theme-toggle__tab.is-active .theme-toggle__tab-label {
@@ -170,7 +171,7 @@
   gap: 4px;
   padding: 3px 8px 3px 6px;
   background: #c0c0c0;
-  border: 2px inset #808080;
+  border: 1px solid #909090;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.65rem;
   font-weight: 700;
@@ -182,39 +183,39 @@
 .y2k-online-badge__dot {
   display: inline-block;
   font-size: 0.7rem;
-  color: #00c800;
-  animation: y2k-blink-online 1.2s step-end infinite;
+  color: #3a9a50;
+  animation: y2k-pulse-online 3s ease-in-out infinite;
   line-height: 1;
 }
 
 .y2k-online-badge__top {
   font-size: 0.6rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.04em;
-  color: #006000;
+  color: #2a6a38;
 }
 
 /* ── Ticker strip ── */
 .y2k-ticker {
   overflow: hidden;
-  background: #000080;
-  border-top: 2px solid #808080;
-  padding: 2px 0;
+  background: #2a2a2e;
+  border-top: 1px solid #484850;
+  padding: 1px 0;
   white-space: nowrap;
 }
 
 .y2k-ticker__inner {
   display: inline-block;
-  animation: y2k-ticker 28s linear infinite;
+  animation: y2k-ticker 55s linear infinite;
   white-space: nowrap;
 }
 
 .y2k-ticker__text {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: #00ff00;
-  letter-spacing: 0.06em;
+  font-size: 0.58rem;
+  font-weight: 400;
+  color: #b0b8c4;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -269,7 +270,7 @@
     animation: none;
   }
   .y2k-title-bar {
-    background: #000080;
+    background: #1a2a4a;
   }
   .y2k-online-badge__dot {
     opacity: 1;
