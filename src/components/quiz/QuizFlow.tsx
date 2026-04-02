@@ -53,7 +53,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     return (
       <div className="quiz-retro-wrapper">
         <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: '"Comic Sans MS", cursive', color: '#000080', fontWeight: 'bold', marginBottom: 12 }}>
+          <p style={{ fontFamily: '"Comic Neue", "Comic Sans MS", cursive', color: '#000080', fontWeight: 'bold', marginBottom: 12 }}>
             No quiz questions available.
           </p>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
@@ -114,7 +114,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
       return (
         <div className="quiz-retro-wrapper">
           <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
-            <p style={{ fontFamily: '"Comic Sans MS", cursive', color: '#000080', fontWeight: 'bold' }}>
+            <p style={{ fontFamily: '"Comic Neue", "Comic Sans MS", cursive', color: '#000080', fontWeight: 'bold' }}>
               🎉 Quiz Completed!
             </p>
             <button className="quiz-retro-btn" onClick={handleRetake} style={{ marginTop: 10 }}>

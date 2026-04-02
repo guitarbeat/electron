@@ -62,7 +62,7 @@
   align-items: center;
   justify-content: center;
   font-size: 6rem;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-weight: 900;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
@@ -89,7 +89,7 @@
 
 .poster-explore-card__title {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 1.05rem;
   font-weight: 900;
   color: #fff;
@@ -100,14 +100,14 @@
 
 .poster-explore-card__year {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.78rem;
   color: rgba(255, 200, 255, 0.85);
 }
 
 .poster-explore-card__director {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.72rem;
   color: rgba(255, 180, 255, 0.65);
   font-style: italic;
@@ -133,7 +133,7 @@
 }
 
 .poster-explore-header__title {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 1rem;
   font-weight: 900;
   color: #ff88ff;
@@ -145,7 +145,7 @@
 }
 
 .poster-explore-header__count {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.72rem;
   color: rgba(255, 150, 255, 0.65);
   letter-spacing: 0.06em;
@@ -216,7 +216,7 @@
 }
 
 .poster-explore-arrow__text {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.68rem;
   color: rgba(255, 150, 255, 0.75);
   text-transform: uppercase;
@@ -251,7 +251,7 @@
   justify-content: center;
   gap: 1rem;
   color: rgba(255, 150, 255, 0.7);
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   pointer-events: none;
 }
 

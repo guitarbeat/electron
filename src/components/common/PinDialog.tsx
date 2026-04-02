@@ -58,7 +58,7 @@ const styles = {
     letterSpacing: '0.12em',
     textTransform: 'uppercase' as const,
     textShadow: '0 0 12px rgba(200,80,255,0.7), 0 0 24px rgba(255,110,180,0.4)',
-    fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+    fontFamily: '"Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive',
   },
   dot: (filled: boolean, active: boolean, hasError: boolean) => ({
     width: '48px',
@@ -103,7 +103,7 @@ const styles = {
     fontSize: '20px',
     fontWeight: 700,
     color: '#f0d4ff',
-    fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+    fontFamily: '"Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive',
     letterSpacing: '0.02em',
     textShadow: '0 1px 3px rgba(0,0,0,0.4)',
     transition: 'all 0.12s ease',
@@ -149,7 +149,7 @@ const styles = {
     color: active && !loading ? '#fff' : 'rgba(255,255,255,0.25)',
     letterSpacing: '0.14em',
     textTransform: 'uppercase' as const,
-    fontFamily: '"Comic Sans MS", "Chalkboard SE", cursive',
+    fontFamily: '"Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive',
     textShadow: active && !loading ? '0 1px 3px rgba(0,0,0,0.35)' : 'none',
     transition: 'all 0.2s ease',
     outline: 'none',
@@ -177,7 +177,7 @@ const styles = {
     fontWeight: 600,
     textShadow: '0 0 8px rgba(244,63,94,0.4)',
     letterSpacing: '0.04em',
-    fontFamily: '"Comic Sans MS", cursive',
+    fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
   },
 };
 

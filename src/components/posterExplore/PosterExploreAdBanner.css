@@ -79,7 +79,7 @@
 
 .poster-ad-banner__marquee {
   display: inline-block;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.72rem;
   font-weight: bold;
   color: #44ccff;
@@ -139,7 +139,7 @@
 
 .poster-ad-banner__label {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.6rem;
   font-weight: 700;
   color: #66ccff;
@@ -149,7 +149,7 @@
 
 .poster-ad-banner__headline {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(0.7rem, 1.5vw, 0.88rem);
   font-weight: 900;
   color: #44aaff;
@@ -164,7 +164,7 @@
 
 .poster-ad-banner__sub {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(0.58rem, 1.1vw, 0.7rem);
   color: #88ccff;
   letter-spacing: 0.02em;
@@ -180,7 +180,7 @@
 
 .poster-ad-banner__cta {
   display: inline-block;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(0.65rem, 1.2vw, 0.8rem);
   font-weight: 900;
   color: #000d28;

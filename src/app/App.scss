@@ -2889,6 +2889,9 @@ body {
   --font-heading: 'Papyrus', serif;
   --font-sans: var(--font-body);
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
+  /* Retro / lo-fi font — Comic Neue loads from Google Fonts on all platforms,
+     including iOS where Comic Sans MS is unavailable as a system font */
+  --font-retro: 'Comic Neue', 'Comic Sans MS', 'Comic Sans', cursive;
   --font-size-3xs: 0.5625rem;
   --font-size-2xs: 0.625rem;
   --font-size-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem);
