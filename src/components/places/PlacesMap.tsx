@@ -46,6 +46,10 @@ interface PlacesMapProps {
   style?: React.CSSProperties;
 }
 
+export interface PlacesMapHandle {
+  flyTo: (lng: number, lat: number, zoom?: number) => void;
+}
+
 type PinMode = 'assign' | 'new';
 
 interface PendingPin {
@@ -53,7 +57,7 @@ interface PendingPin {
   lat: number;
 }
 
-const PlacesMap: React.FC<PlacesMapProps> = ({
+const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   places,
   canEdit = false,
   searchQuery = '',
@@ -66,7 +70,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   onUpdatePlace,
   onAddPlace,
   style,
-}) => {
+}, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const markersRef = useRef<MapLibreGL.Marker[]>([]);
