@@ -250,7 +250,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
       {isShell ? (
-        <div className="user-selection__shell-layout">
+        <div className={`user-selection__shell-layout${currentUser ? ' user-selection__shell-layout--single' : ''}`}>
           <div
             className={`user-selection__shell-profile-list${currentUser ? ' user-selection__shell-profile-list--single' : ''}`}
             role="group"
