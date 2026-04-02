@@ -62,4 +62,8 @@
   line-height: 1;
 }
 
-/* ── Carousel mode: no overrides needed — carousel is transparent and fits naturally ── */
+/* ── Carousel mode: extra bottom padding so the outer page has room to scroll
+      the ad banners fully out of view above the sticky toggle bar ── */
+.workspace-surface--carousel-mode {
+  padding-bottom: 180px;
+}
