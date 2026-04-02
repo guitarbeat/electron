@@ -76,8 +76,9 @@ export const fetchOmdbMetadata = async (
     throw new Error('OMDb API key not configured');
   }
 
-  const identifier = imdbId || title;
-  const searchUrl = `${OMDB_BASE}?t=${encodeURIComponent(identifier)}&apikey=${OMDB_API_KEY}${type ? `&type=${type}` : ''}`;
+  const searchUrl = imdbId
+    ? `${OMDB_BASE}?i=${encodeURIComponent(imdbId)}&apikey=${OMDB_API_KEY}${type ? `&type=${type}` : ''}`
+    : `${OMDB_BASE}?t=${encodeURIComponent(title)}&apikey=${OMDB_API_KEY}${type ? `&type=${type}` : ''}`;
   
   try {
     const response = await fetch(searchUrl, { 
@@ -98,6 +99,7 @@ export const fetchOmdbMetadata = async (
       title: sanitizeInput(data.Title),
       year: data.Year,
       imdbID: data.imdbID,
+      imdbRating: data.imdbRating && data.imdbRating !== 'N/A' ? data.imdbRating : undefined,
       type: data.Type?.toLowerCase() as 'movie' | 'series',
       poster: normalizePosterUrl(data.Poster),
       plot: stripHtml(data.Plot),
