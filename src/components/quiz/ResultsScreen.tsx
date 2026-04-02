@@ -6,6 +6,7 @@ interface ResultsScreenProps {
   result: QuizResult;
   onContinue: () => void;
   onRetake: () => void;
+  onEdit?: () => void;
   characterDescriptions: Record<QuizCharacter, string>;
   neitherDescription: string;
 }
@@ -32,6 +33,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
   onContinue,
   onRetake,
+  onEdit,
   characterDescriptions,
   neitherDescription,
 }) => {
@@ -167,6 +169,16 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
             >
               🔄 RETAKE QUIZ - GET NEW RESULTS!!!
             </button>
+            {onEdit && (
+              <button
+                className="quiz-retro-btn quiz-retro-btn--secondary"
+                onClick={onEdit}
+                style={{ width: '100%', fontSize: '12px', opacity: 0.85 }}
+                aria-label="Edit quiz questions"
+              >
+                ✏️ EDIT QUIZ QUESTIONS
+              </button>
+            )}
           </div>
         </div>
 

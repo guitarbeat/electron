@@ -44,12 +44,13 @@
   align-self: center;
 }
 
-/* ── Profiles row: two big circles filling full width ── */
+/* ── Profiles row: contains the UserSelection shell ── */
 .shell-control-strip__profiles-row {
   display: flex;
   width: 100%;
 }
 
+/* Desktop: profile list + account-actions in a flat row */
 .shell-control-strip__profiles-row .user-selection,
 .shell-control-strip__profiles-row .user-selection__shell-layout,
 .shell-control-strip__profiles-row .user-selection__shell-profile-list {
@@ -60,7 +61,6 @@
   width: 100%;
   gap: 0;
 }
-
 
 /* ── Ticker strip ── */
 .y2k-ticker {
@@ -86,12 +86,51 @@
   text-transform: uppercase;
 }
 
-/* ── Mobile: scale circles up with viewport width ── */
+/* ── Mobile layout ── */
 @media (max-width: 600px) {
+  /* Grow circles to fill most of the viewport width */
   .shell-control-strip__profiles-row .user-selection__shell-avatar-btn {
-    width: clamp(6rem, 38vw, 9rem);
-    height: clamp(6rem, 38vw, 9rem);
-    flex: 0 0 clamp(6rem, 38vw, 9rem);
+    width: clamp(6rem, 36vw, 8.5rem);
+    height: clamp(6rem, 36vw, 8.5rem);
+    flex: 0 0 clamp(6rem, 36vw, 8.5rem);
+  }
+
+  /* Stack: circles on top, account actions below */
+  .shell-control-strip__profiles-row .user-selection__shell-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Profile list stays as a row, centred */
+  .shell-control-strip__profiles-row .user-selection__shell-profile-list {
+    justify-content: center !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+  }
+
+  /* Reduce the active-circle scale so it doesn't visually crash into the neighbour */
+  .shell-control-strip__profiles-row .user-selection__shell-avatar-btn.is-active {
+    transform: scale(1.08) !important;
+  }
+
+  /* Account actions row: centred and compact below the circles */
+  .shell-control-strip__profiles-row .user-selection__account-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Compact pill buttons for PIN / Log out */
+  .shell-control-strip__profiles-row .user-selection__pin-button {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.7rem !important;
+    min-height: 1.8rem !important;
   }
 }
 
