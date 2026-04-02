@@ -85,6 +85,12 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   const [isSaving, setIsSaving] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  useImperativeHandle(ref, () => ({
+    flyTo: (lng: number, lat: number, zoom = 13) => {
+      mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200 });
+    },
+  }), []);
+
   const unmappedPlaces = places.filter(
     (p) => typeof p.lat !== 'number' || typeof p.lng !== 'number'
   );
