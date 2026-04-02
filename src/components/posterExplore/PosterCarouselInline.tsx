@@ -50,22 +50,55 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
     const viewH = scroller.clientHeight;
     stage.style.height = `${viewH}px`;
 
-    gsap.set(cards, {
-      transformOrigin: '50% 999px -100px',
-      x: '-50%',
-      y: '-45%',
-      z: -500,
-      rotateX: 2,
-      autoAlpha: 1,
-    });
+    // Detect mobile / iOS: the combination of deep z-axis GSAP transforms,
+    // perspective, and backdrop-filter crashes Safari on iPhone.
+    // On those devices we use a flat 2-D fade+slide instead.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+    const useSimpleAnim = isIOS || isSmallScreen;
+
+    let tl: gsap.core.Timeline;
+
+    if (useSimpleAnim) {
+      // Simple 2-D animation: no z-axis, no rotateX, no 3-D transform-origin
+      gsap.set(cards, { x: '-50%', y: '-50%', autoAlpha: 0 });
+
+      tl = gsap.timeline({ paused: true });
+      const staggerOffset = 1;
+      const cardDuration = 2;
+
+      cards.forEach((card, i) => {
+        const start = (cards.length - 1 - i) * staggerOffset;
+        tl.fromTo(
+          card,
+          { autoAlpha: 0, yPercent: 8 },
+          { autoAlpha: 1, yPercent: 0, duration: 0.25, ease: 'power2.out' },
+          start
+        ).to(
+          card,
+          { autoAlpha: 0, yPercent: -8, duration: 0.25, ease: 'power2.in' },
+          start + cardDuration - 0.25
+        );
+      });
+    } else {
+      // Desktop: full 3-D carousel
+      gsap.set(cards, {
+        transformOrigin: '50% 999px -100px',
+        x: '-50%',
+        y: '-45%',
+        z: -500,
+        rotateX: 2,
+        autoAlpha: 1,
+      });
+
+      tl = gsap
+        .timeline({ defaults: { duration: 2 }, paused: true })
+        .to(cards, { z: 10, rotateX: -3, stagger: -1 }, 0)
+        .to(cards, { yPercent: 100, stagger: -1, ease: 'back.in(2)' }, 0)
+        .to(cards, { duration: 0.1, autoAlpha: 0, stagger: -1 }, 1.9);
+    }
 
     gsap.to(stage, { duration: 0.4, opacity: 1, ease: 'power2.inOut' });
-
-    const tl = gsap
-      .timeline({ defaults: { duration: 2 }, paused: true })
-      .to(cards, { z: 10, rotateX: -3, stagger: -1 }, 0)
-      .to(cards, { yPercent: 100, stagger: -1, ease: 'back.in(2)' }, 0)
-      .to(cards, { duration: 0.1, autoAlpha: 0, stagger: -1 }, 1.9);
 
     ScrollTrigger.scrollerProxy(scroller, {
       scrollTop(value?: number) {
