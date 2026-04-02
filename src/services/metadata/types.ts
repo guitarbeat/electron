@@ -20,6 +20,7 @@ export interface MovieMetadata {
   title: string;
   year?: string;
   imdbID?: string;
+  imdbRating?: string;
   type: 'movie' | 'series';
   poster?: string;
   plot?: string;

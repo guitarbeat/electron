@@ -510,8 +510,8 @@ function MagicComponent({
         const pageX = e.x === undefined ? e.pageX : e.x;
         const pageY = e.y === undefined ? e.pageY : e.y;
 
-        const x = touchX || pageX;
-        const y = touchY || pageY;
+        const x = touchX ?? pageX;
+        const y = touchY ?? pageY;
 
         state.mouse.set(
           (x / state.gl.renderer.width) * 2 - 1,

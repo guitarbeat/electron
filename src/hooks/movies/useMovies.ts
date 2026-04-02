@@ -16,12 +16,12 @@ import { useCollection } from '../useCollection';
 const POLLING_INTERVAL = 15000;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
-  const { poster, year, plot, imdbID, runtime, genre, director } = metadata;
+  const { poster, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
   if (poster && isValidUrl(poster)) result.posterUrl = poster;
   if (year) result.year = year;
   if (plot) result.plot = sanitizeInput(plot);
-  if (imdbID) result.imdbRating = imdbID;
+  if (imdbRating) result.imdbRating = imdbRating;
   if (runtime) result.runtime = runtime;
   if (genre && Array.isArray(genre)) result.genre = sanitizeInput(genre.join(', '));
   if (director) result.director = sanitizeInput(director);
