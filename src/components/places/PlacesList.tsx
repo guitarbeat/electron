@@ -331,10 +331,16 @@ const PlacesList: React.FC = () => {
                 {sections.queue.map((place) => (
                   <div
                     key={place.id}
+                    onClick={() => {
+                      if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+                        mapRef.current?.flyTo(place.lng, place.lat);
+                      }
+                    }}
                     style={{
                       flex: '0 0 auto',
                       width: 140,
                       scrollSnapAlign: 'start',
+                      cursor: typeof place.lat === 'number' ? 'pointer' : undefined,
                     }}
                   >
                     <PlaceCard
@@ -373,10 +379,16 @@ const PlacesList: React.FC = () => {
                 {sections.visited.map((place) => (
                   <div
                     key={place.id}
+                    onClick={() => {
+                      if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+                        mapRef.current?.flyTo(place.lng, place.lat);
+                      }
+                    }}
                     style={{
                       flex: '0 0 auto',
                       width: 140,
                       scrollSnapAlign: 'start',
+                      cursor: typeof place.lat === 'number' ? 'pointer' : undefined,
                     }}
                   >
                     <PlaceCard
