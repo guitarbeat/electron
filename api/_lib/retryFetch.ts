@@ -10,6 +10,7 @@ const DEFAULT_TIMEOUT_MS = 15000;
 interface FetchResponse {
   ok: boolean;
   status: number;
+  statusText: string;
   headers: { get(name: string): string | null };
   json(): Promise<unknown>;
   text(): Promise<string>;
@@ -69,6 +70,7 @@ const nodeFetch = (
           resolve({
             ok: status >= 200 && status < 300,
             status,
+            statusText: res.statusMessage ?? '',
             headers: {
               get(name: string): string | null {
                 const val = rawResponseHeaders[name.toLowerCase()];

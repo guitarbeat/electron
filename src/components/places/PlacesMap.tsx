@@ -298,7 +298,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
         onDrop={handleDrop}
         style={{
           width: '100%',
-          height: 'clamp(360px, 52vh, 580px)',
+          height: '100%',
           borderRadius: radius.xl,
           overflow: 'hidden',
           border: isDragOver
