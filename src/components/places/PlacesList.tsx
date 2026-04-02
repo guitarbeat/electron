@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
@@ -6,7 +6,7 @@ import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import { colors, spacing, radius, typography, motion } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
-import PlacesMap from './PlacesMap.tsx';
+import PlacesMap, { type PlacesMapHandle } from './PlacesMap.tsx';
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
@@ -20,6 +20,7 @@ const glassStyle: React.CSSProperties = {
 };
 
 const PlacesList: React.FC = () => {
+  const mapRef = useRef<PlacesMapHandle>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
@@ -191,6 +192,7 @@ const PlacesList: React.FC = () => {
 
       {/* Full-height map */}
       <PlacesMap
+        ref={mapRef}
         places={places}
         canEdit={Boolean(currentUser)}
         searchQuery={searchQuery}
@@ -329,10 +331,16 @@ const PlacesList: React.FC = () => {
                 {sections.queue.map((place) => (
                   <div
                     key={place.id}
+                    onClick={() => {
+                      if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+                        mapRef.current?.flyTo(place.lng, place.lat);
+                      }
+                    }}
                     style={{
                       flex: '0 0 auto',
                       width: 140,
                       scrollSnapAlign: 'start',
+                      cursor: typeof place.lat === 'number' ? 'pointer' : undefined,
                     }}
                   >
                     <PlaceCard
@@ -371,10 +379,16 @@ const PlacesList: React.FC = () => {
                 {sections.visited.map((place) => (
                   <div
                     key={place.id}
+                    onClick={() => {
+                      if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+                        mapRef.current?.flyTo(place.lng, place.lat);
+                      }
+                    }}
                     style={{
                       flex: '0 0 auto',
                       width: 140,
                       scrollSnapAlign: 'start',
+                      cursor: typeof place.lat === 'number' ? 'pointer' : undefined,
                     }}
                   >
                     <PlaceCard
