@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
@@ -46,6 +46,10 @@ interface PlacesMapProps {
   style?: React.CSSProperties;
 }
 
+export interface PlacesMapHandle {
+  flyTo: (lng: number, lat: number, zoom?: number) => void;
+}
+
 type PinMode = 'assign' | 'new';
 
 interface PendingPin {
@@ -53,7 +57,7 @@ interface PendingPin {
   lat: number;
 }
 
-const PlacesMap: React.FC<PlacesMapProps> = ({
+const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   places,
   canEdit = false,
   searchQuery = '',
@@ -66,7 +70,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   onUpdatePlace,
   onAddPlace,
   style,
-}) => {
+}, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const markersRef = useRef<MapLibreGL.Marker[]>([]);
@@ -80,6 +84,12 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   const [newPlaceName, setNewPlaceName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    flyTo: (lng: number, lat: number, zoom = 13) => {
+      mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200 });
+    },
+  }), []);
 
   const unmappedPlaces = places.filter(
     (p) => typeof p.lat !== 'number' || typeof p.lng !== 'number'
@@ -614,6 +624,6 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default PlacesMap;
