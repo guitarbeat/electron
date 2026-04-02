@@ -71,12 +71,11 @@ class PollingManager {
       if (listeners.size === 0) {
         this.stopPolling(key);
         this.subscribers.delete(key);
-        // Clear cache on last unsubscribe to ensure freshness on next mount
-        this.cache.delete(key);
-        this.errors.delete(key);
         this.fetchFns.delete(key);
         this.inFlight.delete(key);
         this.options.delete(key);
+        // Keep cache and errors so remounting components (e.g. tab switches)
+        // get instant data on re-subscribe; a fresh fetch fires immediately anyway.
       }
     }
   }
