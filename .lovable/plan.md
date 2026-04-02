@@ -1,41 +1,33 @@
 
 
-## Build Error Fix Plan
+## Plan: Bigger Map with Overlaid Place Cards + Build Fix
 
-The preview fails due to 10+ TypeScript errors across multiple files. Here is each fix:
+### Build Fix
+The `FetchResponse` interface in `api/_lib/retryFetch.ts` is missing `statusText`. Both `api/omdb.ts` and `api/tvmaze.ts` reference it. Fix: add `statusText: string` to the `FetchResponse` interface and include it in the `nodeFetch` response object (from `res.statusMessage`).
 
-### 1. `src/hooks/index.ts` — Remove missing `useModal` export
-Line 7 exports `./useModal` which doesn't exist. Remove that line.
+### Layout Redesign: Map-First with Overlaid Cards
 
-### 2. `src/hooks/useQuiz.ts` — Fix re-export path
-Line 16: `export type { QuizData } from '@/services/stateTypes'` should be `'@/services/state/stateTypes'`.
+Currently the Places tab shows: map at top, then card grids below in a vertical scroll. The new layout makes the map fill the entire workspace height, with place cards overlaid as a scrollable tray at the bottom of the map.
 
-### 3. `src/hooks/places/usePlaceSuggestions.ts` — Fix relative import
-Line 3: `'../shared/types.ts'` should be `'@/shared/types'` (the relative path is wrong from hooks/places/).
+**Changes to `PlacesMap.tsx`:**
+- Increase map height from `clamp(360px, 52vh, 580px)` to `100%` (fills parent).
 
-### 4. `src/app/buildMinigameModals.tsx` — Add missing `title` to messages modal
-The `messages` modal config (line ~65) is missing `title: 'Messages'`.
+**Changes to `PlacesList.tsx`:**
+- Make the outer container fill the workspace (`height: 100%; position: relative; overflow: hidden`).
+- Remove the separate card sections below the map.
+- Instead, render place cards as an overlay panel inside the map container: a horizontally-scrollable row pinned to the bottom of the map area, with glass-morphism background.
+- The overlay tray shows all places (to-try, visited, pinned) as compact cards. Tapping a pinned card flies the map to that location.
+- Suggestions banner stays above the map if present.
+- The SyncBanner stays at the top.
 
-### 5. `src/components/matchmaker/matchmakerGame.ts` — Fix shuffleArray call
-Line 76: `shuffleArray(arr, randomSource)` passes 2 args but the imported `shuffleArray` only accepts 1. Remove the `randomSource` parameter from `createMatchmakerPool` signature and the second argument from the call.
+**Overlay tray design:**
+- Position: absolute, bottom 0, full width, z-index above map but below pin panel.
+- Horizontal scroll with snap, showing PlaceCard components at a smaller fixed width (~140px).
+- Semi-transparent glass background matching the existing `glassStyle`.
+- Drag handle at top to collapse/expand (optional, keep simple for now).
 
-### 6. `src/components/watchlist/WatchlistTopControls.tsx` — Fix `posterUrl` → `poster`
-Lines 428/430: Change `result.posterUrl` to `result.poster` to match `MovieAutocompleteResult`.
-
-### 7. `src/services/metadata/omdb.ts` — Add types to `.map` callbacks
-Lines 105-106: Add `: string` type annotation to `actor` and `genre` parameters.
-
-### 8. `src/services/content/pinHelpers.ts` — Fix type assertion in `isUserPinsRecord`
-Line 29-30: Cast `value` as `Record<string, unknown>` to fix index signature error.
-
-### 9. Test file import fixes (4 files)
-These test files use `.ts` extensions in imports that fail resolution:
-- `src/api/spinWheelState.test.ts`: Change `'../services/stateSchemas.ts'` → `'../services/state/stateSchemas'`, add type to `entry` param
-- `src/services/messageService.test.ts`: `'./messageService.ts'` → `'./content/messageService'`
-- `src/services/metadataService.test.ts`: `'./metadataService.ts'` → `'./metadata/metadataService'`, type the `result` param
-- `src/services/stateClient.test.ts`: `'./stateClient.ts'` → `'./state/stateClient'`
-- `src/services/stateSchemas.test.ts`: `'./stateSchemas.ts'` → `'./state/stateSchemas'`
-
-### Technical Details
-All changes are single-line or few-line fixes. No architectural changes. No removal of Vercel or Replit code.
+**Files to modify:**
+1. `api/_lib/retryFetch.ts` — add `statusText` to `FetchResponse`
+2. `src/components/places/PlacesList.tsx` — restructure layout: map fills container, cards overlay at bottom
+3. `src/components/places/PlacesMap.tsx` — accept `height: 100%`, remove fixed clamp height
 
