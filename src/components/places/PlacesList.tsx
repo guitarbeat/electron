@@ -20,6 +20,7 @@ const glassStyle: React.CSSProperties = {
 };
 
 const PlacesList: React.FC = () => {
+  const mapRef = useRef<PlacesMapHandle>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
@@ -191,6 +192,7 @@ const PlacesList: React.FC = () => {
 
       {/* Full-height map */}
       <PlacesMap
+        ref={mapRef}
         places={places}
         canEdit={Boolean(currentUser)}
         searchQuery={searchQuery}
