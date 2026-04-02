@@ -3,9 +3,8 @@ import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
-import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
 import SyncBanner from '../ui/SyncBanner.tsx';
-import { colors, spacing, typography } from '../../theme/tokens.ts';
+import { colors, spacing, radius, typography, motion } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import PlacesMap from './PlacesMap.tsx';
 import PlaceCard from './PlaceCard.tsx';
@@ -13,6 +12,12 @@ import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
 import { buildPlaceSections } from './placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
+
+const glassStyle: React.CSSProperties = {
+  background: 'rgba(18, 11, 6, 0.72)',
+  backdropFilter: 'blur(14px)',
+  WebkitBackdropFilter: 'blur(14px)',
+};
 
 const PlacesList: React.FC = () => {
   const { currentUser } = useUser();
@@ -52,14 +57,11 @@ const PlacesList: React.FC = () => {
   const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
 
   const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
-  const placesSummary = useMemo(
-    () => ({
-      toTry: sections.queue.length,
-      pinned: places.filter((place: Place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
-      visited: sections.visited.length,
-      pendingSuggestions: sections.suggestions.length,
-    }),
-    [places, sections.queue.length, sections.suggestions.length, sections.visited.length]
+
+  // All places combined for the overlay tray
+  const allPlaces = useMemo(
+    () => [...sections.queue, ...sections.visited],
+    [sections.queue, sections.visited]
   );
 
   const handleAcceptSuggestion = useCallback(
@@ -103,18 +105,13 @@ const PlacesList: React.FC = () => {
 
   const handleAddAction = useCallback(async () => {
     const query = searchQuery.trim();
-    if (!query || isAdding) {
-      return;
-    }
-
+    if (!query || isAdding) return;
     if (!currentUser) {
       showToast({ message: 'Pick Aaron or Electra to edit shared places.', type: 'info' });
       return;
     }
-
     setIsAdding(true);
     setSuggestionError(null);
-
     try {
       await addPlace(query);
       setSearchQuery('');
@@ -129,18 +126,13 @@ const PlacesList: React.FC = () => {
 
   const handleSuggestAction = useCallback(async () => {
     const query = searchQuery.trim();
-    if (!query || isSuggesting) {
-      return;
-    }
-
+    if (!query || isSuggesting) return;
     if (!currentUser) {
       showToast({ message: 'Pick Aaron or Electra to suggest places.', type: 'info' });
       return;
     }
-
     setIsSuggesting(true);
     setSuggestionError(null);
-
     try {
       await addPlaceSuggestion(query);
       setSearchQuery('');
@@ -154,10 +146,7 @@ const PlacesList: React.FC = () => {
   }, [addPlaceSuggestion, currentUser, isSuggesting, searchQuery, showToast]);
 
   const confirmDelete = useCallback(async () => {
-    if (!placeToDelete) {
-      return;
-    }
-
+    if (!placeToDelete) return;
     const deleted = placeToDelete;
     try {
       await removePlace(deleted.id);
@@ -169,188 +158,243 @@ const PlacesList: React.FC = () => {
     }
   }, [placeToDelete, removePlace, showToast]);
 
-  const renderPlaceSection = useCallback(
-    ({
-      title,
-      placesToRender,
-      emptyState,
-    }: {
-      title: string;
-      placesToRender: Place[];
-      emptyState: string;
-    }) => (
-      <section
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
-        }}
-      >
+  return (
+    <div
+      className="places-container"
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        minHeight: '70vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        borderRadius: radius.xl,
+      }}
+    >
+      {/* Sync banner at top */}
+      {(isDegraded || isSuggestionsDegraded) && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30 }}>
+          <SyncBanner
+            isBlocked={isSyncBlocked || isSuggestionsSyncBlocked}
+            onRetry={async () => {
+              await Promise.all([retrySync(), retrySuggestionsSync()]);
+            }}
+            label={
+              isSyncBlocked || isSuggestionsSyncBlocked
+                ? 'A shared places update conflicted with local edits. Refresh and retry.'
+                : syncWarning || suggestionsSyncWarning || 'Places changes are being kept locally until shared sync recovers.'
+            }
+          />
+        </div>
+      )}
+
+      {/* Full-height map */}
+      <PlacesMap
+        places={places}
+        canEdit={Boolean(currentUser)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmitSearch={handleAddAction}
+        onSuggestPlace={handleSuggestAction}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+        onUpdatePlace={updatePlace}
+        onAddPlace={addPlace}
+        style={{ flex: 1, minHeight: 0 }}
+      />
+
+      {/* Suggestions banner */}
+      {sections.suggestions.length > 0 && (
         <div
           style={{
+            position: 'absolute',
+            top: 56,
+            left: spacing.md,
+            right: spacing.md,
+            zIndex: 15,
+            ...glassStyle,
+            borderRadius: radius.lg,
+            border: `1px solid ${colors.border}`,
+            padding: spacing.sm,
             display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
-            gap: spacing.sm,
-            paddingInline: spacing.xs,
+            flexDirection: 'column',
+            gap: spacing.xs,
+            maxHeight: '30vh',
+            overflowY: 'auto',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-            <span style={{ ...typography.presets.eyebrow, color: colors.accentLight }}>
-              {title}
-            </span>
-            <h2
-              style={{
-                margin: 0,
-                color: colors.textPrimary,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.xl,
-                lineHeight: typography.lineHeight.snug,
-              }}
-            >
-              {placesToRender.length} {placesToRender.length === 1 ? 'place' : 'places'}
-            </h2>
+          <span style={{ ...typography.presets.eyebrow, color: colors.accentLight, fontSize: typography.fontSize['2xs'] }}>
+            {sections.suggestions.length} suggestion{sections.suggestions.length === 1 ? '' : 's'} pending
+          </span>
+          <div style={{ display: 'flex', gap: spacing.sm, overflowX: 'auto', paddingBottom: spacing.xs }}>
+            {sections.suggestions.map((suggestion) => (
+              <div key={suggestion.id} style={{ flex: '0 0 auto', width: 180 }}>
+                <PlaceSuggestionCard
+                  suggestion={suggestion}
+                  onAccept={() => handleAcceptSuggestion(suggestion)}
+                  onReject={() => handleRejectSuggestion(suggestion.id, suggestion.name)}
+                  canRespond={Boolean(currentUser)}
+                  isProcessing={processingSuggestionId === suggestion.id}
+                />
+              </div>
+            ))}
           </div>
         </div>
-        <CollectionGrid
-          className="places-grid"
-          minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
-          style={{ gap: spacing.lg }}
-        >
-          {placesToRender.length > 0 ? (
-            placesToRender.map((place) => (
-              <PlaceCard
-                key={place.id}
-                place={place}
-                canEdit={Boolean(currentUser)}
-                isSubmitting={isSubmitting}
-                onMarkVisited={markVisited}
-                onMarkUnvisited={markUnvisited}
-                onDelete={setPlaceToDelete}
-                onEdit={setPlaceToEdit}
-              />
-            ))
-          ) : (
-            <CollectionEmptyState>{emptyState}</CollectionEmptyState>
-          )}
-        </CollectionGrid>
-      </section>
-    ),
-    [currentUser, isSubmitting, markUnvisited, markVisited]
-  );
+      )}
 
-  const renderSuggestionSection = useCallback(
-    (suggestionsToRender: PlaceSuggestion[]) => (
-      <section
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
-        }}
-      >
+      {/* Overlaid card tray at bottom */}
+      {isLoading && places.length === 0 ? (
         <div
           style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 15,
+            ...glassStyle,
+            borderTop: `1px solid ${colors.border}`,
+            padding: `${spacing.sm} ${spacing.md}`,
             display: 'flex',
-            alignItems: 'baseline',
-            gap: spacing.sm,
-            paddingInline: spacing.xs,
+            gap: spacing.md,
+            overflowX: 'auto',
           }}
         >
-          <span style={{ ...typography.presets.eyebrow, color: colors.accentLight }}>
-            Pending Suggestions
-          </span>
-          <span style={{ ...typography.presets.caption, color: colors.textTertiary }}>
-            {suggestionsToRender.length}
-          </span>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} style={{ flex: '0 0 auto', width: 140 }}>
+              <MovieCardSkeleton />
+            </div>
+          ))}
         </div>
-        <CollectionGrid
-          className="places-grid"
-          minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
-          style={{ gap: spacing.lg }}
+      ) : allPlaces.length > 0 ? (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 15,
+            ...glassStyle,
+            borderTop: `1px solid ${colors.border}`,
+            padding: `${spacing.sm} ${spacing.md} ${spacing.md}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.xs,
+          }}
         >
-          {suggestionsToRender.map((suggestion) => (
-            <PlaceSuggestionCard
-              key={suggestion.id}
-              suggestion={suggestion}
-              onAccept={() => handleAcceptSuggestion(suggestion)}
-              onReject={() => handleRejectSuggestion(suggestion.id, suggestion.name)}
-              canRespond={Boolean(currentUser)}
-              isProcessing={processingSuggestionId === suggestion.id}
+          {/* Drag handle */}
+          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: spacing.xs }}>
+            <div
+              style={{
+                width: 32,
+                height: 4,
+                borderRadius: 2,
+                background: colors.textTertiary,
+                opacity: 0.4,
+              }}
             />
-          ))}
-        </CollectionGrid>
-      </section>
-    ),
-    [currentUser, handleAcceptSuggestion, handleRejectSuggestion, processingSuggestionId]
-  );
+          </div>
 
-  return (
-    <div className="places-container" style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
-      {(isDegraded || isSuggestionsDegraded) && (
-        <SyncBanner
-          isBlocked={isSyncBlocked || isSuggestionsSyncBlocked}
-          onRetry={async () => {
-            await Promise.all([retrySync(), retrySuggestionsSync()]);
-          }}
-          label={
-            isSyncBlocked || isSuggestionsSyncBlocked
-              ? 'A shared places update conflicted with local edits. Refresh and retry.'
-              : syncWarning || suggestionsSyncWarning || 'Places changes are being kept locally until shared sync recovers.'
-          }
-        />
-      )}
+          {/* Section labels + scrollable cards */}
+          <div
+            style={{
+              display: 'flex',
+              gap: spacing.md,
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              paddingBottom: spacing.xs,
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {sections.queue.length > 0 && (
+              <>
+                <div
+                  style={{
+                    flex: '0 0 auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
+                    transform: 'rotate(180deg)',
+                    ...typography.presets.eyebrow,
+                    color: colors.accentLight,
+                    fontSize: typography.fontSize['2xs'],
+                    letterSpacing: '0.08em',
+                    paddingRight: spacing.xs,
+                  }}
+                >
+                  TO TRY
+                </div>
+                {sections.queue.map((place) => (
+                  <div
+                    key={place.id}
+                    style={{
+                      flex: '0 0 auto',
+                      width: 140,
+                      scrollSnapAlign: 'start',
+                    }}
+                  >
+                    <PlaceCard
+                      place={place}
+                      canEdit={Boolean(currentUser)}
+                      isSubmitting={isSubmitting}
+                      onMarkVisited={markVisited}
+                      onMarkUnvisited={markUnvisited}
+                      onDelete={setPlaceToDelete}
+                      onEdit={setPlaceToEdit}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
 
-      <div className="places-map-shell">
-        <div className="places-overview">
-          {placesSummary.pendingSuggestions > 0 && (
-            <span className="places-overview__badge">
-              {placesSummary.pendingSuggestions} suggestion{placesSummary.pendingSuggestions === 1 ? '' : 's'} waiting
-            </span>
-          )}
-
+            {sections.visited.length > 0 && (
+              <>
+                <div
+                  style={{
+                    flex: '0 0 auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
+                    transform: 'rotate(180deg)',
+                    ...typography.presets.eyebrow,
+                    color: colors.textTertiary,
+                    fontSize: typography.fontSize['2xs'],
+                    letterSpacing: '0.08em',
+                    paddingRight: spacing.xs,
+                  }}
+                >
+                  VISITED
+                </div>
+                {sections.visited.map((place) => (
+                  <div
+                    key={place.id}
+                    style={{
+                      flex: '0 0 auto',
+                      width: 140,
+                      scrollSnapAlign: 'start',
+                    }}
+                  >
+                    <PlaceCard
+                      place={place}
+                      canEdit={Boolean(currentUser)}
+                      isSubmitting={isSubmitting}
+                      onMarkVisited={markVisited}
+                      onMarkUnvisited={markUnvisited}
+                      onDelete={setPlaceToDelete}
+                      onEdit={setPlaceToEdit}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
         </div>
+      ) : null}
 
-        <PlacesMap
-          places={places}
-          canEdit={Boolean(currentUser)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSubmitSearch={handleAddAction}
-          onSuggestPlace={handleSuggestAction}
-          isAdding={isAdding}
-          isSuggesting={isSuggesting}
-          suggestionError={suggestionError}
-          onUpdatePlace={updatePlace}
-          onAddPlace={addPlace}
-        />
-      </div>
-
-      {isLoading && places.length === 0 ? (
-        <CollectionGrid
-          className="places-grid"
-          minColumnWidth="clamp(12rem, 26vw, 16.5rem)"
-          style={{ gap: spacing.lg }}
-        >
-          {[1, 2, 3, 4, 5, 6].map((index) => (
-            <MovieCardSkeleton key={index} />
-          ))}
-        </CollectionGrid>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
-          {sections.suggestions.length > 0 && renderSuggestionSection(sections.suggestions)}
-          {renderPlaceSection({
-            title: 'To try',
-            placesToRender: sections.queue,
-            emptyState: 'No places saved to try yet',
-          })}
-          {renderPlaceSection({
-            title: 'Visited',
-            placesToRender: sections.visited,
-            emptyState: 'No visited places yet',
-          })}
-        </div>
-      )}
-
+      {/* Modals */}
       {placeToDelete && (
         <ConfirmDialog
           isOpen={Boolean(placeToDelete)}
