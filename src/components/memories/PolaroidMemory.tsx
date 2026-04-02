@@ -91,7 +91,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
             fontWeight: 800,
             color: '#1a1a2e',
             marginBottom: '4px',
-            fontFamily: '"Comic Sans MS", cursive, sans-serif',
+            fontFamily: '"Comic Neue", "Comic Sans MS", cursive, sans-serif',
           }}
         >
           {memory.movieTitle}

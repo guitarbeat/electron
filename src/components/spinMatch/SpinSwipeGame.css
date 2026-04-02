@@ -58,7 +58,7 @@
 
 .spin-game-ad-header__marquee {
   display: inline-block;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.68rem;
   font-weight: bold;
   color: #ff0;
@@ -84,7 +84,7 @@
 
 .spin-game-ad-header__title {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(0.75rem, 1.6vw, 0.95rem);
   font-weight: 900;
   color: #ff0;
@@ -96,7 +96,7 @@
 
 .spin-game-ad-header__sub {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-retro);
   font-size: 0.6rem;
   color: #0ff;
   text-align: center;
@@ -110,7 +110,7 @@
 }
 
 .spin-result-retro__win-label {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  font-family: var(--font-retro) !important;
   font-size: 0.85rem !important;
   font-weight: 900 !important;
   color: #ff0 !important;
