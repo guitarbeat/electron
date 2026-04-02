@@ -131,6 +131,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
           result={quizResult}
           onContinue={onComplete}
           onRetake={handleRetake}
+          onEdit={onEdit}
           characterDescriptions={quizData.characterDescriptions}
           neitherDescription={quizData.neitherDescription}
         />
