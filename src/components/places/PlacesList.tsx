@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
@@ -6,7 +6,7 @@ import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import { colors, spacing, radius, typography, motion } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
-import PlacesMap from './PlacesMap.tsx';
+import PlacesMap, { type PlacesMapHandle } from './PlacesMap.tsx';
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
