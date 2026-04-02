@@ -618,6 +618,6 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
       )}
     </div>
   );
-};
+});
 
 export default PlacesMap;
