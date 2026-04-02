@@ -47,9 +47,11 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
               <div className="ad-banners-row__item">
                 <QuizAdBanner onOpen={onOpenQuiz} quizCompleted={quizCompleted} />
               </div>
-              <div className="ad-banners-row__item">
-                <SpinAdBanner onOpen={onOpenSpin} />
-              </div>
+              {viewMode !== 'carousel' && (
+                <div className="ad-banners-row__item">
+                  <SpinAdBanner onOpen={onOpenSpin} />
+                </div>
+              )}
             </div>
 
             <div className="view-toggle-bar">
