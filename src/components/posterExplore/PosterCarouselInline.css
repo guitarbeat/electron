@@ -19,6 +19,7 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   position: relative;
+  overscroll-behavior: contain;
 }
 .pci-scroller::-webkit-scrollbar {
   display: none;
