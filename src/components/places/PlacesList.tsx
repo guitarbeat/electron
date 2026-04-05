@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/providers';
 import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
@@ -21,6 +21,7 @@ const glassStyle: React.CSSProperties = {
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
+  const trayScrollRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
@@ -57,13 +58,35 @@ const PlacesList: React.FC = () => {
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
   const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
 
+  // Collapsible tray
+  const [trayExpanded, setTrayExpanded] = useState(true);
+
+  // Active card highlight
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
 
-  // All places combined for the overlay tray
   const allPlaces = useMemo(
     () => [...sections.queue, ...sections.visited],
     [sections.queue, sections.visited]
   );
+
+  const handleCardTap = useCallback((place: Place) => {
+    if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+      mapRef.current?.flyTo(place.lng, place.lat);
+    }
+    // Set active highlight
+    clearTimeout(activeTimerRef.current);
+    setActiveCardId(place.id);
+    activeTimerRef.current = setTimeout(() => setActiveCardId(null), 2500);
+
+    // Scroll card into view
+    const el = document.getElementById(`place-card-${place.id}`);
+    el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, []);
+
+  useEffect(() => () => clearTimeout(activeTimerRef.current), []);
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
@@ -159,6 +182,9 @@ const PlacesList: React.FC = () => {
     }
   }, [placeToDelete, removePlace, showToast]);
 
+  const hasPlaces = allPlaces.length > 0;
+  const showEmptyState = !isLoading && !hasPlaces;
+
   return (
     <div
       className="places-container"
@@ -166,7 +192,7 @@ const PlacesList: React.FC = () => {
         position: 'relative',
         width: '100%',
         height: '100%',
-        minHeight: '70vh',
+        minHeight: '75vh',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -246,66 +272,134 @@ const PlacesList: React.FC = () => {
         </div>
       )}
 
-      {/* Overlaid card tray at bottom */}
-      {isLoading && places.length === 0 ? (
+      {/* Empty state overlay */}
+      {showEmptyState && (
         <div
           style={{
             position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 15,
-            ...glassStyle,
-            borderTop: `1px solid ${colors.border}`,
-            padding: `${spacing.sm} ${spacing.md}`,
+            inset: 0,
+            zIndex: 12,
             display: 'flex',
-            gap: spacing.md,
-            overflowX: 'auto',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
           }}
         >
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} style={{ flex: '0 0 auto', width: 140 }}>
-              <MovieCardSkeleton />
-            </div>
-          ))}
-        </div>
-      ) : allPlaces.length > 0 ? (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 15,
-            ...glassStyle,
-            borderTop: `1px solid ${colors.border}`,
-            padding: `${spacing.sm} ${spacing.md} ${spacing.md}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.xs,
-          }}
-        >
-          {/* Drag handle */}
-          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: spacing.xs }}>
-            <div
-              style={{
-                width: 32,
-                height: 4,
-                borderRadius: 2,
-                background: colors.textTertiary,
-                opacity: 0.4,
-              }}
-            />
-          </div>
-
-          {/* Section labels + scrollable cards */}
           <div
+            style={{
+              ...glassStyle,
+              borderRadius: radius.xl,
+              border: `1px solid ${colors.border}`,
+              padding: `${spacing.xl} ${spacing['2xl']}`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: spacing.sm,
+              pointerEvents: 'auto',
+              textAlign: 'center',
+              maxWidth: 280,
+              animation: 'places-empty-fade-in 0.6s ease-out',
+            }}
+          >
+            <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
+            <span style={{
+              fontFamily: typography.fontFamily.heading.join(', '),
+              fontSize: typography.fontSize.lg,
+              color: colors.textPrimary,
+              letterSpacing: '0.02em',
+            }}>
+              No places yet
+            </span>
+            <span style={{
+              ...typography.presets.bodySm,
+              color: colors.textTertiary,
+            }}>
+              Search above to add your first spot
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Overlaid card tray at bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 15,
+          ...glassStyle,
+          borderTop: `1px solid ${colors.border}`,
+          transition: `max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)`,
+          maxHeight: trayExpanded ? '220px' : '28px',
+          overflow: 'hidden',
+          display: (isLoading && places.length === 0) || hasPlaces ? 'flex' : 'none',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Drag handle / toggle */}
+        <button
+          onClick={() => setTrayExpanded((v) => !v)}
+          aria-label={trayExpanded ? 'Collapse card tray' : 'Expand card tray'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: spacing.xs,
+            padding: `6px ${spacing.md}`,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 32,
+              height: 4,
+              borderRadius: 2,
+              background: colors.textTertiary,
+              opacity: 0.5,
+              transition: `opacity ${motion.duration.fast}`,
+            }}
+          />
+          <span style={{
+            fontSize: typography.fontSize['3xs'],
+            color: colors.textTertiary,
+            fontFamily: typography.fontFamily.heading.join(', '),
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase' as const,
+            opacity: 0.6,
+          }}>
+            {trayExpanded ? '▾' : `▴ ${allPlaces.length} places`}
+          </span>
+        </button>
+
+        {/* Card scroll area */}
+        {isLoading && places.length === 0 ? (
+          <div
+            style={{
+              padding: `0 ${spacing.md} ${spacing.md}`,
+              display: 'flex',
+              gap: spacing.md,
+              overflowX: 'auto',
+            }}
+          >
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} style={{ flex: '0 0 auto', width: 140 }}>
+                <MovieCardSkeleton />
+              </div>
+            ))}
+          </div>
+        ) : hasPlaces ? (
+          <div
+            ref={trayScrollRef}
             style={{
               display: 'flex',
               gap: spacing.md,
               overflowX: 'auto',
               scrollSnapType: 'x mandatory',
-              paddingBottom: spacing.xs,
+              padding: `0 ${spacing.md} ${spacing.md}`,
               WebkitOverflowScrolling: 'touch',
             }}
           >
@@ -328,25 +422,24 @@ const PlacesList: React.FC = () => {
                 >
                   TO TRY
                 </div>
-                {sections.queue.map((place) => (
+                {sections.queue.map((place, i) => (
                   <div
                     key={place.id}
-                    onClick={() => {
-                      if (typeof place.lat === 'number' && typeof place.lng === 'number') {
-                        mapRef.current?.flyTo(place.lng, place.lat);
-                      }
-                    }}
+                    id={`place-card-${place.id}`}
+                    onClick={() => handleCardTap(place)}
                     style={{
                       flex: '0 0 auto',
                       width: 140,
                       scrollSnapAlign: 'start',
-                      cursor: typeof place.lat === 'number' ? 'pointer' : undefined,
+                      cursor: 'pointer',
+                      animation: `place-card-stagger-in 0.3s ease-out ${i * 0.05}s both`,
                     }}
                   >
                     <PlaceCard
                       place={place}
                       canEdit={Boolean(currentUser)}
                       isSubmitting={isSubmitting}
+                      isActive={activeCardId === place.id}
                       onMarkVisited={markVisited}
                       onMarkUnvisited={markUnvisited}
                       onDelete={setPlaceToDelete}
@@ -376,25 +469,24 @@ const PlacesList: React.FC = () => {
                 >
                   VISITED
                 </div>
-                {sections.visited.map((place) => (
+                {sections.visited.map((place, i) => (
                   <div
                     key={place.id}
-                    onClick={() => {
-                      if (typeof place.lat === 'number' && typeof place.lng === 'number') {
-                        mapRef.current?.flyTo(place.lng, place.lat);
-                      }
-                    }}
+                    id={`place-card-${place.id}`}
+                    onClick={() => handleCardTap(place)}
                     style={{
                       flex: '0 0 auto',
                       width: 140,
                       scrollSnapAlign: 'start',
-                      cursor: typeof place.lat === 'number' ? 'pointer' : undefined,
+                      cursor: 'pointer',
+                      animation: `place-card-stagger-in 0.3s ease-out ${(sections.queue.length + i) * 0.05}s both`,
                     }}
                   >
                     <PlaceCard
                       place={place}
                       canEdit={Boolean(currentUser)}
                       isSubmitting={isSubmitting}
+                      isActive={activeCardId === place.id}
                       onMarkVisited={markVisited}
                       onMarkUnvisited={markUnvisited}
                       onDelete={setPlaceToDelete}
@@ -405,8 +497,8 @@ const PlacesList: React.FC = () => {
               </>
             )}
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       {/* Modals */}
       {placeToDelete && (
@@ -428,6 +520,17 @@ const PlacesList: React.FC = () => {
           onClose={() => setPlaceToEdit(null)}
         />
       )}
+
+      <style>{`
+        @keyframes places-empty-fade-in {
+          from { opacity: 0; transform: translateY(8px) scale(0.97); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes place-card-stagger-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
