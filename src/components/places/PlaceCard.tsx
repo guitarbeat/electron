@@ -2,33 +2,58 @@ import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@/common/icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
+import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
 
-export function getPlaceIcon(name: string): string {
+/* ── Category → icon + accent color ── */
+interface CategoryMeta { icon: string; color: string; label: string }
+
+export function getPlaceMeta(name: string): CategoryMeta {
   const lower = name.toLowerCase();
-  if (/beach|ocean|sea|lake|river|bay|shore|coast|surf|swim/.test(lower)) return '🏖️';
-  if (/park|garden|trail|forest|nature|woods|hike|botanical|grove|meadow/.test(lower)) return '🌿';
-  if (/restaurant|diner|bistro|brasserie|grill|steakhouse|bbq|sushi|pizza|tacos|ramen|burger/.test(lower)) return '🍽️';
-  if (/cafe|coffee|espresso|bakery|patisserie|pastry|boulangerie|tea/.test(lower)) return '☕';
-  if (/bar|pub|brewery|taproom|cocktail|lounge|nightclub|club|wine/.test(lower)) return '🍻';
-  if (/museum|gallery|art|exhibit|modern/.test(lower)) return '🎨';
-  if (/theater|theatre|cinema|movies|show|performance|concert|opera|ballet/.test(lower)) return '🎭';
-  if (/mountain|hill|peak|summit|climb|rock|canyon|cliff/.test(lower)) return '⛰️';
-  if (/shop|store|market|mall|boutique|vintage|thrift/.test(lower)) return '🛍️';
-  if (/gym|fitness|yoga|pilates|spa|wellness|sauna/.test(lower)) return '🧘';
-  if (/hotel|resort|airbnb|hostel|motel|inn/.test(lower)) return '🏨';
-  if (/zoo|aquarium|safari|wildlife|animal/.test(lower)) return '🦁';
-  if (/library|bookstore|books|reading/.test(lower)) return '📚';
-  if (/airport|station|terminal|train/.test(lower)) return '✈️';
-  if (/bridge|landmark|tower|castle|palace/.test(lower)) return '🏰';
-  if (/island|cove|lagoon|waterfall/.test(lower)) return '🌊';
-  return '📍';
+  if (/beach|ocean|sea|lake|river|bay|shore|coast|surf|swim/.test(lower))
+    return { icon: '🏖️', color: '#4ecdc4', label: 'Water' };
+  if (/park|garden|trail|forest|nature|woods|hike|botanical|grove|meadow/.test(lower))
+    return { icon: '🌿', color: '#7cb342', label: 'Nature' };
+  if (/restaurant|diner|bistro|brasserie|grill|steakhouse|bbq|sushi|pizza|tacos|ramen|burger/.test(lower))
+    return { icon: '🍽️', color: '#ff8a65', label: 'Dining' };
+  if (/cafe|coffee|espresso|bakery|patisserie|pastry|boulangerie|tea/.test(lower))
+    return { icon: '☕', color: '#bcaaa4', label: 'Café' };
+  if (/bar|pub|brewery|taproom|cocktail|lounge|nightclub|club|wine/.test(lower))
+    return { icon: '🍻', color: '#ffd54f', label: 'Drinks' };
+  if (/museum|gallery|art|exhibit|modern/.test(lower))
+    return { icon: '🎨', color: '#ce93d8', label: 'Culture' };
+  if (/theater|theatre|cinema|movies|show|performance|concert|opera|ballet/.test(lower))
+    return { icon: '🎭', color: '#ef5350', label: 'Entertainment' };
+  if (/mountain|hill|peak|summit|climb|rock|canyon|cliff/.test(lower))
+    return { icon: '⛰️', color: '#8d6e63', label: 'Mountain' };
+  if (/shop|store|market|mall|boutique|vintage|thrift/.test(lower))
+    return { icon: '🛍️', color: '#f48fb1', label: 'Shopping' };
+  if (/gym|fitness|yoga|pilates|spa|wellness|sauna/.test(lower))
+    return { icon: '🧘', color: '#80deea', label: 'Wellness' };
+  if (/hotel|resort|airbnb|hostel|motel|inn/.test(lower))
+    return { icon: '🏨', color: '#9fa8da', label: 'Stay' };
+  if (/zoo|aquarium|safari|wildlife|animal/.test(lower))
+    return { icon: '🦁', color: '#a5d6a7', label: 'Wildlife' };
+  if (/library|bookstore|books|reading/.test(lower))
+    return { icon: '📚', color: '#90a4ae', label: 'Library' };
+  if (/airport|station|terminal|train/.test(lower))
+    return { icon: '✈️', color: '#b0bec5', label: 'Transit' };
+  if (/bridge|landmark|tower|castle|palace/.test(lower))
+    return { icon: '🏰', color: '#ffcc80', label: 'Landmark' };
+  if (/island|cove|lagoon|waterfall/.test(lower))
+    return { icon: '🌊', color: '#4fc3f7', label: 'Island' };
+  return { icon: '📍', color: colors.accent, label: 'Place' };
+}
+
+/** @deprecated Use getPlaceMeta().icon instead */
+export function getPlaceIcon(name: string): string {
+  return getPlaceMeta(name).icon;
 }
 
 interface PlaceCardProps {
   place: Place;
   canEdit: boolean;
   isSubmitting: boolean;
+  isActive?: boolean;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
@@ -39,6 +64,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   place,
   canEdit,
   isSubmitting,
+  isActive = false,
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
@@ -47,7 +73,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const isVisited = Boolean(place.visitedAt);
-  const icon = getPlaceIcon(place.name);
+  const meta = getPlaceMeta(place.name);
   const hasCoords = typeof place.lat === 'number' && typeof place.lng === 'number';
 
   const handleVisitToggle = async (e: React.MouseEvent) => {
@@ -92,11 +118,45 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       style={{
         cursor: canEdit ? (isDragging ? 'grabbing' : 'grab') : undefined,
         opacity: isDragging ? 0.5 : 1,
-        transition: 'opacity 0.15s',
+        transition: `opacity 0.15s, transform ${motion.duration.normal} ${motion.easing.easeOut}, box-shadow ${motion.duration.normal} ${motion.easing.easeOut}`,
         position: 'relative',
+        transform: isActive ? 'translateY(-3px) scale(1.03)' : undefined,
       }}
+      className="place-card-hover-lift"
       title={canEdit ? 'Drag onto map to pin location' : undefined}
     >
+      {/* Category color stripe */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          borderRadius: `${radius.sm} ${radius.sm} 0 0`,
+          background: `linear-gradient(90deg, ${meta.color}, ${meta.color}88)`,
+          zIndex: 5,
+        }}
+      />
+
+      {/* Active glow ring */}
+      {isActive && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: -2,
+            borderRadius: radius.md,
+            border: `2px solid ${meta.color}`,
+            boxShadow: `0 0 12px ${meta.color}66`,
+            zIndex: 3,
+            pointerEvents: 'none',
+            animation: 'place-card-pulse 1.5s ease-in-out infinite',
+          }}
+        />
+      )}
+
       {/* Drag hint badge */}
       {canEdit && !hasCoords && (
         <div
@@ -129,7 +189,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       >
         <MediaCard.PosterWrap className="place-item-poster-wrap">
           <MediaCard.Cover className="place-item-cover" aria-hidden="true">
-            <span className="place-item-cover__icon">{icon}</span>
+            <span className="place-item-cover__icon" style={{ fontSize: '2rem' }}>{meta.icon}</span>
             {hasCoords && <span className="place-item-cover__pin">📍</span>}
           </MediaCard.Cover>
 
@@ -144,6 +204,31 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             <MediaCard.Info className="place-item-info">
               <MediaCard.Title className="place-item-title">{place.name}</MediaCard.Title>
               {place.notes && <MediaCard.Subtext className="place-item-notes">{place.notes}</MediaCard.Subtext>}
+              {/* Coords label */}
+              {hasCoords && (
+                <span style={{
+                  fontSize: typography.fontSize['3xs'],
+                  color: colors.textTertiary,
+                  fontFamily: typography.fontFamily.mono.join(', '),
+                  opacity: 0.7,
+                  marginTop: 2,
+                  display: 'block',
+                }}>
+                  {place.lat!.toFixed(2)}, {place.lng!.toFixed(2)}
+                </span>
+              )}
+              {/* Added by */}
+              {place.addedBy && (
+                <span style={{
+                  fontSize: typography.fontSize['3xs'],
+                  color: colors.textTertiary,
+                  opacity: 0.6,
+                  marginTop: 1,
+                  display: 'block',
+                }}>
+                  by {place.addedBy.name}
+                </span>
+              )}
             </MediaCard.Info>
 
             {canEdit && (
@@ -186,6 +271,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           </MediaCard.Overlay>
         </MediaCard.PosterWrap>
       </MediaCard>
+
+      <style>{`
+        .place-card-hover-lift:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        @keyframes place-card-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 };
