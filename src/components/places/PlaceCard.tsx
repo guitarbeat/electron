@@ -226,7 +226,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                   marginTop: 1,
                   display: 'block',
                 }}>
-                  by {place.addedBy.name}
+                  by {place.addedBy}
                 </span>
               )}
             </MediaCard.Info>
