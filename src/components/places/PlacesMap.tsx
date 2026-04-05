@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 import { PlusIcon, Spinner } from '@/common/icons';
+import { getPlaceMeta } from './PlaceCard';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
