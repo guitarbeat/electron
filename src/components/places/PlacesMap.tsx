@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 import { PlusIcon, Spinner } from '@/common/icons';
+import { getPlaceMeta } from './PlaceCard';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
@@ -195,18 +196,48 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
       markersRef.current = [];
 
       placesWithCoords.forEach((place) => {
+        const meta = getPlaceMeta(place.name);
         const el = document.createElement('div');
         el.style.cssText = `
           width: 14px; height: 14px; border-radius: 50%;
-          background: ${colors.accent};
+          background: ${meta.color};
           border: 2px solid rgba(255,255,255,0.8);
           box-shadow: 0 2px 6px rgba(0,0,0,0.5);
           cursor: pointer;
         `;
         el.title = place.name;
 
+        const isVisited = Boolean(place.visitedAt);
+        const popupHtml = `
+          <div style="
+            background: rgba(18,11,6,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid ${colors.border};
+            border-radius: 10px;
+            padding: 8px 12px;
+            min-width: 100px;
+            font-family: ${typography.fontFamily.heading.join(', ')};
+          ">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <span style="font-size:1.1rem;">${meta.icon}</span>
+              <span style="color:${colors.textPrimary};font-size:0.85rem;font-weight:600;letter-spacing:0.02em;">${place.name}</span>
+            </div>
+            ${isVisited ? `<span style="font-size:0.65rem;color:${colors.secondary};letter-spacing:0.06em;text-transform:uppercase;">✓ Visited</span>` : ''}
+            ${place.notes ? `<div style="font-size:0.72rem;color:${colors.textTertiary};margin-top:2px;">${place.notes}</div>` : ''}
+          </div>
+        `;
+
+        const popup = new MapLibreGL.Popup({
+          offset: 12,
+          closeButton: false,
+          closeOnClick: true,
+          className: 'places-map-popup',
+        }).setHTML(popupHtml);
+
         const marker = new MapLibreGL.Marker({ element: el })
           .setLngLat([place.lng, place.lat])
+          .setPopup(popup)
           .addTo(map);
 
         markersRef.current.push(marker);
@@ -622,6 +653,18 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
           </div>
         </div>
       )}
+      {/* Hide default MapLibre popup chrome */}
+      <style>{`
+        .places-map-popup .maplibregl-popup-content {
+          background: transparent !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+        }
+        .places-map-popup .maplibregl-popup-tip {
+          display: none !important;
+        }
+      `}</style>
     </div>
   );
 });
