@@ -653,6 +653,18 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
           </div>
         </div>
       )}
+      {/* Hide default MapLibre popup chrome */}
+      <style>{`
+        .places-map-popup .maplibregl-popup-content {
+          background: transparent !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+        }
+        .places-map-popup .maplibregl-popup-tip {
+          display: none !important;
+        }
+      `}</style>
     </div>
   );
 });
