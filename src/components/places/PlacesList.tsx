@@ -63,7 +63,7 @@ const PlacesList: React.FC = () => {
 
   // Active card highlight
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
-  const activeTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
 
