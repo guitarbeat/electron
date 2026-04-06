@@ -1049,24 +1049,24 @@ body {
 
 .user-selection--inline {
   /* Height of the oval; width = this × --gel-bubble-width-mult (wider than tall for names) */
-  --inline-profile-bubble-size: clamp(56px, 9vw, 82px);
+  --inline-profile-bubble-size: clamp(72px, 12vw, 108px);
   /* ~2.08 fits long display names (e.g. Electra) on one line with wide letter-spacing */
   --gel-bubble-width-mult: 2.08;
   /* Floor width so long names stay inside the photo oval */
   --inline-profile-shell-floor: clamp(22ch, 36vw, 40ch);
   /* Rounded-rectangle corners (not elliptical %) */
   --gel-inline-border-radius: clamp(12px, 1.85vw, 18px);
-  --inline-profile-name-size: clamp(0.72rem, 2.2vw, 1.1rem);
+  --inline-profile-name-size: clamp(0.82rem, 2.6vw, 1.24rem);
   padding: 0.28rem 0.4rem;
 }
 
 /* Mobile inline: edge-to-edge profile row, two equal columns */
 .user-selection--inline.is-mobile {
-  --inline-profile-bubble-size: clamp(66px, 11.5vw, 98px);
+  --inline-profile-bubble-size: clamp(82px, 14vw, 120px);
   --gel-bubble-width-mult: 2.24;
   --inline-profile-shell-floor: clamp(18ch, 50vw, 36ch);
   --gel-inline-border-radius: clamp(10px, 2.4vw, 15px);
-  --inline-profile-name-size: clamp(0.9rem, 3.5vw, 1.36rem);
+  --inline-profile-name-size: clamp(1rem, 4vw, 1.5rem);
   width: 100vw;
   max-width: 100vw;
   margin-left: calc(50% - 50vw);
