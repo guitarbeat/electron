@@ -1049,7 +1049,7 @@ body {
 
 .user-selection--inline {
   /* Height of the oval; width = this × --gel-bubble-width-mult (wider than tall for names) */
-  --inline-profile-bubble-size: clamp(56px, 9vw, 82px);
+  --inline-profile-bubble-size: clamp(72px, 12vw, 108px);
   /* ~2.08 fits long display names (e.g. Electra) on one line with wide letter-spacing */
   --gel-bubble-width-mult: 2.08;
   /* Floor width so long names stay inside the photo oval */
