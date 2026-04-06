@@ -1062,7 +1062,7 @@ body {
 
 /* Mobile inline: edge-to-edge profile row, two equal columns */
 .user-selection--inline.is-mobile {
-  --inline-profile-bubble-size: clamp(66px, 11.5vw, 98px);
+  --inline-profile-bubble-size: clamp(82px, 14vw, 120px);
   --gel-bubble-width-mult: 2.24;
   --inline-profile-shell-floor: clamp(18ch, 50vw, 36ch);
   --gel-inline-border-radius: clamp(10px, 2.4vw, 15px);
