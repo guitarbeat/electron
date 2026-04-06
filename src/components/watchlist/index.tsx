@@ -376,10 +376,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         ) : (
           <CollectionEmptyState
             padding={isMobile ? spacing.md : spacing['2xl']}
-            className={isMobile ? 'collection-empty-state--tight' : undefined}
-            style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+            className={`watchlist-empty-watched-state${isMobile ? ' collection-empty-state--tight' : ''}`}
           >
-            {emptyState}
+            <span className="watchlist-empty-watched-state__icon" aria-hidden="true">✓</span>
+            <span className="watchlist-empty-watched-state__text">{emptyState}</span>
           </CollectionEmptyState>
         )}
       </CollectionGrid>
@@ -496,12 +496,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
             <CollectionEmptyState
               padding={isMobile ? spacing.md : spacing['2xl']}
               className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
-              style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
             >
-              <span className="watchlist-empty-queue-state__eyebrow">Your next movie night starts here</span>
-              <strong className="watchlist-empty-queue-state__title">Add the first title to build the queue.</strong>
+              <span className="watchlist-empty-queue-state__icon" aria-hidden="true">🎬</span>
+              <strong className="watchlist-empty-queue-state__title">Nothing queued yet</strong>
               <span className="watchlist-empty-queue-state__copy">
-                Search for a movie or series above, then add it to the shared list in one step.
+                Use the search bar to find a movie or series, then add it here.
               </span>
               <Button
                 type="button"
@@ -510,7 +509,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 onClick={focusSearchInput}
                 className="watchlist-empty-queue-state__action"
               >
-                Jump to search
+                Search titles
               </Button>
             </CollectionEmptyState>
           ) : null}
