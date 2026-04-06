@@ -436,71 +436,28 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       );
     }
 
+    const isQueueEmpty = sections.queue.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
+    const isWatchedEmpty = sections.watched.length === 0;
+    const isAllEmpty = isQueueEmpty && isWatchedEmpty;
+
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
-        <CollectionGrid
-          className="watchlist-content"
-          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-          style={{
-            animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-          }}
-        >
-          {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-            skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
-          ) : (
-            sections.suggestions.map((suggestion, index) => (
-              <SuggestionCard
-                key={suggestion.id}
-                suggestion={suggestion}
-                onAccept={() => void handleAcceptSuggestion(suggestion)}
-                onReject={() => void handleRejectSuggestion(suggestion)}
-                canRespond={Boolean(currentUser)}
-                disableActions={!currentUser}
-                isProcessing={processingSuggestionId === suggestion.id}
-                animationDelay={`${index * 0.05}s`}
-              />
-            ))
-          )}
-          {sections.queue.length > 0 ? (
-            sections.queue.map((movie, index) => (
-              <MovieCard
-                key={movie.id}
-                movie={movie}
-                currentUser={currentUser}
-                onToggle={() => toggleWatched(movie.id)}
-                onToggleError={handleToggleError}
-                onRename={(title) => renameMovie(movie.id, title)}
-                onDelete={() => setMovieToDelete(movie)}
-                animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
-                isHighlighted={successMovieId === movie.id}
-                memories={movieMemories.get(movie.id) ?? []}
-                onAddMemory={
-                  currentUser
-                    ? async (note) => {
-                        await addMemory(movie.id, movie.title, currentUser, note);
-                      }
-                    : undefined
-                }
-                onUpdateMemory={async (memoryId, note) => {
-                  await updateMemory(memoryId, { note });
-                }}
-                onDeleteMemory={async (memoryId) => {
-                  await deleteMemoryRecord(memoryId);
-                }}
-                onTogglePin={async (memoryId) => {
-                  await toggleMemoryPin(memoryId);
-                }}
-              />
-            ))
-          ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
+        {isAllEmpty ? (
+          <CollectionGrid
+            className="watchlist-content"
+            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+            style={{
+              animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
+            }}
+          >
             <CollectionEmptyState
-              padding={isMobile ? spacing.md : spacing['2xl']}
+              padding={isMobile ? spacing.lg : spacing['3xl']}
               className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
             >
               <span className="watchlist-empty-queue-state__icon" aria-hidden="true">🎬</span>
-              <strong className="watchlist-empty-queue-state__title">Nothing queued yet</strong>
+              <strong className="watchlist-empty-queue-state__title">Nothing here yet</strong>
               <span className="watchlist-empty-queue-state__copy">
-                Use the search bar to find a movie or series, then add it here.
+                Search for a movie or series to start building the shared watchlist.
               </span>
               <Button
                 type="button"
@@ -512,10 +469,67 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 Search titles
               </Button>
             </CollectionEmptyState>
-          ) : null}
-        </CollectionGrid>
+          </CollectionGrid>
+        ) : (
+          <>
+            <CollectionGrid
+              className="watchlist-content"
+              minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+              style={{
+                animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
+              }}
+            >
+              {isSuggestionsLoading && sections.suggestions.length === 0 ? (
+                skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
+              ) : (
+                sections.suggestions.map((suggestion, index) => (
+                  <SuggestionCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onAccept={() => void handleAcceptSuggestion(suggestion)}
+                    onReject={() => void handleRejectSuggestion(suggestion)}
+                    canRespond={Boolean(currentUser)}
+                    disableActions={!currentUser}
+                    isProcessing={processingSuggestionId === suggestion.id}
+                    animationDelay={`${index * 0.05}s`}
+                  />
+                ))
+              )}
+              {sections.queue.map((movie, index) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  currentUser={currentUser}
+                  onToggle={() => toggleWatched(movie.id)}
+                  onToggleError={handleToggleError}
+                  onRename={(title) => renameMovie(movie.id, title)}
+                  onDelete={() => setMovieToDelete(movie)}
+                  animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
+                  isHighlighted={successMovieId === movie.id}
+                  memories={movieMemories.get(movie.id) ?? []}
+                  onAddMemory={
+                    currentUser
+                      ? async (note) => {
+                          await addMemory(movie.id, movie.title, currentUser, note);
+                        }
+                      : undefined
+                  }
+                  onUpdateMemory={async (memoryId, note) => {
+                    await updateMemory(memoryId, { note });
+                  }}
+                  onDeleteMemory={async (memoryId) => {
+                    await deleteMemoryRecord(memoryId);
+                  }}
+                  onTogglePin={async (memoryId) => {
+                    await toggleMemoryPin(memoryId);
+                  }}
+                />
+              ))}
+            </CollectionGrid>
 
-        {renderMovieGrid(sections.watched, 'No watched movies yet')}
+            {renderMovieGrid(sections.watched, 'No watched movies yet')}
+          </>
+        )}
       </div>
     );
   }, [
