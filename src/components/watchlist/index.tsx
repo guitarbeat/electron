@@ -376,10 +376,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         ) : (
           <CollectionEmptyState
             padding={isMobile ? spacing.md : spacing['2xl']}
-            className={isMobile ? 'collection-empty-state--tight' : undefined}
-            style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+            className={`watchlist-empty-watched-state${isMobile ? ' collection-empty-state--tight' : ''}`}
           >
-            {emptyState}
+            <span className="watchlist-empty-watched-state__icon" aria-hidden="true">✓</span>
+            <span className="watchlist-empty-watched-state__text">{emptyState}</span>
           </CollectionEmptyState>
         )}
       </CollectionGrid>
