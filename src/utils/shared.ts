@@ -1,4 +1,5 @@
 import type { User } from '@/shared/types';
+import { spacing } from '@/theme/tokens';
 
 /**
  * Consolidated Utilities
@@ -361,5 +362,53 @@ export const randomUtils = {
     y: -foodSize,
     speed: 2 + Math.random() * 2,
     fruit: randomUtils.randomItem(fruitList.slice(0, maxIndex)),
+  }),
+};
+
+// ============================================================================
+// Layout Utilities
+// ============================================================================
+
+export const layouts = {
+  centeredContainer: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: `0 ${spacing.md}`,
+  },
+  grid: (columns: number = 1, gap: string = spacing.md) => ({
+    display: 'grid',
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gap,
+  }),
+  stack: (gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap,
+  }),
+  inlineStack: (gap: string = spacing.md) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap,
+  }),
+  flexRow: (justifyContent: string = 'flex-start', alignItems: string = 'center', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'row' as const,
+    justifyContent,
+    alignItems,
+    gap,
+  }),
+  flexColumn: (justifyContent: string = 'flex-start', alignItems: string = 'stretch', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent,
+    alignItems,
+    gap,
+  }),
+  spaceBetween: (direction: 'row' | 'column' = 'row', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: direction,
+    justifyContent: 'space-between',
+    alignItems: direction === 'row' ? 'center' : 'stretch',
+    gap,
   }),
 };
