@@ -2,7 +2,7 @@ import React, { type FC } from 'react';
 import type { MainTab, Movie } from '@/shared/types';
 import QuizAdBanner from '@/components/quiz/QuizAdBanner';
 import SpinAdBanner from '@/components/spinMatch/SpinAdBanner';
-import WatchlistComponent from '../../src/components/watchlist/index.tsx';
+import WatchlistComponent from '../components/watchlist/index.tsx';
 import PosterCarouselInline from '@/components/posterExplore/PosterCarouselInline';
 import './AppWorkspaceShell.css';
 
