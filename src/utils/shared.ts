@@ -1,4 +1,5 @@
 import type { User } from '@/shared/types';
+import { spacing } from '@/theme/tokens';
 
 /**
  * Consolidated Utilities
