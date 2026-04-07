@@ -8,6 +8,7 @@ export * from './places';
 export * from './quiz';
 export * from './snake';
 export * from './spinMatch';
+export * from './posterExplore';
 export * from './spinWheel';
 export * from './ui';
 export * from './watchlist';
