@@ -1,29 +1,6 @@
 import { spacing } from '../theme/tokens.ts';
 
 /**
-
-/**
- * Theme-aware color utilities
- */
-const normalizeHex = (color: string): string => {
-  // Remove # if present
-  const hex = color.replace('#', '');
-  
-  // Handle 3-digit hex
-  if (hex.length === 3) {
-    return '#' + hex.split('').map(char => char + char).join('');
-  }
-  
-  // Handle 6-digit hex
-  if (hex.length === 6) {
-    return '#' + hex;
-  }
-  
-  // Invalid hex, return as-is (might be a named color)
-  return color;
-};
-
-/**
  * Common layout patterns
  */
 export const layouts = {
