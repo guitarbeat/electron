@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput, parseJsonContent } from './shared.ts';
+import { executeAction, isValidUrl, sanitizeInput, parseJsonContent, validateMemory } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -121,5 +121,100 @@ test('parseJsonContent', async (t) => {
         return err instanceof Error && err.message === 'Failed to parse TestContext JSON.' && err.cause instanceof SyntaxError;
       }
     );
+  });
+});
+
+
+test('validateMemory', async (t) => {
+  await t.test('passes for valid memory without mentions', () => {
+    const result = validateMemory({
+      note: 'Great movie!',
+      movieTitle: 'The Matrix',
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, true);
+    assert.deepEqual(result.errors, {});
+  });
+
+  await t.test('passes for valid memory with allowed mentions', () => {
+    const result = validateMemory({
+      note: 'Watched with @aaron and @electra',
+      movieTitle: 'The Matrix',
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, true);
+    assert.deepEqual(result.errors, {});
+  });
+
+  await t.test('passes with case-insensitive allowed mentions', () => {
+    const result = validateMemory({
+      note: 'Watched with @Aaron and @Electra',
+      movieTitle: 'The Matrix',
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, true);
+    assert.deepEqual(result.errors, {});
+  });
+
+  await t.test('fails for missing required fields', () => {
+    const result = validateMemory({
+      note: '',
+      movieTitle: '',
+      author: ''
+    });
+    assert.equal(result.isValid, false);
+    assert.ok(result.errors.note);
+    assert.ok(result.errors.movieTitle);
+    assert.ok(result.errors.author);
+  });
+
+  await t.test('fails for invalid mentions', () => {
+    const result = validateMemory({
+      note: 'Watched with @invaliduser',
+      movieTitle: 'The Matrix',
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, false);
+    assert.equal(result.errors.note, 'Invalid mentions: @invaliduser. Only @aaron and @electra are allowed.');
+  });
+
+  await t.test('fails for mix of valid and invalid mentions', () => {
+    const result = validateMemory({
+      note: 'Watched with @aaron and @invaliduser',
+      movieTitle: 'The Matrix',
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, false);
+    assert.equal(result.errors.note, 'Invalid mentions: @invaliduser. Only @aaron and @electra are allowed.');
+  });
+
+  await t.test('fails when note exceeds max length', () => {
+    const result = validateMemory({
+      note: 'a'.repeat(501),
+      movieTitle: 'The Matrix',
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, false);
+    assert.equal(result.errors.note, 'note exceeds maximum length of 500 characters');
+  });
+
+  await t.test('fails when movieTitle exceeds max length', () => {
+    const result = validateMemory({
+      note: 'Great movie!',
+      movieTitle: 'a'.repeat(201),
+      author: 'Test User'
+    });
+    assert.equal(result.isValid, false);
+    assert.equal(result.errors.movieTitle, 'movieTitle exceeds maximum length of 200 characters');
+  });
+
+  await t.test('fails when author exceeds max length', () => {
+    const result = validateMemory({
+      note: 'Great movie!',
+      movieTitle: 'The Matrix',
+      author: 'a'.repeat(51)
+    });
+    assert.equal(result.isValid, false);
+    assert.equal(result.errors.author, 'author exceeds maximum length of 50 characters');
   });
 });
