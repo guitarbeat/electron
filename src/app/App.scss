@@ -7294,6 +7294,8 @@ body.grabbing * {
   color: inherit;
   text-align: left;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background 0.18s ease,
     transform 0.18s ease;
@@ -7406,6 +7408,8 @@ body.grabbing * {
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.02em;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
