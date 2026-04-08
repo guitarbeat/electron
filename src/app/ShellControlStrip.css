@@ -88,11 +88,11 @@
 
 /* ── Mobile layout ── */
 @media (max-width: 600px) {
-  /* Grow circles to fill most of the viewport width */
+  /* Polaroid cards: slightly smaller on mobile */
   .shell-control-strip__profiles-row .user-selection__shell-avatar-btn {
-    width: clamp(6rem, 36vw, 8.5rem);
-    height: clamp(6rem, 36vw, 8.5rem);
-    flex: 0 0 clamp(6rem, 36vw, 8.5rem);
+    width: clamp(7rem, 36vw, 9rem);
+    height: clamp(7rem, 36vw, 9rem);
+    flex: 0 0 auto;
   }
 
   /* Stack: circles on top, account actions below */
@@ -111,7 +111,7 @@
 
   /* Reduce the active-circle scale so it doesn't visually crash into the neighbour */
   .shell-control-strip__profiles-row .user-selection__shell-avatar-btn.is-active {
-    transform: scale(1.08) !important;
+    transform: rotate(0deg) scale(1.04) !important;
   }
 
   /* Account actions row: centred and compact below the circles */
