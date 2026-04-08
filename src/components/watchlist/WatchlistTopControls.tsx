@@ -98,6 +98,10 @@ const WatchlistTopControls = React.forwardRef<
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
   const focusBoundaryFrameRef = useRef<number | null>(null);
   const autocompleteRequestIdRef = useRef(0);
+  // On iOS Safari, buttons don't receive focus on tap, so document.activeElement
+  // stays on <body> when the input blurs. This flag prevents a false "outside click"
+  // dismissal while the user is interacting with the dropdown.
+  const dropdownInteractionPendingRef = useRef(false);
   const autocompleteListId = useId();
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
@@ -342,6 +346,12 @@ const WatchlistTopControls = React.forwardRef<
               clearFocusBoundaryCheck();
               focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
                 focusBoundaryFrameRef.current = null;
+                // On iOS Safari, buttons don't receive focus on tap, so
+                // document.activeElement is <body> even when the user tapped
+                // inside the dropdown. Check the pending-interaction flag first.
+                if (dropdownInteractionPendingRef.current) {
+                  return;
+                }
                 const nextIsFocused = Boolean(
                   autocompleteRegionRef.current?.contains(document.activeElement)
                 );
@@ -442,6 +452,15 @@ const WatchlistTopControls = React.forwardRef<
                 className={`watchlist-top-controls__autocomplete${isAutocompleteOpen ? ' is-open' : ''}`}
                 role="listbox"
                 aria-label="Movie and show suggestions"
+                onPointerDown={() => {
+                  // Mark that the user started a touch/click inside the dropdown.
+                  // This keeps the dropdown open on iOS Safari where tapping a button
+                  // doesn't move focus (document.activeElement stays <body>).
+                  dropdownInteractionPendingRef.current = true;
+                  window.setTimeout(() => {
+                    dropdownInteractionPendingRef.current = false;
+                  }, 300);
+                }}
               >
                 {isAutocompleteLoading && (
                   <div className="watchlist-top-controls__autocomplete-loading" role="status" aria-label="Searching">
@@ -455,7 +474,6 @@ const WatchlistTopControls = React.forwardRef<
                     className="watchlist-top-controls__autocomplete-filters"
                     role="group"
                     aria-label="Filter by type"
-                    onMouseDown={(e) => e.preventDefault()}
                   >
                     {(
                       [
@@ -468,6 +486,7 @@ const WatchlistTopControls = React.forwardRef<
                         value === 'all'
                           ? autocompleteResults.length
                           : autocompleteResults.filter((r) => r.type === value).length;
+                      const isDisabled = count === 0 && value !== 'all';
                       return (
                         <button
                           key={value}
@@ -475,8 +494,11 @@ const WatchlistTopControls = React.forwardRef<
                           className={`watchlist-top-controls__autocomplete-filter-chip${
                             autocompleteTypeFilter === value ? ' is-active' : ''
                           }${count === 0 ? ' is-empty' : ''}`}
-                          onClick={() => setAutocompleteTypeFilter(value)}
-                          disabled={count === 0 && value !== 'all'}
+                          disabled={isDisabled}
+                          onPointerDown={(e) => {
+                            e.preventDefault(); // prevents input blur on all pointer types
+                            if (!isDisabled) setAutocompleteTypeFilter(value);
+                          }}
                         >
                           {label}
                           <span className="watchlist-top-controls__autocomplete-filter-count">{count}</span>
@@ -511,11 +533,13 @@ const WatchlistTopControls = React.forwardRef<
                       className={`watchlist-top-controls__autocomplete-option ${
                         index === activeAutocompleteIndex ? 'is-active' : ''
                       }`}
-                      onMouseDown={(event) => {
+                      onPointerDown={(event) => {
+                        // Prevent input blur on all pointer types (mouse, touch, pen).
+                        // Then select immediately so the action fires before any blur.
                         event.preventDefault();
+                        selectAutocompleteResult(result);
                       }}
                       onMouseEnter={() => setActiveAutocompleteIndex(index)}
-                      onClick={() => selectAutocompleteResult(result)}
                     >
                       <span className="watchlist-top-controls__autocomplete-poster">
                         {result.poster ? (
