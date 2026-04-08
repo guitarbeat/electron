@@ -204,7 +204,7 @@ const parseMatchmaker = (content: string | null): MatchmakerGame | null => {
   }
 };
 
-const parsePins = (content: string | null): UserPins => {
+const parsePins = (content: string | null): PinRecord => {
   if (!content) {
     return {};
   }
@@ -1158,14 +1158,14 @@ const scopes: {
     parse: parsePins,
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => {
-      const pins = value as UserPins;
+      const pins = value as PinRecord;
       return {
         Aaron: Boolean(pins.Aaron),
         Electra: Boolean(pins.Electra),
       } satisfies StateScopeDataMap['pins'];
     },
     mutate: (current, op, payload, context) => {
-      const pins = current as UserPins;
+      const pins = current as PinRecord;
 
       switch (op) {
         case 'set_pin': {
@@ -1422,7 +1422,7 @@ export const getPinProtectedUsers = async (): Promise<User[]> => {
 
 export const getPinCoverageState = async (): Promise<PinCoverageState> => {
   const { stored } = await readScopeStoredData('pins');
-  const pins = stored as UserPins;
+  const pins = stored as PinRecord;
   return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user])));
 };
 
@@ -1431,7 +1431,7 @@ export const verifyProfilePin = async (
   pin: string | undefined
 ): Promise<boolean> => {
   const { stored } = await readScopeStoredData('pins');
-  const pins = stored as UserPins;
+  const pins = stored as PinRecord;
   const storedHash = pins[user];
 
   if (!storedHash) {
