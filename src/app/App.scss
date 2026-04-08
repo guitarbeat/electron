@@ -7383,6 +7383,72 @@ body.grabbing * {
   line-height: 1.4;
 }
 
+.watchlist-top-controls__autocomplete-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.7rem 0.45rem;
+  border-bottom: 1px solid rgba(201, 165, 111, 0.12);
+  flex-shrink: 0;
+}
+
+.watchlist-top-controls__autocomplete-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgba(201, 165, 111, 0.22);
+  border-radius: 2rem;
+  background: rgba(255, 247, 228, 0.05);
+  color: color-mix(in srgb, var(--color-text-secondary) 80%, transparent);
+  font-family: var(--type-caption-family);
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+  white-space: nowrap;
+}
+
+.watchlist-top-controls__autocomplete-filter-chip:hover {
+  background: rgba(255, 247, 228, 0.1);
+  border-color: rgba(201, 165, 111, 0.44);
+  color: var(--color-text-primary);
+}
+
+.watchlist-top-controls__autocomplete-filter-chip.is-active {
+  background: linear-gradient(135deg, rgba(214, 179, 117, 0.28) 0%, rgba(201, 165, 111, 0.18) 100%);
+  border-color: rgba(214, 179, 117, 0.55);
+  color: color-mix(in srgb, var(--color-secondary) 90%, var(--color-text-primary) 10%);
+}
+
+.watchlist-top-controls__autocomplete-filter-chip.is-empty,
+.watchlist-top-controls__autocomplete-filter-chip:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.watchlist-top-controls__autocomplete-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.2rem;
+  border-radius: 1rem;
+  background: rgba(255, 247, 228, 0.1);
+  font-size: 0.65rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.watchlist-top-controls__autocomplete-filter-chip.is-active .watchlist-top-controls__autocomplete-filter-count {
+  background: rgba(214, 179, 117, 0.3);
+}
+
 .watchlist-top-controls__autocomplete-loading {
   display: flex;
   align-items: center;

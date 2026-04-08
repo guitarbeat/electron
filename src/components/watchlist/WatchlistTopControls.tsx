@@ -108,6 +108,7 @@ const WatchlistTopControls = React.forwardRef<
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
   const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
+  const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
@@ -157,6 +158,7 @@ const WatchlistTopControls = React.forwardRef<
     setIsAutocompleteOpen(false);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteLoading(false);
+    setAutocompleteTypeFilter('all');
     if (autocompleteCloseTimerRef.current !== null) {
       window.clearTimeout(autocompleteCloseTimerRef.current);
     }
@@ -173,6 +175,7 @@ const WatchlistTopControls = React.forwardRef<
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(false);
     setIsAutocompleteMounted(false);
+    setAutocompleteTypeFilter('all');
     if (autocompleteCloseTimerRef.current !== null) {
       window.clearTimeout(autocompleteCloseTimerRef.current);
       autocompleteCloseTimerRef.current = null;
@@ -447,14 +450,60 @@ const WatchlistTopControls = React.forwardRef<
                     <span className="watchlist-top-controls__autocomplete-loading-dot" />
                   </div>
                 )}
+                {!isAutocompleteLoading && autocompleteResults.length > 0 && (
+                  <div
+                    className="watchlist-top-controls__autocomplete-filters"
+                    role="group"
+                    aria-label="Filter by type"
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    {(
+                      [
+                        { value: 'all', label: 'All' },
+                        { value: 'movie', label: 'Movies' },
+                        { value: 'series', label: 'TV Series' },
+                      ] as const
+                    ).map(({ value, label }) => {
+                      const count =
+                        value === 'all'
+                          ? autocompleteResults.length
+                          : autocompleteResults.filter((r) => r.type === value).length;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          className={`watchlist-top-controls__autocomplete-filter-chip${
+                            autocompleteTypeFilter === value ? ' is-active' : ''
+                          }${count === 0 ? ' is-empty' : ''}`}
+                          onClick={() => setAutocompleteTypeFilter(value)}
+                          disabled={count === 0 && value !== 'all'}
+                        >
+                          {label}
+                          <span className="watchlist-top-controls__autocomplete-filter-count">{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 {autocompleteError ? (
                   <div className="watchlist-top-controls__autocomplete-status" role="alert">
                     {autocompleteError}
                   </div>
-                ) : autocompleteResults.length > 0 ? (
-                  autocompleteResults.map((result, index) => (
+                ) : autocompleteResults.length > 0 ? (() => {
+                  const filtered =
+                    autocompleteTypeFilter === 'all'
+                      ? autocompleteResults
+                      : autocompleteResults.filter((r) => r.type === autocompleteTypeFilter);
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="watchlist-top-controls__autocomplete-status">
+                        No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
+                      </div>
+                    );
+                  }
+                  return filtered.map((result, index) => (
                     <button
-                      key={result.imdbID}
+                      key={result.imdbID ?? `${result.title}-${index}`}
                       id={`${autocompleteListId}-option-${index}`}
                       type="button"
                       role="option"
@@ -485,8 +534,8 @@ const WatchlistTopControls = React.forwardRef<
                         </span>
                       </span>
                     </button>
-                  ))
-                ) : !isAutocompleteLoading ? (
+                  ));
+                })() : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
                     No titles found for "{trimmedSearchQuery}"
                   </div>
