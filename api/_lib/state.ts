@@ -11,7 +11,7 @@ import {
 import {
   normalizeMovieRecord,
   normalizeMovies,
-} from '../../src/services/movieRecords.ts';
+} from '../../src/services/content/movieRecords.ts';
 import type { PinRecord } from '../../src/services/pinHelpers.ts';
 import {
   appendDailySpinEntry,
