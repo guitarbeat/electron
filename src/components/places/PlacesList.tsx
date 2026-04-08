@@ -6,7 +6,8 @@ import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import { colors, spacing, radius, typography, motion } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
-import PlacesMap, { type PlacesMapHandle } from './PlacesMap.tsx';
+import type { PlacesMapHandle } from './PlacesMap.tsx';
+const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
@@ -217,21 +218,23 @@ const PlacesList: React.FC = () => {
       )}
 
       {/* Full-height map */}
-      <PlacesMap
-        ref={mapRef}
-        places={places}
-        canEdit={Boolean(currentUser)}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSubmitSearch={handleAddAction}
-        onSuggestPlace={handleSuggestAction}
-        isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        suggestionError={suggestionError}
-        onUpdatePlace={updatePlace}
-        onAddPlace={addPlace}
-        style={{ flex: 1, minHeight: 0 }}
-      />
+      <React.Suspense fallback={<div style={{ flex: 1, minHeight: 0, background: 'rgba(0,0,0,0.3)' }} />}>
+        <PlacesMap
+          ref={mapRef}
+          places={places}
+          canEdit={Boolean(currentUser)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onSubmitSearch={handleAddAction}
+          onSuggestPlace={handleSuggestAction}
+          isAdding={isAdding}
+          isSuggesting={isSuggesting}
+          suggestionError={suggestionError}
+          onUpdatePlace={updatePlace}
+          onAddPlace={addPlace}
+          style={{ flex: 1, minHeight: 0 }}
+        />
+      </React.Suspense>
 
       {/* Suggestions banner */}
       {sections.suggestions.length > 0 && (

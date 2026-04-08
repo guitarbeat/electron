@@ -5,9 +5,9 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
 import ShellControlStrip from '@/app/ShellControlStrip';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
-import RetroEffects from '@/components/effects/RetroEffects';
+const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
-import ElectronLogoLab from '@/branding/ElectronLogoLab';
+const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useMovies } from '@/hooks/movies/useMovies';
@@ -120,13 +120,17 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
-        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+        <React.Suspense fallback={null}>
+          <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+        </React.Suspense>
         <div className="app-shell app-shell--viewport bg-main">
           <React.Suspense fallback={null}>
             {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
           </React.Suspense>
           <VignetteOverlay />
-          <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
+          <React.Suspense fallback={null}>
+            <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
+          </React.Suspense>
         </div>
       </ThemeProvider>
     );
@@ -134,7 +138,9 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
-      <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+      <React.Suspense fallback={null}>
+        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+      </React.Suspense>
       <div className="app-shell app-shell--viewport bg-main">
         <React.Suspense fallback={null}>
           {!prefersReducedMotion ? (
