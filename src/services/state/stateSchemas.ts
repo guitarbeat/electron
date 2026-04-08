@@ -390,20 +390,20 @@ export const cloneMatchmakerGame = (
     : null;
 
 export const normalizePinsState = (value: unknown): PinsState => {
-  const pins = normalizeUserPins(value);
+  const pins = normalizePinRecord(value);
   return {
     Aaron: Boolean(pins?.Aaron),
     Electra: Boolean(pins?.Electra),
   };
 };
 
-export const pinsStateFromHashes = (pins: UserPins): PinsState => ({
+export const pinsStateFromHashes = (pins: PinRecord): PinsState => ({
   Aaron: Boolean(pins.Aaron),
   Electra: Boolean(pins.Electra),
 });
 
-export const normalizeStoredPins = (value: unknown): UserPins =>
-  normalizeUserPins(value) ?? {};
+export const normalizeStoredPins = (value: unknown): PinRecord =>
+  normalizePinRecord(value) ?? {};
 
 export const clonePinsState = (pins: PinsState): PinsState => ({ ...pins });
 
