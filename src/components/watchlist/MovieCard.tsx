@@ -118,13 +118,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
   currentUser,
   onToggle,
   onToggleError,
-  onDelete,
   onRename,
   animationDelay,
   memories = [],
   onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
   onTogglePin,
   isHighlighted = false,
 }) => {
@@ -352,7 +349,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onToggle,
   onToggleNotes,
   onEdit,
-  onDelete,
 }) => {
   const iconActionClassName = (modifierClassName: string) =>
     `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
@@ -512,8 +508,6 @@ const MovieMemories: React.FC<MovieMemoriesProps> = ({
   isMobile,
   onClose,
   onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
   onTogglePin,
 }) => {
   const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);

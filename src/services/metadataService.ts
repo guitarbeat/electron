@@ -18,8 +18,7 @@ const resolveConfig = (value: string | undefined, fallback: string) => {
 const OMDB_BASE = resolveConfig(env.VITE_OMDB_API_URL, OMDB_DEFAULT_BASE_URL);
 const TVMAZE_BASE = resolveConfig(env.VITE_TVMAZE_API_URL, TVMAZE_DEFAULT_BASE_URL);
 export const METADATA_REQUEST_TIMEOUT_MS = 5000;
-export const AUTOCOMPLETE_REQUEST_TIMEOUT_MS = 2500;
-export const MOVIE_AUTOCOMPLETE_RESULT_LIMIT = 6;
+export export const MOVIE_AUTOCOMPLETE_RESULT_LIMIT = 6;
 export const MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT = 3;
 const OMDB_AUTH_FAILURE_CODE = 'omdb_auth';
 const OMDB_CONFIG_FAILURE_CODE = 'omdb_config';
