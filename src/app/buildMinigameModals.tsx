@@ -1,10 +1,10 @@
 import React, { type CSSProperties, type ReactNode } from 'react';
 
-const MessageBoard = React.lazy(() => import('@/components/messages/MessageBoard'));
-const FloatingMemoriesPanel = React.lazy(() => import('@/components/memories/FloatingMemoriesPanel'));
-const SpinSwipeGame = React.lazy(() => import('@/components/spinMatch/SpinSwipeGame'));
-const QuizEditor = React.lazy(() => import('@/components/quiz/QuizEditor'));
-const QuizFlowModalContent = React.lazy(() => import('@/app/QuizFlowModalContent'));
+export const MessageBoard = React.lazy(() => import('@/components/messages/MessageBoard'));
+export const FloatingMemoriesPanel = React.lazy(() => import('@/components/memories/FloatingMemoriesPanel'));
+export const SpinSwipeGame = React.lazy(() => import('@/components/spinMatch/SpinSwipeGame'));
+export const QuizEditor = React.lazy(() => import('@/components/quiz/QuizEditor'));
+export const QuizFlowModalContent = React.lazy(() => import('@/app/QuizFlowModalContent'));
 import type { User } from '@/shared/types';
 import { spacing } from '@/theme/tokens';
 

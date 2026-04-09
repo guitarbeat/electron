@@ -3,7 +3,7 @@ import { SharedMemory, User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { colors, radius, spacing, typography, layouts, sanitizeInput, CommonRules, createValidator } from '@/utils';
+import { colors, radius, spacing, typography, layouts, sanitizeInput } from '@/utils';
 import { formatMemoryTimestamp } from '@/utils';
 import {
   ALL_MOVIES_FILTER,
@@ -91,18 +91,6 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const [draftNote, setDraftNote] = useState('');
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
   const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
-
-  // Validation for memory editing
-  const validateMemoryNote = useMemo(
-    () => createValidator({
-      note: {
-        ...CommonRules.messageContent,
-        maxLength: 500,
-        required: true,
-      },
-    }),
-    []
-  );
 
   const canManageMemories = Boolean(currentUser);
   const isSingleMovieContext = Boolean(contextMovieTitle);
