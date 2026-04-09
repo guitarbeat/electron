@@ -27,7 +27,6 @@ const characterColors: Record<string, string> = {
   Neither: '#888888',
 };
 
-const BLINK_COLORS = ['#ff0000', '#ff7700', '#ffff00', '#00cc00', '#0000ff', '#8b00ff'];
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
