@@ -1,4 +1,3 @@
-import { isValidUrl, sanitizeInput } from '../../utils/shared';
 
 const env = (import.meta.env ?? {}) as ImportMetaEnv & {
   VITE_OMDB_API_URL?: string;

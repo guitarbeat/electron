@@ -52,6 +52,6 @@ export const searchTvMazeShows = async (
     if (error instanceof Error && error.name === 'AbortError') {
       throw error;
     }
-    throw new Error(`TVMaze search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`TVMaze search failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
   }
 };

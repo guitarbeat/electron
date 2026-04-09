@@ -6,7 +6,6 @@ export default function BrutalistCinema() {
 
   const fontHeading = { fontFamily: "'Anton', 'Bebas Neue', 'Impact', sans-serif", letterSpacing: '0.05em' };
   const fontBody = { fontFamily: "'IBM Plex Mono', 'Courier New', monospace" };
-  const redColor = '#ff2200';
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#ff2200] selection:text-white" style={fontBody}>
