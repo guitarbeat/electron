@@ -324,7 +324,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     } finally {
       setMovieToDelete(null);
     }
-  }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
+  }, [deleteMovie, movieToDelete, setToast]);
 
   const handleToggleError = useCallback(
     (message: string) => {
@@ -351,7 +351,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               onToggle={() => toggleWatched(movie.id)}
               onToggleError={handleToggleError}
               onRename={(title) => renameMovie(movie.id, title)}
-              onDelete={() => setMovieToDelete(movie)}
               animationDelay={`${index * 0.05}s`}
               isHighlighted={successMovieId === movie.id}
               memories={movieMemories.get(movie.id) ?? []}
@@ -503,7 +502,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                   onToggle={() => toggleWatched(movie.id)}
                   onToggleError={handleToggleError}
                   onRename={(title) => renameMovie(movie.id, title)}
-                  onDelete={() => setMovieToDelete(movie)}
                   animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
                   isHighlighted={successMovieId === movie.id}
                   memories={movieMemories.get(movie.id) ?? []}
