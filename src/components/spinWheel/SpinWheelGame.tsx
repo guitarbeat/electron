@@ -166,6 +166,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
   const triggerLabel = isSpinning ? '...' : spinPool.length === 0 ? 'Wait' : 'Spin';
 
+  const hasCurrentUserWatched = currentUser && selectedMovie ? selectedMovie.watchedBy.includes(currentUser) : false;
+
   return (
     <div className="spin-wheel-shell" style={{ padding: spacing.md, color: colors.textPrimary }}>
       <div className="spin-wheel-summary">
@@ -287,18 +289,18 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               {selectedMovie.plot ? <p className="spin-wheel-panel__copy">{selectedMovie.plot}</p> : null}
               {currentUser ? (
                 <Button
-                  variant={selectedMovie.watchedBy.includes(currentUser) ? 'danger' : 'primary'}
+                  variant={hasCurrentUserWatched ? 'danger' : 'primary'}
                   size="sm"
                   isLoading={isTogglingWatched}
                   disabled={isTogglingWatched}
                   onClick={toggleWatchedForCurrentUser}
                   className={`spin-result-action ${
-                    selectedMovie.watchedBy.includes(currentUser)
+                    hasCurrentUserWatched
                       ? 'spin-result-action--undo'
                       : 'spin-result-action--mark'
                   }`}
                 >
-                  {selectedMovie.watchedBy.includes(currentUser)
+                  {hasCurrentUserWatched
                     ? `Undo watched for ${currentUser}`
                     : `Mark watched by ${currentUser}`}
                 </Button>
