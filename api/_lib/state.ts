@@ -613,6 +613,47 @@ const scopes: {
             ],
           };
         }
+        case 'update_memories_batch': {
+          const nextPayload = payload as {
+            updates?: Array<{
+              memoryId?: unknown;
+              updates?: { note?: unknown; movieId?: unknown; movieTitle?: unknown };
+            }>;
+          };
+
+          if (!Array.isArray(nextPayload.updates)) {
+             return { ok: false, conflict: 'Invalid batch updates.' };
+          }
+
+          let nextMemories = [...memories];
+          const updatedIds = new Set();
+
+          for (const update of nextPayload.updates) {
+             const memoryId = typeof update.memoryId === 'string' ? sanitizeInput(update.memoryId) : '';
+             const index = nextMemories.findIndex((memory) => memory.id === memoryId);
+
+             if (index < 0) continue;
+
+             const currentMemory = nextMemories[index];
+             if (currentMemory.author !== context.currentUser!) continue;
+
+             const updatedMemory: SharedMemory = {
+               ...currentMemory,
+               note: typeof update.updates?.note === 'string' ? sanitizeInput(update.updates.note) : currentMemory.note,
+               movieId: typeof update.updates?.movieId === 'string' ? sanitizeInput(update.updates.movieId) : currentMemory.movieId,
+               movieTitle: typeof update.updates?.movieTitle === 'string' ? sanitizeInput(update.updates.movieTitle) : currentMemory.movieTitle,
+               updatedAt: context.now,
+             };
+
+             nextMemories[index] = updatedMemory;
+             updatedIds.add(memoryId);
+          }
+
+          return {
+            ok: true,
+            data: nextMemories
+          };
+        }
         case 'update_memory': {
           const nextPayload = payload as {
             memoryId?: unknown;
