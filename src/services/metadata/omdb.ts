@@ -1,5 +1,5 @@
 import { isValidUrl, sanitizeInput } from '../../utils/shared';
-import { OMDB_BASE, OMDB_API_KEY, METADATA_REQUEST_TIMEOUT_MS } from './config';
+import { OMDB_BASE, OMDB_API_KEY } from './config';
 import type { MovieAutocompleteResult, OmdbSearchResult, MovieMetadata } from './types';
 
 const stripHtml = (value?: string | null): string | undefined => {
@@ -62,7 +62,7 @@ export const searchOmdbMovies = async (
       poster: normalizePosterUrl(movie.Poster),
     }));
   } catch (error) {
-    throw new Error(`OMDb search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`OMDb search failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
   }
 };
 
@@ -111,7 +111,7 @@ export const fetchOmdbMetadata = async (
       released: data.Released,
     };
   } catch (error) {
-    throw new Error(`OMDb metadata fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`OMDb metadata fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
   }
 };
 

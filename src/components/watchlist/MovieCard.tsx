@@ -369,7 +369,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onToggle,
   onToggleNotes,
   onEdit,
-  onDelete,
 }) => {
   const iconActionClassName = (modifierClassName: string) =>
     `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
