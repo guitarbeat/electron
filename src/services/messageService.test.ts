@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cloneMessages, isMessageRecord, parseMessagesContent } from './content/messageService';
+import { cloneMessages, isMessageRecord, parseMessagesContent } from './content/messageService.ts';
 
 test('cloneMessages', async (t) => {
   await t.test('returns a new array with copied message objects', () => {
