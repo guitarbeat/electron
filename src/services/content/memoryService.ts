@@ -133,3 +133,44 @@ export const toggleMemoryPin = async (memoryId: string): Promise<SharedMemory> =
 
   return nextMemory;
 };
+
+
+export const updateMemoriesBatch = async (
+  updates: Array<{ memoryId: string; updates: { note?: string; movieId?: string; movieTitle?: string } }>
+): Promise<SharedMemory[]> => {
+  if (updates.length === 0) return [];
+
+  const memories = await getOptimisticMemories();
+  const nextMemories = [...memories];
+  const updatedMemories: SharedMemory[] = [];
+  const validUpdates = [];
+
+  for (const update of updates) {
+    const memoryIndex = findMemoryIndex(nextMemories, update.memoryId);
+    if (memoryIndex < 0) continue;
+
+    const nextMemory: SharedMemory = {
+      ...nextMemories[memoryIndex],
+      ...update.updates,
+      note: update.updates.note ? sanitizeInput(update.updates.note) : nextMemories[memoryIndex].note,
+      movieTitle: update.updates.movieTitle
+        ? sanitizeInput(update.updates.movieTitle)
+        : nextMemories[memoryIndex].movieTitle,
+      updatedAt: new Date().toISOString(),
+    };
+
+    nextMemories[memoryIndex] = nextMemory;
+    updatedMemories.push(nextMemory);
+    validUpdates.push(update);
+  }
+
+  if (validUpdates.length > 0) {
+    await mutateScope('memories', {
+      op: 'update_memories_batch',
+      payload: { updates: validUpdates },
+      optimisticData: nextMemories,
+    });
+  }
+
+  return updatedMemories;
+};
