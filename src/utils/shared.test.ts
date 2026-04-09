@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput, parseJsonContent } from './shared.ts';
+import { executeAction, isValidUrl, sanitizeInput, parseJsonContent, layouts } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -121,5 +121,129 @@ test('parseJsonContent', async (t) => {
         return err instanceof Error && err.message === 'Failed to parse TestContext JSON.' && err.cause instanceof SyntaxError;
       }
     );
+  });
+});
+test('layouts', async (t) => {
+  // Test centeredContainer
+  await t.test('centeredContainer returns static style object', () => {
+    assert.deepEqual(layouts.centeredContainer, {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '0 1rem', // Assuming spacing.md is 1rem
+    });
+  });
+
+  // Test grid
+  await t.test('grid returns expected styles with default args', () => {
+    assert.deepEqual(layouts.grid(), {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(1, 1fr)',
+      gap: '1rem',
+    });
+  });
+
+  await t.test('grid returns expected styles with custom args', () => {
+    assert.deepEqual(layouts.grid(3, '2rem'), {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '2rem',
+    });
+  });
+
+  // Test stack
+  await t.test('stack returns expected styles with default args', () => {
+    assert.deepEqual(layouts.stack(), {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+    });
+  });
+
+  await t.test('stack returns expected styles with custom args', () => {
+    assert.deepEqual(layouts.stack('2rem'), {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '2rem',
+    });
+  });
+
+  // Test inlineStack
+  await t.test('inlineStack returns expected styles with default args', () => {
+    assert.deepEqual(layouts.inlineStack(), {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+    });
+  });
+
+  await t.test('inlineStack returns expected styles with custom args', () => {
+    assert.deepEqual(layouts.inlineStack('2rem'), {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '2rem',
+    });
+  });
+
+  // Test flexRow
+  await t.test('flexRow returns expected styles with default args', () => {
+    assert.deepEqual(layouts.flexRow(), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      gap: '1rem',
+    });
+  });
+
+  await t.test('flexRow returns expected styles with custom args', () => {
+    assert.deepEqual(layouts.flexRow('space-between', 'flex-start', '2rem'), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: '2rem',
+    });
+  });
+
+  // Test flexColumn
+  await t.test('flexColumn returns expected styles with default args', () => {
+    assert.deepEqual(layouts.flexColumn(), {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'stretch',
+      gap: '1rem',
+    });
+  });
+
+  await t.test('flexColumn returns expected styles with custom args', () => {
+    assert.deepEqual(layouts.flexColumn('center', 'center', '2rem'), {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '2rem',
+    });
+  });
+
+  // Test spaceBetween
+  await t.test('spaceBetween returns expected styles with default args', () => {
+    assert.deepEqual(layouts.spaceBetween(), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '1rem',
+    });
+  });
+
+  await t.test('spaceBetween returns expected styles with custom column args', () => {
+    assert.deepEqual(layouts.spaceBetween('column', '2rem'), {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'stretch',
+      gap: '2rem',
+    });
   });
 });
