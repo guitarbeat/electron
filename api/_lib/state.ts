@@ -625,8 +625,7 @@ const scopes: {
              return { ok: false, conflict: 'Invalid batch updates.' };
           }
 
-          let nextMemories = [...memories];
-          const updatedIds = new Set();
+          const nextMemories = [...memories];
 
           for (const update of nextPayload.updates) {
              const memoryId = typeof update.memoryId === 'string' ? sanitizeInput(update.memoryId) : '';
@@ -646,7 +645,6 @@ const scopes: {
              };
 
              nextMemories[index] = updatedMemory;
-             updatedIds.add(memoryId);
           }
 
           return {
