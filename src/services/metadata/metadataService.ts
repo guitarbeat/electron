@@ -2,7 +2,6 @@ import { sanitizeInput } from '../../utils/shared';
 import { 
   MOVIE_AUTOCOMPLETE_RESULT_LIMIT, 
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
-  AUTOCOMPLETE_REQUEST_TIMEOUT_MS 
 } from './config';
 export { MOVIE_AUTOCOMPLETE_RESULT_LIMIT, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT };
 import { searchOmdbMovies } from './omdb';
@@ -73,6 +72,6 @@ export const searchMovieAutocomplete = async (
 
     return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
   } catch (error) {
-    throw new Error(`Movie autocomplete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Movie autocomplete failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
   }
 };

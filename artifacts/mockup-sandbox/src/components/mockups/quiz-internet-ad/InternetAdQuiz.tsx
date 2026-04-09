@@ -143,7 +143,7 @@ export function InternetAdQuiz() {
   const total = questions.length;
   const progress = Math.round(((step) / total) * 100);
 
-  const handleSelect = (char: string, optIdx: number) => {
+  const handleSelect = (char: string) => {
     setAnswers(prev => ({ ...prev, [q.id]: char }));
   };
 
@@ -478,7 +478,7 @@ export function InternetAdQuiz() {
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#000080', marginBottom: '4px' }}>
                   📊 MATCH BREAKDOWN (100% ACCURATE!!!):
                 </div>
-                {['Electra', 'Aaron', 'Madeleine', 'Nosferatu'].map((char, i) => {
+                {['Electra', 'Aaron', 'Madeleine', 'Nosferatu'].map((char) => {
                   const charResults = results[char];
                   const isWinner = char === winnerChar;
                   const pct = isWinner ? 47 : [32, 15, 6][['Electra', 'Aaron', 'Madeleine', 'Nosferatu'].filter(c => c !== winnerChar).indexOf(char)] ?? 10;
