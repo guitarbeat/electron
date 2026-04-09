@@ -46,6 +46,7 @@ export interface BuildFeatureModalsParams {
   onQuizComplete: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
   const {
     showMessages,

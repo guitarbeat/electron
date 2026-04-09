@@ -35,7 +35,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     isAdding,
     setIsAdding,
     movieToDelete,
-    setMovieToDelete,
+
     setToast,
     successMovieId,
     setSuccessMovieId,
@@ -390,7 +390,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       isMobile,
       movieMemories,
       renameMovie,
-      setMovieToDelete,
+
       successMovieId,
       handleToggleError,
       toggleMemoryPin,
@@ -550,7 +550,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     toggleMemoryPin,
     toggleWatched,
     updateMemory,
-    setMovieToDelete,
+
     processingSuggestionId,
   ]);
 
