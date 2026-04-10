@@ -1,12 +1,14 @@
+import { deepClone } from '../../utils/shared.ts';
 import { cloneMatchmakerGame, cloneQuizData, defaultQuizData } from './stateSchemas.ts';
-import type {
-  ConflictResponse,
-  MutationResponse,
-  ScopeOutbox,
-  ScopeSnapshot,
-  StateEnvelope,
-  StateScope,
-  StateScopeDataMap,
+import {
+  StateClientError,
+  type ConflictResponse,
+  type MutationResponse,
+  type ScopeOutbox,
+  type ScopeSnapshot,
+  type StateEnvelope,
+  type StateScope,
+  type StateScopeDataMap,
 } from './stateTypes.ts';
 
 const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
@@ -27,38 +29,7 @@ interface StoredSnapshot<T> {
   warning?: string;
 }
 
-type ErrorCode =
-  | 'unauthorized'
-  | 'forbidden'
-  | 'conflict'
-  | 'invalid'
-  | 'server'
-  | 'network';
-
 const replayLocks = new Map<StateScope, Promise<ScopeSnapshot<unknown>>>();
-
-const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-
-export class StateClientError extends Error {
-  status: number;
-
-  code: ErrorCode;
-
-  conflict?: ConflictResponse;
-
-  constructor(
-    message: string,
-    status: number,
-    code: ErrorCode,
-    conflict?: ConflictResponse
-  ) {
-    super(message);
-    this.name = 'StateClientError';
-    this.status = status;
-    this.code = code;
-    this.conflict = conflict;
-  }
-}
 
 const isBrowser = (): boolean => typeof window !== 'undefined';
 

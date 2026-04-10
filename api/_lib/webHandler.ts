@@ -1,3 +1,4 @@
+import { serverErrorResponse } from './http.ts';
 import {
   isWebRequest,
   toWebRequest,
@@ -32,47 +33,18 @@ export function withWebHandler(handler: WebHandler): DualModeHandler {
 
       await writeFetchResponse(res, response);
     } catch (error) {
-const url = isWebRequest(req) ? req.url : (req as NodeLikeRequest).url;
+      const url = isWebRequest(req) ? req.url : (req as NodeLikeRequest).url;
       const method = isWebRequest(req) ? req.method : (req as NodeLikeRequest).method;
-      const message = error instanceof Error ? error.message : String(error);
-      const stack = error instanceof Error ? error.stack : undefined;
+      console.error(`[webHandler] Fatal error during ${method} ${url}:`, error);
 
-      console.error(`[webHandler] Fatal error during ${method} ${url}:`, {
-        message,
-        stack,
-        error,
-      });
+      const response = serverErrorResponse(error);
 
       if (res) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(
-          JSON.stringify({
-            error: 'Internal Server Error',
-            message,
-            stack: process.env.NODE_ENV === 'development' ? stack : undefined,
-          })
-        );
+        await writeFetchResponse(res, response);
         return;
       }
 
-      // If we don't have res, we're in Web mode. Try to return a Response.
-      if (typeof Response !== 'undefined') {
-        return new Response(
-          JSON.stringify({
-            error: 'Internal Server Error',
-            message,
-            stack: process.env.NODE_ENV === 'development' ? stack : undefined,
-          }),
-          {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      // Fatal: no Response, no res. Just rethrow.
-      throw error;
+      return response;
     }
   };
 

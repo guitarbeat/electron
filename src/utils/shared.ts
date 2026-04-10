@@ -27,6 +27,13 @@ export const parseJsonContent = (content: string, context: string): unknown => {
   }
 };
 
+export const deepClone = <T>(value: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
+};
+
 export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
   if (left === right) return true;
   if (left === null || right === null) return left === right;
