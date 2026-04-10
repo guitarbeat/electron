@@ -1,34 +1,20 @@
+import { z } from 'zod';
 import { sanitizeInput, consoleError } from '../utils/shared.ts';
 
-export interface UserPins {
-  Aaron?: string;
-  Electra?: string;
-}
+const UserPinsSchema = z.object({
+  Aaron: z.string().trim().min(1).optional(),
+  Electra: z.string().trim().min(1).optional(),
+});
+
+export type UserPins = z.infer<typeof UserPinsSchema>;
 
 type SerialTaskRunner = <T>(task: () => Promise<T>) => Promise<T>;
-
-const normalizeOptionalPinHash = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-
-  const normalized = value.trim();
-  return normalized || undefined;
-};
 
 export const clonePins = (pins: UserPins): UserPins => ({ ...pins });
 
 export const normalizeUserPins = (value: unknown): UserPins | null => {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-
-  const pins = value as Partial<UserPins>;
-
-  return {
-    Aaron: normalizeOptionalPinHash(pins.Aaron),
-    Electra: normalizeOptionalPinHash(pins.Electra),
-  };
+  const result = UserPinsSchema.safeParse(value);
+  return result.success ? result.data : null;
 };
 
 export const isUserPinsRecord = (value: unknown): value is UserPins =>
@@ -65,32 +51,25 @@ export const createSerialTaskRunner = (): SerialTaskRunner => {
 // Generic pin record helpers (merged from content/pinHelpers.ts)
 // ---------------------------------------------------------------------------
 
-export interface PinRecord {
-  [key: string]: string;
-}
+const PinRecordSchema = z.record(z.string(), z.string().trim().min(1));
+
+export type PinRecord = z.infer<typeof PinRecordSchema>;
 
 export const normalizePinRecord = (value: unknown): PinRecord => {
-  if (!value || typeof value !== 'object') {
+  const result = PinRecordSchema.safeParse(value);
+  if (!result.success) {
     return {};
   }
 
   const normalized: PinRecord = {};
-
-  for (const [key, pinValue] of Object.entries(value)) {
-    if (typeof pinValue === 'string' && pinValue.trim().length > 0) {
-      normalized[key] = sanitizeInput(pinValue);
-    }
+  for (const [key, pinValue] of Object.entries(result.data)) {
+    normalized[key] = sanitizeInput(pinValue);
   }
 
   return normalized;
 };
 
 export const isPinRecord = (value: unknown): value is PinRecord => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record);
-  return keys.length > 0 && keys.every(key => typeof record[key] === 'string' && (record[key] as string).trim().length > 0);
+  const result = PinRecordSchema.safeParse(value);
+  return result.success && Object.keys(result.data).length > 0;
 };

@@ -655,7 +655,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   const duplicateQuestion = (q: QuizQuestion) => {
     const idx = questions.findIndex((question) => question.id === q.id);
     const duplicate = {
-      ...JSON.parse(JSON.stringify(q)),
+      ...(JSON.parse(JSON.stringify(q)) as QuizQuestion),
       id: `q_${Date.now()}`,
       question: `${q.question} (copy)`,
     };

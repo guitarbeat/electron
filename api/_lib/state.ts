@@ -1423,8 +1423,8 @@ export const getPinProtectedUsers = async (): Promise<User[]> => {
 export const getPinCoverageState = async (): Promise<PinCoverageState> => {
   try {
     const { stored } = await readScopeStoredData('pins');
-    const pins = stored as PinRecord;
-    return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user])));
+    const pins = stored as Record<string, string>;
+    return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user as string])));
   } catch (error) {
     console.warn('Failed to read PIN coverage state, falling back to empty.', error);
     return buildPinCoverageState([]);
@@ -1436,8 +1436,8 @@ export const verifyProfilePin = async (
   pin: string | undefined
 ): Promise<boolean> => {
   const { stored } = await readScopeStoredData('pins');
-  const pins = stored as PinRecord;
-  const storedHash = pins[user];
+  const pins = stored as Record<string, string>;
+  const storedHash = pins[user as string];
 
   if (!storedHash) {
     return true;
