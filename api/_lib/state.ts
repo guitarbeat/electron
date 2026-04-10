@@ -1421,9 +1421,14 @@ export const getPinProtectedUsers = async (): Promise<User[]> => {
 };
 
 export const getPinCoverageState = async (): Promise<PinCoverageState> => {
-  const { stored } = await readScopeStoredData('pins');
-  const pins = stored as PinRecord;
-  return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user])));
+  try {
+    const { stored } = await readScopeStoredData('pins');
+    const pins = stored as PinRecord;
+    return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user])));
+  } catch (error) {
+    console.warn('Failed to read PIN coverage state, falling back to empty.', error);
+    return buildPinCoverageState([]);
+  }
 };
 
 export const verifyProfilePin = async (
@@ -1497,7 +1502,18 @@ export const createReadHandler =
       );
     } catch (error) {
       console.error(`Failed to read ${scope} state`, error);
-      return serverErrorResponse();
+      const fallback = buildFallbackScopeData(scope);
+      return jsonResponse(
+        {
+          data: fallback.clientData,
+          version: fallback.version,
+          degraded: true,
+          warning: getScopeWarning(error),
+        },
+        {
+          status: 200,
+        }
+      );
     }
   };
 
