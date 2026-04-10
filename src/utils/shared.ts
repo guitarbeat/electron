@@ -76,9 +76,9 @@ export const consoleError = (
   const details =
     error && typeof error === "object"
       ? {
-          status: (error as any).status,
-          code: (error as any).code,
-          conflict: (error as any).conflict,
+          status: (error as Record<string, unknown>).status,
+          code: (error as Record<string, unknown>).code,
+          conflict: (error as Record<string, unknown>).conflict,
           ...context,
         }
       : context;
@@ -496,6 +496,7 @@ export const createValidator = (rules: ValidationRules) => {
         return;
       }
 
+      // eslint-disable-next-line no-control-regex
       const cleanValue = value.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
 
       if (rule.maxLength && cleanValue.length > rule.maxLength) {
@@ -542,7 +543,7 @@ export const ValidationPatterns = {
   url: /^https?:\/\/.+/,
   alphanumeric: /^[a-zA-Z0-9]+$/,
   numeric: /^\d+$/,
-  phone: /^\+?[\d\s\-\(\)]+$/,
+  phone: /^\+?[\d\s\-()]+$/,
   slug: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
 } as const;
 

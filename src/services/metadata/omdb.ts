@@ -1,6 +1,35 @@
+import { z } from 'zod';
 import { isValidUrl, sanitizeInput } from '../../utils/shared';
-import { OMDB_BASE, OMDB_API_KEY, METADATA_REQUEST_TIMEOUT_MS } from './config';
+import { OMDB_BASE, OMDB_API_KEY } from './config';
 import type { MovieAutocompleteResult, OmdbSearchResult, MovieMetadata } from './types';
+
+const OmdbMovieSchema = z.object({
+  Title: z.string(),
+  Year: z.string().optional(),
+  imdbID: z.string().optional(),
+  Type: z.enum(['movie', 'series']).catch('movie' as never),
+  Poster: z.string().optional(),
+});
+
+const OmdbSearchResultSchema = z.object({
+  Search: z.array(OmdbMovieSchema).optional(),
+});
+
+const OmdbMetadataSchema = z.object({
+  Title: z.string(),
+  Year: z.string().optional(),
+  imdbID: z.string().optional(),
+  imdbRating: z.string().optional(),
+  Type: z.string().optional(),
+  Poster: z.string().optional(),
+  Plot: z.string().optional(),
+  Director: z.string().optional(),
+  Actors: z.string().optional(),
+  Genre: z.string().optional(),
+  Runtime: z.string().optional(),
+  Rated: z.string().optional(),
+  Released: z.string().optional(),
+});
 
 const stripHtml = (value?: string | null): string | undefined => {
   if (!value) return undefined;
@@ -48,7 +77,8 @@ export const searchOmdbMovies = async (
       throw new Error(`OMDb search failed with status ${response.status}`);
     }
 
-    const data = await response.json() as OmdbSearchResult;
+    const json = await response.json();
+    const data = OmdbSearchResultSchema.parse(json);
     
     if (!data.Search) {
       return [];
@@ -58,11 +88,11 @@ export const searchOmdbMovies = async (
       title: sanitizeInput(movie.Title),
       year: movie.Year,
       imdbID: movie.imdbID,
-      type: movie.Type.toLowerCase() as 'movie' | 'series',
+      type: movie.Type as 'movie' | 'series',
       poster: normalizePosterUrl(movie.Poster),
     }));
   } catch (error) {
-    throw new Error(`OMDb search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`OMDb search failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
   }
 };
 
@@ -93,14 +123,15 @@ export const fetchOmdbMetadata = async (
       throw new Error(`OMDb metadata fetch failed with status ${response.status}`);
     }
 
-    const data = await response.json();
+    const json = await response.json();
+    const data = OmdbMetadataSchema.parse(json);
     
     return {
       title: sanitizeInput(data.Title),
       year: data.Year,
       imdbID: data.imdbID,
       imdbRating: data.imdbRating && data.imdbRating !== 'N/A' ? data.imdbRating : undefined,
-      type: data.Type?.toLowerCase() as 'movie' | 'series',
+      type: (data.Type?.toLowerCase() as 'movie' | 'series') || 'movie',
       poster: normalizePosterUrl(data.Poster),
       plot: stripHtml(data.Plot),
       director: data.Director,
@@ -111,7 +142,7 @@ export const fetchOmdbMetadata = async (
       released: data.Released,
     };
   } catch (error) {
-    throw new Error(`OMDb metadata fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`OMDb metadata fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
   }
 };
 

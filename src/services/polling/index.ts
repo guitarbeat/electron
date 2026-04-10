@@ -280,7 +280,7 @@ export const usePolling = <T>(
     } finally {
       setIsLoading(false);
     }
-  }, [allowNull]);
+  }, [allowNull, key]);
 
   useEffect(() => {
     if (isPaused) {

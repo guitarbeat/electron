@@ -19,7 +19,7 @@ const isWebRequest = (value: unknown): value is Request =>
       'url' in value &&
       'method' in value &&
       'headers' in value &&
-      typeof (value as any).arrayBuffer === 'function'));
+      typeof (value as Request).arrayBuffer === 'function'));
 
 const toHeaders = (input: NodeLikeRequest['headers']): Headers => {
   const headers = new Headers();
@@ -28,19 +28,10 @@ const toHeaders = (input: NodeLikeRequest['headers']): Headers => {
     return headers;
   }
 
-  const inputAny = input as any;
-
-  if (typeof inputAny.forEach === 'function') {
-    inputAny.forEach((value: string, key: string) => {
+  if (input instanceof Headers) {
+    input.forEach((value: string, key: string) => {
       headers.append(key, value);
     });
-    return headers;
-  }
-
-  if (typeof inputAny.entries === 'function') {
-    for (const [key, value] of inputAny.entries()) {
-      headers.append(key, value);
-    }
     return headers;
   }
 
@@ -125,8 +116,8 @@ export function withWebHandler(handler: WebHandler): DualModeHandler {
 
       await writeFetchResponse(res, response);
     } catch (error) {
-      const url = isWebRequest(req) ? req.url : (req as any).url;
-      const method = isWebRequest(req) ? req.method : (req as any).method;
+      const url = isWebRequest(req) ? req.url : (req as NodeLikeRequest).url;
+      const method = isWebRequest(req) ? req.method : (req as NodeLikeRequest).method;
       console.error(`[webHandler] Fatal error during ${method} ${url}:`, error);
       const response = new Response(
         JSON.stringify({
