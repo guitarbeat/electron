@@ -92,8 +92,10 @@ export const normalizeMovieRecord = (value: unknown): Movie | null => {
 export const isMovieRecord = (value: unknown): value is Movie =>
   normalizeMovieRecord(value) !== null;
 
-export const normalizeMovies = (value: unknown[]): Movie[] =>
-  value.flatMap((entry) => {
-    const normalizedMovie = normalizeMovieRecord(entry);
-    return normalizedMovie ? [normalizedMovie] : [];
-  });
+export const normalizeMovies = (value: unknown): Movie[] =>
+  Array.isArray(value)
+    ? value.flatMap((entry) => {
+        const normalizedMovie = normalizeMovieRecord(entry);
+        return normalizedMovie ? [normalizedMovie] : [];
+      })
+    : [];

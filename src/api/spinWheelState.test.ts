@@ -4,7 +4,7 @@ import {
   appendDailySpinEntry,
   normalizeDailySpinRecord,
   normalizeSpinHistoryParsed,
-} from '../services/state/stateSchemas';
+} from '../services/state/stateSchemas.ts';
 
 test('normalizeSpinHistoryParsed accepts string titles', () => {
   assert.deepEqual(normalizeSpinHistoryParsed(['A', 'B']), ['A', 'B']);

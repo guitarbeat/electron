@@ -7,7 +7,7 @@ import type {
   StateEnvelope,
   StateScope,
   StateScopeDataMap,
-} from './stateTypes';
+} from './stateTypes.ts';
 
 const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
 const OUTBOX_PREFIX = 'movieList.scopeOutbox.';

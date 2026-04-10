@@ -1,96 +1,12 @@
-import { writeFetchResponse, type NodeLikeResponse } from './nodeResponse.ts';
+import {
+  isWebRequest,
+  toWebRequest,
+  writeFetchResponse,
+  type NodeLikeRequest,
+  type NodeLikeResponse,
+} from './nodeBridge.ts';
 
 type WebHandler = (req: Request) => Promise<Response> | Response;
-
-type HeaderValue = string | string[] | undefined;
-
-type NodeLikeRequest = {
-  method?: string;
-  url?: string;
-  headers?: Headers | Record<string, HeaderValue>;
-  on?: (event: 'data' | 'end' | 'error', listener: (...args: unknown[]) => void) => void;
-};
-
-const isWebRequest = (value: unknown): value is Request =>
-  typeof Request !== 'undefined' &&
-  (value instanceof Request ||
-    (value !== null &&
-      typeof value === 'object' &&
-      'url' in value &&
-      'method' in value &&
-      'headers' in value &&
-      typeof (value as Request).arrayBuffer === 'function'));
-
-const toHeaders = (input: NodeLikeRequest['headers']): Headers => {
-  const headers = new Headers();
-
-  if (!input) {
-    return headers;
-  }
-
-  if (input instanceof Headers) {
-    input.forEach((value: string, key: string) => {
-      headers.append(key, value);
-    });
-    return headers;
-  }
-
-  for (const [key, value] of Object.entries(input)) {
-    if (value === undefined) {
-      continue;
-    }
-
-    if (Array.isArray(value)) {
-      value.forEach((entry) => headers.append(key, entry));
-      continue;
-    }
-
-    headers.set(key, value);
-  }
-
-  return headers;
-};
-
-const readRequestBody = async (
-  req: NodeLikeRequest,
-  method: string
-): Promise<string | undefined> => {
-  if (method === 'GET' || method === 'HEAD' || typeof req.on !== 'function') {
-    return undefined;
-  }
-
-  const body = await new Promise<Buffer>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-
-    req.on?.('data', (chunk) => {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
-    });
-    req.on?.('end', () => resolve(Buffer.concat(chunks)));
-    req.on?.('error', (error) => reject(error));
-  });
-
-  return body.byteLength > 0 ? body.toString('utf8') : undefined;
-};
-
-const toWebRequest = async (req: NodeLikeRequest): Promise<Request> => {
-  const method = (req.method || 'GET').toUpperCase();
-  const headers = toHeaders(req.headers);
-  const host = headers.get('x-forwarded-host') || headers.get('host') || 'localhost';
-  const protocol = headers.get('x-forwarded-proto') || 'https';
-  const url = new URL(req.url || '/', `${protocol}://${host}`);
-  const body = await readRequestBody(req, method);
-
-  const init: RequestInit = {
-    method,
-    headers,
-  };
-
-  if (body !== undefined && method !== 'GET' && method !== 'HEAD') {
-    init.body = body;
-  }
-
-  return new Request(url, init);
-};
 
 type DualModeHandler = {
   (req: Request): Promise<Response>;
@@ -116,27 +32,47 @@ export function withWebHandler(handler: WebHandler): DualModeHandler {
 
       await writeFetchResponse(res, response);
     } catch (error) {
-      const url = isWebRequest(req) ? req.url : (req as NodeLikeRequest).url;
+const url = isWebRequest(req) ? req.url : (req as NodeLikeRequest).url;
       const method = isWebRequest(req) ? req.method : (req as NodeLikeRequest).method;
-      console.error(`[webHandler] Fatal error during ${method} ${url}:`, error);
-      const response = new Response(
-        JSON.stringify({
-          error: 'Internal Server Error',
-          message: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
 
-      if (!res) {
-        return response;
+      console.error(`[webHandler] Fatal error during ${method} ${url}:`, {
+        message,
+        stack,
+        error,
+      });
+
+      if (res) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            error: 'Internal Server Error',
+            message,
+            stack: process.env.NODE_ENV === 'development' ? stack : undefined,
+          })
+        );
+        return;
       }
 
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(await response.text());
+      // If we don't have res, we're in Web mode. Try to return a Response.
+      if (typeof Response !== 'undefined') {
+        return new Response(
+          JSON.stringify({
+            error: 'Internal Server Error',
+            message,
+            stack: process.env.NODE_ENV === 'development' ? stack : undefined,
+          }),
+          {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      // Fatal: no Response, no res. Just rethrow.
+      throw error;
     }
   };
 
