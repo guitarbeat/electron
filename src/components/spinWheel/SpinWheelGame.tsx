@@ -78,6 +78,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const handleSpin = () => {
     if (isSpinning || spinPool.length === 0) return;
 
+    setSelectedMovieId(null);
+
     const outcome = computeSpinOutcome(spinPool, rotation);
     if (!outcome) return;
 

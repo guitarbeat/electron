@@ -321,6 +321,33 @@ const replayOutbox = async <TScope extends StateScope>(
         }
 
         if (!response.ok) {
+          const updatedFailures = (nextOp.consecutiveFailures ?? 0) + 1;
+          const MAX_CONSECUTIVE_FAILURES = 3;
+          if (updatedFailures >= MAX_CONSECUTIVE_FAILURES) {
+            const blockedOutbox = {
+              ...outbox,
+              blocked: true,
+              pendingOps: [
+                { ...nextOp, consecutiveFailures: updatedFailures },
+                ...remaining,
+              ],
+            };
+            writeOutbox(scope, blockedOutbox);
+            return {
+              data: storedSnapshot?.data ?? optimisticSnapshot.data,
+              version: latestVersion,
+              degraded: true,
+              blocked: true,
+              warning: 'A change could not be saved after multiple attempts. Refresh to retry.',
+            };
+          }
+          writeOutbox(scope, {
+            ...outbox,
+            pendingOps: [
+              { ...nextOp, consecutiveFailures: updatedFailures },
+              ...remaining,
+            ],
+          });
           return {
             data: storedSnapshot?.data ?? optimisticSnapshot.data,
             version: latestVersion,

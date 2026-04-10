@@ -24,6 +24,7 @@ const MessageList: React.FC<MessageListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const previousLengthRef = useRef(0);
+  const scrollTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -49,20 +50,30 @@ const MessageList: React.FC<MessageListProps> = ({
         const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
 
         if (isNearBottom) {
-          requestAnimationFrame(() => {
-            window.setTimeout(() => {
-              container.scrollTo({
-                top: container.scrollHeight,
-                behavior: 'smooth',
-              });
-            }, 50);
-          });
+          if (scrollTimeoutRef.current !== null) {
+            window.clearTimeout(scrollTimeoutRef.current);
+          }
+          scrollTimeoutRef.current = window.setTimeout(() => {
+            scrollTimeoutRef.current = null;
+            containerRef.current?.scrollTo({
+              top: containerRef.current.scrollHeight,
+              behavior: 'smooth',
+            });
+          }, 50);
         }
       }
     }
 
     previousLengthRef.current = messages.length;
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current !== null) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const scrollToBottom = () => {
     const container = containerRef.current;
