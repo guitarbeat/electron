@@ -28,8 +28,10 @@ const nodeFetch = (
 
     const rawHeaders = init?.headers;
     const headersRecord: Record<string, string> = {};
-    if (rawHeaders instanceof Headers) {
-      rawHeaders.forEach((value, key) => {
+
+    const rawHeadersAny = rawHeaders as any;
+    if (rawHeadersAny && typeof rawHeadersAny.forEach === 'function') {
+      rawHeadersAny.forEach((value: string, key: string) => {
         headersRecord[key] = value;
       });
     } else if (rawHeaders && typeof rawHeaders === 'object') {

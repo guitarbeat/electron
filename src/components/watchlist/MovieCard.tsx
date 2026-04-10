@@ -1,7 +1,7 @@
 import React from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage } from '@/utils';
+import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import MediaCard from '@/ui/MediaCard';
 import Button from '@/ui/Button';
@@ -162,7 +162,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
     try {
       await onToggle();
     } catch (error) {
-      console.error('Failed to toggle watched status', error);
+      consoleError('Failed to toggle watched status', error);
       onToggleError?.(getErrorMessage(error, 'Failed to update watched status.'));
     } finally {
       setIsUpdating(false);

@@ -3,7 +3,7 @@ import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUser } from '@/app/useProviders';
 import { USER_PHOTOS, type User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
-import { getErrorMessage, USER_OPTIONS } from '@/utils';
+import { getErrorMessage, USER_OPTIONS, consoleError } from '@/utils';
 import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
@@ -162,7 +162,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             }
           }
         } catch (error) {
-          console.error('Profile selection failed:', error);
+          consoleError('Profile selection failed:', error);
           setSelectionError(getErrorMessage(error, 'Profile login is unavailable right now.'));
         }
       })();
@@ -181,7 +181,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           onUserSelected?.(null);
         }
       } catch (error) {
-        console.error('Profile logout failed:', error);
+        consoleError('Profile logout failed:', error);
         setSelectionError(getErrorMessage(error, 'Unable to update the profile session.'));
       }
     })();
