@@ -43,7 +43,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const description =
     result.character === 'Neither'
       ? neitherDescription
-      : characterDescriptions[result.character as QuizCharacter];
+      : (characterDescriptions[result.character as QuizCharacter] ?? `You got ${result.character}!`);
 
   useEffect(() => {
     const id = setInterval(() => setStarAngle(a => (a + 8) % 360), 40);

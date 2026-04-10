@@ -97,6 +97,7 @@ export interface ConflictResponse {
 export interface PendingMutation {
   op: string;
   payload: unknown;
+  consecutiveFailures?: number;
 }
 
 export interface ScopeOutbox {
