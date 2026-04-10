@@ -15,6 +15,7 @@ import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { useToast } from '@/app/useProviders';
+import { deepClone } from '@/utils';
 import { spacing, colors, typography, radius } from '@/theme/tokens';
 
 interface QuestionsTabProps {
@@ -655,7 +656,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   const duplicateQuestion = (q: QuizQuestion) => {
     const idx = questions.findIndex((question) => question.id === q.id);
     const duplicate = {
-      ...(JSON.parse(JSON.stringify(q)) as QuizQuestion),
+      ...deepClone(q),
       id: `q_${Date.now()}`,
       question: `${q.question} (copy)`,
     };

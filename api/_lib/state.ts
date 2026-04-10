@@ -1601,6 +1601,6 @@ export const createMutateHandler =
       );
     } catch (error) {
       console.error(`Failed to mutate ${scope} state during ${req.method} ${req.url}:`, error);
-      return serverErrorResponse();
+      return serverErrorResponse(error);
     }
   };

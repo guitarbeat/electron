@@ -80,8 +80,21 @@ export const methodNotAllowedResponse = (
 export const badRequestResponse = (message: string): Response =>
   jsonResponse({ error: message }, { status: 400 });
 
-export const serverErrorResponse = (message: string = 'Internal server error.'): Response =>
-  jsonResponse({ error: message }, { status: 500 });
+export const serverErrorResponse = (
+  error: unknown = 'Internal server error.'
+): Response => {
+  const message = error instanceof Error ? error.message : String(error);
+  const stack = error instanceof Error ? error.stack : undefined;
+
+  return jsonResponse(
+    {
+      error: 'Internal Server Error',
+      message,
+      stack: process.env.NODE_ENV === 'development' ? stack : undefined,
+    },
+    { status: 500 }
+  );
+};
 
 export const normalizeEtag = (value: string | null): string =>
   (value || '').trim().replace(/^W\//, '').replace(/^"|"$/g, '');
