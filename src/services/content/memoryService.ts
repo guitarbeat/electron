@@ -1,7 +1,7 @@
 import type { SharedMemory } from '@/shared/types';
-import { mutateScope, readScope } from '../state';
-import { cloneMemories } from '../state/stateSchemas';
-import { sanitizeInput } from '@/utils';
+import { mutateScope, readScope } from '../state/index.ts';
+import { cloneMemories } from '../state/stateSchemas.ts';
+import { sanitizeInput } from '../../utils/shared.ts';
 
 const sortMemories = (memories: SharedMemory[]): SharedMemory[] =>
   [...memories].sort(

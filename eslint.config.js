@@ -9,7 +9,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 const reactHooksRecommendedLatest = reactHooks.configs.flat['recommended-latest'];
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next'] },
   {
     extends: [
       js.configs.recommended,
