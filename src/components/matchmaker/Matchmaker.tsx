@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback, useImperative
 import { User, Movie } from '@/shared/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
 import { useMovies } from '@/hooks/movies';
-import { useToast } from '@/app/providers';
+import { useToast } from '@/app/useProviders';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';

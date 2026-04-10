@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import type { Message } from '@/shared/types';
 import { areDeeplyEqual, sanitizeInput } from '@/utils';
 import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/content';
