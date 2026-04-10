@@ -561,7 +561,7 @@ const WatchlistTopControls = React.forwardRef<
                   ));
                 })() : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
-                    No titles found for "{trimmedSearchQuery}"
+                    No titles found for &quot;{trimmedSearchQuery}&quot;
                   </div>
                 ) : null}
               </div>

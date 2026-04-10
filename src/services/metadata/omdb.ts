@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isValidUrl, sanitizeInput } from '../../utils/shared';
 import { OMDB_BASE, OMDB_API_KEY } from './config';
-import type { MovieAutocompleteResult, OmdbSearchResult, MovieMetadata } from './types';
+import type { MovieAutocompleteResult, MovieMetadata } from './types';
 
 const OmdbMovieSchema = z.object({
   Title: z.string(),
