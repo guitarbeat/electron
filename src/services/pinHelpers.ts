@@ -1,3 +1,5 @@
+import { sanitizeInput, consoleError } from '../utils/shared.ts';
+
 export interface UserPins {
   Aaron?: string;
   Electra?: string;
@@ -41,7 +43,7 @@ export const parsePinsContent = (fileContent: string | undefined): UserPins => {
     const parsed = JSON.parse(fileContent);
     return normalizeUserPins(parsed) ?? {};
   } catch (parseError) {
-    console.error('Error parsing PIN file:', parseError);
+    consoleError('Error parsing PIN file:', parseError);
     return {};
   }
 };
@@ -62,8 +64,6 @@ export const createSerialTaskRunner = (): SerialTaskRunner => {
 // ---------------------------------------------------------------------------
 // Generic pin record helpers (merged from content/pinHelpers.ts)
 // ---------------------------------------------------------------------------
-
-import { sanitizeInput } from '../utils/shared.ts';
 
 export interface PinRecord {
   [key: string]: string;

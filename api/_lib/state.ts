@@ -1501,7 +1501,7 @@ export const createReadHandler =
         }
       );
     } catch (error) {
-      console.error(`Failed to read ${scope} state`, error);
+      console.error(`Failed to read ${scope} state during ${req.method} ${req.url}:`, error);
       const fallback = buildFallbackScopeData(scope);
       return jsonResponse(
         {
@@ -1596,7 +1596,7 @@ export const createMutateHandler =
         }
       );
     } catch (error) {
-      console.error(`Failed to mutate ${scope} state`, error);
+      console.error(`Failed to mutate ${scope} state during ${req.method} ${req.url}:`, error);
       return serverErrorResponse();
     }
   };

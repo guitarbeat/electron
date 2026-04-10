@@ -12,7 +12,14 @@ type NodeLikeRequest = {
 };
 
 const isWebRequest = (value: unknown): value is Request =>
-  typeof Request !== 'undefined' && value instanceof Request;
+  typeof Request !== 'undefined' &&
+  (value instanceof Request ||
+    (value !== null &&
+      typeof value === 'object' &&
+      'url' in value &&
+      'method' in value &&
+      'headers' in value &&
+      typeof (value as any).arrayBuffer === 'function'));
 
 const toHeaders = (input: NodeLikeRequest['headers']): Headers => {
   const headers = new Headers();
@@ -21,10 +28,19 @@ const toHeaders = (input: NodeLikeRequest['headers']): Headers => {
     return headers;
   }
 
-  if (input instanceof Headers) {
-    input.forEach((value, key) => {
+  const inputAny = input as any;
+
+  if (typeof inputAny.forEach === 'function') {
+    inputAny.forEach((value: string, key: string) => {
       headers.append(key, value);
     });
+    return headers;
+  }
+
+  if (typeof inputAny.entries === 'function') {
+    for (const [key, value] of inputAny.entries()) {
+      headers.append(key, value);
+    }
     return headers;
   }
 
@@ -90,14 +106,14 @@ type DualModeHandler = {
   (req: NodeLikeRequest, res: NodeLikeResponse): Promise<void>;
 };
 
-export function withWebHandler(handler: WebHandler) {
-  return (async (
+export function withWebHandler(handler: WebHandler): DualModeHandler {
+  const dualModeHandler = async (
     req: Request | NodeLikeRequest,
     res?: NodeLikeResponse
   ): Promise<Response | void> => {
     try {
       if (isWebRequest(req) && !res) {
-        return handler(req);
+        return await handler(req);
       }
 
       const request = isWebRequest(req) ? req : await toWebRequest(req);
@@ -109,7 +125,9 @@ export function withWebHandler(handler: WebHandler) {
 
       await writeFetchResponse(res, response);
     } catch (error) {
-      console.error('[webHandler] Fatal error:', error);
+      const url = isWebRequest(req) ? req.url : (req as any).url;
+      const method = isWebRequest(req) ? req.method : (req as any).method;
+      console.error(`[webHandler] Fatal error during ${method} ${url}:`, error);
       const response = new Response(
         JSON.stringify({
           error: 'Internal Server Error',
@@ -129,5 +147,7 @@ export function withWebHandler(handler: WebHandler) {
       res.setHeader('Content-Type', 'application/json');
       res.end(await response.text());
     }
-  }) as DualModeHandler;
+  };
+
+  return dualModeHandler as DualModeHandler;
 }

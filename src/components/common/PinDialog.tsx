@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
 import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/modalPrimitives';
-import { getErrorMessage } from '@/utils';
+import { getErrorMessage, consoleError } from '@/utils';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -350,7 +350,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       const success = await onSubmit(pin, newPin);
       if (!success) triggerError('Unable to update PIN. Try again!');
     } catch (submitError) {
-      console.error('PIN submit failed:', submitError);
+      consoleError('PIN submit failed:', submitError);
       triggerError(getErrorMessage(submitError, 'Unable to save PIN. Please try again.'));
     }
   };

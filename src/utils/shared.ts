@@ -65,6 +65,33 @@ export const getErrorMessage = (
   return fallback;
 };
 
+/**
+ * Log error with extra info if available (status, code, etc)
+ */
+export const consoleError = (
+  message: string,
+  error: unknown,
+  context?: Record<string, unknown>,
+): void => {
+  const details =
+    error && typeof error === "object"
+      ? {
+          status: (error as any).status,
+          code: (error as any).code,
+          conflict: (error as any).conflict,
+          ...context,
+        }
+      : context;
+
+  const hasDetails =
+    details && Object.values(details).some((v) => v !== undefined);
+  if (hasDetails) {
+    console.error(message, error, details);
+  } else {
+    console.error(message, error);
+  }
+};
+
 export const readApiErrorMessage = async (
   response: Response,
   fallback: string,
