@@ -3,14 +3,6 @@ const BASE_DELAY_MS = 200;
 const MAX_DELAY_MS = 5000;
 const DEFAULT_TIMEOUT_MS = 15000;
 
-interface FetchResponse {
-  ok: boolean;
-  status: number;
-  statusText: string;
-  headers: { get(name: string): string | null };
-  json(): Promise<unknown>;
-  text(): Promise<string>;
-}
 
 const isRetryableStatus = (status: number): boolean => {
   return status === 429 || status === 502 || status === 503 || status === 504 || status >= 500;
@@ -44,7 +36,7 @@ export const fetchWithRetry = async (
   init: RequestInit | undefined,
   context: string,
   options: { timeoutMs?: number } = {}
-): Promise<FetchResponse> => {
+): Promise<Response> => {
   let lastResponse: Response | undefined;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
@@ -53,8 +45,8 @@ export const fetchWithRetry = async (
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const signal = init?.signal 
-        ? AbortSignal.any([init.signal, controller.signal]) 
+      const signal = init?.signal
+        ? AbortSignal.any([init.signal, controller.signal])
         : controller.signal;
 
       const response = await fetch(input, {
@@ -65,26 +57,12 @@ export const fetchWithRetry = async (
 
       if (response.ok) {
         clearTimeout(timeoutId);
-        return {
-          ok: response.ok,
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-          json: () => response.json(),
-          text: () => response.text(),
-        };
+        return response;
       }
 
       if (!isRetryableStatus(response.status) || attempt === MAX_ATTEMPTS) {
         clearTimeout(timeoutId);
-        return {
-          ok: response.ok,
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-          json: () => response.json(),
-          text: () => response.text(),
-        };
+        return response;
       }
 
       const retryAfterMs = parseRetryAfterMs(response);
@@ -111,14 +89,7 @@ export const fetchWithRetry = async (
   }
 
   if (lastResponse) {
-    return {
-      ok: lastResponse.ok,
-      status: lastResponse.status,
-      statusText: lastResponse.statusText,
-      headers: lastResponse.headers,
-      json: () => lastResponse.json(),
-      text: () => lastResponse.text(),
-    };
+    return lastResponse;
   }
 
   throw new Error(`${context}: no response`);
