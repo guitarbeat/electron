@@ -1,4 +1,4 @@
 // State management module
-export * from './stateClient';
-export * from './stateSchemas';
-export * from './stateTypes';
+export * from './stateClient.ts';
+export * from './stateSchemas.ts';
+export * from './stateTypes.ts';

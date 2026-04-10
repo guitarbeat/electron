@@ -1,5 +1,5 @@
-import type { User } from '@/shared/types';
-import { spacing } from '@/theme/tokens';
+import type { User } from '../shared/types.ts';
+import { spacing } from '../theme/tokens.ts';
 
 /**
  * Consolidated Utilities

@@ -177,7 +177,7 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
                 flexShrink: 0,
                 cursor: onPosterClick ? 'pointer' : 'default',
               }}
-              title={onPosterClick ? `Click for more details about "${movie.title}"` : undefined}
+              title={onPosterClick ? `Click for more details about &quot;${movie.title}&quot;` : undefined}
             />
           ) : (
             <div
@@ -196,7 +196,7 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
                 flexShrink: 0,
                 cursor: onPosterClick ? 'pointer' : 'default',
               }}
-              title={onPosterClick ? `Click for more details about "${movie.title}"` : undefined}
+              title={onPosterClick ? `Click for more details about &quot;${movie.title}&quot;` : undefined}
             >
               No poster
             </div>

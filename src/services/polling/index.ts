@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { consoleError } from '@/utils';
+import { consoleError } from '../../utils/shared.ts';
 
 type Listener<T> = (data: T | undefined, error: unknown | null) => void;
 interface PollingOptions {

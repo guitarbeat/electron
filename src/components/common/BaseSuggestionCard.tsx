@@ -75,7 +75,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
               marginTop: spacing.xs,
             }}
           >
-            "{subtitle}"
+            &quot;{subtitle}&quot;
           </p>
         )}
         {footer}

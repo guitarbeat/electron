@@ -1,12 +1,12 @@
-import { sanitizeInput } from '../../utils/shared';
+import { sanitizeInput } from '../../utils/shared.ts';
 import { 
   MOVIE_AUTOCOMPLETE_RESULT_LIMIT, 
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT
-} from './config';
+} from './config.ts';
 export { MOVIE_AUTOCOMPLETE_RESULT_LIMIT, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT };
-import { searchOmdbMovies } from './omdb';
-import { searchTvMazeShows } from './tvmaze';
-import type { MovieAutocompleteResult } from './types';
+import { searchOmdbMovies } from './omdb.ts';
+import { searchTvMazeShows } from './tvmaze.ts';
+import type { MovieAutocompleteResult } from './types.ts';
 
 const getMovieAutocompleteResultKey = (result: MovieAutocompleteResult): string =>
   `${sanitizeInput(result.title).toLowerCase()}|${sanitizeInput(result.year || '').toLowerCase()}|${result.type}`;
@@ -16,37 +16,42 @@ export const mergeMovieAutocompleteResults = (
   seriesResults: MovieAutocompleteResult[],
   query?: string
 ): MovieAutocompleteResult[] => {
-  const allResults = [...movieResults, ...seriesResults];
+  const results: MovieAutocompleteResult[] = [];
+  const maxLen = Math.max(movieResults.length, seriesResults.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    if (i < movieResults.length) results.push(movieResults[i]);
+    if (i < seriesResults.length) results.push(seriesResults[i]);
+  }
+
+  const normalizedQuery = (query || '').trim().toLowerCase();
   
-  const uniqueResults = allResults.filter((result, index, arr) => 
-    arr.findIndex(item => 
-      getMovieAutocompleteResultKey(item) === getMovieAutocompleteResultKey(result)
-    ) === index
-  );
+  const getScore = (item: MovieAutocompleteResult): number => {
+    const norm = item.title.toLowerCase();
+    if (!normalizedQuery) return 0;
+    if (norm === normalizedQuery) return 2;
+    if (norm.startsWith(normalizedQuery)) return 1;
+    return 0;
+  };
 
-  const normalizedQuery = query ? query.trim().toLowerCase() : '';
+  const scoredResults = results.map(item => ({ item, score: getScore(item) }));
 
-  return uniqueResults
+  // Filter unique
+  const seen = new Set<string>();
+  const uniqueScoredResults = scoredResults.filter(entry => {
+    const key = `${entry.item.title.toLowerCase()}|${entry.item.year || ''}|${entry.item.type}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return uniqueScoredResults
     .sort((a, b) => {
-      const aNorm = a.title.toLowerCase();
-      const bNorm = b.title.toLowerCase();
-
-      const getScore = (norm: string): number => {
-        if (!normalizedQuery) return 0;
-        if (norm === normalizedQuery) return 2;
-        if (norm.startsWith(normalizedQuery)) return 1;
-        return 0;
-      };
-
-      const aScore = getScore(aNorm);
-      const bScore = getScore(bNorm);
-
-      if (aScore !== bScore) {
-        return bScore - aScore;
-      }
-
-      return a.title.localeCompare(b.title);
+      if (a.score !== b.score) return b.score - a.score;
+      // If same score, keep original order (interleaved)
+      return 0;
     })
+    .map(entry => entry.item)
     .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
 };
 
@@ -54,24 +59,25 @@ export const searchMovieAutocomplete = async (
   query: string,
   options: { signal?: AbortSignal } = {}
 ): Promise<MovieAutocompleteResult[]> => {
-  if (!query.trim()) {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) {
     return [];
   }
 
-  try {
-    const [omdbResults, tvMazeResults] = await Promise.allSettled([
-      searchOmdbMovies(query, options.signal),
-      searchTvMazeShows(query, options.signal)
-    ]);
+  const [omdbResults, tvMazeResults] = await Promise.allSettled([
+    searchOmdbMovies(trimmedQuery, options.signal),
+    searchTvMazeShows(trimmedQuery, options.signal)
+  ]);
 
-    const successfulOmdbResults = omdbResults.status === 'fulfilled' ? omdbResults.value : [];
-    const successfulTvMazeResults = tvMazeResults.status === 'fulfilled' ? tvMazeResults.value : [];
-
-    const omdbLimited = successfulOmdbResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
-    const tvMazeLimited = successfulTvMazeResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
-
-    return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
-  } catch (error) {
-    throw new Error(`Movie autocomplete failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
+  if (omdbResults.status === 'rejected' && tvMazeResults.status === 'rejected') {
+    throw omdbResults.reason;
   }
+
+  const successfulOmdbResults = omdbResults.status === 'fulfilled' ? omdbResults.value : [];
+  const successfulTvMazeResults = tvMazeResults.status === 'fulfilled' ? tvMazeResults.value : [];
+
+  const omdbLimited = successfulOmdbResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
+  const tvMazeLimited = successfulTvMazeResults.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
+
+  return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
 };

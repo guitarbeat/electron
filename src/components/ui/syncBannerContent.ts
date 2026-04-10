@@ -1,7 +1,7 @@
 import {
   SYNC_WARNING_CLIENT_NETWORK,
   SYNC_WARNING_OUTBOX,
-} from '../../services/state';
+} from '../../services/state/index.ts';
 
 export interface SyncBannerContent {
   badge: string;

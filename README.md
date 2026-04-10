@@ -26,8 +26,8 @@ Run `pnpm verify` before a Vercel deploy to execute the full local validation se
 
 ## Documentation
 
-- **[docs/README.md](docs/README.md)** — index of guides (deployment, site layout, history)
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** — toolchain, env vars, and workflow
+- **[docs/README.md](docs/README.md)** — index of guides (architecture, development, deployment)
+- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — toolchain, env vars, and workflow
 
 ## Tech stack
 

@@ -1427,7 +1427,11 @@ export const getPinCoverageState = async (): Promise<PinCoverageState> => {
     return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user as string])));
   } catch (error) {
     console.warn('Failed to read PIN coverage state, falling back to empty.', error);
-    return buildPinCoverageState([]);
+    return {
+      pinProtectedUsers: [],
+      usersMissingPins: [],
+      pinCoverageComplete: true,
+    };
   }
 };
 
