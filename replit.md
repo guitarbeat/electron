@@ -132,8 +132,8 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 | Package | Role |
 |---|---|
 | `react` / `react-dom` 19 | UI framework |
-| `vite` 7 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
-| `typescript` ~5.9 | Type safety |
+| `vite` 8 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
+| `typescript` ~6.0 | Type safety |
 | `ogl` | WebGL for visual effects |
 | `chroma-js` | Color manipulation |
 | `sass` / `sass-embedded` | SCSS compilation |
