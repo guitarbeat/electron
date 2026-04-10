@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { sanitizeInput } from '@/utils';
 import { MovieSuggestion, User } from '@/shared/types';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import { mutateScope } from '@/services/state';
 import type { MovieAutocompleteResult } from '@/services/metadata/types';
 import { useCollection } from '../useCollection';

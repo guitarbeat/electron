@@ -14,7 +14,7 @@ import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { useToast } from '@/app/providers';
+import { useToast } from '@/app/useProviders';
 import { spacing, colors, typography, radius } from '@/theme/tokens';
 
 interface QuestionsTabProps {

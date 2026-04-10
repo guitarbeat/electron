@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useToast } from '@/app/providers';
+import { useToast } from '@/app/useProviders';
 import type { Message } from '@/shared/types';
 import { spacing, typography } from '@/theme/tokens';
 import ConfirmDialog from '@/ui/ConfirmDialog';

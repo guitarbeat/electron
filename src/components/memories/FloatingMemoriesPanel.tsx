@@ -3,7 +3,7 @@ import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import { useMovies } from '@/hooks/movies/useMovies';
 import { usePolling } from '@/services/polling';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import {
   addMemory,
   deleteMemory,

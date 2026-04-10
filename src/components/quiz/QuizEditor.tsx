@@ -8,7 +8,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useToast } from '@/app/providers';
+import { useToast } from '@/app/useProviders';
 import type { QuizData } from '@/hooks/useQuiz';
 import { QuizQuestion } from './types';
 import QuestionsTab from './QuestionsTab';
