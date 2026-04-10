@@ -9,7 +9,7 @@ import {
   quizQuestions as defaultQuestions,
 } from '../../components/quiz/data.ts';
 import { reconcileMatchmakerStatus } from '../../components/matchmaker/matchmakerGame.ts';
-import { normalizePinRecord, type PinRecord } from '../pinHelpers.ts';
+import { normalizePinRecord, type PinRecord } from '../content/pinHelpers.ts';
 import type {
   MatchmakerGame,
   Message,

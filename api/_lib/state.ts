@@ -12,7 +12,7 @@ import {
   normalizeMovieRecord,
   normalizeMovies,
 } from '../../src/services/content/movieRecords.ts';
-import type { PinRecord } from '../../src/services/pinHelpers.ts';
+import type { PinRecord } from '../../src/services/content/pinHelpers.ts';
 import {
   appendDailySpinEntry,
   cloneQuizData,
