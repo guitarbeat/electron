@@ -73,11 +73,16 @@ const toWebRequest = async (req: NodeLikeRequest): Promise<Request> => {
   const url = new URL(req.url || '/', `${protocol}://${host}`);
   const body = await readRequestBody(req, method);
 
-  return new Request(url, {
+  const init: RequestInit = {
     method,
     headers,
-    body,
-  });
+  };
+
+  if (body !== undefined && method !== 'GET' && method !== 'HEAD') {
+    init.body = body;
+  }
+
+  return new Request(url, init);
 };
 
 type DualModeHandler = {
@@ -86,18 +91,43 @@ type DualModeHandler = {
 };
 
 export function withWebHandler(handler: WebHandler) {
-  return (async (req: Request | NodeLikeRequest, res?: NodeLikeResponse): Promise<Response | void> => {
-    if (isWebRequest(req) && !res) {
-      return handler(req);
+  return (async (
+    req: Request | NodeLikeRequest,
+    res?: NodeLikeResponse
+  ): Promise<Response | void> => {
+    try {
+      if (isWebRequest(req) && !res) {
+        return handler(req);
+      }
+
+      const request = isWebRequest(req) ? req : await toWebRequest(req);
+      const response = await handler(request);
+
+      if (!res) {
+        return response;
+      }
+
+      await writeFetchResponse(res, response);
+    } catch (error) {
+      console.error('[webHandler] Fatal error:', error);
+      const response = new Response(
+        JSON.stringify({
+          error: 'Internal Server Error',
+          message: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      if (!res) {
+        return response;
+      }
+
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(await response.text());
     }
-
-    const request = isWebRequest(req) ? req : await toWebRequest(req);
-    const response = await handler(request);
-
-    if (!res) {
-      return response;
-    }
-
-    await writeFetchResponse(res, response);
   }) as DualModeHandler;
 }

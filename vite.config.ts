@@ -100,13 +100,16 @@ export default defineConfig(({ mode }) => {
                     }
                   }
 
-                  const request = new Request(url, {
+                  const init: RequestInit = {
                     method: req.method,
                     headers,
-                    body: body,
-                    // Note: for GET/HEAD, body must be null or undefined
-                    // our code ensures body is only populated for other methods
-                  });
+                  };
+
+                  if (body !== undefined && req.method !== 'GET' && req.method !== 'HEAD') {
+                    init.body = body;
+                  }
+
+                  const request = new Request(url, init);
 
                   const response = await handler(request);
 
