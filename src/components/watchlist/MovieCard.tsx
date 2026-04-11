@@ -20,6 +20,7 @@ interface MovieCardProps {
   currentUser: User | null;
   onToggle: () => void | Promise<void>;
   onToggleError?: (message: string) => void;
+  onDelete?: () => void;
   onRename?: (title: string) => Promise<void>;
   animationDelay: string;
   memories?: SharedMemory[];
@@ -118,6 +119,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
   onToggle,
   onToggleError,
 
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onDelete,
   onRename,
   animationDelay,
   memories = [],
@@ -266,6 +270,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           isMobile={isMobile}
           onClose={() => setIsTitleEditorOpen(false)}
           onSubmit={onRename}
+          onDelete={onDelete}
         />
       ) : null}
 
@@ -356,6 +361,7 @@ interface MovieActionsProps {
   onToggle: () => void;
   onToggleNotes: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const MovieActions: React.FC<MovieActionsProps> = ({
@@ -366,6 +372,9 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onToggleNotes,
   onEdit,
 
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onDelete,
 }) => {
   const iconActionClassName = (modifierClassName: string) =>
     `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
