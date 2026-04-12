@@ -178,6 +178,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           watchedByBoth ? 'movie-item-card--watched' : ''
         } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
         data-movie-id={movie.id}
+        data-added-by={movie.addedBy}
         style={{
           padding: 0,
           marginBottom: 0,
@@ -192,6 +193,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
             <div className="movie-item-watchers">
               {movie.watchedBy.includes('Aaron') ? <WatcherBadge user="Aaron" size="md" /> : null}
               {movie.watchedBy.includes('Electra') ? <WatcherBadge user="Electra" size="md" /> : null}
+            </div>
+          ) : null}
+
+          {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
+            <div className="movie-item-imdb-badge" aria-label={`IMDb rating: ${movie.imdbRating}`}>
+              <span className="movie-item-imdb-badge__star">⭐</span>
+              <span className="movie-item-imdb-badge__score">{movie.imdbRating}</span>
             </div>
           ) : null}
 
@@ -329,8 +337,9 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, 
   const metadataItems = [
     movie.year,
     movie.runtime,
-    movie.imdbRating ? `${movie.imdbRating} IMDb` : null,
   ].filter(Boolean) as string[];
+
+  const firstGenre = movie.genre?.split(',')[0]?.trim();
 
   return (
     <div className={`movie-metadata ${className}`}>
@@ -347,6 +356,11 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, 
           </span>
         ) : null}
       </div>
+      {firstGenre ? (
+        <div className="movie-meta-genre-row">
+          <span className="movie-item-genre-chip">{firstGenre}</span>
+        </div>
+      ) : null}
     </div>
   );
 };
