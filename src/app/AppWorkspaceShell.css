@@ -67,3 +67,24 @@
 .workspace-surface--carousel-mode {
   padding-bottom: 180px;
 }
+
+/* ── Mobile improvements ── */
+@media (max-width: 640px) {
+  .view-toggle-bar {
+    padding: 8px 12px 6px;
+    gap: 6px;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 0.8rem;
+    border-radius: 14px;
+  }
+
+  .view-toggle-btn__icon {
+    font-size: 1rem;
+  }
+}
