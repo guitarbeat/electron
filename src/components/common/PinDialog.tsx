@@ -431,10 +431,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
             {/* Rainbow top strip */}
             <div style={styles.rainbowTop} aria-hidden="true" />
 
-            {/* Corner sparkles */}
-            <span style={{ ...styles.sparkleCorner, top: 10, left: 12, animationDelay: '0s' }} aria-hidden="true">✦</span>
-            <span style={{ ...styles.sparkleCorner, top: 10, right: 12, animationDelay: '0.7s' }} aria-hidden="true">✦</span>
-
             {/* Title */}
             <h2 id="pin-dialog-title" style={styles.title}>
               {getTitle()}
