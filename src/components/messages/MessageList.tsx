@@ -55,10 +55,13 @@ const MessageList: React.FC<MessageListProps> = ({
           }
           scrollTimeoutRef.current = window.setTimeout(() => {
             scrollTimeoutRef.current = null;
-            containerRef.current?.scrollTo({
-              top: containerRef.current.scrollHeight,
-              behavior: 'smooth',
-            });
+            const el = containerRef.current;
+            if (el) {
+              el.scrollTo({
+                top: el.scrollHeight,
+                behavior: 'smooth',
+              });
+            }
           }, 50);
         }
       }
