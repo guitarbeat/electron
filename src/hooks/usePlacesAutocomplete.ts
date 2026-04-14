@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { buildGoogleMapsUrl } from "../utils";
+import { buildGoogleMapsUrl, sanitizeInput } from "../utils";
 
 const GOOGLE_PLACES_API_KEY =
   ((import.meta.env || {}) as Record<string, string | undefined>)
@@ -65,7 +65,7 @@ export function usePlacesAutocomplete(
         const loc = place.geometry?.location;
         const lat = loc ? loc.lat() : undefined;
         const lng = loc ? loc.lng() : undefined;
-        onPlaceSelectRef.current(name.trim(), lat, lng);
+        onPlaceSelectRef.current(sanitizeInput(name.trim()), lat, lng);
       });
 
       autocompleteRef.current = autocomplete;
