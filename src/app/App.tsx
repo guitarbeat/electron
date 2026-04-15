@@ -19,6 +19,7 @@ import type { ViewMode } from '@/app/AppWorkspaceShell';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
+const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -65,6 +66,14 @@ const App: React.FC = () => {
     setQuizCompleted(readQuizCompletionState(currentUser));
   }, [currentUser]);
 
+  const updateQuizCompletion = useCallback(
+    (completed: boolean) => {
+      setQuizCompleted(completed);
+      writeQuizCompletionState(currentUser, completed);
+    },
+    [currentUser]
+  );
+
   const openQuizExperience = useCallback(() => {
     setShowQuizFlow(true);
   }, []);
@@ -75,15 +84,13 @@ const App: React.FC = () => {
   }, []);
 
   const handleQuizComplete = useCallback(() => {
-    setQuizCompleted(true);
-    writeQuizCompletionState(currentUser, true);
+    updateQuizCompletion(true);
     setShowQuizFlow(false);
-  }, [currentUser]);
+  }, [updateQuizCompletion]);
 
   const handleQuizRetake = useCallback(() => {
-    setQuizCompleted(false);
-    writeQuizCompletionState(currentUser, false);
-  }, [currentUser]);
+    updateQuizCompletion(false);
+  }, [updateQuizCompletion]);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
@@ -214,7 +221,7 @@ const App: React.FC = () => {
             closeDisabled={modal.closeDisabled}
             closeDisabledLabel={modal.closeDisabledLabel}
           >
-            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
+            <div style={modal.contentStyle ?? modalBodyStyle}>
               {modal.isOpen ? modal.content : null}
             </div>
           </MinigameModal>

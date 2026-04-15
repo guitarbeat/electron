@@ -34,6 +34,10 @@ const paddedScrollContentStyle: CSSProperties = {
   padding: spacing.lg,
 };
 
+const renderSuspended = (content: ReactNode) => (
+  <React.Suspense fallback={null}>{content}</React.Suspense>
+);
+
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
   showMemoriesPanel: boolean;
@@ -83,11 +87,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 820,
       maxHeight: 920,
       contentStyle: scrollContentStyle,
-      content: (
-        <React.Suspense fallback={null}>
-          <MessageBoard />
-        </React.Suspense>
-      ),
+      content: renderSuspended(<MessageBoard />),
     },
     {
       key: 'memories',
@@ -98,11 +98,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 980,
       maxHeight: 920,
       contentStyle: scrollContentStyle,
-      content: (
-        <React.Suspense fallback={null}>
-          <FloatingMemoriesPanel />
-        </React.Suspense>
-      ),
+      content: renderSuspended(<FloatingMemoriesPanel />),
     },
     {
       key: 'quiz-editor',
@@ -112,11 +108,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Personality quiz',
       maxWidth: 1200,
       maxHeight: 900,
-      content: (
-        <React.Suspense fallback={null}>
-          <QuizEditor onClose={() => setShowQuizEditor(false)} />
-        </React.Suspense>
-      ),
+      content: renderSuspended(<QuizEditor onClose={() => setShowQuizEditor(false)} />),
     },
     {
       key: 'spin-match',
@@ -128,11 +120,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 820,
       closeDisabled: isSpinWheelLocked,
       closeDisabledLabel: 'Finish the current spin before closing.',
-      content: (
-        <React.Suspense fallback={null}>
-          <SpinSwipeGame onSpinningChange={setIsSpinWheelLocked} />
-        </React.Suspense>
-      ),
+      content: renderSuspended(<SpinSwipeGame onSpinningChange={setIsSpinWheelLocked} />),
       contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
@@ -144,19 +132,17 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 920,
       maxHeight: 900,
       contentStyle: paddedScrollContentStyle,
-      content: (
-        <React.Suspense fallback={null}>
-          <QuizFlowModalContent
-            currentUser={currentUser}
-            quizCompleted={quizCompleted}
-            onComplete={onQuizComplete}
-            onRetake={onQuizRetake}
-            onEdit={() => {
-              setShowQuizFlow(false);
-              setShowQuizEditor(true);
-            }}
-          />
-        </React.Suspense>
+      content: renderSuspended(
+        <QuizFlowModalContent
+          currentUser={currentUser}
+          quizCompleted={quizCompleted}
+          onComplete={onQuizComplete}
+          onRetake={onQuizRetake}
+          onEdit={() => {
+            setShowQuizFlow(false);
+            setShowQuizEditor(true);
+          }}
+        />
       ),
     },
   ];
