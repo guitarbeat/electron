@@ -22,6 +22,12 @@ export interface AppModalConfig {
   contentStyle?: CSSProperties;
 }
 
+const scrollContentStyle: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+};
+
 const paddedScrollContentStyle: CSSProperties = {
   flex: 1,
   overflowY: 'auto',
@@ -44,6 +50,7 @@ export interface BuildFeatureModalsParams {
   setShowSpinWheel: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
+  onQuizRetake: () => void;
 }
 
 export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
@@ -63,6 +70,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     setShowSpinWheel,
     setIsSpinWheelLocked,
     onQuizComplete,
+    onQuizRetake,
   } = params;
 
   return [
@@ -74,11 +82,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Shared messages',
       maxWidth: 820,
       maxHeight: 920,
-      contentStyle: {
-        flex: 1,
-        minHeight: 0,
-        overflowY: 'auto',
-      },
+      contentStyle: scrollContentStyle,
       content: (
         <React.Suspense fallback={null}>
           <MessageBoard />
@@ -93,11 +97,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Shared movie notes',
       maxWidth: 980,
       maxHeight: 920,
-      contentStyle: {
-        flex: 1,
-        minHeight: 0,
-        overflowY: 'auto',
-      },
+      contentStyle: scrollContentStyle,
       content: (
         <React.Suspense fallback={null}>
           <FloatingMemoriesPanel />
@@ -150,6 +150,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
             currentUser={currentUser}
             quizCompleted={quizCompleted}
             onComplete={onQuizComplete}
+            onRetake={onQuizRetake}
             onEdit={() => {
               setShowQuizFlow(false);
               setShowQuizEditor(true);

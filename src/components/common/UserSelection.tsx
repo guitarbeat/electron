@@ -250,13 +250,13 @@ const UserSelection: React.FC<UserSelectionProps> = ({
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
       {isShell ? (
-        <div className={`user-selection__shell-layout${currentUser ? ' user-selection__shell-layout--single' : ''}`}>
+        <div className="user-selection__shell-layout">
           <div
-            className={`user-selection__shell-profile-list${currentUser ? ' user-selection__shell-profile-list--single' : ''}`}
+            className="user-selection__shell-profile-list"
             role="group"
             aria-label="Select profile"
           >
-            {(currentUser ? [currentUser] : users).map((profile) => {
+            {users.map((profile) => {
               const isActive = currentUser === profile;
               const hasPin = userHasPin(profile);
               const needsPin = userNeedsPin(profile);

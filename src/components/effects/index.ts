@@ -1,6 +1,6 @@
 // Effects components module
-export * from './Confetti';
-export * from './LoadingSequence';
-export * from './Moire';
-export * from './RetroEffects';
-export * from './VignetteOverlay';
+export { default as Confetti } from './Confetti';
+export { default as LoadingSequence } from './LoadingSequence';
+export { default as Moire } from './Moire';
+export { default as RetroEffects } from './RetroEffects';
+export { default as VignetteOverlay } from './VignetteOverlay';

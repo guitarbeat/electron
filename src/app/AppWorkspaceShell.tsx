@@ -1,5 +1,5 @@
 import React, { type FC } from 'react';
-import type { MainTab, Movie } from '@/shared/types';
+import type { MainTab, Movie, User } from '@/shared/types';
 import QuizAdBanner from '@/components/quiz/QuizAdBanner';
 import SpinAdBanner from '@/components/spinMatch/SpinAdBanner';
 import WatchlistComponent from '../components/watchlist/index.tsx';
@@ -13,7 +13,9 @@ export type ViewMode = 'grid' | 'carousel';
 interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
+  currentUser: User | null;
   onOpenQuiz: () => void;
+  onOpenQuizEditor: () => void;
   quizCompleted: boolean;
   onOpenSpin: () => void;
   viewMode: ViewMode;
@@ -24,7 +26,9 @@ interface AppWorkspaceShellProps {
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   isMobile,
   activeTab,
+  currentUser,
   onOpenQuiz,
+  onOpenQuizEditor,
   quizCompleted,
   onOpenSpin,
   viewMode,
@@ -45,7 +49,12 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
           <>
             <div className="ad-banners-row">
               <div className="ad-banners-row__item">
-                <QuizAdBanner onOpen={onOpenQuiz} quizCompleted={quizCompleted} />
+                <QuizAdBanner
+                  currentUser={currentUser}
+                  onOpen={onOpenQuiz}
+                  onEdit={onOpenQuizEditor}
+                  quizCompleted={quizCompleted}
+                />
               </div>
               <div className="ad-banners-row__item">
                 <SpinAdBanner onOpen={onOpenSpin} />

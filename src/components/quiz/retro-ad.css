@@ -121,6 +121,38 @@
   font-family: var(--font-retro);
 }
 
+.quiz-retro-utility-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: linear-gradient(180deg, #fff8b0 0%, #ffd05a 100%);
+  border: 3px outset #888888;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.quiz-retro-utility-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quiz-retro-utility-label {
+  color: #8a001a;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.quiz-retro-utility-text {
+  color: #000080;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
 /* Progress bar */
 .quiz-retro-progress-wrap {
   background: #000000;
@@ -266,6 +298,12 @@
 .quiz-retro-btn--secondary:hover:not(:disabled) {
   background: linear-gradient(180deg, #aaaaaa 0%, #dddddd 50%, #aaaaaa 100%);
   border-style: inset;
+}
+
+.quiz-retro-btn--compact {
+  padding: 6px 12px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 /* Blink text (JS-driven color cycling) */
@@ -568,4 +606,15 @@
   align-items: center;
   margin-bottom: 8px;
   gap: 8px;
+}
+
+@media (max-width: 700px) {
+  .quiz-retro-utility-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quiz-retro-btn--compact {
+    width: 100%;
+  }
 }

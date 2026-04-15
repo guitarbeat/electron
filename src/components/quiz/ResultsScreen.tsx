@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QuizResult, QuizCharacter } from './types';
-import { BlinkText } from './QuizFlow';
+import BlinkText from './BlinkText';
 
 interface ResultsScreenProps {
   result: QuizResult;

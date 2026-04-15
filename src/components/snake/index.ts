@@ -1,3 +1,3 @@
 // Snake game components module
-export * from './SnakeGame';
+export { default as SnakeGame } from './SnakeGame';
 export * from './snakeEngine';
