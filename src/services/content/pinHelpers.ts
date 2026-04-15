@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { sanitizeInput, consoleError } from '../../utils/shared';
+import { sanitizeInput, consoleError } from '../../utils/shared.ts';
 
 const UserPinsSchema = z.object({
   Aaron: z.string().trim().min(1).optional(),
