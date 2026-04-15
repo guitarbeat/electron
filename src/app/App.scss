@@ -512,10 +512,10 @@ body {
 
 @media (max-width: 640px) {
   .messages-fab {
-    bottom: 1.1rem;
-    right: 1.1rem;
-    width: 3rem;
-    height: 3rem;
+    bottom: max(1.1rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem));
+    right: max(1.1rem, calc(env(safe-area-inset-right, 0px) + 0.75rem));
+    width: 3.25rem;
+    height: 3.25rem;
   }
 }
 
@@ -2583,7 +2583,7 @@ body {
 
   .workspace-surface {
     min-height: 56vh;
-    padding: 0.65rem;
+    padding: 0.75rem;
   }
 
 }
@@ -2616,7 +2616,7 @@ body {
   }
 
   .workspace-surface {
-    padding: 0.45rem;
+    padding: 0.6rem;
     border-radius: 1rem;
   }
 }
@@ -4130,8 +4130,8 @@ body {
 @media (max-width: 640px) {
   input,
   textarea {
-    font-size: calc(0.95rem + 0.2vw);
-    /* Prevents zoom on iOS */
+    font-size: 16px;
+    /* Prevents zoom on iOS — must be >= 16px */
     -webkit-appearance: none;
     /* Prevent iOS default styling */
     border-radius: 4px;
@@ -4150,7 +4150,7 @@ body {
     input,
     textarea,
     select {
-      font-size: calc(0.95rem + 0.2vw);
+      font-size: 16px;
     }
   }
 
@@ -7208,6 +7208,29 @@ body.grabbing * {
   z-index: 50;
 }
 
+.watchlist-top-controls__search-shell--with-icon {
+  align-items: center;
+}
+
+.watchlist-top-controls__search-icon {
+  flex: 0 0 auto;
+  padding-left: 1rem;
+  font-size: 1rem;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 0 6px rgba(255, 127, 198, 0.45));
+  transition: filter 0.2s ease;
+}
+
+.watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
+  filter: drop-shadow(0 0 10px rgba(255, 127, 198, 0.75));
+}
+
+.watchlist-top-controls__search-shell--with-icon .watchlist-top-controls__search-field {
+  padding-left: 0.6rem !important;
+}
+
 /* Lift the whole input block above the movie grid when the dropdown is active */
 .watchlist-top-controls__input-block:focus-within {
   position: relative;
@@ -7875,6 +7898,31 @@ body.grabbing * {
   }
 }
 
+/* AddedBy top accent stripe per user */
+.movie-item-card[data-added-by="Aaron"]:not(.movie-item-card--watched) .movie-item-poster-wrap::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(96, 197, 245, 0.55) 30%,
+    rgba(135, 220, 255, 0.8) 50%,
+    rgba(96, 197, 245, 0.55) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(96, 197, 245, 0.35);
+}
+
+.movie-item-card[data-added-by="Electra"]:not(.movie-item-card--watched) .movie-item-poster-wrap::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 127, 198, 0.55) 30%,
+    rgba(255, 180, 220, 0.8) 50%,
+    rgba(255, 127, 198, 0.55) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(255, 127, 198, 0.35);
+}
+
 .movie-item-poster-wrap::after {
   content: '';
   position: absolute;
@@ -8193,6 +8241,72 @@ body.grabbing * {
   line-height: 1;
   letter-spacing: 0.02em;
   color: #f3fff6;
+}
+
+/* IMDb rating badge – top-left of poster */
+.movie-item-imdb-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.22rem 0.48rem 0.22rem 0.32rem;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 220, 100, 0.3) 0%, transparent 52%),
+    rgba(6, 8, 14, 0.82);
+  border: 1px solid rgba(255, 210, 80, 0.38);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(255, 200, 50, 0.15);
+  pointer-events: none;
+  animation: movie-success-badge-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.movie-item-imdb-badge__star {
+  font-size: 0.62rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 3px rgba(255, 200, 50, 0.6));
+}
+
+.movie-item-imdb-badge__score {
+  font-family: var(--type-eyebrow-family);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #ffe98a;
+}
+
+/* Genre chip in movie overlay */
+.movie-meta-genre-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.1rem;
+}
+
+.movie-item-genre-chip {
+  display: inline-block;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--type-eyebrow-family);
+  font-size: 0.58rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: var(--line-height-none);
+  white-space: nowrap;
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .watcher-badge {
@@ -11543,6 +11657,48 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   .watchlist-top-controls__search-button.ui-button {
     min-height: 2.4rem !important;
   }
+}
+
+/* ── IMDb badge: retro pixel-art look ── */
+.movie-item-imdb-badge {
+  border-radius: 0;
+  background: rgba(0, 0, 80, 0.85);
+  border: 1px solid rgba(100, 150, 255, 0.7);
+  border-top-color: rgba(150, 200, 255, 0.8);
+  border-left-color: rgba(150, 200, 255, 0.8);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 1px 1px 0 rgba(160, 200, 255, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  padding: 0.18rem 0.4rem 0.18rem 0.28rem;
+}
+
+.movie-item-imdb-badge__score {
+  font-family: var(--y2k-mono);
+  color: #ffee88;
+}
+
+/* ── Genre chip: terminal terminal look ── */
+.movie-item-genre-chip {
+  border-radius: 0;
+  font-family: var(--y2k-mono);
+  font-size: 0.55rem;
+  background: rgba(0, 80, 20, 0.7);
+  border: 1px solid rgba(80, 200, 100, 0.5);
+  color: #88ffaa;
+  letter-spacing: 0.06em;
+}
+
+/* ── Search icon: compact inside Win98 shell ── */
+.watchlist-top-controls__search-icon {
+  padding-left: 0.5rem;
+  font-size: 0.9rem;
+  filter: none;
+}
+
+.watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
+  filter: none;
 }
 
 /* ── Ad banner row: side-by-side on desktop, stacked on mobile ── */

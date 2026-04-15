@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QuizResult, QuizCharacter } from './types';
-import { BlinkText } from './QuizFlow';
+import BlinkText from './BlinkText';
 
 interface ResultsScreenProps {
   result: QuizResult;
@@ -27,6 +27,27 @@ const characterColors: Record<string, string> = {
   Neither: '#888888',
 };
 
+const RESULT_NAME_STYLE = { fontSize: '26px' } as const;
+const RESULT_DESCRIPTION_STYLE = (characterColor: string) =>
+  ({
+    background: `${characterColor}22`,
+    border: `3px solid ${characterColor}`,
+    padding: '8px',
+    marginBottom: '12px',
+  }) satisfies React.CSSProperties;
+const ACTION_BUTTON_STACK_STYLE = { display: 'flex', flexDirection: 'column', gap: 6 } as const;
+const PRIMARY_ACTION_STYLE = { width: '100%', fontSize: '14px' } as const;
+const SECONDARY_ACTION_STYLE = { width: '100%' } as const;
+const EDIT_ACTION_STYLE = { width: '100%', fontSize: '12px', opacity: 0.85 } as const;
+
+const getResultDescription = (
+  result: QuizResult,
+  characterDescriptions: Record<QuizCharacter, string>,
+  neitherDescription: string
+) =>
+  result.character === 'Neither'
+    ? neitherDescription
+    : (characterDescriptions[result.character as QuizCharacter] ?? `You got ${result.character}!`);
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
@@ -39,10 +60,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const [starAngle, setStarAngle] = useState(0);
   const characterColor = characterColors[result.character] || '#888888';
   const characterEmoji = characterEmojis[result.character] || '🤷';
-  const description =
-    result.character === 'Neither'
-      ? neitherDescription
-      : characterDescriptions[result.character as QuizCharacter];
+  const description = getResultDescription(result, characterDescriptions, neitherDescription);
 
   useEffect(() => {
     const id = setInterval(() => setStarAngle(a => (a + 8) % 360), 40);
@@ -90,19 +108,12 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
           <div className="quiz-retro-results-you-are">YOU ARE...</div>
           <div
             className="quiz-retro-results-name"
-            style={{ fontSize: '26px', color: characterColor }}
+            style={{ ...RESULT_NAME_STYLE, color: characterColor }}
           >
             {characterEmoji} {result.character.toUpperCase()}!!!
           </div>
 
-          <div
-            style={{
-              background: characterColor + '22',
-              border: `3px solid ${characterColor}`,
-              padding: '8px',
-              marginBottom: '12px',
-            }}
-          >
+          <div style={RESULT_DESCRIPTION_STYLE(characterColor)}>
             <p className="quiz-retro-results-desc">{description}</p>
           </div>
 
@@ -151,11 +162,11 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
 
           {/* Action buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={ACTION_BUTTON_STACK_STYLE}>
             <button
               className="quiz-retro-btn"
               onClick={onContinue}
-              style={{ width: '100%', fontSize: '14px' }}
+              style={PRIMARY_ACTION_STYLE}
               aria-label="Continue to movie watchlist"
             >
               {'🎬 CONTINUE TO WATCHLIST >>>'}
@@ -163,7 +174,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
             <button
               className="quiz-retro-btn quiz-retro-btn--secondary"
               onClick={onRetake}
-              style={{ width: '100%' }}
+              style={SECONDARY_ACTION_STYLE}
               aria-label="Retake the quiz"
             >
               🔄 RETAKE QUIZ - GET NEW RESULTS!!!
@@ -172,7 +183,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
               <button
                 className="quiz-retro-btn quiz-retro-btn--secondary"
                 onClick={onEdit}
-                style={{ width: '100%', fontSize: '12px', opacity: 0.85 }}
+                style={EDIT_ACTION_STYLE}
                 aria-label="Edit quiz questions"
               >
                 ✏️ EDIT QUIZ QUESTIONS

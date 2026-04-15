@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/movies/useMovies';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
@@ -77,6 +77,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
   const handleSpin = () => {
     if (isSpinning || spinPool.length === 0) return;
+
+    setSelectedMovieId(null);
 
     const outcome = computeSpinOutcome(spinPool, rotation);
     if (!outcome) return;

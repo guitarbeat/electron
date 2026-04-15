@@ -1,13 +1,42 @@
-import { isValidUrl, sanitizeInput } from '../../utils/shared';
-import { OMDB_BASE, OMDB_API_KEY } from './config';
-import type { MovieAutocompleteResult, OmdbSearchResult, MovieMetadata } from './types';
+import { z } from 'zod';
+import { isValidUrl, sanitizeInput } from '../../utils/shared.ts';
+import { OMDB_BASE, OMDB_API_KEY } from './config.ts';
+import type { MovieAutocompleteResult, MovieMetadata } from './types.ts';
+
+const OmdbMovieSchema = z.object({
+  Title: z.string(),
+  Year: z.string().optional(),
+  imdbID: z.string().optional(),
+  Type: z.enum(['movie', 'series']).catch('movie' as never),
+  Poster: z.string().optional(),
+});
+
+const OmdbSearchResultSchema = z.object({
+  Search: z.array(OmdbMovieSchema).optional(),
+});
+
+const OmdbMetadataSchema = z.object({
+  Title: z.string(),
+  Year: z.string().optional(),
+  imdbID: z.string().optional(),
+  imdbRating: z.string().optional(),
+  Type: z.string().optional(),
+  Poster: z.string().optional(),
+  Plot: z.string().optional(),
+  Director: z.string().optional(),
+  Actors: z.string().optional(),
+  Genre: z.string().optional(),
+  Runtime: z.string().optional(),
+  Rated: z.string().optional(),
+  Released: z.string().optional(),
+});
 
 const stripHtml = (value?: string | null): string | undefined => {
   if (!value) return undefined;
   return value.replace(/<[^>]*>?/gm, '');
 };
 
-const normalizePosterUrl = (value?: string | null): string | undefined => {
+export const normalizePosterUrl = (value?: string | null): string | undefined => {
   if (!value) return undefined;
   const cleanValue = sanitizeInput(value);
   if (!cleanValue || !isValidUrl(cleanValue)) {
@@ -29,26 +58,28 @@ export const searchOmdbMovies = async (
   query: string,
   signal?: AbortSignal
 ): Promise<MovieAutocompleteResult[]> => {
-  if (!OMDB_API_KEY) {
-    throw new Error('OMDb API key not configured');
-  }
-
-  const searchUrl = `${OMDB_BASE}?s=${encodeURIComponent(query)}&apikey=${OMDB_API_KEY}`;
+  const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+  const url = new URL(OMDB_BASE, base);
+  url.searchParams.set('s', query);
+  url.searchParams.set('type', 'movie');
+  url.searchParams.set('apikey', OMDB_API_KEY);
   
   try {
-    const response = await fetch(searchUrl, { 
+    const response = await fetch(url.toString(), {
       signal,
       headers: { 'Accept': 'application/json' }
     });
 
+    const json = await response.json();
+
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('OMDb API key rejected');
+      if (response.status === 401 || (json && typeof json === 'object' && 'code' in json && json.code === 'omdb_auth')) {
+        throw new Error('OMDb key was rejected');
       }
       throw new Error(`OMDb search failed with status ${response.status}`);
     }
 
-    const data = await response.json() as OmdbSearchResult;
+    const data = OmdbSearchResultSchema.parse(json);
     
     if (!data.Search) {
       return [];
@@ -58,7 +89,7 @@ export const searchOmdbMovies = async (
       title: sanitizeInput(movie.Title),
       year: movie.Year,
       imdbID: movie.imdbID,
-      type: movie.Type.toLowerCase() as 'movie' | 'series',
+      type: movie.Type as 'movie' | 'series',
       poster: normalizePosterUrl(movie.Poster),
     }));
   } catch (error) {
@@ -72,35 +103,41 @@ export const fetchOmdbMetadata = async (
   imdbId?: string,
   signal?: AbortSignal
 ): Promise<MovieMetadata> => {
-  if (!OMDB_API_KEY) {
-    throw new Error('OMDb API key not configured');
+  const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+  const url = new URL(OMDB_BASE, base);
+  url.searchParams.set('apikey', OMDB_API_KEY);
+  if (imdbId) {
+    url.searchParams.set('i', imdbId);
+  } else {
+    url.searchParams.set('t', title);
   }
-
-  const searchUrl = imdbId
-    ? `${OMDB_BASE}?i=${encodeURIComponent(imdbId)}&apikey=${OMDB_API_KEY}${type ? `&type=${type}` : ''}`
-    : `${OMDB_BASE}?t=${encodeURIComponent(title)}&apikey=${OMDB_API_KEY}${type ? `&type=${type}` : ''}`;
+  if (type) {
+    url.searchParams.set('type', type);
+  }
   
   try {
-    const response = await fetch(searchUrl, { 
+    const response = await fetch(url.toString(), {
       signal,
       headers: { 'Accept': 'application/json' }
     });
 
+    const json = await response.json();
+
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('OMDb API key rejected');
+      if (response.status === 401 || (json && typeof json === 'object' && 'code' in json && json.code === 'omdb_auth')) {
+        throw new Error('OMDb key was rejected');
       }
       throw new Error(`OMDb metadata fetch failed with status ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = OmdbMetadataSchema.parse(json);
     
     return {
       title: sanitizeInput(data.Title),
       year: data.Year,
       imdbID: data.imdbID,
       imdbRating: data.imdbRating && data.imdbRating !== 'N/A' ? data.imdbRating : undefined,
-      type: data.Type?.toLowerCase() as 'movie' | 'series',
+      type: (data.Type?.toLowerCase() as 'movie' | 'series') || 'movie',
       poster: normalizePosterUrl(data.Poster),
       plot: stripHtml(data.Plot),
       director: data.Director,

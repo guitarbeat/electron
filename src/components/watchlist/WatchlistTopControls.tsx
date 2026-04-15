@@ -337,7 +337,7 @@ const WatchlistTopControls = React.forwardRef<
         >
           <div
             ref={autocompleteRegionRef}
-            className="watchlist-top-controls__search-shell"
+            className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
             onFocusCapture={() => {
               clearFocusBoundaryCheck();
               setIsAutocompleteRegionFocused(true);
@@ -362,6 +362,7 @@ const WatchlistTopControls = React.forwardRef<
               });
             }}
           >
+            <span className="watchlist-top-controls__search-icon" aria-hidden="true">🎬</span>
             <Input
               ref={internalSearchInputRef}
               className="watchlist-top-controls__search-field"
@@ -561,7 +562,7 @@ const WatchlistTopControls = React.forwardRef<
                   ));
                 })() : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
-                    No titles found for "{trimmedSearchQuery}"
+                    No titles found for &quot;{trimmedSearchQuery}&quot;
                   </div>
                 ) : null}
               </div>

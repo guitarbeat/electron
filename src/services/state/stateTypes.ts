@@ -97,6 +97,7 @@ export interface ConflictResponse {
 export interface PendingMutation {
   op: string;
   payload: unknown;
+  consecutiveFailures?: number;
 }
 
 export interface ScopeOutbox {
@@ -112,4 +113,33 @@ export interface SessionState {
   currentUser: User | null;
   pinProtectedUsers: User[];
   usersMissingPins: User[];
+}
+
+export type StateClientErrorCode =
+  | 'unauthorized'
+  | 'forbidden'
+  | 'conflict'
+  | 'invalid'
+  | 'server'
+  | 'network';
+
+export class StateClientError extends Error {
+  status: number;
+
+  code: StateClientErrorCode;
+
+  conflict?: ConflictResponse;
+
+  constructor(
+    message: string,
+    status: number,
+    code: StateClientErrorCode,
+    conflict?: ConflictResponse
+  ) {
+    super(message);
+    this.name = 'StateClientError';
+    this.status = status;
+    this.code = code;
+    this.conflict = conflict;
+  }
 }

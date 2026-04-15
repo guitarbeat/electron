@@ -1,3 +1,3 @@
 // Spin match components module
-export * from './SpinSwipeGame';
+export { default as SpinSwipeGame } from './SpinSwipeGame';
 export * from './spinMatchGame';

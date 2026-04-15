@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useUser, useToast } from '@/app/providers';
+import { useUser, useToast } from '@/app/useProviders';
 import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';

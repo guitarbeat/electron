@@ -6,8 +6,11 @@ import { isStateScope } from '../../src/services/state/stateTypes.ts';
 const resolveScope = (req: Request): string => {
   // Vercel may pass a relative `req.url` which requires a base.
   const url = new URL(req.url, 'http://localhost');
+  const queryScope = url.searchParams.get('scope');
+  if (queryScope) return queryScope;
+
   const segments = url.pathname.split('/').filter(Boolean);
-  return segments.at(-1) || '';
+  return segments[segments.length - 1] || '';
 };
 
 async function handler(req: Request): Promise<Response> {

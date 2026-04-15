@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import type { Movie, MovieSuggestion, SharedMemory, WatchlistProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
@@ -66,9 +66,22 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     retryWatchlistSync,
   } = useWatchlist({ currentUser, isPaused });
 
-  const skeletonKeys = isMobile
-    ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
-    : ['desktop-1', 'desktop-2', 'desktop-3', 'desktop-4', 'desktop-5', 'desktop-6', 'desktop-7', 'desktop-8'];
+  const skeletonKeys = useMemo(
+    () =>
+      isMobile
+        ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
+        : [
+            'desktop-1',
+            'desktop-2',
+            'desktop-3',
+            'desktop-4',
+            'desktop-5',
+            'desktop-6',
+            'desktop-7',
+            'desktop-8',
+          ],
+    [isMobile]
+  );
 
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();

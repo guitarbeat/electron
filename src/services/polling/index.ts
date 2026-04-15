@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { consoleError } from '../../utils/shared.ts';
 
 type Listener<T> = (data: T | undefined, error: unknown | null) => void;
 interface PollingOptions {
@@ -139,7 +140,7 @@ class PollingManager {
         this.errors.delete(key);
         this.notify(key, data, null);
       } catch (e) {
-        console.error(`Polling failed for ${key}`, e);
+        consoleError(`Polling failed for ${key}:`, e);
 
         // Check if this error response is stale before processing
         if (!this.subscribers.has(key) || this.fetchFns.get(key) !== currentFetchFn) {
@@ -274,12 +275,12 @@ export const usePolling = <T>(
         return result;
       });
     } catch (e) {
-      console.error('Polling execution failed:', e);
+      consoleError(`Polling execution failed${key ? ` for ${key}` : ''}:`, e);
       setError(e instanceof Error ? e : new Error(String(e)));
     } finally {
       setIsLoading(false);
     }
-  }, [allowNull]);
+  }, [allowNull, key]);
 
   useEffect(() => {
     if (isPaused) {
@@ -331,7 +332,7 @@ export const usePolling = <T>(
       setIsLoading(true);
       setError(null);
       pollingManager.refresh(key).catch((error) => {
-        console.error('Polling refresh failed:', error);
+        consoleError(`Polling refresh failed for ${key}:`, error);
         setError(error instanceof Error ? error : new Error(String(error)));
         setIsLoading(false);
       });

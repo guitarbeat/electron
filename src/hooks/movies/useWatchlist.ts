@@ -11,7 +11,7 @@ import { usePolling } from '../../services/polling';
 import { Movie, MovieSuggestion, User } from '../../shared/types';
 import { useMovies } from './useMovies';
 import { useSuggestions } from '../suggestions/useSuggestions';
-import { useToast } from '@/app/providers';
+import { useToast } from '@/app/useProviders';
 import { areDeeplyEqual, normalizeMovieTitle, sanitizeInput } from '../../utils';
 import { trackMetric } from '../../services/analyticsService';
 import { readScope, retryScopeSync } from '../../services/state';

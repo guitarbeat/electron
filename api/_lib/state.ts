@@ -8,11 +8,8 @@ import {
   applyMatchmakerSwipe,
   undoMatchmakerSwipe,
 } from '../../src/components/matchmaker/matchmakerGame.ts';
-import {
-  normalizeMovieRecord,
-  normalizeMovies,
-} from '../../src/services/content/movieRecords.ts';
-import type { PinRecord } from '../../src/services/pinHelpers.ts';
+import { normalizeMovieRecord } from '../../src/services/content/movieRecords.ts';
+import type { PinRecord } from '../../src/services/content/pinHelpers.ts';
 import {
   appendDailySpinEntry,
   cloneQuizData,
@@ -75,6 +72,9 @@ interface MutationContext {
   currentUser: User | null;
   now: string;
 }
+
+const extractString = (value: unknown): string =>
+  typeof value === 'string' ? sanitizeInput(value) : '';
 
 export interface PinCoverageState {
   pinProtectedUsers: User[];
@@ -152,30 +152,8 @@ const parseArrayScope = <T>(
   }
 };
 
-const parseMovies = (content: string | null): Movie[] => {
-  if (!content) {
-    return [];
-  }
-
-  try {
-    const parsed = parseJsonContent(content, 'movies');
-    if (!Array.isArray(parsed)) {
-      console.warn('movies.json was not an array; defaulting to empty state.');
-      return [];
-    }
-
-    const normalized = normalizeMovies(parsed);
-    if (normalized.length !== parsed.length) {
-      console.warn(
-        `Dropped ${parsed.length - normalized.length} invalid movie record(s) from movies.json.`
-      );
-    }
-    return normalized;
-  } catch (error) {
-    console.error('Failed to parse movies.json; defaulting to empty state.', error);
-    return [];
-  }
-};
+const parseMovies = (content: string | null): Movie[] =>
+  parseArrayScope<Movie>(content, 'movies', normalizeMovieRecord);
 
 const parseQuiz = (content: string | null) => {
   if (!content) {
@@ -325,11 +303,8 @@ const scopes: {
       switch (op) {
         case 'add_movie': {
           const nextPayload = payload as { id?: unknown; title?: unknown };
-          const id = typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
-          const title =
-            typeof nextPayload.title === 'string'
-              ? sanitizeInput(nextPayload.title)
-              : '';
+          const id = extractString(nextPayload.id);
+          const title = extractString(nextPayload.title);
 
           if (!id || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
             return { ok: false, conflict: 'Invalid movie payload.' };
@@ -358,14 +333,8 @@ const scopes: {
             movieId?: unknown;
             title?: unknown;
           };
-          const movieId =
-            typeof nextPayload.movieId === 'string'
-              ? sanitizeInput(nextPayload.movieId)
-              : '';
-          const title =
-            typeof nextPayload.title === 'string'
-              ? sanitizeInput(nextPayload.title)
-              : '';
+          const movieId = extractString(nextPayload.movieId);
+          const title = extractString(nextPayload.title);
 
           if (!movieId || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
             return { ok: false, conflict: 'Invalid movie title.' };
@@ -388,10 +357,7 @@ const scopes: {
           };
         }
         case 'toggle_watched': {
-          const movieId =
-            typeof (payload as { movieId?: unknown }).movieId === 'string'
-              ? sanitizeInput((payload as { movieId?: string }).movieId || '')
-              : '';
+          const movieId = extractString((payload as { movieId?: unknown }).movieId);
 
           const target = movies.find((movie) => movie.id === movieId);
           if (!target) {
@@ -417,10 +383,7 @@ const scopes: {
           };
         }
         case 'delete_movie': {
-          const movieId =
-            typeof (payload as { movieId?: unknown }).movieId === 'string'
-              ? sanitizeInput((payload as { movieId?: string }).movieId || '')
-              : '';
+          const movieId = extractString((payload as { movieId?: unknown }).movieId);
 
           if (!movies.some((movie) => movie.id === movieId)) {
             return { ok: false, conflict: 'Movie not found.' };
@@ -454,10 +417,7 @@ const scopes: {
             movieId?: unknown;
             metadata?: unknown;
           };
-          const movieId =
-            typeof nextPayload.movieId === 'string'
-              ? sanitizeInput(nextPayload.movieId)
-              : '';
+          const movieId = extractString(nextPayload.movieId);
           const metadata = sanitizeMovieMetadata(nextPayload.metadata);
 
           if (!movieId || Object.keys(metadata).length === 0) {
@@ -497,14 +457,9 @@ const scopes: {
       switch (op) {
         case 'add_message': {
           const nextPayload = payload as { id?: unknown; content?: unknown };
-          const id =
-            typeof nextPayload.id === 'string' && sanitizeInput(nextPayload.id)
-              ? sanitizeInput(nextPayload.id)
-              : `message-${randomUUID()}`;
-          const content =
-            typeof nextPayload.content === 'string'
-              ? sanitizeInput(nextPayload.content || '')
-              : '';
+          const rawId = extractString(nextPayload.id);
+          const id = rawId || `message-${randomUUID()}`;
+          const content = extractString(nextPayload.content);
 
           if (!content || content.length > MAX_MESSAGE_LENGTH) {
             return { ok: false, conflict: 'Invalid message content.' };
@@ -528,10 +483,7 @@ const scopes: {
           };
         }
         case 'delete_message': {
-          const messageId =
-            typeof (payload as { messageId?: unknown }).messageId === 'string'
-              ? sanitizeInput((payload as { messageId?: string }).messageId || '')
-              : '';
+          const messageId = extractString((payload as { messageId?: unknown }).messageId);
 
           const message = messages.find((entry) => entry.id === messageId);
           if (!message) {
@@ -570,18 +522,10 @@ const scopes: {
             note?: unknown;
             imageUrl?: unknown;
           };
-          const id =
-            typeof nextPayload.id === 'string' && sanitizeInput(nextPayload.id)
-              ? sanitizeInput(nextPayload.id)
-              : `memory-${randomUUID()}`;
-          const movieTitle =
-            typeof nextPayload.movieTitle === 'string'
-              ? sanitizeInput(nextPayload.movieTitle)
-              : '';
-          const note =
-            typeof nextPayload.note === 'string'
-              ? sanitizeInput(nextPayload.note)
-              : '';
+          const rawId = extractString(nextPayload.id);
+          const id = rawId || `memory-${randomUUID()}`;
+          const movieTitle = extractString(nextPayload.movieTitle);
+          const note = extractString(nextPayload.note);
 
           if (!movieTitle || !note) {
             return { ok: false, conflict: 'Invalid memory payload.' };
@@ -591,23 +535,20 @@ const scopes: {
             return { ok: false, conflict: 'Memory already exists.' };
           }
 
+          const movieId = extractString(nextPayload.movieId) || undefined;
+          const imageUrl = extractString(nextPayload.imageUrl) || undefined;
+
           return {
             ok: true,
             data: [
               {
                 id,
-                movieId:
-                  typeof nextPayload.movieId === 'string'
-                    ? sanitizeInput(nextPayload.movieId)
-                    : undefined,
+                movieId,
                 movieTitle,
                 author: context.currentUser!,
                 note,
                 createdAt: context.now,
-                imageUrl:
-                  typeof nextPayload.imageUrl === 'string'
-                    ? sanitizeInput(nextPayload.imageUrl)
-                    : undefined,
+                imageUrl,
               },
               ...memories,
             ],
@@ -618,10 +559,7 @@ const scopes: {
             memoryId?: unknown;
             updates?: { note?: unknown; movieId?: unknown; movieTitle?: unknown };
           };
-          const memoryId =
-            typeof nextPayload.memoryId === 'string'
-              ? sanitizeInput(nextPayload.memoryId)
-              : '';
+          const memoryId = extractString(nextPayload.memoryId);
 
           const index = memories.findIndex((memory) => memory.id === memoryId);
           if (index < 0) {
@@ -633,20 +571,12 @@ const scopes: {
             return { ok: false, conflict: 'Only the author can edit this memory.' };
           }
 
+          const upd = nextPayload.updates ?? {};
           const updatedMemory: SharedMemory = {
             ...currentMemory,
-            note:
-              typeof nextPayload.updates?.note === 'string'
-                ? sanitizeInput(nextPayload.updates.note)
-                : currentMemory.note,
-            movieId:
-              typeof nextPayload.updates?.movieId === 'string'
-                ? sanitizeInput(nextPayload.updates.movieId)
-                : currentMemory.movieId,
-            movieTitle:
-              typeof nextPayload.updates?.movieTitle === 'string'
-                ? sanitizeInput(nextPayload.updates.movieTitle)
-                : currentMemory.movieTitle,
+            note: typeof upd.note === 'string' ? extractString(upd.note) : currentMemory.note,
+            movieId: typeof upd.movieId === 'string' ? extractString(upd.movieId) : currentMemory.movieId,
+            movieTitle: typeof upd.movieTitle === 'string' ? extractString(upd.movieTitle) : currentMemory.movieTitle,
             updatedAt: context.now,
           };
 
@@ -658,10 +588,7 @@ const scopes: {
           };
         }
         case 'delete_memory': {
-          const memoryId =
-            typeof (payload as { memoryId?: unknown }).memoryId === 'string'
-              ? sanitizeInput((payload as { memoryId?: string }).memoryId || '')
-              : '';
+          const memoryId = extractString((payload as { memoryId?: unknown }).memoryId);
 
           const memory = memories.find((entry) => entry.id === memoryId);
           if (!memory) {
@@ -677,10 +604,7 @@ const scopes: {
           };
         }
         case 'toggle_memory_pin': {
-          const memoryId =
-            typeof (payload as { memoryId?: unknown }).memoryId === 'string'
-              ? sanitizeInput((payload as { memoryId?: string }).memoryId || '')
-              : '';
+          const memoryId = extractString((payload as { memoryId?: unknown }).memoryId);
 
           const existing = memories.find((memory) => memory.id === memoryId);
           if (!existing) {
@@ -723,12 +647,8 @@ const scopes: {
             lat?: unknown;
             lng?: unknown;
           };
-          const id =
-            typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
-          const name =
-            typeof nextPayload.name === 'string'
-              ? sanitizeInput(nextPayload.name)
-              : '';
+          const id = extractString(nextPayload.id);
+          const name = extractString(nextPayload.name);
 
           if (!id || !name) {
             return { ok: false, conflict: 'Invalid place payload.' };
@@ -738,6 +658,8 @@ const scopes: {
             return { ok: false, conflict: 'Place already exists.' };
           }
 
+          const notes = extractString(nextPayload.notes) || undefined;
+
           return {
             ok: true,
             data: [
@@ -746,15 +668,10 @@ const scopes: {
                 id,
                 name,
                 addedBy: context.currentUser!,
-                notes:
-                  typeof nextPayload.notes === 'string'
-                    ? sanitizeInput(nextPayload.notes)
-                    : undefined,
+                notes,
                 createdAt: context.now,
-                lat:
-                  typeof nextPayload.lat === 'number' ? nextPayload.lat : undefined,
-                lng:
-                  typeof nextPayload.lng === 'number' ? nextPayload.lng : undefined,
+                lat: typeof nextPayload.lat === 'number' ? nextPayload.lat : undefined,
+                lng: typeof nextPayload.lng === 'number' ? nextPayload.lng : undefined,
               },
             ],
           };
@@ -764,10 +681,7 @@ const scopes: {
             placeId?: unknown;
             updates?: { name?: unknown; notes?: unknown; category?: unknown; lat?: unknown; lng?: unknown };
           };
-          const placeId =
-            typeof nextPayload.placeId === 'string'
-              ? sanitizeInput(nextPayload.placeId)
-              : '';
+          const placeId = extractString(nextPayload.placeId);
 
           const existing = places.find((place) => place.id === placeId);
           if (!existing) {
@@ -781,36 +695,18 @@ const scopes: {
               place.id === placeId
                 ? {
                     ...place,
-                    name:
-                      typeof upd.name === 'string'
-                        ? sanitizeInput(upd.name)
-                        : place.name,
-                    notes:
-                      typeof upd.notes === 'string'
-                        ? sanitizeInput(upd.notes) || undefined
-                        : place.notes,
-                    category:
-                      typeof upd.category === 'string'
-                        ? sanitizeInput(upd.category) || undefined
-                        : place.category,
-                    lat:
-                      typeof upd.lat === 'number'
-                        ? upd.lat
-                        : place.lat,
-                    lng:
-                      typeof upd.lng === 'number'
-                        ? upd.lng
-                        : place.lng,
+                    name: typeof upd.name === 'string' ? extractString(upd.name) : place.name,
+                    notes: typeof upd.notes === 'string' ? extractString(upd.notes) || undefined : place.notes,
+                    category: typeof upd.category === 'string' ? extractString(upd.category) || undefined : place.category,
+                    lat: typeof upd.lat === 'number' ? upd.lat : place.lat,
+                    lng: typeof upd.lng === 'number' ? upd.lng : place.lng,
                   }
                 : place
             ),
           };
         }
         case 'remove_place': {
-          const placeId =
-            typeof (payload as { placeId?: unknown }).placeId === 'string'
-              ? sanitizeInput((payload as { placeId?: string }).placeId || '')
-              : '';
+          const placeId = extractString((payload as { placeId?: unknown }).placeId);
 
           if (!places.some((place) => place.id === placeId)) {
             return { ok: false, conflict: 'Place not found.' };
@@ -823,10 +719,7 @@ const scopes: {
         }
         case 'mark_visited':
         case 'mark_unvisited': {
-          const placeId =
-            typeof (payload as { placeId?: unknown }).placeId === 'string'
-              ? sanitizeInput((payload as { placeId?: string }).placeId || '')
-              : '';
+          const placeId = extractString((payload as { placeId?: unknown }).placeId);
 
           if (!places.some((place) => place.id === placeId)) {
             return { ok: false, conflict: 'Place not found.' };
@@ -873,21 +766,10 @@ const scopes: {
             imdbID?: unknown;
             type?: unknown;
           };
-          const id =
-            typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
-          const title =
-            typeof nextPayload.title === 'string'
-              ? sanitizeInput(nextPayload.title)
-              : '';
-          const suggestedBy =
-            context.currentUser ??
-            ((typeof nextPayload.suggestedBy === 'string'
-              ? sanitizeInput(nextPayload.suggestedBy)
-              : '') || 'Guest');
-          const imdbID =
-            typeof nextPayload.imdbID === 'string'
-              ? sanitizeInput(nextPayload.imdbID)
-              : undefined;
+          const id = extractString(nextPayload.id);
+          const title = extractString(nextPayload.title);
+          const suggestedBy = context.currentUser ?? (extractString(nextPayload.suggestedBy) || 'Guest');
+          const imdbID = extractString(nextPayload.imdbID) || undefined;
           const type =
             nextPayload.type === 'movie' || nextPayload.type === 'series'
               ? nextPayload.type
@@ -909,11 +791,8 @@ const scopes: {
                 id,
                 title,
                 suggestedBy,
-                reason:
-                  typeof nextPayload.reason === 'string'
-                    ? sanitizeInput(nextPayload.reason)
-                    : undefined,
-                imdbID: imdbID || undefined,
+                reason: extractString(nextPayload.reason) || undefined,
+                imdbID,
                 type,
                 status: 'pending',
                 createdAt: context.now,
@@ -923,12 +802,7 @@ const scopes: {
         }
         case 'accept_suggestion':
         case 'reject_suggestion': {
-          const suggestionId =
-            typeof (payload as { suggestionId?: unknown }).suggestionId === 'string'
-              ? sanitizeInput(
-                  (payload as { suggestionId?: string }).suggestionId || ''
-                )
-              : '';
+          const suggestionId = extractString((payload as { suggestionId?: unknown }).suggestionId);
 
           if (!suggestions.some((suggestion) => suggestion.id === suggestionId)) {
             return { ok: false, conflict: 'Suggestion not found.' };
@@ -977,12 +851,8 @@ const scopes: {
             description?: unknown;
             imageUrl?: unknown;
           };
-          const id =
-            typeof nextPayload.id === 'string' ? sanitizeInput(nextPayload.id) : '';
-          const name =
-            typeof nextPayload.name === 'string'
-              ? sanitizeInput(nextPayload.name)
-              : '';
+          const id = extractString(nextPayload.id);
+          const name = extractString(nextPayload.name);
 
           if (!id || !name) {
             return { ok: false, conflict: 'Invalid place suggestion payload.' };
@@ -1000,11 +870,11 @@ const scopes: {
                 id,
                 name,
                 suggestedBy: context.currentUser!,
-                notes: typeof nextPayload.notes === 'string' ? sanitizeInput(nextPayload.notes) : undefined,
-                category: typeof nextPayload.category === 'string' ? sanitizeInput(nextPayload.category) : undefined,
-                rating: typeof nextPayload.rating === 'string' ? sanitizeInput(nextPayload.rating) : undefined,
-                description: typeof nextPayload.description === 'string' ? sanitizeInput(nextPayload.description) : undefined,
-                imageUrl: typeof nextPayload.imageUrl === 'string' ? sanitizeInput(nextPayload.imageUrl) : undefined,
+                notes: extractString(nextPayload.notes) || undefined,
+                category: extractString(nextPayload.category) || undefined,
+                rating: extractString(nextPayload.rating) || undefined,
+                description: extractString(nextPayload.description) || undefined,
+                imageUrl: extractString(nextPayload.imageUrl) || undefined,
                 status: 'pending',
                 createdAt: context.now,
               },
@@ -1013,12 +883,7 @@ const scopes: {
         }
         case 'accept_place_suggestion':
         case 'reject_place_suggestion': {
-          const suggestionId =
-            typeof (payload as { suggestionId?: unknown }).suggestionId === 'string'
-              ? sanitizeInput(
-                  (payload as { suggestionId?: string }).suggestionId || ''
-                )
-              : '';
+          const suggestionId = extractString((payload as { suggestionId?: unknown }).suggestionId);
 
           if (!suggestions.some((suggestion) => suggestion.id === suggestionId)) {
             return { ok: false, conflict: 'Suggestion not found.' };
@@ -1081,10 +946,8 @@ const scopes: {
             id?: unknown;
             movieIds?: unknown;
           };
-          const id =
-            typeof nextPayload.id === 'string' && sanitizeInput(nextPayload.id)
-              ? sanitizeInput(nextPayload.id)
-              : randomUUID();
+          const rawId = extractString(nextPayload.id);
+          const id = rawId || randomUUID();
           const movieIds = Array.isArray(nextPayload.movieIds)
             ? nextPayload.movieIds
                 .filter((value): value is string => typeof value === 'string')
@@ -1118,10 +981,7 @@ const scopes: {
             return { ok: false, conflict: 'No active matchmaker game.' };
           }
 
-          const movieId =
-            typeof (payload as { movieId?: unknown }).movieId === 'string'
-              ? sanitizeInput((payload as { movieId?: string }).movieId || '')
-              : '';
+          const movieId = extractString((payload as { movieId?: unknown }).movieId);
           const liked = ensureBoolean((payload as { liked?: unknown }).liked);
 
           if (!movieId || liked === null) {
@@ -1207,10 +1067,7 @@ const scopes: {
         return { ok: false, conflict: `Unsupported spinHistory operation: ${op}` };
       }
 
-      const title =
-        typeof (payload as { title?: unknown }).title === 'string'
-          ? sanitizeInput((payload as { title: string }).title)
-          : '';
+      const title = extractString((payload as { title?: unknown }).title);
 
       if (!title) {
         return { ok: false, conflict: 'Invalid spin history title.' };
@@ -1233,14 +1090,8 @@ const scopes: {
         return { ok: false, conflict: `Unsupported dailySpin operation: ${op}` };
       }
 
-      const movieId =
-        typeof (payload as { movieId?: unknown }).movieId === 'string'
-          ? sanitizeInput((payload as { movieId: string }).movieId)
-          : '';
-      const movieTitle =
-        typeof (payload as { movieTitle?: unknown }).movieTitle === 'string'
-          ? sanitizeInput((payload as { movieTitle: string }).movieTitle)
-          : '';
+      const movieId = extractString((payload as { movieId?: unknown }).movieId);
+      const movieTitle = extractString((payload as { movieTitle?: unknown }).movieTitle);
 
       if (!movieId || !movieTitle) {
         return { ok: false, conflict: 'Invalid daily spin payload.' };
@@ -1421,9 +1272,18 @@ export const getPinProtectedUsers = async (): Promise<User[]> => {
 };
 
 export const getPinCoverageState = async (): Promise<PinCoverageState> => {
-  const { stored } = await readScopeStoredData('pins');
-  const pins = stored as PinRecord;
-  return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user])));
+  try {
+    const { stored } = await readScopeStoredData('pins');
+    const pins = stored as Record<string, string>;
+    return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user as string])));
+  } catch (error) {
+    console.warn('Failed to read PIN coverage state, falling back to empty.', error);
+    return {
+      pinProtectedUsers: [],
+      usersMissingPins: [],
+      pinCoverageComplete: true,
+    };
+  }
 };
 
 export const verifyProfilePin = async (
@@ -1431,8 +1291,8 @@ export const verifyProfilePin = async (
   pin: string | undefined
 ): Promise<boolean> => {
   const { stored } = await readScopeStoredData('pins');
-  const pins = stored as PinRecord;
-  const storedHash = pins[user];
+  const pins = stored as Record<string, string>;
+  const storedHash = pins[user as string];
 
   if (!storedHash) {
     return true;
@@ -1496,8 +1356,19 @@ export const createReadHandler =
         }
       );
     } catch (error) {
-      console.error(`Failed to read ${scope} state`, error);
-      return serverErrorResponse();
+      console.error(`Failed to read ${scope} state during ${req.method} ${req.url}:`, error);
+      const fallback = buildFallbackScopeData(scope);
+      return jsonResponse(
+        {
+          data: fallback.clientData,
+          version: fallback.version,
+          degraded: true,
+          warning: getScopeWarning(error),
+        },
+        {
+          status: 200,
+        }
+      );
     }
   };
 
@@ -1580,7 +1451,7 @@ export const createMutateHandler =
         }
       );
     } catch (error) {
-      console.error(`Failed to mutate ${scope} state`, error);
-      return serverErrorResponse();
+      console.error(`Failed to mutate ${scope} state during ${req.method} ${req.url}:`, error);
+      return serverErrorResponse(error);
     }
   };
