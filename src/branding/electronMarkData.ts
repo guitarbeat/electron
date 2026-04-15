@@ -195,7 +195,7 @@ export const getElectronMarkSvgMarkup = (
   variant: ElectronMarkVariant,
   options: ElectronMarkSvgOptions = {}
 ) => {
-  const resolvedTitle = options.title?.trim() || '';
+  const resolvedTitle = escapeXml(options.title?.trim() || '');
   const resolvedSize = escapeXml(getResolvedSize(options.size));
   const palette = getResolvedPalette(options.palette);
   const idPrefix = options.idPrefix ?? `${variant}-${options.monochrome ? 'mono' : 'color'}`;
@@ -217,7 +217,7 @@ export const getElectronMarkSvgMarkup = (
   const a11yAttributes = resolvedTitle
     ? `role="img" aria-labelledby="${titleId}"`
     : 'aria-hidden="true"';
-  const titleMarkup = resolvedTitle ? `<title id="${titleId}">${escapeXml(resolvedTitle)}</title>` : '';
+  const titleMarkup = resolvedTitle ? `<title id="${titleId}">${resolvedTitle}</title>` : '';
   const defsMarkup = options.monochrome ? '' : buildSharedDefs(palette, ids);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${resolvedSize}" height="${resolvedSize}" viewBox="0 0 64 64" fill="none" ${a11yAttributes}>${titleMarkup}${defsMarkup}${buildVariantMarkup(variant, paint)}</svg>`;

@@ -44,7 +44,6 @@ import type {
 import {
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
-  isUser,
   isValidUrl,
   parseJsonContent,
   sanitizeInput,
