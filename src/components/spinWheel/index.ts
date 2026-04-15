@@ -1,3 +1,3 @@
 // Spin wheel components module
-export * from './SpinWheelGame';
+export { default as SpinWheelGame } from './SpinWheelGame';
 export * from './spinWheelEngine';

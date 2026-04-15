@@ -92,6 +92,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
   const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
 
+  // Validation for memory editing
   const canManageMemories = Boolean(currentUser);
   const isSingleMovieContext = Boolean(contextMovieTitle);
   const pinnedCount = useMemo(

@@ -195,6 +195,47 @@
   cursor: pointer;
 }
 
+/* ── Mobile tweaks ── */
+@media (max-width: 600px) {
+  .poster-ad-banner__body {
+    padding: 0.5rem 0.65rem;
+    gap: 0.55rem;
+  }
+
+  .poster-ad-banner__icon-wrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .poster-ad-banner__ring {
+    font-size: 2.2rem;
+  }
+
+  .poster-ad-banner__icon {
+    font-size: 1.2rem;
+  }
+
+  .poster-ad-banner__headline {
+    font-size: 0.78rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.25;
+  }
+
+  .poster-ad-banner__sub {
+    font-size: 0.62rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .poster-ad-banner__cta {
+    font-size: 0.68rem;
+    padding: 0.45em 0.65em;
+  }
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .poster-ad-banner__marquee,

@@ -5,7 +5,7 @@ import {
   MOVIE_AUTOCOMPLETE_RESULT_LIMIT,
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   searchMovieAutocomplete,
-} from './metadata/metadataService.ts';
+} from './metadataService.ts';
 
 const originalFetch = globalThis.fetch;
 const globalWithWindow = globalThis as typeof globalThis & { window?: unknown };
@@ -183,7 +183,7 @@ test('searchMovieAutocomplete interleaves OMDb movies with TVMaze series results
   assert.equal(results.length, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
   assert.deepEqual(
     results.map((result) => result.type),
-    ['movie', 'series', 'movie', 'series', 'movie', 'series']
+    ['movie', 'series', 'movie', 'series', 'movie', 'series', 'movie', 'series', 'movie', 'series']
   );
   assert.equal(results[0]?.title, 'Heat 1');
   assert.equal(results[1]?.title, 'Heat Series 1');
@@ -233,7 +233,7 @@ test('searchMovieAutocomplete returns partial results when one provider fails', 
   assert.deepEqual(results, [
     {
       imdbID: 'tv-11',
-      posterUrl: 'https://images.example/the-bear.jpg',
+      poster: 'https://images.example/the-bear.jpg',
       title: 'The Bear',
       type: 'series',
       year: '2022',

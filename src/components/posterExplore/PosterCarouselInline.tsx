@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import type { Movie } from '@/shared/types';
+import type { Movie, User } from '@/shared/types';
 import './PosterCarouselInline.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -10,9 +10,30 @@ interface PosterCarouselInlineProps {
   movies: Movie[];
 }
 
-function getCatUrl(movieId: string, title: string): string {
-  const seed = encodeURIComponent(movieId || title || 'cat');
-  return `https://cataas.com/cat?width=300&height=450&_id=${seed}`;
+const USER_COLORS: Record<User, string> = {
+  Aaron: '#60c5f5',
+  Electra: '#ff7fc6',
+};
+
+function getInitials(title: string): string {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '?';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
+const FALLBACK_GRADIENTS = [
+  'linear-gradient(145deg, #3d1a6e 0%, #7b3fc8 60%, #1a0035 100%)',
+  'linear-gradient(145deg, #6e1a4a 0%, #c83f80 60%, #350014 100%)',
+  'linear-gradient(145deg, #1a3a6e 0%, #3f7bc8 60%, #001435 100%)',
+  'linear-gradient(145deg, #6e4a1a 0%, #c8803f 60%, #351400 100%)',
+  'linear-gradient(145deg, #1a6e4a 0%, #3fc880 60%, #003520 100%)',
+  'linear-gradient(145deg, #5a1a6e 0%, #a03fc8 60%, #1a0035 100%)',
+];
+
+function getFirstGenres(genre?: string, max = 2): string[] {
+  if (!genre) return [];
+  return genre.split(',').map(g => g.trim()).filter(Boolean).slice(0, max);
 }
 
 const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) => {
@@ -45,14 +66,9 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
 
     scroller.scrollTop = 0;
 
-    // Stage must be exactly as tall as the scroller's visible area — NOT the
-    // full track height — so the cards are centred in the visible viewport.
     const viewH = scroller.clientHeight;
     stage.style.height = `${viewH}px`;
 
-    // Detect mobile / iOS: the combination of deep z-axis GSAP transforms,
-    // perspective, and backdrop-filter crashes Safari on iPhone.
-    // On those devices we use a flat 2-D fade+slide instead.
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
     const useSimpleAnim = isIOS || isSmallScreen;
@@ -60,7 +76,6 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
     let tl: gsap.core.Timeline;
 
     if (useSimpleAnim) {
-      // Simple 2-D animation: no z-axis, no rotateX, no 3-D transform-origin
       gsap.set(cards, { x: '-50%', y: '-50%', autoAlpha: 0 });
 
       tl = gsap.timeline({ paused: true });
@@ -81,7 +96,6 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
         );
       });
     } else {
-      // Desktop: full 3-D carousel
       gsap.set(cards, {
         transformOrigin: '50% 999px -100px',
         x: '-50%',
@@ -169,25 +183,77 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
           style={{ height: `${trackHeight}vh` }}
         >
           <div ref={stageRef} className="pci-stage">
-            {displayMovies.map((movie) => {
-              const imgSrc = movie.posterUrl || getCatUrl(movie.id, movie.title);
+            {displayMovies.map((movie, idx) => {
+              const genres = getFirstGenres(movie.genre ?? movie.category);
+              const accentColor = USER_COLORS[movie.addedBy] ?? '#cc88ff';
+              const fallbackGradient = FALLBACK_GRADIENTS[idx % FALLBACK_GRADIENTS.length];
+              const isWatchedByAaron = movie.watchedBy.includes('Aaron');
+              const isWatchedByElectra = movie.watchedBy.includes('Electra');
+              const bothWatched = isWatchedByAaron && isWatchedByElectra;
+
               return (
                 <div
                   key={movie.id}
-                  className="pci-card"
+                  className={`pci-card${bothWatched ? ' pci-card--watched' : ''}`}
+                  style={{ '--card-accent': accentColor } as React.CSSProperties}
                 >
-                  <img
-                    src={imgSrc}
-                    alt={movie.title}
-                    className="pci-card__img"
-                    draggable={false}
-                  />
+                  {movie.posterUrl ? (
+                    <img
+                      src={movie.posterUrl}
+                      alt={movie.title}
+                      className="pci-card__img"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div
+                      className="pci-card__fallback"
+                      style={{ background: fallbackGradient }}
+                    >
+                      {getInitials(movie.title)}
+                    </div>
+                  )}
+
+                  {movie.imdbRating && (
+                    <div className="pci-card__rating">
+                      <span className="pci-card__rating-star">★</span>
+                      <span className="pci-card__rating-val">{movie.imdbRating}</span>
+                    </div>
+                  )}
+
                   <div className="pci-card__info">
+                    <div className="pci-card__meta-row">
+                      {movie.year && <span className="pci-card__year">{movie.year}</span>}
+                      {movie.runtime && <span className="pci-card__runtime">{movie.runtime}</span>}
+                    </div>
+
                     <p className="pci-card__title">{movie.title}</p>
-                    {movie.year && <p className="pci-card__year">{movie.year}</p>}
+
                     {movie.director && (
                       <p className="pci-card__director">dir. {movie.director}</p>
                     )}
+
+                    {genres.length > 0 && (
+                      <div className="pci-card__genres">
+                        {genres.map(g => (
+                          <span key={g} className="pci-card__genre-chip">{g}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="pci-card__watchers">
+                      <span
+                        className={`pci-card__watcher pci-card__watcher--aaron${isWatchedByAaron ? ' is-watched' : ''}`}
+                        title={isWatchedByAaron ? 'Aaron watched' : 'Aaron hasn\'t watched'}
+                      >
+                        {isWatchedByAaron ? '✓' : '○'} Aaron
+                      </span>
+                      <span
+                        className={`pci-card__watcher pci-card__watcher--electra${isWatchedByElectra ? ' is-watched' : ''}`}
+                        title={isWatchedByElectra ? 'Electra watched' : 'Electra hasn\'t watched'}
+                      >
+                        {isWatchedByElectra ? '✓' : '○'} Electra
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
@@ -202,7 +268,8 @@ const PosterCarouselInline: React.FC<PosterCarouselInlineProps> = ({ movies }) =
       </div>
 
       <div className="pci-count" aria-hidden="true">
-        {displayMovies.length} film{displayMovies.length !== 1 ? 's' : ''}
+        <span className="pci-count__num">{displayMovies.length}</span>
+        <span className="pci-count__label"> film{displayMovies.length !== 1 ? 's' : ''}</span>
       </div>
     </div>
   );

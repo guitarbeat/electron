@@ -1,13 +1,15 @@
+import { deepClone } from '../../utils/shared.ts';
 import { cloneMatchmakerGame, cloneQuizData, defaultQuizData } from './stateSchemas.ts';
-import type {
-  ConflictResponse,
-  MutationResponse,
-  ScopeOutbox,
-  ScopeSnapshot,
-  StateEnvelope,
-  StateScope,
-  StateScopeDataMap,
-} from './stateTypes';
+import {
+  StateClientError,
+  type ConflictResponse,
+  type MutationResponse,
+  type ScopeOutbox,
+  type ScopeSnapshot,
+  type StateEnvelope,
+  type StateScope,
+  type StateScopeDataMap,
+} from './stateTypes.ts';
 
 const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
 const OUTBOX_PREFIX = 'movieList.scopeOutbox.';
@@ -27,38 +29,7 @@ interface StoredSnapshot<T> {
   warning?: string;
 }
 
-type ErrorCode =
-  | 'unauthorized'
-  | 'forbidden'
-  | 'conflict'
-  | 'invalid'
-  | 'server'
-  | 'network';
-
 const replayLocks = new Map<StateScope, Promise<ScopeSnapshot<unknown>>>();
-
-const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-
-export class StateClientError extends Error {
-  status: number;
-
-  code: ErrorCode;
-
-  conflict?: ConflictResponse;
-
-  constructor(
-    message: string,
-    status: number,
-    code: ErrorCode,
-    conflict?: ConflictResponse
-  ) {
-    super(message);
-    this.name = 'StateClientError';
-    this.status = status;
-    this.code = code;
-    this.conflict = conflict;
-  }
-}
 
 const isBrowser = (): boolean => typeof window !== 'undefined';
 
@@ -321,6 +292,33 @@ const replayOutbox = async <TScope extends StateScope>(
         }
 
         if (!response.ok) {
+          const updatedFailures = (nextOp.consecutiveFailures ?? 0) + 1;
+          const MAX_CONSECUTIVE_FAILURES = 3;
+          if (updatedFailures >= MAX_CONSECUTIVE_FAILURES) {
+            const blockedOutbox = {
+              ...outbox,
+              blocked: true,
+              pendingOps: [
+                { ...nextOp, consecutiveFailures: updatedFailures },
+                ...remaining,
+              ],
+            };
+            writeOutbox(scope, blockedOutbox);
+            return {
+              data: storedSnapshot?.data ?? optimisticSnapshot.data,
+              version: latestVersion,
+              degraded: true,
+              blocked: true,
+              warning: 'A change could not be saved after multiple attempts. Refresh to retry.',
+            };
+          }
+          writeOutbox(scope, {
+            ...outbox,
+            pendingOps: [
+              { ...nextOp, consecutiveFailures: updatedFailures },
+              ...remaining,
+            ],
+          });
           return {
             data: storedSnapshot?.data ?? optimisticSnapshot.data,
             version: latestVersion,

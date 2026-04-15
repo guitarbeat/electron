@@ -28,6 +28,17 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   return result;
 };
 
+const validateMovieTitle = (title: string): string => {
+  const cleanTitle = sanitizeInput(title);
+  if (!cleanTitle) {
+    throw new Error('Movie title cannot be empty');
+  }
+  if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
+    throw new Error(`Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`);
+  }
+  return cleanTitle;
+};
+
 const sortMovies = (movies: Movie[]): Movie[] =>
   [...movies].sort((a, b) => {
     const aWatchedByBoth = a.watchedBy.length === 2;
@@ -94,16 +105,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         throw new Error('Profile required');
       }
 
-      const cleanTitle = sanitizeInput(title);
-      if (!cleanTitle) {
-        throw new Error('Movie title cannot be empty');
-      }
-
-      if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
-        throw new Error(
-          `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`
-        );
-      }
+      const cleanTitle = validateMovieTitle(title);
 
       const newMovie: Movie = {
         id: crypto.randomUUID(),
@@ -163,16 +165,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         throw new Error('Movie not found');
       }
 
-      const cleanTitle = sanitizeInput(title);
-      if (!cleanTitle) {
-        throw new Error('Movie title cannot be empty');
-      }
-
-      if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
-        throw new Error(
-          `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`
-        );
-      }
+      const cleanTitle = validateMovieTitle(title);
 
       const optimisticMovies = movies.map((movie) =>
         movie.id === movieId ? { ...movie, title: cleanTitle } : movie

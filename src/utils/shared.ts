@@ -1,4 +1,4 @@
-import type { User } from '@/shared/types';
+import type { User } from '../shared/types.ts';
 import { spacing } from '../theme/tokens.ts';
 
 /**
@@ -25,6 +25,13 @@ export const parseJsonContent = (content: string, context: string): unknown => {
   } catch (error) {
     throw new Error(`Failed to parse ${context} JSON.`, { cause: error });
   }
+};
+
+export const deepClone = <T>(value: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
 };
 
 export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
@@ -63,6 +70,33 @@ export const getErrorMessage = (
   }
 
   return fallback;
+};
+
+/**
+ * Log error with extra info if available (status, code, etc)
+ */
+export const consoleError = (
+  message: string,
+  error: unknown,
+  context?: Record<string, unknown>,
+): void => {
+  const details =
+    error && typeof error === "object"
+      ? {
+          status: (error as Record<string, unknown>).status,
+          code: (error as Record<string, unknown>).code,
+          conflict: (error as Record<string, unknown>).conflict,
+          ...context,
+        }
+      : context;
+
+  const hasDetails =
+    details && Object.values(details).some((v) => v !== undefined);
+  if (hasDetails) {
+    console.error(message, error, details);
+  } else {
+    console.error(message, error);
+  }
 };
 
 export const readApiErrorMessage = async (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage } from '@/utils';
+import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import MediaCard from '@/ui/MediaCard';
 import Button from '@/ui/Button';
@@ -162,7 +162,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
     try {
       await onToggle();
     } catch (error) {
-      console.error('Failed to toggle watched status', error);
+      consoleError('Failed to toggle watched status', error);
       onToggleError?.(getErrorMessage(error, 'Failed to update watched status.'));
     } finally {
       setIsUpdating(false);
@@ -178,6 +178,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           watchedByBoth ? 'movie-item-card--watched' : ''
         } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
         data-movie-id={movie.id}
+        data-added-by={movie.addedBy}
         style={{
           padding: 0,
           marginBottom: 0,
@@ -192,6 +193,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
             <div className="movie-item-watchers">
               {movie.watchedBy.includes('Aaron') ? <WatcherBadge user="Aaron" size="md" /> : null}
               {movie.watchedBy.includes('Electra') ? <WatcherBadge user="Electra" size="md" /> : null}
+            </div>
+          ) : null}
+
+          {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
+            <div className="movie-item-imdb-badge" aria-label={`IMDb rating: ${movie.imdbRating}`}>
+              <span className="movie-item-imdb-badge__star">⭐</span>
+              <span className="movie-item-imdb-badge__score">{movie.imdbRating}</span>
             </div>
           ) : null}
 
@@ -241,7 +249,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
               onToggle={handleToggle}
               onToggleNotes={handleToggleMemories}
               onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
-              onDelete={onDelete}
             />
           </div>
         ) : null}
@@ -330,8 +337,9 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, 
   const metadataItems = [
     movie.year,
     movie.runtime,
-    movie.imdbRating ? `${movie.imdbRating} IMDb` : null,
   ].filter(Boolean) as string[];
+
+  const firstGenre = movie.genre?.split(',')[0]?.trim();
 
   return (
     <div className={`movie-metadata ${className}`}>
@@ -348,6 +356,11 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, 
           </span>
         ) : null}
       </div>
+      {firstGenre ? (
+        <div className="movie-meta-genre-row">
+          <span className="movie-item-genre-chip">{firstGenre}</span>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -359,7 +372,6 @@ interface MovieActionsProps {
   onToggle: () => void;
   onToggleNotes: () => void;
   onEdit?: () => void;
-  onDelete: () => void;
 }
 
 const MovieActions: React.FC<MovieActionsProps> = ({

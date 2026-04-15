@@ -1,3 +1,3 @@
 // Utility exports - consolidated
-export * from './shared';
-export * from '../theme/tokens';
+export * from './shared.ts';
+export * from '../theme/tokens.ts';

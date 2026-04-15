@@ -70,7 +70,7 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
               marginTop: spacing.xs,
             }}
           >
-            "{suggestion.notes}"
+            &quot;{suggestion.notes}&quot;
           </p>
         )}
         {suggestion.category && (

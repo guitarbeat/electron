@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageIcon } from '@/common/icons';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
+import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
+import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import ShellControlStrip from '@/app/ShellControlStrip';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
@@ -17,6 +19,7 @@ import type { ViewMode } from '@/app/AppWorkspaceShell';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
+const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -25,8 +28,8 @@ const App: React.FC = () => {
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const [quizCompleted, setQuizCompleted] = useState<boolean>(
-    () => localStorage.getItem('quizCompleted') === 'true'
+  const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
+    readQuizCompletionState(currentUser)
   );
   const [showMessages, setShowMessages] = useState(false);
   const [showMemoriesPanel, setShowMemoriesPanel] = useState(false);
@@ -59,15 +62,35 @@ const App: React.FC = () => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
+  useEffect(() => {
+    setQuizCompleted(readQuizCompletionState(currentUser));
+  }, [currentUser]);
+
+  const updateQuizCompletion = useCallback(
+    (completed: boolean) => {
+      setQuizCompleted(completed);
+      writeQuizCompletionState(currentUser, completed);
+    },
+    [currentUser]
+  );
+
   const openQuizExperience = useCallback(() => {
     setShowQuizFlow(true);
   }, []);
 
-  const handleQuizComplete = useCallback(() => {
-    setQuizCompleted(true);
-    localStorage.setItem('quizCompleted', 'true');
+  const openQuizEditor = useCallback(() => {
     setShowQuizFlow(false);
+    setShowQuizEditor(true);
   }, []);
+
+  const handleQuizComplete = useCallback(() => {
+    updateQuizCompletion(true);
+    setShowQuizFlow(false);
+  }, [updateQuizCompletion]);
+
+  const handleQuizRetake = useCallback(() => {
+    updateQuizCompletion(false);
+  }, [updateQuizCompletion]);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
@@ -103,10 +126,12 @@ const App: React.FC = () => {
         setShowSpinWheel,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
+        onQuizRetake: handleQuizRetake,
       }),
     [
       currentUser,
       handleQuizComplete,
+      handleQuizRetake,
       isSpinWheelLocked,
       quizCompleted,
       showMemoriesPanel,
@@ -171,7 +196,9 @@ const App: React.FC = () => {
               <AppWorkspaceShell
                 isMobile={isMobile}
                 activeTab={activeTab}
+                currentUser={currentUser}
                 onOpenQuiz={openQuizExperience}
+                onOpenQuizEditor={openQuizEditor}
                 quizCompleted={quizCompleted}
                 onOpenSpin={openSpinMatch}
                 viewMode={viewMode}
@@ -194,7 +221,7 @@ const App: React.FC = () => {
             closeDisabled={modal.closeDisabled}
             closeDisabledLabel={modal.closeDisabledLabel}
           >
-            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
+            <div style={modal.contentStyle ?? modalBodyStyle}>
               {modal.isOpen ? modal.content : null}
             </div>
           </MinigameModal>

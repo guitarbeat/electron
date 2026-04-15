@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
 import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/modalPrimitives';
-import { getErrorMessage } from '@/utils';
+import { getErrorMessage, consoleError } from '@/utils';
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -350,7 +350,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       const success = await onSubmit(pin, newPin);
       if (!success) triggerError('Unable to update PIN. Try again!');
     } catch (submitError) {
-      console.error('PIN submit failed:', submitError);
+      consoleError('PIN submit failed:', submitError);
       triggerError(getErrorMessage(submitError, 'Unable to save PIN. Please try again.'));
     }
   };
@@ -430,10 +430,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
           <div style={styles.card}>
             {/* Rainbow top strip */}
             <div style={styles.rainbowTop} aria-hidden="true" />
-
-            {/* Corner sparkles */}
-            <span style={{ ...styles.sparkleCorner, top: 10, left: 12, animationDelay: '0s' }} aria-hidden="true">✦</span>
-            <span style={{ ...styles.sparkleCorner, top: 10, right: 12, animationDelay: '0.7s' }} aria-hidden="true">✦</span>
 
             {/* Title */}
             <h2 id="pin-dialog-title" style={styles.title}>

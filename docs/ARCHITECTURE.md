@@ -45,7 +45,7 @@ src/
   branding/    # Logo marks, favicon, logo lab
   components/  # Feature UI (watchlist, messages, matchmaker, spinWheel, places, quiz, effects, ui, ...)
   hooks/       # Shared React hooks (useMovies, useMessages, useMatchmaker, usePolling, ...)
-  services/    # State client, polling, metadata fetching, Gist client, storage
+  services/    # Domain modules: state, metadata, content (messages, memories), polling
   shared/      # Shared TypeScript types
   theme/       # Design tokens
   utils/       # Shared helpers (date.ts, browser.ts, shared.ts, random.ts, styling.ts, commonUtils.ts)
@@ -122,7 +122,7 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 | Service | Integration point | Purpose |
 |---|---|---|
 | **GitHub Gist API** | `api/_lib/gistStore.ts` | Shared persistence store (optional) |
-| **OMDb API** | `api/omdb.ts` + `src/services/metadataService.ts` | Movie metadata (title, poster, ratings, plot) |
+| **OMDb API** | `api/omdb.ts` + `@/services/metadata` | Movie metadata (title, poster, ratings, plot) |
 | **TVMaze API** | `api/tvmaze.ts` | TV show metadata |
 | **Google Places API** | Map/places components, `VITE_GOOGLE_PLACES_API_KEY` | Date spot search and maps |
 | **Google Fonts** | `index.html` preconnect links | Typography (Inter, Outfit, Space Grotesk) |
@@ -132,8 +132,8 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 | Package | Role |
 |---|---|
 | `react` / `react-dom` 19 | UI framework |
-| `vite` 7 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
-| `typescript` ~5.9 | Type safety |
+| `vite` 8 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
+| `typescript` ~6.0 | Type safety |
 | `ogl` | WebGL for visual effects |
 | `chroma-js` | Color manipulation |
 | `sass` / `sass-embedded` | SCSS compilation |

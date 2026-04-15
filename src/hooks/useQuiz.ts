@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 import { usePolling } from '@/services/polling';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz/types';
-import { areDeeplyEqual } from '@/utils';
+import { areDeeplyEqual, consoleError } from '@/utils';
 import { mutateScope, readScope, retryScopeSync } from '@/services/state';
 import type { QuizData } from '@/services/state/stateTypes';
 
@@ -44,7 +44,7 @@ export const useQuiz = (isPaused: boolean = false) => {
         });
         refresh();
       } catch (err) {
-        console.error('Quiz mutation failed:', err);
+        consoleError('Quiz mutation failed:', err);
         throw err;
       } finally {
         setIsSaving(false);

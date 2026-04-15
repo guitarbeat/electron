@@ -75,42 +75,55 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 2.5rem 1.25rem 1.25rem;
+  padding: 4rem 1.25rem 1.5rem;
   background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.88) 0%,
-    rgba(0, 0, 0, 0.4) 60%,
-    transparent 100%
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 30%,
+    rgba(0, 0, 0, 0.88) 65%,
+    rgba(0, 0, 0, 0.97) 100%
   );
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.3rem;
 }
 
 .poster-explore-card__title {
   margin: 0;
   font-family: var(--font-retro);
-  font-size: 1.05rem;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
   font-weight: 900;
   color: #fff;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+  text-shadow:
+    0 1px 8px rgba(0, 0, 0, 0.9),
+    0 0 20px rgba(255, 100, 220, 0.35);
   line-height: 1.25;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .poster-explore-card__year {
   margin: 0;
   font-family: var(--font-retro);
-  font-size: 0.78rem;
-  color: rgba(255, 200, 255, 0.85);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 200, 255, 0.7);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .poster-explore-card__director {
   margin: 0;
   font-family: var(--font-retro);
-  font-size: 0.72rem;
-  color: rgba(255, 180, 255, 0.65);
+  font-size: 0.7rem;
+  color: rgba(255, 180, 255, 0.55);
   font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Header ── */

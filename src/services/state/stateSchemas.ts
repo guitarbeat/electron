@@ -9,7 +9,7 @@ import {
   quizQuestions as defaultQuestions,
 } from '../../components/quiz/data.ts';
 import { reconcileMatchmakerStatus } from '../../components/matchmaker/matchmakerGame.ts';
-import { normalizePinRecord, type PinRecord } from '../pinHelpers.ts';
+import { normalizePinRecord, type PinRecord } from '../content/pinHelpers.ts';
 import type {
   MatchmakerGame,
   Message,
@@ -19,7 +19,7 @@ import type {
   SharedMemory,
 } from '../../shared/types.ts';
 import type { DailySpinRecord, SpinEntry } from './stateTypes.ts';
-import { isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../../utils/shared.ts';
+import { deepClone, isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../../utils/shared.ts';
 import type { PinsState, QuizData } from './stateTypes.ts';
 
 const normalizeRequiredString = (value: unknown): string | null => {
@@ -75,7 +75,7 @@ export const defaultQuizData: QuizData = {
 };
 
 export const cloneQuizData = (data: QuizData): QuizData =>
-  JSON.parse(JSON.stringify(data)) as QuizData;
+  deepClone(data);
 
 export const normalizeQuizData = (value: unknown): QuizData | null => {
   if (!value || typeof value !== 'object') {

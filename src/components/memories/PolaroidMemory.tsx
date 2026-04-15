@@ -106,7 +106,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
             fontStyle: 'italic',
           }}
         >
-          "{memory.note}"
+          &quot;{memory.note}&quot;
         </p>
         <div
           style={{

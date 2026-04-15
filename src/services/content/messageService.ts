@@ -1,7 +1,7 @@
-import { mutateScope, readScope } from '../state';
-import { cloneMessages, isMessageRecord, parseMessagesContent } from '../state/stateSchemas';
-import type { Message } from '@/shared/types';
-import { sanitizeInput } from '../../utils/shared';
+import { mutateScope, readScope } from '../state/index.ts';
+import { cloneMessages, isMessageRecord, parseMessagesContent } from '../state/stateSchemas.ts';
+import type { Message } from '../../shared/types.ts';
+import { sanitizeInput } from '../../utils/shared.ts';
 
 export { cloneMessages, isMessageRecord, parseMessagesContent };
 

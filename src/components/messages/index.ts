@@ -1,4 +1,4 @@
 // Message components module
-export * from './MessageBubble';
-export * from './MessageInput';
-export * from './MessageList';
+export { default as MessageBubble } from './MessageBubble';
+export { default as MessageInput } from './MessageInput';
+export { default as MessageList } from './MessageList';
