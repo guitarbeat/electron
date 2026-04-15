@@ -7,6 +7,7 @@ interface QuizFlowModalContentProps {
   currentUser: User | null;
   quizCompleted: boolean;
   onComplete: () => void;
+  onRetake: () => void;
   onEdit: () => void;
 }
 
@@ -14,6 +15,7 @@ const QuizFlowModalContent: FC<QuizFlowModalContentProps> = ({
   currentUser,
   quizCompleted,
   onComplete,
+  onRetake,
   onEdit,
 }) => {
   const { quizData, isLoading } = useQuiz();
@@ -25,10 +27,12 @@ const QuizFlowModalContent: FC<QuizFlowModalContentProps> = ({
   return (
     <QuizFlow
       key={`${currentUser ?? 'guest'}-${quizCompleted ? 'completed' : 'fresh'}`}
+      sessionKey={currentUser ?? 'guest'}
       quizData={quizData}
       onComplete={onComplete}
+      onRetake={onRetake}
       onEdit={currentUser ? onEdit : undefined}
-      isCompleted={false}
+      isCompleted={quizCompleted}
     />
   );
 };

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageIcon } from '@/common/icons';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
+import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
 import { useUser } from '@/app/useProviders';
@@ -26,8 +27,8 @@ const App: React.FC = () => {
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const [quizCompleted, setQuizCompleted] = useState<boolean>(
-    () => localStorage.getItem('quizCompleted') === 'true'
+  const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
+    readQuizCompletionState(currentUser)
   );
   const [showMessages, setShowMessages] = useState(false);
   const [showMemoriesPanel, setShowMemoriesPanel] = useState(false);
@@ -60,15 +61,29 @@ const App: React.FC = () => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
+  useEffect(() => {
+    setQuizCompleted(readQuizCompletionState(currentUser));
+  }, [currentUser]);
+
   const openQuizExperience = useCallback(() => {
     setShowQuizFlow(true);
   }, []);
 
+  const openQuizEditor = useCallback(() => {
+    setShowQuizFlow(false);
+    setShowQuizEditor(true);
+  }, []);
+
   const handleQuizComplete = useCallback(() => {
     setQuizCompleted(true);
-    localStorage.setItem('quizCompleted', 'true');
+    writeQuizCompletionState(currentUser, true);
     setShowQuizFlow(false);
-  }, []);
+  }, [currentUser]);
+
+  const handleQuizRetake = useCallback(() => {
+    setQuizCompleted(false);
+    writeQuizCompletionState(currentUser, false);
+  }, [currentUser]);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
@@ -104,10 +119,12 @@ const App: React.FC = () => {
         setShowSpinWheel,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
+        onQuizRetake: handleQuizRetake,
       }),
     [
       currentUser,
       handleQuizComplete,
+      handleQuizRetake,
       isSpinWheelLocked,
       quizCompleted,
       showMemoriesPanel,
@@ -172,7 +189,9 @@ const App: React.FC = () => {
               <AppWorkspaceShell
                 isMobile={isMobile}
                 activeTab={activeTab}
+                currentUser={currentUser}
                 onOpenQuiz={openQuizExperience}
+                onOpenQuizEditor={openQuizEditor}
                 quizCompleted={quizCompleted}
                 onOpenSpin={openSpinMatch}
                 viewMode={viewMode}

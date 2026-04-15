@@ -1,7 +1,7 @@
 // Places components module
 export * from './PlaceCard';
-export * from './PlaceEditModal';
-export * from './PlaceSuggestionCard';
-export * from './PlacesList';
+export { default as PlaceEditModal } from './PlaceEditModal';
+export { default as PlaceSuggestionCard } from './PlaceSuggestionCard';
+export { default as PlacesList } from './PlacesList';
 export * from './PlacesMap';
-export * from './PlacesTopControls';
+export { default as PlacesTopControls } from './PlacesTopControls';

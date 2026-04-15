@@ -1,2 +1,3 @@
 // Moire effect components module
-export * from './Moire';
+export { default } from './Moire';
+export { default as Moire } from './Moire';

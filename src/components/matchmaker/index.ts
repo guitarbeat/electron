@@ -1,3 +1,3 @@
 // Matchmaker components module
 export * from './matchmakerGame';
-export * from './Matchmaker';
+export { default as Matchmaker } from './Matchmaker';

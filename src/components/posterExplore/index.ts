@@ -1,4 +1,4 @@
 // Poster explore components module
-export * from './PosterCarouselInline';
-export * from './PosterExploreAdBanner';
-export * from './PosterExploreOverlay';
+export { default as PosterCarouselInline } from './PosterCarouselInline';
+export { default as PosterExploreAdBanner } from './PosterExploreAdBanner';
+export { default as PosterExploreOverlay } from './PosterExploreOverlay';

@@ -16,90 +16,70 @@ interface QuestionPreviewProps {
 
 const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question, previewMode = 'desktop' }) => {
   const isMobile = previewMode === 'mobile';
-  const scale = isMobile ? 0.8 : 0.65;
+  const scale = isMobile ? 0.84 : 0.72;
 
   return (
-    <div
-      style={{
-        backgroundColor: colors.background,
-        borderRadius: radius.lg,
-        padding: spacing.md,
-        border: `2px dashed ${colors.borderSecondary}40`,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Preview header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: spacing.sm,
-        }}
-      >
-        <span
-          style={{
-            color: colors.textTertiary,
-            ...typography.presets.eyebrow,
-          }}
-        >
-          Live Preview
-        </span>
-        <div
-          style={{
-            padding: '2px 8px',
-            ...typography.presets.micro,
-            backgroundColor: `${colors.accent}20`,
-            color: colors.accent,
-            borderRadius: radius.full,
-          }}
-        >
-          {isMobile ? '📱 Mobile' : '🖥️ Desktop'}
+    <div className="quiz-editor-preview">
+      <div className="quiz-editor-preview__frame">
+        <div className="quiz-editor-preview__header">
+          <p className="quiz-editor-preview__title">Live Preview</p>
+          <div className="quiz-editor__preview-badge">{isMobile ? 'Mobile' : 'Desktop'}</div>
         </div>
-      </div>
 
-      {/* Scaled preview container */}
-      <div
-        style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'top center',
-          maxWidth: isMobile ? '300px' : '100%',
-          margin: '0 auto',
-        }}
-      >
-        <Card
-          variant="elevated"
-          style={{
-            padding: spacing.lg,
-            textAlign: 'center',
-          }}
-        >
-          {/* Question text */}
-          <h3
+        <div className="quiz-editor-preview__canvas">
+          <div
+            className="quiz-editor-preview__scale"
             style={{
-              fontSize: typography.fontSize.lg,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              color: colors.textPrimary,
-              marginBottom: spacing.lg,
-              lineHeight: typography.lineHeight.normal,
+              transform: `scale(${scale})`,
+              maxWidth: isMobile ? '300px' : '100%',
+              margin: '0 auto',
             }}
           >
-            {question.question || 'Your question here...'}
-          </h3>
+            <Card
+              variant="elevated"
+              style={{
+                padding: spacing.lg,
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginBottom: spacing.sm,
+                }}
+              >
+                <span className="quiz-editor__type-badge">{question.type.replace('-', ' ')}</span>
+              </div>
 
-          {/* Render based on type */}
-          {question.type === 'multiple-choice' && (
-            <MultipleChoicePreview question={question as MultipleChoiceQuestion} />
-          )}
+              <h3
+                style={{
+                  fontSize: typography.fontSize.lg,
+                  fontFamily: typography.fontFamily.heading.join(', '),
+                  color: colors.textPrimary,
+                  marginBottom: spacing.lg,
+                  lineHeight: typography.lineHeight.normal,
+                }}
+              >
+                {question.question || 'Your question here...'}
+              </h3>
 
-          {question.type === 'agree-disagree' && <AgreeDisagreePreview />}
+              {question.type === 'multiple-choice' && (
+                <MultipleChoicePreview question={question as MultipleChoiceQuestion} />
+              )}
 
-          {question.type === 'image-choice' && (
-            <ImageChoicePreview question={question as ImageChoiceQuestion} />
-          )}
+              {question.type === 'agree-disagree' && <AgreeDisagreePreview />}
 
-          {question.type === 'xy-axis' && <XYAxisPreview question={question as XYAxisQuestion} />}
-        </Card>
+              {question.type === 'image-choice' && (
+                <ImageChoicePreview question={question as ImageChoiceQuestion} />
+              )}
+
+              {question.type === 'xy-axis' && (
+                <XYAxisPreview question={question as XYAxisQuestion} />
+              )}
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
