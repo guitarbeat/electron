@@ -35,6 +35,18 @@ interface QuizFlowInitialState {
   showResults: boolean;
 }
 
+const QUIZ_EMPTY_STATE_TEXT_STYLE = {
+  fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+  color: '#000080',
+  fontWeight: 'bold',
+} satisfies React.CSSProperties;
+const QUIZ_EMPTY_STATE_ACTIONS_STYLE = {
+  display: 'flex',
+  gap: 8,
+  justifyContent: 'center',
+} satisfies React.CSSProperties;
+const QUIZ_RETAKE_BUTTON_STYLE = { marginTop: 10 } as const;
+
 const getInitialQuizState = ({
   isCompleted,
   progressStorageKey,
@@ -95,6 +107,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
   const progress =
     totalQuestions > 0 ? Math.round((currentQuestionIndex / totalQuestions) * 100) : 0;
 
+  const clearProgressAndContinue = () => {
+    clearSavedQuizProgress(progressStorageKey);
+    onComplete();
+  };
+
   useEffect(() => {
     if (isCompleted || showResults || totalQuestions === 0) {
       clearSavedQuizProgress(progressStorageKey);
@@ -120,24 +137,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     return (
       <div className="quiz-retro-wrapper">
         <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
-          <p
-            style={{
-              fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
-              color: '#000080',
-              fontWeight: 'bold',
-              marginBottom: 12,
-            }}
-          >
+          <p style={{ ...QUIZ_EMPTY_STATE_TEXT_STYLE, marginBottom: 12 }}>
             No quiz questions available.
           </p>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-            <button
-              className="quiz-retro-btn"
-              onClick={() => {
-                clearSavedQuizProgress(progressStorageKey);
-                onComplete();
-              }}
-            >
+          <div style={QUIZ_EMPTY_STATE_ACTIONS_STYLE}>
+            <button className="quiz-retro-btn" onClick={clearProgressAndContinue}>
               Continue
             </button>
             {onEdit && (
@@ -213,17 +217,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     if (!quizResult && isCompleted) {
       return (
         <div className="quiz-retro-wrapper">
-          <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
-            <p
-              style={{
-                fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
-                color: '#000080',
-                fontWeight: 'bold',
-              }}
-            >
+        <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
+            <p style={QUIZ_EMPTY_STATE_TEXT_STYLE}>
               🎉 Quiz Completed!
             </p>
-            <button className="quiz-retro-btn" onClick={handleRetake} style={{ marginTop: 10 }}>
+            <button className="quiz-retro-btn" onClick={handleRetake} style={QUIZ_RETAKE_BUTTON_STYLE}>
               🔄 RETAKE QUIZ!!!
             </button>
           </div>
