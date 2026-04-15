@@ -17,6 +17,7 @@ import SyncBanner from '@/components/ui/SyncBanner';
 import Button from '@/ui/Button';
 import { spacing, colors } from '@/theme/tokens';
 import { ArrowLeftIcon, EyeIcon } from '@/common/icons';
+import './retro-ad.css';
 import './QuizEditor.css';
 
 interface UseUndoRedoReturn<T> {
@@ -260,6 +261,19 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
 
   return (
     <div className="quiz-editor-shell">
+      <div className="quiz-retro-marquee-bar quiz-editor__marquee">
+        <span className="quiz-retro-marquee-inner">
+          ★★★ EDIT MODE ACTIVATED!!! REORDER QUESTIONS!!! TUNE SCORES!!! REWRITE RESULTS!!!
+          ★★★
+        </span>
+      </div>
+
+      <div className="quiz-retro-rainbow-border quiz-editor__frame-border">
+        <div className="quiz-retro-header-bar">
+          <span>★ PERSONALITY QUIZ STUDIO - WORKING COPY OPEN ★</span>
+        </div>
+      </div>
+
       <section className="quiz-editor__hero">
         <div className="quiz-editor__hero-content">
           <div className="quiz-editor__hero-top">
@@ -455,6 +469,13 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           onUpdateNeither={(neitherDescription) => updateLocalData({ neitherDescription })}
         />
       )}
+
+      <div className="quiz-retro-marquee-bar quiz-editor__marquee quiz-editor__marquee--bottom">
+        <span className="quiz-retro-marquee-inner" style={{ animationDelay: '-7s' }}>
+          ★★★ LIVE QUIZ STYLE SYNCHRONIZED!!! PREVIEW THE PLAYER EXPERIENCE BESIDE YOUR EDITS!!!
+          ★★★
+        </span>
+      </div>
     </div>
   );
 };
