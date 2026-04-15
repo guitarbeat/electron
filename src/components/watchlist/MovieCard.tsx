@@ -20,7 +20,7 @@ interface MovieCardProps {
   currentUser: User | null;
   onToggle: () => void | Promise<void>;
   onToggleError?: (message: string) => void;
-  onDelete: () => void;
+
   onRename?: (title: string) => Promise<void>;
   animationDelay: string;
   memories?: SharedMemory[];
@@ -359,8 +359,8 @@ interface MovieActionsProps {
   onToggle: () => void;
   onToggleNotes: () => void;
   onEdit?: () => void;
-  onDelete: () => void;
 }
+
 
 const MovieActions: React.FC<MovieActionsProps> = ({
   movie,
@@ -369,7 +369,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onToggle,
   onToggleNotes,
   onEdit,
-  onDelete,
 }) => {
   const iconActionClassName = (modifierClassName: string) =>
     `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
