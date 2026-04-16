@@ -34,6 +34,7 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
@@ -103,6 +104,10 @@ const App: React.FC = () => {
     setShowSpinWheel(true);
   }, []);
 
+  const openSpinWheelOnly = useCallback(() => {
+    setShowSpinWheelOnly(true);
+  }, []);
+
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
@@ -111,6 +116,7 @@ const App: React.FC = () => {
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
+        showSpinWheelOnly,
         quizCompleted,
         isSpinWheelLocked,
         currentUser,
@@ -119,6 +125,7 @@ const App: React.FC = () => {
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
+        setShowSpinWheelOnly,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
         onQuizRetake: handleQuizRetake,
@@ -134,6 +141,7 @@ const App: React.FC = () => {
       showQuizEditor,
       showQuizFlow,
       showSpinWheel,
+      showSpinWheelOnly,
     ]
   );
 
@@ -196,6 +204,7 @@ const App: React.FC = () => {
                 onOpenQuizEditor={openQuizEditor}
                 quizCompleted={quizCompleted}
                 onOpenSpin={openSpinMatch}
+                onOpenSpinOnly={openSpinWheelOnly}
               />
             </React.Suspense>
           </div>

@@ -3,6 +3,7 @@ import React, { type CSSProperties, type ReactNode } from 'react';
 const MessageBoard = React.lazy(() => import('@/components/messages/MessageBoard'));
 const FloatingMemoriesPanel = React.lazy(() => import('@/components/memories/FloatingMemoriesPanel'));
 const SpinSwipeGame = React.lazy(() => import('@/components/spinMatch/SpinSwipeGame'));
+const SpinWheelGame = React.lazy(() => import('@/components/spinWheel/SpinWheelGame'));
 const QuizEditor = React.lazy(() => import('@/components/quiz/QuizEditor'));
 const QuizFlowModalContent = React.lazy(() => import('@/app/QuizFlowModalContent'));
 import type { User } from '@/shared/types';
@@ -44,6 +45,7 @@ export interface BuildFeatureModalsParams {
   showQuizEditor: boolean;
   showQuizFlow: boolean;
   showSpinWheel: boolean;
+  showSpinWheelOnly: boolean;
   quizCompleted: boolean;
   isSpinWheelLocked: boolean;
   currentUser: User | null;
@@ -52,6 +54,7 @@ export interface BuildFeatureModalsParams {
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
+  setShowSpinWheelOnly: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
   onQuizRetake: () => void;
@@ -64,6 +67,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     showQuizEditor,
     showQuizFlow,
     showSpinWheel,
+    showSpinWheelOnly,
     quizCompleted,
     isSpinWheelLocked,
     currentUser,
@@ -72,6 +76,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     setShowQuizEditor,
     setShowQuizFlow,
     setShowSpinWheel,
+    setShowSpinWheelOnly,
     setIsSpinWheelLocked,
     onQuizComplete,
     onQuizRetake,
@@ -121,6 +126,17 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       closeDisabled: isSpinWheelLocked,
       closeDisabledLabel: 'Finish the current spin before closing.',
       content: renderSuspended(<SpinSwipeGame onSpinningChange={setIsSpinWheelLocked} />),
+      contentStyle: { flex: 1, overflowY: 'auto' },
+    },
+    {
+      key: 'spin-wheel-only',
+      isOpen: showSpinWheelOnly,
+      onClose: () => setShowSpinWheelOnly(false),
+      title: 'Spin the Wheel',
+      ariaLabel: 'Spin the wheel to pick a movie',
+      maxWidth: 520,
+      maxHeight: 700,
+      content: renderSuspended(<SpinWheelGame />),
       contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
