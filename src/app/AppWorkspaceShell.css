@@ -1,1 +1,144 @@
 /* AppWorkspaceShell layout styles */
+
+/* ── Game Shelf ── */
+.game-shelf {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.game-shelf__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+
+.game-shelf__btn:hover {
+  transform: translateY(-1px);
+}
+
+.game-shelf__btn:active {
+  transform: translateY(0);
+}
+
+.game-shelf__btn--spin {
+  border-color: rgba(255, 140, 50, 0.3);
+  background: rgba(255, 110, 20, 0.08);
+}
+
+.game-shelf__btn--spin:hover {
+  border-color: rgba(255, 140, 50, 0.6);
+  background: rgba(255, 110, 20, 0.16);
+}
+
+.game-shelf__btn--quiz {
+  border-color: rgba(200, 80, 255, 0.3);
+  background: rgba(160, 50, 255, 0.08);
+}
+
+.game-shelf__btn--quiz:hover {
+  border-color: rgba(200, 80, 255, 0.6);
+  background: rgba(160, 50, 255, 0.16);
+}
+
+.game-shelf__btn--edit {
+  flex: 0 0 auto;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.6rem 0.75rem;
+}
+
+.game-shelf__btn--edit:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.game-shelf__icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.game-shelf__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.game-shelf__name {
+  font-family: var(--font-retro, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-shelf__desc {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-shelf__play {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.game-shelf__btn--spin:hover .game-shelf__play {
+  color: rgba(255, 140, 50, 0.8);
+  transform: translateX(2px);
+}
+
+.game-shelf__btn--quiz:hover .game-shelf__play {
+  color: rgba(200, 80, 255, 0.8);
+  transform: translateX(2px);
+}
+
+/* ── Mobile ── */
+@media (max-width: 500px) {
+  .game-shelf {
+    padding: 0.6rem 0.75rem 0.4rem;
+    gap: 0.4rem;
+  }
+
+  .game-shelf__btn {
+    padding: 0.55rem 0.7rem;
+  }
+
+  .game-shelf__icon {
+    font-size: 1.2rem;
+  }
+
+  .game-shelf__name {
+    font-size: 0.7rem;
+  }
+
+  .game-shelf__desc {
+    display: none;
+  }
+
+  .game-shelf__btn--edit .game-shelf__text {
+    display: none;
+  }
+}
