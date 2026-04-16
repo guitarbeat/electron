@@ -52,7 +52,6 @@ const GameShelf: FC<GameShelfProps> = ({
           </div>
           <div className="y2k-banner__body">
             <div className="y2k-banner__icon-wrap">
-              <span className="y2k-banner__starburst" aria-hidden="true">✦</span>
               <span className="y2k-banner__icon" aria-hidden="true">🎡</span>
             </div>
             <div className="y2k-banner__center">
@@ -85,7 +84,6 @@ const GameShelf: FC<GameShelfProps> = ({
           </div>
           <div className="y2k-banner__body">
             <div className="y2k-banner__icon-wrap">
-              <span className="y2k-banner__starburst" aria-hidden="true">✦</span>
               <span className="y2k-banner__icon" aria-hidden="true">🃏</span>
             </div>
             <div className="y2k-banner__center">
@@ -118,7 +116,6 @@ const GameShelf: FC<GameShelfProps> = ({
           </div>
           <div className="y2k-banner__body">
             <div className="y2k-banner__icon-wrap">
-              <span className="y2k-banner__starburst" aria-hidden="true">✦</span>
               <span className="y2k-banner__icon" aria-hidden="true">🧠</span>
             </div>
             <div className="y2k-banner__center">
@@ -136,30 +133,6 @@ const GameShelf: FC<GameShelfProps> = ({
       </div>
     </div>
 
-    {/* ── Edit Quiz (signed-in only) ── */}
-    {currentUser ? (
-      <div className="y2k-banner y2k-banner--edit">
-        <div className="y2k-banner__border">
-          <button
-            type="button"
-            className="y2k-banner__inner"
-            onClick={onOpenQuizEditor}
-            aria-label="Edit quiz questions"
-          >
-            <div className="y2k-banner__body y2k-banner__body--compact">
-              <span className="y2k-banner__icon y2k-banner__icon--sm" aria-hidden="true">✏️</span>
-              <div className="y2k-banner__center">
-                <p className="y2k-banner__headline">Edit Quiz</p>
-                <p className="y2k-banner__sub">Customise questions</p>
-              </div>
-              <div className="y2k-banner__cta" aria-hidden="true">
-                <span className="y2k-banner__cta-text">EDIT</span>
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-    ) : null}
 
   </div>
 );

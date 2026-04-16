@@ -30,14 +30,10 @@
   50%       { border-color: #ff44ff; box-shadow: 0 0 8px 2px #ff44ff, 0 0 16px 4px #cc00cc; }
 }
 
-@keyframes y2k-edit-border {
-  0%, 100% { border-color: rgba(255,255,255,0.18); }
-  50%       { border-color: rgba(255,255,255,0.35); }
-}
 
-@keyframes y2k-starburst {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes y2k-glow-ring {
+  0%, 100% { transform: scale(1);   opacity: 0.55; }
+  50%       { transform: scale(1.2); opacity: 0.9; }
 }
 
 @keyframes y2k-cta-bounce {
@@ -80,11 +76,6 @@
   animation: y2k-quiz-border 1.6s ease-in-out infinite;
 }
 
-.y2k-banner--edit .y2k-banner__border {
-  border-color: rgba(255,255,255,0.18);
-  animation: y2k-edit-border 3s ease-in-out infinite;
-  box-shadow: none;
-}
 
 /* ── The clickable button inside ── */
 .y2k-banner__inner {
@@ -110,9 +101,6 @@
   background: linear-gradient(135deg, #140020 0%, #220040 45%, #140020 100%);
 }
 
-.y2k-banner--edit .y2k-banner__inner {
-  background: rgba(255,255,255,0.04);
-}
 
 .y2k-banner__inner:focus-visible {
   outline: 2px solid #ffaa00;
@@ -164,7 +152,7 @@
   padding: 0.4rem 0.8rem;
 }
 
-/* ── Icon with spinning starburst ── */
+/* ── Icon with glow ring ── */
 .y2k-banner__icon-wrap {
   flex-shrink: 0;
   position: relative;
@@ -175,25 +163,22 @@
   justify-content: center;
 }
 
-.y2k-banner__starburst {
+.y2k-banner__icon-wrap::before {
+  content: '';
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.8rem;
-  line-height: 1;
-  animation: y2k-starburst 5s linear infinite;
+  inset: 2px;
+  border-radius: 50%;
+  animation: y2k-glow-ring 1.8s ease-in-out infinite;
 }
 
-.y2k-banner--spin .y2k-banner__starburst   { color: #ff6600; }
-.y2k-banner--match .y2k-banner__starburst  { color: #ff3300; }
-.y2k-banner--quiz .y2k-banner__starburst   { color: #cc00cc; }
+.y2k-banner--spin .y2k-banner__icon-wrap::before  { background: radial-gradient(circle, #ff660055 0%, transparent 70%); }
+.y2k-banner--match .y2k-banner__icon-wrap::before { background: radial-gradient(circle, #ff330055 0%, transparent 70%); }
+.y2k-banner--quiz .y2k-banner__icon-wrap::before  { background: radial-gradient(circle, #cc00cc55 0%, transparent 70%); }
 
 .y2k-banner__icon {
   position: relative;
   z-index: 1;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   line-height: 1;
   animation: y2k-icon-wobble 2s ease-in-out infinite;
 }
@@ -261,7 +246,6 @@
 .y2k-banner--spin .y2k-banner__cta  { background: #ff6600; }
 .y2k-banner--match .y2k-banner__cta { background: #cc2200; }
 .y2k-banner--quiz .y2k-banner__cta  { background: #aa00aa; }
-.y2k-banner--edit .y2k-banner__cta  { background: rgba(255,255,255,0.12); animation: none; }
 
 .y2k-banner__cta-text {
   font-family: var(--font-retro, monospace);
