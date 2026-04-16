@@ -62,7 +62,9 @@ export const searchOmdbMovies = async (
   const url = new URL(OMDB_BASE, base);
   url.searchParams.set('s', query);
   url.searchParams.set('type', 'movie');
-  url.searchParams.set('apikey', OMDB_API_KEY);
+  if (OMDB_API_KEY.trim().length > 0) {
+    url.searchParams.set('apikey', OMDB_API_KEY);
+  }
   
   try {
     const response = await fetch(url.toString(), { 
@@ -105,7 +107,9 @@ export const fetchOmdbMetadata = async (
 ): Promise<MovieMetadata> => {
   const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
   const url = new URL(OMDB_BASE, base);
-  url.searchParams.set('apikey', OMDB_API_KEY);
+  if (OMDB_API_KEY.trim().length > 0) {
+    url.searchParams.set('apikey', OMDB_API_KEY);
+  }
   if (imdbId) {
     url.searchParams.set('i', imdbId);
   } else {
