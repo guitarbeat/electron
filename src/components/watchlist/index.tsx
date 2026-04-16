@@ -432,12 +432,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         >
           <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
             <div className="scanning-overlay" style={{ padding: spacing.xl }}>
+              <div style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</div>
               <div
-                style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite' }}
+                style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite', letterSpacing: '0.12em' }}
               >
-                SCANNING GIST REPOSITORY...
+                Loading your watchlist
+                <span className="loading-dots" aria-hidden="true" />
               </div>
-              <div className="scanning-bar" style={{ maxWidth: '300px', margin: '0 auto' }} />
+              <div className="scanning-bar" style={{ maxWidth: '200px', margin: '0 auto' }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
               {skeletonKeys.map((key) => (
@@ -468,9 +470,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
               className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
             >
               <span className="watchlist-empty-queue-state__icon" aria-hidden="true">🎬</span>
-              <strong className="watchlist-empty-queue-state__title">Nothing here yet</strong>
+              <strong className="watchlist-empty-queue-state__title">Your queue is wide open</strong>
               <span className="watchlist-empty-queue-state__copy">
-                Search for a movie or series to start building the shared watchlist.
+                No movies lined up yet. Add something you both want to watch and kick off movie night.
               </span>
               <Button
                 type="button"
@@ -479,7 +481,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 onClick={focusSearchInput}
                 className="watchlist-empty-queue-state__action"
               >
-                Search titles
+                Add a movie
               </Button>
             </CollectionEmptyState>
           </CollectionGrid>
