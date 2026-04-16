@@ -12,10 +12,8 @@ import VignetteOverlay from '@/components/effects/VignetteOverlay';
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useMovies } from '@/hooks/movies/useMovies';
 import type { MainTab } from '@/shared/types';
 import MinigameModal from '@/ui/MinigameModal';
-import type { ViewMode } from '@/app/AppWorkspaceShell';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
@@ -37,12 +35,9 @@ const App: React.FC = () => {
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
-
-  const { movies } = useMovies(currentUser, activeTab !== 'queue');
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -201,9 +196,6 @@ const App: React.FC = () => {
                 onOpenQuizEditor={openQuizEditor}
                 quizCompleted={quizCompleted}
                 onOpenSpin={openSpinMatch}
-                viewMode={viewMode}
-                onSetViewMode={setViewMode}
-                movies={movies}
               />
             </React.Suspense>
           </div>
