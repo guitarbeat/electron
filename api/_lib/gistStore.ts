@@ -1,7 +1,7 @@
 import { fetchWithRetry } from './retryFetch.ts';
 
 const GIST_API_BASE_URL = 'https://api.github.com/gists';
-const GIST_CACHE_TTL_MS = 5000;
+const GIST_CACHE_TTL_MS = 30000;
 
 interface GistFile {
   content?: string;
