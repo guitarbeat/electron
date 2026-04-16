@@ -215,7 +215,8 @@ async function handler(req: Request): Promise<Response> {
     sourceUrl.searchParams.forEach((value, key) => {
       targetUrl.searchParams.set(key, value);
     });
-    if (!targetUrl.searchParams.has('apikey') && omdbApiKey.length > 0) {
+    const incomingApiKey = targetUrl.searchParams.get('apikey')?.trim();
+    if ((!incomingApiKey || incomingApiKey.length === 0) && omdbApiKey.length > 0) {
       targetUrl.searchParams.set('apikey', omdbApiKey);
     }
 
