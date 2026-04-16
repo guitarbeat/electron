@@ -25,7 +25,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
-  const [mode, setMode] = useState<SpinMode>('queue');
+  const [mode, setMode] = useState<SpinMode>('all');
   const [selectedPoolIds, setSelectedPoolIds] = useState<string[]>([]);
   const spinTimeoutRef = useRef<number | null>(null);
 
