@@ -58,6 +58,9 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       port: 5000,
       allowedHosts: true,
+      watch: {
+        ignored: ['**/.local/share/pnpm/store/**', '**/node_modules/.pnpm/store/**'],
+      },
     },
     plugins: [
       react(),
