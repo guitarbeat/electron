@@ -101,7 +101,8 @@ packages = ["gh"]
 [userenv.shared]
 GIST_ID = "ba250f944e3e9e71c0d669060254eab2"
 VITE_GIST_ID = "ba250f944e3e9e71c0d669060254eab2"
-VITE_OMDB_API_KEY = "107d93368d2a51a595e29a63910446ee"
+VITE_OMDB_API_KEY = "3850ae42"
+OMDB_API_KEY = "3850ae42"
 
 [postMerge]
 path = "scripts/post-merge.sh"
