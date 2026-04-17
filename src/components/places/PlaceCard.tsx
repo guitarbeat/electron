@@ -125,7 +125,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       className="place-card-hover-lift"
       title={canEdit ? 'Drag onto map to pin location' : undefined}
     >
-      {/* Category color stripe */}
+      {/* Per-user top accent stripe — mirrors movie-item-card[data-added-by] stripe */}
       <div
         aria-hidden="true"
         style={{
@@ -135,7 +135,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           right: 0,
           height: 3,
           borderRadius: `${radius.sm} ${radius.sm} 0 0`,
-          background: `linear-gradient(90deg, ${meta.color}, ${meta.color}88)`,
+          background: `linear-gradient(90deg, transparent 0%, ${meta.color}99 30%, ${meta.color}cc 50%, ${meta.color}99 70%, transparent 100%)`,
+          boxShadow: `0 0 10px ${meta.color}55`,
           zIndex: 5,
         }}
       />
@@ -189,43 +190,42 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       >
         <MediaCard.PosterWrap className="place-item-poster-wrap">
           <MediaCard.Cover className="place-item-cover" aria-hidden="true">
-            <span className="place-item-cover__icon" style={{ fontSize: '2rem' }}>{meta.icon}</span>
+            {/* Large decorative emoji — acts like a poster focal element */}
+            <span className="place-item-cover__icon">{meta.icon}</span>
             {hasCoords && <span className="place-item-cover__pin">📍</span>}
           </MediaCard.Cover>
 
-          {isVisited && (
+          {/* Top-left badge: visited state takes priority over category badge */}
+          {isVisited ? (
             <div className="place-item-visited-badge" aria-label="Visited">
               <CheckIcon style={{ width: 10, height: 10 }} />
               {visitedDate ?? 'Visited'}
+            </div>
+          ) : (
+            <div className="place-item-category-badge" aria-label={meta.label}>
+              <span className="place-item-category-badge__icon">{meta.icon}</span>
+              <span className="place-item-category-badge__label">{meta.label}</span>
             </div>
           )}
 
           <MediaCard.Overlay className="place-item-overlay">
             <MediaCard.Info className="place-item-info">
               <MediaCard.Title className="place-item-title">{place.name}</MediaCard.Title>
+
+              {/* Category chip — mirrors movie genre chip */}
+              <div className="place-item-meta-row">
+                <span className="place-item-genre-chip">{meta.label}</span>
+                {hasCoords && (
+                  <span className="place-item-coords-chip">
+                    {place.lat!.toFixed(2)}, {place.lng!.toFixed(2)}
+                  </span>
+                )}
+              </div>
+
               {place.notes && <MediaCard.Subtext className="place-item-notes">{place.notes}</MediaCard.Subtext>}
-              {/* Coords label */}
-              {hasCoords && (
-                <span style={{
-                  fontSize: typography.fontSize['3xs'],
-                  color: colors.textTertiary,
-                  fontFamily: typography.fontFamily.mono.join(', '),
-                  opacity: 0.7,
-                  marginTop: 2,
-                  display: 'block',
-                }}>
-                  {place.lat!.toFixed(2)}, {place.lng!.toFixed(2)}
-                </span>
-              )}
               {/* Added by */}
               {place.addedBy && (
-                <span style={{
-                  fontSize: typography.fontSize['3xs'],
-                  color: colors.textTertiary,
-                  opacity: 0.6,
-                  marginTop: 1,
-                  display: 'block',
-                }}>
+                <span className="place-item-added-by">
                   by {place.addedBy}
                 </span>
               )}
