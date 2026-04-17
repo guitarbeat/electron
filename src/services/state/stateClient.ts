@@ -445,6 +445,17 @@ const replayOutbox = async <TScope extends StateScope>(
 export const readScope = async <TScope extends StateScope>(
   scope: TScope
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
+  // Return mock data immediately in mock mode - no API calls
+  if (isMockMode()) {
+    return {
+      data: getMockState(scope),
+      version: 'mock-version',
+      degraded: false,
+      blocked: false,
+      warning: undefined,
+    };
+  }
+
   const outbox = readOutbox(scope);
   if (outbox?.blocked) {
     return readOptimisticSnapshot(scope);
@@ -558,6 +569,18 @@ export const mutateScope = async <TScope extends StateScope>(
     optimisticData: StateScopeDataMap[TScope];
   }
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
+  // In mock mode, just update the in-memory store and return success
+  if (isMockMode()) {
+    setMockState(scope, options.optimisticData);
+    return {
+      data: options.optimisticData,
+      version: 'mock-version',
+      degraded: false,
+      blocked: false,
+      warning: undefined,
+    };
+  }
+
   const outbox = readOutbox(scope);
   if (outbox?.blocked) {
     throw new StateClientError(
@@ -648,3 +671,6 @@ export const getStoredScopeSnapshot = <TScope extends StateScope>(
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => readOptimisticSnapshot(scope);
 
 export const sessionInvalidationEvent = SESSION_INVALID_EVENT;
+
+// Re-export isMockMode for components to check
+export { isMockMode } from './mockData.ts';
