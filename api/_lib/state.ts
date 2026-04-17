@@ -61,6 +61,7 @@ import {
   unauthorizedResponse,
 } from './http.ts';
 import {
+  isGistConfigured,
   isGitHubTokenConfigured,
   listGistFiles,
   patchGistFile,
@@ -1143,6 +1144,20 @@ const readScopeStoredData = async <TScope extends StateScope>(
   fileMissing: boolean;
 }> => {
   const definition = getScopeDefinition(scope);
+
+  // In mock mode (no GIST_ID), return default/empty data without errors
+  if (!isGistConfigured()) {
+    const stored = definition.parse(null);
+    const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
+    const version = computeVersion(clientData);
+    return {
+      stored,
+      clientData,
+      version,
+      fileMissing: true,
+    };
+  }
+
   const file = await readGistFileRecord(definition.filename, options);
   const stored = definition.parse(file.content);
 

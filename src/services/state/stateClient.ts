@@ -10,6 +10,20 @@ import {
   type StateScope,
   type StateScopeDataMap,
 } from './stateTypes.ts';
+import {
+  isMockMode,
+  mockMovies,
+  mockSuggestions,
+  mockMessages,
+  mockMemories,
+  mockPlaces,
+  mockPlaceSuggestions,
+  mockQuizData,
+  mockMatchmakerGame,
+  mockPins,
+  mockSpinHistory,
+  mockDailySpin,
+} from './mockData.ts';
 
 const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
 const OUTBOX_PREFIX = 'movieList.scopeOutbox.';
@@ -63,6 +77,56 @@ const getDefaultScopeData = <TScope extends StateScope>(
     default:
       return [] as unknown as StateScopeDataMap[TScope];
   }
+};
+
+const getMockScopeData = <TScope extends StateScope>(
+  scope: TScope
+): StateScopeDataMap[TScope] => {
+  switch (scope) {
+    case 'movies':
+      return deepClone(mockMovies) as StateScopeDataMap[TScope];
+    case 'messages':
+      return deepClone(mockMessages) as StateScopeDataMap[TScope];
+    case 'memories':
+      return deepClone(mockMemories) as StateScopeDataMap[TScope];
+    case 'places':
+      return deepClone(mockPlaces) as StateScopeDataMap[TScope];
+    case 'suggestions':
+      return deepClone(mockSuggestions) as StateScopeDataMap[TScope];
+    case 'placeSuggestions':
+      return deepClone(mockPlaceSuggestions) as StateScopeDataMap[TScope];
+    case 'quiz':
+      return deepClone(mockQuizData) as StateScopeDataMap[TScope];
+    case 'matchmaker':
+      return deepClone(mockMatchmakerGame) as StateScopeDataMap[TScope];
+    case 'pins':
+      return deepClone(mockPins) as StateScopeDataMap[TScope];
+    case 'spinHistory':
+      return deepClone(mockSpinHistory) as StateScopeDataMap[TScope];
+    case 'dailySpin':
+      return deepClone(mockDailySpin) as StateScopeDataMap[TScope];
+    default:
+      return getDefaultScopeData(scope);
+  }
+};
+
+// In-memory mock state storage for mutations
+const mockStateStore = new Map<StateScope, unknown>();
+
+const getMockState = <TScope extends StateScope>(
+  scope: TScope
+): StateScopeDataMap[TScope] => {
+  if (!mockStateStore.has(scope)) {
+    mockStateStore.set(scope, getMockScopeData(scope));
+  }
+  return deepClone(mockStateStore.get(scope)) as StateScopeDataMap[TScope];
+};
+
+const setMockState = <TScope extends StateScope>(
+  scope: TScope,
+  data: StateScopeDataMap[TScope]
+): void => {
+  mockStateStore.set(scope, deepClone(data));
 };
 
 const readJson = <T>(key: string): T | null => {
@@ -381,6 +445,17 @@ const replayOutbox = async <TScope extends StateScope>(
 export const readScope = async <TScope extends StateScope>(
   scope: TScope
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
+  // Return mock data immediately in mock mode - no API calls
+  if (isMockMode()) {
+    return {
+      data: getMockState(scope),
+      version: 'mock-version',
+      degraded: false,
+      blocked: false,
+      warning: undefined,
+    };
+  }
+
   const outbox = readOutbox(scope);
   if (outbox?.blocked) {
     return readOptimisticSnapshot(scope);
@@ -494,6 +569,18 @@ export const mutateScope = async <TScope extends StateScope>(
     optimisticData: StateScopeDataMap[TScope];
   }
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
+  // In mock mode, just update the in-memory store and return success
+  if (isMockMode()) {
+    setMockState(scope, options.optimisticData);
+    return {
+      data: options.optimisticData,
+      version: 'mock-version',
+      degraded: false,
+      blocked: false,
+      warning: undefined,
+    };
+  }
+
   const outbox = readOutbox(scope);
   if (outbox?.blocked) {
     throw new StateClientError(
@@ -584,3 +671,6 @@ export const getStoredScopeSnapshot = <TScope extends StateScope>(
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => readOptimisticSnapshot(scope);
 
 export const sessionInvalidationEvent = SESSION_INVALID_EVENT;
+
+// Re-export isMockMode for components to check
+export { isMockMode } from './mockData.ts';

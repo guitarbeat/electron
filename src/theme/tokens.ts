@@ -6,54 +6,56 @@
  * Now supports theme switching between Movies and Places modes.
  */
 
+// Y2K Aesthetic Theme - Bubblegum Pink & Baby Blue
 export const moviesTheme = {
-  accent: '#c88d59',
-  accentHover: '#d9a170',
-  accentMuted: '#c88d5940',
-  accentLight: '#efd2af',
-  secondary: '#8e9f82',
-  secondaryHover: '#a3b497',
-  secondaryMuted: '#8e9f8240',
-  tertiary: '#9a6554',
-  tertiaryHover: '#af7b68',
-  background: '#1d140e',
-  surface: 'rgba(73, 51, 32, 0.72)',
-  surfaceElevated: 'rgba(92, 64, 40, 0.84)',
-  surface0: '#130d08',
-  surface1: 'rgba(69, 48, 29, 0.78)',
-  surface2: 'rgba(90, 63, 39, 0.9)',
-  surface3: 'rgba(113, 81, 52, 0.95)',
-  glow: '0 0 16px rgba(200, 141, 89, 0.22), 0 0 32px rgba(142, 159, 130, 0.12)',
-  glowStrong: '0 0 24px rgba(200, 141, 89, 0.34), 0 0 40px rgba(212, 177, 115, 0.16)',
-  textGlow: '0 1px 2px rgba(15, 10, 6, 0.4), 0 0 8px rgba(200, 141, 89, 0.18)',
-  gradientPrimary: 'linear-gradient(135deg, #c88d59 0%, #d4b173 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(102, 75, 49, 0.96) 0%, rgba(58, 39, 24, 0.92) 100%)',
-  textGradient: 'linear-gradient(135deg, #f4dfbc 0%, #d4b173 52%, #fff7e3 100%)',
+  accent: '#ff6eb4',           // Hot pink
+  accentHover: '#ff8ec4',
+  accentMuted: '#ff6eb440',
+  accentLight: '#ffd4e8',
+  secondary: '#7dd3fc',        // Baby blue
+  secondaryHover: '#a5e1fe',
+  secondaryMuted: '#7dd3fc40',
+  tertiary: '#c4b5fd',         // Lavender
+  tertiaryHover: '#d8ccfe',
+  background: '#1a1625',       // Deep purple-black
+  surface: 'rgba(60, 45, 80, 0.72)',
+  surfaceElevated: 'rgba(80, 60, 100, 0.84)',
+  surface0: '#12101a',
+  surface1: 'rgba(55, 40, 75, 0.78)',
+  surface2: 'rgba(75, 55, 95, 0.9)',
+  surface3: 'rgba(95, 70, 115, 0.95)',
+  glow: '0 0 16px rgba(255, 110, 180, 0.35), 0 0 32px rgba(125, 211, 252, 0.2)',
+  glowStrong: '0 0 24px rgba(255, 110, 180, 0.5), 0 0 40px rgba(196, 181, 253, 0.25)',
+  textGlow: '0 1px 2px rgba(15, 10, 20, 0.4), 0 0 8px rgba(255, 110, 180, 0.25)',
+  gradientPrimary: 'linear-gradient(135deg, #ff6eb4 0%, #7dd3fc 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(80, 55, 100, 0.96) 0%, rgba(45, 30, 65, 0.92) 100%)',
+  textGradient: 'linear-gradient(135deg, #ffd4e8 0%, #c4b5fd 52%, #a5e1fe 100%)',
 } as const;
 
+// Y2K Aesthetic Theme - Mint & Peach (Places variant)
 export const placesTheme = {
-  accent: '#b87248',
-  accentHover: '#cb8861',
-  accentMuted: '#b8724840',
-  accentLight: '#ebc3a6',
-  secondary: '#98a06a',
-  secondaryHover: '#acb47a',
-  secondaryMuted: '#98a06a40',
-  tertiary: '#6f8f8e',
-  tertiaryHover: '#86a5a3',
-  background: '#1c140d',
-  surface: 'rgba(70, 50, 31, 0.72)',
-  surfaceElevated: 'rgba(90, 64, 39, 0.84)',
-  surface0: '#120d08',
-  surface1: 'rgba(67, 48, 29, 0.78)',
-  surface2: 'rgba(87, 63, 38, 0.9)',
-  surface3: 'rgba(109, 79, 50, 0.95)',
-  glow: '0 0 16px rgba(184, 114, 72, 0.2), 0 0 32px rgba(152, 160, 106, 0.12)',
-  glowStrong: '0 0 24px rgba(184, 114, 72, 0.3), 0 0 40px rgba(135, 164, 160, 0.16)',
-  textGlow: '0 1px 2px rgba(15, 10, 6, 0.4), 0 0 8px rgba(184, 114, 72, 0.18)',
-  gradientPrimary: 'linear-gradient(135deg, #b87248 0%, #98a06a 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(100, 74, 47, 0.96) 0%, rgba(57, 40, 24, 0.92) 100%)',
-  textGradient: 'linear-gradient(135deg, #f2dcc0 0%, #98a06a 52%, #fff7e3 100%)',
+  accent: '#ffb86c',           // Peachy orange
+  accentHover: '#ffc98a',
+  accentMuted: '#ffb86c40',
+  accentLight: '#ffe4c4',
+  secondary: '#86efac',        // Mint green
+  secondaryHover: '#a7f3c9',
+  secondaryMuted: '#86efac40',
+  tertiary: '#fcd34d',         // Sunny yellow
+  tertiaryHover: '#fde68a',
+  background: '#1a1a25',       // Deep blue-black
+  surface: 'rgba(45, 55, 80, 0.72)',
+  surfaceElevated: 'rgba(60, 70, 100, 0.84)',
+  surface0: '#101018',
+  surface1: 'rgba(40, 50, 75, 0.78)',
+  surface2: 'rgba(55, 65, 95, 0.9)',
+  surface3: 'rgba(70, 80, 115, 0.95)',
+  glow: '0 0 16px rgba(255, 184, 108, 0.35), 0 0 32px rgba(134, 239, 172, 0.2)',
+  glowStrong: '0 0 24px rgba(255, 184, 108, 0.5), 0 0 40px rgba(252, 211, 77, 0.25)',
+  textGlow: '0 1px 2px rgba(15, 15, 20, 0.4), 0 0 8px rgba(255, 184, 108, 0.25)',
+  gradientPrimary: 'linear-gradient(135deg, #ffb86c 0%, #86efac 100%)',
+  gradientCard: 'linear-gradient(180deg, rgba(55, 65, 100, 0.96) 0%, rgba(30, 38, 65, 0.92) 100%)',
+  textGradient: 'linear-gradient(135deg, #ffe4c4 0%, #fcd34d 52%, #a7f3c9 100%)',
 } as const;
 
 // * Spacing scale (Tight but balanced)

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Button from './Button';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import { getSyncBannerContent } from './syncBannerContent';
+import { isMockMode } from '@/services/state';
 
 interface SyncBannerProps {
   isBlocked?: boolean;
@@ -29,6 +30,11 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   onRetry,
   label,
 }) => {
+  // Don't show sync banner in mock mode - there's nothing to sync
+  if (isMockMode()) {
+    return null;
+  }
+
   const incidentKey = `${isBlocked}::${label ?? ''}`;
 
   const content = getSyncBannerContent({ isBlocked, label });
