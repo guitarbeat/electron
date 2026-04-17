@@ -5,7 +5,7 @@ import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCom
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
 import { useUser } from '@/app/useProviders';
-import ShellControlStrip from '@/app/ShellControlStrip';
+import AppHeader from '@/app/AppHeader';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
@@ -191,7 +191,7 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">
-            <ShellControlStrip
+            <AppHeader
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />

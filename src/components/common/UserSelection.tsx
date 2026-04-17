@@ -8,7 +8,7 @@ import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
 
-type UserSelectionVariant = 'inline' | 'panel' | 'shell';
+type UserSelectionVariant = 'inline' | 'panel' | 'shell' | 'compact';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
@@ -68,7 +68,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const selectedUserNeedsPin = selectedNamedUser ? userNeedsPin(selectedNamedUser) : false;
   const isPanel = variant === 'panel';
   const isShell = variant === 'shell';
-  const showBubbleName = true;
+  const isCompact = variant === 'compact';
+  const showBubbleName = !isCompact;
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   const renderAccountActions = (shellMode = false) => {
@@ -249,7 +250,63 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     <div
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
-      {isShell ? (
+      {isCompact ? (
+        <div className="user-selection__compact-layout">
+          <div
+            className="user-selection__compact-avatars"
+            role="group"
+            aria-label="Select profile"
+          >
+            {users.map((profile) => {
+              const isActive = currentUser === profile;
+              const hasPin = userHasPin(profile);
+              const needsPin = userNeedsPin(profile);
+
+              return (
+                <button
+                  key={profile}
+                  type="button"
+                  className={`user-selection__compact-avatar${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
+                  onClick={() => selectProfile(profile)}
+                  disabled={isDisabled}
+                  aria-label={
+                    isActive
+                      ? `${profile} (active, click to log out)`
+                      : needsPin
+                        ? `Select ${profile} (PIN required)`
+                        : hasPin
+                          ? `Select ${profile} (PIN protected)`
+                          : `Select ${profile}`
+                  }
+                  aria-pressed={isActive}
+                  title={profile}
+                >
+                  <span className="user-selection__compact-avatar-inner">
+                    {USER_PHOTOS[profile] ? (
+                      <img
+                        src={USER_PHOTOS[profile]}
+                        alt=""
+                        className="user-selection__compact-avatar-img"
+                        draggable="false"
+                      />
+                    ) : (
+                      <span className="user-selection__compact-avatar-initial">
+                        {profile.charAt(0)}
+                      </span>
+                    )}
+                  </span>
+                  {isActive && (
+                    <span className="user-selection__compact-active-ring" aria-hidden="true" />
+                  )}
+                  {hasPin && !isActive && (
+                    <span className="user-selection__compact-pin-indicator" aria-hidden="true" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : isShell ? (
         <div className="user-selection__shell-layout">
           <div
             className="user-selection__shell-profile-list"
