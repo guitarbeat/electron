@@ -1493,6 +1493,143 @@ body {
   justify-content: flex-start;
 }
 
+/* Compact variant - for header use */
+.user-selection--compact {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.user-selection__compact-layout {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.user-selection__compact-avatars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-selection__compact-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.user-selection__compact-avatar:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+
+.user-selection__compact-avatar:focus-visible {
+  outline: 2px solid var(--focus-ring, rgba(255, 210, 120, 0.7));
+  outline-offset: 2px;
+}
+
+.user-selection__compact-avatar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.user-selection__compact-avatar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface-secondary, rgba(255, 255, 255, 0.1));
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-selection__compact-avatar:hover .user-selection__compact-avatar-inner {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.user-selection__compact-avatar.is-active .user-selection__compact-avatar-inner {
+  border-color: rgba(255, 210, 120, 0.8);
+  box-shadow: 0 0 0 2px rgba(255, 210, 120, 0.3);
+}
+
+.user-selection__compact-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.user-selection__compact-avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+}
+
+.user-selection__compact-active-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 210, 120, 0.6);
+  pointer-events: none;
+  animation: compact-ring-pulse 2s ease-in-out infinite;
+}
+
+@keyframes compact-ring-pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.user-selection__compact-pin-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(180, 140, 255, 0.9);
+  border: 2px solid var(--surface-primary, #1a1a2e);
+  pointer-events: none;
+}
+
+/* Responsive: smaller on mobile */
+@media (max-width: 480px) {
+  .user-selection__compact-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-selection__compact-avatars {
+    gap: 4px;
+  }
+
+  .user-selection__compact-avatar-initial {
+    font-size: 12px;
+  }
+}
+
 /* Hover: show full API image (contain); name hidden via TSX + this wins over inline name styles */
 .user-selection--inline .gel-bubble--photo-hover-preview .gel-avatar-name--inside {
   opacity: 0 !important;
@@ -11674,7 +11811,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   }
 }
 
-/* ── IMDb badge: retro pixel-art look ── */
+/* ── IMDb badge: retro pixel-art look ─��� */
 .movie-item-imdb-badge {
   border-radius: 0;
   background: rgba(0, 0, 80, 0.85);
