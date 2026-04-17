@@ -116,19 +116,19 @@ const getMarkIds = (idPrefix: string): ElectronMarkIds => ({
 const buildSharedDefs = (palette: ElectronMarkPalette, ids: ElectronMarkIds) => `
 <defs>
   <linearGradient id="${ids.primaryGradient}" x1="14" y1="14" x2="50" y2="52" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="${escapeXml(palette.accentLight)}" />
-    <stop offset="0.42" stop-color="${escapeXml(palette.accent)}" />
-    <stop offset="1" stop-color="${escapeXml(palette.secondary)}" />
+    <stop offset="0" stop-color="${palette.accentLight}" />
+    <stop offset="0.42" stop-color="${palette.accent}" />
+    <stop offset="1" stop-color="${palette.secondary}" />
   </linearGradient>
   <linearGradient id="${ids.secondaryGradient}" x1="19" y1="12" x2="48" y2="49" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="${escapeXml(palette.highlight)}" />
-    <stop offset="0.18" stop-color="${escapeXml(palette.secondary)}" />
-    <stop offset="1" stop-color="${escapeXml(palette.tertiary)}" />
+    <stop offset="0" stop-color="${palette.highlight}" />
+    <stop offset="0.18" stop-color="${palette.secondary}" />
+    <stop offset="1" stop-color="${palette.tertiary}" />
   </linearGradient>
   <radialGradient id="${ids.glowGradient}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(32 31) rotate(90) scale(24)">
-    <stop offset="0" stop-color="${escapeXml(palette.highlight)}" stop-opacity="0.38" />
-    <stop offset="0.54" stop-color="${escapeXml(palette.accent)}" stop-opacity="0.24" />
-    <stop offset="1" stop-color="${escapeXml(palette.secondary)}" stop-opacity="0" />
+    <stop offset="0" stop-color="${palette.highlight}" stop-opacity="0.38" />
+    <stop offset="0.54" stop-color="${palette.accent}" stop-opacity="0.24" />
+    <stop offset="1" stop-color="${palette.secondary}" stop-opacity="0" />
   </radialGradient>
 </defs>`;
 
@@ -197,20 +197,23 @@ export const getElectronMarkSvgMarkup = (
 ) => {
   const resolvedTitle = escapeXml(options.title?.trim() || '');
   const resolvedSize = escapeXml(getResolvedSize(options.size));
-  const palette = getResolvedPalette(options.palette);
+  const rawPalette = getResolvedPalette(options.palette);
+  const palette = Object.fromEntries(
+    Object.entries(rawPalette).map(([key, value]) => [key, escapeXml(value)])
+  ) as ElectronMarkPalette;
   const idPrefix = options.idPrefix ?? `${variant}-${options.monochrome ? 'mono' : 'color'}`;
   const ids = getMarkIds(idPrefix);
   const titleId = escapeXml(`${idPrefix}-title`);
   const paint: ElectronMarkPaint = options.monochrome
     ? {
-        primary: escapeXml(palette.mono),
-        secondary: escapeXml(palette.mono),
-        highlight: escapeXml(palette.mono),
+        primary: palette.mono,
+        secondary: palette.mono,
+        highlight: palette.mono,
       }
     : {
         primary: `url(#${ids.primaryGradient})`,
         secondary: `url(#${ids.secondaryGradient})`,
-        highlight: escapeXml(palette.highlight),
+        highlight: palette.highlight,
         glow: `url(#${ids.glowGradient})`,
       };
 
