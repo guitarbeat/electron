@@ -72,6 +72,9 @@ const getGitHubToken = (): string =>
 
 export const isGitHubTokenConfigured = (): boolean => Boolean(getGitHubToken());
 
+/** Returns true if GIST_ID is configured and the backend can actually sync data. */
+export const isGistConfigured = (): boolean => Boolean(getGistId());
+
 const getGitHubHeaders = (options: { includeAuthorization?: boolean } = {}): Headers => {
   const headers = new Headers({
     Accept: 'application/vnd.github+json',
