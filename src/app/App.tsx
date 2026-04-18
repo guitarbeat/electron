@@ -201,6 +201,15 @@ const App: React.FC = () => {
           <FishTank />
         </React.Suspense>
 
+        <button
+          className="messages-fab"
+          aria-label="Open messages"
+          title="Messages"
+          onClick={() => setShowMessages(true)}
+        >
+          <MessageIcon size={22} />
+        </button>
+
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">
             <AppHeader
