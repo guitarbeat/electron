@@ -9955,6 +9955,67 @@ body.grabbing * {
   gap: 1.75rem;
 }
 
+/* Map loading placeholder */
+.places-map-placeholder {
+  height: var(--places-map-height, 380px);
+  border-radius: var(--chrome-radius-xl, 1rem);
+  background: rgba(0, 0, 0, 0.25);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Section heading — mirrors watchlist section labels */
+.places-section-heading {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-heading, 'Papyrus', serif);
+  font-size: var(--type-title-sm-size, 1.1rem);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.places-section-heading--visited {
+  color: var(--color-success, #34d399);
+}
+
+/* Suggestions row */
+.places-suggestions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.places-suggestions-scroll {
+  display: flex;
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+/* Empty state */
+.places-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.places-empty-state__title {
+  font-family: var(--font-heading, 'Papyrus', serif);
+  font-size: 1.15rem;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+.places-empty-state__hint {
+  font-size: 0.82rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+}
+
 .places-map-shell {
   display: flex;
   flex-direction: column;
