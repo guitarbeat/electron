@@ -1,4 +1,4 @@
-import type { MovieAutocompleteResult } from '@/services/metadataService';
+import type { MovieAutocompleteResult } from '@/services/metadata';
 
 export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
 export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 220;

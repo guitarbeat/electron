@@ -1,19 +1,20 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { match, P } from 'ts-pattern';
 import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
-import { useMovies } from '@/hooks/useMovies';
+import { useMovies } from '@/hooks/movies/useMovies';
 import { usePolling } from '@/services/polling';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import {
   addMemory,
   deleteMemory,
   toggleMemoryPin,
   updateMemory,
-} from '@/services/memoryService';
-import { readScope } from '@/services/stateClient';
-import type { ScopeSnapshot } from '@/services/stateTypes';
-import { formatMemoryTimestamp } from '@/utils/date';
-import { sortMemories } from './memoryUtils';
+} from '@/services/content/memoryService';
+import { readScope } from '@/services/state';
+import type { ScopeSnapshot } from '@/services/state/stateTypes';
+import { formatMemoryTimestamp } from '@/utils';
+import { sortMemories, type MemorySortMode } from './memoryUtils';
 import type { SharedMemory } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';
@@ -64,10 +65,10 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'scrapbook'>('list');
+  const [sortMode, setSortMode] = useState<MemorySortMode>('newest');
   const [imageUrl, setImageUrl] = useState('');
 
-  const memories = snapshot?.data ?? [];
-  const sorted = useMemo(() => sortMemories(memories, 'newest'), [memories]);
+  const sorted = useMemo(() => sortMemories(snapshot?.data ?? [], sortMode), [snapshot?.data, sortMode]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -211,6 +212,26 @@ const FloatingMemoriesPanel: React.FC = () => {
           <div style={{ display: 'flex', gap: spacing.xs, background: colors.surface2, padding: '4px', borderRadius: radius.md }}>
             <Button
               size="sm"
+              variant={sortMode === 'newest' ? 'primary' : 'ghost'}
+              onClick={() => setSortMode('newest')}
+              style={{ padding: '4px 8px', minWidth: '40px' }}
+              title="Sort by Newest"
+            >
+              🕐
+            </Button>
+            <Button
+              size="sm"
+              variant={sortMode === 'oldest' ? 'primary' : 'ghost'}
+              onClick={() => setSortMode('oldest')}
+              style={{ padding: '4px 8px', minWidth: '40px' }}
+              title="Sort by Oldest"
+            >
+              🕰️
+            </Button>
+          </div>
+          <div style={{ display: 'flex', gap: spacing.xs, background: colors.surface2, padding: '4px', borderRadius: radius.md }}>
+            <Button
+              size="sm"
               variant={viewMode === 'list' ? 'primary' : 'ghost'}
               onClick={() => setViewMode('list')}
               style={{ padding: '4px 8px', minWidth: '40px' }}
@@ -233,148 +254,153 @@ const FloatingMemoriesPanel: React.FC = () => {
         <h4 className="memory-lane__thread-title">
           Shared Notes {filtered.length > 0 ? `(${filtered.length})` : ''}
         </h4>
-        {isLoading && filtered.length === 0 ? (
-          <p className="memory-lane__status">Loading memories...</p>
-        ) : error ? (
-          <p className="memory-lane__status memory-lane__status--error">
-            {error instanceof Error ? error.message : 'Unable to load memories.'}
-          </p>
-        ) : filtered.length === 0 ? (
-          <p className="memory-lane__status">No memories match your filters.</p>
-        ) : viewMode === 'scrapbook' ? (
-          <div
-            className="memory-lane__scrapbook"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: '2rem',
-              padding: '2rem 1rem',
-              justifyItems: 'center',
-            }}
-          >
-            {filtered.map((memory) => (
-              <PolaroidMemory
-                key={memory.id}
-                memory={memory}
-                onPin={async () => {
-                  await toggleMemoryPin(memory.id);
-                  refresh();
-                }}
-                onDelete={
-                  currentUser === memory.author
-                    ? async () => {
-                        if (window.confirm('Delete this memory forever?')) {
-                          await deleteMemory(memory.id);
-                          refresh();
-                        }
-                      }
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="memory-lane__thread">
-            {filtered.map((memory) => (
-              <article
-                key={memory.id}
-                className={`memory-lane__message${currentUser === memory.author ? ' memory-lane__message--mine' : ' memory-lane__message--theirs'}`}
-              >
-                <div
-                  className={`memory-lane__bubble${currentUser === memory.author ? ' memory-lane__bubble--mine' : ' memory-lane__bubble--theirs'}${memory.isPinned ? ' is-pinned' : ''}`}
-                >
-                  <div className="memory-lane__bubble-top">
-                    <div className="memory-lane__bubble-copy">
-                      <p className="memory-lane__movie">{memory.movieTitle}</p>
-                      <p className="memory-lane__meta">
-                        {memory.author} ·{' '}
-                        {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
-                      </p>
-                    </div>
-                    {memory.isPinned ? <span className="memory-lane__tag">Pinned</span> : null}
-                  </div>
-
-                  {editingId === memory.id ? (
-                    <Textarea
-                      label="Edit memory"
-                      value={editingNote}
-                      onChange={(event) => setEditingNote(event.target.value)}
-                      className="memory-lane__textarea"
-                      style={{ ...memoryLaneTextareaStyle, minHeight: 80, marginTop: '0.35rem' }}
-                    />
-                  ) : (
-                    <p className="memory-lane__note">{memory.note}</p>
-                  )}
-
-                  <div className="memory-lane__actions">
-                    {editingId === memory.id ? (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => saveEdit(memory)}
-                          className="memory-lane__action-btn memory-lane__action-btn--save"
-                          style={memoryLaneAccentActionStyle}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingId(null);
-                            setEditingNote('');
-                          }}
-                          className="memory-lane__action-btn memory-lane__action-btn--cancel"
-                        >
-                          Cancel
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={async () => {
-                            await toggleMemoryPin(memory.id);
+        {match({ isLoading, error, length: filtered.length, viewMode })
+          .with({ isLoading: true, length: 0 }, () => (
+            <p className="memory-lane__status">Loading memories...</p>
+          ))
+          .with({ error: P.not(P.nullish) }, ({ error }) => (
+            <p className="memory-lane__status memory-lane__status--error">
+              {error instanceof Error ? error.message : 'Unable to load memories.'}
+            </p>
+          ))
+          .with({ length: 0 }, () => (
+            <p className="memory-lane__status">No memories match your filters.</p>
+          ))
+          .with({ viewMode: 'scrapbook' }, () => (
+            <div
+              className="memory-lane__scrapbook"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '2rem',
+                padding: '2rem 1rem',
+                justifyItems: 'center',
+              }}
+            >
+              {filtered.map((memory) => (
+                <PolaroidMemory
+                  key={memory.id}
+                  memory={memory}
+                  onPin={async () => {
+                    await toggleMemoryPin(memory.id);
+                    refresh();
+                  }}
+                  onDelete={
+                    currentUser === memory.author
+                      ? async () => {
+                          if (window.confirm('Delete this memory forever?')) {
+                            await deleteMemory(memory.id);
                             refresh();
-                          }}
-                          className="memory-lane__action-btn memory-lane__action-btn--pin"
-                        >
-                          {memory.isPinned ? 'Unpin' : 'Pin'}
-                        </Button>
-                        {currentUser === memory.author ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => startEditing(memory)}
-                              className="memory-lane__action-btn memory-lane__action-btn--edit"
-                              style={memoryLaneAccentActionStyle}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger"
-                              onClick={async () => {
-                                await deleteMemory(memory.id);
-                                refresh();
-                              }}
-                              className="memory-lane__action-btn memory-lane__action-btn--delete"
-                            >
-                              Delete
-                            </Button>
-                          </>
-                        ) : null}
-                      </>
+                          }
+                        }
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+          ))
+          .otherwise(() => (
+            <div className="memory-lane__thread">
+              {filtered.map((memory) => (
+                <article
+                  key={memory.id}
+                  className={`memory-lane__message${currentUser === memory.author ? ' memory-lane__message--mine' : ' memory-lane__message--theirs'}`}
+                >
+                  <div
+                    className={`memory-lane__bubble${currentUser === memory.author ? ' memory-lane__bubble--mine' : ' memory-lane__bubble--theirs'}${memory.isPinned ? ' is-pinned' : ''}`}
+                  >
+                    <div className="memory-lane__bubble-top">
+                      <div className="memory-lane__bubble-copy">
+                        <p className="memory-lane__movie">{memory.movieTitle}</p>
+                        <p className="memory-lane__meta">
+                          {memory.author} ·{' '}
+                          {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
+                        </p>
+                      </div>
+                      {memory.isPinned ? <span className="memory-lane__tag">Pinned</span> : null}
+                    </div>
+
+                    {editingId === memory.id ? (
+                      <Textarea
+                        label="Edit memory"
+                        value={editingNote}
+                        onChange={(event) => setEditingNote(event.target.value)}
+                        className="memory-lane__textarea"
+                        style={{ ...memoryLaneTextareaStyle, minHeight: 80, marginTop: '0.35rem' }}
+                      />
+                    ) : (
+                      <p className="memory-lane__note">{memory.note}</p>
                     )}
+
+                    <div className="memory-lane__actions">
+                      {editingId === memory.id ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => saveEdit(memory)}
+                            className="memory-lane__action-btn memory-lane__action-btn--save"
+                            style={memoryLaneAccentActionStyle}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditingNote('');
+                            }}
+                            className="memory-lane__action-btn memory-lane__action-btn--cancel"
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={async () => {
+                              await toggleMemoryPin(memory.id);
+                              refresh();
+                            }}
+                            className="memory-lane__action-btn memory-lane__action-btn--pin"
+                          >
+                            {memory.isPinned ? 'Unpin' : 'Pin'}
+                          </Button>
+                          {currentUser === memory.author ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => startEditing(memory)}
+                                className="memory-lane__action-btn memory-lane__action-btn--edit"
+                                style={memoryLaneAccentActionStyle}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                onClick={async () => {
+                                  await deleteMemory(memory.id);
+                                  refresh();
+                                }}
+                                className="memory-lane__action-btn memory-lane__action-btn--delete"
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+                </article>
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   );

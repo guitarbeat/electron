@@ -30,6 +30,11 @@ const clean = (value: string | undefined): string =>
 let _fallbackSecret: string | null = null;
 const getFallbackSecret = (): string => {
   if (!_fallbackSecret) {
+    console.warn(
+      '[session] SESSION_SIGNING_SECRET is not configured. A random secret is being used instead. ' +
+      'All active sessions will be invalidated on every server restart. ' +
+      'Set SESSION_SIGNING_SECRET to a stable value in production.'
+    );
     _fallbackSecret = randomBytes(32).toString('hex');
   }
   return _fallbackSecret;

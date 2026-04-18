@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+// @refresh reset
 /**
  * Consolidated Context Providers
  * Combines Theme, Toast, and User contexts
@@ -7,7 +7,6 @@
 import React, {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -16,20 +15,20 @@ import React, {
 import type { MainTab, User } from '@/shared/types';
 import { moviesTheme, placesTheme, spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
-import { sessionInvalidationEvent } from '@/services/stateClient';
-import type { SessionState } from '@/services/stateTypes';
+import { sessionInvalidationEvent } from '@/services/state';
+import type { SessionState } from '@/services/state/stateTypes';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
 
 // ============================================================================
 // Theme Context
 // ============================================================================
 
-interface ThemeContextValue {
+export interface ThemeContextValue {
   currentTheme: 'movies' | 'places';
   themeTokens: typeof moviesTheme | typeof placesTheme;
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }> = ({
   children,
@@ -49,21 +48,13 @@ export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
-export const useTheme = (): ThemeContextValue => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
-  }
-  return context;
-};
-
 // ============================================================================
 // Toast Context
 // ============================================================================
 
 type ToastType = 'success' | 'error' | 'info';
 
-interface ToastInput {
+export interface ToastInput {
   message: string;
   type: ToastType;
   duration?: number;
@@ -76,13 +67,13 @@ interface ToastRecord extends ToastInput {
   id: string;
 }
 
-interface ToastContextType {
+export interface ToastContextType {
   showToast: (toast: ToastInput) => string;
   dismissToast: (id: string) => void;
   clearToasts: () => void;
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+export const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 const toastId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -171,19 +162,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-export const useToast = (): ToastContextType => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-  return context;
-};
-
 // ============================================================================
 // User Context
 // ============================================================================
 
-interface UserContextType {
+export interface UserContextType {
   hasAccess: boolean;
   pinProtectedUsers: User[];
   usersMissingPins: User[];
@@ -193,7 +176,7 @@ interface UserContextType {
   refreshSession: () => Promise<void>;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+export const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
@@ -325,26 +308,4 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
-};
-
-export const useUser = (): UserContextType => {
-  const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
-  return context;
-};
-
-export const useAppSession = (): Pick<
-  UserContextType,
-  'hasAccess' | 'pinProtectedUsers' | 'usersMissingPins' | 'isSessionLoading' | 'refreshSession'
-> => {
-  const context = useUser();
-  return {
-    hasAccess: context.hasAccess,
-    pinProtectedUsers: context.pinProtectedUsers,
-    usersMissingPins: context.usersMissingPins,
-    isSessionLoading: context.isSessionLoading,
-    refreshSession: context.refreshSession,
-  };
 };

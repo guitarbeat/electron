@@ -1,14 +1,14 @@
 import React from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage } from '@/utils';
+import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import MediaCard from '@/ui/MediaCard';
 import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, NoteIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 import { getMovieActionState, type MovieActionState } from './movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -162,7 +162,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
     try {
       await onToggle();
     } catch (error) {
-      console.error('Failed to toggle watched status', error);
+      consoleError('Failed to toggle watched status', error);
       onToggleError?.(getErrorMessage(error, 'Failed to update watched status.'));
     } finally {
       setIsUpdating(false);
@@ -178,6 +178,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           watchedByBoth ? 'movie-item-card--watched' : ''
         } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
         data-movie-id={movie.id}
+        data-added-by={movie.addedBy}
         style={{
           padding: 0,
           marginBottom: 0,
@@ -192,6 +193,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
             <div className="movie-item-watchers">
               {movie.watchedBy.includes('Aaron') ? <WatcherBadge user="Aaron" size="md" /> : null}
               {movie.watchedBy.includes('Electra') ? <WatcherBadge user="Electra" size="md" /> : null}
+            </div>
+          ) : null}
+
+          {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
+            <div className="movie-item-imdb-badge" aria-label={`IMDb rating: ${movie.imdbRating}`}>
+              <span className="movie-item-imdb-badge__star">⭐</span>
+              <span className="movie-item-imdb-badge__score">{movie.imdbRating}</span>
             </div>
           ) : null}
 
@@ -241,7 +249,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
               onToggle={handleToggle}
               onToggleNotes={handleToggleMemories}
               onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
-              onDelete={onDelete}
             />
           </div>
         ) : null}
@@ -268,6 +275,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           isMobile={isMobile}
           onClose={() => setIsTitleEditorOpen(false)}
           onSubmit={onRename}
+          onDelete={onDelete}
         />
       ) : null}
 
@@ -280,12 +288,15 @@ export default MovieCard;
 
 const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
   const [hasImageError, setHasImageError] = React.useState(false);
+  const [hasCatError, setHasCatError] = React.useState(false);
 
   React.useEffect(() => {
     setHasImageError(false);
+    setHasCatError(false);
   }, [movie.posterUrl]);
 
   const shouldShowPoster = Boolean(movie.posterUrl) && !hasImageError;
+  const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(movie.id || movie.title || 'cat')}`;
 
   return (
     <div className={`movie-poster-wrap ${className}`}>
@@ -297,6 +308,19 @@ const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, cl
           className="movie-poster"
           onError={() => setHasImageError(true)}
         />
+      ) : !hasCatError ? (
+        <>
+          <img
+            src={catUrl}
+            alt={`A cat representing ${movie.title}`}
+            loading="lazy"
+            className="movie-poster movie-poster--cat-fallback"
+            onError={() => setHasCatError(true)}
+          />
+          <div className="movie-poster-cat-title" aria-hidden="true">
+            {movie.title}
+          </div>
+        </>
       ) : (
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
@@ -313,8 +337,9 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, 
   const metadataItems = [
     movie.year,
     movie.runtime,
-    movie.imdbRating ? `${movie.imdbRating} IMDb` : null,
   ].filter(Boolean) as string[];
+
+  const firstGenre = movie.genre?.split(',')[0]?.trim();
 
   return (
     <div className={`movie-metadata ${className}`}>
@@ -331,6 +356,11 @@ const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, 
           </span>
         ) : null}
       </div>
+      {firstGenre ? (
+        <div className="movie-meta-genre-row">
+          <span className="movie-item-genre-chip">{firstGenre}</span>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -342,7 +372,6 @@ interface MovieActionsProps {
   onToggle: () => void;
   onToggleNotes: () => void;
   onEdit?: () => void;
-  onDelete: () => void;
 }
 
 const MovieActions: React.FC<MovieActionsProps> = ({
@@ -352,7 +381,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onToggle,
   onToggleNotes,
   onEdit,
-  onDelete,
 }) => {
   const iconActionClassName = (modifierClassName: string) =>
     `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
@@ -363,14 +391,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
   const handleToggleNotes = () => {
     executeAction(onToggleNotes);
-  };
-
-  const handleDeleteAction = () => {
-    if (actionState.isGuest) {
-      return;
-    }
-
-    executeAction(onDelete);
   };
 
   const handleEditAction = () => {
@@ -476,16 +496,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
               </button>
             ) : null}
 
-            <button
-              type="button"
-              onClick={handleDeleteAction}
-              title={`Remove "${movie.title}"`}
-              aria-label={`Remove "${movie.title}" from list`}
-              className={iconActionClassName('movie-icon-action--delete')}
-              disabled={isUpdating}
-            >
-              <TrashIcon style={{ width: '15px', height: '15px' }} />
-            </button>
           </div>
         ) : null}
       </div>

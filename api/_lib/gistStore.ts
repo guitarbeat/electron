@@ -1,7 +1,7 @@
 import { fetchWithRetry } from './retryFetch.ts';
 
 const GIST_API_BASE_URL = 'https://api.github.com/gists';
-const GIST_CACHE_TTL_MS = 5000;
+const GIST_CACHE_TTL_MS = 30000;
 
 interface GistFile {
   content?: string;
@@ -71,6 +71,9 @@ const getGitHubToken = (): string =>
   );
 
 export const isGitHubTokenConfigured = (): boolean => Boolean(getGitHubToken());
+
+/** Returns true if GIST_ID is configured and the backend can actually sync data. */
+export const isGistConfigured = (): boolean => Boolean(getGistId());
 
 const getGitHubHeaders = (options: { includeAuthorization?: boolean } = {}): Headers => {
   const headers = new Headers({

@@ -146,3 +146,26 @@ test('OMDb proxy translates upstream credential failures into a stable auth erro
   assert.equal(body.code, 'omdb_auth');
   assert.match(body.error, /configured API key/i);
 });
+
+test('OMDb proxy replaces empty apikey query values with configured credentials', async () => {
+  process.env.OMDB_API_KEY = 'server-omdb-key';
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.equal(url.origin, 'https://www.omdbapi.com');
+    assert.equal(url.searchParams.get('t'), 'Heat');
+    assert.equal(url.searchParams.get('apikey'), 'server-omdb-key');
+
+    return new Response('{"Response":"True","Title":"Heat"}', {
+      status: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+  };
+
+  const response = await handler(new Request('https://example.com/api/omdb?t=Heat&apikey='));
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-Cache'), 'MISS');
+  assert.match(await response.text(), /"Title":"Heat"/);
+});

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import type { Movie, MovieSuggestion, SharedMemory, WatchlistProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
@@ -8,14 +8,15 @@ import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
 import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
-import { useWatchlist } from './useWatchlist';
+import { useWatchlist } from "@/hooks/movies/useWatchlist";
 import WatchlistTopControls, {
   type WatchlistTopControlsHandle,
 } from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 import { buildWatchlistSections } from './watchlistSections';
-import type { MovieAutocompleteResult } from '@/services/metadataService';
+import type { MovieAutocompleteResult } from '@/services/metadata';
+import './WatchlistPhotoMode.css';
 
 const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
@@ -65,9 +66,22 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     retryWatchlistSync,
   } = useWatchlist({ currentUser, isPaused });
 
-  const skeletonKeys = isMobile
-    ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
-    : ['desktop-1', 'desktop-2', 'desktop-3', 'desktop-4', 'desktop-5', 'desktop-6', 'desktop-7', 'desktop-8'];
+  const skeletonKeys = useMemo(
+    () =>
+      isMobile
+        ? ['mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
+        : [
+            'desktop-1',
+            'desktop-2',
+            'desktop-3',
+            'desktop-4',
+            'desktop-5',
+            'desktop-6',
+            'desktop-7',
+            'desktop-8',
+          ],
+    [isMobile]
+  );
 
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
@@ -375,10 +389,10 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         ) : (
           <CollectionEmptyState
             padding={isMobile ? spacing.md : spacing['2xl']}
-            className={isMobile ? 'collection-empty-state--tight' : undefined}
-            style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+            className={`watchlist-empty-watched-state${isMobile ? ' collection-empty-state--tight' : ''}`}
           >
-            {emptyState}
+            <span className="watchlist-empty-watched-state__icon" aria-hidden="true">✓</span>
+            <span className="watchlist-empty-watched-state__text">{emptyState}</span>
           </CollectionEmptyState>
         )}
       </CollectionGrid>
@@ -399,54 +413,6 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     ]
   );
 
-  const renderSection = useCallback(
-    ({
-      title,
-      count,
-      content,
-    }: {
-      title: string;
-      count: number;
-      content: React.ReactNode;
-    }) => (
-      <section
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
-            gap: spacing.sm,
-            paddingInline: spacing.xs,
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-            <span style={{ ...typography.presets.eyebrow, color: colors.accentLight }}>
-              {title}
-            </span>
-            <h2
-              style={{
-                margin: 0,
-                color: colors.textPrimary,
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.xl,
-                lineHeight: typography.lineHeight.snug,
-              }}
-            >
-              {count} {count === 1 ? 'title' : 'titles'}
-            </h2>
-          </div>
-        </div>
-        {content}
-      </section>
-    ),
-    []
-  );
 
   const showInitialLoading =
     isLoading &&
@@ -466,12 +432,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         >
           <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
             <div className="scanning-overlay" style={{ padding: spacing.xl }}>
+              <div style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</div>
               <div
-                style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite' }}
+                style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite', letterSpacing: '0.12em' }}
               >
-                SCANNING GIST REPOSITORY...
+                Loading your watchlist
+                <span className="loading-dots" aria-hidden="true" />
               </div>
-              <div className="scanning-bar" style={{ maxWidth: '300px', margin: '0 auto' }} />
+              <div className="scanning-bar" style={{ maxWidth: '200px', margin: '0 auto' }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
               {skeletonKeys.map((key) => (
@@ -483,97 +451,125 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       );
     }
 
+    const isQueueEmpty = sections.queue.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
+    const isWatchedEmpty = sections.watched.length === 0;
+    const isAllEmpty = isQueueEmpty && isWatchedEmpty;
+
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
-        {renderSection({
-          title: 'Queue',
-          count: sections.suggestions.length + sections.queue.length,
-          content: (
-            <CollectionGrid
-              className="watchlist-content"
-              minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-              style={{
-                animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-              }}
+        {isAllEmpty ? (
+          <CollectionGrid
+            className="watchlist-content"
+            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+            style={{
+              animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
+            }}
+          >
+            <CollectionEmptyState
+              padding={isMobile ? spacing.lg : spacing['3xl']}
+              className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
             >
-              {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-                skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
-              ) : (
-                sections.suggestions.map((suggestion, index) => (
-                  <SuggestionCard
-                    key={suggestion.id}
-                    suggestion={suggestion}
-                    onAccept={() => void handleAcceptSuggestion(suggestion)}
-                    onReject={() => void handleRejectSuggestion(suggestion)}
-                    canRespond={Boolean(currentUser)}
-                    disableActions={!currentUser}
-                    isProcessing={processingSuggestionId === suggestion.id}
-                    animationDelay={`${index * 0.05}s`}
-                  />
-                ))
-              )}
-              {sections.queue.length > 0 ? (
-                sections.queue.map((movie, index) => (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                    currentUser={currentUser}
-                    onToggle={() => toggleWatched(movie.id)}
-                    onToggleError={handleToggleError}
-                    onRename={(title) => renameMovie(movie.id, title)}
-                    onDelete={() => setMovieToDelete(movie)}
-                    animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
-                    isHighlighted={successMovieId === movie.id}
-                    memories={movieMemories.get(movie.id) ?? []}
-                    onAddMemory={
-                      currentUser
-                        ? async (note) => {
-                            await addMemory(movie.id, movie.title, currentUser, note);
-                          }
-                        : undefined
-                    }
-                    onUpdateMemory={async (memoryId, note) => {
-                      await updateMemory(memoryId, { note });
-                    }}
-                    onDeleteMemory={async (memoryId) => {
-                      await deleteMemoryRecord(memoryId);
-                    }}
-                    onTogglePin={async (memoryId) => {
-                      await toggleMemoryPin(memoryId);
-                    }}
-                  />
-                ))
-              ) : sections.suggestions.length === 0 && !isSuggestionsLoading ? (
-                <CollectionEmptyState
-                  padding={isMobile ? spacing.md : spacing['2xl']}
-                  className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
-                  style={{ color: 'rgba(255,255,255,0.4)', ...typography.presets.bodySm }}
+              <span className="watchlist-empty-queue-state__icon" aria-hidden="true">🎬</span>
+              <strong className="watchlist-empty-queue-state__title">Your queue is wide open</strong>
+              <span className="watchlist-empty-queue-state__copy">
+                No movies lined up yet. Add something you both want to watch and kick off movie night.
+              </span>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={focusSearchInput}
+                className="watchlist-empty-queue-state__action"
+              >
+                Add a movie
+              </Button>
+            </CollectionEmptyState>
+          </CollectionGrid>
+        ) : (
+          <>
+            {/* ── Incoming suggestions ── */}
+            {(isSuggestionsLoading || sections.suggestions.length > 0) && (
+              <section style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                <h3 className="workspace-section-heading workspace-section-heading--incoming">
+                  Incoming
+                </h3>
+                <CollectionGrid
+                  className="watchlist-content"
+                  minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+                  style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
                 >
-                  <span className="watchlist-empty-queue-state__eyebrow">Your next movie night starts here</span>
-                  <strong className="watchlist-empty-queue-state__title">Add the first title to build the queue.</strong>
-                  <span className="watchlist-empty-queue-state__copy">
-                    Search for a movie or series above, then add it to the shared list in one step.
-                  </span>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={focusSearchInput}
-                    className="watchlist-empty-queue-state__action"
-                  >
-                    Jump to search
-                  </Button>
-                </CollectionEmptyState>
-              ) : null}
-            </CollectionGrid>
-          ),
-        })}
+                  {isSuggestionsLoading && sections.suggestions.length === 0
+                    ? skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
+                    : sections.suggestions.map((suggestion, index) => (
+                        <SuggestionCard
+                          key={suggestion.id}
+                          suggestion={suggestion}
+                          onAccept={() => void handleAcceptSuggestion(suggestion)}
+                          onReject={() => void handleRejectSuggestion(suggestion)}
+                          canRespond={Boolean(currentUser)}
+                          disableActions={!currentUser}
+                          isProcessing={processingSuggestionId === suggestion.id}
+                          animationDelay={`${index * 0.05}s`}
+                        />
+                      ))}
+                </CollectionGrid>
+              </section>
+            )}
 
-        {renderSection({
-          title: 'Watched',
-          count: sections.watched.length,
-          content: renderMovieGrid(sections.watched, 'No watched movies yet'),
-        })}
+            {/* ── Up Next queue ── */}
+            {sections.queue.length > 0 && (
+              <section style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                <h3 className="workspace-section-heading">Up Next</h3>
+                <CollectionGrid
+                  className="watchlist-content"
+                  minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+                  style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
+                >
+                  {sections.queue.map((movie, index) => (
+                    <MovieCard
+                      key={movie.id}
+                      movie={movie}
+                      currentUser={currentUser}
+                      onToggle={() => toggleWatched(movie.id)}
+                      onToggleError={handleToggleError}
+                      onRename={(title) => renameMovie(movie.id, title)}
+                      onDelete={() => setMovieToDelete(movie)}
+                      animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
+                      isHighlighted={successMovieId === movie.id}
+                      memories={movieMemories.get(movie.id) ?? []}
+                      onAddMemory={
+                        currentUser
+                          ? async (note) => {
+                              await addMemory(movie.id, movie.title, currentUser, note);
+                            }
+                          : undefined
+                      }
+                      onUpdateMemory={async (memoryId, note) => {
+                        await updateMemory(memoryId, { note });
+                      }}
+                      onDeleteMemory={async (memoryId) => {
+                        await deleteMemoryRecord(memoryId);
+                      }}
+                      onTogglePin={async (memoryId) => {
+                        await toggleMemoryPin(memoryId);
+                      }}
+                    />
+                  ))}
+                </CollectionGrid>
+              </section>
+            )}
+
+            {/* ── Watched ── */}
+            {sections.watched.length > 0 && (
+              <section style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                <h3 className="workspace-section-heading workspace-section-heading--completed">
+                  Watched
+                </h3>
+                {renderMovieGrid(sections.watched, 'No watched movies yet')}
+              </section>
+            )}
+          </>
+        )}
       </div>
     );
   }, [
@@ -586,11 +582,9 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     handleToggleError,
     isMobile,
     isSuggestionsLoading,
-    isWatchlistDegraded,
     movieMemories,
     renameMovie,
     renderMovieGrid,
-    renderSection,
     sections,
     showInitialLoading,
     skeletonKeys,

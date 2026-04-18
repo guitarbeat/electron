@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useUser } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
 import { USER_PHOTOS, type User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
-import { getErrorMessage, USER_OPTIONS } from '@/utils';
+import { getErrorMessage, USER_OPTIONS, consoleError } from '@/utils';
 import PinDialog from './PinDialog';
 import GelBubbleAvatar from './GelBubbleAvatar';
 import { QuickActionsIcon } from './icons';
 
-type UserSelectionVariant = 'inline' | 'panel' | 'shell';
+type UserSelectionVariant = 'inline' | 'panel' | 'shell' | 'compact';
 
 interface UserSelectionProps {
   onUserSelected?: (user: User | null) => void;
@@ -21,18 +21,21 @@ interface UserSelectionProps {
 const ShellProfileAvatar: React.FC<{ user: User }> = ({ user }) => {
   const [hasImageError, setHasImageError] = useState(false);
 
-  if (hasImageError || !USER_PHOTOS[user]) {
-    return <span className="user-selection__shell-chip-avatar-initial">{user.charAt(0)}</span>;
-  }
-
   return (
-    <img
-      src={USER_PHOTOS[user]}
-      alt=""
-      className="user-selection__shell-chip-avatar-image"
-      onError={() => setHasImageError(true)}
-      draggable="false"
-    />
+    <span className="user-selection__shell-avatar-inner">
+      {hasImageError || !USER_PHOTOS[user] ? (
+        <span className="user-selection__shell-chip-avatar-initial">{user.charAt(0)}</span>
+      ) : (
+        <img
+          src={USER_PHOTOS[user]}
+          alt=""
+          className="user-selection__shell-chip-avatar-image"
+          onError={() => setHasImageError(true)}
+          draggable="false"
+        />
+      )}
+      <span className="user-selection__shell-avatar-name" aria-hidden="true">{user}</span>
+    </span>
   );
 };
 
@@ -65,7 +68,8 @@ const UserSelection: React.FC<UserSelectionProps> = ({
   const selectedUserNeedsPin = selectedNamedUser ? userNeedsPin(selectedNamedUser) : false;
   const isPanel = variant === 'panel';
   const isShell = variant === 'shell';
-  const showBubbleName = true;
+  const isCompact = variant === 'compact';
+  const showBubbleName = !isCompact;
   const panelStatusTitle = selectedNamedUser ?? 'Guest mode';
 
   const renderAccountActions = (shellMode = false) => {
@@ -159,7 +163,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
             }
           }
         } catch (error) {
-          console.error('Profile selection failed:', error);
+          consoleError('Profile selection failed:', error);
           setSelectionError(getErrorMessage(error, 'Profile login is unavailable right now.'));
         }
       })();
@@ -178,7 +182,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
           onUserSelected?.(null);
         }
       } catch (error) {
-        console.error('Profile logout failed:', error);
+        consoleError('Profile logout failed:', error);
         setSelectionError(getErrorMessage(error, 'Unable to update the profile session.'));
       }
     })();
@@ -246,7 +250,63 @@ const UserSelection: React.FC<UserSelectionProps> = ({
     <div
       className={`user-selection user-selection--${variant}${isMobile ? ' is-mobile' : ''}${className ? ` ${className}` : ''}`}
     >
-      {isShell ? (
+      {isCompact ? (
+        <div className="user-selection__compact-layout">
+          <div
+            className="user-selection__compact-avatars"
+            role="group"
+            aria-label="Select profile"
+          >
+            {users.map((profile) => {
+              const isActive = currentUser === profile;
+              const hasPin = userHasPin(profile);
+              const needsPin = userNeedsPin(profile);
+
+              return (
+                <button
+                  key={profile}
+                  type="button"
+                  className={`user-selection__compact-avatar${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
+                  onClick={() => selectProfile(profile)}
+                  disabled={isDisabled}
+                  aria-label={
+                    isActive
+                      ? `${profile} (active, click to log out)`
+                      : needsPin
+                        ? `Select ${profile} (PIN required)`
+                        : hasPin
+                          ? `Select ${profile} (PIN protected)`
+                          : `Select ${profile}`
+                  }
+                  aria-pressed={isActive}
+                  title={profile}
+                >
+                  <span className="user-selection__compact-avatar-inner">
+                    {USER_PHOTOS[profile] ? (
+                      <img
+                        src={USER_PHOTOS[profile]}
+                        alt=""
+                        className="user-selection__compact-avatar-img"
+                        draggable="false"
+                      />
+                    ) : (
+                      <span className="user-selection__compact-avatar-initial">
+                        {profile.charAt(0)}
+                      </span>
+                    )}
+                  </span>
+                  {isActive && (
+                    <span className="user-selection__compact-active-ring" aria-hidden="true" />
+                  )}
+                  {hasPin && !isActive && (
+                    <span className="user-selection__compact-pin-indicator" aria-hidden="true" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : isShell ? (
         <div className="user-selection__shell-layout">
           <div
             className="user-selection__shell-profile-list"
@@ -262,7 +322,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                 <button
                   key={profile}
                   type="button"
-                  className={`user-selection__shell-chip${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
+                  className={`user-selection__shell-avatar-btn${isActive ? ' is-active' : ''}${needsPin ? ' is-pin-required' : ''}${hasPin ? ' is-pin-locked' : ''}`}
                   onClick={() => {
                     if (!isActive) {
                       selectProfile(profile);
@@ -280,31 +340,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                   }
                   aria-pressed={isActive}
                 >
-                  <span className="user-selection__shell-chip-avatar" aria-hidden="true">
-                    <ShellProfileAvatar user={profile} />
-                  </span>
-                  <span className="user-selection__shell-chip-copy">
-                    <span className="user-selection__shell-chip-name">{profile}</span>
-                    {(isActive || hasPin || needsPin) ? (
-                      <span className="user-selection__shell-chip-status-row">
-                        {isActive ? (
-                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--active">
-                            Active
-                          </span>
-                        ) : null}
-                        {needsPin ? (
-                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--pin-required">
-                            PIN Required
-                          </span>
-                        ) : null}
-                        {hasPin ? (
-                          <span className="user-selection__shell-chip-status user-selection__shell-chip-status--pin">
-                            PIN Locked
-                          </span>
-                        ) : null}
-                      </span>
-                    ) : null}
-                  </span>
+                  <ShellProfileAvatar user={profile} />
                 </button>
               );
             })}
@@ -363,6 +399,7 @@ const UserSelection: React.FC<UserSelectionProps> = ({
                       selectionState={selectionState}
                       isSelectionAnimating={isSelectionAnimating}
                       size={bubbleSize}
+                      enableImageRefresh
                       onClick={() => {
                         selectProfile(profile);
                       }}

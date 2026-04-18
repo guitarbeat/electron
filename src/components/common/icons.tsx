@@ -69,7 +69,7 @@ export const TrashIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-export const EyeIcon: React.FC<IconProps> = (props) => (
+export const EyeIcon: React.FC<IconProps> = (props: IconProps) => (
   <StrokeIcon {...props}>
     {path('M15 12a3 3 0 11-6 0 3 3 0 016 0z')}
     {path('M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z')}
@@ -116,11 +116,6 @@ export const SpinIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-export const EyeOffIcon: React.FC<IconProps> = (props) => (
-  <StrokeIcon {...props}>
-    {path('M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21')}
-  </StrokeIcon>
-);
 
 export const MagicWandIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
@@ -146,12 +141,6 @@ export const QuickActionsIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const FilmIcon: React.FC<IconProps> = (props) => (
-  <StrokeIcon {...props}>
-    {path('M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0V1m10 3V1m0 3l1 1v16a2 2 0 01-2 2H6a2 2 0 01-2-2V5l1-1z')}
-  </StrokeIcon>
-);
-
 export const PlusIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>{path('M12 6v6m0 0v6m0-6h6m-6 0H6')}</StrokeIcon>
 );
@@ -171,10 +160,6 @@ export const ArrowLeftIcon: React.FC<IconProps> = (props) => (
 
 export const CrossIcon: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>{path('M6 18L18 6M6 6l12 12')}</StrokeIcon>
-);
-
-export const SearchIcon: React.FC<IconProps> = (props) => (
-  <StrokeIcon {...props}>{path('M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z')}</StrokeIcon>
 );
 
 export const Spinner: React.FC<IconProps> = ({ className = 'w-6 h-6', style, size }) => (

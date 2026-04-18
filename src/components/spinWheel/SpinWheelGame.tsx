@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/ui/Button';
-import { useMovies } from '@/hooks/useMovies';
-import { useUser, useToast } from '@/app/providers';
+import { useMovies } from '@/hooks/movies/useMovies';
+import { useUser } from '@/app/useProviders';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
@@ -12,25 +12,20 @@ import {
   getSpinPool,
   type SpinMode,
 } from './spinWheelEngine.ts';
-import { useSpinWheelState } from '@/hooks/useSpinWheelState';
 
 interface SpinWheelGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
 }
 
-const todayUtcDate = (): string => new Date().toISOString().slice(0, 10);
-
 const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
-  const { showToast } = useToast();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
-  const { history, daily, recordSpin } = useSpinWheelState(currentUser, false);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
-  const [mode, setMode] = useState<SpinMode>('queue');
+  const [mode, setMode] = useState<SpinMode>('all');
   const [selectedPoolIds, setSelectedPoolIds] = useState<string[]>([]);
   const spinTimeoutRef = useRef<number | null>(null);
 
@@ -81,12 +76,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const candidatePreviewMovies = useMemo(() => candidates, [candidates]);
 
   const handleSpin = () => {
-    if (isSpinning || spinPool.length === 0 || !currentUser) return;
+    if (isSpinning || spinPool.length === 0) return;
+
+    setSelectedMovieId(null);
 
     const outcome = computeSpinOutcome(spinPool, rotation);
-    if (!outcome) {
-      return;
-    }
+    if (!outcome) return;
 
     setIsSpinning(true);
     setRotation(outcome.nextRotation);
@@ -96,28 +91,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     }
 
     spinTimeoutRef.current = window.setTimeout(() => {
-      const winner = outcome.winner;
-      setSelectedMovieId(winner.id);
+      setSelectedMovieId(outcome.winner.id);
       setIsSpinning(false);
-
-      void (async () => {
-        const saved = await recordSpin(winner.id, winner.title);
-        if (saved) {
-          showToast({
-            message: `Wheel picked "${winner.title}"`,
-            type: 'success',
-            duration: 3000,
-          });
-        } else {
-          showToast({
-            message:
-              'Could not save spin to shared state. Your pick is shown here; Recent picks may be out of date.',
-            type: 'error',
-            duration: 4000,
-          });
-        }
-      })();
-
       spinTimeoutRef.current = null;
     }, 4200);
   };
@@ -185,28 +160,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         ? `Watched by ${selectedMovie.watchedBy[0]}`
         : 'Unwatched';
 
-  const emptyStateMessage = !currentUser
-    ? 'Select Aaron or Electra to load the wheel.'
-    : isLoading
-      ? 'Loading movies...'
-      : movies.length === 0
-        ? 'Add movies to spin the wheel.'
-        : null;
+  const emptyStateMessage = isLoading
+    ? 'Loading movies...'
+    : movies.length === 0
+      ? 'Add movies to spin the wheel.'
+      : null;
 
-  const triggerLabel = isSpinning
-    ? '...'
-    : !currentUser
-      ? 'Pick'
-      : spinPool.length === 0
-        ? 'Wait'
-        : 'Spin';
-
-  const todaySpins = useMemo(() => {
-    if (daily && daily.date === todayUtcDate()) {
-      return daily.spins;
-    }
-    return [];
-  }, [daily]);
+  const triggerLabel = isSpinning ? '...' : spinPool.length === 0 ? 'Wait' : 'Spin';
 
   return (
     <div className="spin-wheel-shell" style={{ padding: spacing.md, color: colors.textPrimary }}>
@@ -227,12 +187,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             {isSpinning ? 'Locked In' : selectedMovie ? 'Winner Ready' : 'Idle'}
           </strong>
         </div>
-        {todaySpins.length > 0 ? (
-          <div className="spin-wheel-summary__item">
-            <span className="spin-wheel-summary__label">Today's Spins</span>
-            <strong className="spin-wheel-summary__value">{todaySpins.length}</strong>
-          </div>
-        ) : null}
       </div>
 
       <div className="spin-wheel-mode-bar" role="group" aria-label="Spin wheel pool">
@@ -355,7 +309,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           ) : (
             <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
               <p className="spin-wheel-panel__eyebrow">
-                {isSpinning ? 'Spinning Now' : currentUser ? 'Wheel Loaded' : 'Pick A Profile'}
+                {isSpinning ? 'Spinning Now' : 'Wheel Loaded'}
               </p>
               <h3 className="spin-wheel-panel__title">
                 {emptyStateMessage ? 'Wheel Offline' : 'Movie Night Roulette'}
@@ -436,32 +390,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             </Button>
           </div>
 
-          {todaySpins.length > 0 && (
-            <div className="spin-wheel-history">
-              <h4 className="spin-wheel-history__title">Today's Spins</h4>
-              <ol className="spin-wheel-history__list">
-                {todaySpins.map((spin, index) => (
-                  <li key={`${spin.movieId}-${index}`}>
-                    <strong>{spin.movieTitle}</strong>
-                    <span style={{ fontSize: '0.8em', opacity: 0.7, marginLeft: '8px' }}>
-                      (by {spin.spunBy} at {new Date(spin.createdAt).toLocaleTimeString()})
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {history.length > 0 && (
-            <div className="spin-wheel-history">
-              <h4 className="spin-wheel-history__title">Recent Picks (All-time)</h4>
-              <ol className="spin-wheel-history__list">
-                {history.map((title, index) => (
-                  <li key={`${title}-${index}`}>{title}</li>
-                ))}
-              </ol>
-            </div>
-          )}
         </div>
       </div>
 

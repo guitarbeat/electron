@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
-import { PlusIcon, Spinner } from '@/common/icons';
+import { Spinner } from '@/common/icons';
+import { getPlaceMeta } from './PlaceCard';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
@@ -34,16 +35,13 @@ const MAP_STYLE: StyleSpecification = {
 interface PlacesMapProps {
   places: Place[];
   canEdit?: boolean;
-  searchQuery: string;
-  setSearchQuery: (v: string) => void;
-  onSubmitSearch: () => Promise<void> | void;
-  onSuggestPlace?: () => Promise<void> | void;
-  isAdding: boolean;
-  isSuggesting?: boolean;
-  suggestionError: string | null;
   onUpdatePlace?: (id: string, updates: Partial<Pick<Place, 'lat' | 'lng'>>) => Promise<void>;
   onAddPlace?: (name: string, notes?: string, lat?: number, lng?: number) => Promise<void>;
   style?: React.CSSProperties;
+}
+
+export interface PlacesMapHandle {
+  flyTo: (lng: number, lat: number, zoom?: number) => void;
 }
 
 type PinMode = 'assign' | 'new';
@@ -53,20 +51,13 @@ interface PendingPin {
   lat: number;
 }
 
-const PlacesMap: React.FC<PlacesMapProps> = ({
+const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   places,
   canEdit = false,
-  searchQuery = '',
-  setSearchQuery = () => undefined,
-  onSubmitSearch = () => undefined,
-  onSuggestPlace,
-  isAdding = false,
-  isSuggesting = false,
-  suggestionError = null,
   onUpdatePlace,
   onAddPlace,
   style,
-}) => {
+}, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const markersRef = useRef<MapLibreGL.Marker[]>([]);
@@ -80,6 +71,12 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
   const [newPlaceName, setNewPlaceName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    flyTo: (lng: number, lat: number, zoom = 13) => {
+      mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200 });
+    },
+  }), []);
 
   const unmappedPlaces = places.filter(
     (p) => typeof p.lat !== 'number' || typeof p.lng !== 'number'
@@ -185,18 +182,48 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
       markersRef.current = [];
 
       placesWithCoords.forEach((place) => {
+        const meta = getPlaceMeta(place.name);
         const el = document.createElement('div');
         el.style.cssText = `
           width: 14px; height: 14px; border-radius: 50%;
-          background: ${colors.accent};
+          background: ${meta.color};
           border: 2px solid rgba(255,255,255,0.8);
           box-shadow: 0 2px 6px rgba(0,0,0,0.5);
           cursor: pointer;
         `;
         el.title = place.name;
 
+        const isVisited = Boolean(place.visitedAt);
+        const popupHtml = `
+          <div style="
+            background: rgba(18,11,6,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid ${colors.border};
+            border-radius: 10px;
+            padding: 8px 12px;
+            min-width: 100px;
+            font-family: ${typography.fontFamily.heading.join(', ')};
+          ">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <span style="font-size:1.1rem;">${meta.icon}</span>
+              <span style="color:${colors.textPrimary};font-size:0.85rem;font-weight:600;letter-spacing:0.02em;">${place.name}</span>
+            </div>
+            ${isVisited ? `<span style="font-size:0.65rem;color:${colors.secondary};letter-spacing:0.06em;text-transform:uppercase;">✓ Visited</span>` : ''}
+            ${place.notes ? `<div style="font-size:0.72rem;color:${colors.textTertiary};margin-top:2px;">${place.notes}</div>` : ''}
+          </div>
+        `;
+
+        const popup = new MapLibreGL.Popup({
+          offset: 12,
+          closeButton: false,
+          closeOnClick: true,
+          className: 'places-map-popup',
+        }).setHTML(popupHtml);
+
         const marker = new MapLibreGL.Marker({ element: el })
           .setLngLat([place.lng, place.lat])
+          .setPopup(popup)
           .addTo(map);
 
         markersRef.current.push(marker);
@@ -298,7 +325,7 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
         onDrop={handleDrop}
         style={{
           width: '100%',
-          height: 'clamp(360px, 52vh, 580px)',
+          height: '100%',
           borderRadius: radius.xl,
           overflow: 'hidden',
           border: isDragOver
@@ -351,101 +378,6 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
           </div>
         </div>
       )}
-
-      {/* ── Floating search bar ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: spacing.md,
-          left: spacing.md,
-          right: canEdit ? '120px' : spacing.md,
-          zIndex: 10,
-        }}
-      >
-        <form
-          onSubmit={(e) => { e.preventDefault(); void onSubmitSearch(); }}
-          style={{ display: 'flex', gap: spacing.xs }}
-        >
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Add a place…"
-            aria-label="Place name"
-            style={{
-              flex: 1,
-              ...glassStyle,
-              color: colors.textPrimary,
-              fontSize: typography.fontSize.sm,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              padding: `${spacing.sm} ${spacing.md}`,
-              outline: 'none',
-              border: `1px solid ${searchQuery ? colors.accent : colors.border}`,
-              transition: `border-color ${motion.duration.fast}`,
-              minWidth: 0,
-            }}
-          />
-          {searchQuery.trim() && canEdit && (
-            <div style={{ display: 'flex', gap: spacing.xs }}>
-              <button
-                type="submit"
-                disabled={isAdding || isSuggesting}
-                style={{
-                  ...glassStyle,
-                  padding: `${spacing.sm} ${spacing.md}`,
-                  color: isAdding ? colors.textTertiary : colors.accentLight,
-                  cursor: isAdding ? 'not-allowed' : 'pointer',
-                  border: `1px solid ${colors.accent}66`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-                aria-label="Add place"
-                title="Add directly to queue"
-              >
-                {isAdding ? <Spinner /> : <PlusIcon />}
-              </button>
-              {onSuggestPlace && (
-                <button
-                  type="button"
-                  onClick={() => void onSuggestPlace()}
-                  disabled={isAdding || isSuggesting}
-                  style={{
-                    ...glassStyle,
-                    padding: `${spacing.sm} ${spacing.md}`,
-                    color: isSuggesting ? colors.textTertiary : colors.accentLight,
-                    cursor: isSuggesting ? 'not-allowed' : 'pointer',
-                    border: `1px dashed ${colors.accent}44`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                  aria-label="Suggest place"
-                  title="Suggest for review"
-                >
-                  {isSuggesting ? <Spinner /> : '💡'}
-                </button>
-              )}
-            </div>
-          )}
-        </form>
-
-        {suggestionError && (
-          <div
-            style={{
-              marginTop: spacing.xs,
-              padding: `${spacing.xs} ${spacing.sm}`,
-              ...glassStyle,
-              borderColor: 'rgba(220,80,60,0.5)',
-              color: '#f87171',
-              fontSize: typography.fontSize.xs,
-            }}
-          >
-            {suggestionError}
-          </div>
-        )}
-      </div>
 
       {/* ── Drop-pin toggle ── */}
       {canEdit && !pendingPin && (
@@ -612,8 +544,20 @@ const PlacesMap: React.FC<PlacesMapProps> = ({
           </div>
         </div>
       )}
+      {/* Hide default MapLibre popup chrome */}
+      <style>{`
+        .places-map-popup .maplibregl-popup-content {
+          background: transparent !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+        }
+        .places-map-popup .maplibregl-popup-tip {
+          display: none !important;
+        }
+      `}</style>
     </div>
   );
-};
+});
 
 export default PlacesMap;

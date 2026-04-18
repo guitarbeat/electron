@@ -24,6 +24,7 @@ const MessageList: React.FC<MessageListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const previousLengthRef = useRef(0);
+  const scrollTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -49,20 +50,33 @@ const MessageList: React.FC<MessageListProps> = ({
         const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
 
         if (isNearBottom) {
-          requestAnimationFrame(() => {
-            window.setTimeout(() => {
-              container.scrollTo({
-                top: container.scrollHeight,
+          if (scrollTimeoutRef.current !== null) {
+            window.clearTimeout(scrollTimeoutRef.current);
+          }
+          scrollTimeoutRef.current = window.setTimeout(() => {
+            scrollTimeoutRef.current = null;
+            const el = containerRef.current;
+            if (el) {
+              el.scrollTo({
+                top: el.scrollHeight,
                 behavior: 'smooth',
               });
-            }, 50);
-          });
+            }
+          }, 50);
         }
       }
     }
 
     previousLengthRef.current = messages.length;
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current !== null) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const scrollToBottom = () => {
     const container = containerRef.current;
@@ -93,66 +107,37 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div
-      ref={containerRef}
       style={{
-        flex: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        padding: spacing.md,
         position: 'relative',
+        flex: 1,
         minHeight: 0,
-        backgroundColor: '#ffffff',
-        WebkitOverflowScrolling: 'touch',
+        display: 'flex',
+        flexDirection: 'column',
       }}
-      className="ios-message-list"
     >
-      <style>{`
-        .ios-message-list {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
+      <div
+        ref={containerRef}
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: spacing.md,
+          minHeight: 0,
+          backgroundColor: '#ffffff',
+          WebkitOverflowScrolling: 'touch',
+        }}
+        className="ios-message-list"
+      >
+        <style>{`
+          .ios-message-list {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
 
-        .ios-message-list::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-
-      {showScrollToBottom ? (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: spacing.md,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 10,
-          }}
-        >
-          <button
-            type="button"
-            onClick={scrollToBottom}
-            aria-label="Scroll to latest messages"
-            style={{
-              width: '44px',
-              height: '44px',
-              border: 'none',
-              borderRadius: '999px',
-              background: 'rgba(0, 0, 0, 0.55)',
-              color: '#ffffff',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-            }}
-          >
-            <span aria-hidden="true" style={{ fontSize: '20px', lineHeight: 1 }}>
-              ↓
-            </span>
-          </button>
-        </div>
-      ) : null}
+          .ios-message-list::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
 
       <div
         style={{
@@ -266,6 +251,45 @@ const MessageList: React.FC<MessageListProps> = ({
         <div ref={endRef} aria-hidden="true" />
       </div>
     </div>
+
+    {showScrollToBottom ? (
+      <div
+        style={{
+          position: 'absolute',
+          bottom: spacing.md,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10,
+          pointerEvents: 'auto',
+        }}
+      >
+        <button
+          type="button"
+          onClick={scrollToBottom}
+          aria-label="Scroll to latest messages"
+          style={{
+            width: '44px',
+            height: '44px',
+            border: 'none',
+            borderRadius: '999px',
+            background: 'rgba(0, 0, 0, 0.55)',
+            color: '#ffffff',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+          }}
+        >
+          <span aria-hidden="true" style={{ fontSize: '20px', lineHeight: 1 }}>
+            ↓
+          </span>
+        </button>
+      </div>
+    ) : null}
+  </div>
   );
 };
 

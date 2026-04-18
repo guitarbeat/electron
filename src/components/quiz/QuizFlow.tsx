@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
 import type { QuizData } from '@/hooks/useQuiz';
+import BlinkText from './BlinkText';
 import {
   MultipleChoiceQuestionView,
   AgreeDisagreeQuestionView,
@@ -8,66 +9,171 @@ import {
   XYAxisQuestionView,
 } from './QuestionViews';
 import ResultsScreen from './ResultsScreen';
-import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import { spacing, colors, typography, shadows, radius } from '@/theme/tokens';
 import { calculateQuizResults } from './quizScoring';
+import {
+  buildQuizProgressStorageKey,
+  clearSavedQuizProgress,
+  readSavedQuizProgress,
+  writeSavedQuizProgress,
+} from './quizProgressStorage';
+import './retro-ad.css';
 
 interface QuizFlowProps {
   onComplete: () => void;
   quizData: QuizData;
+  sessionKey?: string;
+  onRetake?: () => void;
   onEdit?: () => void;
   isCompleted?: boolean;
 }
 
+const EMPTY_QUESTIONS: QuizData['questions'] = [];
+
+interface QuizFlowInitialState {
+  currentQuestionIndex: number;
+  answers: QuizAnswer[];
+  showResults: boolean;
+}
+
+const QUIZ_EMPTY_STATE_TEXT_STYLE = {
+  fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+  color: '#000080',
+  fontWeight: 'bold',
+} satisfies React.CSSProperties;
+const QUIZ_EMPTY_STATE_ACTIONS_STYLE = {
+  display: 'flex',
+  gap: 8,
+  justifyContent: 'center',
+} satisfies React.CSSProperties;
+const QUIZ_RETAKE_BUTTON_STYLE = { marginTop: 10 } as const;
+
+const getInitialQuizState = ({
+  isCompleted,
+  progressStorageKey,
+  questionSignature,
+  questionCount,
+}: {
+  isCompleted?: boolean;
+  progressStorageKey: string;
+  questionSignature: string;
+  questionCount: number;
+}): QuizFlowInitialState => {
+  const savedProgress = isCompleted
+    ? null
+    : readSavedQuizProgress(progressStorageKey, questionSignature);
+  const savedIndex = savedProgress?.currentQuestionIndex ?? 0;
+  const maxIndex = Math.max(questionCount - 1, 0);
+
+  return {
+    currentQuestionIndex: Math.max(0, Math.min(savedIndex, maxIndex)),
+    answers: savedProgress?.answers ?? [],
+    showResults: Boolean(isCompleted),
+  };
+};
+
 const QuizFlow: React.FC<QuizFlowProps> = ({
   onComplete,
   quizData,
+  sessionKey = 'guest',
+  onRetake,
   onEdit,
   isCompleted,
 }) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<QuizAnswer[]>([]);
-  const [showResults, setShowResults] = useState(isCompleted || false);
+  const questions = useMemo(() => quizData.questions ?? EMPTY_QUESTIONS, [quizData.questions]);
+  const questionSignature = useMemo(
+    () => questions.map((question) => question.id).join('|'),
+    [questions]
+  );
+  const progressStorageKey = useMemo(
+    () => buildQuizProgressStorageKey(sessionKey),
+    [sessionKey]
+  );
+  const [initialState] = useState(() =>
+    getInitialQuizState({
+      isCompleted,
+      progressStorageKey,
+      questionSignature,
+      questionCount: questions.length,
+    })
+  );
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialState.currentQuestionIndex);
+  const [answers, setAnswers] = useState(initialState.answers);
+  const [showResults, setShowResults] = useState(initialState.showResults);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
-  const questions = quizData.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
-  const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
+  const progress =
+    totalQuestions > 0 ? Math.round((currentQuestionIndex / totalQuestions) * 100) : 0;
+
+  const clearProgressAndContinue = () => {
+    clearSavedQuizProgress(progressStorageKey);
+    onComplete();
+  };
+
+  useEffect(() => {
+    if (isCompleted || showResults || totalQuestions === 0) {
+      clearSavedQuizProgress(progressStorageKey);
+      return;
+    }
+
+    writeSavedQuizProgress(progressStorageKey, {
+      questionSignature,
+      currentQuestionIndex,
+      answers,
+    });
+  }, [
+    answers,
+    currentQuestionIndex,
+    isCompleted,
+    progressStorageKey,
+    questionSignature,
+    showResults,
+    totalQuestions,
+  ]);
 
   if (!currentQuestion && !showResults) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          padding: spacing['2xl'],
-          color: colors.textSecondary,
-        }}
-      >
-        <p style={{ marginBottom: spacing.md }}>No quiz questions available.</p>
-        <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'center' }}>
-          <Button onClick={onComplete} variant="primary" size="md">
-            Continue
-          </Button>
-          {onEdit && (
-            <Button onClick={onEdit} variant="secondary" size="md">
-              Edit Quiz
-            </Button>
-          )}
+      <div className="quiz-retro-wrapper">
+        <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
+          <p style={{ ...QUIZ_EMPTY_STATE_TEXT_STYLE, marginBottom: 12 }}>
+            No quiz questions available.
+          </p>
+          <div style={QUIZ_EMPTY_STATE_ACTIONS_STYLE}>
+            <button className="quiz-retro-btn" onClick={clearProgressAndContinue}>
+              Continue
+            </button>
+            {onEdit && (
+              <button className="quiz-retro-btn quiz-retro-btn--secondary" onClick={onEdit}>
+                Edit Quiz
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  const currentAnswer = answers.find((a) => a.questionId === currentQuestion.id);
+  const currentAnswer = currentQuestion
+    ? answers.find((answer) => answer.questionId === currentQuestion.id)
+    : undefined;
+  const isAnswered =
+    currentAnswer !== undefined &&
+    (currentAnswer.answerIndex !== undefined ||
+      currentAnswer.scaleValue !== undefined ||
+      currentAnswer.xyPosition !== undefined);
 
   const handleAnswer = (
     answerIndex?: number,
     scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree',
     xyPosition?: { x: number; y: number }
   ) => {
-    const newAnswer: QuizAnswer = {
+    if (!currentQuestion) {
+      return;
+    }
+
+    const nextAnswer: QuizAnswer = {
       questionId: currentQuestion.id,
       answerIndex,
       scaleValue,
@@ -75,8 +181,8 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     };
 
     setAnswers((prev) => {
-      const filtered = prev.filter((a) => a.questionId !== currentQuestion.id);
-      return [...filtered, newAnswer];
+      const filtered = prev.filter((answer) => answer.questionId !== currentQuestion.id);
+      return [...filtered, nextAnswer];
     });
   };
 
@@ -87,6 +193,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     }
 
     const result = calculateQuizResults(answers, questions);
+    clearSavedQuizProgress(progressStorageKey);
     setQuizResult(result);
     setShowResults(true);
   };
@@ -98,6 +205,8 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
   };
 
   const handleRetake = () => {
+    onRetake?.();
+    clearSavedQuizProgress(progressStorageKey);
     setCurrentQuestionIndex(0);
     setAnswers([]);
     setShowResults(false);
@@ -105,15 +214,17 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
   };
 
   if (showResults) {
-    // If we're already completed, we might not have quizResult yet if we just loaded
-    // Need a way to handle 'viewing previous results' if needed, but for now:
     if (!quizResult && isCompleted) {
       return (
-        <div style={{ textAlign: 'center', padding: spacing.xl }}>
-          <h3>Quiz Completed!</h3>
-          <Button onClick={handleRetake} variant="primary" style={{ marginTop: spacing.md }}>
-            Retake Quiz
-          </Button>
+        <div className="quiz-retro-wrapper">
+        <div className="quiz-retro-question-card" style={{ textAlign: 'center' }}>
+            <p style={QUIZ_EMPTY_STATE_TEXT_STYLE}>
+              🎉 Quiz Completed!
+            </p>
+            <button className="quiz-retro-btn" onClick={handleRetake} style={QUIZ_RETAKE_BUTTON_STYLE}>
+              🔄 RETAKE QUIZ!!!
+            </button>
+          </div>
         </div>
       );
     }
@@ -124,6 +235,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
           result={quizResult}
           onContinue={onComplete}
           onRetake={handleRetake}
+          onEdit={onEdit}
           characterDescriptions={quizData.characterDescriptions}
           neitherDescription={quizData.neitherDescription}
         />
@@ -131,13 +243,11 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
     }
   }
 
-  const canProceed =
-    currentAnswer !== undefined &&
-    (currentAnswer.answerIndex !== undefined ||
-      currentAnswer.scaleValue !== undefined ||
-      currentAnswer.xyPosition !== undefined);
-
   const renderCurrentQuestion = () => {
+    if (!currentQuestion) {
+      return null;
+    }
+
     switch (currentQuestion.type) {
       case 'multiple-choice':
         return (
@@ -172,7 +282,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
             key={currentQuestion.id}
             question={currentQuestion as XYAxisQuestionType}
             selectedPosition={currentAnswer?.xyPosition ?? null}
-            onSelect={(pos) => handleAnswer(undefined, undefined, pos)}
+            onSelect={(position) => handleAnswer(undefined, undefined, position)}
           />
         );
       default:
@@ -181,123 +291,109 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
   };
 
   return (
-    <div
-      style={{
-        maxWidth: '48rem',
-        margin: '0 auto',
-      }}
-    >
-      <div
-        style={{
-          marginBottom: spacing.xl,
-        }}
-        role="progressbar"
-        aria-valuenow={currentQuestionIndex + 1}
-        aria-valuemin={1}
-        aria-valuemax={totalQuestions}
-        aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.sm,
-          }}
-        >
-          <span
-            style={{
-              fontSize: typography.fontSize.sm,
-              color: colors.textSecondary,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
-            Question {currentQuestionIndex + 1} of {totalQuestions}
-          </span>
-          <span
-            style={{
-              fontSize: typography.fontSize.sm,
-              color: colors.accent,
-              fontWeight: typography.fontWeight.semibold,
-            }}
-          >
-            {Math.round(progress)}%
-          </span>
-        </div>
-        <div
-          style={{
-            height: '8px',
-            backgroundColor: colors.surface,
-            borderRadius: radius.md,
-            overflow: 'hidden',
-            border: `2px solid ${colors.borderSecondary}`,
-            position: 'relative',
-          }}
-        >
-          <div
-            style={{
-              width: `${progress}%`,
-              height: '100%',
-              backgroundColor: colors.accent,
-              transition: 'width 0.3s ease-out',
-              boxShadow: shadows.glow,
-              position: 'relative',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-                animation: 'shimmer 2s infinite',
-              }}
-            />
-          </div>
+    <div className="quiz-retro-wrapper">
+      <div className="quiz-retro-marquee-bar">
+        <span className="quiz-retro-marquee-inner">
+          ★★★ CLICK HERE TO DISCOVER YOUR TRUE PERSONALITY!!! ★★★ LIMITED TIME!!! ★★★ 100%
+          FREE!!! ★★★ AMAZING RESULTS AWAIT!!! ★★★
+        </span>
+      </div>
+
+      <div className="quiz-retro-rainbow-border">
+        <div className="quiz-retro-header-bar">
+          <span>★ PERSONALITY QUIZ - FIND OUT WHO YOU REALLY ARE!!! ★</span>
         </div>
       </div>
 
-      <Card variant="elevated" className="animate-fade-in" key={currentQuestion.id}>
-        <div style={{ padding: spacing['2xl'] }}>{renderCurrentQuestion()}</div>
-      </Card>
+      <div className="quiz-retro-main">
+        <div className="quiz-retro-title-banner">
+          <h2>🌟 WHICH CHARACTER ARE YOU?! 🌟</h2>
+          <p>*** TAKE THE OFFICIAL QUIZ NOW - IT&apos;S TOTALLY FREE!!! ***</p>
+        </div>
 
-      <div
-        style={{
-          display: 'flex',
-          gap: spacing.md,
-          marginTop: spacing.xl,
-          justifyContent: 'space-between',
-        }}
-      >
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={handlePrevious}
-          disabled={currentQuestionIndex === 0}
-          style={{
-            fontSize: typography.fontSize.base,
-            opacity: currentQuestionIndex === 0 ? 0.5 : 1,
-            cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
-          }}
-          aria-label="Previous question"
-        >
-          {'<- Previous'}
-        </Button>
+        {onEdit && (
+          <div className="quiz-retro-utility-row">
+            <div className="quiz-retro-utility-copy">
+              <span className="quiz-retro-utility-label">EDITOR ACCESS</span>
+              <span className="quiz-retro-utility-text">
+                Adjust the questions anytime. Your current progress stays saved while you edit.
+              </span>
+            </div>
+            <button
+              type="button"
+              className="quiz-retro-btn quiz-retro-btn--secondary quiz-retro-btn--compact"
+              onClick={onEdit}
+              aria-label="Edit quiz questions"
+            >
+              ✏️ EDIT QUIZ
+            </button>
+          </div>
+        )}
 
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleNext}
-          disabled={!canProceed}
-          style={{
-            fontSize: typography.fontSize.base,
-            opacity: !canProceed ? 0.5 : 1,
-            cursor: !canProceed ? 'not-allowed' : 'pointer',
-          }}
-          aria-label={currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'}
+        <div
+          className="quiz-retro-progress-wrap"
+          role="progressbar"
+          aria-valuenow={currentQuestionIndex + 1}
+          aria-valuemin={1}
+          aria-valuemax={totalQuestions}
+          aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
         >
-          {currentQuestionIndex === totalQuestions - 1 ? 'See Results' : 'Next ->'}
-        </Button>
+          <div className="quiz-retro-progress-label">
+            ⚡ LOADING YOUR DESTINY... QUESTION {currentQuestionIndex + 1} OF {totalQuestions}!!!
+            ⚡
+          </div>
+          <div className="quiz-retro-progress-track">
+            <div className="quiz-retro-progress-fill" style={{ width: `${progress}%` }} />
+            <div className="quiz-retro-progress-text">{progress}% COMPLETE</div>
+          </div>
+          <div className="quiz-retro-progress-sub">
+            ⚡ ONLY {totalQuestions - currentQuestionIndex} QUESTIONS REMAINING!!! ACT NOW!!! ⚡
+          </div>
+        </div>
+
+        <div className="quiz-retro-question-card">
+          <div className="quiz-retro-question-title-bar">
+            ▶ QUESTION {currentQuestionIndex + 1}:{' '}
+            <BlinkText>ANSWER CAREFULLY!!!</BlinkText>
+          </div>
+          {renderCurrentQuestion()}
+        </div>
+
+        <div className="quiz-retro-nav-row">
+          <button
+            className="quiz-retro-btn quiz-retro-btn--secondary"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            aria-label="Previous question"
+          >
+            {'<< BACK'}
+          </button>
+          <button
+            className="quiz-retro-btn"
+            onClick={handleNext}
+            disabled={!isAnswered}
+            aria-label={currentQuestionIndex === totalQuestions - 1 ? 'See results' : 'Next question'}
+          >
+            {currentQuestionIndex === totalQuestions - 1
+              ? '🌟 SEE MY RESULTS!!!'
+              : 'NEXT QUESTION >>>'}
+          </button>
+        </div>
+
+        <div className="quiz-retro-ad-strip">
+          <span>⭐ YOU COULD BE A WINNER!!! ⭐</span>
+          <p>Complete the quiz to discover your TRUE personality type!!!</p>
+          <p style={{ color: '#888888', fontSize: '9px', fontWeight: 'normal' }}>
+            * Results are 100% scientific and totally official *
+          </p>
+        </div>
+      </div>
+
+      <div className="quiz-retro-marquee-bar" style={{ marginTop: 4, marginBottom: 0 }}>
+        <span className="quiz-retro-marquee-inner" style={{ animationDelay: '-7s' }}>
+          🌟 AMAZING!!! INCREDIBLE!!! UNBELIEVABLE QUIZ RESULTS AWAIT!!! 🌟 TAKE THE QUIZ NOW FOR
+          FREE!!! 🌟 DON&apos;T MISS OUT!!! 🌟
+        </span>
       </div>
     </div>
   );

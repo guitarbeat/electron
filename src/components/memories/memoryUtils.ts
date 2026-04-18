@@ -134,21 +134,20 @@ export const sortMemories = (
   memories: SharedMemory[],
   sortMode: MemorySortMode
 ): SharedMemory[] => {
-  const ordered = [...memories].sort((a, b) => {
+  return [...memories].sort((a, b) => {
     if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
       return a.isPinned ? -1 : 1;
     }
 
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    const aTime = new Date(a.createdAt).getTime();
+    const bTime = new Date(b.createdAt).getTime();
+
+    if (sortMode === 'oldest') {
+      return aTime - bTime;
+    } else {
+      return bTime - aTime;
+    }
   });
-
-  if (sortMode === 'newest') {
-    return ordered;
-  }
-
-  const pinned = ordered.filter((memory) => memory.isPinned);
-  const unpinned = ordered.filter((memory) => !memory.isPinned).reverse();
-  return [...pinned, ...unpinned];
 };
 
 export const canCreateMemory = (currentUser: string | null): boolean => Boolean(currentUser);

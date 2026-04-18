@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback, useImperativeHandle } from 'react';
 import { User, Movie } from '@/shared/types';
 import { useMatchmaker } from '@/hooks/useMatchmaker';
-import { useMovies } from '@/hooks/useMovies';
-import { useToast } from '@/app/providers';
+import { useMovies } from '@/hooks/movies';
+import { useToast } from '@/app/useProviders';
 import Button from '@/ui/Button';
 import Card from '@/ui/Card';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import SyncBanner from '@/components/ui/SyncBanner';
-import { randomUtils } from '@/utils/random';
+import { randomUtils } from '@/utils';
 import {
   colors,
   spacing,
@@ -177,7 +177,7 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
                 flexShrink: 0,
                 cursor: onPosterClick ? 'pointer' : 'default',
               }}
-              title={onPosterClick ? `Click for more details about "${movie.title}"` : undefined}
+              title={onPosterClick ? `Click for more details about &quot;${movie.title}&quot;` : undefined}
             />
           ) : (
             <div
@@ -196,7 +196,7 @@ const SwipeCard = React.forwardRef<SwipeCardHandle, SwipeCardProps>(({ movie, on
                 flexShrink: 0,
                 cursor: onPosterClick ? 'pointer' : 'default',
               }}
-              title={onPosterClick ? `Click for more details about "${movie.title}"` : undefined}
+              title={onPosterClick ? `Click for more details about &quot;${movie.title}&quot;` : undefined}
             >
               No poster
             </div>
@@ -285,11 +285,6 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
   const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
 
-  const unwatchedMovies = useMemo(
-    () => (movies ? movies.filter((m) => m.watchedBy.length < 2) : []),
-    [movies]
-  );
-
   const movieMap = useMemo(() => {
     return new Map(movies?.map((m) => [m.id, m]));
   }, [movies]);
@@ -368,24 +363,25 @@ const Matchmaker: React.FC<MatchmakerProps> = ({ currentUser }) => {
     lastMatchCount.current = matches.length;
   }, [matches.length, movies, matches]);
 
-  const availableVibes = useMemo(() => getAvailableMatchmakerVibes(unwatchedMovies), [unwatchedMovies]);
+  const availableVibes = useMemo(() => getAvailableMatchmakerVibes(movies ?? []), [movies]);
 
   const handleStart = (selectedVibe: string | null = null) => {
     if (!currentUser) return;
     clearTransientUiState();
 
-    const filteredMovies = filterMoviesByVibe(unwatchedMovies, selectedVibe);
+    const allMovies = movies ?? [];
+    const filteredMovies = filterMoviesByVibe(allMovies, selectedVibe);
 
     if (filteredMovies.length < 3) {
       const vibeLabel = selectedVibe ? `${selectedVibe} ` : '';
       showToast({
-        message: `Not enough ${vibeLabel}movies in your queue. Add at least 3 to start.`,
+        message: `Not enough ${vibeLabel}movies to start. Add at least 3 to your watchlist.`,
         type: 'info',
       });
       return;
     }
 
-    startNewGame(createMatchmakerPool(unwatchedMovies, selectedVibe));
+    startNewGame(createMatchmakerPool(allMovies, selectedVibe));
   };
 
   const handleSwipe = (direction: 'left' | 'right') => {

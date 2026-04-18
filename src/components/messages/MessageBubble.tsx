@@ -2,7 +2,7 @@ import React from 'react';
 import type { Message, User } from '@/shared/types';
 import { TrashIcon } from '@/common/icons';
 import { spacing, typography } from '@/theme/tokens';
-import { formatMessageTimestamp } from '@/utils/date';
+import { formatMessageTimestamp } from '@/utils';
 import { getBubbleColor, getBubbleTextColor, IOS_TIMESTAMP, isMessageFromCurrentUser } from './messageUtils';
 
 interface MessageBubbleProps {
