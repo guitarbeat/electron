@@ -11,6 +11,7 @@ const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
+import PlacesTopControls from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
 
@@ -188,19 +189,24 @@ const PlacesList: React.FC = () => {
         />
       )}
 
+      {/* Search bar — mirrors movie watchlist bar */}
+      <PlacesTopControls
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleAddAction}
+        onSuggest={handleSuggestAction}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+        canEdit={Boolean(currentUser)}
+      />
+
       {/* Map — fixed height, rounded */}
       <React.Suspense fallback={<div className="places-map-placeholder" />}>
         <PlacesMap
           ref={mapRef}
           places={places}
           canEdit={Boolean(currentUser)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSubmitSearch={handleAddAction}
-          onSuggestPlace={handleSuggestAction}
-          isAdding={isAdding}
-          isSuggesting={isSuggesting}
-          suggestionError={suggestionError}
           onUpdatePlace={updatePlace}
           onAddPlace={addPlace}
           style={{ height: 'var(--places-map-height, 380px)', borderRadius: radius.xl }}
