@@ -9,6 +9,7 @@ import AppHeader from '@/app/AppHeader';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
 const FishTank = React.lazy(() => import('@/components/effects/FishTank'));
+const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
@@ -181,14 +182,9 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <button
-          type="button"
-          className="messages-fab"
-          aria-label="Open messages"
-          onClick={() => setShowMessages(true)}
-        >
-          <MessageIcon size={22} />
-        </button>
+        <React.Suspense fallback={null}>
+          <RadialMenu onOpenMessages={() => setShowMessages(true)} />
+        </React.Suspense>
 
         <React.Suspense fallback={null}>
           <FishTank />
