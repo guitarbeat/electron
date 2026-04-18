@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
-import { useAppSession, useUser } from '@/app/providers';
-import { mutateScope } from '@/services/stateClient';
-import { getErrorMessage, readApiErrorMessage } from '@/utils';
+import { useAppSession, useUser } from '@/app/useProviders';
+import { mutateScope } from '@/services/state';
+import { getErrorMessage, readApiErrorMessage, consoleError } from '@/utils';
 import type { User } from '../shared/types.ts';
 
 const PINS_POLL_INTERVAL = 30000;
@@ -56,7 +56,7 @@ export const usePins = (isPaused: boolean = false) => {
         await refreshSession();
         return true;
       } catch (error) {
-        console.error('Error setting PIN:', error);
+        consoleError('Error setting PIN:', error);
         return false;
       }
     },
@@ -93,7 +93,7 @@ export const usePins = (isPaused: boolean = false) => {
         await refreshSession();
         return true;
       } catch (error) {
-        console.error('PIN verification failed:', error);
+        consoleError('PIN verification failed:', error);
         throw new Error(
           getErrorMessage(error, 'Profile login is unavailable right now.'),
           { cause: error }

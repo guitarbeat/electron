@@ -1,4 +1,4 @@
-import { jsonResponse, methodNotAllowedResponse, serverErrorResponse } from './_lib/http.ts';
+import { jsonResponse, methodNotAllowedResponse } from './_lib/http.ts';
 import { getSessionState } from './_lib/session.ts';
 import { getPinCoverageState } from './_lib/state.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
@@ -29,8 +29,14 @@ async function handler(req: Request): Promise<Response> {
       usersMissingPins,
     });
   } catch (error) {
-    console.error('Failed to read session state', error);
-    return serverErrorResponse();
+    console.error(`Failed to read session state during ${req.method} ${req.url}:`, error);
+    return jsonResponse({
+      hasAccess: false,
+      currentUser: null,
+      pinProtectedUsers: [],
+      usersMissingPins: [],
+      warning: 'Session state is temporarily unavailable.',
+    });
   }
 }
 

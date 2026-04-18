@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '@total-typescript/ts-reset';
 import App from './app/App';
 
 const rootElement = document.getElementById('root');

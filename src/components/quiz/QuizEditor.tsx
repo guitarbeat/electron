@@ -8,16 +8,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useToast } from '@/app/providers';
+import { useToast } from '@/app/useProviders';
 import type { QuizData } from '@/hooks/useQuiz';
-import { QuizQuestion } from './types';
+import { CHARACTERS, QuizQuestion } from './types';
 import QuestionsTab from './QuestionsTab';
 import DescriptionsTab from './DescriptionsTab';
 import SyncBanner from '@/components/ui/SyncBanner';
-import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { spacing, colors, typography, radius } from '@/theme/tokens';
-import { ArrowLeftIcon } from '@/common/icons';
+import { spacing, colors } from '@/theme/tokens';
+import { ArrowLeftIcon, EyeIcon } from '@/common/icons';
+import './retro-ad.css';
+import './QuizEditor.css';
 
 interface UseUndoRedoReturn<T> {
   state: T;
@@ -250,114 +251,159 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
     );
   }
 
+  const completedDescriptions =
+    CHARACTERS.filter((character) => localData.characterDescriptions[character].trim().length > 0)
+      .length + Number(localData.neitherDescription.trim().length > 0);
+  const descriptionCoverage = Math.round(
+    (completedDescriptions / (CHARACTERS.length + 1)) * 100
+  );
+  const questionFormatCount = new Set(localData.questions.map((question) => question.type)).size;
+
   return (
-    <div style={{ maxWidth: '80rem', margin: '0 auto', padding: spacing.md }}>
-      {/* Header */}
-      <Card variant="elevated" style={{ marginBottom: spacing.lg, padding: spacing.md }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: spacing.sm,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Back">
-            <ArrowLeftIcon style={{ width: '1.25rem', height: '1.25rem' }} />
-          </Button>
-          <h1
-            style={{
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              margin: 0,
-              flex: 1,
-              minWidth: '120px',
-            }}
-          >
-            Quiz Editor
-          </h1>
+    <div className="quiz-editor-shell">
+      <div className="quiz-retro-marquee-bar quiz-editor__marquee">
+        <span className="quiz-retro-marquee-inner">
+          ★★★ EDIT MODE ACTIVATED!!! REORDER QUESTIONS!!! TUNE SCORES!!! REWRITE RESULTS!!!
+          ★★★
+        </span>
+      </div>
 
-          {/* Undo/Redo buttons */}
-          <div style={{ display: 'flex', gap: spacing.xs }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={undo}
-              disabled={!canUndo}
-              title="Undo (Ctrl+Z)"
-              aria-label="Undo"
-              style={{ opacity: canUndo ? 1 : 0.4 }}
-            >
-              ↩
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={redo}
-              disabled={!canRedo}
-              title="Redo (Ctrl+Shift+Z)"
-              aria-label="Redo"
-              style={{ opacity: canRedo ? 1 : 0.4 }}
-            >
-              ↪
-            </Button>
-          </div>
-
-          {/* Import/Export */}
-          <div style={{ display: 'flex', gap: spacing.xs }}>
-            <Button variant="ghost" size="sm" onClick={handleExport} title="Export quiz as JSON">
-              📤
-            </Button>
-            <label style={{ cursor: 'pointer' }}>
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                style={{ display: 'none' }}
-              />
-              <span
-                title="Import quiz from JSON"
-                style={{
-                  pointerEvents: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '4px 12px',
-                  cursor: 'pointer',
-                }}
-              >
-                📥
-              </span>
-            </label>
-          </div>
-
-          {/* Preview toggle (desktop only) */}
-          {!isMobile && (
-            <Button
-              variant={showPreview ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              {showPreview ? '👁️ Preview On' : '👁️ Preview'}
-            </Button>
-          )}
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            disabled={!hasChanges || isSaving}
-            isLoading={isSaving}
-            loadingText="Saving..."
-          >
-            Save Changes
-          </Button>
+      <div className="quiz-retro-rainbow-border quiz-editor__frame-border">
+        <div className="quiz-retro-header-bar">
+          <span>★ PERSONALITY QUIZ STUDIO - WORKING COPY OPEN ★</span>
         </div>
-      </Card>
+      </div>
+
+      <section className="quiz-editor__hero">
+        <div className="quiz-editor__hero-content">
+          <div className="quiz-editor__hero-top">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              aria-label="Back"
+              className="quiz-editor__back-button"
+            >
+              <ArrowLeftIcon size={18} />
+            </Button>
+
+            <div className="quiz-editor__hero-copy">
+              <p className="quiz-editor__eyebrow">Personality Quiz Studio</p>
+              <div className="quiz-editor__hero-title-row">
+                <h1 className="quiz-editor__hero-title">Edit the quiz flow, scoring, and results.</h1>
+                <span
+                  className={`quiz-editor__status-pill ${
+                    hasChanges
+                      ? 'quiz-editor__status-pill--dirty'
+                      : 'quiz-editor__status-pill--clean'
+                  }`}
+                >
+                  {hasChanges ? 'Unsaved changes' : 'Working copy ready'}
+                </span>
+              </div>
+              <p className="quiz-editor__hero-description">
+                Manage question order, tune character weighting, and rewrite each result profile
+                from one workspace.
+              </p>
+            </div>
+
+            <div className="quiz-editor__hero-actions">
+              <div className="quiz-editor__hero-action-row">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={undo}
+                  disabled={!canUndo}
+                  title="Undo (Ctrl+Z)"
+                  aria-label="Undo"
+                >
+                  Undo
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={redo}
+                  disabled={!canRedo}
+                  title="Redo (Ctrl+Shift+Z)"
+                  aria-label="Redo"
+                >
+                  Redo
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleExport}
+                  title="Export quiz as JSON"
+                >
+                  Export JSON
+                </Button>
+                <label
+                  className="ui-button ui-button--ghost ui-button--sm quiz-editor__import-label"
+                  aria-label="Import quiz from JSON"
+                >
+                  <span className="ui-button__content">Import JSON</span>
+                  <input type="file" accept=".json" onChange={handleImport} />
+                </label>
+              </div>
+
+              <div className="quiz-editor__hero-action-row quiz-editor__hero-action-row--save">
+                {!isMobile && (
+                  <Button
+                    variant={showPreview ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setShowPreview(!showPreview)}
+                    leftIcon={<EyeIcon size={16} />}
+                  >
+                    {showPreview ? 'Hide preview' : 'Show preview'}
+                  </Button>
+                )}
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={!hasChanges || isSaving}
+                  isLoading={isSaving}
+                  loadingText="Saving..."
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="quiz-editor__hero-stats">
+            <div className="quiz-editor__stat">
+              <p className="quiz-editor__stat-value">{localData.questions.length}</p>
+              <p className="quiz-editor__stat-label">Questions in flow</p>
+              <p className="quiz-editor__stat-detail">
+                {questionFormatCount} scoring formats in active use
+              </p>
+            </div>
+
+            <div className="quiz-editor__stat">
+              <p className="quiz-editor__stat-value">{descriptionCoverage}%</p>
+              <p className="quiz-editor__stat-label">Results copy coverage</p>
+              <p className="quiz-editor__stat-detail">
+                {completedDescriptions} of {CHARACTERS.length + 1} endings currently filled
+              </p>
+            </div>
+
+            <div className="quiz-editor__stat">
+              <p className="quiz-editor__stat-value">{showPreview && !isMobile ? 'On' : 'Focus'}</p>
+              <p className="quiz-editor__stat-label">Editing mode</p>
+              <p className="quiz-editor__stat-detail">
+                {showPreview && !isMobile
+                  ? 'Preview stays visible beside the composer'
+                  : 'Workspace is prioritizing editing space'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {isDegraded && (
-        <div style={{ marginBottom: spacing.lg }}>
+        <div>
           <SyncBanner
             isBlocked={isSyncBlocked}
             onRetry={() => void retrySync()}
@@ -370,52 +416,28 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         </div>
       )}
 
-      {/* Tabs - Modern Segmented Control */}
-      <div
-        style={{
-          display: 'flex',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          padding: '4px',
-          borderRadius: radius.lg,
-          marginBottom: spacing.xl,
-          border: `1px solid ${colors.borderSecondary}10`,
-        }}
-      >
+      <div className="quiz-editor__tabs">
         <button
           onClick={() => setActiveTab('questions')}
-          style={{
-            flex: 1,
-            padding: `${spacing.sm} ${spacing.md}`,
-            border: 'none',
-            borderRadius: radius.md,
-            backgroundColor: activeTab === 'questions' ? colors.accent : 'transparent',
-            color: activeTab === 'questions' ? '#000' : colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.bold,
-            cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: activeTab === 'questions' ? `0 4px 12px ${colors.accent}40` : 'none',
-          }}
+          className={`quiz-editor__tab ${
+            activeTab === 'questions' ? 'quiz-editor__tab--active' : ''
+          }`}
         >
-          Questions ({localData.questions.length})
+          <span className="quiz-editor__tab-label">Questions</span>
+          <span className="quiz-editor__tab-meta">
+            {localData.questions.length} items in sequence
+          </span>
         </button>
         <button
           onClick={() => setActiveTab('descriptions')}
-          style={{
-            flex: 1,
-            padding: `${spacing.sm} ${spacing.md}`,
-            border: 'none',
-            borderRadius: radius.md,
-            backgroundColor: activeTab === 'descriptions' ? colors.accent : 'transparent',
-            color: activeTab === 'descriptions' ? '#000' : colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.bold,
-            cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: activeTab === 'descriptions' ? `0 4px 12px ${colors.accent}40` : 'none',
-          }}
+          className={`quiz-editor__tab ${
+            activeTab === 'descriptions' ? 'quiz-editor__tab--active' : ''
+          }`}
         >
-          Characters
+          <span className="quiz-editor__tab-label">Results Copy</span>
+          <span className="quiz-editor__tab-meta">
+            {completedDescriptions} of {CHARACTERS.length + 1} result profiles ready
+          </span>
         </button>
       </div>
 
@@ -434,7 +456,6 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           setDraggedIndex={setDraggedIndex}
           dragOverIndex={dragOverIndex}
           setDragOverIndex={setDragOverIndex}
-          isMobile={isMobile}
         />
       )}
 
@@ -448,6 +469,13 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           onUpdateNeither={(neitherDescription) => updateLocalData({ neitherDescription })}
         />
       )}
+
+      <div className="quiz-retro-marquee-bar quiz-editor__marquee quiz-editor__marquee--bottom">
+        <span className="quiz-retro-marquee-inner" style={{ animationDelay: '-7s' }}>
+          ★★★ LIVE QUIZ STYLE SYNCHRONIZED!!! PREVIEW THE PLAYER EXPERIENCE BESIDE YOUR EDITS!!!
+          ★★★
+        </span>
+      </div>
     </div>
   );
 };

@@ -1,20 +1,27 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { MessageIcon } from '@/common/icons';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
+import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import { ThemeProvider, ToastProvider, UserProvider, useUser } from '@/app/providers';
-import ShellControlStrip from '@/app/ShellControlStrip';
-import { type ShellActionId } from '@/app/shellState';
+import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
+import { useUser } from '@/app/useProviders';
+import AppHeader from '@/app/AppHeader';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
-import RetroEffects from '@/components/effects/RetroEffects';
+const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
+const FishTank = React.lazy(() => import('@/components/effects/FishTank'));
+const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
+const WaterSimulation = React.lazy(() => import('@/components/effects/WaterSimulation'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
-import ElectronLogoLab from '@/branding/ElectronLogoLab';
+const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
+import type { BackgroundType } from '@/components/effects/RadialMenu';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
+const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
@@ -23,18 +30,20 @@ const App: React.FC = () => {
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const [activeTab, setActiveTab] = useState<MainTab>('queue');
-  const [quizCompleted, setQuizCompleted] = useState<boolean>(
-    () => localStorage.getItem('quizCompleted') === 'true'
+  const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
+    readQuizCompletionState(currentUser)
   );
   const [showMessages, setShowMessages] = useState(false);
   const [showMemoriesPanel, setShowMemoriesPanel] = useState(false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
+  const [backgroundType, setBackgroundType] = useState<BackgroundType>('moire');
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -54,20 +63,35 @@ const App: React.FC = () => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
 
-  const openQuizExperience = useCallback(() => {
-    if (currentUser) {
-      setShowQuizFlow(true);
-      return;
-    }
-
-    setShowQuizEditor(true);
+  useEffect(() => {
+    setQuizCompleted(readQuizCompletionState(currentUser));
   }, [currentUser]);
 
-  const handleQuizComplete = useCallback(() => {
-    setQuizCompleted(true);
-    localStorage.setItem('quizCompleted', 'true');
-    setShowQuizFlow(false);
+  const updateQuizCompletion = useCallback(
+    (completed: boolean) => {
+      setQuizCompleted(completed);
+      writeQuizCompletionState(currentUser, completed);
+    },
+    [currentUser]
+  );
+
+  const openQuizExperience = useCallback(() => {
+    setShowQuizFlow(true);
   }, []);
+
+  const openQuizEditor = useCallback(() => {
+    setShowQuizFlow(false);
+    setShowQuizEditor(true);
+  }, []);
+
+  const handleQuizComplete = useCallback(() => {
+    updateQuizCompletion(true);
+    setShowQuizFlow(false);
+  }, [updateQuizCompletion]);
+
+  const handleQuizRetake = useCallback(() => {
+    updateQuizCompletion(false);
+  }, [updateQuizCompletion]);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
@@ -81,27 +105,13 @@ const App: React.FC = () => {
     [activeTab, playSwitch]
   );
 
-  const handleShellAction = useCallback(
-    (action: ShellActionId) => {
-      switch (action) {
-        case 'messages':
-          setShowMessages(true);
-          return;
-        case 'notes':
-          setShowMemoriesPanel(true);
-          return;
-        case 'quiz':
-          openQuizExperience();
-          return;
-        case 'spin-match':
-          setShowSpinWheel(true);
-          return;
-        default:
-          action satisfies never;
-      }
-    },
-    [openQuizExperience]
-  );
+  const openSpinMatch = useCallback(() => {
+    setShowSpinWheel(true);
+  }, []);
+
+  const openSpinWheelOnly = useCallback(() => {
+    setShowSpinWheelOnly(true);
+  }, []);
 
   const featureModals = useMemo(
     () =>
@@ -111,6 +121,7 @@ const App: React.FC = () => {
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
+        showSpinWheelOnly,
         quizCompleted,
         isSpinWheelLocked,
         currentUser,
@@ -119,12 +130,15 @@ const App: React.FC = () => {
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
+        setShowSpinWheelOnly,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
+        onQuizRetake: handleQuizRetake,
       }),
     [
       currentUser,
       handleQuizComplete,
+      handleQuizRetake,
       isSpinWheelLocked,
       quizCompleted,
       showMemoriesPanel,
@@ -132,19 +146,24 @@ const App: React.FC = () => {
       showQuizEditor,
       showQuizFlow,
       showSpinWheel,
+      showSpinWheelOnly,
     ]
   );
 
   if (logoLabState.enabled) {
     return (
       <ThemeProvider activeTab={activeTab}>
-        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+        <React.Suspense fallback={null}>
+          <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+        </React.Suspense>
         <div className="app-shell app-shell--viewport bg-main">
           <React.Suspense fallback={null}>
             {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
           </React.Suspense>
           <VignetteOverlay />
-          <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
+          <React.Suspense fallback={null}>
+            <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
+          </React.Suspense>
         </div>
       </ThemeProvider>
     );
@@ -152,11 +171,17 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider activeTab={activeTab}>
-      <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+      <React.Suspense fallback={null}>
+        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+      </React.Suspense>
       <div className="app-shell app-shell--viewport bg-main">
         <React.Suspense fallback={null}>
           {!prefersReducedMotion ? (
-            <MagicComponent isVisible opacity={0.2} />
+            backgroundType === 'moire' ? (
+              <MagicComponent isVisible opacity={0.2} />
+            ) : (
+              <WaterSimulation />
+            )
           ) : null}
         </React.Suspense>
         <VignetteOverlay />
@@ -164,13 +189,22 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
+        <React.Suspense fallback={null}>
+          <RadialMenu 
+            onOpenMessages={() => setShowMessages(true)} 
+            onBackgroundChange={setBackgroundType}
+            currentBackground={backgroundType}
+          />
+        </React.Suspense>
+
+        <React.Suspense fallback={null}>
+          <FishTank />
+        </React.Suspense>
+
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">
-            <ShellControlStrip
+            <AppHeader
               activeTab={activeTab}
-              currentUser={currentUser}
-              quizCompleted={quizCompleted}
-              onAction={handleShellAction}
               onTabChange={handleTabChange}
             />
             <React.Suspense fallback={null}>
@@ -178,6 +212,11 @@ const App: React.FC = () => {
                 isMobile={isMobile}
                 activeTab={activeTab}
                 currentUser={currentUser}
+                onOpenQuiz={openQuizExperience}
+                onOpenQuizEditor={openQuizEditor}
+                quizCompleted={quizCompleted}
+                onOpenSpin={openSpinMatch}
+                onOpenSpinOnly={openSpinWheelOnly}
               />
             </React.Suspense>
           </div>
@@ -195,11 +234,12 @@ const App: React.FC = () => {
             closeDisabled={modal.closeDisabled}
             closeDisabledLabel={modal.closeDisabledLabel}
           >
-            <div style={modal.contentStyle ?? { flex: 1, overflowY: 'auto' }}>
+            <div style={modal.contentStyle ?? modalBodyStyle}>
               {modal.isOpen ? modal.content : null}
             </div>
           </MinigameModal>
         ))}
+
       </div>
     </ThemeProvider>
   );

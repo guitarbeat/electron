@@ -16,6 +16,16 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   onClose,
 }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const [hasPosterError, setHasPosterError] = React.useState(false);
+  const [hasCatError, setHasCatError] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasPosterError(false);
+    setHasCatError(false);
+  }, [movie.posterUrl]);
+
+  const shouldShowPoster = Boolean(movie.posterUrl) && !hasPosterError;
+  const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || 'No Poster')}?fontSize=18&width=400&height=600`;
 
   const metadataItems = [
     { label: 'Year', value: movie.year },
@@ -36,7 +46,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       <div style={{ padding: spacing.lg, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: spacing.lg }}>
         {/* Poster Section */}
         <div style={{ flexShrink: 0, width: isMobile ? '100%' : '200px' }}>
-          {movie.posterUrl ? (
+          {shouldShowPoster ? (
             <img
               src={movie.posterUrl}
               alt={`${movie.title} poster`}
@@ -46,6 +56,21 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 display: 'block'
               }}
+              onError={() => setHasPosterError(true)}
+            />
+          ) : !hasCatError ? (
+            <img
+              src={catUrl}
+              alt={`A cat representing ${movie.title}`}
+              style={{
+                width: '100%',
+                borderRadius: radius.md,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                display: 'block',
+                aspectRatio: '2/3',
+                objectFit: 'cover',
+              }}
+              onError={() => setHasCatError(true)}
             />
           ) : (
             <div

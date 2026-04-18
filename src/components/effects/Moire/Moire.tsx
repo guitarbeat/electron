@@ -328,7 +328,17 @@ function MagicComponent({
       // If the component has already unmounted, containerEl will be null
       if (!containerEl) return;
 
-      state.renderer = new Renderer({ dpr: 1 });
+      // Guard: WebGL may be unavailable (e.g. sandboxed iframes, headless environments).
+      // Bail silently so the rest of the app is unaffected.
+      let renderer: InstanceType<typeof Renderer>;
+      try {
+        renderer = new Renderer({ dpr: 1 });
+      } catch {
+        return;
+      }
+      if (!renderer.gl) return;
+
+      state.renderer = renderer;
       state.gl = state.renderer.gl;
       containerEl.appendChild(state.gl.canvas as HTMLCanvasElement);
 
@@ -510,8 +520,8 @@ function MagicComponent({
         const pageX = e.x === undefined ? e.pageX : e.x;
         const pageY = e.y === undefined ? e.pageY : e.y;
 
-        const x = touchX || pageX;
-        const y = touchY || pageY;
+        const x = touchX ?? pageX;
+        const y = touchY ?? pageY;
 
         state.mouse.set(
           (x / state.gl.renderer.width) * 2 - 1,

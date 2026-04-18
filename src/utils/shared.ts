@@ -1,17 +1,14 @@
-import type { User } from '@/shared/types';
+import type { User } from '../shared/types.ts';
+import { spacing } from '../theme/tokens.ts';
 
 /**
  * Consolidated Utilities
- * Combines security, validation, and concurrency helpers
+ * Combines security, concurrency, and core utilities
  */
 
 // ============================================================================
-// Security & Validation Constants
+// Security Constants
 // ============================================================================
-
-export const MAX_MESSAGE_LENGTH = 500;
-export const MAX_AUTHOR_LENGTH = 50;
-export const MAX_MOVIE_TITLE_LENGTH = 200;
 
 export const KNOWN_USERS = ["Aaron", "Electra"] as const;
 export const USER_OPTIONS: ReadonlyArray<User> = KNOWN_USERS;
@@ -28,6 +25,13 @@ export const parseJsonContent = (content: string, context: string): unknown => {
   } catch (error) {
     throw new Error(`Failed to parse ${context} JSON.`, { cause: error });
   }
+};
+
+export const deepClone = <T>(value: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
 };
 
 export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
@@ -66,6 +70,33 @@ export const getErrorMessage = (
   }
 
   return fallback;
+};
+
+/**
+ * Log error with extra info if available (status, code, etc)
+ */
+export const consoleError = (
+  message: string,
+  error: unknown,
+  context?: Record<string, unknown>,
+): void => {
+  const details =
+    error && typeof error === "object"
+      ? {
+          status: (error as Record<string, unknown>).status,
+          code: (error as Record<string, unknown>).code,
+          conflict: (error as Record<string, unknown>).conflict,
+          ...context,
+        }
+      : context;
+
+  const hasDetails =
+    details && Object.values(details).some((v) => v !== undefined);
+  if (hasDetails) {
+    console.error(message, error, details);
+  } else {
+    console.error(message, error);
+  }
 };
 
 export const readApiErrorMessage = async (
@@ -112,122 +143,6 @@ export const isValidUrl = (url: string): boolean => {
 };
 
 // ============================================================================
-// Validation Framework
-// ============================================================================
-
-export interface ValidationRule {
-  required?: boolean;
-  maxLength?: number;
-  minLength?: number;
-  pattern?: RegExp;
-  custom?: (value: string) => string | null;
-}
-
-export interface ValidationRules {
-  [key: string]: ValidationRule;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: Record<string, string>;
-}
-
-export const createValidator = (rules: ValidationRules) => {
-  return (data: Record<string, string>): ValidationResult => {
-    const errors = Object.entries(rules).reduce<Record<string, string>>(
-      (acc, [field, rule]) => {
-        const value = data[field] || "";
-        const trimmedValue = value.trim();
-
-        if (rule.required && !trimmedValue) {
-          acc[field] = `${field} is required`;
-          return acc;
-        }
-
-        if (!trimmedValue && !rule.required) {
-          return acc;
-        }
-
-        const cleanValue = sanitizeInput(value);
-
-        if (rule.maxLength && cleanValue.length > rule.maxLength) {
-          acc[field] =
-            `${field} exceeds maximum length of ${rule.maxLength} characters`;
-        }
-
-        if (rule.minLength && cleanValue.length < rule.minLength) {
-          acc[field] = `${field} must be at least ${rule.minLength} characters`;
-        }
-
-        if (rule.pattern && !rule.pattern.test(cleanValue)) {
-          acc[field] = `${field} format is invalid`;
-        }
-
-        if (rule.custom) {
-          const customError = rule.custom(cleanValue);
-          if (customError) {
-            acc[field] = customError;
-          }
-        }
-
-        return acc;
-      },
-      {},
-    );
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors,
-    };
-  };
-};
-
-// Predefined validation rules
-const commonValidationRules = {
-  movieTitle: {
-    required: true,
-    maxLength: MAX_MOVIE_TITLE_LENGTH,
-  } as ValidationRule,
-
-  messageContent: {
-    required: true,
-    maxLength: MAX_MESSAGE_LENGTH,
-  } as ValidationRule,
-
-  messageAuthor: {
-    required: false,
-    maxLength: MAX_AUTHOR_LENGTH,
-  } as ValidationRule,
-
-  placeName: {
-    required: true,
-    maxLength: 100,
-  } as ValidationRule,
-
-  notes: {
-    required: false,
-    maxLength: 500,
-  } as ValidationRule,
-};
-
-export const validatePlace = createValidator({
-  name: commonValidationRules.placeName,
-  notes: commonValidationRules.notes,
-});
-
-export const validateAndThrow = (
-  validator: (data: Record<string, string>) => ValidationResult,
-  data: Record<string, string>,
-) => {
-  const result = validator(data);
-  if (!result.isValid) {
-    const [firstError] = Object.values(result.errors);
-    throw new Error(firstError || "Validation failed");
-  }
-  return result;
-};
-
-// ============================================================================
 // Concurrency Utilities
 // ============================================================================
 
@@ -243,16 +158,30 @@ export const concurrentMap = async <T, R>(
   concurrency: number,
   fn: (item: T) => Promise<R>,
 ): Promise<R[]> => {
-  const results = new Array(items.length);
-  const iterator = items.entries();
+  if (items.length === 0) {
+    return [];
+  }
+
+  const results = new Array<R>(items.length);
+  let currentIndex = 0;
+
   const worker = async () => {
-    for (const [index, item] of iterator) {
-      results[index] = await fn(item);
+    while (true) {
+      const index = currentIndex++;
+      if (index >= items.length) {
+        break;
+      }
+      results[index] = await fn(items[index]);
     }
   };
-  await Promise.all(
-    Array.from({ length: Math.min(items.length, concurrency) }, worker),
+
+  // Start workers
+  const workers = Array.from(
+    { length: Math.min(items.length, concurrency) },
+    worker,
   );
+
+  await Promise.all(workers);
   return results;
 };
 
@@ -263,14 +192,12 @@ export const buildGoogleMapsUrl = (
   return `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=${libraries.join(",")}`;
 };
 
-/**
- * Normalizes a movie title for comparison purposes (trim + lowercase).
- */
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
 export const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
 
-/**
- * Debounce / throttle helpers
- */
 export const throttle = <T extends (...args: unknown[]) => unknown>(func: T, limit: number) => {
   let inThrottle = false;
   return (...args: Parameters<T>) => {
@@ -302,6 +229,429 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
 
-    if (callNow) func.apply(this, args);
+  if (callNow) func.apply(this, args);
   };
+};
+
+export const copyTextToClipboard = async (value: string): Promise<void> => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const fallbackField = document.createElement('textarea');
+  fallbackField.value = value;
+  fallbackField.setAttribute('readonly', 'true');
+  fallbackField.style.position = 'fixed';
+  fallbackField.style.opacity = '0';
+  fallbackField.style.pointerEvents = 'none';
+
+  document.body.appendChild(fallbackField);
+  fallbackField.focus();
+  fallbackField.select();
+
+  const didCopy = document.execCommand('copy');
+  document.body.removeChild(fallbackField);
+
+  if (!didCopy) {
+    throw new Error('Clipboard unavailable');
+  }
+};
+
+export const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
+export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
+  arr.map((item) => ({ ...item }));
+
+export const shuffleArray = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+// ============================================================================
+// Date Utilities
+// ============================================================================
+
+/**
+ * Formats a message timestamp as a short time (e.g. "3:45 PM") for messages sent
+ * today, or as a short date (e.g. "Jan 5") for older messages.
+ */
+export const formatMessageTimestamp = (date: string): string => {
+  try {
+    const timestamp = new Date(date);
+    const now = new Date();
+
+    if (Number.isNaN(timestamp.getTime()) || Number.isNaN(now.getTime())) {
+      return '';
+    }
+
+    const diffSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+    if (diffSeconds < 0) {
+      return '';
+    }
+
+    if (diffSeconds < 86400) {
+      const hours = timestamp.getHours();
+      const minutes = timestamp.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+
+    return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * Formats a memory/record timestamp as a full date-time string
+ * (e.g. "Jan 5, 2025, 3:45 PM").
+ */
+export const formatMemoryTimestamp = (createdAt: string): string => {
+  const parsedDate = new Date(createdAt);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Unknown date';
+  }
+
+  return parsedDate.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+};
+
+// ============================================================================
+// Random Utilities
+// ============================================================================
+
+/**
+ * Utility functions for common random patterns
+ */
+export const randomUtils = {
+  /**
+   * Get random item from array using seeded random for animations
+   */
+  randomItem: <T>(array: T[]): T => {
+    return array[Math.floor(Math.random() * array.length)];
+  },
+
+  /**
+   * Get random number in range
+   */
+  randomRange: (min: number, max: number): number => {
+    return min + Math.random() * (max - min);
+  },
+
+  /**
+   * Get random integer in range
+   */
+  randomInt: (min: number, max: number): number => {
+    return Math.floor(min + Math.random() * (max - min));
+  },
+
+  /**
+   * Get random boolean
+   */
+  randomBool: (): boolean => Math.random() > 0.5,
+
+  /**
+   * Generate confetti particle properties
+   */
+  generateConfettiParticle: (id: number, colors: string[]) => ({
+    id,
+    x: Math.random() * 100,
+    color: randomUtils.randomItem(colors),
+    delay: Math.random() * 0.5,
+    rotation: Math.random() * 360,
+    scale: 0.5 + Math.random() * 0.5,
+    isRounded: randomUtils.randomBool(),
+  }),
+
+  /**
+   * Generate star particle for cursor trail
+   */
+  generateCursorStar: (x: number, y: number, id: number) => ({
+    id,
+    x,
+    y,
+    opacity: 1,
+    scale: 0.5 + Math.random(),
+  }),
+
+  /**
+   * Generate food spawn properties
+   */
+  generateFoodSpawn: (boardWidth: number, foodSize: number, fruitList: string[], maxIndex: number) => ({
+    id: crypto.randomUUID(),
+    x: Math.random() * (boardWidth - foodSize),
+    y: -foodSize,
+    speed: 2 + Math.random() * 2,
+    fruit: randomUtils.randomItem(fruitList.slice(0, maxIndex)),
+  }),
+};
+
+// ============================================================================
+// Layout Utilities
+// ============================================================================
+
+export const layouts = {
+  centeredContainer: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: `0 ${spacing.md}`,
+  },
+  grid: (columns: number = 1, gap: string = spacing.md) => ({
+    display: 'grid',
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gap,
+  }),
+  stack: (gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap,
+  }),
+  inlineStack: (gap: string = spacing.md) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap,
+  }),
+  flexRow: (justifyContent: string = 'flex-start', alignItems: string = 'center', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'row' as const,
+    justifyContent,
+    alignItems,
+    gap,
+  }),
+  flexColumn: (justifyContent: string = 'flex-start', alignItems: string = 'stretch', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent,
+    alignItems,
+    gap,
+  }),
+  spaceBetween: (direction: 'row' | 'column' = 'row', gap: string = spacing.md) => ({
+    display: 'flex',
+    flexDirection: direction,
+    justifyContent: 'space-between',
+    alignItems: direction === 'row' ? 'center' : 'stretch',
+    gap,
+  }),
+};
+
+// ============================================================================
+// Validation Constants
+// ============================================================================
+
+export const MAX_MESSAGE_LENGTH = 500;
+export const MAX_AUTHOR_LENGTH = 50;
+export const MAX_MOVIE_TITLE_LENGTH = 200;
+
+// ============================================================================
+// Validation Types
+// ============================================================================
+
+export interface ValidationRule {
+  required?: boolean;
+  maxLength?: number;
+  minLength?: number;
+  pattern?: RegExp;
+  custom?: (value: string) => string | null;
+  message?: string;
+}
+
+export interface ValidationRules {
+  [key: string]: ValidationRule;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: Record<string, string>;
+  fieldErrors: string[];
+}
+
+// ============================================================================
+// Validation Functions
+// ============================================================================
+
+export const createValidator = (rules: ValidationRules) => {
+  return (data: Record<string, unknown>): ValidationResult => {
+    const errors: Record<string, string> = {};
+    const fieldErrors: string[] = [];
+
+    Object.entries(rules).forEach(([field, rule]) => {
+      const rawValue = data[field];
+      const value = typeof rawValue === 'string' ? rawValue : String(rawValue || '');
+      const trimmedValue = value.trim();
+
+      if (rule.required && !trimmedValue) {
+        const error = rule.message || `${field} is required`;
+        errors[field] = error;
+        fieldErrors.push(error);
+        return;
+      }
+
+      if (!trimmedValue && !rule.required) {
+        return;
+      }
+
+      // eslint-disable-next-line no-control-regex
+      const cleanValue = value.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
+
+      if (rule.maxLength && cleanValue.length > rule.maxLength) {
+        const error = rule.message || `${field} exceeds maximum length of ${rule.maxLength} characters`;
+        errors[field] = error;
+        fieldErrors.push(error);
+      }
+
+      if (rule.minLength && cleanValue.length < rule.minLength) {
+        const error = rule.message || `${field} must be at least ${rule.minLength} characters`;
+        errors[field] = error;
+        fieldErrors.push(error);
+      }
+
+      if (rule.pattern && !rule.pattern.test(cleanValue)) {
+        const error = rule.message || `${field} format is invalid`;
+        errors[field] = error;
+        fieldErrors.push(error);
+      }
+
+      if (rule.custom) {
+        const customError = rule.custom(cleanValue);
+        if (customError) {
+          errors[field] = customError;
+          fieldErrors.push(customError);
+        }
+      }
+    });
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors,
+      fieldErrors,
+    };
+  };
+};
+
+// ============================================================================
+// Common Validation Patterns
+// ============================================================================
+
+export const ValidationPatterns = {
+  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  url: /^https?:\/\/.+/,
+  alphanumeric: /^[a-zA-Z0-9]+$/,
+  numeric: /^\d+$/,
+  phone: /^\+?[\d\s\-()]+$/,
+  slug: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+} as const;
+
+// ============================================================================
+// Predefined Validation Rules
+// ============================================================================
+
+export const CommonRules = {
+  required: { required: true },
+  email: {
+    required: true,
+    pattern: ValidationPatterns.email,
+    message: 'Please enter a valid email address',
+  },
+  url: {
+    pattern: ValidationPatterns.url,
+    message: 'Please enter a valid URL starting with http:// or https://',
+  },
+  username: {
+    required: true,
+    minLength: 3,
+    maxLength: 20,
+    pattern: ValidationPatterns.alphanumeric,
+    message: 'Username must be 3-20 alphanumeric characters',
+  },
+  password: {
+    required: true,
+    minLength: 8,
+    message: 'Password must be at least 8 characters long',
+  },
+  movieTitle: {
+    required: true,
+    maxLength: MAX_MOVIE_TITLE_LENGTH,
+    message: `Movie title must be ${MAX_MOVIE_TITLE_LENGTH} characters or less`,
+  },
+  messageContent: {
+    required: true,
+    maxLength: MAX_MESSAGE_LENGTH,
+    message: `Message must be ${MAX_MESSAGE_LENGTH} characters or less`,
+  },
+  messageAuthor: {
+    required: false,
+    maxLength: MAX_AUTHOR_LENGTH,
+    message: `Author name must be ${MAX_AUTHOR_LENGTH} characters or less`,
+  },
+  placeName: {
+    required: true,
+    maxLength: 100,
+    message: 'Place name must be 100 characters or less',
+  },
+  notes: {
+    required: false,
+    maxLength: 500,
+    message: 'Notes must be 500 characters or less',
+  },
+} as const;
+
+// ============================================================================
+// Predefined Validators
+// ============================================================================
+
+export const validatePlace = createValidator({
+  name: CommonRules.placeName,
+  notes: CommonRules.notes,
+});
+
+export const validateMemory = createValidator({
+  note: {
+    required: true,
+    maxLength: 500,
+    custom: (value) => {
+      const mentions = value.match(/(@\w+)/g);
+      if (mentions) {
+        const invalidMentions = mentions.filter(mention =>
+          !['@aaron', '@electra'].includes(mention.toLowerCase())
+        );
+        if (invalidMentions.length > 0) {
+          return `Invalid mentions: ${invalidMentions.join(', ')}. Only @aaron and @electra are allowed.`;
+        }
+      }
+      return null;
+    },
+  } as ValidationRule,
+  movieTitle: {
+    required: true,
+    maxLength: MAX_MOVIE_TITLE_LENGTH,
+  } as ValidationRule,
+  author: {
+    required: true,
+    maxLength: MAX_AUTHOR_LENGTH,
+  } as ValidationRule,
+});
+
+export const validateAndThrow = (
+  validator: (data: Record<string, unknown>) => ValidationResult,
+  data: Record<string, unknown>,
+): ValidationResult => {
+  const result = validator(data);
+  if (!result.isValid) {
+    const [firstError] = Object.values(result.errors);
+    throw new Error(firstError || "Validation failed");
+  }
+  return result;
 };

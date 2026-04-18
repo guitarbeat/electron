@@ -160,7 +160,7 @@ async function handler(req: Request): Promise<Response> {
       },
     });
   } catch (error) {
-    console.error('Error handling /api/tvmaze', error);
+    console.error(`Error handling ${req.method} ${req.url}:`, error);
     return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), 500);
   }
 }

@@ -202,7 +202,7 @@ async function handler(req: Request): Promise<Response> {
       return serverErrorResponse(SESSION_SECRET_CONFIG_ERROR);
     }
 
-    console.error('Failed to update profile session', error);
+    console.error(`Failed to update profile session during ${req.method} ${req.url}:`, error);
     return serverErrorResponse();
   }
 }

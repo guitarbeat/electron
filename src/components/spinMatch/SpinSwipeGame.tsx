@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMovies } from '@/hooks/useMovies';
-import { useUser } from '@/app/providers';
+import { useMovies } from '@/hooks/movies/useMovies';
+import { useUser } from '@/app/useProviders';
 import type { Movie } from '@/shared/types';
 import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
 } from '@/components/spinWheel/spinWheelEngine';
+import './SpinSwipeGame.css';
 
 type Phase = 'swipe' | 'spin' | 'result';
 
@@ -421,6 +422,31 @@ function ResultScreen({
   );
 }
 
+function SpinGameAdHeader() {
+  return (
+    <div className="spin-game-ad-header">
+      <div className="spin-game-ad-header__marquee-wrap" aria-hidden="true">
+        <span className="spin-game-ad-header__marquee">
+          {'🎰 WHEEL OF MOVIE DESTINY!!! 🎰 '}
+          {'★ SWIPE TO KEEP · SPIN TO DECIDE!!! ★ '}
+          {'🎬 TONIGHT\'S WINNER CHOSEN BY FATE!!! 🎬 '}
+          {'🎰 WHEEL OF MOVIE DESTINY!!! 🎰 '}
+          {'★ SWIPE TO KEEP · SPIN TO DECIDE!!! ★ '}
+          {'🎬 TONIGHT\'S WINNER CHOSEN BY FATE!!! 🎬 '}
+        </span>
+      </div>
+      <div className="spin-game-ad-header__body">
+        <span className="spin-game-ad-header__icon" aria-hidden="true">🎰</span>
+        <p className="spin-game-ad-header__title">SPIN &amp; MATCH — WHEEL OF MOVIE DESTINY!!!</p>
+        <span className="spin-game-ad-header__icon" aria-hidden="true">🎰</span>
+      </div>
+      <p className="spin-game-ad-header__sub">
+        SPONSORED BY MOVIE NIGHT INC. ™ · EST. 1999 · ALL RESULTS FINAL!!!
+      </p>
+    </div>
+  );
+}
+
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
@@ -514,12 +540,6 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     setDragX(0);
   }, []);
 
-  if (!currentUser) {
-    return (
-      <EmptyState>Select Aaron or Electra to play.</EmptyState>
-    );
-  }
-
   if (isLoading) {
     return <EmptyState>Loading movies…</EmptyState>;
   }
@@ -530,7 +550,8 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === 'result' && winner) {
     return (
-      <>
+      <div className="spin-game-ad-wrapper">
+        <SpinGameAdHeader />
         <ResultScreen
           winner={winner}
           onReset={handleReset}
@@ -543,22 +564,27 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
             onClose={() => setModalMovie(null)}
           />
         )}
-      </>
+      </div>
     );
   }
 
   if (phase === 'spin') {
     return (
-      <SpinWheel
-        kept={kept}
-        rotation={rotation}
-        isSpinning={isSpinning}
-        onSpin={handleSpin}
-      />
+      <div className="spin-game-ad-wrapper">
+        <SpinGameAdHeader />
+        <SpinWheel
+          kept={kept}
+          rotation={rotation}
+          isSpinning={isSpinning}
+          onSpin={handleSpin}
+        />
+      </div>
     );
   }
 
   return (
+    <div className="spin-game-ad-wrapper">
+    <SpinGameAdHeader />
     <div
       style={{
         display: 'flex',
@@ -657,6 +683,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
           onClose={() => setModalMovie(null)}
         />
       )}
+    </div>
     </div>
   );
 };

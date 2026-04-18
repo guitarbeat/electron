@@ -15,8 +15,9 @@ import { PlusIcon } from '@/common/icons';
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
-} from '@/services/metadataService';
+} from '@/services/metadata';
 import RecommendationComposer from './RecommendationComposer';
+import '@/app/ShellControlStrip.css';
 import {
   getNextMovieAutocompleteIndex,
   getMovieAutocompleteEnterSelectionIndex,
@@ -27,6 +28,9 @@ import {
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './watchlistAutocomplete';
+
+const TICKER_TEXT =
+  '\u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER · \u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER ·';
 
 interface WatchlistTopControlsProps {
   currentUser: User | null;
@@ -51,6 +55,18 @@ interface WatchlistTopControlsProps {
 
 export interface WatchlistTopControlsHandle {
   focusSearchInput: () => void;
+}
+
+function AutocompletePosterImage({ src }: { src: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt=""
+      className={`watchlist-top-controls__autocomplete-poster-image${loaded ? ' is-loaded' : ''}`}
+      onLoad={() => setLoaded(true)}
+    />
+  );
 }
 
 const WatchlistTopControls = React.forwardRef<
@@ -82,22 +98,26 @@ const WatchlistTopControls = React.forwardRef<
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
   const focusBoundaryFrameRef = useRef<number | null>(null);
   const autocompleteRequestIdRef = useRef(0);
+  // On iOS Safari, buttons don't receive focus on tap, so document.activeElement
+  // stays on <body> when the input blurs. This flag prevents a false "outside click"
+  // dismissal while the user is interacting with the dropdown.
+  const dropdownInteractionPendingRef = useRef(false);
   const autocompleteListId = useId();
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
   const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+  const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
+  const autocompleteCloseTimerRef = useRef<number | null>(null);
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
   const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
+  const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
-  const helperText = isGuest
-    ? `Not signed in? ${guestName.trim() || 'Guest'} can still send titles to Suggestions for Aaron or Electra to approve.`
-    : 'Add titles straight to the shared queue, or open the composer to leave a note first.';
 
   useImperativeHandle(
     forwardedRef,
@@ -129,6 +149,11 @@ const WatchlistTopControls = React.forwardRef<
   }, []);
 
   const openAutocomplete = useCallback(() => {
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
+    setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
     setActiveAutocompleteIndex(-1);
   }, []);
@@ -137,6 +162,14 @@ const WatchlistTopControls = React.forwardRef<
     setIsAutocompleteOpen(false);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteLoading(false);
+    setAutocompleteTypeFilter('all');
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+    }
+    autocompleteCloseTimerRef.current = window.setTimeout(() => {
+      autocompleteCloseTimerRef.current = null;
+      setIsAutocompleteMounted(false);
+    }, 200);
   }, []);
 
   const resetAutocomplete = useCallback(() => {
@@ -145,6 +178,12 @@ const WatchlistTopControls = React.forwardRef<
     setAutocompleteResults([]);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(false);
+    setIsAutocompleteMounted(false);
+    setAutocompleteTypeFilter('all');
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
     setIsAutocompleteLoading(false);
     setAutocompleteError(null);
   }, []);
@@ -179,6 +218,12 @@ const WatchlistTopControls = React.forwardRef<
 
   useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
 
+  useEffect(() => () => {
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isAutocompleteRegionFocused) {
       hideAutocomplete();
@@ -198,8 +243,12 @@ const WatchlistTopControls = React.forwardRef<
     const requestId = autocompleteRequestIdRef.current + 1;
     autocompleteRequestIdRef.current = requestId;
     setAutocompleteQuery(normalizedSearchQuery);
-    setAutocompleteResults([]);
     setActiveAutocompleteIndex(-1);
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
+    setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
     setIsAutocompleteLoading(true);
     setAutocompleteError(null);
@@ -269,21 +318,12 @@ const WatchlistTopControls = React.forwardRef<
 
   return (
     <section
-      className="workspace-control-panel ui-control-surface watchlist-top-controls"
+      className="workspace-control-panel watchlist-top-controls"
       style={{
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
-      <div className="watchlist-top-controls__intro">
-        <p className="watchlist-top-controls__eyebrow">
-          Shared queue
-        </p>
-        <h2 className="watchlist-top-controls__title">
-          {isGuest ? 'Send a title to the queue' : 'Add to the shared watchlist'}
-        </h2>
-        <p className="watchlist-top-controls__lead">{helperText}</p>
-      </div>
-
+      <div className="watchlist-top-controls__input-block">
       <div className="watchlist-top-controls__toolbar">
         <form
           className="watchlist-top-controls__search-form"
@@ -297,7 +337,7 @@ const WatchlistTopControls = React.forwardRef<
         >
           <div
             ref={autocompleteRegionRef}
-            className="watchlist-top-controls__search-shell"
+            className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
             onFocusCapture={() => {
               clearFocusBoundaryCheck();
               setIsAutocompleteRegionFocused(true);
@@ -306,6 +346,12 @@ const WatchlistTopControls = React.forwardRef<
               clearFocusBoundaryCheck();
               focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
                 focusBoundaryFrameRef.current = null;
+                // On iOS Safari, buttons don't receive focus on tap, so
+                // document.activeElement is <body> even when the user tapped
+                // inside the dropdown. Check the pending-interaction flag first.
+                if (dropdownInteractionPendingRef.current) {
+                  return;
+                }
                 const nextIsFocused = Boolean(
                   autocompleteRegionRef.current?.contains(document.activeElement)
                 );
@@ -316,6 +362,7 @@ const WatchlistTopControls = React.forwardRef<
               });
             }}
           >
+            <span className="watchlist-top-controls__search-icon" aria-hidden="true">🎬</span>
             <Input
               ref={internalSearchInputRef}
               className="watchlist-top-controls__search-field"
@@ -400,25 +447,86 @@ const WatchlistTopControls = React.forwardRef<
               autoComplete="off"
               fullWidth
             />
-            {isAutocompleteOpen && hasAutocompleteFeedback && (
+            {isAutocompleteMounted && hasAutocompleteFeedback && (
               <div
                 id={autocompleteListId}
-                className="watchlist-top-controls__autocomplete"
+                className={`watchlist-top-controls__autocomplete${isAutocompleteOpen ? ' is-open' : ''}`}
                 role="listbox"
                 aria-label="Movie and show suggestions"
+                onPointerDown={() => {
+                  // Mark that the user started a touch/click inside the dropdown.
+                  // This keeps the dropdown open on iOS Safari where tapping a button
+                  // doesn't move focus (document.activeElement stays <body>).
+                  dropdownInteractionPendingRef.current = true;
+                  window.setTimeout(() => {
+                    dropdownInteractionPendingRef.current = false;
+                  }, 300);
+                }}
               >
-                {isAutocompleteLoading ? (
-                  <div className="watchlist-top-controls__autocomplete-status" role="status">
-                    Searching titles...
+                {isAutocompleteLoading && (
+                  <div className="watchlist-top-controls__autocomplete-loading" role="status" aria-label="Searching">
+                    <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                    <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                    <span className="watchlist-top-controls__autocomplete-loading-dot" />
                   </div>
-                ) : autocompleteError ? (
+                )}
+                {!isAutocompleteLoading && autocompleteResults.length > 0 && (
+                  <div
+                    className="watchlist-top-controls__autocomplete-filters"
+                    role="group"
+                    aria-label="Filter by type"
+                  >
+                    {(
+                      [
+                        { value: 'all', label: 'All' },
+                        { value: 'movie', label: 'Movies' },
+                        { value: 'series', label: 'TV Series' },
+                      ] as const
+                    ).map(({ value, label }) => {
+                      const count =
+                        value === 'all'
+                          ? autocompleteResults.length
+                          : autocompleteResults.filter((r) => r.type === value).length;
+                      const isDisabled = count === 0 && value !== 'all';
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          className={`watchlist-top-controls__autocomplete-filter-chip${
+                            autocompleteTypeFilter === value ? ' is-active' : ''
+                          }${count === 0 ? ' is-empty' : ''}`}
+                          disabled={isDisabled}
+                          onPointerDown={(e) => {
+                            e.preventDefault(); // prevents input blur on all pointer types
+                            if (!isDisabled) setAutocompleteTypeFilter(value);
+                          }}
+                        >
+                          {label}
+                          <span className="watchlist-top-controls__autocomplete-filter-count">{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {autocompleteError ? (
                   <div className="watchlist-top-controls__autocomplete-status" role="alert">
                     {autocompleteError}
                   </div>
-                ) : autocompleteResults.length > 0 ? (
-                  autocompleteResults.map((result, index) => (
+                ) : autocompleteResults.length > 0 ? (() => {
+                  const filtered =
+                    autocompleteTypeFilter === 'all'
+                      ? autocompleteResults
+                      : autocompleteResults.filter((r) => r.type === autocompleteTypeFilter);
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="watchlist-top-controls__autocomplete-status">
+                        No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
+                      </div>
+                    );
+                  }
+                  return filtered.map((result, index) => (
                     <button
-                      key={result.imdbID}
+                      key={result.imdbID ?? `${result.title}-${index}`}
                       id={`${autocompleteListId}-option-${index}`}
                       type="button"
                       role="option"
@@ -426,19 +534,17 @@ const WatchlistTopControls = React.forwardRef<
                       className={`watchlist-top-controls__autocomplete-option ${
                         index === activeAutocompleteIndex ? 'is-active' : ''
                       }`}
-                      onMouseDown={(event) => {
+                      onPointerDown={(event) => {
+                        // Prevent input blur on all pointer types (mouse, touch, pen).
+                        // Then select immediately so the action fires before any blur.
                         event.preventDefault();
+                        selectAutocompleteResult(result);
                       }}
                       onMouseEnter={() => setActiveAutocompleteIndex(index)}
-                      onClick={() => selectAutocompleteResult(result)}
                     >
                       <span className="watchlist-top-controls__autocomplete-poster">
-                        {result.posterUrl ? (
-                          <img
-                            src={result.posterUrl}
-                            alt=""
-                            className="watchlist-top-controls__autocomplete-poster-image"
-                          />
+                        {result.poster ? (
+                          <AutocompletePosterImage src={result.poster} />
                         ) : (
                           <span className="watchlist-top-controls__autocomplete-poster-fallback" aria-hidden>
                             {result.title.charAt(0).toUpperCase()}
@@ -453,12 +559,12 @@ const WatchlistTopControls = React.forwardRef<
                         </span>
                       </span>
                     </button>
-                  ))
-                ) : (
+                  ));
+                })() : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
-                    No titles found for “{trimmedSearchQuery}”
+                    No titles found for &quot;{trimmedSearchQuery}&quot;
                   </div>
-                )}
+                ) : null}
               </div>
             )}
           </div>
@@ -496,6 +602,13 @@ const WatchlistTopControls = React.forwardRef<
             </div>
           )}
         </form>
+      </div>
+
+      <div className="y2k-ticker" aria-hidden="true">
+        <div className="y2k-ticker__inner">
+          <span className="y2k-ticker__text">{TICKER_TEXT}</span>
+        </div>
+      </div>
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (

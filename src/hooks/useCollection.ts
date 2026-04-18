@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePolling } from '@/services/polling';
-import { mutateScope, readScope, retryScopeSync } from '@/services/stateClient';
-import type { StateScope, StateScopeDataMap } from '@/services/stateTypes';
+import { mutateScope, readScope, retryScopeSync } from '@/services/state';
+import type { StateScope, StateScopeDataMap } from '@/services/state/stateTypes';
 import { areDeeplyEqual } from '@/utils';
 import { User } from '@/shared/types';
 
@@ -36,9 +36,12 @@ export const useCollection = <T>(
 
   const polledData = useMemo(() => (snapshot?.data as T[]) ?? [], [snapshot]);
   const [data, setData] = useState<T[]>(polledData);
+  const mutationsInFlightRef = useRef(0);
 
   useEffect(() => {
-    setData(polledData);
+    if (mutationsInFlightRef.current === 0) {
+      setData(polledData);
+    }
   }, [polledData]);
 
   const performMutation = useCallback(
@@ -48,6 +51,8 @@ export const useCollection = <T>(
       }
 
       setIsSubmitting(true);
+      mutationsInFlightRef.current += 1;
+      setData(optimisticData);
       try {
         const nextSnapshot = await mutateScope(scope, {
           op,
@@ -58,6 +63,7 @@ export const useCollection = <T>(
         refresh();
         return true;
       } finally {
+        mutationsInFlightRef.current -= 1;
         setIsSubmitting(false);
       }
     },

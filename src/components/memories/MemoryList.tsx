@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { SharedMemory, User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
-import { formatMemoryTimestamp } from '@/utils/date';
+import { colors, radius, spacing, typography, layouts, sanitizeInput } from '@/utils';
+import { formatMemoryTimestamp } from '@/utils';
 import {
   ALL_MOVIES_FILTER,
   INITIAL_VISIBLE_COUNT,
@@ -92,11 +92,15 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
   const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
 
+  // Validation for memory editing
   const canManageMemories = Boolean(currentUser);
   const isSingleMovieContext = Boolean(contextMovieTitle);
-  const pinnedCount = sortedMemories.filter((memory) => memory.isPinned).length;
+  const pinnedCount = useMemo(
+    () => sortedMemories.filter((memory) => memory.isPinned).length,
+    [sortedMemories]
+  );
 
-  const confirmDeleteMemory = async () => {
+  const confirmDeleteMemory = useCallback(async () => {
     if (!memoryToDelete) return;
     if (!currentUser || memoryToDelete.author !== currentUser) {
       setMemoryToDelete(null);
@@ -110,7 +114,49 @@ const MemoryList: React.FC<MemoryListProps> = ({
     } finally {
       setIsBusyMemoryId(null);
     }
-  };
+  }, [memoryToDelete, currentUser, onDeleteMemory]);
+
+  const startEditing = useCallback(
+    (memory: SharedMemory) => {
+      setEditingMemoryId(memory.id);
+      setDraftNote(memory.note);
+    },
+    []
+  );
+
+  const saveEdit = useCallback(
+    async (memory: SharedMemory) => {
+      const trimmedNote = sanitizeInput(draftNote.trim());
+      if (!trimmedNote) return;
+
+      setIsBusyMemoryId(memory.id);
+      try {
+        await onEditMemory(memory, trimmedNote);
+        setEditingMemoryId(null);
+        setDraftNote('');
+      } finally {
+        setIsBusyMemoryId(null);
+      }
+    },
+    [draftNote, onEditMemory]
+  );
+
+  const cancelEdit = useCallback(() => {
+    setEditingMemoryId(null);
+    setDraftNote('');
+  }, []);
+
+  const togglePin = useCallback(
+    async (memory: SharedMemory) => {
+      setIsBusyMemoryId(memory.id);
+      try {
+        await onTogglePin(memory);
+      } finally {
+        setIsBusyMemoryId(null);
+      }
+    },
+    [onTogglePin]
+  );
 
   return (
     <div
@@ -124,16 +170,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: spacing.sm,
-          flexWrap: 'wrap',
-          marginBottom: spacing.sm,
-        }}
-      >
+      <div style={{ ...layouts.spaceBetween('row', spacing.sm), flexWrap: 'wrap', marginBottom: spacing.sm }}>
         <h4
           style={{
             margin: 0,
@@ -151,18 +188,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
       </div>
 
       {memories.length > 0 && !isSingleMovieContext && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr auto',
-            gap: spacing.sm,
-            marginBottom: spacing.sm,
-            padding: spacing.sm,
-            border: '1px dashed rgba(255, 227, 172, 0.3)',
-            borderRadius: radius.sm,
-            background: 'rgba(18, 25, 43, 0.32)',
-          }}
-        >
+        <div style={{ ...layouts.grid(isMobile ? 1 : 2, spacing.sm), marginBottom: spacing.sm, padding: spacing.sm, border: '1px dashed rgba(255, 227, 172, 0.3)', borderRadius: radius.sm, background: 'rgba(18, 25, 43, 0.32)' }}>
           <label style={{ color: colors.textSecondary, fontSize: typography.fontSize.xs }}>
             Filter by title
             <select
@@ -234,13 +260,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
         </p>
       )}
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: spacing.md,
-        }}
-      >
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: spacing.md }}>
         {visibleMemories.map((memory) => {
           const noteTheme = getStickyNoteTheme(memory);
           const noteRotation = getStickyNoteRotation(memory);
@@ -282,19 +302,11 @@ const MemoryList: React.FC<MemoryListProps> = ({
                 }}
               />
 
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: spacing.sm,
-                  flexWrap: 'wrap',
-                }}
-              >
+              <div style={{ ...layouts.spaceBetween('row', spacing.sm), flexWrap: 'wrap' }}>
                 <strong style={{ color: noteTheme.heading, fontSize: typography.fontSize.sm }}>
                   {isSingleMovieContext ? 'Quote or thought' : memory.movieTitle}
                 </strong>
-                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+                <div style={{ ...layouts.flexRow('flex-start', 'center', spacing.xs) }}>
                   {memory.isPinned && (
                     <span
                       style={{
@@ -330,16 +342,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                       size="sm"
                       variant="secondary"
                       disabled={isBusy || !draftNote.trim()}
-                      onClick={async () => {
-                        setIsBusyMemoryId(memory.id);
-                        try {
-                          await onEditMemory(memory, draftNote.trim());
-                          setEditingMemoryId(null);
-                          setDraftNote('');
-                        } finally {
-                          setIsBusyMemoryId(null);
-                        }
-                      }}
+                      onClick={() => saveEdit(memory)}
                     >
                       Save note
                     </Button>
@@ -348,10 +351,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                       size="sm"
                       variant="ghost"
                       disabled={isBusy}
-                      onClick={() => {
-                        setEditingMemoryId(null);
-                        setDraftNote('');
-                      }}
+                      onClick={cancelEdit}
                     >
                       Cancel
                     </Button>
@@ -404,9 +404,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
               </span>
 
               {!isEditing && (
-                <div
-                  style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap', marginTop: 'auto' }}
-                >
+                <div style={{ ...layouts.flexRow('flex-start', 'center', spacing.xs), flexWrap: 'wrap', marginTop: 'auto' }}>
                   {!isSingleMovieContext && (
                     <Button
                       type="button"
@@ -419,19 +417,12 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     </Button>
                   )}
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      disabled={!canManageMemories || isBusy}
-                      onClick={async () => {
-                        setIsBusyMemoryId(memory.id);
-                        try {
-                        await onTogglePin(memory);
-                      } finally {
-                        setIsBusyMemoryId(null);
-                      }
-                    }}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={!canManageMemories || isBusy}
+                    onClick={() => togglePin(memory)}
                     style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
                   >
                     {memory.isPinned ? 'Unpin note' : 'Keep pinned'}
@@ -444,10 +435,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                         size="sm"
                         variant="ghost"
                         disabled={!canManageMemories || isBusy}
-                        onClick={() => {
-                          setEditingMemoryId(memory.id);
-                          setDraftNote(memory.note);
-                        }}
+                        onClick={() => startEditing(memory)}
                         style={{
                           border: '1px solid rgba(106, 77, 40, 0.45)',
                           color: '#4e2d11',

@@ -5,8 +5,6 @@ import type {
   MultipleChoiceQuestion as MultipleChoiceQuestionType,
   XYAxisQuestion as XYAxisQuestionType,
 } from './types';
-import Button from '@/ui/Button';
-import { spacing, typography, colors, shadows, radius } from '@/theme/tokens';
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;
@@ -20,56 +18,19 @@ export const MultipleChoiceQuestionView: React.FC<MultipleChoiceQuestionViewProp
   onSelect,
 }) => {
   return (
-    <div className="animate-fade-in">
-      <h3
-        style={{
-          fontSize: typography.fontSize['2xl'],
-          fontWeight: typography.fontWeight.semibold,
-          color: colors.textPrimary,
-          marginBottom: spacing.xl,
-          textAlign: 'center',
-          lineHeight: typography.lineHeight.normal,
-        }}
-      >
-        {question.question}
-      </h3>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.md,
-        }}
-      >
+    <div>
+      <div className="quiz-retro-question-text">{question.question}</div>
+      <div>
         {question.options.map((option, index) => (
-          <Button
+          <button
             key={index}
-            variant={selectedIndex === index ? 'primary' : 'secondary'}
-            size="lg"
+            className={`quiz-retro-option${selectedIndex === index ? ' quiz-retro-option--selected' : ''}`}
             onClick={() => onSelect(index)}
-            style={{
-              width: '100%',
-              fontSize: typography.fontSize.lg,
-              textAlign: 'left',
-              justifyContent: 'flex-start',
-              padding: spacing.lg,
-              position: 'relative',
-              overflow: 'hidden',
-            }}
             aria-pressed={selectedIndex === index}
           >
+            {selectedIndex === index ? '✅ ' : '◻ '}
             {option.text}
-            {selectedIndex === index && (
-              <span
-                style={{
-                  position: 'absolute',
-                  right: spacing.lg,
-                  fontSize: typography.fontSize.xl,
-                }}
-              >
-                ✓
-              </span>
-            )}
-          </Button>
+          </button>
         ))}
       </div>
     </div>
@@ -91,18 +52,12 @@ export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps>
 }) => {
   const getNumericValue = (val: string | null) => {
     switch (val) {
-      case 'stronglyDisagree':
-        return 0;
-      case 'disagree':
-        return 25;
-      case 'neutral':
-        return 50;
-      case 'agree':
-        return 75;
-      case 'stronglyAgree':
-        return 100;
-      default:
-        return 50;
+      case 'stronglyDisagree': return 0;
+      case 'disagree': return 25;
+      case 'neutral': return 50;
+      case 'agree': return 75;
+      case 'stronglyAgree': return 100;
+      default: return 50;
     }
   };
 
@@ -125,121 +80,34 @@ export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps>
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
     setSliderValue(val);
-    onSelect(getSymbolicValue(val));
+    onSelect(getSymbolicValue(val) as 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree');
   };
 
   return (
-    <div className="animate-fade-in">
-      <h3
-        style={{
-          fontSize: typography.fontSize['2xl'],
-          fontWeight: typography.fontWeight.semibold,
-          color: colors.textPrimary,
-          marginBottom: spacing.xl,
-          textAlign: 'center',
-          lineHeight: typography.lineHeight.normal,
-        }}
-      >
-        {question.question}
-      </h3>
-
-      <div
-        style={{
-          padding: `0 ${spacing.lg}`,
-          marginBottom: spacing.xl,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: spacing.md,
-            color: colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.semibold,
-          }}
-        >
-          <span>Strongly Disagree</span>
-          <span>Strongly Agree</span>
+    <div>
+      <div className="quiz-retro-question-text">{question.question}</div>
+      <div className="quiz-retro-slider-wrap">
+        <div className="quiz-retro-slider-labels">
+          <span>😤 STRONGLY DISAGREE</span>
+          <span>🤩 STRONGLY AGREE</span>
         </div>
-
-        <div
-          style={{ position: 'relative', height: '40px', display: 'flex', alignItems: 'center' }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              height: '8px',
-              backgroundColor: colors.surface,
-              borderRadius: '4px',
-              border: `1px solid ${colors.borderSecondary}`,
-            }}
-          />
-
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              width: `${sliderValue}%`,
-              height: '8px',
-              backgroundColor: colors.accent,
-              borderRadius: '4px',
-              transition: 'width 0.1s ease-out',
-            }}
-          />
-
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={sliderValue}
-            onChange={handleSliderChange}
-            style={{
-              width: '100%',
-              position: 'absolute',
-              opacity: 0,
-              cursor: 'pointer',
-              height: '40px',
-              zIndex: 10,
-            }}
-            aria-label="Agree/Disagree scale"
-          />
-
-          <div
-            style={{
-              position: 'absolute',
-              left: `${sliderValue}%`,
-              transform: 'translateX(-50%)',
-              width: '24px',
-              height: '24px',
-              backgroundColor: colors.accent,
-              borderRadius: '50%',
-              border: `2px solid #fff`,
-              boxShadow: shadows.glow,
-              pointerEvents: 'none',
-              transition: 'left 0.1s ease-out',
-            }}
-          />
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={sliderValue}
+          onChange={handleSliderChange}
+          className="quiz-retro-slider"
+          aria-label="Agree/Disagree scale"
+        />
+        <div className="quiz-retro-slider-value">
+          {sliderValue <= 20 && '😤 STRONGLY DISAGREE!!!'}
+          {sliderValue > 20 && sliderValue <= 40 && '🙁 DISAGREE!'}
+          {sliderValue > 40 && sliderValue <= 60 && '😐 NEUTRAL...'}
+          {sliderValue > 60 && sliderValue <= 80 && '😊 AGREE!'}
+          {sliderValue > 80 && '🤩 STRONGLY AGREE!!!'}
         </div>
-
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: spacing.md,
-            color: colors.textPrimary,
-            fontSize: typography.fontSize.lg,
-            fontWeight: typography.fontWeight.bold,
-            minHeight: '2rem',
-          }}
-        >
-          {sliderValue <= 20 && 'Strongly Disagree'}
-          {sliderValue > 20 && sliderValue <= 40 && 'Disagree'}
-          {sliderValue > 40 && sliderValue <= 60 && 'Neutral'}
-          {sliderValue > 60 && sliderValue <= 80 && 'Agree'}
-          {sliderValue > 80 && 'Strongly Agree'}
-        </div>
+        <div className="quiz-retro-slider-hint">DRAG THE SLIDER TO ANSWER!!!</div>
       </div>
     </div>
   );
@@ -257,100 +125,32 @@ export const ImageChoiceQuestionView: React.FC<ImageChoiceQuestionViewProps> = (
   onSelect,
 }) => {
   return (
-    <div className="animate-fade-in">
-      <h3
-        style={{
-          fontSize: typography.fontSize['2xl'],
-          fontWeight: typography.fontWeight.semibold,
-          color: colors.textPrimary,
-          marginBottom: spacing.xl,
-          textAlign: 'center',
-          lineHeight: typography.lineHeight.normal,
-        }}
-      >
-        {question.question}
-      </h3>
+    <div>
+      <div className="quiz-retro-question-text">{question.question}</div>
       <div
+        className="quiz-retro-img-grid"
         style={{
-          display: 'grid',
           gridTemplateColumns:
             question.options.length === 2
               ? 'repeat(2, 1fr)'
-              : 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: spacing.lg,
+              : 'repeat(auto-fit, minmax(160px, 1fr))',
         }}
       >
         {question.options.map((option, index) => (
           <button
             key={index}
+            className={`quiz-retro-img-option${selectedIndex === index ? ' quiz-retro-img-option--selected' : ''}`}
             onClick={() => onSelect(index)}
-            style={{
-              position: 'relative',
-              padding: 0,
-              backgroundColor: 'transparent',
-              border: `4px solid ${selectedIndex === index ? colors.accent : colors.borderSecondary}`,
-              borderRadius: '12px',
-              cursor: 'pointer',
-              overflow: 'hidden',
-              transition: 'all 0.3s ease',
-              boxShadow: selectedIndex === index ? shadows.glow : shadows.card,
-              aspectRatio: '3/2',
-            }}
-            onMouseEnter={(e) => {
-              if (selectedIndex !== index) {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.borderColor = colors.accentHover;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (selectedIndex !== index) {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.borderColor = colors.borderSecondary;
-              }
-            }}
             aria-pressed={selectedIndex === index}
             aria-label={option.alt}
           >
             <img
               src={option.imageUrl}
               alt={option.alt}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
             {selectedIndex === index && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: spacing.sm,
-                  right: spacing.sm,
-                  backgroundColor: colors.accent,
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: typography.fontSize.xl,
-                  boxShadow: shadows.glow,
-                }}
-                className="bounce-in"
-              >
-                ✓
-              </div>
-            )}
-            {selectedIndex === index && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  backgroundColor: 'rgba(255, 105, 180, 0.2)',
-                  pointerEvents: 'none',
-                }}
-              />
+              <div className="quiz-retro-img-checkmark">✓</div>
             )}
           </button>
         ))}
@@ -375,11 +175,9 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
 
   const calculatePosition = useCallback((clientX: number, clientY: number) => {
     if (!gridRef.current) return null;
-
     const rect = gridRef.current.getBoundingClientRect();
     const x = ((clientX - rect.left) / rect.width) * 2 - 1;
     const y = 1 - ((clientY - rect.top) / rect.height) * 2;
-
     return {
       x: Math.max(-1, Math.min(1, x)),
       y: Math.max(-1, Math.min(1, y)),
@@ -424,20 +222,11 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
     const newPos = { ...current };
 
     switch (e.key) {
-      case 'ArrowLeft':
-        newPos.x = Math.max(-1, current.x - step);
-        break;
-      case 'ArrowRight':
-        newPos.x = Math.min(1, current.x + step);
-        break;
-      case 'ArrowUp':
-        newPos.y = Math.min(1, current.y + step);
-        break;
-      case 'ArrowDown':
-        newPos.y = Math.max(-1, current.y - step);
-        break;
-      default:
-        return;
+      case 'ArrowLeft': newPos.x = Math.max(-1, current.x - step); break;
+      case 'ArrowRight': newPos.x = Math.min(1, current.x + step); break;
+      case 'ArrowUp': newPos.y = Math.min(1, current.y + step); break;
+      case 'ArrowDown': newPos.y = Math.max(-1, current.y - step); break;
+      default: return;
     }
 
     e.preventDefault();
@@ -449,46 +238,15 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
 
   return (
     <div>
-      <h2
-        style={{
-          fontSize: typography.fontSize['2xl'],
-          fontFamily: typography.fontFamily.heading.join(', '),
-          color: colors.textPrimary,
-          textAlign: 'center',
-          marginBottom: spacing.xl,
-          textShadow: shadows.textGlow,
-        }}
-      >
-        {question.question}
-      </h2>
-      <div
-        style={{
-          position: 'relative',
-          maxWidth: '400px',
-          margin: '0 auto',
-        }}
-      >
-        <div
-          style={{
-            textAlign: 'center',
-            marginBottom: spacing.sm,
-            fontSize: typography.fontSize.sm,
-            color: colors.secondary,
-            fontWeight: typography.fontWeight.bold,
-          }}
-        >
+      <div className="quiz-retro-question-text">{question.question}</div>
+      <div style={{ position: 'relative', maxWidth: '380px', margin: '0 auto' }}>
+        <div className="quiz-retro-xy-label" style={{ marginBottom: 4 }}>
           {question.yAxis.topLabel}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div
-            style={{
-              writingMode: 'vertical-rl',
-              transform: 'rotate(180deg)',
-              fontSize: typography.fontSize.sm,
-              color: colors.secondary,
-              fontWeight: typography.fontWeight.bold,
-              whiteSpace: 'nowrap',
-            }}
+            className="quiz-retro-xy-label"
+            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
             {question.xAxis.leftLabel}
           </div>
@@ -510,93 +268,30 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onKeyDown={handleKeyDown}
-            style={{
-              flex: 1,
-              aspectRatio: '1',
-              backgroundColor: colors.surface,
-              borderRadius: radius.md,
-              border: `2px solid ${colors.borderSecondary}`,
-              position: 'relative',
-              cursor: 'crosshair',
-              touchAction: 'none',
-              outline: 'none',
-            }}
+            className="quiz-retro-xy-grid"
+            style={{ flex: 1, aspectRatio: '1' }}
           >
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: 0,
-                right: 0,
-                height: '2px',
-                backgroundColor: `${colors.borderSecondary}60`,
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: 0,
-                bottom: 0,
-                width: '2px',
-                backgroundColor: `${colors.borderSecondary}60`,
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gridTemplateRows: '1fr 1fr',
-                pointerEvents: 'none',
-              }}
-            >
-              <div style={{ backgroundColor: 'rgba(135, 206, 250, 0.05)' }} />
-              <div style={{ backgroundColor: 'rgba(255, 105, 180, 0.05)' }} />
-              <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.05)' }} />
-              <div style={{ backgroundColor: 'rgba(147, 112, 219, 0.05)' }} />
-            </div>
+            <div className="quiz-retro-xy-axis-h" />
+            <div className="quiz-retro-xy-axis-v" />
             {selectedPosition && (
               <div
+                className="quiz-retro-xy-marker"
                 style={{
-                  position: 'absolute',
                   left: `${markerLeft}%`,
                   top: `${markerTop}%`,
-                  transform: 'translate(-50%, -50%)',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: colors.accent,
-                  border: '3px solid white',
-                  boxShadow: `${shadows.glow}, 0 2px 8px rgba(0,0,0,0.3)`,
                   transition: isDragging ? 'none' : 'all 0.15s ease-out',
-                  pointerEvents: 'none',
                 }}
               />
             )}
           </div>
           <div
-            style={{
-              writingMode: 'vertical-rl',
-              fontSize: typography.fontSize.sm,
-              color: colors.secondary,
-              fontWeight: typography.fontWeight.bold,
-              whiteSpace: 'nowrap',
-            }}
+            className="quiz-retro-xy-label"
+            style={{ writingMode: 'vertical-rl' }}
           >
             {question.xAxis.rightLabel}
           </div>
         </div>
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: spacing.sm,
-            fontSize: typography.fontSize.sm,
-            color: colors.secondary,
-            fontWeight: typography.fontWeight.bold,
-          }}
-        >
+        <div className="quiz-retro-xy-label" style={{ marginTop: 4 }}>
           {question.yAxis.bottomLabel}
         </div>
       </div>
@@ -604,9 +299,10 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
         <div
           style={{
             textAlign: 'center',
-            marginTop: spacing.lg,
-            fontSize: typography.fontSize.xs,
-            color: colors.textTertiary,
+            marginTop: 6,
+            fontSize: '9px',
+            color: '#888888',
+            fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
           }}
           role="status"
           aria-live="polite"

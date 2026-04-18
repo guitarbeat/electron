@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeAction, isValidUrl, sanitizeInput } from './shared.ts';
+import { executeAction, isValidUrl, sanitizeInput, parseJsonContent, createValidator } from './shared.ts';
 
 test('executeAction', async (t) => {
   await t.test('runs action and completion in order', () => {
@@ -104,5 +104,137 @@ test('sanitizeInput', async (t) => {
 
   await t.test('returns empty string for control characters and whitespace only', () => {
     assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
+  });
+});
+
+test('parseJsonContent', async (t) => {
+  await t.test('parses valid JSON string correctly', () => {
+    const json = '{"key": "value", "number": 42}';
+    assert.deepEqual(parseJsonContent(json, 'TestContext'), { key: 'value', number: 42 });
+  });
+
+  await t.test('throws an error with context for invalid JSON', () => {
+    const invalidJson = '{key: "value"}';
+    assert.throws(
+      () => parseJsonContent(invalidJson, 'TestContext'),
+      (err) => {
+        return err instanceof Error && err.message === 'Failed to parse TestContext JSON.' && err.cause instanceof SyntaxError;
+      }
+    );
+  });
+});
+
+test('createValidator', async (t) => {
+  await t.test('validates valid data successfully', () => {
+    const validator = createValidator({
+      name: { required: true, maxLength: 50 },
+      age: { custom: (val) => Number.isNaN(Number(val)) ? 'Must be a number' : null }
+    });
+
+    const result = validator({ name: 'John Doe', age: '30' });
+    assert.equal(result.isValid, true);
+    assert.deepEqual(result.errors, {});
+    assert.deepEqual(result.fieldErrors, []);
+  });
+
+  await t.test('enforces required rule', () => {
+    const validator = createValidator({
+      name: { required: true, message: 'Name is mandatory' },
+      optional: { required: false }
+    });
+
+    const result = validator({ optional: 'present' });
+    assert.equal(result.isValid, false);
+    assert.deepEqual(result.errors, { name: 'Name is mandatory' });
+    assert.deepEqual(result.fieldErrors, ['Name is mandatory']);
+  });
+
+  await t.test('enforces maxLength rule', () => {
+    const validator = createValidator({
+      code: { maxLength: 3 }
+    });
+
+    const result = validator({ code: 'ABCD' });
+    assert.equal(result.isValid, false);
+    assert.deepEqual(result.errors, { code: 'code exceeds maximum length of 3 characters' });
+  });
+
+  await t.test('enforces minLength rule', () => {
+    const validator = createValidator({
+      pin: { minLength: 4 }
+    });
+
+    const result = validator({ pin: '123' });
+    assert.equal(result.isValid, false);
+    assert.deepEqual(result.errors, { pin: 'pin must be at least 4 characters' });
+  });
+
+  await t.test('enforces pattern rule', () => {
+    const validator = createValidator({
+      email: { pattern: /^[^@]+@[^@]+\.[^@]+$/ }
+    });
+
+    const result = validator({ email: 'invalid-email' });
+    assert.equal(result.isValid, false);
+    assert.deepEqual(result.errors, { email: 'email format is invalid' });
+  });
+
+  await t.test('enforces custom rule', () => {
+    const validator = createValidator({
+      username: { custom: (val) => val === 'admin' ? 'Reserved username' : null }
+    });
+
+    const result = validator({ username: 'admin' });
+    assert.equal(result.isValid, false);
+    assert.deepEqual(result.errors, { username: 'Reserved username' });
+  });
+
+  await t.test('trims whitespace before validation', () => {
+    const validator = createValidator({
+      name: { required: true },
+      code: { maxLength: 3 }
+    });
+
+    const resultEmpty = validator({ name: '   ' });
+    assert.equal(resultEmpty.isValid, false);
+    assert.equal(resultEmpty.errors.name, 'name is required');
+
+    const resultLength = validator({ name: 'Valid', code: '  AB  ' });
+    assert.equal(resultLength.isValid, true);
+  });
+
+  await t.test('ignores missing non-required fields', () => {
+    const validator = createValidator({
+      bio: { maxLength: 10 } // Not required
+    });
+
+    const result = validator({}); // Missing
+    assert.equal(result.isValid, true);
+
+    const resultEmpty = validator({ bio: '' }); // Empty
+    assert.equal(resultEmpty.isValid, true);
+  });
+
+  await t.test('coerces non-string values to string', () => {
+    const validator = createValidator({
+      count: { minLength: 2 }
+    });
+
+    // Number 5 will be coerced to "5", which is 1 char (less than minLength 2)
+    const result = validator({ count: 5 });
+    assert.equal(result.isValid, false);
+    assert.equal(result.errors.count, 'count must be at least 2 characters');
+  });
+
+  await t.test('accumulates multiple errors across different fields', () => {
+    const validator = createValidator({
+      name: { required: true },
+      age: { required: true }
+    });
+
+    const result = validator({});
+    assert.equal(result.isValid, false);
+    assert.equal(Object.keys(result.errors).length, 2);
+    assert.equal(result.fieldErrors.length, 2);
   });
 });

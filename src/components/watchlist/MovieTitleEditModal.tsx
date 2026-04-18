@@ -12,6 +12,7 @@ interface MovieTitleEditModalProps {
   isMobile: boolean;
   onClose: () => void;
   onSubmit: (title: string) => Promise<void>;
+  onDelete?: () => void;
 }
 
 const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
@@ -20,6 +21,7 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
   isMobile,
   onClose,
   onSubmit,
+  onDelete,
 }) => {
   const [draftTitle, setDraftTitle] = React.useState(movie.title);
   const [error, setError] = React.useState<string | null>(null);
@@ -134,16 +136,31 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
         <div
           style={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             gap: spacing.sm,
           }}
         >
-          <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>
-            Cancel
-          </Button>
-          <Button type="submit" isLoading={isSaving} loadingText="Saving..." disabled={!canSubmit}>
-            Save title
-          </Button>
+          {onDelete ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => { onDelete(); onClose(); }}
+              disabled={isSaving}
+              style={{ color: colors.error ?? '#c0392b' }}
+            >
+              Remove
+            </Button>
+          ) : <span />}
+
+          <div style={{ display: 'flex', gap: spacing.sm }}>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={isSaving} loadingText="Saving..." disabled={!canSubmit}>
+              Save title
+            </Button>
+          </div>
         </div>
       </form>
     </Modal>

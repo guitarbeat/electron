@@ -1,30 +1,18 @@
 const MAX_ATTEMPTS = 3;
 const BASE_DELAY_MS = 200;
 const MAX_DELAY_MS = 5000;
-const DEFAULT_TIMEOUT_MS = 5000;
+const DEFAULT_TIMEOUT_MS = 15000;
+
 
 const isRetryableStatus = (status: number): boolean => {
-  if (status === 429) {
-    return true;
-  }
-  if (status === 502 || status === 503 || status === 504) {
-    return true;
-  }
-  if (status >= 500) {
-    return true;
-  }
-  return false;
+  return status === 429 || status === 502 || status === 503 || status === 504 || status >= 500;
 };
 
 const parseRetryAfterMs = (response: Response): number | null => {
   const raw = response.headers.get('Retry-After');
-  if (!raw) {
-    return null;
-  }
+  if (!raw) return null;
   const seconds = Number.parseInt(raw, 10);
-  if (!Number.isFinite(seconds) || seconds < 0) {
-    return null;
-  }
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
   return seconds * 1000;
 };
 
@@ -41,6 +29,7 @@ const sleep = (ms: number): Promise<void> =>
 /**
  * Retries transient GitHub API failures (429, 5xx) and network errors.
  * Returns the last response when retries are exhausted or on non-retryable status.
+ * Uses globalThis.fetch (standard in Node 18+).
  */
 export const fetchWithRetry = async (
   input: RequestInfo | URL,
@@ -52,40 +41,27 @@ export const fetchWithRetry = async (
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const signal = init?.signal
+        ? AbortSignal.any([init.signal, controller.signal])
+        : controller.signal;
 
-      const signal = init?.signal;
-      if (signal) {
-        if (signal.aborted) {
-          controller.abort();
-        } else {
-          signal.addEventListener('abort', () => controller.abort(), { once: true });
-        }
-      }
-
-      let response: Response | undefined;
-      try {
-        response = await fetch(input, {
-          ...(init || {}),
-          signal: controller.signal,
-        });
-        lastResponse = response;
-      } finally {
-        clearTimeout(timeoutId);
-      }
-
-      // If `fetch()` didn't throw, `response` must be set.
-      if (!response) {
-        throw new Error(`${context}: no response`);
-      }
+      const response = await fetch(input, {
+        ...init,
+        signal,
+      });
+      lastResponse = response;
 
       if (response.ok) {
+        clearTimeout(timeoutId);
         return response;
       }
 
       if (!isRetryableStatus(response.status) || attempt === MAX_ATTEMPTS) {
+        clearTimeout(timeoutId);
         return response;
       }
 
@@ -107,6 +83,8 @@ export const fetchWithRetry = async (
         Math.min(MAX_DELAY_MS, BASE_DELAY_MS * 2 ** (attempt - 1))
       );
       await sleep(delayMs);
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

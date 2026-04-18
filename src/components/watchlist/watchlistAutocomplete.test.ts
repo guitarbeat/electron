@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { MovieAutocompleteResult } from '@/services/metadataService';
+import type { MovieAutocompleteResult } from '@/services/metadata';
 import {
   getMovieAutocompleteEnterSelectionIndex,
   getNextMovieAutocompleteIndex,
@@ -16,7 +16,7 @@ const SELECTED_RESULT: MovieAutocompleteResult = {
   title: 'Heat',
   type: 'movie',
   year: '1995',
-  posterUrl: 'https://images.example/heat.jpg',
+  poster: 'https://images.example/heat.jpg',
 };
 
 test('shouldFetchMovieAutocomplete enforces the minimum query length and skips matched selections', async (t) => {

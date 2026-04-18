@@ -124,21 +124,21 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         style={surfaceStyles}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header: optional title + close */}
-        <div
-          style={{
-            flex: '0 0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: title ? 'space-between' : 'flex-end',
-            padding: `${spacing.md} ${spacing.lg}`,
-            borderBottom: title ? `1px solid ${colors.borderSecondary}30` : 'none',
-            minHeight: 48,
-            background:
-              'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)',
-          }}
-        >
-          {title && (
+        {/* Header: only rendered when a title is provided; otherwise close floats absolute */}
+        {title ? (
+          <div
+            style={{
+              flex: '0 0 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: `${spacing.md} ${spacing.lg}`,
+              borderBottom: `1px solid ${colors.borderSecondary}30`,
+              minHeight: 48,
+              background:
+                'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)',
+            }}
+          >
             <h2
               style={{
                 margin: 0,
@@ -151,7 +151,61 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             >
               {title}
             </h2>
-          )}
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={handleClose}
+              aria-label={closeDisabled ? closeDisabledLabel : 'Close'}
+              title={closeDisabled ? closeDisabledLabel : 'Close'}
+              disabled={closeDisabled}
+              style={{
+                width: 40,
+                height: 40,
+                padding: 0,
+                borderRadius: radius.full,
+                background:
+                  'linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 100%), rgba(41, 26, 37, 0.74)',
+                color: '#fff3f7',
+                border: `1px solid ${colors.borderSecondary}45`,
+                cursor: closeDisabled ? 'not-allowed' : 'pointer',
+                opacity: closeDisabled ? 0.45 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: shadows.button,
+                transition: `all ${motion.duration.button} ${motion.easing.ease}`,
+              }}
+              onMouseEnter={(e) => {
+                if (!closeDisabled) {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.borderColor = colors.accent;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!closeDisabled) {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.borderColor = `${colors.borderSecondary}45`;
+                }
+              }}
+              onMouseDown={(e) => {
+                if (!closeDisabled) e.currentTarget.style.transform = 'scale(0.95)';
+              }}
+              onMouseUp={(e) => {
+                if (!closeDisabled) e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+            >
+              <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          /* No title — close button floats over content */
           <button
             ref={closeButtonRef}
             type="button"
@@ -160,9 +214,10 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             title={closeDisabled ? closeDisabledLabel : 'Close'}
             disabled={closeDisabled}
             style={{
-              position: title ? 'relative' : 'absolute',
-              top: title ? undefined : spacing.sm,
-              right: title ? undefined : spacing.sm,
+              position: 'absolute',
+              top: spacing.sm,
+              right: spacing.sm,
+              zIndex: 10,
               width: 40,
               height: 40,
               padding: 0,
@@ -207,7 +262,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
               />
             </svg>
           </button>
-        </div>
+        )}
 
         {/* Content */}
         <div

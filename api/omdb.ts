@@ -215,7 +215,8 @@ async function handler(req: Request): Promise<Response> {
     sourceUrl.searchParams.forEach((value, key) => {
       targetUrl.searchParams.set(key, value);
     });
-    if (!targetUrl.searchParams.has('apikey') && omdbApiKey.length > 0) {
+    const incomingApiKey = targetUrl.searchParams.get('apikey')?.trim();
+    if ((!incomingApiKey || incomingApiKey.length === 0) && omdbApiKey.length > 0) {
       targetUrl.searchParams.set('apikey', omdbApiKey);
     }
 
@@ -274,7 +275,7 @@ async function handler(req: Request): Promise<Response> {
       },
     });
   } catch (error) {
-    console.error('Error handling /api/omdb', error);
+    console.error(`Error handling ${req.method} ${req.url}:`, error);
     return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), 500);
   }
 }
