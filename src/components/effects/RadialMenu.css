@@ -1,11 +1,3 @@
-.background-container {
-  background: url("https://preview.redd.it/over-50-frutiger-aero-wallpapers-2008ify-your-pc-v0-ja2v6kc2nz9b1.jpg?width=1920&format=pjpg&auto=webp&s=09407129bb0b6df40651cc3b79d7fea29c60c869");
-  background-size: cover;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
-
 .menu {
   width: 200px;
   height: 200px;
@@ -13,12 +5,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 1000;
   pointer-events: none;
 }
 
-.menu.active {
-  pointer-events: auto;
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .menu li {
@@ -31,12 +25,24 @@
   transition: 0.5s;
   transition-delay: calc(0.1s * var(--i));
   transform: rotate(0deg) translateX(80px) translateY(-15px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: #111;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .menu.active li {
   transform: rotate(calc(225deg / 5 * var(--i)));
+  opacity: 1;
+  pointer-events: auto;
 }
 
+/* Gradient button colors */
 .green {
   background: linear-gradient(135deg, #a8d52d, #83ac29, #74a727, #83ac29, #a8d52d);
 }
@@ -61,6 +67,7 @@
   background: linear-gradient(135deg, #ffe96e, #f8d300, #dcbb01, #f8d300, #ffe96e);
 }
 
+/* Glossy highlight effect */
 .round-button::before {
   content: '';
   position: absolute;
@@ -69,37 +76,43 @@
   right: 19%;
   height: 40%;
   background: linear-gradient(135deg, 
-      rgba(255,255,255,0.4) 0%, 
-      rgba(255,255,255,0.2) 50%, 
+      rgba(255,255,255,0.5) 0%, 
+      rgba(255,255,255,0.25) 50%, 
       rgba(255,255,255,0.05) 100%);
   border-radius: 50%;
   pointer-events: none;
 }
 
-li {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.15);
-  color: #111;
-  transition: 0.5s;
+/* Menu item button styling */
+.menu-item-button {
+  width: 100%;
+  height: 100%;
   border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
-}
-
-ion-icon {
-  transform: rotate(calc(225deg / -5 * var(--i)));
-}
-
-li:hover {
   color: white;
-  background-color: black;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
 }
 
+.menu-item-button:hover {
+  transform: scale(1.1);
+}
+
+.menu-item-button:active {
+  transform: scale(0.95);
+}
+
+.menu-item-button svg {
+  color: white;
+  stroke: white;
+}
+
+/* Toggle button */
 .toggle {
   position: absolute;
   width: 60px;
@@ -110,11 +123,31 @@ li:hover {
   z-index: 10000;
   border-radius: 50%;
   cursor: grab;
-  box-shadow: 0 0px 4px rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
   font-size: 2em;
-  transition: transform 1.25s;
+  font-weight: 300;
+  color: white;
+  transition: transform 1.25s cubic-bezier(0.4, 0, 0.2, 1);
   background: linear-gradient(135deg, #f4cb8d, #fca44d, #fe8922, #fca44d, #f4cb8d);
   pointer-events: auto;
+  user-select: none;
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  top: 8%;
+  left: 15%;
+  right: 15%;
+  height: 35%;
+  background: linear-gradient(135deg, 
+      rgba(255,255,255,0.5) 0%, 
+      rgba(255,255,255,0.2) 50%, 
+      rgba(255,255,255,0) 100%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .toggle:active {
@@ -125,11 +158,36 @@ li:hover {
   transform: rotate(360deg);
 }
 
+.rotate {
+  display: inline-block;
+  transition: transform 0.5s ease;
+  line-height: 1;
+}
+
 .menu.active .rotate {
   transform: rotate(315deg);
 }
 
-.rotate {
-  display: inline-block;
-  transition: transform 0.5s ease;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .menu {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .menu li {
+    width: 36px;
+    height: 36px;
+    transform-origin: 80px;
+  }
+  
+  .menu.active li {
+    transform: rotate(calc(225deg / 5 * var(--i)));
+  }
+  
+  .toggle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.6em;
+  }
 }
