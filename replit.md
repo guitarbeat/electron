@@ -30,6 +30,26 @@ A React/TypeScript/Vite SPA for Aaron & Electra to plan movie nights and discove
 - Both card types share a `2:3` aspect-ratio poster format
 - Both card types use an identical bottom gradient overlay design
 
+## Layout & Section Headings
+
+Both tabs share the `.workspace-section-heading` CSS class for section dividers:
+- Papyrus uppercase, smaller eyebrow size (`clamp(0.78rem…0.96rem)`)
+- Amber ink color for primary sections (`--incoming`: slightly warmer, default `--color-accent`)
+- Green tint for completed sections (`--completed` modifier, used by "Watched" and "Visited")
+- A trailing decorative line via `::after` that fades to transparent
+- Y2K skin overrides the color to proper sepia-amber and green values
+
+Movies watchlist now has three named sections with headings: **Incoming** (suggestions), **Up Next** (queue), **Watched**.
+Places tab has: **suggestions pending** count, **To Try**, **Visited** — using `.places-section-heading` which is an alias for `.workspace-section-heading`.
+
+### PlacesTopControls
+
+Search bar for Places now mirrors the Movies bar exactly:
+- Same `.watchlist-top-controls__search-form / __search-shell / __search-field` classes
+- 📍 icon instead of 🎬
+- Add + Suggest buttons appear when query is non-empty
+- Rendered above the map in `PlacesList`; map no longer contains a floating search overlay
+
 ## Card Parity (Movies ↔ Places)
 
 Both card types are styled to be visually identical:
