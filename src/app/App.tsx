@@ -8,11 +8,15 @@ import { useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
+const FishTank = React.lazy(() => import('@/components/effects/FishTank'));
+const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
+const WaterSimulation = React.lazy(() => import('@/components/effects/WaterSimulation'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
+import type { BackgroundType } from '@/components/effects/RadialMenu';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 
@@ -39,6 +43,7 @@ const App: React.FC = () => {
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
+  const [backgroundType, setBackgroundType] = useState<BackgroundType>('moire');
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -172,7 +177,11 @@ const App: React.FC = () => {
       <div className="app-shell app-shell--viewport bg-main">
         <React.Suspense fallback={null}>
           {!prefersReducedMotion ? (
-            <MagicComponent isVisible opacity={0.2} />
+            backgroundType === 'moire' ? (
+              <MagicComponent isVisible opacity={0.2} />
+            ) : (
+              <WaterSimulation />
+            )
           ) : null}
         </React.Suspense>
         <VignetteOverlay />
@@ -180,14 +189,17 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <button
-          type="button"
-          className="messages-fab"
-          aria-label="Open messages"
-          onClick={() => setShowMessages(true)}
-        >
-          <MessageIcon size={22} />
-        </button>
+        <React.Suspense fallback={null}>
+          <RadialMenu 
+            onOpenMessages={() => setShowMessages(true)} 
+            onBackgroundChange={setBackgroundType}
+            currentBackground={backgroundType}
+          />
+        </React.Suspense>
+
+        <React.Suspense fallback={null}>
+          <FishTank />
+        </React.Suspense>
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">
