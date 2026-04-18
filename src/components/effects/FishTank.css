@@ -1,6 +1,27 @@
 .fish-tank-wrapper {
-  z-index: 1000;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
   pointer-events: none;
+}
+
+/* Responsive sizing for smaller screens */
+@media (max-width: 768px) {
+  .fish-tank-wrapper {
+    transform: scale(0.7);
+    transform-origin: bottom right;
+    bottom: 12px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fish-tank-wrapper {
+    transform: scale(0.5);
+    bottom: 8px;
+    right: 8px;
+  }
 }
 
 .fish-tank-wrapper #pwrbtn {
@@ -13,12 +34,19 @@
   height: 20px;
   width: 30px;
   border: none;
-  cursor: grab;
+  cursor: pointer;
   pointer-events: auto;
+  transition: opacity 0.2s ease;
 }
 
-.fish-tank-wrapper #pwrbtn:active {
-  cursor: grabbing;
+.fish-tank-wrapper #pwrbtn:hover {
+  opacity: 0.8;
+}
+
+.fish-tank-wrapper #pwrbtn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .fish-tank-wrapper .container {
@@ -60,8 +88,8 @@
   position: relative;
   top: 5px;
   left: 5px;
-  /* glow */
   box-shadow: 0px 0px 10px 0px #a4dfeeab, 0px 0px 10px 0px #a4dfeeab;
+  border-radius: 2px;
 }
 
 .fish-tank-wrapper .bg {
@@ -98,6 +126,7 @@
   position: relative;
   z-index: 10;
   background: #3ad1ff14;
+  transition: backdrop-filter 0.3s ease;
 }
 
 .fish-tank-wrapper .fish {
@@ -173,7 +202,7 @@
   }
 }
 
-/* off */
+/* off state */
 .fish-tank-wrapper .overlay-off {
   backdrop-filter: brightness(0.5);
 }
