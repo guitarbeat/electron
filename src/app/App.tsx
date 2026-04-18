@@ -8,6 +8,7 @@ import { useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
+const FishTank = React.lazy(() => import('@/components/effects/FishTank'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
@@ -188,6 +189,10 @@ const App: React.FC = () => {
         >
           <MessageIcon size={22} />
         </button>
+
+        <React.Suspense fallback={null}>
+          <FishTank />
+        </React.Suspense>
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className="app-workspace-stack">
