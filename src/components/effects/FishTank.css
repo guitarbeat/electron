@@ -1,8 +1,6 @@
 .fish-tank-wrapper {
-  background: #222;
-  display: grid;
-  place-items: center;
-  height: 100vh;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 .fish-tank-wrapper #pwrbtn {
@@ -15,7 +13,12 @@
   height: 20px;
   width: 30px;
   border: none;
-  cursor: pointer;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.fish-tank-wrapper #pwrbtn:active {
+  cursor: grabbing;
 }
 
 .fish-tank-wrapper .container {
@@ -23,6 +26,7 @@
   z-index: 1;
   height: 250px;
   width: 400px;
+  pointer-events: auto;
 }
 
 .fish-tank-wrapper .container::before {
