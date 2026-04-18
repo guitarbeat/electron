@@ -3,7 +3,7 @@ import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
-import { PlusIcon, Spinner } from '@/common/icons';
+import { Spinner } from '@/common/icons';
 import { getPlaceMeta } from './PlaceCard';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
@@ -35,13 +35,6 @@ const MAP_STYLE: StyleSpecification = {
 interface PlacesMapProps {
   places: Place[];
   canEdit?: boolean;
-  searchQuery: string;
-  setSearchQuery: (v: string) => void;
-  onSubmitSearch: () => Promise<void> | void;
-  onSuggestPlace?: () => Promise<void> | void;
-  isAdding: boolean;
-  isSuggesting?: boolean;
-  suggestionError: string | null;
   onUpdatePlace?: (id: string, updates: Partial<Pick<Place, 'lat' | 'lng'>>) => Promise<void>;
   onAddPlace?: (name: string, notes?: string, lat?: number, lng?: number) => Promise<void>;
   style?: React.CSSProperties;
@@ -61,13 +54,6 @@ interface PendingPin {
 const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   places,
   canEdit = false,
-  searchQuery = '',
-  setSearchQuery = () => undefined,
-  onSubmitSearch = () => undefined,
-  onSuggestPlace,
-  isAdding = false,
-  isSuggesting = false,
-  suggestionError = null,
   onUpdatePlace,
   onAddPlace,
   style,
@@ -392,101 +378,6 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
           </div>
         </div>
       )}
-
-      {/* ── Floating search bar ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: spacing.md,
-          left: spacing.md,
-          right: canEdit ? '120px' : spacing.md,
-          zIndex: 10,
-        }}
-      >
-        <form
-          onSubmit={(e) => { e.preventDefault(); void onSubmitSearch(); }}
-          style={{ display: 'flex', gap: spacing.xs }}
-        >
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Add a place…"
-            aria-label="Place name"
-            style={{
-              flex: 1,
-              ...glassStyle,
-              color: colors.textPrimary,
-              fontSize: typography.fontSize.sm,
-              fontFamily: typography.fontFamily.heading.join(', '),
-              padding: `${spacing.sm} ${spacing.md}`,
-              outline: 'none',
-              border: `1px solid ${searchQuery ? colors.accent : colors.border}`,
-              transition: `border-color ${motion.duration.fast}`,
-              minWidth: 0,
-            }}
-          />
-          {searchQuery.trim() && canEdit && (
-            <div style={{ display: 'flex', gap: spacing.xs }}>
-              <button
-                type="submit"
-                disabled={isAdding || isSuggesting}
-                style={{
-                  ...glassStyle,
-                  padding: `${spacing.sm} ${spacing.md}`,
-                  color: isAdding ? colors.textTertiary : colors.accentLight,
-                  cursor: isAdding ? 'not-allowed' : 'pointer',
-                  border: `1px solid ${colors.accent}66`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-                aria-label="Add place"
-                title="Add directly to queue"
-              >
-                {isAdding ? <Spinner /> : <PlusIcon />}
-              </button>
-              {onSuggestPlace && (
-                <button
-                  type="button"
-                  onClick={() => void onSuggestPlace()}
-                  disabled={isAdding || isSuggesting}
-                  style={{
-                    ...glassStyle,
-                    padding: `${spacing.sm} ${spacing.md}`,
-                    color: isSuggesting ? colors.textTertiary : colors.accentLight,
-                    cursor: isSuggesting ? 'not-allowed' : 'pointer',
-                    border: `1px dashed ${colors.accent}44`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                  aria-label="Suggest place"
-                  title="Suggest for review"
-                >
-                  {isSuggesting ? <Spinner /> : '💡'}
-                </button>
-              )}
-            </div>
-          )}
-        </form>
-
-        {suggestionError && (
-          <div
-            style={{
-              marginTop: spacing.xs,
-              padding: `${spacing.xs} ${spacing.sm}`,
-              ...glassStyle,
-              borderColor: 'rgba(220,80,60,0.5)',
-              color: '#f87171',
-              fontSize: typography.fontSize.xs,
-            }}
-          >
-            {suggestionError}
-          </div>
-        )}
-      </div>
 
       {/* ── Drop-pin toggle ── */}
       {canEdit && !pendingPin && (
