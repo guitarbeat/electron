@@ -170,12 +170,21 @@ const AppHeader: FC<AppHeaderProps> = ({ activeTab, onTabChange }) => {
     const photoUrl = USER_PHOTOS[user];
     if (photoUrl) {
       return (
-        <img
-          src={photoUrl}
-          alt=""
-          className="app-header__avatar-image"
-          draggable="false"
-        />
+        <>
+          <img
+            src={photoUrl}
+            alt=""
+            className="app-header__avatar-image"
+            draggable="false"
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = 'none';
+              const sibling = target.nextElementSibling as HTMLElement | null;
+              if (sibling) sibling.style.display = '';
+            }}
+          />
+          <span className="app-header__avatar-initial" style={{ display: 'none' }}>{user.charAt(0)}</span>
+        </>
       );
     }
     return <span className="app-header__avatar-initial">{user.charAt(0)}</span>;

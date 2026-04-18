@@ -49,8 +49,8 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
     },
     {
       id: 'movie-quiz',
-      title: 'Movie Quiz',
-      description: 'Test your movie knowledge',
+      title: 'Personality Quiz',
+      description: 'Test how well you know each other',
       icon: <HelpCircle className="game-card__icon" />,
       gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
       onClick: onMovieQuiz || (() => {}),
