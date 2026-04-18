@@ -2,11 +2,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MessageIcon } from '@/common/icons';
 import './RadialMenu.css';
 
+export type BackgroundType = 'moire' | 'water';
+
 interface RadialMenuProps {
   onOpenMessages?: () => void;
+  onBackgroundChange?: (bg: BackgroundType) => void;
+  currentBackground?: BackgroundType;
 }
 
-const RadialMenu: React.FC<RadialMenuProps> = ({ onOpenMessages }) => {
+const RadialMenu: React.FC<RadialMenuProps> = ({ 
+  onOpenMessages, 
+  onBackgroundChange,
+  currentBackground = 'moire'
+}) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
@@ -91,6 +99,12 @@ const RadialMenu: React.FC<RadialMenuProps> = ({ onOpenMessages }) => {
     setIsActive(false);
   };
 
+  const toggleBackground = () => {
+    const newBg: BackgroundType = currentBackground === 'moire' ? 'water' : 'moire';
+    onBackgroundChange?.(newBg);
+    setIsActive(false);
+  };
+
   return (
     <div
       ref={menuRef}
@@ -111,11 +125,11 @@ const RadialMenu: React.FC<RadialMenuProps> = ({ onOpenMessages }) => {
           tabIndex={0}
           aria-label="Toggle menu"
         >
-          <span className="rotate">⚙</span>
+          <span className="rotate">+</span>
         </div>
 
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          <li style={{ '--i': 0 } as React.CSSProperties} className="green">
+          <li style={{ '--i': 0 } as React.CSSProperties} className="green round-button">
             <button
               onClick={() => handleMenuItemClick(onOpenMessages)}
               aria-label="Open messages"
@@ -123,7 +137,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({ onOpenMessages }) => {
                 width: '100%',
                 height: '100%',
                 border: 'none',
-                background: 'inherit',
+                background: 'transparent',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -135,26 +149,41 @@ const RadialMenu: React.FC<RadialMenuProps> = ({ onOpenMessages }) => {
             </button>
           </li>
 
-          <li style={{ '--i': 1 } as React.CSSProperties} className="blue">
-            <button aria-label="Messages" style={{ width: '100%', height: '100%', border: 'none', background: 'inherit', cursor: 'pointer' }}>
-              💬
+          <li style={{ '--i': 1 } as React.CSSProperties} className="blue round-button">
+            <button 
+              onClick={toggleBackground}
+              aria-label="Toggle background" 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                border: 'none', 
+                background: 'transparent', 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+              }}
+              title={currentBackground === 'moire' ? 'Switch to Water' : 'Switch to Moire'}
+            >
+              {currentBackground === 'moire' ? '🌊' : '🔮'}
             </button>
           </li>
 
-          <li style={{ '--i': 2 } as React.CSSProperties} className="purple">
-            <button aria-label="Settings" style={{ width: '100%', height: '100%', border: 'none', background: 'inherit', cursor: 'pointer' }}>
-              ⚙
+          <li style={{ '--i': 2 } as React.CSSProperties} className="purple round-button">
+            <button aria-label="Settings" style={{ width: '100%', height: '100%', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '18px' }}>
+              ⚙️
             </button>
           </li>
 
-          <li style={{ '--i': 3 } as React.CSSProperties} className="orange">
-            <button aria-label="Favorites" style={{ width: '100%', height: '100%', border: 'none', background: 'inherit', cursor: 'pointer' }}>
+          <li style={{ '--i': 3 } as React.CSSProperties} className="orange round-button">
+            <button aria-label="Favorites" style={{ width: '100%', height: '100%', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '18px' }}>
               ⭐
             </button>
           </li>
 
-          <li style={{ '--i': 4 } as React.CSSProperties} className="red">
-            <button aria-label="Help" style={{ width: '100%', height: '100%', border: 'none', background: 'inherit', cursor: 'pointer' }}>
+          <li style={{ '--i': 4 } as React.CSSProperties} className="red round-button">
+            <button aria-label="Help" style={{ width: '100%', height: '100%', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '18px' }}>
               ❓
             </button>
           </li>
