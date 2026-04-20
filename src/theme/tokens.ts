@@ -136,8 +136,8 @@ export const colors = {
 // * Typography scale
 const fontFamily = {
   heading: ['Papyrus', 'serif'],
-  body: ['Cormorant Garamond', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
-  sans: ['Cormorant Garamond', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'serif'],
+  body: ['Papyrus', 'serif'],
+  sans: ['Papyrus', 'serif'],
   mono: ['JetBrains Mono', 'SFMono-Regular', 'Consolas', 'monospace'],
 } as const;
 

@@ -8,7 +8,7 @@ A React/TypeScript/Vite SPA for Aaron & Electra to plan movie nights and discove
 - **Backend**: GitHub Gist (data persistence) + OMDB/TVMaze APIs (movie metadata)
 - **State**: React context + localStorage fallback
 - **Theme**: Dual-theme system (Movies: pink/blue, Places: peach/mint)
-- **Font**: Papyrus (headings/brand), Cormorant Garamond (body), system-ui (Y2K skin only)
+- **Font**: Papyrus everywhere — both `--font-heading` and `--font-body` CSS vars + all `tokens.ts` fontFamily presets unified to `['Papyrus', 'serif']`
 
 ## Key Files
 
@@ -37,7 +37,7 @@ Both tabs share the `.workspace-section-heading` CSS class for section dividers:
 - Amber ink color for primary sections (`--incoming`: slightly warmer, default `--color-accent`)
 - Green tint for completed sections (`--completed` modifier, used by "Watched" and "Visited")
 - A trailing decorative line via `::after` that fades to transparent
-- Y2K skin overrides the color to proper sepia-amber and green values
+- Y2K skin overrides the color to sepia-amber (#8a5c1e) and green for completed sections
 
 Movies watchlist now has three named sections with headings: **Incoming** (suggestions), **Up Next** (queue), **Watched**.
 Places tab has: **suggestions pending** count, **To Try**, **Visited** — using `.places-section-heading` which is an alias for `.workspace-section-heading`.
@@ -59,8 +59,19 @@ Both card types are styled to be visually identical:
 - Same title treatment: Papyrus, uppercase, `0.04em` letter-spacing, color transition on hover
 - Same top accent stripe: Movies use per-user color (Aaron=blue, Electra=pink); Places use per-category color
 - Same top-left badge: Movies use IMDB star rating; Places use category emoji + label
-- Same genre chip: Movies use genre text; Places use category label
+- Same genre chip: amber-tinted Y2K chip (warm amber bg, #f5d898 text) — Movies use genre text; Places use category label
 - Same action buttons: glass pill style with `backdrop-filter: blur(10px)`
+
+## Y2K Skin Cohesion (Watchlist / App-wide)
+
+The Y2K skin section (App.scss ~line 11736) applies these unified rules:
+- **Suggestion cards**: Y2K raised-bevel amber panel (`var(--y2k-silver)` bg, Y2K bevel borders) — matching the Win98 search bar style
+- **Movie cards**: Y2K outset raised frame (3px bevel borders)
+- **All fonts**: `'Papyrus', serif` everywhere — eyebrow labels, section titles, search field, autocomplete, buttons, movie titles, meta, genre badges, IMDb scores
+- **Card hover highlight**: warm amber (`rgba(196, 154, 80, 0.75)`) instead of cold blue
+- **Genre badges / IMDb badge**: warm amber background, no more cold blue
+- **Spin wheel summary items**: warm amber borders and background
+- **Tokens.ts alignment**: `fontFamily.body` set to `['Papyrus', 'serif']` to match the CSS variable `--font-body`, so inline-styled React components and CSS-class-based styles are in sync
 
 ## Known Non-Issues
 
