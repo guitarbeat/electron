@@ -88,7 +88,7 @@
   position: relative;
   top: 5px;
   left: 5px;
-  box-shadow: 0px 0px 10px 0px #a4dfeeab, 0px 0px 10px 0px #a4dfeeab;
+  box-shadow: 0px 0px 12px 0px rgba(200, 130, 160, 0.45), 0px 0px 24px 0px rgba(180, 100, 130, 0.2);
   border-radius: 2px;
 }
 
@@ -120,12 +120,12 @@
 }
 
 .fish-tank-wrapper .overlay {
-  box-shadow: inset 13px 0px 10px 5px #f4f4f4db,
-    inset -13px 0px 10px 5px #f4f4f4db;
+  box-shadow: inset 13px 0px 10px 5px rgba(255, 236, 210, 0.35),
+    inset -13px 0px 10px 5px rgba(255, 236, 210, 0.35);
   height: 100%;
   position: relative;
   z-index: 10;
-  background: #3ad1ff14;
+  background: rgba(255, 200, 160, 0.04);
   transition: backdrop-filter 0.3s ease;
 }
 
