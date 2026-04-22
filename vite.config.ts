@@ -141,6 +141,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      // The MapLibre bundle is isolated behind a lazy PlacesMap import, so the
+      // default 500 kB warning is noisy for this repo. Keep the threshold just
+      // above that expected lazy chunk size so real regressions still stand out.
+      chunkSizeWarningLimit: 1100,
       rollupOptions: {
         output: {
           manualChunks(id) {
