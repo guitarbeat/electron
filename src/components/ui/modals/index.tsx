@@ -74,7 +74,7 @@ interface ModalProps {
   maxHeight?: number;
   closeDisabled?: boolean;
   closeDisabledLabel?: string;
-  variant?: 'centered' | 'bottom-sheet';
+  variant?: 'centered' | 'bottom-sheet' | 'fullscreen';
 }
 
 const Modal: React.FC<ModalProps> = ({
