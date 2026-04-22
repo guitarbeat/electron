@@ -95,8 +95,24 @@ const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   const isBottomSheet = variant === 'bottom-sheet';
-  
-  const modalStyle = isBottomSheet ? {
+  const isFullscreen = variant === 'fullscreen';
+
+  const modalStyle = isFullscreen ? {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100dvw',
+    height: '100dvh',
+    maxWidth: '100dvw',
+    maxHeight: '100dvh',
+    paddingTop: 'env(safe-area-inset-top, 0px)',
+    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+    paddingLeft: 'env(safe-area-inset-left, 0px)',
+    paddingRight: 'env(safe-area-inset-right, 0px)',
+    borderRadius: 0,
+  } : isBottomSheet ? {
     position: 'fixed' as const,
     bottom: 0,
     left: 0,
