@@ -6,7 +6,7 @@ import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
 import { buildProfileCookie } from '../../api/_lib/session.ts';
 import mutateHandler from '../../api/state/[scope]/mutate.ts';
 import readHandler from '../../api/state/[scope].ts';
-import type { Movie, MovieSuggestion, SharedMemory } from '../shared/types.ts';
+import type { Movie, MovieSuggestion, PlaceSuggestion, SharedMemory } from '../shared/types.ts';
 
 const withUnsetGistId = async (run: () => Promise<void>) => {
   const previousGistId = process.env.GIST_ID;
@@ -155,6 +155,92 @@ const withSuggestionStore = async (
       const nextContent = body.files?.['suggestions.json']?.content;
       if (typeof nextContent === 'string') {
         suggestions = JSON.parse(nextContent) as MovieSuggestion[];
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
+      status: 405,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }) as typeof fetch;
+
+  try {
+    await run({
+      getSuggestions: () => suggestions,
+      patchBodies,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (typeof previousGistId === 'string') {
+      process.env.GIST_ID = previousGistId;
+    } else {
+      delete process.env.GIST_ID;
+    }
+
+    if (typeof previousGitHubToken === 'string') {
+      process.env.GITHUB_TOKEN = previousGitHubToken;
+    } else {
+      delete process.env.GITHUB_TOKEN;
+    }
+
+    invalidateGistCache();
+  }
+};
+
+const withPlaceSuggestionStore = async (
+  seedSuggestions: PlaceSuggestion[],
+  run: (context: { getSuggestions: () => PlaceSuggestion[]; patchBodies: unknown[] }) => Promise<void>
+) => {
+  const previousGistId = process.env.GIST_ID;
+  const previousGitHubToken = process.env.GITHUB_TOKEN;
+  const originalFetch = globalThis.fetch;
+  const patchBodies: unknown[] = [];
+  let suggestions = [...seedSuggestions];
+
+  process.env.GIST_ID = 'test-gist-id';
+  process.env.GITHUB_TOKEN = 'ghp_testToken';
+  invalidateGistCache();
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const request = input instanceof Request ? input : new Request(String(input), init);
+
+    if (request.method === 'GET') {
+      return new Response(
+        JSON.stringify({
+          files: {
+            'placesuggestions.json': {
+              content: JSON.stringify(suggestions),
+            },
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
+    if (request.method === 'PATCH') {
+      const body = JSON.parse(await request.text()) as {
+        files?: Record<string, { content?: string } | undefined>;
+      };
+      patchBodies.push(body);
+
+      const nextContent = body.files?.['placesuggestions.json']?.content;
+      if (typeof nextContent === 'string') {
+        suggestions = JSON.parse(nextContent) as PlaceSuggestion[];
       }
 
       return new Response(JSON.stringify({ ok: true }), {
@@ -447,6 +533,52 @@ test('dynamic state mutate route lets guests create movie suggestions', async ()
     assert.equal(getSuggestions()[0]?.suggestedBy, 'Movie Night Guest');
     assert.equal(getSuggestions()[0]?.imdbID, 'tt3799694');
     assert.equal(getSuggestions()[0]?.type, 'movie');
+    assert.equal(patchBodies.length, 1);
+  });
+});
+
+test('dynamic state mutate route lets guests create place suggestions', async () => {
+  await withPlaceSuggestionStore([], async ({ getSuggestions, patchBodies }) => {
+    const readResponse = await readHandler(new Request('https://example.com/api/state/placeSuggestions'));
+    assert.equal(readResponse.status, 200);
+
+    const readPayload = (await readResponse.json()) as {
+      version: string;
+    };
+
+    const response = await mutateHandler(
+      new Request('https://example.com/api/state/placeSuggestions/mutate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          baseVersion: readPayload.version,
+          op: 'add_place_suggestion',
+          payload: {
+            id: 'place-suggestion-1',
+            name: 'Skylight Lounge',
+            notes: 'Rooftop patio and late-night tacos.',
+            category: 'Restaurant',
+            suggestedBy: 'Patio Scout',
+          },
+        }),
+      })
+    );
+
+    assert.equal(response.status, 200);
+
+    const payload = (await response.json()) as {
+      data: PlaceSuggestion[];
+      applied: boolean;
+    };
+
+    assert.equal(payload.applied, true);
+    assert.equal(payload.data[0]?.name, 'Skylight Lounge');
+    assert.equal(payload.data[0]?.notes, 'Rooftop patio and late-night tacos.');
+    assert.equal(payload.data[0]?.category, 'Restaurant');
+    assert.equal(payload.data[0]?.suggestedBy, 'Patio Scout');
+    assert.equal(getSuggestions()[0]?.suggestedBy, 'Patio Scout');
     assert.equal(patchBodies.length, 1);
   });
 });

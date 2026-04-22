@@ -86,15 +86,18 @@ test('normalizePlaceSuggestionRecord', async (t) => {
     assert.equal(normalizePlaceSuggestionRecord({ name: 'Test Place' }), null);
   });
 
-  await t.test('rejects invalid user', () => {
+  await t.test('accepts guest suggester names', () => {
     const raw = {
       id: 'ps1',
       name: 'Test Place',
-      suggestedBy: 'Unknown',
+      suggestedBy: 'Movie Night Guest',
       status: 'pending',
       createdAt: '2026-03-27T10:00:00.000Z',
     };
-    assert.equal(normalizePlaceSuggestionRecord(raw), null);
+
+    const normalized = normalizePlaceSuggestionRecord(raw);
+    assert.notEqual(normalized, null);
+    assert.equal(normalized?.suggestedBy, 'Movie Night Guest');
   });
 
   await t.test('rejects invalid status', () => {

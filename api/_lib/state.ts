@@ -838,6 +838,7 @@ const scopes: {
       ),
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['placeSuggestions'],
+    allowAnonymousMutation: (op) => op === 'add_place_suggestion',
     mutate: (current, op, payload, context) => {
       const suggestions = current as PlaceSuggestion[];
 
@@ -851,11 +852,13 @@ const scopes: {
             rating?: unknown;
             description?: unknown;
             imageUrl?: unknown;
+            suggestedBy?: unknown;
           };
           const id = extractString(nextPayload.id);
           const name = extractString(nextPayload.name);
+          const suggestedBy = context.currentUser ?? (extractString(nextPayload.suggestedBy) || 'Guest');
 
-          if (!id || !name) {
+          if (!id || !name || !suggestedBy) {
             return { ok: false, conflict: 'Invalid place suggestion payload.' };
           }
 
@@ -870,7 +873,7 @@ const scopes: {
               {
                 id,
                 name,
-                suggestedBy: context.currentUser!,
+                suggestedBy,
                 notes: extractString(nextPayload.notes) || undefined,
                 category: extractString(nextPayload.category) || undefined,
                 rating: extractString(nextPayload.rating) || undefined,

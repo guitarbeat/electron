@@ -25,6 +25,9 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isBusy = isAdding || Boolean(isSuggesting);
+  const hasQuery = searchQuery.trim().length > 0;
+  const showAddAction = hasQuery && canEdit;
+  const showSuggestAction = hasQuery && Boolean(onSuggest);
 
   return (
     <section className="workspace-control-panel watchlist-top-controls">
@@ -35,6 +38,10 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
             onSubmit={(e) => {
               e.preventDefault();
               inputRef.current?.blur();
+              if (!canEdit && onSuggest) {
+                void onSuggest();
+                return;
+              }
               void onSubmit();
             }}
           >
@@ -52,18 +59,20 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
               />
             </div>
 
-            {searchQuery.trim() && canEdit && (
+            {(showAddAction || showSuggestAction) && (
               <div className="watchlist-top-controls__search-actions">
-                <button
-                  type="submit"
-                  className="watchlist-top-controls__search-button ui-button ui-button--primary ui-button--md"
-                  disabled={isBusy}
-                  aria-label="Add place"
-                  title="Add directly to list"
-                >
-                  {isAdding ? <Spinner size={16} /> : <><PlusIcon size={14} /> Add</>}
-                </button>
-                {onSuggest && (
+                {showAddAction && (
+                  <button
+                    type="submit"
+                    className="watchlist-top-controls__search-button ui-button ui-button--primary ui-button--md"
+                    disabled={isBusy}
+                    aria-label="Add place"
+                    title="Add directly to list"
+                  >
+                    {isAdding ? <Spinner size={16} /> : <><PlusIcon size={14} /> Add</>}
+                  </button>
+                )}
+                {showSuggestAction && onSuggest && (
                   <button
                     type="button"
                     className="watchlist-top-controls__search-button ui-button ui-button--ghost ui-button--md"
