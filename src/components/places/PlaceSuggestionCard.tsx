@@ -1,10 +1,8 @@
 import React from 'react';
-import type { PlaceSuggestion } from '../../shared/types.ts';
-import Card from '../ui/Card.tsx';
-import Button from '../ui/Button.tsx';
-import { colors, motion, spacing, typography } from '../../theme/tokens.ts';
-import { CheckIcon, CrossIcon } from '../common/icons.tsx';
-import { getPlaceIcon } from './placeMeta';
+import BaseSuggestionCard from '@/components/common/BaseSuggestionCard';
+import { getPlaceIcon } from '@/components/places/placeMeta';
+import type { PlaceSuggestion } from '@/shared/types';
+import { colors, typography } from '@/theme/tokens';
 
 interface PlaceSuggestionCardProps {
   suggestion: PlaceSuggestion;
@@ -25,130 +23,36 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
   isProcessing = false,
   animationDelay = '0s',
 }) => {
-  const actionsDisabled = isProcessing || disableActions;
   const icon = getPlaceIcon(suggestion.name);
 
   return (
-    <Card
-      variant="default"
-      className="suggestion-item-card"
-      style={{
-        padding: spacing.md,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: spacing.sm,
-        animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut} ${animationDelay} both`,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div className="suggestion-item-card__eyebrow" style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
-            Suggestion from {suggestion.suggestedBy}
-          </div>
-          <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-        </div>
-        <h3
-          style={{
-            margin: 0,
-            ...typography.presets.bodySm,
-            fontWeight: typography.fontWeight.semibold,
-            color: colors.textPrimary,
-          }}
-        >
-          {suggestion.name}
-        </h3>
-        {suggestion.notes && (
-          <p
+    <BaseSuggestionCard
+      suggestedBy={suggestion.suggestedBy}
+      title={suggestion.name}
+      subtitle={suggestion.notes}
+      icon={icon}
+      onAccept={onAccept}
+      onReject={onReject}
+      canRespond={canRespond}
+      disableActions={disableActions}
+      isProcessing={isProcessing}
+      animationDelay={animationDelay}
+      details={
+        suggestion.category ? (
+          <div
             style={{
-              margin: 0,
               ...typography.presets.caption,
-              color: colors.textSecondary,
-              fontStyle: 'italic',
-              lineHeight: 1.4,
-              marginTop: spacing.xs,
+              color: colors.textTertiary,
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
             }}
           >
-            &quot;{suggestion.notes}&quot;
-          </p>
-        )}
-        {suggestion.category && (
-          <div style={{ 
-            ...typography.presets.caption, 
-            color: colors.textTertiary,
-            fontSize: '10px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em'
-          }}>
             {suggestion.category}
           </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          display: 'flex',
-          gap: spacing.xs,
-          marginTop: 'auto',
-          paddingTop: spacing.xs,
-        }}
-      >
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onAccept}
-          isLoading={isProcessing}
-          disabled={actionsDisabled || !canRespond}
-          className="suggestion-item-card__button is-accept"
-          aria-label="Accept suggestion"
-          style={{ padding: 0 }}
-        >
-          <CheckIcon style={{ width: 16, height: 16 }} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onReject}
-          disabled={actionsDisabled || !canRespond}
-          className="suggestion-item-card__button is-reject"
-          aria-label="Reject suggestion"
-          style={{ padding: 0 }}
-        >
-          <CrossIcon style={{ width: 16, height: 16 }} />
-        </Button>
-      </div>
-
-      {!canRespond && (
-        <p
-          className="suggestion-item-card__profile-hint"
-          style={{
-            margin: 0,
-            ...typography.presets.caption,
-            color: colors.textSecondary,
-            textAlign: 'center',
-            marginTop: spacing.xs
-          }}
-        >
-          Pick a profile to review suggestions.
-        </p>
-      )}
-
-      {isProcessing && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(1px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1,
-          }}
-        />
-      )}
-    </Card>
+        ) : undefined
+      }
+    />
   );
 };
 
