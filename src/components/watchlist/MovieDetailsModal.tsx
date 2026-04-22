@@ -42,19 +42,23 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       onClose={onClose}
       title={movie.title}
       maxWidth={640}
+      variant={isMobile ? 'fullscreen' : 'centered'}
     >
-      <div style={{ padding: spacing.lg, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: spacing.lg }}>
+      <div style={{ padding: isMobile ? spacing.xl : spacing.lg, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? spacing.xl : spacing.lg }}>
         {/* Poster Section */}
-        <div style={{ flexShrink: 0, width: isMobile ? '100%' : '200px' }}>
+        <div style={{ flexShrink: 0, width: isMobile ? '100%' : '200px', maxHeight: isMobile ? '50dvh' : undefined, display: 'flex', justifyContent: 'center' }}>
           {shouldShowPoster ? (
             <img
               src={movie.posterUrl}
               alt={`${movie.title} poster`}
               style={{
-                width: '100%',
+                width: isMobile ? 'auto' : '100%',
+                maxWidth: '100%',
+                maxHeight: isMobile ? '50dvh' : undefined,
                 borderRadius: radius.md,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                display: 'block'
+                display: 'block',
+                objectFit: 'contain',
               }}
               onError={() => setHasPosterError(true)}
             />
