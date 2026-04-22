@@ -52,10 +52,13 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
               src={movie.posterUrl}
               alt={`${movie.title} poster`}
               style={{
-                width: '100%',
+                width: isMobile ? 'auto' : '100%',
+                maxWidth: '100%',
+                maxHeight: isMobile ? '50dvh' : undefined,
                 borderRadius: radius.md,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                display: 'block'
+                display: 'block',
+                objectFit: 'contain',
               }}
               onError={() => setHasPosterError(true)}
             />
