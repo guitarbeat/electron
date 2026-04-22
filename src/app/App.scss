@@ -12150,12 +12150,11 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   }
 
   .y2k-ticker {
-    padding: 0.32rem 0;
+    display: none;
   }
 
-  .y2k-ticker__text {
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+  .suggestion-item-card__profile-hint {
+    display: none;
   }
 }
 
