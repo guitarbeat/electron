@@ -76,7 +76,7 @@ const withPinsStore = async (
   }
 };
 
-test('session endpoint always reports app access even without a profile cookie', async () => {
+test('session endpoint reports missing PIN coverage when the shared pin store is unavailable', async () => {
   await withUnsetGistId(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
@@ -89,7 +89,7 @@ test('session endpoint always reports app access even without a profile cookie',
         hasAccess: true,
         currentUser: null,
         pinProtectedUsers: [],
-        usersMissingPins: [],
+        usersMissingPins: ['Aaron', 'Electra'],
       });
     } finally {
       console.warn = originalWarn;
@@ -97,7 +97,7 @@ test('session endpoint always reports app access even without a profile cookie',
   });
 });
 
-test('profile endpoint allows selecting an unprotected user when the shared pin store is missing', async () => {
+test('profile endpoint allows selecting a user while reporting missing PIN coverage', async () => {
   await withUnsetGistId(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
@@ -118,7 +118,7 @@ test('profile endpoint allows selecting an unprotected user when the shared pin 
         hasAccess: true,
         currentUser: 'Aaron',
         pinProtectedUsers: [],
-        usersMissingPins: [],
+        usersMissingPins: ['Aaron', 'Electra'],
       });
     } finally {
       console.warn = originalWarn;

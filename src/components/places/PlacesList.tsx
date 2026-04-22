@@ -4,7 +4,7 @@ import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
-import { colors, spacing, radius, typography, motion } from '../../theme/tokens.ts';
+import { radius } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
 const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
@@ -72,6 +72,16 @@ const PlacesList: React.FC = () => {
     const el = document.getElementById(`place-card-${place.id}`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, []);
+
+  const handleCardKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>, place: Place) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleCardTap(place);
+      }
+    },
+    [handleCardTap]
+  );
 
   useEffect(() => () => clearTimeout(activeTimerRef.current), []);
 
@@ -263,6 +273,9 @@ const PlacesList: React.FC = () => {
                 key={place.id}
                 id={`place-card-${place.id}`}
                 onClick={() => handleCardTap(place)}
+                onKeyDown={(event) => handleCardKeyDown(event, place)}
+                role="button"
+                tabIndex={0}
                 style={{
                   cursor: 'pointer',
                   animation: `place-card-stagger-in 0.3s ease-out ${i * 0.04}s both`,
@@ -294,6 +307,9 @@ const PlacesList: React.FC = () => {
                 key={place.id}
                 id={`place-card-${place.id}`}
                 onClick={() => handleCardTap(place)}
+                onKeyDown={(event) => handleCardKeyDown(event, place)}
+                role="button"
+                tabIndex={0}
                 style={{
                   cursor: 'pointer',
                   animation: `place-card-stagger-in 0.3s ease-out ${i * 0.04}s both`,

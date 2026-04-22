@@ -30,13 +30,9 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   onRetry,
   label,
 }) => {
-  // Don't show sync banner in mock mode - there's nothing to sync
-  if (isMockMode()) {
-    return null;
-  }
+  const isInMockMode = isMockMode();
 
   const incidentKey = `${isBlocked}::${label ?? ''}`;
-
   const content = getSyncBannerContent({ isBlocked, label });
   const [copied, setCopied] = useState(false);
 
@@ -54,6 +50,10 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
     const id = window.setTimeout(() => setCopied(false), 1800);
     return () => window.clearTimeout(id);
   }, [copied]);
+
+  if (isInMockMode) {
+    return null;
+  }
 
   return (
     <div

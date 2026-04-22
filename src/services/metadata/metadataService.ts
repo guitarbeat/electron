@@ -39,7 +39,7 @@ export const mergeMovieAutocompleteResults = (
   // Filter unique
   const seen = new Set<string>();
   const uniqueScoredResults = scoredResults.filter(entry => {
-    const key = `${entry.item.title.toLowerCase()}|${entry.item.year || ''}|${entry.item.type}`;
+    const key = getMovieAutocompleteResultKey(entry.item);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

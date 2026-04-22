@@ -212,12 +212,6 @@ const ScoreSlider: React.FC<ScoreSliderProps> = ({
                     cursor: 'pointer',
                     overflow: 'hidden',
                   }}
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const newValue = Math.round((clickX / rect.width) * maxScore);
-                    updateScore(char, newValue);
-                  }}
                 >
                   {/* Filled portion */}
                   <div

@@ -417,15 +417,32 @@ const PinDialog: React.FC<PinDialogProps> = ({
       <style>{keyframes}</style>
       <div
         style={{ ...getModalOverlayStyle('rgba(0,0,0,0.15)'), ...styles.overlay }}
-        onClick={onCancel}
         role="dialog"
         aria-modal="true"
         aria-labelledby="pin-dialog-title"
       >
+        <button
+          type="button"
+          onClick={onCancel}
+          aria-label="Close PIN dialog"
+          tabIndex={-1}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            border: 'none',
+            padding: 0,
+            margin: 0,
+            background: 'transparent',
+            cursor: 'pointer',
+          }}
+        />
         <div
           ref={dialogRef}
-          onClick={(e) => e.stopPropagation()}
-          style={{ animation: 'pin-pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1)' }}
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            animation: 'pin-pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
         >
           <div style={styles.card}>
             {/* Rainbow top strip */}

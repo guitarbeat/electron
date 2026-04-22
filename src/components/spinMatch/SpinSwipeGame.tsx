@@ -52,6 +52,15 @@ function MovieCard({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onClick={handleDetailsClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleDetailsClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open details for ${movie.title}`}
       style={{
         position: 'absolute',
         width: 220,
@@ -330,7 +339,7 @@ function ResultScreen({
           margin: 0,
         }}
       >
-        Tonight's pick 🎉
+        Tonight&apos;s pick 🎉
       </p>
 
       <div

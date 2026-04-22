@@ -85,19 +85,25 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         zIndex: zIndex.modal,
       }}
     >
-      {/* Backdrop */}
-      <div
+      <button
+        type="button"
         onClick={closeDisabled ? undefined : handleClose}
+        aria-label={closeDisabled ? closeDisabledLabel : 'Close panel'}
+        disabled={closeDisabled}
+        tabIndex={-1}
         style={{
           position: 'absolute',
           inset: 0,
+          border: 'none',
+          padding: 0,
+          margin: 0,
           backgroundColor: 'rgba(11, 8, 16, 0.68)',
           backgroundImage:
             'radial-gradient(circle at top, rgba(255, 150, 197, 0.12), transparent 32%), radial-gradient(circle at bottom, rgba(149, 220, 255, 0.08), transparent 30%)',
           backdropFilter: 'blur(10px)',
           animation: prefersReducedMotion ? undefined : 'overlay-fade-in 0.2s ease-out',
+          cursor: closeDisabled ? 'default' : 'pointer',
         }}
-        aria-hidden="true"
       />
 
       {/* Sheet */}
@@ -126,7 +132,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           backdropFilter: 'blur(18px)',
           WebkitBackdropFilter: 'blur(18px)',
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
         <div

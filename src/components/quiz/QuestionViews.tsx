@@ -69,17 +69,10 @@ export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps>
     return 'stronglyAgree';
   };
 
-  const [sliderValue, setSliderValue] = useState(getNumericValue(selectedValue));
-  const [prevSelectedValue, setPrevSelectedValue] = useState(selectedValue);
-
-  if (selectedValue !== prevSelectedValue) {
-    setSliderValue(getNumericValue(selectedValue));
-    setPrevSelectedValue(selectedValue);
-  }
+  const sliderValue = getNumericValue(selectedValue);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
-    setSliderValue(val);
     onSelect(getSymbolicValue(val) as 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree');
   };
 
@@ -252,13 +245,8 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
           </div>
           <div
             ref={gridRef}
-            role="slider"
+            role="button"
             aria-label="XY position selector"
-            aria-valuetext={
-              selectedPosition
-                ? `X: ${selectedPosition.x.toFixed(1)}, Y: ${selectedPosition.y.toFixed(1)}`
-                : 'No position selected'
-            }
             tabIndex={0}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}

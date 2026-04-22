@@ -1,12 +1,10 @@
 import { z } from 'zod';
 import { sanitizeInput, consoleError } from '../../utils/shared.ts';
 
-const UserPinsSchema = z.object({
-  Aaron: z.string().trim().min(1).optional(),
-  Electra: z.string().trim().min(1).optional(),
-});
-
-export type UserPins = z.infer<typeof UserPinsSchema>;
+export interface UserPins {
+  Aaron?: string;
+  Electra?: string;
+}
 
 type SerialTaskRunner = <T>(task: () => Promise<T>) => Promise<T>;
 
