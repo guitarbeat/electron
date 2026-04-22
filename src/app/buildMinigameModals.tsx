@@ -1,12 +1,13 @@
-import React, { type CSSProperties, type ReactNode } from 'react';
-
-const MessageBoard = React.lazy(() => import('@/components/messages/MessageBoard'));
-const FloatingMemoriesPanel = React.lazy(() => import('@/components/memories/FloatingMemoriesPanel'));
-const SpinSwipeGame = React.lazy(() => import('@/components/spinMatch/SpinSwipeGame'));
-const SpinWheelGame = React.lazy(() => import('@/components/spinWheel/SpinWheelGame'));
-const QuizEditor = React.lazy(() => import('@/components/quiz/QuizEditor'));
-const QuizFlowModalContent = React.lazy(() => import('@/app/QuizFlowModalContent'));
-const FavoritesPanel = React.lazy(() => import('@/components/favorites/FavoritesPanel'));
+import { Suspense, type CSSProperties, type ReactNode } from 'react';
+import {
+  FavoritesPanelContent,
+  FloatingMemoriesPanelContent,
+  MessageBoardPanel,
+  QuizEditorPanel,
+  QuizFlowModalPanel,
+  SpinSwipeGamePanel,
+  SpinWheelGamePanel,
+} from '@/app/lazyFeaturePanels';
 import type { User } from '@/shared/types';
 import { spacing } from '@/theme/tokens';
 
@@ -37,7 +38,7 @@ const paddedScrollContentStyle: CSSProperties = {
 };
 
 const renderSuspended = (content: ReactNode) => (
-  <React.Suspense fallback={null}>{content}</React.Suspense>
+  <Suspense fallback={null}>{content}</Suspense>
 );
 
 export interface BuildFeatureModalsParams {
@@ -97,7 +98,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 920,
       maxHeight: 820,
       contentStyle: scrollContentStyle,
-      content: renderSuspended(<FavoritesPanel />),
+      content: renderSuspended(<FavoritesPanelContent />),
     },
     {
       key: 'messages',
@@ -108,7 +109,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 820,
       maxHeight: 920,
       contentStyle: scrollContentStyle,
-      content: renderSuspended(<MessageBoard />),
+      content: renderSuspended(<MessageBoardPanel />),
     },
     {
       key: 'memories',
@@ -119,7 +120,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 980,
       maxHeight: 920,
       contentStyle: scrollContentStyle,
-      content: renderSuspended(<FloatingMemoriesPanel />),
+      content: renderSuspended(<FloatingMemoriesPanelContent />),
     },
     {
       key: 'quiz-editor',
@@ -129,7 +130,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Personality quiz',
       maxWidth: 1200,
       maxHeight: 900,
-      content: renderSuspended(<QuizEditor onClose={() => setShowQuizEditor(false)} />),
+      content: renderSuspended(<QuizEditorPanel onClose={() => setShowQuizEditor(false)} />),
     },
     {
       key: 'spin-match',
@@ -141,7 +142,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 820,
       closeDisabled: isSpinWheelLocked,
       closeDisabledLabel: 'Finish the current spin before closing.',
-      content: renderSuspended(<SpinSwipeGame onSpinningChange={setIsSpinWheelLocked} />),
+      content: renderSuspended(<SpinSwipeGamePanel onSpinningChange={setIsSpinWheelLocked} />),
       contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
@@ -152,7 +153,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Spin the wheel to pick a movie',
       maxWidth: 520,
       maxHeight: 700,
-      content: renderSuspended(<SpinWheelGame />),
+      content: renderSuspended(<SpinWheelGamePanel />),
       contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
@@ -165,7 +166,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 900,
       contentStyle: paddedScrollContentStyle,
       content: renderSuspended(
-        <QuizFlowModalContent
+        <QuizFlowModalPanel
           currentUser={currentUser}
           quizCompleted={quizCompleted}
           onComplete={onQuizComplete}
