@@ -1,6 +1,6 @@
 import { useContext } from 'react';
-import type { ThemeContextValue, ToastContextType, UserContextType } from './providers';
-import { ThemeContext, ToastContext, UserContext } from './providers';
+import type { ThemeContextValue, ToastContextType, UserContextType } from './providerContexts';
+import { ThemeContext, ToastContext, UserContext } from './providerContexts';
 
 export const useTheme = (): ThemeContextValue => {
   const context = useContext(ThemeContext);

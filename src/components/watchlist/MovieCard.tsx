@@ -3,7 +3,12 @@ import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
-import MediaCard from '@/ui/MediaCard';
+import {
+  MediaCardInfo,
+  MediaCardOverlay,
+  MediaCardPosterWrap,
+  MediaCardTitle,
+} from '@/ui/MediaCard';
 import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
@@ -186,7 +191,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           borderColor: watchedByBoth ? colors.accent : colors.border,
         }}
       >
-        <MediaCard.PosterWrap className="movie-item-poster-wrap">
+        <MediaCardPosterWrap className="movie-item-poster-wrap">
           <MoviePoster movie={movie} />
 
           {movie.watchedBy.length > 0 ? (
@@ -224,19 +229,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
             <span className="sr-only">{`View details for "${movie.title}"`}</span>
           </button>
 
-          <MediaCard.Overlay
+          <MediaCardOverlay
             className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}
           >
-            <MediaCard.Info>
-              <MediaCard.Title
+            <MediaCardInfo>
+              <MediaCardTitle
                 className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}
               >
                 {movie.title}
-              </MediaCard.Title>
+              </MediaCardTitle>
               <MovieMetadata movie={movie} />
-            </MediaCard.Info>
-          </MediaCard.Overlay>
-        </MediaCard.PosterWrap>
+            </MediaCardInfo>
+          </MediaCardOverlay>
+        </MediaCardPosterWrap>
 
         {actionState.showActionRail ? (
           <div

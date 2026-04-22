@@ -4,7 +4,7 @@ import Card from '../ui/Card.tsx';
 import Button from '../ui/Button.tsx';
 import { colors, motion, spacing, typography } from '../../theme/tokens.ts';
 import { CheckIcon, CrossIcon } from '../common/icons.tsx';
-import { getPlaceIcon } from './PlaceCard.tsx';
+import { getPlaceIcon } from './placeMeta';
 
 interface PlaceSuggestionCardProps {
   suggestion: PlaceSuggestion;

@@ -3,51 +3,16 @@ import { CheckIcon, TrashIcon } from '@/common/icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
 import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
-
-/* ── Category → icon + accent color ── */
-interface CategoryMeta { icon: string; color: string; label: string }
-
-export function getPlaceMeta(name: string): CategoryMeta {
-  const lower = name.toLowerCase();
-  if (/beach|ocean|sea|lake|river|bay|shore|coast|surf|swim/.test(lower))
-    return { icon: '🏖️', color: '#4ecdc4', label: 'Water' };
-  if (/park|garden|trail|forest|nature|woods|hike|botanical|grove|meadow/.test(lower))
-    return { icon: '🌿', color: '#7cb342', label: 'Nature' };
-  if (/restaurant|diner|bistro|brasserie|grill|steakhouse|bbq|sushi|pizza|tacos|ramen|burger/.test(lower))
-    return { icon: '🍽️', color: '#ff8a65', label: 'Dining' };
-  if (/cafe|coffee|espresso|bakery|patisserie|pastry|boulangerie|tea/.test(lower))
-    return { icon: '☕', color: '#bcaaa4', label: 'Café' };
-  if (/bar|pub|brewery|taproom|cocktail|lounge|nightclub|club|wine/.test(lower))
-    return { icon: '🍻', color: '#ffd54f', label: 'Drinks' };
-  if (/museum|gallery|art|exhibit|modern/.test(lower))
-    return { icon: '🎨', color: '#ce93d8', label: 'Culture' };
-  if (/theater|theatre|cinema|movies|show|performance|concert|opera|ballet/.test(lower))
-    return { icon: '🎭', color: '#ef5350', label: 'Entertainment' };
-  if (/mountain|hill|peak|summit|climb|rock|canyon|cliff/.test(lower))
-    return { icon: '⛰️', color: '#8d6e63', label: 'Mountain' };
-  if (/shop|store|market|mall|boutique|vintage|thrift/.test(lower))
-    return { icon: '🛍️', color: '#f48fb1', label: 'Shopping' };
-  if (/gym|fitness|yoga|pilates|spa|wellness|sauna/.test(lower))
-    return { icon: '🧘', color: '#80deea', label: 'Wellness' };
-  if (/hotel|resort|airbnb|hostel|motel|inn/.test(lower))
-    return { icon: '🏨', color: '#9fa8da', label: 'Stay' };
-  if (/zoo|aquarium|safari|wildlife|animal/.test(lower))
-    return { icon: '🦁', color: '#a5d6a7', label: 'Wildlife' };
-  if (/library|bookstore|books|reading/.test(lower))
-    return { icon: '📚', color: '#90a4ae', label: 'Library' };
-  if (/airport|station|terminal|train/.test(lower))
-    return { icon: '✈️', color: '#b0bec5', label: 'Transit' };
-  if (/bridge|landmark|tower|castle|palace/.test(lower))
-    return { icon: '🏰', color: '#ffcc80', label: 'Landmark' };
-  if (/island|cove|lagoon|waterfall/.test(lower))
-    return { icon: '🌊', color: '#4fc3f7', label: 'Island' };
-  return { icon: '📍', color: colors.accent, label: 'Place' };
-}
-
-/** @deprecated Use getPlaceMeta().icon instead */
-export function getPlaceIcon(name: string): string {
-  return getPlaceMeta(name).icon;
-}
+import {
+  MediaCardActions,
+  MediaCardCover,
+  MediaCardInfo,
+  MediaCardOverlay,
+  MediaCardPosterWrap,
+  MediaCardSubtext,
+  MediaCardTitle,
+} from '@/ui/MediaCard';
+import { getPlaceMeta } from './placeMeta';
 
 interface PlaceCardProps {
   place: Place;
@@ -188,12 +153,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         variant={isVisited ? 'visited' : 'default'}
         className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
       >
-        <MediaCard.PosterWrap className="place-item-poster-wrap">
-          <MediaCard.Cover className="place-item-cover" aria-hidden="true">
+        <MediaCardPosterWrap className="place-item-poster-wrap">
+          <MediaCardCover className="place-item-cover" aria-hidden="true">
             {/* Large decorative emoji — acts like a poster focal element */}
             <span className="place-item-cover__icon">{meta.icon}</span>
             {hasCoords && <span className="place-item-cover__pin">📍</span>}
-          </MediaCard.Cover>
+          </MediaCardCover>
 
           {/* Top-left badge: visited state takes priority over category badge */}
           {isVisited ? (
@@ -208,9 +173,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             </div>
           )}
 
-          <MediaCard.Overlay className="place-item-overlay">
-            <MediaCard.Info className="place-item-info">
-              <MediaCard.Title className="place-item-title">{place.name}</MediaCard.Title>
+          <MediaCardOverlay className="place-item-overlay">
+            <MediaCardInfo className="place-item-info">
+              <MediaCardTitle className="place-item-title">{place.name}</MediaCardTitle>
 
               {/* Category chip — mirrors movie genre chip */}
               <div className="place-item-meta-row">
@@ -222,17 +187,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 )}
               </div>
 
-              {place.notes && <MediaCard.Subtext className="place-item-notes">{place.notes}</MediaCard.Subtext>}
+              {place.notes && <MediaCardSubtext className="place-item-notes">{place.notes}</MediaCardSubtext>}
               {/* Added by */}
               {place.addedBy && (
                 <span className="place-item-added-by">
                   by {place.addedBy}
                 </span>
               )}
-            </MediaCard.Info>
+            </MediaCardInfo>
 
             {canEdit && (
-              <MediaCard.Actions className="place-item-actions">
+              <MediaCardActions className="place-item-actions">
                 <button
                   type="button"
                   className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
@@ -266,10 +231,10 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                 >
                   <TrashIcon style={{ width: 13, height: 13 }} />
                 </button>
-              </MediaCard.Actions>
+              </MediaCardActions>
             )}
-          </MediaCard.Overlay>
-        </MediaCard.PosterWrap>
+          </MediaCardOverlay>
+        </MediaCardPosterWrap>
       </MediaCard>
 
       <style>{`

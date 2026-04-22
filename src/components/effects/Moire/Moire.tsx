@@ -323,6 +323,10 @@ function MagicComponent({
 }: MagicComponentProps) {
   const containerRef = useRef(null);
   const colorsRef = useRef<{ c1: InstanceType<typeof ogl.Color> | null; c2: InstanceType<typeof ogl.Color> | null }>({ c1: null, c2: null });
+  const colorPropsRef = useRef({
+    color1: color1Prop,
+    color2: color2Prop,
+  });
   const visibilityStyle = {
     opacity: isVisible ? opacity : 0,
   } satisfies CSSProperties;
@@ -330,6 +334,10 @@ function MagicComponent({
   // Whenever theme colors change, push them into the live shader uniforms
   // and publish them as CSS variables so the rest of the UI can color-link.
   useEffect(() => {
+    colorPropsRef.current = {
+      color1: color1Prop,
+      color2: color2Prop,
+    };
     const [r1, g1, b1] = hexToRgb(color1Prop);
     const [r2, g2, b2] = hexToRgb(color2Prop);
     if (colorsRef.current.c1) colorsRef.current.c1.set([r1, g1, b1]);
@@ -378,8 +386,8 @@ function MagicComponent({
       state.mouseOver = false;
       state.hasNewMouseInput = false;
 
-      const [r1, g1, b1] = hexToRgb(color1Prop);
-      const [r2, g2, b2] = hexToRgb(color2Prop);
+      const [r1, g1, b1] = hexToRgb(colorPropsRef.current.color1);
+      const [r2, g2, b2] = hexToRgb(colorPropsRef.current.color2);
       state.color1 = new Color([r1, g1, b1]);
       state.color2 = new Color([r2, g2, b2]);
       colorsRef.current.c1 = state.color1;
