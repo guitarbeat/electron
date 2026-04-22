@@ -38,6 +38,67 @@ const ThemedMoire: React.FC = () => {
   );
 };
 
+interface WorkspaceShellFallbackProps {
+  activeTab: MainTab;
+  isMobile: boolean;
+}
+
+const WorkspaceShellFallback: React.FC<WorkspaceShellFallbackProps> = ({
+  activeTab,
+  isMobile,
+}) => {
+  const cardCount = isMobile ? 2 : activeTab === 'places' ? 3 : 4;
+
+  return (
+    <main
+      id="main-content"
+      className={`workspace-stage workspace-stage--simplified${isMobile ? ' workspace-stage--mobile-shell' : ''}`}
+      tabIndex={-1}
+      aria-busy="true"
+    >
+      <section
+        className={`workspace-surface workspace-surface--${activeTab} workspace-surface--loading`}
+        style={{ minWidth: 0 }}
+      >
+        <section
+          className="workspace-control-panel workspace-fallback-panel"
+          aria-label="Loading workspace"
+        >
+          <div className="workspace-control-panel__header">
+            <p className="workspace-control-panel__eyebrow">
+              {activeTab === 'places' ? 'Places Workspace' : 'Movie Workspace'}
+            </p>
+            <h2 className="workspace-control-panel__title">
+              {activeTab === 'places' ? 'Loading shared spots' : 'Loading movie night'}
+            </h2>
+            <p className="workspace-control-panel__copy">
+              Keeping the home surface visible while the workspace bundle finishes loading.
+            </p>
+          </div>
+          <div className="workspace-control-panel__meta">
+            <span className="workspace-control-panel__pill">Shared state</span>
+            <span className="workspace-control-panel__pill">Recent picks</span>
+            <span className="workspace-control-panel__pill">Quick actions</span>
+          </div>
+        </section>
+
+        <div className="workspace-fallback-grid" aria-hidden="true">
+          {Array.from({ length: cardCount }, (_, index) => (
+            <article key={`workspace-fallback-${index}`} className="workspace-fallback-card">
+              <div className="workspace-fallback-card__poster skeleton" />
+              <div className="workspace-fallback-card__copy">
+                <span className="workspace-fallback-card__line workspace-fallback-card__line--title skeleton" />
+                <span className="workspace-fallback-card__line workspace-fallback-card__line--meta skeleton" />
+                <span className="workspace-fallback-card__line workspace-fallback-card__line--body skeleton" />
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+};
+
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
@@ -60,7 +121,6 @@ const App: React.FC = () => {
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
-  
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -94,11 +154,6 @@ const App: React.FC = () => {
 
   const openQuizExperience = useCallback(() => {
     setShowQuizFlow(true);
-  }, []);
-
-  const openQuizEditor = useCallback(() => {
-    setShowQuizFlow(false);
-    setShowQuizEditor(true);
   }, []);
 
   const handleQuizComplete = useCallback(() => {
@@ -228,14 +283,13 @@ const App: React.FC = () => {
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />
-            <React.Suspense fallback={null}>
+            <React.Suspense
+              fallback={<WorkspaceShellFallback activeTab={activeTab} isMobile={isMobile} />}
+            >
               <AppWorkspaceShell
                 isMobile={isMobile}
                 activeTab={activeTab}
-                currentUser={currentUser}
                 onOpenQuiz={openQuizExperience}
-                onOpenQuizEditor={openQuizEditor}
-                quizCompleted={quizCompleted}
                 onOpenSpin={openSpinMatch}
                 onOpenSpinOnly={openSpinWheelOnly}
               />

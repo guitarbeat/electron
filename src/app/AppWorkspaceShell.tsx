@@ -1,5 +1,5 @@
 import React, { type FC } from 'react';
-import type { MainTab, User } from '@/shared/types';
+import type { MainTab } from '@/shared/types';
 import WatchlistComponent from '../components/watchlist/index.tsx';
 import { GameDrawer } from '@/components/games/GameDrawer';
 import './AppWorkspaceShell.css';
@@ -9,10 +9,7 @@ const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
 interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
-  currentUser: User | null;
   onOpenQuiz: () => void;
-  onOpenQuizEditor: () => void;
-  quizCompleted: boolean;
   onOpenSpin: () => void;
   onOpenSpinOnly: () => void;
 }
