@@ -140,6 +140,7 @@
     color-mix(in oklab, var(--moire-color-1, #f4cb8d) 35%, #f4cb8d)
   );
   pointer-events: auto;
+  touch-action: manipulation;
   user-select: none;
 }
 

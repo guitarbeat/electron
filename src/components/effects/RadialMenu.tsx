@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageIcon } from '@/common/icons';
 import './RadialMenu.css';
 
@@ -44,6 +44,9 @@ const StarIcon = () => (
 const STORAGE_KEY = 'radialMenu.position';
 const DISCOVERED_KEY = 'radialMenu.discovered';
 const MOBILE_BREAKPOINT = 600;
+const TOGGLE_DRAG_THRESHOLD_PX = 8;
+const TOGGLE_CLICK_THRESHOLD_MS = 300;
+const TOGGLE_OFFSET = 100;
 
 const isMobileViewport = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
@@ -108,18 +111,17 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   onOpenFavorites,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
   const [isActive, setIsActive] = useState(false);
   const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
   const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
 
+  const activePointerIdRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const dragStartTimeRef = useRef(0);
-  const dragThreshold = 8;
-  const clickTimeThreshold = 300;
+  const suppressClickRef = useRef(false);
 
-  const markDiscovered = () => {
+  const markDiscovered = useCallback(() => {
     setHasDiscovered((prev) => {
       if (!prev) {
         try {
@@ -130,89 +132,151 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       }
       return true;
     });
-  };
+  }, []);
+
+  const toggleMenu = useCallback(() => {
+    setIsActive((prev) => !prev);
+    markDiscovered();
+  }, [markDiscovered]);
+
+  const persistMenuPosition = useCallback(() => {
+    if (!menuRef.current || isMobileViewport()) {
+      return;
+    }
+
+    const left = parseFloat(menuRef.current.style.left || '0');
+    const top = parseFloat(menuRef.current.style.top || '0');
+
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ x: left, y: top })
+      );
+    } catch {
+      // Ignore quota / privacy-mode failures.
+    }
+  }, []);
+
+  const resetPointerInteraction = useCallback(() => {
+    activePointerIdRef.current = null;
+    isDraggingRef.current = false;
+    dragStartTimeRef.current = 0;
+  }, []);
+
+  const suppressNextClick = useCallback(() => {
+    suppressClickRef.current = true;
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+  }, []);
 
   useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      if (!toggleRef.current?.contains(e.target as Node)) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      dragStartPosRef.current = { x: e.pageX, y: e.pageY };
-      dragStartTimeRef.current = Date.now();
-      isDraggingRef.current = false;
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (dragStartTimeRef.current === 0) return;
-
-      const deltaX = e.pageX - dragStartPosRef.current.x;
-      const deltaY = e.pageY - dragStartPosRef.current.y;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-      if (distance > dragThreshold && !isDraggingRef.current) {
-        isDraggingRef.current = true;
-      }
-
-      if (isDraggingRef.current && menuRef.current) {
-        const newX = e.pageX - 100;
-        const newY = e.pageY - 100;
-        menuRef.current.style.left = `${newX}px`;
-        menuRef.current.style.top = `${newY}px`;
-        setMenuPos({ x: newX, y: newY });
-      }
-    };
-
-    const handleMouseUp = () => {
-      if (dragStartTimeRef.current > 0) {
-        const clickDuration = Date.now() - dragStartTimeRef.current;
-        const wasDragging = isDraggingRef.current;
-
-        if (!wasDragging && clickDuration < clickTimeThreshold) {
-          setIsActive((prev) => !prev);
-          markDiscovered();
-        }
-
-        if (wasDragging && menuRef.current && !isMobileViewport()) {
-          // Persist final position so it survives reloads (desktop only —
-          // mobile always re-docks bottom-right).
-          const left = parseFloat(menuRef.current.style.left || '0');
-          const top = parseFloat(menuRef.current.style.top || '0');
-          try {
-            window.localStorage.setItem(
-              STORAGE_KEY,
-              JSON.stringify({ x: left, y: top })
-            );
-          } catch {
-            // Ignore quota / privacy-mode failures.
-          }
-        }
-
-        isDraggingRef.current = false;
-        dragStartTimeRef.current = 0;
-      }
-    };
-
     const handleResize = () => {
       // Re-dock on mobile so the toggle stays in the corner across rotations.
       setMenuPos((prev) =>
         isMobileViewport() ? getDockedPosition() : clampToViewport(prev)
       );
     };
+
     window.addEventListener('resize', handleResize);
-
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
     return () => {
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  const handleTogglePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) {
+        return;
+      }
+
+      activePointerIdRef.current = event.pointerId;
+      dragStartPosRef.current = { x: event.clientX, y: event.clientY };
+      dragStartTimeRef.current = Date.now();
+      isDraggingRef.current = false;
+      suppressClickRef.current = false;
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    []
+  );
+
+  const handleTogglePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - dragStartPosRef.current.x;
+      const deltaY = event.clientY - dragStartPosRef.current.y;
+      const distance = Math.hypot(deltaX, deltaY);
+
+      if (distance > TOGGLE_DRAG_THRESHOLD_PX && !isDraggingRef.current) {
+        isDraggingRef.current = true;
+      }
+
+      if (isDraggingRef.current && !isMobileViewport()) {
+        const nextPos = clampToViewport({
+          x: event.clientX - TOGGLE_OFFSET,
+          y: event.clientY - TOGGLE_OFFSET,
+        });
+        setMenuPos(nextPos);
+      }
+    },
+    []
+  );
+
+  const handleTogglePointerUp = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+
+      const clickDuration =
+        dragStartTimeRef.current > 0
+          ? Date.now() - dragStartTimeRef.current
+          : Number.POSITIVE_INFINITY;
+      const wasDragging = isDraggingRef.current;
+
+      suppressNextClick();
+
+      if (!wasDragging && clickDuration < TOGGLE_CLICK_THRESHOLD_MS) {
+        toggleMenu();
+      } else if (wasDragging) {
+        persistMenuPosition();
+      }
+
+      resetPointerInteraction();
+    },
+    [persistMenuPosition, resetPointerInteraction, suppressNextClick, toggleMenu]
+  );
+
+  const handleTogglePointerCancel = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) {
+        return;
+      }
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+
+      resetPointerInteraction();
+    },
+    [resetPointerInteraction]
+  );
+
+  const handleToggleClick = useCallback(() => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+
+    toggleMenu();
+  }, [toggleMenu]);
 
   const handleMenuItemClick = (callback?: () => void) => {
     callback?.();
@@ -267,18 +331,15 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       }}
     >
       <button
-        ref={toggleRef}
         type="button"
         className={`toggle ${!hasDiscovered ? 'discover-pulse' : ''}`}
-        aria-label="Toggle menu"
+        aria-label="Toggle quick actions"
         aria-expanded={isActive}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            setIsActive((prev) => !prev);
-            markDiscovered();
-          }
-        }}
+        onClick={handleToggleClick}
+        onPointerDown={handleTogglePointerDown}
+        onPointerMove={handleTogglePointerMove}
+        onPointerUp={handleTogglePointerUp}
+        onPointerCancel={handleTogglePointerCancel}
       >
         <span className="rotate">+</span>
       </button>

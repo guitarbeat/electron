@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useId, useState } from 'react';
 import { ChevronDown, ChevronUp, Gamepad2, Dices, HelpCircle, RotateCcw } from 'lucide-react';
 import './GameDrawer.css';
 
@@ -25,6 +25,7 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
   defaultExpanded = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const contentId = useId();
 
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -60,10 +61,11 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
   return (
     <div className={`game-drawer ${isExpanded ? 'game-drawer--expanded' : ''}`}>
       <button
+        type="button"
         className="game-drawer__toggle"
         onClick={toggleExpanded}
         aria-expanded={isExpanded}
-        aria-controls="game-drawer-content"
+        aria-controls={contentId}
       >
         <div className="game-drawer__toggle-content">
           <Gamepad2 className="game-drawer__toggle-icon" />
@@ -80,17 +82,20 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
       </button>
 
       <div
-        id="game-drawer-content"
+        id={contentId}
         className="game-drawer__content"
         role="region"
+        aria-label="Quick games"
         aria-hidden={!isExpanded}
       >
         <div className="game-drawer__games">
           {games.map((game) => (
             <button
               key={game.id}
+              type="button"
               className="game-card"
               onClick={game.onClick}
+              disabled={!isExpanded}
               style={{ '--game-gradient': game.gradient } as React.CSSProperties}
             >
               <div className="game-card__icon-wrapper">
