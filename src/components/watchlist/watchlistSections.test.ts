@@ -1,0 +1,41 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import type { Movie, MovieSuggestion } from '@/shared/types';
+import { buildWatchlistSections } from './watchlistSections.ts';
+
+const MOVIES: Movie[] = [
+  {
+    id: 'm1',
+    title: 'Arrival',
+    addedBy: 'Aaron',
+    watchedBy: [],
+    createdAt: '2026-03-20T10:00:00.000Z',
+  },
+  {
+    id: 'm2',
+    title: 'Moonlight',
+    addedBy: 'Electra',
+    watchedBy: ['Aaron', 'Electra'],
+    createdAt: '2026-03-21T10:00:00.000Z',
+  },
+];
+
+const PENDING_SUGGESTIONS: MovieSuggestion[] = [
+  {
+    id: 's1',
+    title: 'Perfect Blue',
+    suggestedBy: 'Electra',
+    status: 'pending',
+    createdAt: '2026-03-22T10:00:00.000Z',
+    reason: 'Stylish chaos',
+  },
+];
+
+test('buildWatchlistSections groups suggestions, queue, and watched titles for inline rendering', () => {
+  const sections = buildWatchlistSections(MOVIES, PENDING_SUGGESTIONS);
+
+  assert.deepEqual(sections.suggestions.map((suggestion) => suggestion.title), ['Perfect Blue']);
+  assert.deepEqual(sections.queue.map((movie) => movie.title), ['Arrival']);
+  assert.deepEqual(sections.watched.map((movie) => movie.title), ['Moonlight']);
+});
