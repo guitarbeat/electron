@@ -15,7 +15,7 @@ export interface BaseSuggestionCardProps {
   disableActions?: boolean;
   isProcessing?: boolean;
   animationDelay?: string;
-  footer?: React.ReactNode;
+  details?: React.ReactNode;
 }
 
 const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
@@ -29,7 +29,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
   disableActions = false,
   isProcessing = false,
   animationDelay = '0s',
-  footer,
+  details,
 }) => {
   const actionsDisabled = isProcessing || disableActions || !canRespond;
 
@@ -78,7 +78,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
             &quot;{subtitle}&quot;
           </p>
         )}
-        {footer}
+        {details}
       </div>
 
       <div
