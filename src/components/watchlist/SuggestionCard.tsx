@@ -110,7 +110,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           <MediaCard.Info>
             <div
               className="suggestion-item-card__eyebrow"
-              style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.9 }}
+              style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.9, fontSize: '9px' }}
             >
               From {suggestion.suggestedBy}
             </div>
@@ -126,10 +126,10 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
                   ...typography.presets.caption,
                   color: colors.textSecondary,
                   fontStyle: 'italic',
-                  lineHeight: 1.4,
-                  marginTop: spacing.xs,
+                  lineHeight: 1.3,
+                  marginTop: 2,
                   display: '-webkit-box',
-                  WebkitLineClamp: 2,
+                  WebkitLineClamp: 1,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                 }}
