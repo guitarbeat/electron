@@ -123,17 +123,32 @@ const Modal: React.FC<ModalProps> = ({
         minHeight: '100dvh',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
-      onClick={closeDisabled ? undefined : onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
       aria-label={ariaLabel}
     >
+      <button
+        type="button"
+        onClick={closeDisabled ? undefined : onClose}
+        aria-label={closeDisabled ? closeDisabledLabel ?? 'Dialog cannot be closed' : 'Close dialog'}
+        disabled={closeDisabled}
+        tabIndex={-1}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          border: 'none',
+          padding: 0,
+          margin: 0,
+          background: 'transparent',
+          cursor: closeDisabled ? 'default' : 'pointer',
+        }}
+      />
       <div
         ref={dialogRef}
-        onClick={(e) => e.stopPropagation()}
         style={{
           ...modalStyle,
+          zIndex: 1,
           backgroundColor: colors.surface,
           boxShadow: shadows.cardElevated,
           overflow: 'hidden',

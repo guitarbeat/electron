@@ -317,7 +317,7 @@ test('getScopeWarning maps gist and config errors to user-safe copy', () => {
   assert.equal(getScopeWarning(null), undefined);
 });
 
-test('dynamic state read route returns a clear warning when GIST_ID is missing', async () => {
+test('dynamic state read route falls back to default state when GIST_ID is missing', async () => {
   await withUnsetGistId(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
@@ -330,8 +330,8 @@ test('dynamic state read route returns a clear warning when GIST_ID is missing',
       };
 
       assert.equal(response.status, 200);
-      assert.equal(payload.degraded, true);
-      assert.match(payload.warning || '', /missing GIST_ID/i);
+      assert.equal(payload.degraded, false);
+      assert.equal(payload.warning, undefined);
     } finally {
       console.warn = originalWarn;
     }

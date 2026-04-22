@@ -79,6 +79,27 @@ const clampToViewport = (pos: { x: number; y: number }) => {
   };
 };
 
+const getInitialMenuPosition = () => {
+  if (typeof window === 'undefined') {
+    return { x: 0, y: 0 };
+  }
+
+  const stored = isMobileViewport() ? null : readStoredPosition();
+  return stored ? clampToViewport(stored) : getDockedPosition();
+};
+
+const getInitialDiscoveryState = () => {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  try {
+    return window.localStorage.getItem(DISCOVERED_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
 const RadialMenu: React.FC<RadialMenuProps> = ({
   onOpenMessages,
   onOpenMemories,
@@ -87,10 +108,10 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   onOpenFavorites,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const [isActive, setIsActive] = useState(false);
-  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
-  const [hasDiscovered, setHasDiscovered] = useState(true);
+  const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
+  const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
 
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
@@ -98,23 +119,20 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const dragThreshold = 8;
   const clickTimeThreshold = 300;
 
+  const markDiscovered = () => {
+    setHasDiscovered((prev) => {
+      if (!prev) {
+        try {
+          window.localStorage.setItem(DISCOVERED_KEY, '1');
+        } catch {
+          // Ignore quota / privacy-mode failures.
+        }
+      }
+      return true;
+    });
+  };
+
   useEffect(() => {
-    // On mobile, always start docked bottom-right (don't honor saved desktop
-    // positions that may sit off-screen or in awkward middle areas).
-    const stored = isMobileViewport() ? null : readStoredPosition();
-    const initial = stored
-      ? clampToViewport(stored)
-      : getDockedPosition();
-    setMenuPos(initial);
-
-    // Show discovery pulse if user hasn't opened the menu before.
-    try {
-      const seen = window.localStorage.getItem(DISCOVERED_KEY);
-      setHasDiscovered(seen === '1');
-    } catch {
-      setHasDiscovered(false);
-    }
-
     const handleMouseDown = (e: MouseEvent) => {
       if (!toggleRef.current?.contains(e.target as Node)) return;
 
@@ -153,17 +171,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
         if (!wasDragging && clickDuration < clickTimeThreshold) {
           setIsActive((prev) => !prev);
-          // Mark menu as discovered so the pulse stops permanently.
-          setHasDiscovered((prev) => {
-            if (!prev) {
-              try {
-                window.localStorage.setItem(DISCOVERED_KEY, '1');
-              } catch {
-                // Ignore quota / privacy-mode failures.
-              }
-            }
-            return true;
-          });
+          markDiscovered();
         }
 
         if (wasDragging && menuRef.current && !isMobileViewport()) {
@@ -258,16 +266,22 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         top: `${menuPos.y}px`,
       }}
     >
-      <div
+      <button
         ref={toggleRef}
+        type="button"
         className={`toggle ${!hasDiscovered ? 'discover-pulse' : ''}`}
-        role="button"
-        tabIndex={0}
         aria-label="Toggle menu"
         aria-expanded={isActive}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setIsActive((prev) => !prev);
+            markDiscovered();
+          }
+        }}
       >
         <span className="rotate">+</span>
-      </div>
+      </button>
 
       <ul>
         {menuItems.map((item) => (
@@ -277,6 +291,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
             className={`${item.colorClass} round-button`}
           >
             <button
+              type="button"
               onClick={item.onClick}
               aria-label={item.label}
               title={item.label}

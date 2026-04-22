@@ -112,17 +112,31 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         WebkitBackdropFilter: 'blur(10px)',
         backdropFilter: 'blur(10px)',
       }}
-      onClick={handleClose}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
     >
+      <button
+        type="button"
+        onClick={closeDisabled ? undefined : handleClose}
+        aria-label={closeDisabled ? closeDisabledLabel : 'Close dialog'}
+        disabled={closeDisabled}
+        tabIndex={-1}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          border: 'none',
+          padding: 0,
+          margin: 0,
+          background: 'transparent',
+          cursor: closeDisabled ? 'default' : 'pointer',
+        }}
+      />
       <div
         ref={dialogRef}
         tabIndex={-1}
         className="minigame-modal-surface"
         style={surfaceStyles}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header: only rendered when a title is provided; otherwise close floats absolute */}
         {title ? (

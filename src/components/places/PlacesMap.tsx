@@ -3,7 +3,6 @@ import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
-import { Spinner } from '@/common/icons';
 import { getPlaceMeta } from './PlaceCard';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
@@ -59,6 +58,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   style,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const newPlaceInputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const markersRef = useRef<MapLibreGL.Marker[]>([]);
   const pendingMarkerRef = useRef<MapLibreGL.Marker | null>(null);
@@ -314,6 +314,12 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
     borderRadius: radius.lg,
   };
 
+  useEffect(() => {
+    if (pendingPin && pinMode === 'new') {
+      newPlaceInputRef.current?.focus();
+    }
+  }, [pendingPin, pinMode]);
+
   return (
     <div style={{ position: 'relative', width: '100%', ...style }}>
       {/* Map canvas */}
@@ -382,6 +388,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
       {/* ── Drop-pin toggle ── */}
       {canEdit && !pendingPin && (
         <button
+          type="button"
           onClick={() => { setIsDropMode((p) => !p); if (isDropMode) cancelPin(); }}
           style={{
             position: 'absolute',
@@ -435,6 +442,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
               {(['assign', 'new'] as PinMode[]).map((m) => (
                 <button
                   key={m}
+                  type="button"
                   onClick={() => setPinMode(m)}
                   style={{
                     padding: `3px ${spacing.xs}`,
@@ -478,16 +486,16 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
               </select>
             ) : (
               <p style={{ ...typography.presets.bodySm, color: colors.textTertiary, margin: 0 }}>
-                No places yet. Switch to "New place" to create one here.
+                No places yet. Switch to New place to create one here.
               </p>
             )
           ) : (
             <input
+              ref={newPlaceInputRef}
               type="text"
               value={newPlaceName}
               onChange={(e) => setNewPlaceName(e.target.value)}
               placeholder="Name this place…"
-              autoFocus
               onKeyDown={(e) => { if (e.key === 'Enter' && canSave) void handleSavePin(); }}
               style={{
                 background: 'rgba(18,11,6,0.85)',
@@ -510,6 +518,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
 
           <div style={{ display: 'flex', gap: spacing.sm, justifyContent: 'flex-end' }}>
             <button
+              type="button"
               onClick={cancelPin}
               style={{
                 padding: `${spacing.xs} ${spacing.sm}`,
@@ -525,6 +534,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
               Cancel
             </button>
             <button
+              type="button"
               onClick={() => void handleSavePin()}
               disabled={!canSave}
               style={{
@@ -559,5 +569,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
     </div>
   );
 });
+
+PlacesMap.displayName = 'PlacesMap';
 
 export default PlacesMap;

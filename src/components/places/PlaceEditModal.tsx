@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import type { Place } from '@/shared/types';
 import { Modal } from '@/ui/modals';
 import { useMediaQuery, mediaBreakpoints } from '@/hooks/useMediaQuery';
@@ -37,6 +37,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
+  const nameInputId = useId();
+  const categoryInputId = useId();
+  const notesInputId = useId();
 
   useEffect(() => {
     setName(place.name);
@@ -119,10 +122,11 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
           gap: spacing.md,
           padding: spacing.xl,
         }}
-      >
+        >
         <div>
-          <label style={labelStyle}>Name *</label>
+          <label htmlFor={nameInputId} style={labelStyle}>Name *</label>
           <input
+            id={nameInputId}
             ref={nameRef}
             value={name}
             onChange={(event) => {
@@ -151,8 +155,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
         </div>
 
         <div>
-          <label style={labelStyle}>Category</label>
+          <label htmlFor={categoryInputId} style={labelStyle}>Category</label>
           <select
+            id={categoryInputId}
             value={category}
             onChange={(event) => setCategory(event.target.value)}
             disabled={isSaving}
@@ -176,8 +181,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
         </div>
 
         <div>
-          <label style={labelStyle}>Notes</label>
+          <label htmlFor={notesInputId} style={labelStyle}>Notes</label>
           <textarea
+            id={notesInputId}
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             placeholder="Any notes..."
