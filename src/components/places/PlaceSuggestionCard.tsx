@@ -121,6 +121,7 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
 
       {!canRespond && (
         <p
+          className="suggestion-item-card__profile-hint"
           style={{
             margin: 0,
             ...typography.presets.caption,
