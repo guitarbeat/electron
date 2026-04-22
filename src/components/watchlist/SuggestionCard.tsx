@@ -141,37 +141,34 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
         </MediaCard.Overlay>
       </MediaCard.PosterWrap>
 
-      <div
-        className="movie-item-action-rail"
-        style={{
-          display: 'flex',
-          gap: spacing.xs,
-          padding: spacing.sm,
-        }}
-      >
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onAccept}
-          isLoading={isProcessing}
-          disabled={actionsDisabled}
-          className="suggestion-item-card__button is-accept"
-          aria-label="Accept suggestion"
-          style={{ flex: 1, padding: 0 }}
-        >
-          <CheckIcon style={{ width: 16, height: 16 }} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onReject}
-          disabled={actionsDisabled}
-          className="suggestion-item-card__button is-reject"
-          aria-label="Reject suggestion"
-          style={{ flex: 1, padding: 0 }}
-        >
-          <CrossIcon style={{ width: 16, height: 16 }} />
-        </Button>
+      <div className="movie-item-action-rail">
+        <div className="movie-actions">
+          <div className="movie-actions__row movie-actions__row--secondary" style={{ display: 'flex', gap: spacing.xs }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onAccept}
+              isLoading={isProcessing}
+              disabled={actionsDisabled}
+              className="suggestion-item-card__button is-accept"
+              aria-label="Accept suggestion"
+              style={{ flex: 1, padding: 0 }}
+            >
+              <CheckIcon style={{ width: 14, height: 14 }} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onReject}
+              disabled={actionsDisabled}
+              className="suggestion-item-card__button is-reject"
+              aria-label="Reject suggestion"
+              style={{ flex: 1, padding: 0 }}
+            >
+              <CrossIcon style={{ width: 14, height: 14 }} />
+            </Button>
+          </div>
+        </div>
       </div>
 
       {!canRespond && (
