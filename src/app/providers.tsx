@@ -23,6 +23,12 @@ import {
   type ToastInput,
 } from './providerContexts';
 
+const debugSession = (...args: unknown[]) => {
+  if (import.meta.env.DEV) {
+    console.debug(...args);
+  }
+};
+
 // ============================================================================
 // Theme Context
 // ============================================================================
@@ -152,7 +158,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   const applySessionState = useCallback((nextState: SessionState) => {
-    console.debug('[session] Applying state:', {
+    debugSession('[session] Applying state:', {
       hasAccess: nextState.hasAccess,
       currentUser: nextState.currentUser,
       pinProtectedUsers: nextState.pinProtectedUsers,
@@ -165,7 +171,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const refreshSession = useCallback(async () => {
-    console.debug('[session] Refreshing session…');
+    debugSession('[session] Refreshing session…');
     setIsSessionLoading(true);
     try {
       const response = await fetch('/api/session', {
@@ -175,7 +181,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (!response.ok) {
-        console.debug('[session] Refresh failed — status', response.status, '— clearing state');
+        debugSession('[session] Refresh failed — status', response.status, '— clearing state');
         setHasAccess(false);
         setCurrentUserState(null);
         setPinProtectedUsers([]);
@@ -184,7 +190,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const session = (await response.json()) as SessionState;
-      console.debug('[session] Refresh succeeded:', session);
+      debugSession('[session] Refresh succeeded:', session);
       applySessionState(session);
     } finally {
       setIsSessionLoading(false);
@@ -201,7 +207,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     const handleSessionInvalid = () => {
-      console.debug('[session] Session invalidation event received — refreshing');
+      debugSession('[session] Session invalidation event received — refreshing');
       void refreshSession();
     };
 
@@ -219,9 +225,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       currentUser,
       setCurrentUser: async (user: User | null, pin?: string) => {
         if (user) {
-          console.debug('[session] Logging in as:', user);
+          debugSession('[session] Logging in as:', user);
         } else {
-          console.debug('[session] Logging out');
+          debugSession('[session] Logging out');
         }
         try {
           const response = await fetch('/api/session/profile', {
@@ -237,7 +243,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
 
           if (response.status === 401 || response.status === 403) {
-            console.debug('[session] Profile update rejected (status', response.status, ') — refreshing session');
+            debugSession(
+              '[session] Profile update rejected (status',
+              response.status,
+              ') — refreshing session'
+            );
             await refreshSession();
             return false;
           }
@@ -249,11 +259,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
 
           const session = (await response.json()) as SessionState;
-          console.debug('[session] Profile update succeeded:', session);
+          debugSession('[session] Profile update succeeded:', session);
           applySessionState(session);
           return true;
         } catch (error) {
-          console.debug('[session] Profile update error:', error);
+          debugSession('[session] Profile update error:', error);
           throw new Error(
             getErrorMessage(error, 'Profile login is unavailable right now.'),
             { cause: error }
