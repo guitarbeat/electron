@@ -60,6 +60,24 @@
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 
+@media (max-width: 640px) {
+  .app-shell--viewport {
+    --app-shell-gutter: clamp(0.75rem, 4vw, 1rem);
+    padding-top: max(env(safe-area-inset-top, 0px), 0.5rem);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.7rem);
+  }
+
+  .app-shell__canvas--main {
+    gap: 0.45rem;
+    min-height: auto;
+  }
+
+  .workspace-stage--mobile-shell {
+    gap: 0.5rem;
+    padding-top: 0.1rem;
+  }
+}
+
 .places-map-card--height {
   height: 340px;
 }
@@ -12131,12 +12149,106 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   to   { transform: translateX(-50%); }
 }
 
+.watchlist-suggestion-rail {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.1rem 0 0.2rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.watchlist-suggestion-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.watchlist-suggestion-rail__item {
+  flex: 0 0 min(78vw, 16rem);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.watchlist-suggestion-rail__item > .suggestion-item-card {
+  width: 100%;
+  height: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .y2k-ticker__inner { animation: none; transform: none; }
 }
 
 /* 44px+ touch targets on phones for the accept/reject suggestion buttons */
 @media (max-width: 640px) {
+  .watchlist-container,
+  .places-container {
+    gap: 0.8rem !important;
+  }
+
+  .workspace-control-panel,
+  .watchlist-top-controls {
+    gap: 0.55rem;
+  }
+
+  .watchlist-top-controls__input-block,
+  .watchlist-top-controls__toolbar {
+    gap: 0.35rem;
+  }
+
+  .watchlist-top-controls__search-form {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .watchlist-top-controls__search-shell {
+    flex-basis: 100%;
+  }
+
+  .watchlist-top-controls__search-icon {
+    padding-left: 0.7rem;
+    font-size: 0.82rem;
+  }
+
+  .watchlist-top-controls__search-field {
+    min-height: 2.85rem;
+  }
+
+  .watchlist-top-controls__search-actions {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .watchlist-top-controls__search-button.ui-button,
+  .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+    min-width: 0 !important;
+    min-height: 2.75rem !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  .watchlist-top-controls__autocomplete {
+    top: calc(100% + 0.4rem);
+    max-height: min(18rem, 58vh);
+  }
+
+  .watchlist-suggestion-rail__item {
+    flex-basis: min(82vw, 15.5rem);
+  }
+
+  .watchlist-suggestion-rail .suggestion-item-card {
+    padding: 0.65rem !important;
+  }
+
+  .watchlist-suggestion-rail .suggestion-item-card__eyebrow {
+    font-size: 0.54rem !important;
+    letter-spacing: 0.08em;
+  }
+
+  .watchlist-suggestion-rail .suggestion-item-card h3 {
+    font-size: 0.92rem !important;
+    line-height: 1.2;
+  }
+
   .suggestion-item-card__button {
     width: 44px !important;
     min-width: 44px !important;

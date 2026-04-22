@@ -493,16 +493,22 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                 <h3 className="workspace-section-heading workspace-section-heading--incoming">
                   Incoming
                 </h3>
-                <CollectionGrid
-                  className="watchlist-content"
-                  minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                  style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
-                >
-                  {isSuggestionsLoading && sections.suggestions.length === 0
-                    ? skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
-                    : sections.suggestions.map((suggestion, index) => (
+                {isSuggestionsLoading && sections.suggestions.length === 0 ? (
+                  <CollectionGrid
+                    className="watchlist-content"
+                    minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+                    style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
+                  >
+                    {skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
+                  </CollectionGrid>
+                ) : isMobile ? (
+                  <div
+                    className="watchlist-suggestion-rail"
+                    style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
+                  >
+                    {sections.suggestions.map((suggestion, index) => (
+                      <div key={suggestion.id} className="watchlist-suggestion-rail__item">
                         <SuggestionCard
-                          key={suggestion.id}
                           suggestion={suggestion}
                           onAccept={() => void handleAcceptSuggestion(suggestion)}
                           onReject={() => void handleRejectSuggestion(suggestion)}
@@ -511,8 +517,29 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                           isProcessing={processingSuggestionId === suggestion.id}
                           animationDelay={`${index * 0.05}s`}
                         />
-                      ))}
-                </CollectionGrid>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <CollectionGrid
+                    className="watchlist-content"
+                    minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+                    style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
+                  >
+                    {sections.suggestions.map((suggestion, index) => (
+                      <SuggestionCard
+                        key={suggestion.id}
+                        suggestion={suggestion}
+                        onAccept={() => void handleAcceptSuggestion(suggestion)}
+                        onReject={() => void handleRejectSuggestion(suggestion)}
+                        canRespond={Boolean(currentUser)}
+                        disableActions={!currentUser}
+                        isProcessing={processingSuggestionId === suggestion.id}
+                        animationDelay={`${index * 0.05}s`}
+                      />
+                    ))}
+                  </CollectionGrid>
+                )}
               </section>
             )}
 
