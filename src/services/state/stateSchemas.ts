@@ -255,7 +255,7 @@ export const normalizePlaceSuggestionRecord = (value: unknown): PlaceSuggestion 
   const suggestion = value as Partial<PlaceSuggestion>;
   const id = normalizeRequiredString(suggestion.id);
   const name = normalizeRequiredString(suggestion.name);
-  const suggestedBy = isUser(suggestion.suggestedBy) ? suggestion.suggestedBy : undefined;
+  const suggestedBy = normalizeRequiredString(suggestion.suggestedBy);
   const createdAt = normalizeCreatedAt(suggestion.createdAt);
 
   if (!id || !name || !suggestedBy || !createdAt || !isPlaceSuggestionStatus(suggestion.status)) {

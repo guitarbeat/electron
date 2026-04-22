@@ -25,7 +25,7 @@ export interface Place {
 export interface PlaceSuggestion {
   id: string;
   name: string;
-  suggestedBy: User;
+  suggestedBy: string; // Any name (not restricted to User type)
   createdAt: string;
   notes?: string;
   category?: string;

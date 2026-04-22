@@ -148,10 +148,6 @@ const PlacesList: React.FC = () => {
   const handleSuggestAction = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query || isSuggesting) return;
-    if (!currentUser) {
-      showToast({ message: 'Pick Aaron or Electra to suggest places.', type: 'info' });
-      return;
-    }
     setIsSuggesting(true);
     setSuggestionError(null);
     try {
@@ -164,7 +160,7 @@ const PlacesList: React.FC = () => {
     } finally {
       setIsSuggesting(false);
     }
-  }, [addPlaceSuggestion, currentUser, isSuggesting, searchQuery, showToast]);
+  }, [addPlaceSuggestion, isSuggesting, searchQuery, showToast]);
 
   const confirmDelete = useCallback(async () => {
     if (!placeToDelete) return;

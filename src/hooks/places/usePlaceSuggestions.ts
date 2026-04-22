@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { sanitizeInput } from '@/utils';
 import type { PlaceSuggestion, User } from '@/shared/types';
 import { useUser } from '@/app/useProviders';
+import { mutateScope } from '@/services/state';
 import { useCollection } from '../useCollection';
 
 export const usePlaceSuggestions = (isPaused: boolean = false) => {
@@ -50,38 +51,59 @@ export const usePlaceSuggestions = (isPaused: boolean = false) => {
   );
 
   const addPlaceSuggestion = useCallback(
-    async (name: string, notes?: string, metadata?: Partial<PlaceSuggestion>): Promise<PlaceSuggestion> => {
-      if (!currentUser) {
-        throw new Error('Profile required');
-      }
+    async (
+      name: string,
+      notes?: string,
+      metadata?: Partial<PlaceSuggestion>,
+      suggestedByOverride?: string
+    ): Promise<PlaceSuggestion> => {
+      const cleanSuggestedBy =
+        currentUser ?? (sanitizeInput(suggestedByOverride || '') || 'Guest');
 
       const nextSuggestion: PlaceSuggestion = {
         id: crypto.randomUUID(),
         name: sanitizeInput(name),
-        suggestedBy: currentUser,
+        suggestedBy: cleanSuggestedBy,
         notes: notes ? sanitizeInput(notes) : undefined,
         status: 'pending',
         createdAt: new Date().toISOString(),
         ...metadata,
       };
 
-      await performMutation(
-        'add_place_suggestion',
-        {
-          id: nextSuggestion.id,
-          name: nextSuggestion.name,
-          notes: nextSuggestion.notes,
-          category: nextSuggestion.category,
-          rating: nextSuggestion.rating,
-          description: nextSuggestion.description,
-          imageUrl: nextSuggestion.imageUrl,
-        },
-        [...suggestions, nextSuggestion],
-      );
-      refresh();
+      if (currentUser) {
+        await performMutation(
+          'add_place_suggestion',
+          {
+            id: nextSuggestion.id,
+            name: nextSuggestion.name,
+            notes: nextSuggestion.notes,
+            category: nextSuggestion.category,
+            rating: nextSuggestion.rating,
+            description: nextSuggestion.description,
+            imageUrl: nextSuggestion.imageUrl,
+          },
+          [...suggestions, nextSuggestion],
+        );
+      } else {
+        await mutateScope('placeSuggestions', {
+          op: 'add_place_suggestion',
+          payload: {
+            id: nextSuggestion.id,
+            name: nextSuggestion.name,
+            notes: nextSuggestion.notes,
+            category: nextSuggestion.category,
+            rating: nextSuggestion.rating,
+            description: nextSuggestion.description,
+            imageUrl: nextSuggestion.imageUrl,
+            suggestedBy: nextSuggestion.suggestedBy,
+          },
+          optimisticData: [...suggestions, nextSuggestion],
+        });
+      }
+
       return nextSuggestion;
     },
-    [currentUser, refresh, suggestions, performMutation]
+    [currentUser, suggestions, performMutation]
   );
 
   const acceptPlaceSuggestion = useCallback(
