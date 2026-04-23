@@ -416,8 +416,8 @@ test('dynamic state read route falls back to default state when GIST_ID is missi
       };
 
       assert.equal(response.status, 200);
-      assert.equal(payload.degraded, false);
-      assert.equal(payload.warning, undefined);
+      assert.equal(payload.degraded, true);
+      assert.match(payload.warning ?? '', /missing GIST_ID|VITE_GIST_ID/i);
     } finally {
       console.warn = originalWarn;
     }
