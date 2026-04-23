@@ -10,15 +10,11 @@ import {
   MediaCardTitle,
 } from '@/ui/MediaCard';
 import Button from '@/ui/Button';
-import MemoryList from '@/memories/MemoryList';
-import MemoryComposer from '@/memories/MemoryComposer';
-import { colors, spacing, typography } from '@/theme/tokens';
+import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
-import { MAX_MOVIE_NOTE_LENGTH } from './lib/movieConstants';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
-import { INITIAL_VISIBLE_COUNT } from '@/memories/lib/memoryUtils';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -140,7 +136,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   onTogglePin,
   isHighlighted = false,
 }) => {
-  const [showMemories, setShowMemories] = React.useState(false);
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const [detailsOrigin, setDetailsOrigin] = React.useState<MovieTransitionOrigin | null>(null);
@@ -163,10 +158,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
     () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
     [memories]
   );
-
-  const handleToggleMemories = () => {
-    setShowMemories((current) => !current);
-  };
 
   const handleOpenDetails = () => {
     const rect = posterRef.current?.getBoundingClientRect() ?? cardRef.current?.getBoundingClientRect();
@@ -262,7 +253,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               <MovieMemoryPreview
                 memory={featuredMemory}
                 additionalCount={Math.max(memories.length - 1, 0)}
-                isExpanded={showMemories}
+                isExpanded={false}
               />
             ) : null}
             <MediaCardInfo>
@@ -285,26 +276,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
               actionState={actionState}
               isUpdating={isUpdating}
               onToggle={handleToggle}
-              onToggleNotes={handleToggleMemories}
+              onToggleNotes={handleOpenDetails}
               onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
             />
           </div>
         ) : null}
       </Card>
-
-      {showMemories ? (
-        <MovieMemories
-          movie={movie}
-          memories={memories}
-          currentUser={currentUser}
-          isMobile={isMobile}
-          onClose={handleToggleMemories}
-          onAddMemory={onAddMemory}
-          onUpdateMemory={onUpdateMemory}
-          onDeleteMemory={onDeleteMemory}
-          onTogglePin={onTogglePin}
-        />
-      ) : null}
 
       {onRename ? (
         <MovieTitleEditModal
@@ -322,6 +299,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
         memories={memories}
         isOpen={isDetailsOpen}
         origin={detailsOrigin}
+        currentUser={currentUser}
+        onAddMemory={onAddMemory}
+        onUpdateMemory={onUpdateMemory}
+        onDeleteMemory={onDeleteMemory}
+        onTogglePin={onTogglePin}
         onClose={() => setIsDetailsOpen(false)}
       />
     </>
@@ -571,202 +553,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
           </div>
         ) : null}
       </div>
-    </div>
-  );
-};
-
-interface MovieMemoriesProps {
-  movie: Movie;
-  memories: SharedMemory[];
-  currentUser: User | null;
-  isMobile: boolean;
-  onClose: () => void;
-  onAddMemory?: (note: string) => Promise<void>;
-  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
-  onDeleteMemory?: (memoryId: string) => Promise<void>;
-  onTogglePin?: (memoryId: string) => Promise<void>;
-}
-
-const MovieMemories: React.FC<MovieMemoriesProps> = ({
-  movie,
-  memories,
-  currentUser,
-  isMobile,
-  onClose,
-  onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
-  onTogglePin,
-}) => {
-  const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
-  const [draftNote, setDraftNote] = React.useState('');
-  const [submitSuccess, setSubmitSuccess] = React.useState(false);
-  const [visibleCount, setVisibleCount] = React.useState(() =>
-    Math.min(INITIAL_VISIBLE_COUNT, memories.length)
-  );
-  const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
-  const memoriesListRef = React.useRef<HTMLDivElement>(null);
-  const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
-  const canSubmitNote =
-    !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
-
-  React.useEffect(() => {
-    setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
-  }, [memories.length, movie.id]);
-
-  const handleMemorySubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!onAddMemory) {
-      return;
-    }
-
-    const trimmedNote = draftNote.trim();
-    if (!trimmedNote) {
-      return;
-    }
-
-    setIsSubmittingMemory(true);
-    try {
-      await onAddMemory(trimmedNote);
-      setDraftNote('');
-      setSubmitSuccess(true);
-      setTimeout(() => {
-        setSubmitSuccess(false);
-        noteInputRef.current?.focus();
-        if (memoriesListRef.current) {
-          memoriesListRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 1200);
-    } finally {
-      setIsSubmittingMemory(false);
-    }
-  };
-
-  if (memories.length === 0 && !currentUser) {
-    return null;
-  }
-
-  return (
-    <div
-      className="movie-memory-panel"
-      style={{
-        marginTop: `-${spacing.sm}`,
-        marginBottom: spacing.md,
-        padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
-        borderRadius: '0 0 16px 16px',
-        background: `linear-gradient(180deg, ${colors.surface2} 0%, ${colors.surface1} 42%, ${colors.surface0} 100%)`,
-        border: `1px solid ${colors.borderSubtle}`,
-        borderTop: 'none',
-        borderLeft: `3px solid ${colors.accentMuted}`,
-        boxShadow: '0 18px 34px rgba(18, 11, 7, 0.24)',
-        position: 'relative',
-      }}
-    >
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close notes panel"
-        style={{
-          position: 'absolute',
-          top: spacing.sm,
-          right: spacing.sm,
-          width: '28px',
-          height: '28px',
-          borderRadius: '50%',
-          border: `1px solid ${colors.borderSubtle}`,
-          background: 'rgba(255,255,255,0.07)',
-          color: colors.textSecondary,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '16px',
-          lineHeight: 1,
-          padding: 0,
-        }}
-      >
-        &times;
-      </button>
-
-      {currentUser && onAddMemory ? (
-        <div style={{ marginBottom: spacing.md }}>
-          <MemoryComposer
-            watchedMovieOptions={[movie]}
-            selectedMovieId={movie.id}
-            onSelectedMovieIdChange={() => {}}
-            currentUser={currentUser}
-            onSubmit={handleMemorySubmit}
-            isSubmitting={isSubmittingMemory}
-            canSubmit={canSubmitNote}
-            isMobile={isMobile}
-            note={draftNote}
-            onNoteChange={(nextNote) => setDraftNote(nextNote.slice(0, MAX_MOVIE_NOTE_LENGTH))}
-            isComposerOpen
-            onComposerToggle={() => {}}
-            remainingChars={remainingChars}
-            error={null}
-            successMessage={submitSuccess ? 'Saved!' : null}
-            noteInputRef={noteInputRef}
-          />
-        </div>
-      ) : null}
-
-      {memories.length > 0 ? (
-        <div ref={memoriesListRef}>
-          <MemoryList
-            memories={memories}
-            visibleMemories={memories.slice(0, visibleCount)}
-            sortedMemories={memories}
-            contextMovieTitle={movie.title}
-            currentUser={currentUser}
-            isMobile={isMobile}
-            onEditMemory={async (memory, note) => {
-              if (onUpdateMemory) {
-                await onUpdateMemory(memory.id, note);
-              }
-            }}
-            onDeleteMemory={async (memory) => {
-              if (onDeleteMemory) {
-                await onDeleteMemory(memory.id);
-              }
-            }}
-            onTogglePin={async (memory) => {
-              if (onTogglePin) {
-                await onTogglePin(memory.id);
-              }
-            }}
-            movieFilterOptions={[]}
-            activeMovieFilter={movie.id}
-            onActiveMovieFilterChange={() => {}}
-            sortMode="newest"
-            onSortModeChange={() => {}}
-            onShowMore={() => {
-              setVisibleCount((current) =>
-                Math.min(current + INITIAL_VISIBLE_COUNT, memories.length)
-              );
-            }}
-            onShowLess={() => {
-              setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
-            }}
-            visibleCount={visibleCount}
-            isLoading={false}
-            memoriesError={null}
-            onJumpToMovie={() => {}}
-          />
-        </div>
-      ) : (
-        <p
-          style={{
-            textAlign: 'center',
-            color: colors.textTertiary,
-            fontSize: typography.fontSize.xs,
-            fontStyle: 'italic',
-            padding: spacing.sm,
-          }}
-        >
-          No notes on this movie yet. Leave the first one above.
-        </p>
-      )}
     </div>
   );
 };

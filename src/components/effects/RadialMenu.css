@@ -275,17 +275,139 @@
   color: rgba(255, 235, 214, 0.74);
 }
 
-.menu.active .menu-item-button__tooltip {
-  opacity: 1;
-  transform: translate(var(--tooltip-x, -50%), var(--tooltip-y-open, 0));
-}
-
 @media (hover: hover) and (pointer: fine) {
   .menu-item-button:hover .menu-item-button__tooltip,
   .menu-item-button:focus-visible .menu-item-button__tooltip {
     opacity: 1;
     transform: translate(var(--tooltip-x, -50%), var(--tooltip-y-open, 0));
   }
+}
+
+.menu-context-bubble {
+  position: absolute;
+  width: 170px;
+  min-height: 78px;
+  padding: 0.72rem 0.8rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(255, 235, 214, 0.16);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.14) 0%, transparent 36%),
+    linear-gradient(180deg, rgba(63, 43, 28, 0.96) 0%, rgba(28, 19, 14, 0.98) 100%);
+  box-shadow:
+    0 24px 40px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  color: #fff3e1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  backdrop-filter: blur(16px);
+}
+
+.menu-context-bubble::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  border-right: 1px solid rgba(255, 235, 214, 0.16);
+  border-bottom: 1px solid rgba(255, 235, 214, 0.16);
+  transform: rotate(45deg);
+}
+
+.menu.menu--fan-tl .menu-context-bubble {
+  left: 116px;
+  top: 110px;
+}
+
+.menu.menu--fan-tl .menu-context-bubble::after {
+  left: 14px;
+  top: 14px;
+}
+
+.menu.menu--fan-tr .menu-context-bubble {
+  right: 116px;
+  top: 110px;
+}
+
+.menu.menu--fan-tr .menu-context-bubble::after {
+  right: 14px;
+  top: 14px;
+}
+
+.menu.menu--fan-bl .menu-context-bubble {
+  left: 116px;
+  bottom: 110px;
+}
+
+.menu.menu--fan-bl .menu-context-bubble::after {
+  left: 14px;
+  bottom: 14px;
+}
+
+.menu.menu--fan-br .menu-context-bubble {
+  right: 116px;
+  bottom: 110px;
+}
+
+.menu.menu--fan-br .menu-context-bubble::after {
+  right: 14px;
+  bottom: 14px;
+}
+
+.menu-context-bubble__eyebrow {
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 211, 164, 0.76);
+}
+
+.menu-context-bubble__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.menu-context-bubble__icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 54%),
+    linear-gradient(180deg, rgba(255, 183, 109, 0.3) 0%, rgba(105, 67, 34, 0.18) 100%);
+  border: 1px solid rgba(255, 214, 170, 0.18);
+  color: color-mix(in oklab, var(--menu-bubble-accent, #ffbc6c) 68%, white);
+}
+
+.menu-context-bubble__title-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  min-width: 0;
+}
+
+.menu-context-bubble__title-copy strong,
+.menu-context-bubble__title-copy span {
+  display: block;
+}
+
+.menu-context-bubble__title-copy strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+
+.menu-context-bubble__title-copy span {
+  font-size: 0.62rem;
+  line-height: 1.22;
+  color: rgba(255, 235, 214, 0.76);
 }
 
 .toggle {
@@ -593,5 +715,48 @@
 
   .menu-item-button__tooltip {
     display: none;
+  }
+
+  .menu-context-bubble {
+    width: 146px;
+    min-height: 68px;
+    padding: 0.62rem 0.7rem;
+  }
+
+  .menu.menu--fan-tl .menu-context-bubble,
+  .menu.menu--fan-bl .menu-context-bubble {
+    left: 94px;
+  }
+
+  .menu.menu--fan-tr .menu-context-bubble,
+  .menu.menu--fan-br .menu-context-bubble {
+    right: 94px;
+  }
+
+  .menu.menu--fan-tl .menu-context-bubble,
+  .menu.menu--fan-tr .menu-context-bubble {
+    top: 92px;
+  }
+
+  .menu.menu--fan-bl .menu-context-bubble,
+  .menu.menu--fan-br .menu-context-bubble {
+    bottom: 92px;
+  }
+
+  .menu-context-bubble__eyebrow {
+    display: none;
+  }
+
+  .menu-context-bubble__icon {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .menu-context-bubble__title-copy strong {
+    font-size: 0.74rem;
+  }
+
+  .menu-context-bubble__title-copy span {
+    font-size: 0.58rem;
   }
 }

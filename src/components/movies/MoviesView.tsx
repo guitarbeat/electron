@@ -20,7 +20,7 @@ import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
 import { buildMovieSections } from './lib/movieSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
-import './WatchlistPhotoMode.css';
+import './MoviesPhotoMode.css';
 
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
@@ -64,10 +64,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     updateMemory,
     deleteMemoryRecord,
     toggleMemoryPin,
-    isWatchlistDegraded,
-    isWatchlistSyncBlocked,
-    watchlistSyncWarning,
-    retryWatchlistSync,
+    isMoviesWorkspaceDegraded,
+    isMoviesWorkspaceSyncBlocked,
+    moviesWorkspaceSyncWarning,
+    retryMoviesWorkspaceSync,
   } = useMoviesWorkspace({ currentUser, isPaused });
 
   const skeletonKeys = useMemo(
@@ -122,7 +122,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [movies, pendingSuggestions]
   );
   const latestMemory = memories[0] ?? null;
-  const queueSummaryCount = sections.queue.length + sections.suggestions.length;
+  const upNextSummaryCount = sections.upNext.length + sections.suggestions.length;
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -222,7 +222,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       setSearchQuery('');
       setSelectedAutocompleteResult(null);
       setToast({
-        message: `"${title}" added to watchlist!`,
+        message: `"${title}" added to movies!`,
         type: 'success',
       });
       window.requestAnimationFrame(focusSearchInput);
@@ -304,7 +304,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     async (suggestion: MovieSuggestion) => {
       try {
         await acceptSuggestionToWatchlist(suggestion.id);
-        setToast({ message: `"${suggestion.title}" added to watchlist!`, type: 'success' });
+        setToast({ message: `"${suggestion.title}" added to movies!`, type: 'success' });
       } catch (error) {
         setToast({
           message: error instanceof Error ? error.message : 'Failed to accept suggestion',
@@ -426,7 +426,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movies.length === 0 &&
     pendingSuggestions.length === 0;
 
-  const watchlistBody = useMemo(() => {
+  const moviesBody = useMemo(() => {
     if (showInitialLoading) {
       return (
         <CollectionGrid
@@ -442,7 +442,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
               <div
                 style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite', letterSpacing: '0.12em' }}
               >
-                Loading your watchlist
+                Loading your movies
                 <span className="loading-dots" aria-hidden="true" />
               </div>
               <div className="scanning-bar" style={{ maxWidth: '200px', margin: '0 auto' }} />
@@ -457,7 +457,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       );
     }
 
-    const isQueueEmpty = sections.queue.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
+    const isQueueEmpty = sections.upNext.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
     const isWatchedEmpty = sections.watched.length === 0;
     const isAllEmpty = isQueueEmpty && isWatchedEmpty;
 
@@ -476,7 +476,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
               className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
             >
               <span className="watchlist-empty-queue-state__icon" aria-hidden="true">🎬</span>
-              <strong className="watchlist-empty-queue-state__title">Your queue is wide open</strong>
+              <strong className="watchlist-empty-queue-state__title">Your movie list is wide open</strong>
               <span className="watchlist-empty-queue-state__copy">
                 No movies lined up yet. Add something you both want to watch and kick off movie night.
               </span>
@@ -527,15 +527,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
               </CollectionSection>
             )}
 
-            {/* ── Up Next queue ── */}
-            {sections.queue.length > 0 && (
+            {/* ── Up Next ── */}
+            {sections.upNext.length > 0 && (
               <CollectionSection heading="Up Next">
                 <CollectionGrid
                   className="watchlist-content"
                   minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
                   style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
                 >
-                  {sections.queue.map((movie, index) => (
+                  {sections.upNext.map((movie, index) => (
                     <MovieCard
                       key={movie.id}
                       movie={movie}
@@ -610,15 +610,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     >
       <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
 
-      {isWatchlistDegraded && (
+      {isMoviesWorkspaceDegraded && (
         <SyncBanner
-          isBlocked={isWatchlistSyncBlocked}
-          onRetry={() => void retryWatchlistSync()}
+          isBlocked={isMoviesWorkspaceSyncBlocked}
+          onRetry={() => void retryMoviesWorkspaceSync()}
           label={
-            isWatchlistSyncBlocked
-              ? 'A shared watchlist change conflicted with local edits. Refresh and retry.'
-              : watchlistSyncWarning ||
-                'Watchlist changes are being kept locally until shared sync recovers.'
+            isMoviesWorkspaceSyncBlocked
+              ? 'A shared movies change conflicted with local edits. Refresh and retry.'
+              : moviesWorkspaceSyncWarning ||
+                'Movie changes are being kept locally until shared sync recovers.'
           }
         />
       )}
@@ -626,7 +626,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       <MoviesTopControls
         ref={moviesTopControlsRef}
         currentUser={currentUser}
-        queueCount={queueSummaryCount}
+        upNextCount={upNextSummaryCount}
         watchedCount={sections.watched.length}
         noteCount={memories.length}
         latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
@@ -649,7 +649,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         suggestionError={suggestionError}
         canRecommend={true}
       />
-      {watchlistBody}
+      {moviesBody}
 
       {movieToDelete && (
         <ConfirmDialog

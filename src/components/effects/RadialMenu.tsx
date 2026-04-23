@@ -148,6 +148,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const [isActive, setIsActive] = useState(false);
   const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
   const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
+  const [highlightedItemIndex, setHighlightedItemIndex] = useState<number>(0);
 
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
@@ -173,7 +174,13 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   const toggleMenu = useCallback(() => {
     setMenuPos((prev) => clampToViewport(prev));
-    setIsActive((prev) => !prev);
+    setIsActive((prev) => {
+      const next = !prev;
+      if (next) {
+        setHighlightedItemIndex(0);
+      }
+      return next;
+    });
     markDiscovered();
   }, [markDiscovered]);
 
@@ -340,6 +347,8 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     },
   ];
 
+  const highlightedItem = menuItems[highlightedItemIndex] ?? menuItems[0];
+
   return (
     <div
       ref={menuRef}
@@ -381,6 +390,22 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         </span>
       </button>
 
+      {isActive ? (
+        <div
+          className={`menu-context-bubble menu-context-bubble--${highlightedItem.colorClass}`}
+          aria-hidden="true"
+        >
+          <span className="menu-context-bubble__eyebrow">Quick action</span>
+          <span className="menu-context-bubble__title-row">
+            <span className="menu-context-bubble__icon">{highlightedItem.icon}</span>
+            <span className="menu-context-bubble__title-copy">
+              <strong>{highlightedItem.label}</strong>
+              <span>{highlightedItem.description}</span>
+            </span>
+          </span>
+        </div>
+      ) : null}
+
       <ul role="menu" aria-label="Quick actions">
         {menuItems.map((item) => (
           <li
@@ -391,6 +416,8 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
             <button
               type="button"
               onClick={item.onClick}
+              onMouseEnter={() => setHighlightedItemIndex(item.index)}
+              onFocus={() => setHighlightedItemIndex(item.index)}
               aria-label={item.label}
               title={item.label}
               className="menu-item-button"

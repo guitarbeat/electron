@@ -2,8 +2,12 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useModalBase } from '@/ui/ModalSystem';
+import MemoryComposer from '@/memories/MemoryComposer';
+import MemoryList from '@/memories/MemoryList';
+import { INITIAL_VISIBLE_COUNT } from '@/memories/lib/memoryUtils';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { formatMemoryTimestamp } from '@/utils';
+import { MAX_MOVIE_NOTE_LENGTH } from './lib/movieConstants';
 import type { MovieTransitionOrigin } from './MovieCard';
 
 interface MovieDetailsModalProps {
@@ -11,6 +15,11 @@ interface MovieDetailsModalProps {
   memories?: SharedMemory[];
   isOpen: boolean;
   origin?: MovieTransitionOrigin | null;
+  currentUser?: User | null;
+  onAddMemory?: (note: string) => Promise<void>;
+  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
+  onDeleteMemory?: (memoryId: string) => Promise<void>;
+  onTogglePin?: (memoryId: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -90,6 +99,11 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   memories = [],
   isOpen,
   origin,
+  currentUser = null,
+  onAddMemory,
+  onUpdateMemory,
+  onDeleteMemory,
+  onTogglePin,
   onClose,
 }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -97,13 +111,34 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const [hasCatError, setHasCatError] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
   const [isEntering, setIsEntering] = React.useState(false);
+  const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
+  const [draftNote, setDraftNote] = React.useState('');
+  const [submitSuccess, setSubmitSuccess] = React.useState(false);
+  const [visibleCount, setVisibleCount] = React.useState(() =>
+    Math.min(INITIAL_VISIBLE_COUNT, memories.length)
+  );
   const closeTimeoutRef = React.useRef<number | null>(null);
+  const successTimeoutRef = React.useRef<number | null>(null);
+  const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
   const { dialogRef, closeButtonRef, playPop } = useModalBase(isVisible, onClose);
 
   React.useEffect(() => {
     setHasPosterError(false);
     setHasCatError(false);
   }, [movie.posterUrl]);
+
+  React.useEffect(() => {
+    setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+  }, [memories.length, movie.id]);
+
+  React.useEffect(() => {
+    setDraftNote('');
+    setSubmitSuccess(false);
+    if (successTimeoutRef.current !== null) {
+      window.clearTimeout(successTimeoutRef.current);
+      successTimeoutRef.current = null;
+    }
+  }, [movie.id, isOpen]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -131,6 +166,15 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     };
   }, [isOpen, isVisible]);
 
+  React.useEffect(
+    () => () => {
+      if (successTimeoutRef.current !== null) {
+        window.clearTimeout(successTimeoutRef.current);
+      }
+    },
+    []
+  );
+
   React.useEffect(() => {
     if (!isVisible) {
       return undefined;
@@ -157,15 +201,48 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     movie.category,
     movie.director ? `Dir. ${movie.director}` : null,
   ].filter(Boolean) as string[];
+  const canManageMemories = Boolean(onUpdateMemory && onDeleteMemory && onTogglePin);
   const featuredMemory = memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
-  const secondaryMemories = memories.filter((memory) => memory.id !== featuredMemory?.id).slice(0, 2);
+  const secondaryMemories = canManageMemories
+    ? []
+    : memories.filter((memory) => memory.id !== featuredMemory?.id).slice(0, 2);
   const watchStatus = getWatchStatus(movie, memories.length);
   const source = clampOrigin(origin ?? null);
   const { targetWidth, targetHeight } = getDialogMetrics(isMobile);
+  const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
+  const canSubmitNote =
+    !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
   const scaleX =
     origin && targetWidth > 0 ? Math.min(Math.max(origin.width / targetWidth, 0.18), 1) : 0.32;
   const scaleY =
     origin && targetHeight > 0 ? Math.min(Math.max(origin.height / targetHeight, 0.18), 1) : 0.32;
+
+  const handleMemorySubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!onAddMemory) {
+      return;
+    }
+
+    const trimmedNote = draftNote.trim();
+    if (!trimmedNote) {
+      return;
+    }
+
+    setIsSubmittingMemory(true);
+    try {
+      await onAddMemory(trimmedNote);
+      setDraftNote('');
+      setSubmitSuccess(true);
+      if (successTimeoutRef.current !== null) {
+        window.clearTimeout(successTimeoutRef.current);
+      }
+      successTimeoutRef.current = window.setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 1200);
+    } finally {
+      setIsSubmittingMemory(false);
+    }
+  };
 
   return createPortal(
     <div
@@ -299,7 +376,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             <div className="movie-details-modal__section">
               <div className="movie-details-modal__section-head">
                 <p className="movie-details-modal__section-label">
-                  {featuredMemory?.isPinned ? 'Pinned note' : 'Notes on this poster'}
+                  Poster notes
                 </p>
                 {memories.length > 1 ? (
                   <span className="movie-details-modal__section-caption">
@@ -308,39 +385,110 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 ) : null}
               </div>
 
-              {featuredMemory ? (
-                <article className="movie-details-modal__memory-card">
-                  <div className="movie-details-modal__memory-card-header">
-                    <span className="movie-details-modal__memory-author">{featuredMemory.author}</span>
-                    <span className="movie-details-modal__memory-date">
-                      {formatMemoryTimestamp(featuredMemory.updatedAt || featuredMemory.createdAt)}
-                    </span>
+              {currentUser && onAddMemory ? (
+                <div className="movie-details-modal__composer-shell">
+                  <p className="movie-details-modal__composer-copy">
+                    Leave the note here so it stays attached to this poster.
+                  </p>
+                  <MemoryComposer
+                    watchedMovieOptions={[movie]}
+                    selectedMovieId={movie.id}
+                    onSelectedMovieIdChange={() => {}}
+                    currentUser={currentUser}
+                    onSubmit={handleMemorySubmit}
+                    isSubmitting={isSubmittingMemory}
+                    canSubmit={canSubmitNote}
+                    isMobile={isMobile}
+                    note={draftNote}
+                    onNoteChange={(nextNote) => setDraftNote(nextNote.slice(0, MAX_MOVIE_NOTE_LENGTH))}
+                    isComposerOpen
+                    onComposerToggle={() => {}}
+                    remainingChars={remainingChars}
+                    error={null}
+                    successMessage={submitSuccess ? 'Saved!' : null}
+                    noteInputRef={noteInputRef}
+                  />
+                </div>
+              ) : null}
+
+              {canManageMemories ? (
+                memories.length > 0 ? (
+                <div className="movie-details-modal__memory-manager">
+                  <MemoryList
+                    memories={memories}
+                    visibleMemories={memories.slice(0, visibleCount)}
+                    sortedMemories={memories}
+                    contextMovieTitle={movie.title}
+                    currentUser={currentUser}
+                    isMobile={isMobile}
+                    onEditMemory={async (memory, note) => {
+                      await onUpdateMemory(memory.id, note);
+                    }}
+                    onDeleteMemory={async (memory) => {
+                      await onDeleteMemory(memory.id);
+                    }}
+                    onTogglePin={async (memory) => {
+                      await onTogglePin(memory.id);
+                    }}
+                    movieFilterOptions={[]}
+                    activeMovieFilter={movie.id}
+                    onActiveMovieFilterChange={() => {}}
+                    sortMode="newest"
+                    onSortModeChange={() => {}}
+                    onShowMore={() => {
+                      setVisibleCount((current) =>
+                        Math.min(current + INITIAL_VISIBLE_COUNT, memories.length)
+                      );
+                    }}
+                    onShowLess={() => {
+                      setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+                    }}
+                    visibleCount={visibleCount}
+                    isLoading={false}
+                    memoriesError={null}
+                    onJumpToMovie={() => {}}
+                  />
+                </div>
+                ) : (
+                  <div className="movie-details-modal__memory-empty">
+                    No notes on this poster yet. The first one will show up right here.
                   </div>
-                  <p className="movie-details-modal__memory-note">{featuredMemory.note}</p>
-                </article>
+                )
+              ) : featuredMemory ? (
+                <>
+                  <article className="movie-details-modal__memory-card">
+                    <div className="movie-details-modal__memory-card-header">
+                      <span className="movie-details-modal__memory-author">{featuredMemory.author}</span>
+                      <span className="movie-details-modal__memory-date">
+                        {formatMemoryTimestamp(featuredMemory.updatedAt || featuredMemory.createdAt)}
+                      </span>
+                    </div>
+                    <p className="movie-details-modal__memory-note">{featuredMemory.note}</p>
+                  </article>
+
+                  {secondaryMemories.length > 0 ? (
+                    <div className="movie-details-modal__memory-list">
+                      {secondaryMemories.map((memory) => (
+                        <div key={memory.id} className="movie-details-modal__memory-row">
+                          <div className="movie-details-modal__memory-row-copy">
+                            <span className="movie-details-modal__memory-row-author">{memory.author}</span>
+                            <p className="movie-details-modal__memory-row-note">
+                              {getNotePreview(memory.note)}
+                            </p>
+                          </div>
+                          <span className="movie-details-modal__memory-row-date">
+                            {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
               ) : (
                 <div className="movie-details-modal__memory-empty">
                   No notes on this poster yet. The first one will show up right here.
                 </div>
               )}
-
-              {secondaryMemories.length > 0 ? (
-                <div className="movie-details-modal__memory-list">
-                  {secondaryMemories.map((memory) => (
-                    <div key={memory.id} className="movie-details-modal__memory-row">
-                      <div className="movie-details-modal__memory-row-copy">
-                        <span className="movie-details-modal__memory-row-author">{memory.author}</span>
-                        <p className="movie-details-modal__memory-row-note">
-                          {getNotePreview(memory.note)}
-                        </p>
-                      </div>
-                      <span className="movie-details-modal__memory-row-date">
-                        {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
             </div>
 
             <div className="movie-details-modal__footer">
