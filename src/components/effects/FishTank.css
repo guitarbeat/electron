@@ -6,10 +6,6 @@
   pointer-events: none;
 }
 
-.fish-tank-wrapper--static .container {
-  pointer-events: none;
-}
-
 /* Responsive sizing for smaller screens */
 @media (max-width: 768px) {
   .fish-tank-wrapper {
