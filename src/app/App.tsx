@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
+import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
@@ -31,6 +32,7 @@ const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSPropert
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
+const MIN_LOADING_SCREEN_MS = 2200;
 
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
@@ -98,6 +100,7 @@ const App: React.FC = () => {
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const [hasInitialLoadingScreenElapsed, setHasInitialLoadingScreenElapsed] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
   const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'queue');
@@ -146,6 +149,18 @@ const App: React.FC = () => {
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
   }, [activeTab]);
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => {
+      setHasInitialLoadingScreenElapsed(true);
+    }, MIN_LOADING_SCREEN_MS);
+
+    void preloadAppModules();
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, []);
 
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
@@ -210,7 +225,7 @@ const App: React.FC = () => {
 
       installToastIdRef.current = showToast({
         type: 'info',
-        message: 'Install Electron for a faster, standalone movie-night flow.',
+        message: 'Install Electron for a quicker launch.',
         persistent: true,
         actionLabel: 'Install',
         onAction: async () => {
@@ -545,10 +560,16 @@ const App: React.FC = () => {
     );
   }
 
-  if (isSessionLoading) {
+  if (isSessionLoading || !hasInitialLoadingScreenElapsed) {
     return (
       <ThemeProvider activeTab={activeTab}>
-        <LoadingScreen />
+        <LoadingScreen
+          label={
+            isSessionLoading
+              ? 'Warming up the tank…'
+              : 'Letting the tank linger while the cinema finishes loading…'
+          }
+        />
       </ThemeProvider>
     );
   }

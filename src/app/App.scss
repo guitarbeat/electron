@@ -7118,7 +7118,7 @@ body.grabbing * {
 
 .watchlist-top-controls__hero-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--watchlist-hero-stat-count, 3), minmax(0, 1fr));
   gap: 0.55rem;
 }
 
@@ -13205,6 +13205,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
 .app-workspace-stack--queue .watchlist-top-controls {
   gap: 0.7rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__stage {
@@ -13222,6 +13224,9 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   box-shadow:
     0 26px 48px rgba(12, 8, 5, 0.3),
     inset 0 1px 0 rgba(255, 244, 222, 0.12);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: visible;
   isolation: isolate;
 }
@@ -13245,10 +13250,12 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 .app-workspace-stack--queue .watchlist-top-controls__intro {
   gap: 0;
   padding-bottom: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero {
-  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 26rem);
   gap: clamp(1rem, 0.9rem + 0.55vw, 1.5rem);
   align-items: stretch;
   padding: clamp(0.2rem, 0.14rem + 0.16vw, 0.35rem);
@@ -13256,44 +13263,67 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero-copy {
+  width: 100%;
+  min-width: 0;
   align-content: start;
   gap: 0.45rem;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__eyebrow {
+  font-family: 'Papyrus', var(--font-display), serif;
   color: #d2a160;
   letter-spacing: 0.16em;
+  text-shadow: 0 1px 0 rgba(28, 17, 9, 0.8);
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__title {
+  font-family: 'Papyrus', var(--font-display), serif;
   font-size: clamp(1.8rem, 1.42rem + 1.08vw, 2.7rem);
-  letter-spacing: 0.01em;
-  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  letter-spacing: 0.05em;
+  line-height: 1.08;
+  text-transform: uppercase;
+  text-shadow:
+    0 2px 0 rgba(34, 20, 10, 0.85),
+    0 10px 28px rgba(0, 0, 0, 0.24);
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__lead {
   max-width: 54ch;
   color: rgba(237, 223, 198, 0.82);
+  font-family: 'Papyrus', var(--font-display), serif;
   font-size: clamp(0.9rem, 0.84rem + 0.16vw, 1rem);
+  letter-spacing: 0.02em;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero-note {
   margin-top: 0.55rem;
   color: rgba(221, 195, 157, 0.72);
+  font-family: 'Papyrus', var(--font-display), serif;
+  letter-spacing: 0.04em;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero-stats {
+  display: grid;
+  grid-template-columns: repeat(var(--watchlist-hero-stat-count, 3), minmax(0, 1fr));
   align-self: stretch;
   align-items: center;
   gap: 0;
   padding-inline: clamp(0.7rem, 0.55rem + 0.5vw, 1.15rem);
   border-left: 1px solid rgba(212, 177, 115, 0.18);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero-stat {
+  min-width: 0;
   align-content: center;
   min-height: 4.75rem;
   padding-inline: clamp(0.7rem, 0.5rem + 0.4vw, 1rem);
@@ -13301,19 +13331,26 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero-stat-value {
+  font-family: 'Papyrus', var(--font-display), serif;
   font-size: clamp(2rem, 1.7rem + 0.9vw, 2.8rem);
   color: #f6e2bf;
+  letter-spacing: 0.06em;
+  text-shadow: 0 2px 0 rgba(34, 20, 10, 0.85);
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__hero-stat-label {
+  font-family: 'Papyrus', var(--font-display), serif;
   color: rgba(234, 214, 183, 0.72);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__input-block {
   gap: 0.85rem;
   padding-top: 0.95rem;
   border-top: 1px solid rgba(212, 177, 115, 0.14);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__search-form {
@@ -13328,6 +13365,9 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     0 14px 26px rgba(11, 7, 4, 0.2) !important;
   backdrop-filter: blur(0) !important;
   -webkit-backdrop-filter: blur(0) !important;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__search-form:focus-within {
@@ -13352,29 +13392,42 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   padding-inline: 0.8rem 0.7rem !important;
   background: transparent !important;
   color: rgba(67, 41, 16, 0.96) !important;
-  font-family: 'Cormorant Garamond', var(--font-display) !important;
-  font-size: clamp(1.12rem, 1.02rem + 0.3vw, 1.34rem) !important;
+  font-family: 'Papyrus', var(--font-display), serif !important;
+  font-size: clamp(1.16rem, 1.04rem + 0.34vw, 1.42rem) !important;
+  letter-spacing: 0.03em;
   border: 0 !important;
   box-shadow: none !important;
+  text-transform: uppercase;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__search-field::placeholder {
   color: rgba(149, 104, 55, 0.76) !important;
   font-style: italic;
+  letter-spacing: 0.04em;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__search-actions {
   grid-template-columns: minmax(7.5rem, 0.95fr) auto;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__toolbar,
+.app-workspace-stack--queue .watchlist-top-controls__search-shell,
+.app-workspace-stack--queue .watchlist-top-controls__search-shell .ui-input {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button,
 .app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
   min-height: 4.15rem;
   border-radius: 1rem !important;
-  font-family: var(--font-body) !important;
-  font-size: 0.8rem !important;
-  letter-spacing: 0.08em !important;
+  font-family: 'Papyrus', var(--font-display), serif !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.12em !important;
   text-transform: uppercase !important;
   border: 1px solid rgba(173, 123, 69, 0.32) !important;
   backdrop-filter: blur(0) !important;
@@ -13423,7 +13476,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 .app-workspace-stack--queue .watchlist-top-controls__autocomplete-option {
   background: transparent;
   color: rgba(55, 34, 15, 0.96);
-  font-family: var(--font-body);
+  font-family: 'Papyrus', var(--font-display), serif;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__autocomplete-option:hover,
@@ -13445,6 +13498,8 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 .app-workspace-stack--queue .y2k-ticker__text {
   color: rgba(209, 168, 109, 0.82);
   letter-spacing: 0.1em;
+  font-family: 'Papyrus', var(--font-display), serif;
+  text-transform: uppercase;
 }
 
 @media (max-width: 900px) {
