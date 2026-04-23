@@ -28,6 +28,7 @@ import {
 const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
 const OUTBOX_PREFIX = 'movieList.scopeOutbox.';
 const SESSION_INVALID_EVENT = 'movie-watch-session-invalid';
+const OUTBOX_STATUS_EVENT = 'movie-watch-outbox-status';
 
 /** Shown when fetch to /api/state fails (offline, dev server down, CORS). */
 export const SYNC_WARNING_CLIENT_NETWORK =
@@ -181,12 +182,68 @@ const writeSnapshot = <TScope extends StateScope>(
 const readOutbox = (scope: StateScope): ScopeOutbox | null =>
   readJson<ScopeOutbox>(outboxKey(scope));
 
+export interface OutboxScopeStatus {
+  scope: StateScope;
+  pendingCount: number;
+  blocked: boolean;
+  degradedSince?: string;
+}
+
+export interface OutboxStatusSummary {
+  pendingCount: number;
+  blockedCount: number;
+  pendingScopes: OutboxScopeStatus[];
+  lastDegradedSince?: string;
+}
+
+const getOutboxStatusSummaryInternal = (): OutboxStatusSummary => {
+  const pendingScopes = STATE_SCOPES.flatMap((scope) => {
+    const outbox = readOutbox(scope);
+    if (!outbox?.pendingOps.length) {
+      return [];
+    }
+
+    return [
+      {
+        scope,
+        pendingCount: outbox.pendingOps.length,
+        blocked: Boolean(outbox.blocked),
+        degradedSince: outbox.degradedSince,
+      } satisfies OutboxScopeStatus,
+    ];
+  });
+
+  return {
+    pendingCount: pendingScopes.reduce((total, entry) => total + entry.pendingCount, 0),
+    blockedCount: pendingScopes.filter((entry) => entry.blocked).length,
+    pendingScopes,
+    lastDegradedSince: pendingScopes
+      .map((entry) => entry.degradedSince)
+      .filter((value): value is string => Boolean(value))
+      .sort()[0],
+  };
+};
+
+const emitOutboxStatus = (): void => {
+  if (!isBrowser()) {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent<OutboxStatusSummary>(OUTBOX_STATUS_EVENT, {
+      detail: getOutboxStatusSummaryInternal(),
+    })
+  );
+};
+
 const writeOutbox = (scope: StateScope, outbox: ScopeOutbox): void => {
   writeJson(outboxKey(scope), outbox);
+  emitOutboxStatus();
 };
 
 const clearOutbox = (scope: StateScope): void => {
   removeJson(outboxKey(scope));
+  emitOutboxStatus();
 };
 
 const notifySessionInvalid = (): void => {
@@ -671,6 +728,22 @@ export const getStoredScopeSnapshot = <TScope extends StateScope>(
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => readOptimisticSnapshot(scope);
 
 export const sessionInvalidationEvent = SESSION_INVALID_EVENT;
+export const syncOutboxStatusEvent = OUTBOX_STATUS_EVENT;
+export const getOutboxStatusSummary = (): OutboxStatusSummary => getOutboxStatusSummaryInternal();
+
+export const flushPendingSync = async (): Promise<OutboxStatusSummary> => {
+  const summary = getOutboxStatusSummaryInternal();
+
+  if (summary.pendingScopes.length === 0) {
+    return summary;
+  }
+
+  await Promise.allSettled(
+    summary.pendingScopes.map((entry) => retryScopeSync(entry.scope))
+  );
+
+  return getOutboxStatusSummaryInternal();
+};
 
 // Re-export isMockMode for components to check
 export { isMockMode } from './mockData.ts';

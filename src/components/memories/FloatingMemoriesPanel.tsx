@@ -16,9 +16,8 @@ import { readScope } from '@/services/state';
 import type { ScopeSnapshot } from '@/services/state/stateTypes';
 import { formatMemoryTimestamp } from '@/utils';
 import { sortMemories, type MemorySortMode } from './lib/memoryUtils';
-import type { SharedMemory } from '@/shared/types';
+import type { Movie, SharedMemory, User } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
-import PolaroidMemory from './PolaroidMemory';
 
 const MEMORIES_POLLING_INTERVAL = 30000;
 
@@ -44,13 +43,12 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
-  const [viewMode, setViewMode] = useState<'stream' | 'scrapbook'>('stream');
   const [sortMode, setSortMode] = useState<MemorySortMode>('newest');
   const [imageUrl, setImageUrl] = useState('');
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [showPinnedRail, setShowPinnedRail] = useState(false);
 
-  const memories = snapshot?.data ?? [];
+  const memories = useMemo(() => snapshot?.data ?? [], [snapshot?.data]);
   const sorted = useMemo(() => sortMemories(memories, sortMode), [memories, sortMode]);
   const pinnedMemories = useMemo(
     () => sorted.filter((memory) => memory.isPinned),
@@ -76,6 +74,32 @@ const FloatingMemoriesPanel: React.FC = () => {
     () => new Set(memories.map((memory) => memory.movieTitle.trim().toLowerCase())).size,
     [memories]
   );
+  const moviesById = useMemo(
+    () => new Map(movies.map((movie) => [movie.id, movie])),
+    [movies]
+  );
+  const moviesByTitle = useMemo(
+    () =>
+      new Map(
+        movies.map((movie) => [movie.title.trim().toLowerCase(), movie])
+      ),
+    [movies]
+  );
+  const movieByMemoryId = useMemo(() => {
+    const resolved = new Map<string, Movie | null>();
+
+    memories.forEach((memory) => {
+      const normalizedTitle = memory.movieTitle.trim().toLowerCase();
+      resolved.set(
+        memory.id,
+        (memory.movieId ? moviesById.get(memory.movieId) : undefined) ??
+          moviesByTitle.get(normalizedTitle) ??
+          null
+      );
+    });
+
+    return resolved;
+  }, [memories, moviesById, moviesByTitle]);
 
   const canSubmit = Boolean(currentUser && note.trim() && movieQuery.trim());
   const showPinnedSection = pinnedMemories.length > 0 && (!isMobile || showPinnedRail);
@@ -204,7 +228,7 @@ const FloatingMemoriesPanel: React.FC = () => {
         <header className="memory-ledger__header">
           <div className="memory-ledger__title-block">
             <p className="memory-ledger__eyebrow">Notes and memories</p>
-            <h3 className="memory-ledger__title">Shared memory ledger</h3>
+            <h3 className="memory-ledger__title">Notes on the posters</h3>
           </div>
 
           <div className="memory-ledger__stats" aria-label="Memory summary">
@@ -254,14 +278,6 @@ const FloatingMemoriesPanel: React.FC = () => {
             >
               {showPinnedOnly ? 'Pinned only' : 'All entries'}
             </Button>
-            <Button
-              size="sm"
-              variant={viewMode === 'stream' ? 'primary' : 'ghost'}
-              onClick={() => setViewMode(viewMode === 'stream' ? 'scrapbook' : 'stream')}
-              className="memory-lane__action-btn"
-            >
-              {viewMode === 'stream' ? 'Stream view' : 'Scrapbook view'}
-            </Button>
           </div>
         </div>
 
@@ -269,13 +285,26 @@ const FloatingMemoriesPanel: React.FC = () => {
           <section className="memory-ledger__pinned" aria-label="Pinned memories">
             <div className="memory-ledger__section-head">
               <p className="memory-ledger__section-title">Pinned</p>
-              <p className="memory-ledger__section-meta">Keep a few memories in view.</p>
+              <p className="memory-ledger__section-meta">Keep a few notes on their posters.</p>
             </div>
-            <div className="memory-ledger__filmstrip">
+            <div className="memory-ledger__poster-grid">
               {pinnedMemories.map((memory) => (
-                <PolaroidMemory
+                <MemoryPosterCard
                   key={memory.id}
                   memory={memory}
+                  movie={movieByMemoryId.get(memory.id) ?? null}
+                  currentUser={currentUser}
+                  isEditing={editingId === memory.id}
+                  editingNote={editingNote}
+                  onEditingNoteChange={setEditingNote}
+                  onStartEditing={() => startEditing(memory)}
+                  onCancelEditing={() => {
+                    setEditingId(null);
+                    setEditingNote('');
+                  }}
+                  onSaveEdit={async () => {
+                    await saveEdit(memory);
+                  }}
                   onPin={async () => {
                     await toggleMemoryPin(memory.id);
                     refresh();
@@ -336,7 +365,7 @@ const FloatingMemoriesPanel: React.FC = () => {
             <div className="memory-ledger__section-head">
               <p className="memory-ledger__section-title">Archive</p>
               <p className="memory-ledger__section-meta">
-                {filtered.length} visible {filtered.length === 1 ? 'entry' : 'entries'}
+                {filtered.length} visible {filtered.length === 1 ? 'poster' : 'posters'}
               </p>
             </div>
 
@@ -352,12 +381,25 @@ const FloatingMemoriesPanel: React.FC = () => {
               <p className="memory-lane__status">No memories match the current filters.</p>
             ) : null}
 
-            {!error && filtered.length > 0 && viewMode === 'scrapbook' ? (
-              <div className="memory-ledger__scrapbook">
+            {!error && filtered.length > 0 ? (
+              <div className="memory-ledger__poster-grid">
                 {filtered.map((memory) => (
-                  <PolaroidMemory
+                  <MemoryPosterCard
                     key={memory.id}
                     memory={memory}
+                    movie={movieByMemoryId.get(memory.id) ?? null}
+                    currentUser={currentUser}
+                    isEditing={editingId === memory.id}
+                    editingNote={editingNote}
+                    onEditingNoteChange={setEditingNote}
+                    onStartEditing={() => startEditing(memory)}
+                    onCancelEditing={() => {
+                      setEditingId(null);
+                      setEditingNote('');
+                    }}
+                    onSaveEdit={async () => {
+                      await saveEdit(memory);
+                    }}
                     onPin={async () => {
                       await toggleMemoryPin(memory.id);
                       refresh();
@@ -371,102 +413,6 @@ const FloatingMemoriesPanel: React.FC = () => {
                         : undefined
                     }
                   />
-                ))}
-              </div>
-            ) : null}
-
-            {!error && filtered.length > 0 && viewMode === 'stream' ? (
-              <div className="memory-ledger__stream-list">
-                {filtered.map((memory) => (
-                  <article
-                    key={memory.id}
-                    className={`memory-entry${memory.isPinned ? ' is-pinned' : ''}${currentUser === memory.author ? ' is-mine' : ''}`}
-                  >
-                    <div className="memory-entry__head">
-                      <div>
-                        <p className="memory-entry__title">{memory.movieTitle}</p>
-                        <p className="memory-entry__meta">
-                          {memory.author} · {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
-                        </p>
-                      </div>
-                      {memory.isPinned ? <span className="memory-entry__pin">Pinned</span> : null}
-                    </div>
-
-                    {editingId === memory.id ? (
-                      <Textarea
-                        label="Edit memory"
-                        value={editingNote}
-                        onChange={(event) => setEditingNote(event.target.value)}
-                        className="memory-lane__textarea"
-                        style={{ minHeight: 112 }}
-                      />
-                    ) : (
-                      <p className="memory-entry__note">{memory.note}</p>
-                    )}
-
-                    <div className="memory-entry__actions">
-                      {editingId === memory.id ? (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            onClick={() => saveEdit(memory)}
-                            className="memory-lane__action-btn memory-lane__action-btn--save"
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingId(null);
-                              setEditingNote('');
-                            }}
-                            className="memory-lane__action-btn"
-                          >
-                            Cancel
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={async () => {
-                              await toggleMemoryPin(memory.id);
-                              refresh();
-                            }}
-                            className="memory-lane__action-btn"
-                          >
-                            {memory.isPinned ? 'Unpin' : 'Pin'}
-                          </Button>
-                          {currentUser === memory.author ? (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => startEditing(memory)}
-                                className="memory-lane__action-btn"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="danger"
-                                onClick={async () => {
-                                  await deleteMemory(memory.id);
-                                  refresh();
-                                }}
-                                className="memory-lane__action-btn"
-                              >
-                                Delete
-                              </Button>
-                            </>
-                          ) : null}
-                        </>
-                      )}
-                    </div>
-                  </article>
                 ))}
               </div>
             ) : null}
@@ -490,3 +436,141 @@ const FloatingMemoriesPanel: React.FC = () => {
 };
 
 export default FloatingMemoriesPanel;
+
+interface MemoryPosterCardProps {
+  memory: SharedMemory;
+  movie: Movie | null;
+  currentUser: User | null;
+  isEditing: boolean;
+  editingNote: string;
+  onEditingNoteChange: (value: string) => void;
+  onStartEditing: () => void;
+  onCancelEditing: () => void;
+  onSaveEdit: () => Promise<void>;
+  onPin: () => Promise<void>;
+  onDelete?: () => Promise<void>;
+}
+
+const MemoryPosterCard: React.FC<MemoryPosterCardProps> = ({
+  memory,
+  movie,
+  currentUser,
+  isEditing,
+  editingNote,
+  onEditingNoteChange,
+  onStartEditing,
+  onCancelEditing,
+  onSaveEdit,
+  onPin,
+  onDelete,
+}) => {
+  const isMine = currentUser === memory.author;
+  const posterUrl = movie?.posterUrl || memory.imageUrl;
+  const timestamp = formatMemoryTimestamp(memory.updatedAt || memory.createdAt);
+  const posterStyle = posterUrl
+    ? ({
+        backgroundImage: `linear-gradient(180deg, rgba(7, 5, 9, 0.12) 0%, rgba(7, 5, 9, 0.36) 36%, rgba(7, 5, 9, 0.92) 100%), url("${posterUrl}")`,
+      } as React.CSSProperties)
+    : undefined;
+
+  return (
+    <article
+      className={`memory-poster-card${memory.isPinned ? ' is-pinned' : ''}${isMine ? ' is-mine' : ''}`}
+    >
+      <div
+        className={`memory-poster-card__surface${posterUrl ? ' has-poster' : ' is-fallback'}`}
+        style={posterStyle}
+      >
+        {!posterUrl ? (
+          <div className="memory-poster-card__fallback-mark" aria-hidden>
+            {memory.movieTitle}
+          </div>
+        ) : null}
+
+        <div className="memory-poster-card__chips">
+          <span className="memory-poster-card__chip">{memory.author}</span>
+          {memory.isPinned ? <span className="memory-poster-card__chip">Pinned</span> : null}
+        </div>
+
+        <div className="memory-poster-card__caption">
+          <div className="memory-poster-card__header">
+            <div>
+              <p className="memory-poster-card__title">{memory.movieTitle}</p>
+              <p className="memory-poster-card__meta">{timestamp}</p>
+            </div>
+          </div>
+
+          {isEditing ? (
+            <Textarea
+              label="Edit note"
+              value={editingNote}
+              onChange={(event) => onEditingNoteChange(event.target.value)}
+              className="memory-lane__textarea memory-poster-card__textarea"
+              style={{ minHeight: 126 }}
+            />
+          ) : (
+            <p className="memory-poster-card__note" title={memory.note}>
+              {memory.note}
+            </p>
+          )}
+
+          <div className="memory-poster-card__actions">
+            {isEditing ? (
+              <>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={onSaveEdit}
+                  className="memory-lane__action-btn memory-lane__action-btn--save"
+                >
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onCancelEditing}
+                  className="memory-lane__action-btn"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onPin}
+                  className="memory-lane__action-btn"
+                >
+                  {memory.isPinned ? 'Unpin' : 'Pin'}
+                </Button>
+                {isMine ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={onStartEditing}
+                      className="memory-lane__action-btn"
+                    >
+                      Edit
+                    </Button>
+                    {onDelete ? (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={onDelete}
+                        className="memory-lane__action-btn"
+                      >
+                        Delete
+                      </Button>
+                    ) : null}
+                  </>
+                ) : null}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
