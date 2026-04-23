@@ -48,10 +48,11 @@
 .app-shell__canvas--main {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.35rem, 0.2rem + 0.45vw, 0.65rem);
+  gap: clamp(0.7rem, 0.38rem + 0.8vw, 1.15rem);
   flex: 1;
   width: 100%;
   min-height: min(100dvh, 100vh);
+  padding-block: clamp(0.3rem, 0.18rem + 0.4vw, 0.7rem);
 }
 
 .workspace-stage--mobile-shell {
@@ -484,12 +485,12 @@ body {
   z-index: 10;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(0.6rem, 0.45rem + 0.45vw, 0.95rem);
+  gap: clamp(0.85rem, 0.68rem + 0.55vw, 1.3rem);
   max-width: min(100%, var(--shell-max-width));
   margin: 0 auto;
   width: 100%;
   /* Inner rhythm only; horizontal gutters live on .app-shell--viewport */
-  padding: clamp(0.9rem, 0.65rem + 1.1vw, 1.5rem) 0;
+  padding: clamp(0.55rem, 0.42rem + 0.55vw, 0.95rem) 0 clamp(0.8rem, 0.6rem + 0.8vw, 1.35rem);
 }
 
 /* (messages-fab removed — Messages now opens via the radial menu) */
@@ -12437,4 +12438,3 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
