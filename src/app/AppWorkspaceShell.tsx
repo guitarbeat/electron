@@ -1,5 +1,5 @@
 import React, { type FC } from 'react';
-import type { MainTab, User } from '@/shared/types';
+import type { MainTab } from '@/shared/types';
 import WatchlistComponent from '../components/watchlist/index.tsx';
 
 const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
@@ -7,13 +7,11 @@ const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
 interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
-  currentUser: User | null;
 }
 
 const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   isMobile,
   activeTab,
-  currentUser,
 }) => {
   return (
     <main

@@ -15,6 +15,12 @@ const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
+import {
+  flushPendingSync,
+  getOutboxStatusSummary,
+  syncOutboxStatusEvent,
+  type OutboxStatusSummary,
+} from '@/services/state/stateClient';
 
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
@@ -24,6 +30,7 @@ const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
 const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
+const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
 
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
@@ -53,6 +60,37 @@ const getRequestedTab = (value: string | null): MainTab | null => {
   return null;
 };
 
+interface StoredAppViewState {
+  activeTab: MainTab;
+  showMessages: boolean;
+}
+
+const readStoredAppViewState = (): StoredAppViewState | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(APP_VIEW_STATE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<StoredAppViewState>;
+    return {
+      activeTab: parsed.activeTab === 'places' ? 'places' : 'queue',
+      showMessages: Boolean(parsed.showMessages),
+    };
+  } catch {
+    return null;
+  }
+};
+
+const isStandaloneDisplayMode = (): boolean =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
@@ -61,12 +99,12 @@ const App: React.FC = () => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const [activeTab, setActiveTab] = useState<MainTab>('queue');
+  const persistedViewState = useMemo(() => readStoredAppViewState(), []);
+  const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'queue');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser)
   );
-  const [showMessages, setShowMessages] = useState(false);
-  const [showMemoriesPanel, setShowMemoriesPanel] = useState(false);
+  const [showMessages, setShowMessages] = useState(persistedViewState?.showMessages ?? false);
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
@@ -74,6 +112,15 @@ const App: React.FC = () => {
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
+  );
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine
+  );
+  const [isStandalone, setIsStandalone] = useState<boolean>(isStandaloneDisplayMode);
+  const [canInstallApp, setCanInstallApp] = useState(false);
+  const [hasUpdateReady, setHasUpdateReady] = useState(false);
+  const [outboxStatus, setOutboxStatus] = useState<OutboxStatusSummary>(() =>
+    getOutboxStatusSummary()
   );
   const installPromptRef = React.useRef<InstallPromptEvent | null>(null);
   const installToastIdRef = React.useRef<string | null>(null);
@@ -105,6 +152,20 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(
+      APP_VIEW_STATE_KEY,
+      JSON.stringify({
+        activeTab,
+        showMessages,
+      } satisfies StoredAppViewState)
+    );
+  }, [activeTab, showMessages]);
+
+  useEffect(() => {
     if (shortcutHandledRef.current || typeof window === 'undefined') {
       return;
     }
@@ -120,10 +181,7 @@ const App: React.FC = () => {
       didApplyShortcut = true;
     }
 
-    if (requestedPanel === 'memories') {
-      setShowMemoriesPanel(true);
-      didApplyShortcut = true;
-    } else if (requestedPanel === 'messages') {
+    if (requestedPanel === 'messages') {
       setShowMessages(true);
       didApplyShortcut = true;
     }
@@ -144,6 +202,7 @@ const App: React.FC = () => {
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       installPromptRef.current = event as InstallPromptEvent;
+      setCanInstallApp(true);
 
       if (installToastIdRef.current) {
         dismissToast(installToastIdRef.current);
@@ -167,6 +226,7 @@ const App: React.FC = () => {
             });
           }
           installPromptRef.current = null;
+          setCanInstallApp(false);
           if (installToastIdRef.current) {
             dismissToast(installToastIdRef.current);
             installToastIdRef.current = null;
@@ -177,6 +237,8 @@ const App: React.FC = () => {
 
     const handleInstalled = () => {
       installPromptRef.current = null;
+      setCanInstallApp(false);
+      setIsStandalone(true);
       if (installToastIdRef.current) {
         dismissToast(installToastIdRef.current);
         installToastIdRef.current = null;
@@ -204,6 +266,7 @@ const App: React.FC = () => {
     let hasReloaded = false;
 
     const showUpdateToast = (registration: ServiceWorkerRegistration) => {
+      setHasUpdateReady(true);
       if (updateToastIdRef.current) {
         dismissToast(updateToastIdRef.current);
       }
@@ -249,6 +312,7 @@ const App: React.FC = () => {
     const handleControllerChange = () => {
       if (hasReloaded) return;
       hasReloaded = true;
+      setHasUpdateReady(false);
       window.location.reload();
     };
 
@@ -265,6 +329,8 @@ const App: React.FC = () => {
     }
 
     const handleOffline = () => {
+      setIsOnline(false);
+      document.documentElement.classList.add('app-offline');
       if (offlineToastIdRef.current) {
         dismissToast(offlineToastIdRef.current);
       }
@@ -276,10 +342,13 @@ const App: React.FC = () => {
     };
 
     const handleOnline = () => {
+      setIsOnline(true);
+      document.documentElement.classList.remove('app-offline');
       if (offlineToastIdRef.current) {
         dismissToast(offlineToastIdRef.current);
         offlineToastIdRef.current = null;
       }
+      void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
       updateRegistrationRef.current?.update().catch(() => undefined);
       showToast({
         type: 'success',
@@ -292,6 +361,8 @@ const App: React.FC = () => {
 
     if (!navigator.onLine) {
       handleOffline();
+    } else {
+      document.documentElement.classList.remove('app-offline');
     }
 
     return () => {
@@ -299,6 +370,49 @@ const App: React.FC = () => {
       window.removeEventListener('online', handleOnline);
     };
   }, [dismissToast, showToast]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const applyOutboxStatus = () => {
+      setOutboxStatus(getOutboxStatusSummary());
+    };
+
+    const handleOutboxEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<OutboxStatusSummary>;
+      setOutboxStatus(customEvent.detail ?? getOutboxStatusSummary());
+    };
+
+    const handleVisibilitySync = () => {
+      setIsStandalone(isStandaloneDisplayMode());
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
+        updateRegistrationRef.current?.update().catch(() => undefined);
+      }
+    };
+
+    applyOutboxStatus();
+    window.addEventListener(syncOutboxStatusEvent, handleOutboxEvent as EventListener);
+    window.addEventListener('focus', handleVisibilitySync);
+    document.addEventListener('visibilitychange', handleVisibilitySync);
+
+    const syncInterval = window.setInterval(() => {
+      if (!navigator.onLine) {
+        return;
+      }
+
+      void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
+    }, 45000);
+
+    return () => {
+      window.removeEventListener(syncOutboxStatusEvent, handleOutboxEvent as EventListener);
+      window.removeEventListener('focus', handleVisibilitySync);
+      document.removeEventListener('visibilitychange', handleVisibilitySync);
+      window.clearInterval(syncInterval);
+    };
+  }, []);
 
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {
@@ -337,11 +451,41 @@ const App: React.FC = () => {
     setShowSpinWheel(true);
   }, []);
 
+  const handleInstallApp = useCallback(async () => {
+    const promptEvent = installPromptRef.current;
+    if (!promptEvent) {
+      return;
+    }
+
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    if (choice.outcome === 'accepted') {
+      showToast({
+        type: 'success',
+        message: 'Electron added to your device.',
+      });
+    }
+    installPromptRef.current = null;
+    setCanInstallApp(false);
+    if (installToastIdRef.current) {
+      dismissToast(installToastIdRef.current);
+      installToastIdRef.current = null;
+    }
+  }, [dismissToast, showToast]);
+
+  const handleApplyUpdate = useCallback(() => {
+    setHasUpdateReady(false);
+    updateRegistrationRef.current?.waiting?.postMessage({ type: 'SKIP_WAITING' });
+  }, []);
+
+  const handleRetryPendingSync = useCallback(() => {
+    void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
+  }, []);
+
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
         showMessages,
-        showMemoriesPanel,
         showQuizEditor,
         showQuizFlow,
         showSpinWheel,
@@ -350,7 +494,6 @@ const App: React.FC = () => {
         isSpinWheelLocked,
         currentUser,
         setShowMessages,
-        setShowMemoriesPanel,
         setShowQuizEditor,
         setShowQuizFlow,
         setShowSpinWheel,
@@ -365,7 +508,6 @@ const App: React.FC = () => {
       handleQuizRetake,
       isSpinWheelLocked,
       quizCompleted,
-      showMemoriesPanel,
       showMessages,
       showQuizEditor,
       showQuizFlow,
@@ -429,7 +571,6 @@ const App: React.FC = () => {
         <React.Suspense fallback={null}>
           <RadialMenu
             onOpenMessages={() => setShowMessages(true)}
-            onOpenMemories={() => setShowMemoriesPanel(true)}
             onOpenQuiz={openQuizExperience}
             onOpenSpin={openSpinMatch}
           />
@@ -440,12 +581,22 @@ const App: React.FC = () => {
             <AppHeader
               activeTab={activeTab}
               onTabChange={handleTabChange}
+              pwaStatus={{
+                isOnline,
+                isStandalone,
+                canInstall: canInstallApp,
+                hasUpdateReady,
+                pendingSyncCount: outboxStatus.pendingCount,
+                blockedSyncCount: outboxStatus.blockedCount,
+              }}
+              onInstallApp={() => void handleInstallApp()}
+              onApplyUpdate={handleApplyUpdate}
+              onRetrySync={handleRetryPendingSync}
             />
             <React.Suspense fallback={null}>
               <AppWorkspaceShell
                 isMobile={isMobile}
                 activeTab={activeTab}
-                currentUser={currentUser}
               />
             </React.Suspense>
           </div>

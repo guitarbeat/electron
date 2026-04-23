@@ -8,6 +8,8 @@ const SHELL = [
   '/favicon-32x32.png',
   '/apple-touch-icon.png',
   '/electron-logo-mark.png',
+  '/pwa-screenshot-queue.svg',
+  '/pwa-screenshot-memories.svg',
   '/manifest.json',
 ];
 

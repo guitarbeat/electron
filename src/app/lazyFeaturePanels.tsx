@@ -3,9 +3,6 @@ import React from 'react';
 export const MessageBoardPanel = React.lazy(
   () => import('@/components/messages/MessageBoard')
 );
-export const FloatingMemoriesPanelContent = React.lazy(
-  () => import('@/components/memories/FloatingMemoriesPanel')
-);
 export const SpinSwipeGamePanel = React.lazy(
   () => import('@/components/spin-match/SpinSwipeGame')
 );

@@ -1,6 +1,5 @@
 import { Suspense, type CSSProperties, type ReactNode } from 'react';
 import {
-  FloatingMemoriesPanelContent,
   MessageBoardPanel,
   QuizEditorPanel,
   QuizFlowModalPanel,
@@ -42,7 +41,6 @@ const renderSuspended = (content: ReactNode) => (
 
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
-  showMemoriesPanel: boolean;
   showQuizEditor: boolean;
   showQuizFlow: boolean;
   showSpinWheel: boolean;
@@ -51,7 +49,6 @@ export interface BuildFeatureModalsParams {
   isSpinWheelLocked: boolean;
   currentUser: User | null;
   setShowMessages: (open: boolean) => void;
-  setShowMemoriesPanel: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
@@ -64,7 +61,6 @@ export interface BuildFeatureModalsParams {
 export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
   const {
     showMessages,
-    showMemoriesPanel,
     showQuizEditor,
     showQuizFlow,
     showSpinWheel,
@@ -73,7 +69,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     isSpinWheelLocked,
     currentUser,
     setShowMessages,
-    setShowMemoriesPanel,
     setShowQuizEditor,
     setShowQuizFlow,
     setShowSpinWheel,
@@ -94,17 +89,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 920,
       contentStyle: scrollContentStyle,
       content: renderSuspended(<MessageBoardPanel />),
-    },
-    {
-      key: 'memories',
-      isOpen: showMemoriesPanel,
-      onClose: () => setShowMemoriesPanel(false),
-      title: 'Memories · Archive',
-      ariaLabel: 'Shared movie notes',
-      maxWidth: 980,
-      maxHeight: 920,
-      contentStyle: scrollContentStyle,
-      content: renderSuspended(<FloatingMemoriesPanelContent />),
     },
     {
       key: 'quiz-editor',
