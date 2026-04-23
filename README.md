@@ -29,12 +29,6 @@ Run `pnpm verify` before a Vercel deploy to execute the full local validation se
 - **[docs/README.md](docs/README.md)** — index of guides (architecture, development, deployment)
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — toolchain, env vars, and workflow
 
-## Repo sync
-
-Pushes to `guitarbeat/electron` `main` automatically sync the current tracked-file snapshot into `guitarbeat/electron1` `main` via `.github/workflows/sync-electron1.yml`.
-
-That workflow requires the `ELECTRON1_SYNC_TOKEN` repository secret to be set in `guitarbeat/electron`. The secret value should be a GitHub token with permission to push to `guitarbeat/electron1`.
-
 ## Tech stack
 
 - **UI**: React, SCSS (`src/app/App.scss`), design tokens in `src/theme/`
