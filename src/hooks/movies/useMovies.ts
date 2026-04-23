@@ -232,11 +232,16 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
             return movie;
           }
 
+          const nextWatchedBy = new Set(movie.watchedBy);
+          if (nextWatchedBy.has(currentUser)) {
+            nextWatchedBy.delete(currentUser);
+          } else {
+            nextWatchedBy.add(currentUser);
+          }
+
           return {
             ...movie,
-            watchedBy: movie.watchedBy.includes(currentUser)
-              ? movie.watchedBy.filter((user) => user !== currentUser)
-              : [...movie.watchedBy, currentUser],
+            watchedBy: Array.from(nextWatchedBy),
           };
         })
       );
