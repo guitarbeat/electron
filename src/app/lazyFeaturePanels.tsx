@@ -18,6 +18,3 @@ export const QuizEditorPanel = React.lazy(
 export const QuizFlowModalPanel = React.lazy(
   () => import('@/app/QuizFlowModalContent')
 );
-export const FavoritesPanelContent = React.lazy(
-  () => import('@/components/favorites/FavoritesPanel')
-);
