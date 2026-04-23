@@ -12,7 +12,7 @@ import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
 import PlacesTopControls from './PlacesTopControls.tsx';
-import { buildPlaceSections } from './placeSections.ts';
+import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
 
 const PlacesList: React.FC = () => {

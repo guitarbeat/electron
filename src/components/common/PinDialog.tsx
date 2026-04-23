@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
-import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/modalPrimitives';
+import { getModalOverlayStyle, isFocusWithin } from '@/components/ui/lib/modalPrimitives';
 import { getErrorMessage, consoleError } from '@/utils';
 
 interface PinDialogProps {

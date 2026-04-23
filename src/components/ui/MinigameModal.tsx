@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { colors, spacing, shadows, typography, radius, zIndex, motion } from '@/theme/tokens';
-import { getModalOverlayStyle } from './modalPrimitives';
+import { getModalOverlayStyle } from './lib/modalPrimitives';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 

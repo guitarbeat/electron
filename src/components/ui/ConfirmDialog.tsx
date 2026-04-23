@@ -8,7 +8,7 @@ import {
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
-} from './modalPrimitives';
+} from './lib/modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
 import { CrossIcon } from '@/common/Icons';
 

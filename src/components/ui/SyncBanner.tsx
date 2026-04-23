@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Button from './Button';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
-import { getSyncBannerContent } from './syncBannerContent';
+import { getSyncBannerContent } from './lib/syncBannerContent';
 import { isMockMode } from '@/services/state';
 
 interface SyncBannerProps {

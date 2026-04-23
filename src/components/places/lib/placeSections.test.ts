@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { Place, PlaceSuggestion } from '../../shared/types.ts';
+import type { Place, PlaceSuggestion } from '../../../shared/types.ts';
 import { buildPlaceSections } from './placeSections.ts';
 
 const PLACES: Place[] = [

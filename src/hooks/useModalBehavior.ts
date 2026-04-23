@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
-import { isFocusWithin, trapFocusOnTab } from '@/components/ui/modalPrimitives';
+import { isFocusWithin, trapFocusOnTab } from '@/components/ui/lib/modalPrimitives';
 import { useAudio } from './useAudio';
 
 export interface UseModalBehaviorOptions {

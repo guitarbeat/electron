@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { colors, radius, spacing, typography, zIndex, shadows, motion } from '@/theme/tokens';
-import { getModalCloseButtonStyle, getModalOverlayStyle } from './modalPrimitives';
+import { getModalCloseButtonStyle, getModalOverlayStyle } from './lib/modalPrimitives';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 import { CrossIcon } from '@/common/Icons';
 

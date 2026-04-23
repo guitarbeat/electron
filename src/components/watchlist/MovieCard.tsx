@@ -14,11 +14,11 @@ import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
 import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
-import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
-import { getMovieActionState, type MovieActionState } from './movieActionState';
+import { MAX_MOVIE_NOTE_LENGTH } from './lib/watchlistConstants';
+import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
-import { INITIAL_VISIBLE_COUNT } from '@/memories/memoryUtils';
+import { INITIAL_VISIBLE_COUNT } from '@/memories/lib/memoryUtils';
 
 interface MovieCardProps {
   movie: Movie;

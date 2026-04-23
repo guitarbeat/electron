@@ -14,7 +14,7 @@ import {
 import { readScope } from '@/services/state';
 import type { ScopeSnapshot } from '@/services/state/stateTypes';
 import { formatMemoryTimestamp } from '@/utils';
-import { sortMemories, type MemorySortMode } from './memoryUtils';
+import { sortMemories, type MemorySortMode } from './lib/memoryUtils';
 import type { SharedMemory } from '@/shared/types';
 import { areDeeplyEqual } from '@/utils';
 import PolaroidMemory from './PolaroidMemory';

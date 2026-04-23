@@ -12,7 +12,7 @@ import {
   MemorySortMode,
   getStickyNoteRotation,
   getStickyNoteTheme,
-} from './memoryUtils';
+} from './lib/memoryUtils';
 
 interface MemoryListProps {
   memories: SharedMemory[];

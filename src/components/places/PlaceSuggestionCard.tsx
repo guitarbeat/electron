@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseSuggestionCard from '@/components/common/BaseSuggestionCard';
-import { getPlaceIcon } from '@/components/places/placeMeta';
+import { getPlaceIcon } from '@/components/places/lib/placeMeta';
 import type { PlaceSuggestion } from '@/shared/types';
 import { colors, typography } from '@/theme/tokens';
 

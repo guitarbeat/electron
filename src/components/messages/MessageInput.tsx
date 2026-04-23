@@ -3,7 +3,7 @@ import { Spinner } from '@/common/Icons';
 import { MAX_MESSAGE_LENGTH } from '@/utils';
 import type { User } from '@/shared/types';
 import { spacing } from '@/theme/tokens';
-import { shouldSubmitMessageOnKeyDown } from './messageKeyboard';
+import { shouldSubmitMessageOnKeyDown } from './lib/messageKeyboard';
 
 interface MessageInputProps {
   currentUser: User | null;

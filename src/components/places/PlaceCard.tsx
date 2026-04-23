@@ -12,7 +12,7 @@ import {
   MediaCardSubtext,
   MediaCardTitle,
 } from '@/ui/MediaCard';
-import { getPlaceMeta } from './placeMeta';
+import { getPlaceMeta } from './lib/placeMeta';
 
 interface PlaceCardProps {
   place: Place;
