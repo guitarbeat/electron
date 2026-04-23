@@ -9,37 +9,72 @@ import FishTank from '@/components/effects/FishTank';
 const LoadingScreen: React.FC<{ label?: string }> = ({
   label = 'Warming up the tank…',
 }) => (
-  <div
-    role="status"
-    aria-live="polite"
-    style={{
-      position: 'fixed',
-      inset: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '1.25rem',
-      background: 'var(--color-background, #0f0a14)',
-      zIndex: 5000,
-      padding: '1rem',
-    }}
-  >
-    <div style={{ width: 'min(560px, 90vw)' }}>
-      <FishTank />
-    </div>
-    <p
+  <>
+    <style>{`
+      .loading-screen__tank .fish-tank-wrapper {
+        position: relative;
+        inset: auto;
+      }
+
+      .loading-screen__tank .fish-tank-wrapper .container {
+        margin: 0 auto;
+      }
+
+      @media (max-width: 768px) {
+        .loading-screen__tank .fish-tank-wrapper {
+          transform: scale(0.7);
+          transform-origin: center center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .loading-screen__tank .fish-tank-wrapper {
+          transform: scale(0.5);
+          transform-origin: center center;
+        }
+      }
+    `}</style>
+    <div
+      role="status"
+      aria-live="polite"
       style={{
-        fontFamily: 'Papyrus, serif',
-        fontSize: '0.95rem',
-        letterSpacing: '0.08em',
-        color: 'rgba(255, 255, 255, 0.7)',
-        margin: 0,
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1.25rem',
+        background: 'var(--color-background, #0f0a14)',
+        zIndex: 5000,
+        padding: '1rem',
       }}
     >
-      {label}
-    </p>
-  </div>
+      <div
+        className="loading-screen__tank"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: 'min(560px, 90vw)',
+        }}
+      >
+        <FishTank />
+      </div>
+      <p
+        style={{
+          fontFamily: 'Papyrus, serif',
+          fontSize: '0.95rem',
+          letterSpacing: '0.08em',
+          color: 'rgba(255, 255, 255, 0.7)',
+          margin: 0,
+        }}
+      >
+        {label}
+      </p>
+    </div>
+  </>
 );
 
 export default LoadingScreen;

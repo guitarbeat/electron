@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useUser } from '@/app/useProviders';
 import { USER_PHOTOS, type MainTab, type User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
@@ -25,6 +25,11 @@ const AppHeader: FC<AppHeaderProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectionError, setSelectionError] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const leftRef = useRef<HTMLDivElement>(null);
+  const centerRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -64,6 +69,64 @@ const AppHeader: FC<AppHeaderProps> = ({
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isProfileMenuOpen]);
+
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    const left = leftRef.current;
+    const center = centerRef.current;
+    const right = rightRef.current;
+    const brand = brandRef.current;
+
+    if (!header || !left || !center || !right || !brand) {
+      return;
+    }
+
+    let frameId = 0;
+    const deferredIds: number[] = [];
+
+    const fitBrand = () => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        brand.style.setProperty('--electron-scale', '1');
+        const naturalWidth = brand.scrollWidth;
+        const availableWidth = center.clientWidth;
+        const scale =
+          naturalWidth > 0
+            ? Math.min(1, Math.max(0.56, (availableWidth - 2) / naturalWidth))
+            : 1;
+        brand.style.setProperty('--electron-scale', scale.toFixed(3));
+      });
+    };
+
+    fitBrand();
+    deferredIds.push(window.setTimeout(fitBrand, 80), window.setTimeout(fitBrand, 300));
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fitBrand) : null;
+    [header, left, center, right, brand].forEach((element) => resizeObserver?.observe(element));
+
+    window.addEventListener('resize', fitBrand);
+    window.addEventListener('orientationchange', fitBrand);
+    window.visualViewport?.addEventListener('resize', fitBrand);
+    document.addEventListener('visibilitychange', fitBrand);
+
+    const fontSet = document.fonts;
+    void fontSet?.ready.then(fitBrand);
+    fontSet?.addEventListener('loadingdone', fitBrand);
+    fontSet?.addEventListener('loadingerror', fitBrand);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      deferredIds.forEach((id) => window.clearTimeout(id));
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', fitBrand);
+      window.removeEventListener('orientationchange', fitBrand);
+      window.visualViewport?.removeEventListener('resize', fitBrand);
+      document.removeEventListener('visibilitychange', fitBrand);
+      fontSet?.removeEventListener('loadingdone', fitBrand);
+      fontSet?.removeEventListener('loadingerror', fitBrand);
+    };
+  }, [activeTab, currentUser]);
 
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
@@ -194,9 +257,9 @@ const AppHeader: FC<AppHeaderProps> = ({
   };
 
   return (
-    <header className="app-header" role="banner">
+    <header ref={headerRef} className="app-header" role="banner">
       {/* Left: Theme Toggle + Background Toggle */}
-      <div className="app-header__left">
+      <div ref={leftRef} className="app-header__left">
         <ThemeToggle
           activeTab={activeTab}
           onChange={onTabChange}
@@ -207,12 +270,15 @@ const AppHeader: FC<AppHeaderProps> = ({
       </div>
 
       {/* Center: Brand */}
-      <div className="app-header__center">
-        <span className="app-header__brand">Electron</span>
+      <div ref={centerRef} className="app-header__center" aria-label="Electron">
+        <span ref={brandRef} className="app-header__brand" aria-hidden="true">
+          Electron
+        </span>
+        <span className="app-header__brand-fallback">Electron</span>
       </div>
 
       {/* Right: Profile Selector */}
-      <div className="app-header__right">
+      <div ref={rightRef} className="app-header__right">
         <div className="app-header__profile-container">
           <button
             ref={triggerRef}

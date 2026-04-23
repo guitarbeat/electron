@@ -36,7 +36,7 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
       title: 'Spin Wheel',
       description: 'Spin to pick a random movie',
       icon: <RotateCcw className="game-card__icon" />,
-      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      gradient: 'var(--gradient-primary)',
       onClick: onSpinWheel || (() => {}),
     },
     {
@@ -44,7 +44,8 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
       title: 'Spin & Match',
       description: 'Match movies with genres',
       icon: <Dices className="game-card__icon" />,
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      gradient:
+        'linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 90%, transparent) 0%, color-mix(in srgb, var(--color-secondary) 60%, var(--color-accent)) 100%)',
       onClick: onSpinMatch || (() => {}),
     },
     {
@@ -52,7 +53,8 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
       title: 'Personality Quiz',
       description: 'Test how well you know each other',
       icon: <HelpCircle className="game-card__icon" />,
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      gradient:
+        'linear-gradient(135deg, color-mix(in srgb, var(--color-tertiary) 90%, transparent) 0%, color-mix(in srgb, var(--color-tertiary) 55%, var(--color-quaternary)) 100%)',
       onClick: onMovieQuiz || (() => {}),
     },
   ];
@@ -67,7 +69,7 @@ export const GameDrawer: React.FC<GameDrawerProps> = ({
       >
         <div className="game-drawer__toggle-content">
           <Gamepad2 className="game-drawer__toggle-icon" />
-          <span className="game-drawer__toggle-text">Quick Games</span>
+          <span className="game-drawer__toggle-text">Games &amp; Quizzes</span>
           <span className="game-drawer__toggle-hint">Pick a random movie or test your knowledge</span>
         </div>
         <div className="game-drawer__toggle-chevron">
