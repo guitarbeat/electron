@@ -11,11 +11,26 @@ import './AppHeader.css';
 interface AppHeaderProps {
   activeTab: MainTab;
   onTabChange: (tab: MainTab) => void;
+  pwaStatus?: {
+    isOnline: boolean;
+    isStandalone: boolean;
+    canInstall: boolean;
+    hasUpdateReady: boolean;
+    pendingSyncCount: number;
+    blockedSyncCount: number;
+  };
+  onInstallApp?: () => void;
+  onApplyUpdate?: () => void;
+  onRetrySync?: () => void;
 }
 
 const AppHeader: FC<AppHeaderProps> = ({
   activeTab,
   onTabChange,
+  pwaStatus,
+  onInstallApp,
+  onApplyUpdate,
+  onRetrySync,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } = usePins();
@@ -39,6 +54,79 @@ const AppHeader: FC<AppHeaderProps> = ({
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
   const modeLabel = activeTab === 'queue' ? 'Movie queue' : 'Places map';
   const statusLabel = currentUser ? `${currentUser} online` : 'Guest session';
+  const pwaChip = (() => {
+    if (!pwaStatus) {
+      return null;
+    }
+
+    if (!pwaStatus.isOnline) {
+      return {
+        tone: 'offline' as const,
+        label: 'Offline',
+        detail: 'Local cache only',
+        action: undefined,
+        actionLabel: undefined,
+      };
+    }
+
+    if (pwaStatus.hasUpdateReady) {
+      return {
+        tone: 'update' as const,
+        label: 'Update ready',
+        detail: 'Refresh app shell',
+        action: onApplyUpdate,
+        actionLabel: 'Refresh',
+      };
+    }
+
+    if (pwaStatus.blockedSyncCount > 0) {
+      return {
+        tone: 'warning' as const,
+        label: 'Sync blocked',
+        detail: `${pwaStatus.blockedSyncCount} section${pwaStatus.blockedSyncCount === 1 ? '' : 's'} need attention`,
+        action: onRetrySync,
+        actionLabel: 'Retry',
+      };
+    }
+
+    if (pwaStatus.pendingSyncCount > 0) {
+      return {
+        tone: 'syncing' as const,
+        label: 'Syncing',
+        detail: `${pwaStatus.pendingSyncCount} pending change${pwaStatus.pendingSyncCount === 1 ? '' : 's'}`,
+        action: onRetrySync,
+        actionLabel: 'Sync now',
+      };
+    }
+
+    if (pwaStatus.canInstall && !pwaStatus.isStandalone) {
+      return {
+        tone: 'install' as const,
+        label: 'Install app',
+        detail: 'Open like native',
+        action: onInstallApp,
+        actionLabel: 'Install',
+      };
+    }
+
+    if (pwaStatus.isStandalone) {
+      return {
+        tone: 'ready' as const,
+        label: 'Installed',
+        detail: 'Standalone mode',
+        action: undefined,
+        actionLabel: undefined,
+      };
+    }
+
+    return {
+      tone: 'ready' as const,
+      label: 'Live sync',
+      detail: 'App connected',
+      action: undefined,
+      actionLabel: undefined,
+    };
+  })();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -266,6 +354,23 @@ const AppHeader: FC<AppHeaderProps> = ({
           <span className="app-header__status-label">{modeLabel}</span>
           <span className="app-header__status-value">{statusLabel}</span>
         </div>
+        {pwaChip ? (
+          <div className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}>
+            <div className="app-header__pwa-copy">
+              <span className="app-header__pwa-label">{pwaChip.label}</span>
+              <span className="app-header__pwa-detail">{pwaChip.detail}</span>
+            </div>
+            {pwaChip.action && pwaChip.actionLabel ? (
+              <button
+                type="button"
+                className="app-header__pwa-action"
+                onClick={pwaChip.action}
+              >
+                {pwaChip.actionLabel}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
         <ThemeToggle
           activeTab={activeTab}
           onChange={onTabChange}

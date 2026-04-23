@@ -76,6 +76,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }
     Object.entries(cssVars).forEach(([name, value]) => {
       root.style.setProperty(name, value);
     });
+
+    const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    themeMeta?.setAttribute('content', themeTokens.background);
   }, [themeTokens]);
 
   const value = useMemo(
