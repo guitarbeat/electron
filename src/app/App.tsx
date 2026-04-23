@@ -3,7 +3,7 @@ import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
-import { useAppSession, useTheme, useUser } from '@/app/useProviders';
+import { useAppSession, useTheme, useToast, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 import LoadingScreen from '@/app/LoadingScreen';
 const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
@@ -41,9 +41,22 @@ const ThemedMoire: React.FC = () => {
   );
 };
 
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+};
+
+const getRequestedTab = (value: string | null): MainTab | null => {
+  if (!value) return null;
+  if (value === 'places') return 'places';
+  if (value === 'movies' || value === 'queue') return 'queue';
+  return null;
+};
+
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
+  const { showToast, dismissToast } = useToast();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -62,7 +75,12 @@ const App: React.FC = () => {
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
-  
+  const installPromptRef = React.useRef<InstallPromptEvent | null>(null);
+  const installToastIdRef = React.useRef<string | null>(null);
+  const updateToastIdRef = React.useRef<string | null>(null);
+  const updateRegistrationRef = React.useRef<ServiceWorkerRegistration | null>(null);
+  const shortcutHandledRef = React.useRef(false);
+  const offlineToastIdRef = React.useRef<string | null>(null);
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -85,6 +103,202 @@ const App: React.FC = () => {
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
   }, [currentUser]);
+
+  useEffect(() => {
+    if (shortcutHandledRef.current || typeof window === 'undefined') {
+      return;
+    }
+
+    shortcutHandledRef.current = true;
+    const search = new URLSearchParams(window.location.search);
+    const requestedTab = getRequestedTab(search.get('tab'));
+    const requestedPanel = search.get('panel');
+    let didApplyShortcut = false;
+
+    if (requestedTab) {
+      setActiveTab(requestedTab);
+      didApplyShortcut = true;
+    }
+
+    if (requestedPanel === 'memories') {
+      setShowMemoriesPanel(true);
+      didApplyShortcut = true;
+    } else if (requestedPanel === 'messages') {
+      setShowMessages(true);
+      didApplyShortcut = true;
+    }
+
+    if (didApplyShortcut) {
+      search.delete('tab');
+      search.delete('panel');
+      const next = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, '', next);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      installPromptRef.current = event as InstallPromptEvent;
+
+      if (installToastIdRef.current) {
+        dismissToast(installToastIdRef.current);
+      }
+
+      installToastIdRef.current = showToast({
+        type: 'info',
+        message: 'Install Electron for a faster, standalone movie-night flow.',
+        persistent: true,
+        actionLabel: 'Install',
+        onAction: async () => {
+          const promptEvent = installPromptRef.current;
+          if (!promptEvent) return;
+
+          await promptEvent.prompt();
+          const choice = await promptEvent.userChoice;
+          if (choice.outcome === 'accepted') {
+            showToast({
+              type: 'success',
+              message: 'Electron added to your device.',
+            });
+          }
+          installPromptRef.current = null;
+          if (installToastIdRef.current) {
+            dismissToast(installToastIdRef.current);
+            installToastIdRef.current = null;
+          }
+        },
+      });
+    };
+
+    const handleInstalled = () => {
+      installPromptRef.current = null;
+      if (installToastIdRef.current) {
+        dismissToast(installToastIdRef.current);
+        installToastIdRef.current = null;
+      }
+      showToast({
+        type: 'success',
+        message: 'Electron is installed and ready to launch like an app.',
+      });
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleInstalled);
+    };
+  }, [dismissToast, showToast]);
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) {
+      return undefined;
+    }
+
+    let isMounted = true;
+    let hasReloaded = false;
+
+    const showUpdateToast = (registration: ServiceWorkerRegistration) => {
+      if (updateToastIdRef.current) {
+        dismissToast(updateToastIdRef.current);
+      }
+
+      updateRegistrationRef.current = registration;
+      updateToastIdRef.current = showToast({
+        type: 'info',
+        message: 'A newer app version is ready.',
+        persistent: true,
+        actionLabel: 'Refresh',
+        onAction: () => {
+          registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+        },
+      });
+    };
+
+    const watchRegistration = (registration: ServiceWorkerRegistration) => {
+      if (registration.waiting) {
+        showUpdateToast(registration);
+      }
+
+      registration.addEventListener('updatefound', () => {
+        const installing = registration.installing;
+        if (!installing) return;
+        installing.addEventListener('statechange', () => {
+          if (
+            installing.state === 'installed' &&
+            navigator.serviceWorker.controller
+          ) {
+            showUpdateToast(registration);
+          }
+        });
+      });
+    };
+
+    navigator.serviceWorker.ready
+      .then((registration) => {
+        if (!isMounted) return;
+        watchRegistration(registration);
+      })
+      .catch(() => undefined);
+
+    const handleControllerChange = () => {
+      if (hasReloaded) return;
+      hasReloaded = true;
+      window.location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+    return () => {
+      isMounted = false;
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    };
+  }, [dismissToast, showToast]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleOffline = () => {
+      if (offlineToastIdRef.current) {
+        dismissToast(offlineToastIdRef.current);
+      }
+      offlineToastIdRef.current = showToast({
+        type: 'error',
+        message: 'You are offline. Saved app screens still work, but sync is paused.',
+        persistent: true,
+      });
+    };
+
+    const handleOnline = () => {
+      if (offlineToastIdRef.current) {
+        dismissToast(offlineToastIdRef.current);
+        offlineToastIdRef.current = null;
+      }
+      updateRegistrationRef.current?.update().catch(() => undefined);
+      showToast({
+        type: 'success',
+        message: 'Back online. Sync and update checks have resumed.',
+      });
+    };
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+
+    if (!navigator.onLine) {
+      handleOffline();
+    }
+
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [dismissToast, showToast]);
 
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {

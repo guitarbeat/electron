@@ -173,6 +173,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               message={toast.message}
               type={toast.type}
               duration={toast.duration}
+              persistent={toast.persistent}
               onDismiss={() => dismissToast(toast.id)}
               actionLabel={toast.actionLabel}
               onAction={toast.onAction}

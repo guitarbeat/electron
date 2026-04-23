@@ -18,6 +18,7 @@ export interface ToastInput {
   actionLabel?: string;
   onAction?: () => void;
   onUndo?: () => void;
+  persistent?: boolean;
 }
 
 export interface ToastContextType {
