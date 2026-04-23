@@ -7186,6 +7186,11 @@ body.grabbing * {
   width: 100%;
 }
 
+.watchlist-top-controls__input-block.is-autocomplete-active {
+  position: relative;
+  z-index: 300;
+}
+
 .watchlist-top-controls__toolbar {
   display: flex;
   align-items: center;

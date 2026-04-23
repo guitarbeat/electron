@@ -24,6 +24,10 @@
   font-family: var(--font-interface, var(--font-body, sans-serif));
 }
 
+.app-header.is-profile-menu-open {
+  z-index: 1500;
+}
+
 .app-header::before {
   content: '';
   position: absolute;
@@ -310,6 +314,8 @@
 
 /* Profile trigger button */
 .app-header__profile-trigger {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -501,7 +507,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   overflow: hidden;
   animation: menu-appear 0.15s ease-out;
-  z-index: 200;
+  z-index: 3;
 }
 
 @keyframes menu-appear {
@@ -829,6 +835,7 @@
     max-height: 70vh;
     overflow-y: auto;
     animation: menu-slide-up 0.2s ease-out;
+    z-index: 3;
   }
 
   @keyframes menu-slide-up {

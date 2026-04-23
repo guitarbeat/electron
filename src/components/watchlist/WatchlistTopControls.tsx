@@ -355,6 +355,7 @@ const WatchlistTopControls = React.forwardRef<
       trimmedSearchQuery,
     ]
   );
+  const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
   const filteredAutocompleteResults = useMemo(
     () =>
       autocompleteTypeFilter === 'all'
@@ -382,43 +383,48 @@ const WatchlistTopControls = React.forwardRef<
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
-      <div className="watchlist-top-controls__intro">
-        <div className="watchlist-top-controls__hero">
-          <div className="watchlist-top-controls__hero-copy">
-            <p className="watchlist-top-controls__eyebrow">Aaron and Electra</p>
-            <h2 className="watchlist-top-controls__title">{headline}</h2>
-            <p className="watchlist-top-controls__lead">{lead}</p>
-            {latestNoteMovieTitle ? (
-              <p className="watchlist-top-controls__hero-note">
-                Poster spotlight
-                <span> {latestNoteMovieTitle}</span>
-              </p>
-            ) : null}
-          </div>
+      <div className="watchlist-top-controls__stage">
+        <div className="watchlist-top-controls__intro">
+          <div className="watchlist-top-controls__hero">
+            <div className="watchlist-top-controls__hero-copy">
+              <p className="watchlist-top-controls__eyebrow">Aaron and Electra</p>
+              <h2 className="watchlist-top-controls__title">{headline}</h2>
+              <p className="watchlist-top-controls__lead">{lead}</p>
+              {latestNoteMovieTitle ? (
+                <p className="watchlist-top-controls__hero-note">
+                  Poster spotlight
+                  <span> {latestNoteMovieTitle}</span>
+                </p>
+              ) : null}
+            </div>
 
-          <div className="watchlist-top-controls__hero-stats" aria-label="Watchlist summary">
-            {stats.map((stat) => (
-              <div key={stat.label} className="watchlist-top-controls__hero-stat">
-                <span className="watchlist-top-controls__hero-stat-value">{stat.value}</span>
-                <span className="watchlist-top-controls__hero-stat-label">{stat.label}</span>
-              </div>
-            ))}
+            <div className="watchlist-top-controls__hero-stats" aria-label="Watchlist summary">
+              {stats.map((stat) => (
+                <div key={stat.label} className="watchlist-top-controls__hero-stat">
+                  <span className="watchlist-top-controls__hero-stat-value">{stat.value}</span>
+                  <span className="watchlist-top-controls__hero-stat-label">{stat.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="watchlist-top-controls__input-block">
-      <div className="watchlist-top-controls__toolbar">
-        <form
-          className="watchlist-top-controls__search-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            clearFocusBoundaryCheck();
-            hideAutocomplete();
-            internalSearchInputRef.current?.blur();
-            void onSubmit();
-          }}
+        <div
+          className={`watchlist-top-controls__input-block${
+            isAutocompleteElevated ? ' is-autocomplete-active' : ''
+          }`}
         >
+          <div className="watchlist-top-controls__toolbar">
+            <form
+              className="watchlist-top-controls__search-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                clearFocusBoundaryCheck();
+                hideAutocomplete();
+                internalSearchInputRef.current?.blur();
+                void onSubmit();
+              }}
+            >
           <div
             ref={autocompleteRegionRef}
             className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
@@ -689,14 +695,15 @@ const WatchlistTopControls = React.forwardRef<
               </Button>
             </div>
           )}
-        </form>
-      </div>
+            </form>
+          </div>
 
-      <div className="y2k-ticker" aria-hidden="true">
-        <div className="y2k-ticker__inner">
-          <span className="y2k-ticker__text">{TICKER_TEXT}</span>
+          <div className="y2k-ticker" aria-hidden="true">
+            <div className="y2k-ticker__inner">
+              <span className="y2k-ticker__text">{TICKER_TEXT}</span>
+            </div>
+          </div>
         </div>
-      </div>
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (

@@ -153,8 +153,10 @@
 .menu-item-button__tooltip {
   position: absolute;
   left: 50%;
+  right: auto;
+  top: auto;
   bottom: calc(100% + 0.55rem);
-  transform: translateX(-50%) translateY(6px);
+  transform: translate(var(--tooltip-x, -50%), var(--tooltip-y-closed, 6px));
   min-width: 9.5rem;
   max-width: 11rem;
   padding: 0.55rem 0.7rem;
@@ -167,6 +169,35 @@
   pointer-events: none;
   transition: opacity 150ms ease, transform 150ms ease;
   text-align: left;
+}
+
+.menu.menu--fan-tl .menu-item-button__tooltip {
+  left: auto;
+  right: 0;
+  --tooltip-x: 0;
+}
+
+.menu.menu--fan-tr .menu-item-button__tooltip {
+  left: 0;
+  --tooltip-x: 0;
+}
+
+.menu.menu--fan-bl .menu-item-button__tooltip,
+.menu.menu--fan-br .menu-item-button__tooltip {
+  top: calc(100% + 0.55rem);
+  bottom: auto;
+  --tooltip-y-closed: -6px;
+}
+
+.menu.menu--fan-bl .menu-item-button__tooltip {
+  left: auto;
+  right: 0;
+  --tooltip-x: 0;
+}
+
+.menu.menu--fan-br .menu-item-button__tooltip {
+  left: 0;
+  --tooltip-x: 0;
 }
 
 .menu-item-button__tooltip strong,
@@ -190,7 +221,7 @@
   .menu-item-button:hover .menu-item-button__tooltip,
   .menu-item-button:focus-visible .menu-item-button__tooltip {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translate(var(--tooltip-x, -50%), var(--tooltip-y-open, 0));
   }
 }
 

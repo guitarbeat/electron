@@ -577,7 +577,7 @@ const App: React.FC = () => {
         </React.Suspense>
 
         <div className="app-shell__canvas app-shell__canvas--main">
-          <div className="app-workspace-stack">
+          <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
             <AppHeader
               activeTab={activeTab}
               onTabChange={handleTabChange}
