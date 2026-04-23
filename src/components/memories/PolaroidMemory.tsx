@@ -2,6 +2,7 @@ import React from 'react';
 import type { SharedMemory } from '@/shared/types';
 import { getStickyNoteRotation } from './lib/memoryUtils';
 import { typography } from '@/theme/tokens';
+import { formatMemoryTimestamp } from '@/utils';
 
 interface PolaroidMemoryProps {
   memory: SharedMemory;
@@ -11,7 +12,7 @@ interface PolaroidMemoryProps {
 
 const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete }) => {
   const rotation = getStickyNoteRotation(memory);
-  const hoverRotation = rotation + (rotation > 0 ? 2 : -2);
+  const hoverRotation = rotation + (rotation > 0 ? 1.4 : -1.4);
 
   return (
     <div
@@ -20,32 +21,35 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
         ['--polaroid-rotation' as string]: `${rotation}deg`,
         ['--polaroid-hover-rotation' as string]: `${hoverRotation}deg`,
         ['--polaroid-shadow' as string]:
-          '0 8px 16px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.1)',
+          '0 18px 32px rgba(10, 7, 5, 0.24), 0 2px 6px rgba(0,0,0,0.12)',
         width: '100%',
-        maxWidth: '260px',
-        background: '#fff',
-        padding: '12px 12px 32px 12px',
+        maxWidth: '248px',
+        background:
+          'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,242,232,0.98) 100%)',
+        padding: '12px 12px 18px 12px',
         boxShadow: 'var(--polaroid-shadow)',
         transform: 'rotate(var(--polaroid-rotation))',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
+        gap: '10px',
         position: 'relative',
         cursor: 'pointer',
-        border: '1px solid rgba(0,0,0,0.05)',
+        border: '1px solid rgba(74, 57, 36, 0.12)',
+        transformOrigin: 'center 85%',
+        transition: 'transform 220ms ease, box-shadow 220ms ease',
       }}
     >
       <div
         style={{
           position: 'absolute',
-          top: '-15px',
+          top: '-14px',
           left: '50%',
           transform: 'translateX(-50%) rotate(-3deg)',
-          width: '80px',
-          height: '30px',
-          background: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(1px)',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          width: '72px',
+          height: '26px',
+          background: 'rgba(220, 204, 177, 0.42)',
+          border: '1px solid rgba(126, 103, 70, 0.08)',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
           zIndex: 2,
         }}
       />
@@ -57,7 +61,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
           background: memory.imageUrl ? `url(${memory.imageUrl})` : '#e2e8f0',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          border: '1px solid rgba(0,0,0,0.1)',
+          border: '1px solid rgba(66, 49, 32, 0.14)',
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
@@ -66,72 +70,85 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
         }}
       >
         {!memory.imageUrl ? (
-          <span style={{ fontSize: '2rem', opacity: 0.3 }}>🎞️</span>
+          <span style={{ fontSize: '1.7rem', opacity: 0.24 }}>🎞️</span>
         ) : null}
 
         {memory.isPinned ? (
           <div
             style={{
               position: 'absolute',
-              top: '8px',
-              right: '8px',
-              fontSize: '1.2rem',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+              top: '10px',
+              right: '10px',
+              minHeight: '24px',
+              padding: '0 8px',
+              borderRadius: '999px',
+              fontSize: '0.62rem',
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'rgba(21, 17, 13, 0.72)',
+              color: '#fff3df',
             }}
           >
-            📌
+            Pinned
           </div>
         ) : null}
       </div>
 
-      <div style={{ padding: '4px' }}>
+      <div style={{ padding: '2px 4px 0' }}>
         <h4
           style={{
-            ...typography.presets.bodyXs,
-            fontWeight: 800,
-            color: '#1a1a2e',
-            marginBottom: '4px',
-            fontFamily: '"Comic Neue", "Comic Sans MS", cursive, sans-serif',
+            margin: 0,
+            color: '#25180f',
+            fontSize: '0.96rem',
+            lineHeight: 1.15,
+            fontWeight: 700,
+            letterSpacing: '0.03em',
+            fontFamily: '"Cormorant Garamond", serif',
           }}
         >
           {memory.movieTitle}
         </h4>
         <p
           style={{
-            fontSize: '0.85rem',
-            lineHeight: 1.4,
-            color: '#334155',
-            fontFamily: '"Trebuchet MS", sans-serif',
-            marginBottom: '8px',
-            fontStyle: 'italic',
+            margin: '0.45rem 0 0',
+            fontSize: '0.8rem',
+            lineHeight: 1.48,
+            color: '#4d3b2a',
+            fontFamily: typography.fontFamilyValue.body,
           }}
         >
-          &quot;{memory.note}&quot;
+          {memory.note.length > 110 ? `${memory.note.slice(0, 110)}…` : memory.note}
         </p>
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginTop: 'auto',
+            gap: '0.5rem',
+            marginTop: '0.7rem',
+            paddingTop: '0.55rem',
+            borderTop: '1px solid rgba(72, 55, 35, 0.1)',
           }}
         >
           <span
             style={{
               fontSize: '0.65rem',
-              color: '#64748b',
+              color: '#705742',
               fontWeight: 600,
             }}
           >
-            - {memory.author}
+            {memory.author}
           </span>
           <span
             style={{
               fontSize: '0.6rem',
-              color: '#94a3b8',
+              color: '#927760',
             }}
           >
-            {new Date(memory.createdAt).toLocaleDateString()}
+            {formatMemoryTimestamp(memory.createdAt)}
           </span>
         </div>
       </div>
@@ -140,12 +157,12 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
         className="polaroid-actions"
         style={{
           position: 'absolute',
-          bottom: '8px',
+          bottom: '10px',
           left: '0',
           right: '0',
           display: 'flex',
           justifyContent: 'center',
-          gap: '12px',
+          gap: '8px',
           transition: 'opacity 0.2s ease',
         }}
       >
@@ -155,7 +172,15 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
             event.stopPropagation();
             onPin();
           }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+          style={{
+            minWidth: '34px',
+            height: '28px',
+            borderRadius: '999px',
+            border: '1px solid rgba(63, 48, 31, 0.12)',
+            background: 'rgba(255,255,255,0.88)',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+          }}
           title={memory.isPinned ? 'Unpin' : 'Pin'}
         >
           {memory.isPinned ? '📍' : '📌'}
@@ -167,7 +192,15 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
               event.stopPropagation();
               onDelete();
             }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+            style={{
+              minWidth: '34px',
+              height: '28px',
+              borderRadius: '999px',
+              border: '1px solid rgba(63, 48, 31, 0.12)',
+              background: 'rgba(255,255,255,0.88)',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+            }}
             title="Delete"
           >
             🗑️
@@ -183,7 +216,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
           opacity: 1;
         }
         .polaroid-card:hover {
-          transform: rotate(var(--polaroid-hover-rotation)) scale(1.05);
+          transform: rotate(var(--polaroid-hover-rotation)) translateY(-3px) scale(1.02);
           z-index: 10;
         }
       `}</style>

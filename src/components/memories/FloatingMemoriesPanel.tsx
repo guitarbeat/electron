@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import Button from '@/ui/Button';
+import BottomSheet from '@/ui/BottomSheet';
 import { Input, Textarea } from '@/ui/FormFields';
 import { useMovies } from '@/hooks/movies/useMovies';
 import { usePolling } from '@/services/polling';
@@ -79,6 +80,8 @@ const FloatingMemoriesPanel: React.FC = () => {
   const canSubmit = Boolean(currentUser && note.trim() && movieQuery.trim());
   const showPinnedSection = pinnedMemories.length > 0 && (!isMobile || showPinnedRail);
 
+  const closeComposer = () => setIsComposerOpen(false);
+
   const createMemory = async () => {
     if (!currentUser) return;
     const trimmedNote = note.trim();
@@ -98,6 +101,7 @@ const FloatingMemoriesPanel: React.FC = () => {
       setNote('');
       setMovieQuery('');
       setImageUrl('');
+      setIsComposerOpen(false);
       refresh();
     } finally {
       setSubmitting(false);
@@ -125,6 +129,74 @@ const FloatingMemoriesPanel: React.FC = () => {
     setEditingNote('');
     refresh();
   };
+
+  const composerContent = (
+    <>
+      <div className="memory-ledger__section-head">
+        <p className="memory-ledger__section-title">New entry</p>
+        <p className="memory-ledger__section-meta">
+          {currentUser ? `${currentUser} can add to the shared archive.` : 'Sign in to add a memory.'}
+        </p>
+      </div>
+
+      <Input
+        label="Title"
+        value={movieQuery}
+        onChange={(event) => setMovieQuery(event.target.value)}
+        placeholder="Movie or episode"
+        list="memory-movie-suggestions"
+        className="memory-lane__input"
+      />
+      <datalist id="memory-movie-suggestions">
+        {movies.map((movie) => (
+          <option key={movie.id} value={movie.title}>
+            {movie.title}
+          </option>
+        ))}
+      </datalist>
+
+      <Input
+        label="Image URL"
+        value={imageUrl}
+        onChange={(event) => setImageUrl(event.target.value)}
+        placeholder="Optional still or photo"
+        className="memory-lane__input"
+      />
+
+      <Textarea
+        label="Memory"
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+        placeholder="Quote the moment, reaction, or detail worth keeping."
+        className="memory-lane__textarea"
+        style={{ minHeight: isMobile ? 176 : 220 }}
+      />
+
+      {currentUser ? (
+        <div className="memory-ledger__composer-actions">
+          <Button
+            onClick={createMemory}
+            variant="primary"
+            size="sm"
+            disabled={submitting || !canSubmit}
+            className="memory-lane__action-btn memory-lane__action-btn--save"
+          >
+            {submitting ? 'Saving...' : 'Save memory'}
+          </Button>
+          <Button
+            onClick={closeComposer}
+            variant="ghost"
+            size="sm"
+            className="memory-lane__action-btn"
+          >
+            Close
+          </Button>
+        </div>
+      ) : (
+        <p className="memory-lane__hint">Select Aaron or Electra to add memories.</p>
+      )}
+    </>
+  );
 
   return (
     <div className="memory-lane memory-lane--editorial">
@@ -222,75 +294,15 @@ const FloatingMemoriesPanel: React.FC = () => {
           </section>
         ) : null}
 
+        {!isMobile && isComposerOpen ? (
+          <section className="memory-ledger__composer-stage">
+            <div className="memory-ledger__composer memory-ledger__composer--stage">
+              {composerContent}
+            </div>
+          </section>
+        ) : null}
+
         <section className="memory-ledger__workspace">
-          {isComposerOpen ? (
-            <aside className="memory-ledger__composer">
-              <div className="memory-ledger__section-head">
-                <p className="memory-ledger__section-title">New entry</p>
-                <p className="memory-ledger__section-meta">
-                  {currentUser ? `${currentUser} can add to the shared archive.` : 'Sign in to add a memory.'}
-                </p>
-              </div>
-
-              <Input
-                label="Title"
-                value={movieQuery}
-                onChange={(event) => setMovieQuery(event.target.value)}
-                placeholder="Movie or episode"
-                list="memory-movie-suggestions"
-                className="memory-lane__input"
-              />
-              <datalist id="memory-movie-suggestions">
-                {movies.map((movie) => (
-                  <option key={movie.id} value={movie.title}>
-                    {movie.title}
-                  </option>
-                ))}
-              </datalist>
-
-              <Input
-                label="Image URL"
-                value={imageUrl}
-                onChange={(event) => setImageUrl(event.target.value)}
-                placeholder="Optional still or photo"
-                className="memory-lane__input"
-              />
-
-              <Textarea
-                label="Memory"
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                placeholder="Quote the moment, reaction, or detail worth keeping."
-                className="memory-lane__textarea"
-                style={{ minHeight: 156 }}
-              />
-
-              {currentUser ? (
-                <div className="memory-ledger__composer-actions">
-                  <Button
-                    onClick={createMemory}
-                    variant="primary"
-                    size="sm"
-                    disabled={submitting || !canSubmit}
-                    className="memory-lane__action-btn memory-lane__action-btn--save"
-                  >
-                    {submitting ? 'Saving...' : 'Save memory'}
-                  </Button>
-                  <Button
-                    onClick={() => setIsComposerOpen(false)}
-                    variant="ghost"
-                    size="sm"
-                    className="memory-lane__action-btn"
-                  >
-                    Close
-                  </Button>
-                </div>
-              ) : (
-                <p className="memory-lane__hint">Select Aaron or Electra to add memories.</p>
-              )}
-            </aside>
-          ) : null}
-
           <section className="memory-ledger__stream">
             <div className="memory-ledger__controls">
               <Input
@@ -460,6 +472,18 @@ const FloatingMemoriesPanel: React.FC = () => {
             ) : null}
           </section>
         </section>
+
+        {isMobile ? (
+          <BottomSheet
+            isOpen={isComposerOpen}
+            onClose={closeComposer}
+            title="Write Memory"
+          >
+            <div className="memory-ledger__composer memory-ledger__composer--sheet">
+              {composerContent}
+            </div>
+          </BottomSheet>
+        ) : null}
       </section>
     </div>
   );
