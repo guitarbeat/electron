@@ -4,7 +4,7 @@ import {
   getElectronMarkSvgMarkup,
   type ElectronMarkPalette,
   type ElectronMarkVariant,
-} from './electronMarkData';
+} from './ElectronMarkData';
 
 export interface ElectronMarkProps {
   variant?: ElectronMarkVariant;

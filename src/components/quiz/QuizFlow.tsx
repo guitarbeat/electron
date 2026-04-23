@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './types';
+import { QuizAnswer, QuizResult, XYAxisQuestion as XYAxisQuestionType } from './lib/types';
 import type { QuizData } from '@/hooks/useQuiz';
 import BlinkText from './BlinkText';
 import {
@@ -9,13 +9,13 @@ import {
   XYAxisQuestionView,
 } from './QuestionViews';
 import ResultsScreen from './ResultsScreen';
-import { calculateQuizResults } from './quizScoring';
+import { calculateQuizResults } from './lib/quizScoring';
 import {
   buildQuizProgressStorageKey,
   clearSavedQuizProgress,
   readSavedQuizProgress,
   writeSavedQuizProgress,
-} from './quizProgressStorage';
+} from './lib/quizProgressStorage';
 import './retro-ad.css';
 
 interface QuizFlowProps {

@@ -2,7 +2,7 @@ import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   isElectronMarkVariant,
   type ElectronMarkVariant,
-} from '../branding/electronMarkData.ts';
+} from '../branding/ElectronMarkData.ts';
 
 export const LOGO_LAB_QUERY_PARAM = 'logo-lab';
 export const LOGO_VARIANT_QUERY_PARAM = 'logo-variant';

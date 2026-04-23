@@ -108,5 +108,5 @@ export interface WatchlistProps {
   onClosePlanControls?: () => void;
 }
 
-export type { QuizCharacter } from '../components/quiz/types.ts';
-export { CHARACTERS } from '../components/quiz/types.ts';
+export type { QuizCharacter } from '../components/quiz/lib/types.ts';
+export { CHARACTERS } from '../components/quiz/lib/types.ts';

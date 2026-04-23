@@ -2,12 +2,12 @@ import {
   CHARACTERS,
   type QuizCharacter,
   type QuizQuestion,
-} from '../../components/quiz/types.ts';
+} from '../../components/quiz/lib/types.ts';
 import {
   characterDescriptions as defaultDescriptions,
   neitherDescription as defaultNeither,
   quizQuestions as defaultQuestions,
-} from '../../components/quiz/data.ts';
+} from '../../components/quiz/lib/data.ts';
 import { reconcileMatchmakerStatus } from '../../components/matchmaker/matchmakerGame.ts';
 import { normalizePinRecord, type PinRecord } from '../content/pinHelpers.ts';
 import type {

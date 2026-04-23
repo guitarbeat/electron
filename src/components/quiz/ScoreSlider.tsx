@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { QuizCharacter } from './types';
+import { QuizCharacter } from './lib/types';
 import { spacing, colors, typography, radius } from '@/theme/tokens';
 
 interface ScoreSliderProps {

@@ -13,7 +13,7 @@ import type {
   MultipleChoiceQuestion,
   QuizQuestion,
   XYAxisQuestion,
-} from './types';
+} from './lib/types';
 import {
   AgreeDisagreeQuestionView,
   ImageChoiceQuestionView,
