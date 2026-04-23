@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageIcon } from '@/common/Icons';
+import {
+  clampPositionToViewport,
+  getDockedPositionForViewport,
+  getRadialMenuMetricsForWidth,
+  MOBILE_BREAKPOINT,
+} from '@/components/effects/lib/radialMenuLayout';
 import './RadialMenu.css';
 
 interface RadialMenuProps {
@@ -42,31 +48,53 @@ const BubbleIcon = () => (
 
 const STORAGE_KEY = 'radialMenu.position';
 const DISCOVERED_KEY = 'radialMenu.discovered';
-const MOBILE_BREAKPOINT = 600;
-
-// The menu container is 200×200 (160×160 on mobile). The toggle sits centered;
-// bubbles fan out to the container's edge. So the full bounding radius from the
-// center of the toggle is half the container size + a little safety padding.
-const TOGGLE_OFFSET = 100; // half of container (200/2) — used for left/top → center mapping
-const FAN_RADIUS_DESKTOP = 110; // bubbles + halo
-const FAN_RADIUS_MOBILE = 90;
-const SAFE_MARGIN = 10;
 const ITEM_COUNT = 3;
 
 const isMobileViewport = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
 
-const getFanRadius = (): number =>
-  isMobileViewport() ? FAN_RADIUS_MOBILE : FAN_RADIUS_DESKTOP;
+const isStandaloneDisplayMode = (): boolean =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+
+const shouldUseDockedLayout = (): boolean =>
+  typeof window !== 'undefined' &&
+  (isStandaloneDisplayMode() ||
+    window.matchMedia('(pointer: coarse)').matches ||
+    isMobileViewport());
+
+const getSafeAreaInset = (edge: 'top' | 'right' | 'bottom' | 'left'): number => {
+  if (typeof window === 'undefined') {
+    return 0;
+  }
+
+  const value = getComputedStyle(document.documentElement).getPropertyValue(
+    `--radial-safe-${edge}`
+  );
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getViewportBox = () => {
+  const visualViewport = window.visualViewport;
+
+  return {
+    width: visualViewport?.width ?? window.innerWidth,
+    height: visualViewport?.height ?? window.innerHeight,
+    offsetLeft: visualViewport?.offsetLeft ?? 0,
+    offsetTop: visualViewport?.offsetTop ?? 0,
+    insetTop: getSafeAreaInset('top'),
+    insetRight: getSafeAreaInset('right'),
+    insetBottom: getSafeAreaInset('bottom'),
+    insetLeft: getSafeAreaInset('left'),
+  };
+};
+
+const getMenuMetrics = () => getRadialMenuMetricsForWidth(window.innerWidth);
 
 const getDockedPosition = () => {
-  // Position the menu so the entire fan stays on screen at the bottom-right.
-  const radius = getFanRadius();
-  const margin = SAFE_MARGIN;
-  // menuPos is the container's top-left; toggle center sits at +TOGGLE_OFFSET.
-  const x = window.innerWidth - TOGGLE_OFFSET - radius - margin;
-  const y = window.innerHeight - TOGGLE_OFFSET - radius - margin;
-  return { x, y };
+  return getDockedPositionForViewport(getViewportBox(), getMenuMetrics());
 };
 
 const readStoredPosition = (): { x: number; y: number } | null => {
@@ -84,26 +112,20 @@ const readStoredPosition = (): { x: number; y: number } | null => {
 
 const clampToViewport = (pos: { x: number; y: number }) => {
   if (typeof window === 'undefined') return pos;
-  // Inset by the full fan radius so bubbles never clip off-screen.
-  const radius = getFanRadius();
-  const margin = SAFE_MARGIN;
-  const minX = margin - TOGGLE_OFFSET + radius;
-  const maxX = window.innerWidth - TOGGLE_OFFSET - radius - margin;
-  const minY = margin - TOGGLE_OFFSET + radius;
-  const maxY = window.innerHeight - TOGGLE_OFFSET - radius - margin;
-  return {
-    x: Math.min(Math.max(pos.x, minX), Math.max(minX, maxX)),
-    y: Math.min(Math.max(pos.y, minY), Math.max(minY, maxY)),
-  };
+  return clampPositionToViewport(pos, getViewportBox(), getMenuMetrics());
 };
 
 // Pick the quadrant with the most space so the fan opens inward, not off-screen.
 const getFanQuadrant = (pos: { x: number; y: number }): 'tl' | 'tr' | 'bl' | 'br' => {
   if (typeof window === 'undefined') return 'tl';
-  const centerX = pos.x + TOGGLE_OFFSET;
-  const centerY = pos.y + TOGGLE_OFFSET;
-  const isRight = centerX > window.innerWidth / 2;
-  const isBottom = centerY > window.innerHeight / 2;
+  const viewport = getViewportBox();
+  const { toggleOffset } = getMenuMetrics();
+  const centerX = pos.x + toggleOffset;
+  const centerY = pos.y + toggleOffset;
+  const midpointX = viewport.offsetLeft + viewport.width / 2;
+  const midpointY = viewport.offsetTop + viewport.height / 2;
+  const isRight = centerX > midpointX;
+  const isBottom = centerY > midpointY;
   // Fan into the opposite (more-space) quadrant.
   if (isBottom && isRight) return 'tl';
   if (isBottom && !isRight) return 'tr';
@@ -116,7 +138,7 @@ const getInitialMenuPosition = () => {
     return { x: 0, y: 0 };
   }
 
-  const stored = isMobileViewport() ? null : readStoredPosition();
+  const stored = shouldUseDockedLayout() ? null : readStoredPosition();
   return stored ? clampToViewport(stored) : getDockedPosition();
 };
 
@@ -177,7 +199,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!toggleRef.current?.contains(e.target as Node)) return;
+      if (!toggleRef.current?.contains(e.target as Node) || shouldUseDockedLayout()) return;
 
       e.preventDefault();
       e.stopPropagation();
@@ -200,8 +222,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       }
 
       if (isDraggingRef.current && menuRef.current) {
-        const newX = e.clientX - TOGGLE_OFFSET;
-        const newY = e.clientY - TOGGLE_OFFSET;
+        const { toggleOffset } = getMenuMetrics();
+        const newX = e.clientX - toggleOffset;
+        const newY = e.clientY - toggleOffset;
         menuRef.current.style.left = `${newX}px`;
         menuRef.current.style.top = `${newY}px`;
         setMenuPos({ x: newX, y: newY });
@@ -230,9 +253,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
           menuRef.current.style.top = `${clamped.y}px`;
           setMenuPos(clamped);
 
-          if (!isMobileViewport()) {
+          if (!shouldUseDockedLayout()) {
             // Persist final position so it survives reloads (desktop only —
-            // mobile always re-docks bottom-right).
+            // docked layouts always snap back to the bottom-right).
             try {
               window.localStorage.setItem(
                 STORAGE_KEY,
@@ -262,9 +285,10 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     };
 
     const handleResize = () => {
-      // Re-dock on mobile so the toggle stays in the corner across rotations.
+      // Re-dock in compact/standalone layouts so the toggle stays in the corner
+      // across rotations and dynamic viewport changes.
       setMenuPos((prev) =>
-        isMobileViewport() ? getDockedPosition() : clampToViewport(prev)
+        shouldUseDockedLayout() ? getDockedPosition() : clampToViewport(prev)
       );
     };
 
@@ -275,6 +299,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     };
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    window.visualViewport?.addEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('scroll', handleResize);
     window.addEventListener('keydown', handleKeyDown);
 
     document.addEventListener('pointerdown', handlePointerDown);
@@ -290,6 +317,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       document.removeEventListener('pointercancel', handlePointerUp);
       document.removeEventListener('pointerdown', handlePointerDownOutside);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [closeMenu, toggleMenu]);

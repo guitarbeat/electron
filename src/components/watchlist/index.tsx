@@ -117,6 +117,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     () => buildWatchlistSections(movies, pendingSuggestions),
     [movies, pendingSuggestions]
   );
+  const latestMemory = memories[0] ?? null;
+  const queueSummaryCount = sections.queue.length + sections.suggestions.length;
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -627,6 +629,11 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
       <WatchlistTopControls
         ref={watchlistTopControlsRef}
         currentUser={currentUser}
+        queueCount={queueSummaryCount}
+        watchedCount={sections.watched.length}
+        noteCount={memories.length}
+        latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+        latestNoteAuthor={latestMemory?.author ?? null}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         selectedAutocompleteResult={selectedAutocompleteResult}

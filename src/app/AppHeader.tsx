@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useUser } from '@/app/useProviders';
 import { USER_PHOTOS, type MainTab, type User } from '@/shared/types';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePins } from '@/hooks/usePins';
 import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
 import ThemeToggle from '@/ui/ThemeToggle';
@@ -49,6 +50,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const users: User[] = [...USER_OPTIONS];
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isDisabled = isLoading || isVerifying;
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
@@ -127,6 +129,36 @@ const AppHeader: FC<AppHeaderProps> = ({
       actionLabel: undefined,
     };
   })();
+  const pwaChipDismissKey = pwaChip ? `electron:pwa-chip:${pwaChip.tone}:${pwaChip.detail}` : null;
+  const [isPwaChipDismissed, setIsPwaChipDismissed] = useState(false);
+  const shouldShowPwaChip = Boolean(
+    isMobile && pwaChip && pwaChip.tone !== 'ready' && !isPwaChipDismissed
+  );
+
+  useEffect(() => {
+    if (!pwaChipDismissKey) {
+      setIsPwaChipDismissed(false);
+      return;
+    }
+
+    try {
+      setIsPwaChipDismissed(window.localStorage.getItem(pwaChipDismissKey) === '1');
+    } catch {
+      setIsPwaChipDismissed(false);
+    }
+  }, [pwaChipDismissKey]);
+
+  const dismissPwaChip = () => {
+    if (pwaChipDismissKey) {
+      try {
+        window.localStorage.setItem(pwaChipDismissKey, '1');
+      } catch {
+        // Ignore storage failures and still dismiss in-memory.
+      }
+    }
+
+    setIsPwaChipDismissed(true);
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -354,7 +386,7 @@ const AppHeader: FC<AppHeaderProps> = ({
           <span className="app-header__status-label">{modeLabel}</span>
           <span className="app-header__status-value">{statusLabel}</span>
         </div>
-        {pwaChip ? (
+        {shouldShowPwaChip && pwaChip ? (
           <div className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}>
             <div className="app-header__pwa-copy">
               <span className="app-header__pwa-label">{pwaChip.label}</span>
@@ -369,6 +401,14 @@ const AppHeader: FC<AppHeaderProps> = ({
                 {pwaChip.actionLabel}
               </button>
             ) : null}
+            <button
+              type="button"
+              className="app-header__pwa-dismiss"
+              onClick={dismissPwaChip}
+              aria-label={`Dismiss ${pwaChip.label.toLowerCase()} status`}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
           </div>
         ) : null}
         <ThemeToggle

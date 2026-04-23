@@ -34,6 +34,11 @@ const TICKER_TEXT =
 
 interface WatchlistTopControlsProps {
   currentUser: User | null;
+  queueCount: number;
+  watchedCount: number;
+  noteCount: number;
+  latestNoteMovieTitle?: string | null;
+  latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   selectedAutocompleteResult: MovieAutocompleteResult | null;
@@ -74,6 +79,11 @@ const WatchlistTopControls = React.forwardRef<
   WatchlistTopControlsProps
 >(({
   currentUser,
+  queueCount,
+  watchedCount,
+  noteCount,
+  latestNoteMovieTitle,
+  latestNoteAuthor,
   searchQuery,
   setSearchQuery,
   selectedAutocompleteResult,
@@ -118,6 +128,36 @@ const WatchlistTopControls = React.forwardRef<
   const isGuest = !currentUser;
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
+  const headline = useMemo(() => {
+    if (queueCount === 0 && watchedCount === 0) {
+      return 'Movie night starts here';
+    }
+
+    if (queueCount > 0) {
+      return `${queueCount} title${queueCount === 1 ? '' : 's'} in play tonight`;
+    }
+
+    return `${watchedCount} movie${watchedCount === 1 ? '' : 's'} watched together`;
+  }, [queueCount, watchedCount]);
+  const lead = useMemo(() => {
+    if (latestNoteMovieTitle && latestNoteAuthor) {
+      return `Latest poster note is on ${latestNoteMovieTitle}, written by ${latestNoteAuthor}.`;
+    }
+
+    if (noteCount > 0) {
+      return `${noteCount} shared note${noteCount === 1 ? '' : 's'} are already pinned to the posters.`;
+    }
+
+    return 'Add the next title, leave a note on the poster, and keep your queue tight.';
+  }, [latestNoteAuthor, latestNoteMovieTitle, noteCount]);
+  const stats = useMemo(
+    () => [
+      { label: 'Queue', value: queueCount },
+      { label: 'Watched', value: watchedCount },
+      { label: 'Notes', value: noteCount },
+    ],
+    [noteCount, queueCount, watchedCount]
+  );
 
   useImperativeHandle(
     forwardedRef,
@@ -342,6 +382,31 @@ const WatchlistTopControls = React.forwardRef<
         animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
       }}
     >
+      <div className="watchlist-top-controls__intro">
+        <div className="watchlist-top-controls__hero">
+          <div className="watchlist-top-controls__hero-copy">
+            <p className="watchlist-top-controls__eyebrow">Aaron and Electra</p>
+            <h2 className="watchlist-top-controls__title">{headline}</h2>
+            <p className="watchlist-top-controls__lead">{lead}</p>
+            {latestNoteMovieTitle ? (
+              <p className="watchlist-top-controls__hero-note">
+                Poster spotlight
+                <span> {latestNoteMovieTitle}</span>
+              </p>
+            ) : null}
+          </div>
+
+          <div className="watchlist-top-controls__hero-stats" aria-label="Watchlist summary">
+            {stats.map((stat) => (
+              <div key={stat.label} className="watchlist-top-controls__hero-stat">
+                <span className="watchlist-top-controls__hero-stat-value">{stat.value}</span>
+                <span className="watchlist-top-controls__hero-stat-label">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="watchlist-top-controls__input-block">
       <div className="watchlist-top-controls__toolbar">
         <form
