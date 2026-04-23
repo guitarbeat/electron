@@ -315,6 +315,25 @@ const WatchlistTopControls = React.forwardRef<
       trimmedSearchQuery,
     ]
   );
+  const filteredAutocompleteResults = useMemo(
+    () =>
+      autocompleteTypeFilter === 'all'
+        ? autocompleteResults
+        : autocompleteResults.filter((result) => result.type === autocompleteTypeFilter),
+    [autocompleteResults, autocompleteTypeFilter]
+  );
+
+  useEffect(() => {
+    setActiveAutocompleteIndex((currentIndex) => {
+      if (filteredAutocompleteResults.length === 0) {
+        return -1;
+      }
+
+      return currentIndex >= 0 && currentIndex < filteredAutocompleteResults.length
+        ? currentIndex
+        : -1;
+    });
+  }, [filteredAutocompleteResults.length]);
 
   return (
     <section
@@ -387,27 +406,35 @@ const WatchlistTopControls = React.forwardRef<
                 }
 
                 if (event.key === 'ArrowDown') {
-                  if (autocompleteResults.length === 0) {
+                  if (filteredAutocompleteResults.length === 0) {
                     return;
                   }
 
                   event.preventDefault();
                   setIsAutocompleteOpen(true);
                   setActiveAutocompleteIndex((currentIndex) =>
-                    getNextMovieAutocompleteIndex(currentIndex, 'next', autocompleteResults.length)
+                    getNextMovieAutocompleteIndex(
+                      currentIndex,
+                      'next',
+                      filteredAutocompleteResults.length
+                    )
                   );
                   return;
                 }
 
                 if (event.key === 'ArrowUp') {
-                  if (autocompleteResults.length === 0) {
+                  if (filteredAutocompleteResults.length === 0) {
                     return;
                   }
 
                   event.preventDefault();
                   setIsAutocompleteOpen(true);
                   setActiveAutocompleteIndex((currentIndex) =>
-                    getNextMovieAutocompleteIndex(currentIndex, 'previous', autocompleteResults.length)
+                    getNextMovieAutocompleteIndex(
+                      currentIndex,
+                      'previous',
+                      filteredAutocompleteResults.length
+                    )
                   );
                   return;
                 }
@@ -423,14 +450,14 @@ const WatchlistTopControls = React.forwardRef<
                 if (event.key === 'Enter' && isAutocompleteOpen) {
                   const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
                     activeAutocompleteIndex,
-                    autocompleteResults.length
+                    filteredAutocompleteResults.length
                   );
-                  if (selectedIndex < 0 || !autocompleteResults[selectedIndex]) {
+                  if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) {
                     return;
                   }
 
                   event.preventDefault();
-                  selectAutocompleteResult(autocompleteResults[selectedIndex]);
+                  selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
                 }
               }}
               placeholder="Add a movie or show title"
@@ -513,18 +540,14 @@ const WatchlistTopControls = React.forwardRef<
                     {autocompleteError}
                   </div>
                 ) : autocompleteResults.length > 0 ? (() => {
-                  const filtered =
-                    autocompleteTypeFilter === 'all'
-                      ? autocompleteResults
-                      : autocompleteResults.filter((r) => r.type === autocompleteTypeFilter);
-                  if (filtered.length === 0) {
+                  if (filteredAutocompleteResults.length === 0) {
                     return (
                       <div className="watchlist-top-controls__autocomplete-status">
                         No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
                       </div>
                     );
                   }
-                  return filtered.map((result, index) => (
+                  return filteredAutocompleteResults.map((result, index) => (
                     <button
                       key={result.imdbID ?? `${result.title}-${index}`}
                       id={`${autocompleteListId}-option-${index}`}
