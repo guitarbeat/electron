@@ -32,7 +32,7 @@ import {
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
-  queueCount: number;
+  upNextCount: number;
   watchedCount: number;
   noteCount: number;
   latestNoteMovieTitle?: string | null;
@@ -77,7 +77,7 @@ const MoviesTopControls = React.forwardRef<
   MoviesTopControlsProps
 >(({
   currentUser,
-  queueCount,
+  upNextCount,
   watchedCount,
   noteCount,
   latestNoteMovieTitle,
@@ -125,18 +125,18 @@ const MoviesTopControls = React.forwardRef<
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
-  const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
+  const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to movies';
   const headline = useMemo(() => {
-    if (queueCount === 0 && watchedCount === 0) {
-      return 'Start the queue';
+    if (upNextCount === 0 && watchedCount === 0) {
+      return 'Start the list';
     }
 
-    if (queueCount > 0) {
-      return `${queueCount} title${queueCount === 1 ? '' : 's'} in queue`;
+    if (upNextCount > 0) {
+      return `${upNextCount} title${upNextCount === 1 ? '' : 's'} up next`;
     }
 
     return `${watchedCount} watched together`;
-  }, [queueCount, watchedCount]);
+  }, [upNextCount, watchedCount]);
   const lead = useMemo(() => {
     if (latestNoteMovieTitle && latestNoteAuthor) {
       return `Latest note: ${latestNoteMovieTitle} by ${latestNoteAuthor}.`;
@@ -150,10 +150,10 @@ const MoviesTopControls = React.forwardRef<
   }, [latestNoteAuthor, latestNoteMovieTitle, noteCount]);
   const stats = useMemo(
     () => [
-      { label: 'Queue', value: queueCount },
+      { label: 'Up Next', value: upNextCount },
       { label: 'Watched', value: watchedCount },
     ],
-    [queueCount, watchedCount]
+    [upNextCount, watchedCount]
   );
 
   useImperativeHandle(

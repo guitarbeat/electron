@@ -296,7 +296,7 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
     [currentUser, pendingSuggestions, rejectSuggestion]
   );
 
-  const retryWatchlistSync = useCallback(async () => {
+  const retryMoviesWorkspaceSync = useCallback(async () => {
     await Promise.all([
       retryMoviesSync(),
       retrySuggestionsSync(),
@@ -305,13 +305,13 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
     refreshMemories();
   }, [refreshMemories, retryMoviesSync, retrySuggestionsSync]);
 
-  const isWatchlistDegraded =
+  const isMoviesWorkspaceDegraded =
     isMoviesDegraded || isSuggestionsDegraded || (memoriesSnapshot?.degraded ?? false);
-  const isWatchlistSyncBlocked =
+  const isMoviesWorkspaceSyncBlocked =
     isMoviesSyncBlocked ||
     isSuggestionsSyncBlocked ||
     (memoriesSnapshot?.blocked ?? false);
-  const watchlistSyncWarning =
+  const moviesWorkspaceSyncWarning =
     moviesSyncWarning ?? suggestionsSyncWarning ?? memoriesSnapshot?.warning;
 
   return {
@@ -337,15 +337,15 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
     isLoading,
     isSubmitting,
     moviesError,
-    isWatchlistDegraded,
-    isWatchlistSyncBlocked,
-    watchlistSyncWarning,
+    isMoviesWorkspaceDegraded,
+    isMoviesWorkspaceSyncBlocked,
+    moviesWorkspaceSyncWarning,
     addMovie,
     renameMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,
-    retryWatchlistSync,
+    retryMoviesWorkspaceSync,
     pendingSuggestions,
     submitRecommendation,
     acceptSuggestionToWatchlist,

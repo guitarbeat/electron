@@ -584,13 +584,7 @@ const App: React.FC = () => {
   if (isSessionLoading || !hasInitialLoadingScreenElapsed) {
     return (
       <ThemeProvider>
-        <LoadingScreen
-          label={
-            isSessionLoading
-              ? 'Warming up the tank…'
-              : 'Letting the tank linger while the cinema finishes loading…'
-          }
-        />
+        <LoadingScreen />
       </ThemeProvider>
     );
   }

@@ -6,9 +6,7 @@ import FishTank from '@/components/effects/FishTank';
  * Repurposes the FishTank effect (previously a decorative overlay) so the
  * idle moments before the app is ready feel intentional instead of empty.
  */
-const LoadingScreen: React.FC<{ label?: string }> = ({
-  label = 'Warming up the tank…',
-}) => (
+const LoadingScreen: React.FC = () => (
   <>
     <style>{`
       .loading-screen__tank .fish-tank-wrapper {
@@ -37,6 +35,7 @@ const LoadingScreen: React.FC<{ label?: string }> = ({
     <div
       role="status"
       aria-live="polite"
+      aria-label="Loading"
       style={{
         position: 'fixed',
         inset: 0,
@@ -60,19 +59,8 @@ const LoadingScreen: React.FC<{ label?: string }> = ({
           maxWidth: 'min(560px, 90vw)',
         }}
       >
-        <FishTank />
+        <FishTank interactive={false} />
       </div>
-      <p
-        style={{
-          fontFamily: 'Papyrus, serif',
-          fontSize: '0.95rem',
-          letterSpacing: '0.08em',
-          color: 'rgba(255, 255, 255, 0.7)',
-          margin: 0,
-        }}
-      >
-        {label}
-      </p>
     </div>
   </>
 );

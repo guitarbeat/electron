@@ -9028,6 +9028,18 @@ body.grabbing * {
   line-height: 1.6;
 }
 
+.movie-details-modal__composer-shell {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.movie-details-modal__composer-copy {
+  margin: 0;
+  color: rgba(224, 210, 182, 0.82);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
 .movie-details-modal__memory-list {
   display: grid;
   gap: 0.7rem;
@@ -9052,6 +9064,17 @@ body.grabbing * {
   color: rgba(224, 210, 182, 0.82);
   font-size: 0.9rem;
   line-height: 1.55;
+}
+
+.movie-details-modal__memory-manager {
+  margin-top: 0.2rem;
+}
+
+.movie-details-modal__memory-manager > div {
+  margin-top: 0;
+  background:
+    linear-gradient(165deg, rgba(57, 34, 18, 0.4) 0%, rgba(38, 22, 11, 0.52) 100%);
+  border-color: rgba(255, 228, 177, 0.22);
 }
 
 .movie-details-modal__footer {
