@@ -20,7 +20,10 @@ import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
+const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
 const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
+const isCohesionAuditRoute =
+  typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
@@ -169,6 +172,16 @@ const App: React.FC = () => {
       showFavorites,
     ]
   );
+
+  if (isCohesionAuditRoute) {
+    return (
+      <ThemeProvider activeTab={activeTab}>
+        <React.Suspense fallback={null}>
+          <CohesionAudit />
+        </React.Suspense>
+      </ThemeProvider>
+    );
+  }
 
   if (logoLabState.enabled) {
     return (
