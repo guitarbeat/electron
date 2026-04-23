@@ -413,42 +413,42 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
               {canManageMemories ? (
                 memories.length > 0 ? (
-                <div className="movie-details-modal__memory-manager">
-                  <MemoryList
-                    memories={memories}
-                    visibleMemories={memories.slice(0, visibleCount)}
-                    sortedMemories={memories}
-                    contextMovieTitle={movie.title}
-                    currentUser={currentUser}
-                    isMobile={isMobile}
-                    onEditMemory={async (memory, note) => {
-                      await onUpdateMemory(memory.id, note);
-                    }}
-                    onDeleteMemory={async (memory) => {
-                      await onDeleteMemory(memory.id);
-                    }}
-                    onTogglePin={async (memory) => {
-                      await onTogglePin(memory.id);
-                    }}
-                    movieFilterOptions={[]}
-                    activeMovieFilter={movie.id}
-                    onActiveMovieFilterChange={() => {}}
-                    sortMode="newest"
-                    onSortModeChange={() => {}}
-                    onShowMore={() => {
-                      setVisibleCount((current) =>
-                        Math.min(current + INITIAL_VISIBLE_COUNT, memories.length)
-                      );
-                    }}
-                    onShowLess={() => {
-                      setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
-                    }}
-                    visibleCount={visibleCount}
-                    isLoading={false}
-                    memoriesError={null}
-                    onJumpToMovie={() => {}}
-                  />
-                </div>
+                  <div className="movie-details-modal__memory-manager">
+                    <MemoryList
+                      memories={memories}
+                      visibleMemories={memories.slice(0, visibleCount)}
+                      sortedMemories={memories}
+                      contextMovieTitle={movie.title}
+                      currentUser={currentUser}
+                      isMobile={isMobile}
+                      onEditMemory={async (memory, note) => {
+                        await onUpdateMemory!(memory.id, note);
+                      }}
+                      onDeleteMemory={async (memory) => {
+                        await onDeleteMemory!(memory.id);
+                      }}
+                      onTogglePin={async (memory) => {
+                        await onTogglePin!(memory.id);
+                      }}
+                      movieFilterOptions={[]}
+                      activeMovieFilter={movie.id}
+                      onActiveMovieFilterChange={() => {}}
+                      sortMode="newest"
+                      onSortModeChange={() => {}}
+                      onShowMore={() => {
+                        setVisibleCount((current) =>
+                          Math.min(current + INITIAL_VISIBLE_COUNT, memories.length)
+                        );
+                      }}
+                      onShowLess={() => {
+                        setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+                      }}
+                      visibleCount={visibleCount}
+                      isLoading={false}
+                      memoriesError={null}
+                      onJumpToMovie={() => {}}
+                    />
+                  </div>
                 ) : (
                   <div className="movie-details-modal__memory-empty">
                     No notes on this poster yet. The first one will show up right here.

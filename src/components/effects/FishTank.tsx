@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import './FishTank.css';
 
-interface FishTankProps {
-  interactive?: boolean;
-}
-
-const FishTank: React.FC<FishTankProps> = ({ interactive = true }) => {
+const FishTank: React.FC = () => {
   const [isOn, setIsOn] = useState(true);
 
   const handlePowerClick = () => {
@@ -13,7 +9,7 @@ const FishTank: React.FC<FishTankProps> = ({ interactive = true }) => {
   };
 
   return (
-    <div className={`fish-tank-wrapper${interactive ? '' : ' fish-tank-wrapper--static'}`}>
+    <div className="fish-tank-wrapper">
       <div className="container">
         <div className={`tank${!isOn ? ' tank-off' : ''}`}>
           <div
@@ -44,14 +40,12 @@ const FishTank: React.FC<FishTankProps> = ({ interactive = true }) => {
           />
           <div className={`overlay${!isOn ? ' overlay-off' : ''}`} />
         </div>
-        {interactive ? (
-          <button
-            id="pwrbtn"
-            data-on={isOn ? 'true' : 'false'}
-            onClick={handlePowerClick}
-            aria-label={isOn ? 'Turn off fish tank' : 'Turn on fish tank'}
-          />
-        ) : null}
+        <button
+          id="pwrbtn"
+          data-on={isOn ? 'true' : 'false'}
+          onClick={handlePowerClick}
+          aria-label={isOn ? 'Turn off fish tank' : 'Turn on fish tank'}
+        />
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ const LoadingScreen: React.FC = () => (
           maxWidth: 'min(560px, 90vw)',
         }}
       >
-        <FishTank interactive={false} />
+        <FishTank />
       </div>
     </div>
   </>
