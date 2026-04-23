@@ -5,13 +5,13 @@
 ### ✅ COMPLETED
 - [x] `api/_lib/state.ts` - Fixed stateSchemas and stateTypes imports
 - [x] `components/ui/syncBannerContent.ts` - Fixed stateClient import to state module
-- [x] `components/watchlist/WatchlistTopControls.tsx` - Fixed metadataService import to metadata module
+- [x] `components/movies/WatchlistTopControls.tsx` - Fixed metadataService import to metadata module
 - [x] `hooks/movies/useMovies.ts` - Fixed metadataService import to metadata module
-- [x] `components/watchlist/watchlistAutocomplete.ts` - Fixed metadataService import to metadata module
-- [x] `components/watchlist/watchlistAutocomplete.test.ts` - Fixed metadataService import to metadata module
+- [x] `components/movies/lib/watchlistAutocomplete.ts` - Fixed metadataService import to metadata module
+- [x] `components/movies/lib/watchlistAutocomplete.test.ts` - Fixed metadataService import to metadata module
 - [x] `components/ui/SyncBanner.test.ts` - Fixed stateClient import to state module
 - [x] `components/memories/FloatingMemoriesPanel.tsx` - Fixed memoryService and stateClient imports
-- [x] `components/watchlist/index.tsx` - Fixed metadataService import to metadata module
+- [x] `components/movies/Watchlist.tsx` - Fixed metadataService import to metadata module
 - [x] `hooks/movies/useWatchlist.ts` - Fixed providers and analyticsService imports
 
 ### 🔄 CRITICAL FIXES NEEDED (from type check)

@@ -7,9 +7,9 @@ import type { User } from '@/shared/types';
 import {
   MAX_GUEST_SUGGESTER_NAME_LENGTH,
   MAX_RECOMMENDATION_REASON_LENGTH,
-} from './lib/watchlistConstants';
+} from './lib/movieConstants';
 
-interface RecommendationComposerProps {
+interface MovieRecommendationComposerProps {
   currentUser: User | null;
   movieTitle: string;
   guestName: string;
@@ -22,7 +22,7 @@ interface RecommendationComposerProps {
   onCancel: () => void;
 }
 
-const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
+const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = ({
   currentUser,
   movieTitle,
   guestName,
@@ -155,4 +155,4 @@ const RecommendationComposer: React.FC<RecommendationComposerProps> = ({
   );
 };
 
-export default RecommendationComposer;
+export default MovieRecommendationComposer;

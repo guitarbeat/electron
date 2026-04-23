@@ -7,9 +7,9 @@ export interface WorkspaceMeta {
 }
 
 const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
-  queue: {
+  movies: {
     eyebrow: 'Movies',
-    title: 'Watchlist',
+    title: 'Movies',
     icon: '🎬',
   },
   places: {

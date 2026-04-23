@@ -1767,12 +1767,6 @@ body {
     0 0 18px color-mix(in srgb, var(--color-error) 14%, transparent);
 }
 
-/* Legacy layout aliases (kept for safety) */
-.app-frame__profile-login,
-.app-workspace-stack__profile-login {
-  display: none;
-}
-
 .workspace-header,
 .workspace-surface,
 .support-card {
@@ -2352,7 +2346,7 @@ body {
     0 0 48px rgba(255, 255, 255, 0.06);
 }
 
-.workspace-surface--queue {
+.workspace-surface--movies {
   border: none;
   background: transparent;
   box-shadow: none;
@@ -2362,7 +2356,7 @@ body {
   overflow: visible;
 }
 
-.workspace-surface--queue::before {
+.workspace-surface--movies::before {
   display: none;
 }
 
@@ -6949,7 +6943,7 @@ body.grabbing * {
 
 /* ============================================================
    WATCHLIST STYLES
-   (merged from src/components/watchlist/Watchlist.css)
+   (merged from src/components/movies/Watchlist.css)
    ============================================================ */
 
 /* Consolidated Watchlist Styles */
@@ -10712,10 +10706,6 @@ body.grabbing * {
   color: var(--color-success, #34d399);
 }
 
-/* Legacy aliases — keep existing class names working */
-.places-section-heading          { @extend .workspace-section-heading; }
-.places-section-heading--visited { @extend .workspace-section-heading--completed; }
-
 /* Suggestions row */
 .places-suggestions-row {
   display: flex;
@@ -11454,7 +11444,7 @@ body {
 }
 
 /* Queue workspace: no tinted panel — list sits on the shell background */
-.workspace-surface.workspace-surface--queue,
+.workspace-surface.workspace-surface--movies,
 .workspace-surface.workspace-surface--places {
   border: none !important;
   background: transparent !important;
@@ -11463,7 +11453,7 @@ body {
   -webkit-backdrop-filter: none !important;
 }
 
-.workspace-surface.workspace-surface--queue::before,
+.workspace-surface.workspace-surface--movies::before,
 .workspace-surface.workspace-surface--places::before {
   display: none !important;
 }
@@ -13195,7 +13185,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
    Queue Cohesion Refresh
    ============================================================================ */
 
-.queue-unified-shell {
+.movies-unified-shell {
   position: relative;
   display: grid;
   gap: clamp(0.75rem, 0.66rem + 0.36vw, 1.05rem);
@@ -13216,7 +13206,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   isolation: isolate;
 }
 
-.queue-unified-shell::before {
+.movies-unified-shell::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -13227,32 +13217,32 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   pointer-events: none;
 }
 
-.queue-unified-shell > * {
+.movies-unified-shell > * {
   position: relative;
   z-index: 1;
   min-width: 0;
 }
 
-.app-workspace-stack--queue {
+.app-workspace-stack--movies {
   gap: 0;
 }
 
-.app-workspace-stack--queue .workspace-stage--simplified {
+.app-workspace-stack--movies .workspace-stage--simplified {
   gap: clamp(0.55rem, 0.5rem + 0.22vw, 0.78rem);
   padding: 0 0 0.2rem;
 }
 
-.app-workspace-stack--queue .workspace-stage--simplified::before {
+.app-workspace-stack--movies .workspace-stage--simplified::before {
   display: none;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls {
+.app-workspace-stack--movies .watchlist-top-controls {
   gap: 0.7rem;
   width: 100%;
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__stage {
+.app-workspace-stack--movies .watchlist-top-controls__stage {
   position: relative;
   display: grid;
   gap: clamp(0.8rem, 0.72rem + 0.35vw, 1.1rem);
@@ -13268,23 +13258,23 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   isolation: isolate;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__stage::before {
+.app-workspace-stack--movies .watchlist-top-controls__stage::before {
   display: none;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__stage > * {
+.app-workspace-stack--movies .watchlist-top-controls__stage > * {
   position: relative;
   z-index: 1;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__intro {
+.app-workspace-stack--movies .watchlist-top-controls__intro {
   gap: 0;
   padding-bottom: 0;
   width: 100%;
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero {
+.app-workspace-stack--movies .watchlist-top-controls__hero {
   grid-template-columns: minmax(0, 1.45fr) minmax(0, 26rem);
   gap: clamp(1rem, 0.9rem + 0.55vw, 1.5rem);
   align-items: stretch;
@@ -13298,21 +13288,21 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero-copy {
+.app-workspace-stack--movies .watchlist-top-controls__hero-copy {
   width: 100%;
   min-width: 0;
   align-content: start;
   gap: 0.45rem;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__eyebrow {
+.app-workspace-stack--movies .watchlist-top-controls__eyebrow {
   font-family: 'Papyrus', var(--font-display), serif;
   color: #d2a160;
   letter-spacing: 0.16em;
   text-shadow: 0 1px 0 rgba(28, 17, 9, 0.8);
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__title {
+.app-workspace-stack--movies .watchlist-top-controls__title {
   font-family: 'Papyrus', var(--font-display), serif;
   font-size: clamp(1.8rem, 1.42rem + 1.08vw, 2.7rem);
   letter-spacing: 0.05em;
@@ -13323,7 +13313,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     0 10px 28px rgba(0, 0, 0, 0.24);
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__lead {
+.app-workspace-stack--movies .watchlist-top-controls__lead {
   max-width: 54ch;
   color: rgba(237, 223, 198, 0.82);
   font-family: 'Papyrus', var(--font-display), serif;
@@ -13331,14 +13321,14 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   letter-spacing: 0.02em;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero-note {
+.app-workspace-stack--movies .watchlist-top-controls__hero-note {
   margin-top: 0.55rem;
   color: rgba(221, 195, 157, 0.72);
   font-family: 'Papyrus', var(--font-display), serif;
   letter-spacing: 0.04em;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero-stats {
+.app-workspace-stack--movies .watchlist-top-controls__hero-stats {
   display: grid;
   grid-template-columns: repeat(var(--watchlist-hero-stat-count, 3), minmax(0, 1fr));
   align-self: stretch;
@@ -13352,7 +13342,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   overflow: hidden;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero-stat {
+.app-workspace-stack--movies .watchlist-top-controls__hero-stat {
   min-width: 0;
   align-content: center;
   min-height: 4.75rem;
@@ -13360,7 +13350,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   border-left-color: rgba(212, 177, 115, 0.18);
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero-stat-value {
+.app-workspace-stack--movies .watchlist-top-controls__hero-stat-value {
   font-family: 'Papyrus', var(--font-display), serif;
   font-size: clamp(2rem, 1.7rem + 0.9vw, 2.8rem);
   color: #f6e2bf;
@@ -13368,13 +13358,13 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   text-shadow: 0 2px 0 rgba(34, 20, 10, 0.85);
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__hero-stat-label {
+.app-workspace-stack--movies .watchlist-top-controls__hero-stat-label {
   font-family: 'Papyrus', var(--font-display), serif;
   color: rgba(234, 214, 183, 0.72);
   letter-spacing: 0.14em;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__input-block {
+.app-workspace-stack--movies .watchlist-top-controls__input-block {
   gap: 0.85rem;
   padding-top: 0.8rem;
   border-top: 1px solid rgba(212, 177, 115, 0.14);
@@ -13383,33 +13373,33 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__search-form {
+.app-workspace-stack--movies .watchlist-top-controls__search-form {
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__search-actions {
+.app-workspace-stack--movies .watchlist-top-controls__search-actions {
   align-items: stretch;
   min-width: 0;
   max-width: 100%;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__toolbar,
-.app-workspace-stack--queue .watchlist-top-controls__search-shell,
-.app-workspace-stack--queue .watchlist-top-controls__search-shell .ui-input {
+.app-workspace-stack--movies .watchlist-top-controls__toolbar,
+.app-workspace-stack--movies .watchlist-top-controls__search-shell,
+.app-workspace-stack--movies .watchlist-top-controls__search-shell .ui-input {
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
 /* Keep the movie search behavior, but inherit the same visual shell Places uses. */
-.app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button,
-.app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+.app-workspace-stack--movies .watchlist-top-controls__search-button.ui-button,
+.app-workspace-stack--movies .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__autocomplete {
+.app-workspace-stack--movies .watchlist-top-controls__autocomplete {
   border-radius: 1.1rem;
   border: 1px solid rgba(186, 142, 87, 0.24);
   background:
@@ -13419,29 +13409,29 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option {
+.app-workspace-stack--movies .watchlist-top-controls__autocomplete-option {
   background: transparent;
   color: rgba(55, 34, 15, 0.96);
   font-family: 'Papyrus', var(--font-display), serif;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option:hover,
-.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option.is-active {
+.app-workspace-stack--movies .watchlist-top-controls__autocomplete-option:hover,
+.app-workspace-stack--movies .watchlist-top-controls__autocomplete-option.is-active {
   background: rgba(144, 97, 47, 0.1);
   color: rgba(55, 34, 15, 0.96);
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option:hover *,
-.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option.is-active * {
+.app-workspace-stack--movies .watchlist-top-controls__autocomplete-option:hover *,
+.app-workspace-stack--movies .watchlist-top-controls__autocomplete-option.is-active * {
   color: inherit !important;
 }
 
-.app-workspace-stack--queue .y2k-ticker {
+.app-workspace-stack--movies .y2k-ticker {
   padding-top: 0.1rem;
   border-top: 1px solid rgba(212, 177, 115, 0.14);
 }
 
-.app-workspace-stack--queue .y2k-ticker__text {
+.app-workspace-stack--movies .y2k-ticker__text {
   color: rgba(209, 168, 109, 0.82);
   letter-spacing: 0.1em;
   font-family: 'Papyrus', var(--font-display), serif;
@@ -13449,11 +13439,11 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 @media (max-width: 900px) {
-  .app-workspace-stack--queue .watchlist-top-controls__hero {
+  .app-workspace-stack--movies .watchlist-top-controls__hero {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .app-workspace-stack--queue .watchlist-top-controls__hero-stats {
+  .app-workspace-stack--movies .watchlist-top-controls__hero-stats {
     padding-inline: 0;
     padding-top: 0.55rem;
     border-left: none;
@@ -13462,18 +13452,18 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 @media (max-width: 640px) {
-  .queue-unified-shell {
+  .movies-unified-shell {
     gap: 0.6rem;
     padding: 0.85rem;
     border-radius: 1.35rem;
   }
 
-  .app-workspace-stack--queue .watchlist-top-controls__stage {
+  .app-workspace-stack--movies .watchlist-top-controls__stage {
     padding: 0;
     border-radius: 0;
   }
 
-  .app-workspace-stack--queue .watchlist-top-controls__title {
+  .app-workspace-stack--movies .watchlist-top-controls__title {
     font-size: clamp(1.55rem, 1.25rem + 1.3vw, 2.05rem);
   }
 }

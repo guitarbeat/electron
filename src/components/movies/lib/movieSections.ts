@@ -1,15 +1,15 @@
 import type { Movie, MovieSuggestion } from '@/shared/types';
 
-export interface WatchlistSections {
+export interface MovieSections {
   suggestions: MovieSuggestion[];
   queue: Movie[];
   watched: Movie[];
 }
 
-export const buildWatchlistSections = (
+export const buildMovieSections = (
   movies: Movie[],
   pendingSuggestions: MovieSuggestion[]
-): WatchlistSections => ({
+): MovieSections => ({
   suggestions: pendingSuggestions,
   queue: movies.filter((movie) => movie.watchedBy.length < 2),
   watched: movies.filter((movie) => movie.watchedBy.length === 2),

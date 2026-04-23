@@ -12,7 +12,7 @@ interface ThemeToggleProps {
 }
 
 const TABS: { id: MainTab; icon: string; label: string }[] = [
-  { id: 'queue',  icon: '🎬', label: 'Movies' },
+  { id: 'movies', icon: '🎬', label: 'Movies' },
   { id: 'places', icon: '📍', label: 'Places' },
 ];
 

@@ -1,6 +1,6 @@
 import React, { type FC } from 'react';
 import type { MainTab } from '@/shared/types';
-import WatchlistComponent from '../components/watchlist/index.tsx';
+import MoviesView from '@/components/movies/MoviesView';
 
 const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
 
@@ -23,8 +23,8 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         className={`workspace-surface workspace-surface--${activeTab}`}
         style={{ minWidth: 0 }}
       >
-        {activeTab === 'queue' ? (
-          <WatchlistComponent isMobile={isMobile} />
+        {activeTab === 'movies' ? (
+          <MoviesView isMobile={isMobile} />
         ) : (
           <React.Suspense fallback={null}>
             <PlacesList />

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import type { Movie, MovieSuggestion } from '@/shared/types';
-import { buildWatchlistSections } from './watchlistSections.ts';
+import { buildMovieSections } from './movieSections.ts';
 
 const MOVIES: Movie[] = [
   {
@@ -32,8 +32,8 @@ const PENDING_SUGGESTIONS: MovieSuggestion[] = [
   },
 ];
 
-test('buildWatchlistSections groups suggestions, queue, and watched titles for inline rendering', () => {
-  const sections = buildWatchlistSections(MOVIES, PENDING_SUGGESTIONS);
+test('buildMovieSections groups suggestions, queue, and watched titles for inline rendering', () => {
+  const sections = buildMovieSections(MOVIES, PENDING_SUGGESTIONS);
 
   assert.deepEqual(sections.suggestions.map((suggestion) => suggestion.title), ['Perfect Blue']);
   assert.deepEqual(sections.queue.map((movie) => movie.title), ['Arrival']);

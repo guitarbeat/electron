@@ -227,7 +227,7 @@ const PlacesList: React.FC = () => {
       {/* Pending suggestions */}
       {sections.suggestions.length > 0 && (
         <CollectionSection
-          title={`${sections.suggestions.length} suggestion${sections.suggestions.length === 1 ? '' : 's'} pending`}
+          heading={`${sections.suggestions.length} suggestion${sections.suggestions.length === 1 ? '' : 's'} pending`}
           tone="incoming"
           className="places-suggestions-row"
         >
@@ -270,7 +270,7 @@ const PlacesList: React.FC = () => {
 
       {/* TO TRY section */}
       {sections.queue.length > 0 && (
-        <CollectionSection title="To Try">
+        <CollectionSection heading="To Try">
           <CollectionGrid
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
@@ -306,7 +306,7 @@ const PlacesList: React.FC = () => {
 
       {/* VISITED section */}
       {sections.visited.length > 0 && (
-        <CollectionSection title="Visited" tone="completed">
+        <CollectionSection heading="Visited" tone="completed">
           <CollectionGrid
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"

@@ -64,7 +64,7 @@ type ViewTransitionCapableDocument = Document & {
 const getRequestedTab = (value: string | null): MainTab | null => {
   if (!value) return null;
   if (value === 'places') return 'places';
-  if (value === 'movies' || value === 'queue') return 'queue';
+  if (value === 'movies') return 'movies';
   return null;
 };
 
@@ -86,7 +86,7 @@ const readStoredAppViewState = (): StoredAppViewState | null => {
 
     const parsed = JSON.parse(raw) as Partial<StoredAppViewState>;
     return {
-      activeTab: parsed.activeTab === 'places' ? 'places' : 'queue',
+      activeTab: parsed.activeTab === 'places' ? 'places' : 'movies',
       showMessages: Boolean(parsed.showMessages),
     };
   } catch {
@@ -109,7 +109,7 @@ const App: React.FC = () => {
   const [hasInitialLoadingScreenElapsed, setHasInitialLoadingScreenElapsed] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
-  const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'queue');
+  const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'movies');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser)
   );
@@ -554,7 +554,7 @@ const App: React.FC = () => {
 
   if (isCohesionAuditRoute) {
     return (
-      <ThemeProvider activeTab={activeTab}>
+      <ThemeProvider>
         <React.Suspense fallback={null}>
           <CohesionAudit />
         </React.Suspense>
@@ -564,7 +564,7 @@ const App: React.FC = () => {
 
   if (logoLabState.enabled) {
     return (
-      <ThemeProvider activeTab={activeTab}>
+      <ThemeProvider>
         <React.Suspense fallback={null}>
           <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
         </React.Suspense>
@@ -583,7 +583,7 @@ const App: React.FC = () => {
 
   if (isSessionLoading || !hasInitialLoadingScreenElapsed) {
     return (
-      <ThemeProvider activeTab={activeTab}>
+      <ThemeProvider>
         <LoadingScreen
           label={
             isSessionLoading
@@ -596,7 +596,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <ThemeProvider activeTab={activeTab}>
+    <ThemeProvider>
       <React.Suspense fallback={null}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
@@ -620,7 +620,7 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
-            <div className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === 'queue' ? ' queue-unified-shell' : ''}`}>
+            <div className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === 'movies' ? ' movies-unified-shell' : ''}`}>
               <AppHeader
                 activeTab={activeTab}
                 onTabChange={handleTabChange}

@@ -4,7 +4,7 @@ import { useMovies } from '@/hooks/movies/useMovies';
 import { useUser } from '@/app/useProviders';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
-import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
+import MovieDetailsModal from '@/components/movies/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,

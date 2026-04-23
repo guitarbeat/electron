@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser } from '@/app/useProviders';
-import type { Movie, MovieSuggestion, SharedMemory, WatchlistProps } from '@/shared/types';
+import type { Movie, MovieSuggestion, SharedMemory, MoviesViewProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
@@ -12,17 +12,17 @@ import {
 import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
-import { useWatchlist } from "@/hooks/movies/useWatchlist";
-import WatchlistTopControls, {
-  type WatchlistTopControlsHandle,
-} from './WatchlistTopControls';
+import { useMoviesWorkspace } from '@/hooks/movies/useMoviesWorkspace';
+import MoviesTopControls, {
+  type MoviesTopControlsHandle,
+} from './MoviesTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
-import { buildWatchlistSections } from './lib/watchlistSections';
+import { buildMovieSections } from './lib/movieSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
 import './WatchlistPhotoMode.css';
 
-const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
+const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] = useState(false);
@@ -30,7 +30,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   const [guestName, setGuestName] = useState('');
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
-  const watchlistTopControlsRef = useRef<WatchlistTopControlsHandle | null>(null);
+  const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
 
   const {
     isMobile,
@@ -68,7 +68,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
     isWatchlistSyncBlocked,
     watchlistSyncWarning,
     retryWatchlistSync,
-  } = useWatchlist({ currentUser, isPaused });
+  } = useMoviesWorkspace({ currentUser, isPaused });
 
   const skeletonKeys = useMemo(
     () =>
@@ -118,7 +118,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, [memories, movies]);
 
   const sections = useMemo(
-    () => buildWatchlistSections(movies, pendingSuggestions),
+    () => buildMovieSections(movies, pendingSuggestions),
     [movies, pendingSuggestions]
   );
   const latestMemory = memories[0] ?? null;
@@ -159,7 +159,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   }, []);
 
   const focusSearchInput = useCallback(() => {
-    watchlistTopControlsRef.current?.focusSearchInput();
+    moviesTopControlsRef.current?.focusSearchInput();
   }, []);
 
   useEffect(() => {
@@ -495,7 +495,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           <>
             {/* ── Incoming suggestions ── */}
             {(isSuggestionsLoading || sections.suggestions.length > 0) && (
-              <CollectionSection title="Incoming" tone="incoming">
+              <CollectionSection heading="Incoming" tone="incoming">
                 {isSuggestionsLoading && sections.suggestions.length === 0 ? (
                   <CollectionGrid
                     className="watchlist-content"
@@ -529,7 +529,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
             {/* ── Up Next queue ── */}
             {sections.queue.length > 0 && (
-              <CollectionSection title="Up Next">
+              <CollectionSection heading="Up Next">
                 <CollectionGrid
                   className="watchlist-content"
                   minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
@@ -571,7 +571,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
             {/* ── Watched ── */}
             {sections.watched.length > 0 && (
-              <CollectionSection title="Watched" tone="completed">
+              <CollectionSection heading="Watched" tone="completed">
                 {renderMovieGrid(sections.watched, 'No watched movies yet')}
               </CollectionSection>
             )}
@@ -623,8 +623,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
         />
       )}
 
-      <WatchlistTopControls
-        ref={watchlistTopControlsRef}
+      <MoviesTopControls
+        ref={moviesTopControlsRef}
         currentUser={currentUser}
         queueCount={queueSummaryCount}
         watchedCount={sections.watched.length}
@@ -666,4 +666,4 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
   );
 };
 
-export default memo(Watchlist);
+export default memo(MoviesView);

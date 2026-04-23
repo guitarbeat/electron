@@ -9,7 +9,7 @@ import {
   normalizeMovieAutocompleteQuery,
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
-} from './watchlistAutocomplete.ts';
+} from './movieAutocomplete.ts';
 
 const SELECTED_RESULT: MovieAutocompleteResult = {
   imdbID: 'tt0113277',

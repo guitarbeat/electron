@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useModalBase } from '@/ui/modals';
+import { useModalBase } from '@/ui/ModalSystem';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { formatMemoryTimestamp } from '@/utils';
 import type { MovieTransitionOrigin } from './MovieCard';

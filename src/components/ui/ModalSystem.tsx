@@ -13,11 +13,11 @@ import {
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
-} from '../lib/modalPrimitives';
+} from './lib/modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
-import Button from '../Button';
-import SharedBottomSheet from '../BottomSheet';
-import SharedMinigameModal from '../MinigameModal';
+import Button from './Button';
+import SharedBottomSheet from './BottomSheet';
+import SharedMinigameModal from './MinigameModal';
 
 // Base modal hook for shared functionality
 const useModalBase = (isOpen: boolean, onClose?: () => void, closeDisabled?: boolean) => {

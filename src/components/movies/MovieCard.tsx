@@ -14,7 +14,7 @@ import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
 import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
-import { MAX_MOVIE_NOTE_LENGTH } from './lib/watchlistConstants';
+import { MAX_MOVIE_NOTE_LENGTH } from './lib/movieConstants';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';

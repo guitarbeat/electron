@@ -970,7 +970,7 @@
 }
 
 /* Queue-specific cohesion */
-.app-workspace-stack--queue .app-header--queue {
+.app-workspace-stack--movies .app-header--movies {
   margin-bottom: 0;
   border: none;
   border-radius: 0;
@@ -980,24 +980,24 @@
   border-bottom: 1px solid rgba(212, 177, 115, 0.14);
 }
 
-.app-workspace-stack--queue .app-header--queue::after {
+.app-workspace-stack--movies .app-header--movies::after {
   display: none;
 }
 
-.app-workspace-stack--queue .app-header--queue .app-header__status-label,
-.app-workspace-stack--queue .app-header--queue .app-header__brand-kicker {
+.app-workspace-stack--movies .app-header--movies .app-header__status-label,
+.app-workspace-stack--movies .app-header--movies .app-header__brand-kicker {
   font-family: 'Papyrus', var(--font-display), serif;
   color: rgba(226, 199, 157, 0.66);
   letter-spacing: 0.2em;
 }
 
-.app-workspace-stack--queue .app-header--queue .app-header__status-value {
+.app-workspace-stack--movies .app-header--movies .app-header__status-value {
   font-family: 'Papyrus', var(--font-display), serif;
   color: rgba(255, 246, 230, 0.92);
   letter-spacing: 0.04em;
 }
 
-.app-workspace-stack--queue .app-header--queue .app-header__brand {
+.app-workspace-stack--movies .app-header--movies .app-header__brand {
   font-family: 'Papyrus', var(--font-display), serif;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1013,20 +1013,20 @@
   text-shadow: none;
 }
 
-.app-workspace-stack--queue .app-header--queue .app-header__profile-trigger {
+.app-workspace-stack--movies .app-header--movies .app-header__profile-trigger {
   border-color: rgba(191, 147, 92, 0.28);
   background:
     linear-gradient(180deg, rgba(255, 247, 230, 0.12) 0%, transparent 34%),
     rgba(57, 39, 24, 0.88);
 }
 
-.app-workspace-stack--queue .app-header--queue .app-header__profile-name {
+.app-workspace-stack--movies .app-header--movies .app-header__profile-name {
   font-family: 'Papyrus', var(--font-display), serif;
   letter-spacing: 0.05em;
 }
 
 @media (max-width: 640px) {
-  .app-workspace-stack--queue .app-header--queue {
+  .app-workspace-stack--movies .app-header--movies {
     padding-bottom: 0.65rem;
   }
 }

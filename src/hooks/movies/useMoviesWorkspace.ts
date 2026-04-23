@@ -17,12 +17,12 @@ import { trackMetric } from '../../services/analyticsService';
 import { readScope, retryScopeSync } from '../../services/state';
 
 const POLLING_INTERVAL = 30000;
-interface UseWatchlistProps {
+interface UseMoviesWorkspaceProps {
   currentUser: User | null;
   isPaused: boolean;
 }
 
-interface WatchlistToast {
+interface MoviesWorkspaceToast {
   message: string;
   type: 'success' | 'error' | 'info';
   onUndo?: () => void;
@@ -50,12 +50,12 @@ export const getMovieSelectionFromSuggestion = (
   };
 };
 
-export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
+export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspaceProps) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { showToast } = useToast();
   const readMemories = useCallback(() => readScope('memories'), []);
 
-  // State (from useWatchlistState)
+  // Local view state
   const [isAdding, setIsAdding] = useState(false);
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
   const previousMoviesRef = useRef<Movie[] | null>(null);
 
   const setToast = useCallback(
-    (toast: WatchlistToast | null) => {
+    (toast: MoviesWorkspaceToast | null) => {
       if (!toast) return;
       showToast({
         message: toast.message,
@@ -82,7 +82,7 @@ export const useWatchlist = ({ currentUser, isPaused }: UseWatchlistProps) => {
     [showToast]
   );
 
-  // Data (from useWatchlistData)
+  // Data sources
   const {
     movies,
     isLoading,
