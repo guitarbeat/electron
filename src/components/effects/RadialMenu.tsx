@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageIcon } from '@/common/icons';
 import './RadialMenu.css';
 
@@ -153,7 +153,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   const fanQuadrant = getFanQuadrant(menuPos);
 
-  const markDiscovered = () => {
+  const markDiscovered = useCallback(() => {
     setHasDiscovered((prev) => {
       if (!prev) {
         try {
@@ -164,14 +164,13 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       }
       return true;
     });
-  };
+  }, []);
 
-  // Re-clamp whenever the menu opens (handles dragged-near-edge case).
-  useEffect(() => {
-    if (isActive) {
-      setMenuPos((prev) => clampToViewport(prev));
-    }
-  }, [isActive]);
+  const toggleMenu = useCallback(() => {
+    setMenuPos((prev) => clampToViewport(prev));
+    setIsActive((prev) => !prev);
+    markDiscovered();
+  }, [markDiscovered]);
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
@@ -211,8 +210,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         const wasDragging = isDraggingRef.current;
 
         if (!wasDragging && clickDuration < clickTimeThreshold) {
-          setIsActive((prev) => !prev);
-          markDiscovered();
+          toggleMenu();
         }
 
         if (wasDragging && menuRef.current) {
@@ -261,7 +259,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       document.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [toggleMenu]);
 
   const handleMenuItemClick = (callback?: () => void) => {
     callback?.();
@@ -324,8 +322,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            setIsActive((prev) => !prev);
-            markDiscovered();
+            toggleMenu();
           }
         }}
       >
