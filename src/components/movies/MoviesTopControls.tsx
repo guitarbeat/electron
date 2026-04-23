@@ -167,8 +167,6 @@ const MoviesTopControls = React.forwardRef<
         if (document.activeElement !== input) {
           input.focus();
         }
-
-        input.scrollIntoView({ block: 'center' });
       },
     }),
     []
@@ -192,17 +190,15 @@ const MoviesTopControls = React.forwardRef<
   }, []);
 
   const hideAutocomplete = useCallback(() => {
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
     setIsAutocompleteOpen(false);
     setActiveAutocompleteIndex(-1);
     setIsAutocompleteLoading(false);
     setAutocompleteTypeFilter('all');
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-    }
-    autocompleteCloseTimerRef.current = window.setTimeout(() => {
-      autocompleteCloseTimerRef.current = null;
-      setIsAutocompleteMounted(false);
-    }, 200);
+    setIsAutocompleteMounted(false);
   }, []);
 
   const resetAutocomplete = useCallback(() => {
