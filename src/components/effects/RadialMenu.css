@@ -1,0 +1,257 @@
+.menu {
+  width: 200px;
+  height: 200px;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  left: 0;
+  list-style: none;
+  transform-origin: 100px;
+  transition: 0.5s;
+  transition-delay: calc(0.1s * var(--i));
+  transform: rotate(0deg) translateX(80px) translateY(-15px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: #111;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu.active li {
+  transform: rotate(calc(var(--fan-base, 0deg) + (225deg / 5 * var(--i))));
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Quadrant-aware fan direction: bubbles always sweep into open space.
+   --fan-base offsets the starting angle of the arc so the sweep goes
+   into the corner with the most room. */
+
+/* Toggle in bottom-right corner → fan up & left */
+.menu.menu--fan-tl.active li {
+  --fan-base: 180deg;
+}
+
+/* Toggle in bottom-left corner → fan up & right */
+.menu.menu--fan-tr.active li {
+  --fan-base: 270deg;
+}
+
+/* Toggle in top-right corner → fan down & left */
+.menu.menu--fan-bl.active li {
+  --fan-base: 90deg;
+}
+
+/* Toggle in top-left corner → fan down & right (the original default) */
+.menu.menu--fan-br.active li {
+  --fan-base: 0deg;
+}
+
+/* Gradient button colors */
+.green {
+  background: linear-gradient(135deg, #a8d52d, #83ac29, #74a727, #83ac29, #a8d52d);
+}
+
+.blue {
+  background: linear-gradient(135deg, #6fb9f6, #4ca3f9, #2587f8, #4ca3f9, #6fb9f6);
+}
+
+.purple {
+  background: linear-gradient(135deg, #f09bfe, #cd5ffb, #a92bf7, #cd5ffb, #f09bfe);
+}
+
+.orange {
+  background: linear-gradient(135deg, #f4cb8d, #fca44d, #fe8922, #fca44d, #f4cb8d);
+}
+
+.red {
+  background: linear-gradient(135deg, #f79c95, #fc5353, #f70707, #fc5353, #f79c95);
+}
+
+.yellow {
+  background: linear-gradient(135deg, #ffe96e, #f8d300, #dcbb01, #f8d300, #ffe96e);
+}
+
+/* Glossy highlight effect */
+.round-button::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 19%;
+  right: 19%;
+  height: 40%;
+  background: linear-gradient(135deg, 
+      rgba(255,255,255,0.5) 0%, 
+      rgba(255,255,255,0.25) 50%, 
+      rgba(255,255,255,0.05) 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Menu item button styling */
+.menu-item-button {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.menu-item-button:hover {
+  transform: scale(1.1);
+}
+
+.menu-item-button:active {
+  transform: scale(0.95);
+}
+
+.menu-item-button svg {
+  color: white;
+  stroke: white;
+}
+
+/* Toggle button */
+.toggle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    0 0 22px color-mix(in oklab, var(--moire-accent, #fe8922) 55%, transparent);
+  font-size: 2em;
+  font-weight: 300;
+  color: white;
+  transition: transform 1.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 600ms ease;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--moire-color-1, #f4cb8d) 35%, #f4cb8d),
+    color-mix(in oklab, var(--moire-accent, #fca44d) 50%, #fca44d),
+    color-mix(in oklab, var(--moire-color-2, #fe8922) 35%, #fe8922),
+    color-mix(in oklab, var(--moire-accent, #fca44d) 50%, #fca44d),
+    color-mix(in oklab, var(--moire-color-1, #f4cb8d) 35%, #f4cb8d)
+  );
+  pointer-events: auto;
+  user-select: none;
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  top: 8%;
+  left: 15%;
+  right: 15%;
+  height: 35%;
+  background: linear-gradient(135deg, 
+      rgba(255,255,255,0.5) 0%, 
+      rgba(255,255,255,0.2) 50%, 
+      rgba(255,255,255,0) 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.toggle:active {
+  cursor: grabbing;
+}
+
+/* First-visit discovery pulse — stops once user opens menu */
+@keyframes radial-discover-pulse {
+  0% {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.25),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      0 0 0 0 rgba(254, 137, 34, 0.55);
+  }
+  70% {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.25),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      0 0 0 18px rgba(254, 137, 34, 0);
+  }
+  100% {
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.25),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      0 0 0 0 rgba(254, 137, 34, 0);
+  }
+}
+
+.toggle.discover-pulse {
+  animation: radial-discover-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle.discover-pulse {
+    animation: none;
+  }
+}
+
+.menu.active .toggle {
+  transform: rotate(360deg);
+}
+
+.rotate {
+  display: inline-block;
+  transition: transform 0.5s ease;
+  line-height: 1;
+}
+
+.menu.active .rotate {
+  transform: rotate(315deg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .menu {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .menu li {
+    width: 36px;
+    height: 36px;
+    transform-origin: 80px;
+  }
+  
+  .menu.active li {
+    transform: rotate(calc(var(--fan-base, 0deg) + (225deg / 5 * var(--i))));
+  }
+  
+  .toggle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.6em;
+  }
+}
