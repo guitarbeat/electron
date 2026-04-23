@@ -434,7 +434,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onEdit,
 }) => {
   const iconActionClassName = (modifierClassName: string) =>
-    `movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
+    `workspace-card-action workspace-card-action--secondary workspace-card-action--compact movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
 
   const handlePrimaryAction = () => {
     executeAction(onToggle);
@@ -457,9 +457,9 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   }
 
   return (
-    <div className="movie-actions">
+    <div className="workspace-card-actions movie-actions">
       {actionState.showWatchedAction ? (
-        <div className="movie-actions__row movie-actions__row--primary">
+        <div className="workspace-card-actions__row movie-actions__row--primary">
           <Button
             type="button"
             onClick={handlePrimaryAction}
@@ -469,25 +469,11 @@ const MovieActions: React.FC<MovieActionsProps> = ({
             loadingText="Updating..."
             aria-pressed={actionState.watchedByCurrentUser}
             aria-label={actionState.primaryActionAriaLabel ?? undefined}
-            className={`movie-item-primary-action ${
+            className={`workspace-card-action workspace-card-action--primary movie-item-primary-action ${
               actionState.watchedByCurrentUser
                 ? 'movie-item-primary-action--watched'
                 : 'movie-item-primary-action--unwatched'
             }`}
-            style={
-              actionState.watchedByCurrentUser
-                ? {
-                    background: 'linear-gradient(180deg, rgba(30,50,36,0.88) 0%, rgba(18,32,22,0.92) 100%)',
-                    color: 'rgba(220,240,225,0.9)',
-                    border: '1px solid rgba(74,160,96,0.35)',
-                  }
-                : {
-                    background: 'linear-gradient(135deg, #22c55e 0%, #059669 100%)',
-                    color: '#fff',
-                    border: '1px solid rgba(34,197,94,0.5)',
-                    boxShadow: '0 6px 18px rgba(5,150,105,0.4), inset 0 1px 0 rgba(255,255,255,0.18)',
-                  }
-            }
           >
             {actionState.watchedByCurrentUser ? (
               <CheckIcon style={{ width: '15px' }} />
@@ -506,12 +492,12 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         </div>
       ) : null}
 
-      <div className="movie-actions__row movie-actions__row--secondary">
+      <div className="workspace-card-actions__row movie-actions__row--secondary">
         {actionState.showNotesAction ? (
           <button
             type="button"
             onClick={handleToggleNotes}
-            className="movie-item-memory-toggle movie-item-note-action"
+            className="workspace-card-action workspace-card-action--secondary workspace-card-action--expansive movie-item-memory-toggle movie-item-note-action"
             aria-label={actionState.notesButtonAriaLabel ?? undefined}
             disabled={isUpdating}
           >
@@ -533,7 +519,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         ) : null}
 
         {!actionState.isGuest ? (
-          <div className="movie-secondary-actions">
+          <div className="workspace-card-actions__cluster movie-secondary-actions">
             {onEdit ? (
               <button
                 type="button"
@@ -544,6 +530,7 @@ const MovieActions: React.FC<MovieActionsProps> = ({
                 disabled={isUpdating}
               >
                 <EditIcon style={{ width: '15px', height: '15px' }} />
+                <span className="workspace-card-action__text">Edit</span>
               </button>
             ) : null}
 

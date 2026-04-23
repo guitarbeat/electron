@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckIcon, TrashIcon } from '@/common/Icons';
+import { CheckIcon, EditIcon, TrashIcon } from '@/common/Icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
@@ -194,40 +194,50 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             </MediaCardInfo>
 
             {canEdit && (
-              <MediaCardActions className="place-item-actions">
-                <button
-                  type="button"
-                  className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
-                  onClick={handleVisitToggle}
-                  disabled={isSubmitting || isActionLoading}
-                  aria-label={
-                    isVisited
-                      ? `Mark ${place.name} as not visited`
-                      : `Mark ${place.name} as visited`
-                  }
-                >
-                  {isActionLoading ? '…' : isVisited ? 'Unmark' : 'Been here!'}
-                </button>
-                <button
-                  type="button"
-                  className="place-item-delete-btn"
-                  onClick={handleEdit}
-                  disabled={isSubmitting}
-                  aria-label={`Edit ${place.name}`}
-                  title="Edit place"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  ✏️
-                </button>
-                <button
-                  type="button"
-                  className="place-item-delete-btn"
-                  onClick={handleDelete}
-                  disabled={isSubmitting}
-                  aria-label={`Remove ${place.name}`}
-                >
-                  <TrashIcon style={{ width: 13, height: 13 }} />
-                </button>
+              <MediaCardActions className="workspace-card-actions place-item-actions">
+                <div className="workspace-card-actions__row workspace-card-actions__row--primary">
+                  <button
+                    type="button"
+                    className={`workspace-card-action workspace-card-action--primary place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
+                    onClick={handleVisitToggle}
+                    disabled={isSubmitting || isActionLoading}
+                    aria-label={
+                      isVisited
+                        ? `Mark ${place.name} as not visited`
+                        : `Mark ${place.name} as visited`
+                    }
+                  >
+                    <CheckIcon style={{ width: 15, height: 15 }} />
+                    <span className="place-item-action-btn__label">
+                      {isActionLoading ? 'Updating…' : isVisited ? 'Visited' : 'Been here'}
+                    </span>
+                  </button>
+                </div>
+                <div className="workspace-card-actions__row workspace-card-actions__row--secondary">
+                  <button
+                    type="button"
+                    className="workspace-card-action workspace-card-action--secondary workspace-card-action--expansive place-item-edit-btn"
+                    onClick={handleEdit}
+                    disabled={isSubmitting}
+                    aria-label={`Edit ${place.name}`}
+                    title="Edit place"
+                  >
+                    <EditIcon style={{ width: 15, height: 15 }} />
+                    <span className="workspace-card-action__text">Edit</span>
+                  </button>
+                  <div className="workspace-card-actions__cluster place-secondary-actions">
+                    <button
+                      type="button"
+                      className="workspace-card-action workspace-card-action--secondary workspace-card-action--compact place-item-delete-btn"
+                      onClick={handleDelete}
+                      disabled={isSubmitting}
+                      aria-label={`Remove ${place.name}`}
+                      title="Remove place"
+                    >
+                      <TrashIcon style={{ width: 13, height: 13 }} />
+                    </button>
+                  </div>
+                </div>
               </MediaCardActions>
             )}
           </MediaCardOverlay>
