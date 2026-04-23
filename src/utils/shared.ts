@@ -107,6 +107,38 @@ export const isValidUrl = (url: string): boolean => {
   }
 };
 
+/**
+ * Encodes data for storage to prevent direct plaintext access in localStorage.
+ * Uses a version prefix for future extensibility and Base64 for basic obfuscation.
+ */
+export const encodeStorageData = (data: string): string => {
+  try {
+    return `v1:${btoa(data)}`;
+  } catch {
+    return data;
+  }
+};
+
+/**
+ * Decodes data from storage. Supports both legacy plaintext and versioned encoded formats.
+ */
+export const decodeStorageData = (data: string): string => {
+  if (!data || !data.startsWith("v1:")) {
+    return data;
+  }
+
+  try {
+    const encodedPart = data.substring(3);
+    // Basic regex check for Base64 characters
+    if (!/^[a-zA-Z0-9+/=]*$/.test(encodedPart)) {
+      return data;
+    }
+    return atob(encodedPart);
+  } catch {
+    return data;
+  }
+};
+
 // ============================================================================
 // Concurrency Utilities
 // ============================================================================

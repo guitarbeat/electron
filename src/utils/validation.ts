@@ -3,7 +3,7 @@
  * Provides reusable validation rules and utilities
  */
 
-import { sanitizeInput } from './shared';
+import { sanitizeInput } from './shared.ts';
 
 // ============================================================================
 // Validation Constants

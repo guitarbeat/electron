@@ -1,3 +1,4 @@
+import { decodeStorageData, encodeStorageData } from '../../utils/shared.ts';
 import { cloneMatchmakerGame, cloneQuizData, defaultQuizData } from './stateSchemas.ts';
 import type {
   ConflictResponse,
@@ -101,7 +102,9 @@ const readJson = <T>(key: string): T | null => {
 
   try {
     const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
+    if (!raw) return null;
+    const decoded = decodeStorageData(raw);
+    return JSON.parse(decoded) as T;
   } catch {
     return null;
   }
@@ -113,7 +116,8 @@ const writeJson = (key: string, value: unknown): void => {
   }
 
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    const encoded = encodeStorageData(JSON.stringify(value));
+    window.localStorage.setItem(key, encoded);
   } catch {
     // Ignore storage errors; degraded sync still works in-memory for this session.
   }
