@@ -1,4 +1,5 @@
 import React, {
+  type CSSProperties,
   useCallback,
   useEffect,
   useId,
@@ -28,9 +29,6 @@ import {
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './lib/watchlistAutocomplete';
-
-const TICKER_TEXT =
-  '\u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER · \u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER ·';
 
 interface WatchlistTopControlsProps {
   currentUser: User | null;
@@ -130,33 +128,32 @@ const WatchlistTopControls = React.forwardRef<
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to watchlist';
   const headline = useMemo(() => {
     if (queueCount === 0 && watchedCount === 0) {
-      return 'Movie night starts here';
+      return 'Start the queue';
     }
 
     if (queueCount > 0) {
-      return `${queueCount} title${queueCount === 1 ? '' : 's'} in play tonight`;
+      return `${queueCount} title${queueCount === 1 ? '' : 's'} in queue`;
     }
 
-    return `${watchedCount} movie${watchedCount === 1 ? '' : 's'} watched together`;
+    return `${watchedCount} watched together`;
   }, [queueCount, watchedCount]);
   const lead = useMemo(() => {
     if (latestNoteMovieTitle && latestNoteAuthor) {
-      return `Latest poster note is on ${latestNoteMovieTitle}, written by ${latestNoteAuthor}.`;
+      return `Latest note: ${latestNoteMovieTitle} by ${latestNoteAuthor}.`;
     }
 
     if (noteCount > 0) {
-      return `${noteCount} shared note${noteCount === 1 ? '' : 's'} are already pinned to the posters.`;
+      return `${noteCount} shared note${noteCount === 1 ? '' : 's'} saved.`;
     }
 
-    return 'Add the next title, leave a note on the poster, and keep your queue tight.';
+    return 'Add the next title.';
   }, [latestNoteAuthor, latestNoteMovieTitle, noteCount]);
   const stats = useMemo(
     () => [
       { label: 'Queue', value: queueCount },
       { label: 'Watched', value: watchedCount },
-      { label: 'Notes', value: noteCount },
     ],
-    [noteCount, queueCount, watchedCount]
+    [queueCount, watchedCount]
   );
 
   useImperativeHandle(
@@ -390,15 +387,13 @@ const WatchlistTopControls = React.forwardRef<
               <p className="watchlist-top-controls__eyebrow">Aaron and Electra</p>
               <h2 className="watchlist-top-controls__title">{headline}</h2>
               <p className="watchlist-top-controls__lead">{lead}</p>
-              {latestNoteMovieTitle ? (
-                <p className="watchlist-top-controls__hero-note">
-                  Poster spotlight
-                  <span> {latestNoteMovieTitle}</span>
-                </p>
-              ) : null}
             </div>
 
-            <div className="watchlist-top-controls__hero-stats" aria-label="Watchlist summary">
+            <div
+              className="watchlist-top-controls__hero-stats"
+              aria-label="Watchlist summary"
+              style={{ '--watchlist-hero-stat-count': stats.length } as CSSProperties}
+            >
               {stats.map((stat) => (
                 <div key={stat.label} className="watchlist-top-controls__hero-stat">
                   <span className="watchlist-top-controls__hero-stat-value">{stat.value}</span>
@@ -698,11 +693,6 @@ const WatchlistTopControls = React.forwardRef<
             </form>
           </div>
 
-          <div className="y2k-ticker" aria-hidden="true">
-            <div className="y2k-ticker__inner">
-              <span className="y2k-ticker__text">{TICKER_TEXT}</span>
-            </div>
-          </div>
         </div>
       </div>
 

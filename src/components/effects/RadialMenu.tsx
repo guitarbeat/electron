@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MessageIcon } from '@/common/Icons';
+import { CrossIcon, MessageIcon, QuickActionsIcon } from '@/common/Icons';
 import {
   clampPositionToViewport,
   getDockedPositionForViewport,
@@ -27,22 +27,6 @@ const SpinIcon = () => (
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="2" x2="12" y2="12" />
     <line x1="12" y1="12" x2="20" y2="16" />
-  </svg>
-);
-
-const BubbleIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="12" r="7.5" fill="currentColor" fillOpacity="0.18" />
-    <path
-      d="M12 5.75a6.25 6.25 0 1 1-5.09 9.87L5.5 19l3.63-1.16A6.25 6.25 0 1 1 12 5.75Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="9.25" cy="11.9" r="1" fill="currentColor" />
-    <circle cx="12" cy="11.9" r="1" fill="currentColor" />
-    <circle cx="14.75" cy="11.9" r="1" fill="currentColor" />
   </svg>
 );
 
@@ -334,7 +318,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       index: 0,
       colorClass: 'teal',
       label: 'Messages',
-      description: 'Chat and check-ins',
+      description: 'Chat, notes, and check-ins',
       onClick: () => handleMenuItemClick(onOpenMessages),
       icon: <MessageIcon size={20} style={{ color: 'white' }} />,
     },
@@ -342,7 +326,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       index: 1,
       colorClass: 'violet',
       label: 'Quiz',
-      description: 'Personality and couple quiz',
+      description: 'Run the couple compatibility quiz',
       onClick: () => handleMenuItemClick(onOpenQuiz),
       icon: <QuizIcon />,
     },
@@ -350,7 +334,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       index: 2,
       colorClass: 'amber',
       label: 'Spin',
-      description: 'Spin and match a movie',
+      description: 'Launch the movie picker wheel',
       onClick: () => handleMenuItemClick(onOpenSpin),
       icon: <SpinIcon />,
     },
@@ -369,7 +353,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       <button
         ref={toggleRef}
         type="button"
-        className={`toggle ${!hasDiscovered ? 'discover-pulse' : ''}`}
+        className={`toggle ${isActive ? 'toggle--active' : ''} ${!hasDiscovered ? 'discover-pulse' : ''}`}
         aria-label={isActive ? 'Close quick actions' : 'Open quick actions'}
         aria-expanded={isActive}
         aria-haspopup="menu"
@@ -380,11 +364,21 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
           }
         }}
       >
-        <span className="toggle__glow" aria-hidden="true" />
-        <span className="toggle__icon">
-          <BubbleIcon />
+        <span className="toggle__halo" aria-hidden="true" />
+        <span className="toggle__sheen" aria-hidden="true" />
+        <span className="toggle__rail" aria-hidden="true" />
+        <span className="toggle__content">
+          <span className="toggle__eyebrow">{isActive ? 'Quick launch' : 'Control pod'}</span>
+          <span className="toggle__title-row">
+            <span className="toggle__icon-shell">
+              {isActive ? <CrossIcon size={18} /> : <QuickActionsIcon size={18} />}
+            </span>
+            <span className="toggle__title-copy">
+              <strong>{isActive ? 'Hide actions' : 'Quick actions'}</strong>
+              <span>{isActive ? 'Tap again to collapse' : 'Messages, quiz, and spin'}</span>
+            </span>
+          </span>
         </span>
-        <span className="toggle__label">{isActive ? 'Close' : 'Quick actions'}</span>
       </button>
 
       <ul role="menu" aria-label="Quick actions">
