@@ -13190,3 +13190,299 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ============================================================================
+   Queue Cohesion Refresh
+   ============================================================================ */
+
+.app-workspace-stack--queue {
+  gap: clamp(0.38rem, 0.34rem + 0.22vw, 0.62rem);
+}
+
+.app-workspace-stack--queue .workspace-stage--simplified {
+  gap: clamp(0.65rem, 0.58rem + 0.32vw, 0.95rem);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls {
+  gap: 0.7rem;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__stage {
+  position: relative;
+  display: grid;
+  gap: clamp(0.8rem, 0.72rem + 0.35vw, 1.1rem);
+  padding: clamp(1rem, 0.9rem + 0.45vw, 1.35rem);
+  border: 1px solid rgba(192, 149, 94, 0.26);
+  border-radius: 1.7rem;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 226, 0.1) 0%, transparent 18%),
+    radial-gradient(circle at 12% 18%, rgba(232, 195, 141, 0.16) 0%, transparent 28%),
+    radial-gradient(circle at 88% 16%, rgba(118, 77, 38, 0.14) 0%, transparent 24%),
+    linear-gradient(140deg, rgba(82, 56, 33, 0.88) 0%, rgba(42, 28, 18, 0.95) 52%, rgba(23, 15, 10, 0.98) 100%);
+  box-shadow:
+    0 26px 48px rgba(12, 8, 5, 0.3),
+    inset 0 1px 0 rgba(255, 244, 222, 0.12);
+  overflow: visible;
+  isolation: isolate;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg, transparent 16%, rgba(255, 247, 231, 0.08) 36%, transparent 54%),
+    radial-gradient(circle at 18% 14%, rgba(255, 247, 231, 0.08) 0%, transparent 22%);
+  pointer-events: none;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__intro {
+  gap: 0;
+  padding-bottom: 0;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero {
+  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
+  gap: clamp(1rem, 0.9rem + 0.55vw, 1.5rem);
+  align-items: stretch;
+  padding: clamp(0.2rem, 0.14rem + 0.16vw, 0.35rem);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero-copy {
+  align-content: start;
+  gap: 0.45rem;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__eyebrow {
+  color: #d2a160;
+  letter-spacing: 0.16em;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__title {
+  font-size: clamp(1.8rem, 1.42rem + 1.08vw, 2.7rem);
+  letter-spacing: 0.01em;
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__lead {
+  max-width: 54ch;
+  color: rgba(237, 223, 198, 0.82);
+  font-size: clamp(0.9rem, 0.84rem + 0.16vw, 1rem);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero-note {
+  margin-top: 0.55rem;
+  color: rgba(221, 195, 157, 0.72);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero-stats {
+  align-self: stretch;
+  align-items: center;
+  gap: 0;
+  padding-inline: clamp(0.7rem, 0.55rem + 0.5vw, 1.15rem);
+  border-left: 1px solid rgba(212, 177, 115, 0.18);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero-stat {
+  align-content: center;
+  min-height: 4.75rem;
+  padding-inline: clamp(0.7rem, 0.5rem + 0.4vw, 1rem);
+  border-left-color: rgba(212, 177, 115, 0.18);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero-stat-value {
+  font-size: clamp(2rem, 1.7rem + 0.9vw, 2.8rem);
+  color: #f6e2bf;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__hero-stat-label {
+  color: rgba(234, 214, 183, 0.72);
+  letter-spacing: 0.18em;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__input-block {
+  gap: 0.85rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(212, 177, 115, 0.14);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-form {
+  gap: 0.55rem;
+  padding: 0.38rem;
+  border: 1px solid rgba(189, 145, 90, 0.32) !important;
+  border-radius: 1.35rem !important;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 239, 0.94) 0%, rgba(243, 233, 211, 0.92) 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 14px 26px rgba(11, 7, 4, 0.2) !important;
+  backdrop-filter: blur(0) !important;
+  -webkit-backdrop-filter: blur(0) !important;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-form:focus-within {
+  border-color: rgba(214, 166, 104, 0.5) !important;
+  box-shadow:
+    0 0 0 3px rgba(214, 166, 104, 0.14),
+    0 16px 30px rgba(11, 7, 4, 0.22) !important;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-icon {
+  padding-left: 0.75rem;
+  font-size: 0.98rem;
+  filter: none;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
+  filter: none;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-field {
+  min-height: 4.15rem;
+  padding-inline: 0.8rem 0.7rem !important;
+  background: transparent !important;
+  color: rgba(67, 41, 16, 0.96) !important;
+  font-family: 'Cormorant Garamond', var(--font-display) !important;
+  font-size: clamp(1.12rem, 1.02rem + 0.3vw, 1.34rem) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-field::placeholder {
+  color: rgba(149, 104, 55, 0.76) !important;
+  font-style: italic;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-actions {
+  grid-template-columns: minmax(7.5rem, 0.95fr) auto;
+  align-items: stretch;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button,
+.app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+  min-height: 4.15rem;
+  border-radius: 1rem !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  border: 1px solid rgba(173, 123, 69, 0.32) !important;
+  backdrop-filter: blur(0) !important;
+  -webkit-backdrop-filter: blur(0) !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease !important;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 245, 228, 0.26) 0%, transparent 32%),
+    linear-gradient(180deg, #c18a51 0%, #8e6036 100%) !important;
+  color: #fff5e7 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 229, 0.28),
+    0 10px 20px rgba(91, 58, 29, 0.24) !important;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+  background:
+    linear-gradient(180deg, rgba(255, 248, 234, 0.92) 0%, rgba(240, 224, 195, 0.88) 100%) !important;
+  color: rgba(76, 49, 24, 0.92) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 10px 18px rgba(91, 58, 29, 0.12) !important;
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button:hover,
+.app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button):hover {
+  transform: translateY(-1px);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__autocomplete {
+  border-radius: 1.1rem;
+  border: 1px solid rgba(186, 142, 87, 0.24);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 246, 0.98) 0%, rgba(244, 235, 218, 0.98) 100%);
+  box-shadow:
+    0 18px 38px rgba(12, 8, 5, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option {
+  background: transparent;
+  color: rgba(55, 34, 15, 0.96);
+  font-family: var(--font-body);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option:hover,
+.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option.is-active {
+  background: rgba(144, 97, 47, 0.1);
+  color: rgba(55, 34, 15, 0.96);
+}
+
+.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option:hover *,
+.app-workspace-stack--queue .watchlist-top-controls__autocomplete-option.is-active * {
+  color: inherit !important;
+}
+
+.app-workspace-stack--queue .y2k-ticker {
+  padding-top: 0.1rem;
+  border-top: 1px solid rgba(212, 177, 115, 0.14);
+}
+
+.app-workspace-stack--queue .y2k-ticker__text {
+  color: rgba(209, 168, 109, 0.82);
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 900px) {
+  .app-workspace-stack--queue .watchlist-top-controls__hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-workspace-stack--queue .watchlist-top-controls__hero-stats {
+    padding-inline: 0;
+    padding-top: 0.55rem;
+    border-left: none;
+    border-top: 1px solid rgba(212, 177, 115, 0.14);
+  }
+}
+
+@media (max-width: 640px) {
+  .app-workspace-stack--queue {
+    gap: 0.4rem;
+  }
+
+  .app-workspace-stack--queue .watchlist-top-controls__stage {
+    padding: 0.85rem;
+    border-radius: 1.35rem;
+  }
+
+  .app-workspace-stack--queue .watchlist-top-controls__title {
+    font-size: clamp(1.55rem, 1.25rem + 1.3vw, 2.05rem);
+  }
+
+  .app-workspace-stack--queue .watchlist-top-controls__search-form {
+    gap: 0.4rem;
+    padding: 0.32rem;
+    border-radius: 1.1rem !important;
+  }
+
+  .app-workspace-stack--queue .watchlist-top-controls__search-field,
+  .app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button,
+  .app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+    min-height: 3.35rem;
+  }
+}
