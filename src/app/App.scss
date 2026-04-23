@@ -8726,6 +8726,8 @@ body.grabbing * {
   position: relative;
   display: grid;
   grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr);
+  max-height: inherit;
+  min-height: 0;
   overflow: hidden;
   border-radius: 2rem;
   border: 1px solid rgba(255, 236, 206, 0.18);
@@ -8855,7 +8857,11 @@ body.grabbing * {
   gap: 1.25rem;
   padding: 1.65rem 1.55rem 1.45rem;
   min-width: 0;
-  overflow: auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .movie-details-modal__header {
@@ -9046,6 +9052,7 @@ body.grabbing * {
 .movie-details-modal__composer-shell {
   display: grid;
   gap: 0.7rem;
+  min-width: 0;
 }
 
 .movie-details-modal__composer-copy {
@@ -9986,6 +9993,10 @@ body.grabbing * {
     min-height: min(56dvh, 24rem);
   }
 
+  .movie-details-modal__content {
+    max-height: min(50dvh, 32rem);
+  }
+
   .movie-details-modal__summary-band {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -9993,6 +10004,7 @@ body.grabbing * {
 
 @media (max-width: 640px) {
   .movie-details-modal__content {
+    max-height: min(52dvh, 30rem);
     padding: 1.1rem 1rem 1rem;
   }
 
