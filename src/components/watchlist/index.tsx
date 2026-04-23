@@ -14,7 +14,7 @@ import WatchlistTopControls, {
 } from './WatchlistTopControls';
 import SuggestionCard from './SuggestionCard';
 import MovieCard from './MovieCard';
-import { buildWatchlistSections } from './watchlistSections';
+import { buildWatchlistSections } from './lib/watchlistSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
 import './WatchlistPhotoMode.css';
 

@@ -3,7 +3,7 @@ import { Movie, User } from '@/shared/types';
 import { Textarea } from '@/ui/FormFields';
 import Button from '@/ui/Button';
 import { radius, spacing, typography } from '@/theme/tokens';
-import { canCreateMemory } from './memoryUtils';
+import { canCreateMemory } from './lib/memoryUtils';
 
 interface MemoryComposerProps {
   watchedMovieOptions: Movie[];

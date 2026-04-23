@@ -27,7 +27,7 @@ import {
   normalizeMovieAutocompleteQuery,
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
-} from './watchlistAutocomplete';
+} from './lib/watchlistAutocomplete';
 
 const TICKER_TEXT =
   '\u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER · \u00a0\u00a0★ AARON & ELECTRA\'S MOVIE NIGHT · 🎬 NO SPOILERS ALLOWED · 🍿 POPCORN MANDATORY · 2 HEARTS · 1 SCREEN · ★ MADE WITH LOVE · SPIN THE WHEEL · PICK TOGETHER ·';

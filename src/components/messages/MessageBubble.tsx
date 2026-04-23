@@ -3,7 +3,7 @@ import type { Message, User } from '@/shared/types';
 import { TrashIcon } from '@/common/Icons';
 import { spacing, typography } from '@/theme/tokens';
 import { formatMessageTimestamp } from '@/utils';
-import { getBubbleColor, getBubbleTextColor, IOS_TIMESTAMP, isMessageFromCurrentUser } from './messageUtils';
+import { getBubbleColor, getBubbleTextColor, IOS_TIMESTAMP, isMessageFromCurrentUser } from './lib/messageUtils';
 
 interface MessageBubbleProps {
   message: Message;

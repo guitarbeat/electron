@@ -4,7 +4,7 @@ import {
   SYNC_WARNING_CLIENT_NETWORK,
   SYNC_WARNING_OUTBOX,
 } from '../../services/state/index.ts';
-import { getSyncBannerContent } from './syncBannerContent.ts';
+import { getSyncBannerContent } from './lib/syncBannerContent.ts';
 
 test('getSyncBannerContent', async (t) => {
   await t.test('returns local-only messaging for degraded sync', () => {

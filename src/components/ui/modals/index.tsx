@@ -13,7 +13,7 @@ import {
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
-} from '../modalPrimitives';
+} from '../lib/modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
 import Button from '../Button';
 import SharedBottomSheet from '../BottomSheet';

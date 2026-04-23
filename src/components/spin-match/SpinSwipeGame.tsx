@@ -6,7 +6,7 @@ import MovieDetailsModal from '@/components/watchlist/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
-} from '@/components/spin-wheel/spinWheelEngine';
+} from '@/components/spin-wheel/lib/spinWheelEngine';
 import './SpinSwipeGame.css';
 
 type Phase = 'swipe' | 'spin' | 'result';

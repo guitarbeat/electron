@@ -1,4 +1,4 @@
-import type { Place, PlaceSuggestion } from '../../shared/types.ts';
+import type { Place, PlaceSuggestion } from '../../../shared/types.ts';
 
 export interface PlaceSections {
   suggestions: PlaceSuggestion[];

@@ -11,7 +11,7 @@ import {
   getSpinCandidates,
   getSpinPool,
   type SpinMode,
-} from './spinWheelEngine.ts';
+} from './lib/spinWheelEngine.ts';
 
 interface SpinWheelGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;

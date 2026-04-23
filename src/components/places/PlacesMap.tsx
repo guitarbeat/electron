@@ -3,7 +3,7 @@ import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
-import { getPlaceMeta } from './placeMeta';
+import { getPlaceMeta } from './lib/placeMeta';
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
