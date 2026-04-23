@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
-const reactHooksRecommendedLatest = reactHooks.configs.flat['recommended-latest'];
+const reactHooksRecommended = reactHooks.configs.flat.recommended;
 
 export default tseslint.config(
   { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next'] },
@@ -33,11 +33,11 @@ export default tseslint.config(
       },
     },
     plugins: {
-      ...reactHooksRecommendedLatest.plugins,
+      ...reactHooksRecommended.plugins,
       'react-refresh': reactRefresh,
     },
     rules: {
-      ...reactHooksRecommendedLatest.rules,
+      ...reactHooksRecommended.rules,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
