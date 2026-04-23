@@ -83,10 +83,10 @@ This is a chronological inventory of regressions captured from the `git log` and
 | Historical Path | Closest Current Path in Repo | Role in Modern Ecosystem |
 | --- | --- | --- |
 | `components/UserSelection` | `src/components/common/UserSelection.tsx` | Entry point for login/profile handoff. |
-| `components/Watchlist.tsx` | `src/components/watchlist/index.tsx` | The product's core functional anchor. |
+| `components/Watchlist.tsx` | `src/components/movies/Watchlist.tsx` | The product's core functional anchor. |
 | `components/SpinWheel.tsx` | `src/components/spinWheel/SpinWheelGame.tsx` | Spin / selection mechanics. |
 | `components/MessageBoard` | `src/components/messages/MessageBoard.tsx` | Message board surface. |
-| `MovieItem.tsx` | `src/components/watchlist/index.tsx` (`MovieCard`) | Movie rows evolved into rich cards in the watchlist module. |
+| `MovieItem.tsx` | `src/components/movies/MovieCard.tsx` | Movie rows evolved into rich cards in the watchlist module. |
 | `gistConfig.ts` | `src/services/gistClient.ts` | Backend interaction moved to guarded client. |
 | `Dashboard.tsx` | `src/app/App.tsx` and `src/app/App.scss` | Original dashboard UI absorbed into the root shell. |
 

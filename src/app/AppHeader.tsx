@@ -56,7 +56,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
   const statusEyebrow = 'Session';
   const statusLabel = currentUser ? `${currentUser} online` : 'Guest session';
-  const brandLabel = activeTab === 'queue' ? 'Cinematic Queue' : 'Scout Atlas';
+  const brandLabel = activeTab === 'movies' ? 'Movies' : 'Places';
   const pwaChip = (() => {
     if (!pwaStatus) {
       return null;

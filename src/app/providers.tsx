@@ -10,7 +10,7 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import type { MainTab, User } from '@/shared/types';
+import type { User } from '@/shared/types';
 import { moviesTheme, shellTokens, spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
@@ -33,10 +33,7 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }> = ({
-  children,
-  activeTab: _activeTab,
-}) => {
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const currentTheme: 'movies' | 'places' = 'movies';
   const themeTokens = moviesTheme;
 

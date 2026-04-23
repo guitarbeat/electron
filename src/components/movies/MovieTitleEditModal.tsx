@@ -3,7 +3,7 @@ import type { Movie } from '@/shared/types';
 import { colors, spacing, typography } from '@/theme/tokens';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
-import { Modal } from '@/ui/modals';
+import { Modal } from '@/ui/ModalSystem';
 import { MAX_MOVIE_TITLE_LENGTH, sanitizeInput } from '@/utils';
 
 interface MovieTitleEditModalProps {

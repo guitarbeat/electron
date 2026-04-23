@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import type { Place } from '@/shared/types';
-import { Modal } from '@/ui/modals';
+import { Modal } from '@/ui/ModalSystem';
 import { useMediaQuery, mediaBreakpoints } from '@/hooks/useMediaQuery';
 import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
 

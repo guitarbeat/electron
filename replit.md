@@ -18,7 +18,7 @@ A React/TypeScript/Vite SPA for Aaron & Electra to plan movie nights and discove
 | `src/app/App.scss` | All CSS (~12k lines). Movie cards ~line 7977, Place cards ~line 9519 |
 | `src/app/AppHeader.css` | Header brand + nav styling |
 | `src/components/ui/MediaCard.tsx` | Shared card primitive (PosterWrap, Cover, Overlay, Title, Badge, Actions, Info, Subtext) |
-| `src/components/watchlist/MovieCard.tsx` | Movie card component |
+| `src/components/movies/MovieCard.tsx` | Movie card component |
 | `src/components/places/PlaceCard.tsx` | Place card component |
 | `src/theme/tokens.ts` | Design tokens (colors, spacing, typography, motion) |
 

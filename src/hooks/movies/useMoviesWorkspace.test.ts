@@ -3,7 +3,7 @@ import test from 'node:test';
 
 /**
  * Partial implementation of getMovieSelectionFromSuggestion for testing
- * to avoid importing useWatchlist.ts which depends on path aliases not supported by node --test
+ * to avoid importing useMoviesWorkspace.ts which depends on path aliases not supported by node --test
  */
 const getMovieSelectionFromSuggestion = (
   suggestion: { imdbID?: string; type?: string }

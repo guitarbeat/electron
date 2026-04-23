@@ -67,13 +67,13 @@ const CollectionGrid: React.FC<CollectionGridProps> = ({
 // ============================================================================
 
 interface CollectionSectionProps extends React.HTMLAttributes<HTMLElement> {
-  title: React.ReactNode;
+  heading: React.ReactNode;
   tone?: 'default' | 'incoming' | 'completed';
   titleClassName?: string;
 }
 
 const CollectionSection: React.FC<CollectionSectionProps> = ({
-  title,
+  heading,
   tone = 'default',
   className = '',
   titleClassName = '',
@@ -96,7 +96,7 @@ const CollectionSection: React.FC<CollectionSectionProps> = ({
       style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, ...style }}
       {...props}
     >
-      <h3 className={headingClassName}>{title}</h3>
+      <h3 className={headingClassName}>{heading}</h3>
       {children}
     </section>
   );

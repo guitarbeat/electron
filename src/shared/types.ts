@@ -5,7 +5,7 @@ export const USER_PHOTOS: Record<User, string> = {
   Electra: 'https://cataas.com/cat/cute?width=200&height=200',
 };
 
-export type MainTab = 'queue' | 'places';
+export type MainTab = 'movies' | 'places';
 
 export interface Place {
   id: string;
@@ -101,7 +101,7 @@ export interface MatchmakerGame {
   startedBy: User;
 }
 
-export interface WatchlistProps {
+export interface MoviesViewProps {
   isPaused?: boolean;
   isMobile?: boolean;
   showPlanControls?: boolean;

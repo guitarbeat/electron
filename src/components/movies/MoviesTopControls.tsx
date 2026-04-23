@@ -17,7 +17,7 @@ import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
 } from '@/services/metadata';
-import RecommendationComposer from './RecommendationComposer';
+import MovieRecommendationComposer from './MovieRecommendationComposer';
 
 import {
   getNextMovieAutocompleteIndex,
@@ -28,9 +28,9 @@ import {
   normalizeMovieAutocompleteQuery,
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
-} from './lib/watchlistAutocomplete';
+} from './lib/movieAutocomplete';
 
-interface WatchlistTopControlsProps {
+interface MoviesTopControlsProps {
   currentUser: User | null;
   queueCount: number;
   watchedCount: number;
@@ -56,7 +56,7 @@ interface WatchlistTopControlsProps {
   canRecommend: boolean;
 }
 
-export interface WatchlistTopControlsHandle {
+export interface MoviesTopControlsHandle {
   focusSearchInput: () => void;
 }
 
@@ -72,9 +72,9 @@ function AutocompletePosterImage({ src }: { src: string }) {
   );
 }
 
-const WatchlistTopControls = React.forwardRef<
-  WatchlistTopControlsHandle,
-  WatchlistTopControlsProps
+const MoviesTopControls = React.forwardRef<
+  MoviesTopControlsHandle,
+  MoviesTopControlsProps
 >(({
   currentUser,
   queueCount,
@@ -696,7 +696,7 @@ const WatchlistTopControls = React.forwardRef<
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (
-        <RecommendationComposer
+        <MovieRecommendationComposer
           currentUser={currentUser}
           movieTitle={searchQuery.trim()}
           guestName={guestName}
@@ -719,6 +719,6 @@ const WatchlistTopControls = React.forwardRef<
   );
 });
 
-WatchlistTopControls.displayName = 'WatchlistTopControls';
+MoviesTopControls.displayName = 'MoviesTopControls';
 
-export default WatchlistTopControls;
+export default MoviesTopControls;
