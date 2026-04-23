@@ -1,6 +1,15 @@
 /* Electron PWA service worker — minimal app-shell cache for installability + basic offline */
-const CACHE = 'electron-shell-v2';
-const SHELL = ['/', '/index.html', '/favicon.svg', '/favicon-32x32.png', '/apple-touch-icon.png', '/manifest.json'];
+const CACHE = 'electron-shell-v3';
+const SHELL = [
+  '/',
+  '/index.html',
+  '/favicon.svg',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/apple-touch-icon.png',
+  '/electron-logo-mark.png',
+  '/manifest.json',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => undefined));
@@ -14,6 +23,12 @@ self.addEventListener('activate', (event) => {
     ),
   );
   self.clients.claim();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {

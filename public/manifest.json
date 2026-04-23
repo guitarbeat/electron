@@ -17,13 +17,19 @@
       "name": "Open Notes & Memories",
       "short_name": "Memories",
       "description": "Jump back into the shared notes and memories flow.",
-      "url": "/?panel=memories"
+      "url": "/?tab=queue&panel=memories"
     },
     {
       "name": "Open Movies",
       "short_name": "Movies",
       "description": "Go straight to the shared movie queue.",
-      "url": "/?tab=movies"
+      "url": "/?tab=queue"
+    },
+    {
+      "name": "Open Messages",
+      "short_name": "Messages",
+      "description": "Jump into the shared message board.",
+      "url": "/?panel=messages"
     }
   ],
   "icons": [
