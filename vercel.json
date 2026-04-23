@@ -1,0 +1,21 @@
+{
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "{api/_lib,src}/**/*.ts"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/state/:scope/mutate",
+      "destination": "/api/state/[scope]/mutate?scope=:scope"
+    },
+    {
+      "source": "/api/state/:scope",
+      "destination": "/api/state/[scope]?scope=:scope"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+name: Sync to electron
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-to-electron
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build tracked-file snapshot
+        shell: bash
+        run: |
+          rm -rf /tmp/electron2-sync
+          mkdir -p /tmp/electron2-sync
+          git archive --format=tar HEAD | tar -xf - -C /tmp/electron2-sync
+
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          cd /tmp/electron2-sync
+          git init -b main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Sync snapshot from guitarbeat/electron2@${GITHUB_SHA}"
+
+      - name: Push snapshot to electron
+        env:
+          TARGET_REPO: guitarbeat/electron
+          SYNC_TOKEN: ${{ secrets.ELECTRON_SYNC_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error title=Missing sync secret::Set the ELECTRON_SYNC_TOKEN repository secret in guitarbeat/electron2 so this workflow can push to guitarbeat/electron."
+            echo "Expected setup:"
+            echo "  Repository: guitarbeat/electron2"
+            echo "  Secret name: ELECTRON_SYNC_TOKEN"
+            echo "  Secret value: a GitHub token with permission to push to guitarbeat/electron"
+            exit 1
+          fi
+
+          cd /tmp/electron2-sync
+          git remote add target "https://x-access-token:${SYNC_TOKEN}@github.com/${TARGET_REPO}.git"
+          git push --force target HEAD:main
