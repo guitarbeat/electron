@@ -187,7 +187,7 @@ const PlacesList: React.FC = () => {
   const showEmptyState = !isLoading && !hasPlaces;
 
   return (
-    <div className="places-container">
+    <div className="watchlist-container places-container">
       {/* Sync banner */}
       {(isDegraded || isSuggestionsDegraded) && (
         <SyncBanner
@@ -217,6 +217,21 @@ const PlacesList: React.FC = () => {
         suggestionError={suggestionError}
         canEdit={Boolean(currentUser)}
       />
+
+      <CollectionSection heading="Map" className="workspace-section--utility">
+        <div className="workspace-utility-panel places-map-panel">
+          <React.Suspense fallback={<div className="places-map-placeholder" />}>
+            <PlacesMap
+              ref={mapRef}
+              places={places}
+              canEdit={Boolean(currentUser)}
+              onUpdatePlace={updatePlace}
+              onAddPlace={addPlace}
+              style={{ height: 'var(--places-map-height, 380px)', borderRadius: radius.xl }}
+            />
+          </React.Suspense>
+        </div>
+      </CollectionSection>
 
       {/* Pending suggestions */}
       {sections.suggestions.length > 0 && (
@@ -331,21 +346,6 @@ const PlacesList: React.FC = () => {
           </CollectionGrid>
         </CollectionSection>
       )}
-
-      <CollectionSection heading="Map" className="workspace-section--utility">
-        <div className="workspace-utility-panel places-map-panel">
-          <React.Suspense fallback={<div className="places-map-placeholder" />}>
-            <PlacesMap
-              ref={mapRef}
-              places={places}
-              canEdit={Boolean(currentUser)}
-              onUpdatePlace={updatePlace}
-              onAddPlace={addPlace}
-              style={{ height: 'var(--places-map-height, 380px)', borderRadius: radius.xl }}
-            />
-          </React.Suspense>
-        </div>
-      </CollectionSection>
 
       {/* Modals */}
       {placeToDelete && (
