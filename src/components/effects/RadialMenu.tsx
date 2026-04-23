@@ -4,19 +4,9 @@ import './RadialMenu.css';
 
 interface RadialMenuProps {
   onOpenMessages?: () => void;
-  onOpenMemories?: () => void;
   onOpenQuiz?: () => void;
   onOpenSpin?: () => void;
 }
-
-// SVG Icons for the menu
-const MemoriesIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
-  </svg>
-);
 
 const QuizIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -61,7 +51,7 @@ const TOGGLE_OFFSET = 100; // half of container (200/2) â€” used for left/top â†
 const FAN_RADIUS_DESKTOP = 110; // bubbles + halo
 const FAN_RADIUS_MOBILE = 90;
 const SAFE_MARGIN = 10;
-const ITEM_COUNT = 4;
+const ITEM_COUNT = 3;
 
 const isMobileViewport = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
@@ -144,7 +134,6 @@ const getInitialDiscoveryState = () => {
 
 const RadialMenu: React.FC<RadialMenuProps> = ({
   onOpenMessages,
-  onOpenMemories,
   onOpenQuiz,
   onOpenSpin,
 }) => {
@@ -321,14 +310,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     },
     {
       index: 1,
-      colorClass: 'blue',
-      label: 'Memories',
-      description: 'Shared notes and moments',
-      onClick: () => handleMenuItemClick(onOpenMemories),
-      icon: <MemoriesIcon />,
-    },
-    {
-      index: 2,
       colorClass: 'violet',
       label: 'Quiz',
       description: 'Personality and couple quiz',
@@ -336,7 +317,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       icon: <QuizIcon />,
     },
     {
-      index: 3,
+      index: 2,
       colorClass: 'amber',
       label: 'Spin',
       description: 'Spin and match a movie',

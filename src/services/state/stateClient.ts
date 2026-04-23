@@ -1,6 +1,7 @@
 import { deepClone } from '../../utils/shared.ts';
 import { cloneMatchmakerGame, cloneQuizData, defaultQuizData } from './stateSchemas.ts';
 import {
+  STATE_SCOPES,
   StateClientError,
   type ConflictResponse,
   type MutationResponse,
@@ -197,7 +198,7 @@ export interface OutboxStatusSummary {
 }
 
 const getOutboxStatusSummaryInternal = (): OutboxStatusSummary => {
-  const pendingScopes = STATE_SCOPES.flatMap((scope) => {
+  const pendingScopes = STATE_SCOPES.flatMap<OutboxScopeStatus>((scope) => {
     const outbox = readOutbox(scope);
     if (!outbox?.pendingOps.length) {
       return [];
@@ -214,7 +215,7 @@ const getOutboxStatusSummaryInternal = (): OutboxStatusSummary => {
   });
 
   return {
-    pendingCount: pendingScopes.reduce((total, entry) => total + entry.pendingCount, 0),
+    pendingCount: pendingScopes.reduce<number>((total, entry) => total + entry.pendingCount, 0),
     blockedCount: pendingScopes.filter((entry) => entry.blocked).length,
     pendingScopes,
     lastDegradedSince: pendingScopes

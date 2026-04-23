@@ -32,6 +32,20 @@
       "url": "/?panel=messages"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/pwa-screenshot-queue.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "label": "Movie queue with poster-driven expansion flow"
+    },
+    {
+      "src": "/pwa-screenshot-memories.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "label": "Notes and memories workspace with archive and composer"
+    }
+  ],
   "icons": [
     {
       "src": "/favicon-32x32.png",

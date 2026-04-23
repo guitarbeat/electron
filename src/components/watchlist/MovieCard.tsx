@@ -159,6 +159,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }),
     [currentUser, memories.length, movie]
   );
+  const featuredMemory = React.useMemo(
+    () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
+    [memories]
+  );
 
   const handleToggleMemories = () => {
     setShowMemories((current) => !current);
@@ -254,6 +258,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
           <MediaCardOverlay
             className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}
           >
+            {featuredMemory ? (
+              <MovieMemoryPreview
+                memory={featuredMemory}
+                additionalCount={Math.max(memories.length - 1, 0)}
+                isExpanded={showMemories}
+              />
+            ) : null}
             <MediaCardInfo>
               <MediaCardTitle
                 className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}
@@ -317,6 +328,34 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 export default MovieCard;
+
+const getMemoryPreviewText = (note: string): string => {
+  const trimmed = note.trim();
+  if (trimmed.length <= 120) {
+    return trimmed;
+  }
+
+  return `${trimmed.slice(0, 117).trimEnd()}...`;
+};
+
+const MovieMemoryPreview: React.FC<{
+  memory: SharedMemory;
+  additionalCount: number;
+  isExpanded: boolean;
+}> = ({ memory, additionalCount, isExpanded }) => (
+  <div
+    className={`movie-item-memory-preview${isExpanded ? ' is-expanded' : ''}`}
+    aria-hidden="true"
+  >
+    <div className="movie-item-memory-preview__topline">
+      <span className="movie-item-memory-preview__author">{memory.author}</span>
+      <span className="movie-item-memory-preview__count">
+        {additionalCount > 0 ? `+${additionalCount} more` : '1 note'}
+      </span>
+    </div>
+    <p className="movie-item-memory-preview__note">{getMemoryPreviewText(memory.note)}</p>
+  </div>
+);
 
 const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
   const [hasImageError, setHasImageError] = React.useState(false);
