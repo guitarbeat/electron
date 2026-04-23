@@ -4,7 +4,7 @@ import type {
   ImageChoiceQuestion as ImageChoiceQuestionType,
   MultipleChoiceQuestion as MultipleChoiceQuestionType,
   XYAxisQuestion as XYAxisQuestionType,
-} from './types';
+} from './lib/types';
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;

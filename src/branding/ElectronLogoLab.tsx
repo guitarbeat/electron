@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { LOGO_LAB_QUERY_PARAM, LOGO_VARIANT_QUERY_PARAM } from '@/app/logoLab';
 import Card from '@/ui/Card';
 import ElectronMark from './ElectronMark.tsx';
-import { DEFAULT_ELECTRON_FAVICON_PATH } from './logoAssets';
+import { DEFAULT_ELECTRON_FAVICON_PATH } from './LogoAssets';
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   ELECTRON_MARK_META,
   ELECTRON_MARK_VARIANTS,
   getElectronMarkDataUri,
   type ElectronMarkVariant,
-} from './electronMarkData';
+} from './ElectronMarkData';
 
 const FAVICON_PREVIEW_SIZES = [16, 32, 48] as const;
 

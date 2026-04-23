@@ -6,7 +6,7 @@ import {
   ELECTRON_MARK_VARIANTS,
   getElectronMarkDataUri,
   getElectronMarkSvgMarkup,
-} from './electronMarkData.ts';
+} from './ElectronMarkData.ts';
 
 test('electron marks expose the planned five variants', () => {
   assert.deepEqual(ELECTRON_MARK_VARIANTS, ['pulse-ae', 'orbit-e', 'orbit-a', 'static-gem', 'split-spark']);

@@ -10,7 +10,7 @@ import { useQuiz } from '@/hooks/useQuiz';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useToast } from '@/app/useProviders';
 import type { QuizData } from '@/hooks/useQuiz';
-import { CHARACTERS, QuizQuestion } from './types';
+import { CHARACTERS, QuizQuestion } from './lib/types';
 import QuestionsTab from './QuestionsTab';
 import DescriptionsTab from './DescriptionsTab';
 import SyncBanner from '@/components/ui/SyncBanner';

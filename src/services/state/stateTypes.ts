@@ -1,4 +1,4 @@
-import type { QuizCharacter, QuizQuestion } from '../../components/quiz/types.ts';
+import type { QuizCharacter, QuizQuestion } from '../../components/quiz/lib/types.ts';
 import type {
   MatchmakerGame,
   Message,

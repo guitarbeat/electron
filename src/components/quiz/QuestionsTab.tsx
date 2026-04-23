@@ -5,8 +5,8 @@ import type {
   MultipleChoiceQuestion,
   QuizQuestion,
   XYAxisQuestion,
-} from './types';
-import { questionTemplates, TemplateType } from './QuestionTemplates';
+} from './lib/types';
+import { questionTemplates, TemplateType } from './lib/QuestionTemplates';
 import QuestionPreview from './QuestionPreview';
 import QuestionEditorPanel, {
   AgreeDisagreeSummary,
@@ -14,7 +14,7 @@ import QuestionEditorPanel, {
   OptionsSummary,
   XYAxisSummary,
 } from './QuestionEditorPanel';
-import { getQuestionDetail, QUESTION_TYPE_LABELS } from './QuestionEditorMeta';
+import { getQuestionDetail, QUESTION_TYPE_LABELS } from './lib/QuestionEditorMeta';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import ConfirmDialog from '@/ui/ConfirmDialog';
