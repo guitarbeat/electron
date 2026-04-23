@@ -1340,6 +1340,10 @@ export const createReadHandler =
         const stored = await readScopeStoredData(scope);
         clientData = stored.clientData;
         version = stored.version;
+        if (!isGistConfigured()) {
+          degraded = true;
+          warning = getScopeWarning(new Error('GIST_ID is not configured.'));
+        }
       } catch (error) {
         const fallback = buildFallbackScopeData(scope);
         clientData = fallback.clientData;

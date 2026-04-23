@@ -223,12 +223,7 @@ export const isMockMode = (): boolean => {
   if (typeof window === 'undefined') {
     return false;
   }
-  // Explicit opt-out: real backend
-  if (window.localStorage.getItem('useMockData') === 'false') {
-    return false;
-  }
-  // Default to mock mode — the Vercel-style /api/* endpoints are not
-  // available in the Lovable preview/Worker runtime, so we serve bundled
-  // mock data unless the user explicitly opts into a real backend.
-  return true;
+  // Mock mode is opt-in. Real deployed environments with working `/api/*`
+  // routes should use the backend by default.
+  return window.localStorage.getItem('useMockData') === 'true';
 };
