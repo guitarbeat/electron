@@ -9274,15 +9274,10 @@ body.grabbing * {
   animation: memory-section-fade-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.memory-ledger__filmstrip,
-.memory-ledger__scrapbook {
+.memory-ledger__poster-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-}
-
-.memory-ledger__filmstrip {
-  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
 .memory-ledger__workspace {
@@ -9360,22 +9355,17 @@ body.grabbing * {
   flex-wrap: wrap;
 }
 
-.memory-ledger__stream-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.memory-ledger__stream-list > .memory-entry {
+.memory-ledger__poster-grid > .memory-poster-card {
   animation: memory-entry-rise 280ms cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
 }
 
-.memory-ledger__stream-list > .memory-entry:nth-child(1) { animation-delay: 20ms; }
-.memory-ledger__stream-list > .memory-entry:nth-child(2) { animation-delay: 40ms; }
-.memory-ledger__stream-list > .memory-entry:nth-child(3) { animation-delay: 60ms; }
-.memory-ledger__stream-list > .memory-entry:nth-child(4) { animation-delay: 80ms; }
-.memory-ledger__stream-list > .memory-entry:nth-child(5) { animation-delay: 100ms; }
-.memory-ledger__stream-list > .memory-entry:nth-child(n + 6) { animation-delay: 120ms; }
+.memory-ledger__poster-grid > .memory-poster-card:nth-child(1) { animation-delay: 20ms; }
+.memory-ledger__poster-grid > .memory-poster-card:nth-child(2) { animation-delay: 40ms; }
+.memory-ledger__poster-grid > .memory-poster-card:nth-child(3) { animation-delay: 60ms; }
+.memory-ledger__poster-grid > .memory-poster-card:nth-child(4) { animation-delay: 80ms; }
+.memory-ledger__poster-grid > .memory-poster-card:nth-child(5) { animation-delay: 100ms; }
+.memory-ledger__poster-grid > .memory-poster-card:nth-child(n + 6) { animation-delay: 120ms; }
 
 .memory-lane__input {
   border-radius: 18px !important;
@@ -9404,16 +9394,27 @@ body.grabbing * {
   color: var(--color-error);
 }
 
-.memory-entry {
+.memory-poster-card {
   position: relative;
-  display: grid;
-  gap: 0.7rem;
-  padding: 0.95rem 1rem;
-  border-radius: 1.2rem;
+}
+
+.memory-poster-card__surface {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 22rem;
+  aspect-ratio: 2 / 3;
+  padding: 0.95rem;
+  overflow: hidden;
+  border-radius: 1.35rem;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 76%, transparent);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%),
-    color-mix(in srgb, var(--color-surface-1) 72%, transparent);
+    radial-gradient(circle at top, rgba(255, 227, 177, 0.12) 0%, transparent 34%),
+    linear-gradient(180deg, rgba(81, 54, 32, 0.78) 0%, rgba(31, 20, 14, 0.96) 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   box-shadow:
     0 12px 24px rgba(0, 0, 0, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -9423,7 +9424,26 @@ body.grabbing * {
     box-shadow 180ms ease;
 }
 
-.memory-entry:hover {
+.memory-poster-card__surface.has-poster::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 5, 11, 0.1) 0%, rgba(8, 5, 11, 0.42) 44%, rgba(8, 5, 11, 0.88) 100%);
+  pointer-events: none;
+}
+
+.memory-poster-card__surface.is-fallback::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 219, 170, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at top right, rgba(255, 189, 102, 0.14) 0%, transparent 34%);
+  pointer-events: none;
+}
+
+.memory-poster-card:hover .memory-poster-card__surface {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
   box-shadow:
@@ -9431,76 +9451,113 @@ body.grabbing * {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.memory-entry:first-child {
-  border-color: color-mix(in srgb, var(--color-accent) 24%, transparent);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%),
-    color-mix(in srgb, var(--color-surface-1) 78%, transparent);
-}
-
-.memory-entry.is-mine {
+.memory-poster-card.is-mine .memory-poster-card__surface {
   border-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
 
-.memory-entry.is-pinned {
+.memory-poster-card.is-pinned .memory-poster-card__surface {
   box-shadow:
     0 16px 30px rgba(0, 0, 0, 0.18),
     0 0 0 1px rgba(255, 220, 148, 0.24) inset,
     0 0 24px rgba(255, 211, 112, 0.14);
 }
 
-.memory-entry__head {
+.memory-poster-card__chips,
+.memory-poster-card__caption {
+  position: relative;
+  z-index: 1;
+}
+
+.memory-poster-card__chips {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.memory-poster-card__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(20, 13, 9, 0.52);
+  border: 1px solid rgba(255, 226, 184, 0.2);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 244, 226, 0.92);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.memory-poster-card__caption {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(14, 9, 7, 0.18) 0%, rgba(14, 9, 7, 0.72) 24%, rgba(14, 9, 7, 0.9) 100%),
+    rgba(10, 8, 12, 0.28);
+  border: 1px solid rgba(255, 226, 184, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.memory-poster-card__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
 }
 
-.memory-entry__title {
+.memory-poster-card__title {
   margin: 0;
   font-family: 'Cormorant Garamond', var(--font-display);
-  font-size: 1.08rem;
+  font-size: 1.3rem;
   letter-spacing: 0.04em;
   color: rgba(255, 247, 240, 0.96);
 }
 
-.memory-entry__meta {
+.memory-poster-card__meta {
   margin: 0.18rem 0 0;
   font-size: 0.72rem;
   letter-spacing: 0.02em;
-  color: var(--color-text-secondary);
+  color: rgba(241, 225, 203, 0.74);
 }
 
-.memory-entry__pin {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.5rem;
-  padding: 0.1rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(255, 219, 116, 0.18);
-  color: inherit;
-  font-family: var(--font-heading);
-  font-size: 0.68rem;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.memory-entry__note {
+.memory-poster-card__note {
   margin: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
   white-space: pre-wrap;
   font-size: 0.96rem;
-  line-height: 1.6;
-  color: rgba(246, 236, 222, 0.94);
+  line-height: 1.55;
+  color: rgba(255, 246, 232, 0.94);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.22);
 }
 
-.memory-entry__actions {
+.memory-poster-card__textarea {
+  margin-top: -0.1rem;
+}
+
+.memory-poster-card__actions {
   display: flex;
   gap: 0.45rem;
   flex-wrap: wrap;
-  padding-top: 0.15rem;
-  border-top: 1px solid color-mix(in srgb, var(--color-border-subtle) 42%, transparent);
+  padding-top: 0.1rem;
+}
+
+.memory-poster-card__fallback-mark {
+  position: absolute;
+  inset: auto 0 5.2rem 0;
+  padding-inline: 1rem;
+  font-family: 'Cormorant Garamond', var(--font-display);
+  font-size: clamp(1.55rem, 1.2rem + 1vw, 2.15rem);
+  line-height: 0.96;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: rgba(255, 238, 215, 0.38);
+  text-transform: uppercase;
 }
 
 @keyframes memory-section-fade-in {
@@ -9548,7 +9605,7 @@ body.grabbing * {
   .movie-item-card,
   .movie-poster,
   .movie-item-overlay,
-  .memory-entry,
+  .memory-poster-card__surface,
   .movie-details-modal__backdrop,
   .movie-details-modal__dialog,
   .movie-details-modal__poster {
