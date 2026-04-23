@@ -58,6 +58,24 @@ export const placesTheme = {
   textGradient: 'linear-gradient(135deg, #ffe4c4 0%, #fcd34d 52%, #a7f3c9 100%)',
 } as const;
 
+export const shellTokens = {
+  canvasGap: 'clamp(0.7rem, 0.38rem + 0.8vw, 1.15rem)',
+  canvasPaddingBlock: 'clamp(0.3rem, 0.18rem + 0.4vw, 0.7rem)',
+  stackGap: 'clamp(0.85rem, 0.68rem + 0.55vw, 1.3rem)',
+  stackPaddingTop: 'clamp(0.55rem, 0.42rem + 0.55vw, 0.95rem)',
+  stackPaddingBottom: 'clamp(0.8rem, 0.6rem + 0.8vw, 1.35rem)',
+  panelBorderStrong: 'rgba(255, 236, 206, 0.22)',
+  panelBorderSoft: 'rgba(255, 236, 206, 0.12)',
+  panelHighlight: 'rgba(255, 255, 255, 0.08)',
+  panelGlass: 'rgba(255, 255, 255, 0.04)',
+  panelShadow: '0 24px 56px rgba(0, 0, 0, 0.24)',
+  panelShadowSoft: '0 14px 28px rgba(0, 0, 0, 0.16)',
+  headerSurface:
+    'linear-gradient(155deg, rgba(38, 28, 20, 0.9) 0%, rgba(20, 14, 11, 0.94) 100%)',
+  panelSurface:
+    'linear-gradient(160deg, rgba(46, 33, 24, 0.88) 0%, rgba(22, 17, 13, 0.92) 100%)',
+} as const;
+
 // * Spacing scale (Tight but balanced)
 export const spacing = {
   xs: '0.25rem', // 4px
