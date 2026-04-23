@@ -8997,6 +8997,18 @@ body.grabbing * {
   align-items: start;
 }
 
+.memory-ledger__toolbar,
+.memory-ledger__toolbar-group {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.memory-ledger__toolbar {
+  align-items: center;
+  justify-content: space-between;
+}
+
 .memory-ledger__composer,
 .memory-ledger__stream {
   display: grid;
@@ -9006,6 +9018,12 @@ body.grabbing * {
 
 .memory-ledger__composer {
   padding-right: 0.4rem;
+}
+
+.memory-ledger__composer-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
 }
 
 .memory-ledger__stream {
@@ -9173,6 +9191,12 @@ body.grabbing * {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .memory-ledger__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .memory-ledger__toolbar-group,
   .memory-ledger__toggle-row {
     flex-direction: column;
   }

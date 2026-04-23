@@ -4,6 +4,7 @@ import { Input, Textarea } from '@/ui/FormFields';
 import { useMovies } from '@/hooks/movies/useMovies';
 import { usePolling } from '@/services/polling';
 import { useUser } from '@/app/useProviders';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   addMemory,
   deleteMemory,
@@ -22,6 +23,7 @@ const MEMORIES_POLLING_INTERVAL = 30000;
 
 const FloatingMemoriesPanel: React.FC = () => {
   const { currentUser } = useUser();
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { movies } = useMovies(currentUser, false);
   const readMemories = useCallback(
     (): Promise<ScopeSnapshot<SharedMemory[]>> => readScope('memories'),
@@ -44,6 +46,8 @@ const FloatingMemoriesPanel: React.FC = () => {
   const [viewMode, setViewMode] = useState<'stream' | 'scrapbook'>('stream');
   const [sortMode, setSortMode] = useState<MemorySortMode>('newest');
   const [imageUrl, setImageUrl] = useState('');
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [showPinnedRail, setShowPinnedRail] = useState(false);
 
   const memories = snapshot?.data ?? [];
   const sorted = useMemo(() => sortMemories(memories, sortMode), [memories, sortMode]);
@@ -71,6 +75,9 @@ const FloatingMemoriesPanel: React.FC = () => {
     () => new Set(memories.map((memory) => memory.movieTitle.trim().toLowerCase())).size,
     [memories]
   );
+
+  const canSubmit = Boolean(currentUser && note.trim() && movieQuery.trim());
+  const showPinnedSection = pinnedMemories.length > 0 && (!isMobile || showPinnedRail);
 
   const createMemory = async () => {
     if (!currentUser) return;
@@ -144,7 +151,49 @@ const FloatingMemoriesPanel: React.FC = () => {
           </div>
         </header>
 
-        {pinnedMemories.length > 0 ? (
+        <div className="memory-ledger__toolbar">
+          <div className="memory-ledger__toolbar-group">
+            <Button
+              size="sm"
+              variant={isComposerOpen ? 'primary' : 'ghost'}
+              onClick={() => setIsComposerOpen((current) => !current)}
+              className="memory-lane__action-btn"
+            >
+              {isComposerOpen ? 'Hide composer' : 'New memory'}
+            </Button>
+            {pinnedMemories.length > 0 ? (
+              <Button
+                size="sm"
+                variant={showPinnedRail ? 'primary' : 'ghost'}
+                onClick={() => setShowPinnedRail((current) => !current)}
+                className="memory-lane__action-btn"
+              >
+                {showPinnedRail ? 'Hide pinned' : `Pinned (${pinnedMemories.length})`}
+              </Button>
+            ) : null}
+          </div>
+
+          <div className="memory-ledger__toolbar-group">
+            <Button
+              size="sm"
+              variant={showPinnedOnly ? 'primary' : 'ghost'}
+              onClick={() => setShowPinnedOnly((current) => !current)}
+              className="memory-lane__action-btn"
+            >
+              {showPinnedOnly ? 'Pinned only' : 'All entries'}
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === 'stream' ? 'primary' : 'ghost'}
+              onClick={() => setViewMode(viewMode === 'stream' ? 'scrapbook' : 'stream')}
+              className="memory-lane__action-btn"
+            >
+              {viewMode === 'stream' ? 'Stream view' : 'Scrapbook view'}
+            </Button>
+          </div>
+        </div>
+
+        {showPinnedSection ? (
           <section className="memory-ledger__pinned" aria-label="Pinned memories">
             <div className="memory-ledger__section-head">
               <p className="memory-ledger__section-title">Pinned</p>
@@ -174,61 +223,73 @@ const FloatingMemoriesPanel: React.FC = () => {
         ) : null}
 
         <section className="memory-ledger__workspace">
-          <aside className="memory-ledger__composer">
-            <div className="memory-ledger__section-head">
-              <p className="memory-ledger__section-title">New entry</p>
-              <p className="memory-ledger__section-meta">
-                {currentUser ? `${currentUser} can add to the shared archive.` : 'Sign in to add a memory.'}
-              </p>
-            </div>
+          {isComposerOpen ? (
+            <aside className="memory-ledger__composer">
+              <div className="memory-ledger__section-head">
+                <p className="memory-ledger__section-title">New entry</p>
+                <p className="memory-ledger__section-meta">
+                  {currentUser ? `${currentUser} can add to the shared archive.` : 'Sign in to add a memory.'}
+                </p>
+              </div>
 
-            <Input
-              label="Title"
-              value={movieQuery}
-              onChange={(event) => setMovieQuery(event.target.value)}
-              placeholder="Movie or episode"
-              list="memory-movie-suggestions"
-              className="memory-lane__input"
-            />
-            <datalist id="memory-movie-suggestions">
-              {movies.map((movie) => (
-                <option key={movie.id} value={movie.title}>
-                  {movie.title}
-                </option>
-              ))}
-            </datalist>
+              <Input
+                label="Title"
+                value={movieQuery}
+                onChange={(event) => setMovieQuery(event.target.value)}
+                placeholder="Movie or episode"
+                list="memory-movie-suggestions"
+                className="memory-lane__input"
+              />
+              <datalist id="memory-movie-suggestions">
+                {movies.map((movie) => (
+                  <option key={movie.id} value={movie.title}>
+                    {movie.title}
+                  </option>
+                ))}
+              </datalist>
 
-            <Input
-              label="Image URL"
-              value={imageUrl}
-              onChange={(event) => setImageUrl(event.target.value)}
-              placeholder="Optional still or photo"
-              className="memory-lane__input"
-            />
+              <Input
+                label="Image URL"
+                value={imageUrl}
+                onChange={(event) => setImageUrl(event.target.value)}
+                placeholder="Optional still or photo"
+                className="memory-lane__input"
+              />
 
-            <Textarea
-              label="Memory"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Quote the moment, reaction, or detail worth keeping."
-              className="memory-lane__textarea"
-              style={{ minHeight: 156 }}
-            />
+              <Textarea
+                label="Memory"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Quote the moment, reaction, or detail worth keeping."
+                className="memory-lane__textarea"
+                style={{ minHeight: 156 }}
+              />
 
-            {currentUser ? (
-              <Button
-                onClick={createMemory}
-                variant="primary"
-                size="sm"
-                disabled={submitting || !note.trim() || !movieQuery.trim()}
-                className="memory-lane__action-btn memory-lane__action-btn--save"
-              >
-                {submitting ? 'Saving...' : 'Save memory'}
-              </Button>
-            ) : (
-              <p className="memory-lane__hint">Select Aaron or Electra to add memories.</p>
-            )}
-          </aside>
+              {currentUser ? (
+                <div className="memory-ledger__composer-actions">
+                  <Button
+                    onClick={createMemory}
+                    variant="primary"
+                    size="sm"
+                    disabled={submitting || !canSubmit}
+                    className="memory-lane__action-btn memory-lane__action-btn--save"
+                  >
+                    {submitting ? 'Saving...' : 'Save memory'}
+                  </Button>
+                  <Button
+                    onClick={() => setIsComposerOpen(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="memory-lane__action-btn"
+                  >
+                    Close
+                  </Button>
+                </div>
+              ) : (
+                <p className="memory-lane__hint">Select Aaron or Electra to add memories.</p>
+              )}
+            </aside>
+          ) : null}
 
           <section className="memory-ledger__stream">
             <div className="memory-ledger__controls">
@@ -243,14 +304,6 @@ const FloatingMemoriesPanel: React.FC = () => {
               <div className="memory-ledger__toggle-row">
                 <Button
                   size="sm"
-                  variant={showPinnedOnly ? 'primary' : 'ghost'}
-                  onClick={() => setShowPinnedOnly((current) => !current)}
-                  className="memory-lane__action-btn"
-                >
-                  {showPinnedOnly ? 'Pinned only' : 'All entries'}
-                </Button>
-                <Button
-                  size="sm"
                   variant={sortMode === 'newest' ? 'primary' : 'ghost'}
                   onClick={() => setSortMode(sortMode === 'newest' ? 'oldest' : 'newest')}
                   className="memory-lane__action-btn"
@@ -259,11 +312,11 @@ const FloatingMemoriesPanel: React.FC = () => {
                 </Button>
                 <Button
                   size="sm"
-                  variant={viewMode === 'stream' ? 'primary' : 'ghost'}
-                  onClick={() => setViewMode(viewMode === 'stream' ? 'scrapbook' : 'stream')}
+                  variant="ghost"
+                  onClick={() => setIsComposerOpen((current) => !current)}
                   className="memory-lane__action-btn"
                 >
-                  {viewMode === 'stream' ? 'Stream view' : 'Scrapbook view'}
+                  {isComposerOpen ? 'Hide composer' : 'Write memory'}
                 </Button>
               </div>
             </div>
