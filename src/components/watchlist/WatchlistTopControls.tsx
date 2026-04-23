@@ -11,7 +11,7 @@ import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
 import { motion } from '@/theme/tokens';
-import { PlusIcon } from '@/common/icons';
+import { PlusIcon } from '@/common/Icons';
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,

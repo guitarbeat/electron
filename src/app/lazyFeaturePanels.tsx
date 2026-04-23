@@ -7,10 +7,10 @@ export const FloatingMemoriesPanelContent = React.lazy(
   () => import('@/components/memories/FloatingMemoriesPanel')
 );
 export const SpinSwipeGamePanel = React.lazy(
-  () => import('@/components/spinMatch/SpinSwipeGame')
+  () => import('@/components/spin-match/SpinSwipeGame')
 );
 export const SpinWheelGamePanel = React.lazy(
-  () => import('@/components/spinWheel/SpinWheelGame')
+  () => import('@/components/spin-wheel/SpinWheelGame')
 );
 export const QuizEditorPanel = React.lazy(
   () => import('@/components/quiz/QuizEditor')

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Input } from '@/ui/FormFields';
-import { PlusIcon, Spinner } from '@/common/icons';
+import { PlusIcon, Spinner } from '@/common/Icons';
 
 interface PlacesTopControlsProps {
   searchQuery: string;

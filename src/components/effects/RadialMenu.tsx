@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MessageIcon } from '@/common/icons';
+import { MessageIcon } from '@/common/Icons';
 import './RadialMenu.css';
 
 interface RadialMenuProps {

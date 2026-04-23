@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import {
   appendSpinHistory,
   SPIN_HISTORY_MAX,
-} from '../../src/components/spinWheel/spinWheelEngine.ts';
+} from '../../src/components/spin-wheel/spinWheelEngine.ts';
 import {
   applyMatchmakerSwipe,
   undoMatchmakerSwipe,

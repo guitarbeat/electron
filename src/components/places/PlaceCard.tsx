@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckIcon, TrashIcon } from '@/common/icons';
+import { CheckIcon, TrashIcon } from '@/common/Icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
 import { colors, radius, spacing, typography, motion } from '@/theme/tokens';

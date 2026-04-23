@@ -10,7 +10,7 @@ import {
   trapFocusOnTab,
 } from './modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
-import { CrossIcon } from '@/common/icons';
+import { CrossIcon } from '@/common/Icons';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -189,4 +189,3 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 };
 
 export default ConfirmDialog;
-

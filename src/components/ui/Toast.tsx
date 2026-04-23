@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Card from './Card';
-import { CheckIcon } from '@/common/icons';
+import { CheckIcon } from '@/common/Icons';
 import { colors, shadows, spacing, typography, radius, motion } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
 

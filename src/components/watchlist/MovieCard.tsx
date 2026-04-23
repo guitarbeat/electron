@@ -13,7 +13,7 @@ import Button from '@/ui/Button';
 import MemoryList from '@/memories/MemoryList';
 import MemoryComposer from '@/memories/MemoryComposer';
 import { colors, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/icons';
+import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
 import { MAX_MOVIE_NOTE_LENGTH } from './watchlistConstants';
 import { getMovieActionState, type MovieActionState } from './movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
