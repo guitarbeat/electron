@@ -1,4 +1,5 @@
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck - Legacy OGL helper with dynamic shader state
 import * as ogl from "ogl";
 
 const { Vec2, Program, RenderTarget, Triangle, Mesh } = ogl;

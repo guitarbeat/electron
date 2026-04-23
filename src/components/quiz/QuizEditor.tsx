@@ -16,7 +16,7 @@ import DescriptionsTab from './DescriptionsTab';
 import SyncBanner from '@/components/ui/SyncBanner';
 import Button from '@/ui/Button';
 import { spacing, colors } from '@/theme/tokens';
-import { ArrowLeftIcon, EyeIcon } from '@/common/icons';
+import { ArrowLeftIcon, EyeIcon } from '@/common/Icons';
 import './retro-ad.css';
 import './QuizEditor.css';
 

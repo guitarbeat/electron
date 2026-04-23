@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Spinner } from '@/common/icons';
+import { Spinner } from '@/common/Icons';
 import { MAX_MESSAGE_LENGTH } from '@/utils';
 import type { User } from '@/shared/types';
 import { spacing } from '@/theme/tokens';

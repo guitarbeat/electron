@@ -8,7 +8,7 @@ import {
   MediaCardPosterWrap,
   MediaCardSubtext,
   MediaCardTitle,
-} from './mediaCardParts';
+} from './MediaCardParts';
 
 interface MediaCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;

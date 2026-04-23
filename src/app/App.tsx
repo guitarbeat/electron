@@ -6,7 +6,7 @@ import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
 import { useAppSession, useTheme, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 import LoadingScreen from '@/app/LoadingScreen';
-const MagicComponent = React.lazy(() => import('@/components/effects/Moire/Moire'));
+const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
 
 const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));

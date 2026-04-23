@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
-import { CheckIcon, CrossIcon } from '@/common/icons';
+import { CheckIcon, CrossIcon } from '@/common/Icons';
 
 export interface BaseSuggestionCardProps {
   suggestedBy: string;

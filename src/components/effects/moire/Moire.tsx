@@ -1,4 +1,5 @@
-// @ts-nocheck - Legacy OGL implementation with complex types
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck - Legacy OGL implementation with complex third-party types
 import chroma from "chroma-js"; // Import the chroma-js library from the specified CDN
 import * as ogl from "ogl";
 import type { CSSProperties } from "react";
@@ -8,7 +9,8 @@ import RippleEffect from "./RippleEffect";
 import "./Moire.css";
 
 // Legacy implementation (kept for reference only).
-function _Magic(containerEl: Element | null) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function MagicLegacy(containerEl: Element | null) {
   const { Renderer, Camera, Geometry, Program, Mesh, Color, Vec2 } = ogl;
 
   let renderer: InstanceType<typeof Renderer>;
@@ -156,7 +158,7 @@ function _Magic(containerEl: Element | null) {
     }
   };
 
-  const animate = (_t) => {
+  const animate = () => {
     requestAnimationFrame(animate);
     camera.position.z += (cameraZ - camera.position.z) * 0.02;
 
@@ -190,7 +192,7 @@ function _Magic(containerEl: Element | null) {
     return Math.min(Math.max(scrollTop / maxScroll, 0), 1);
   };
 
-  const handleScroll = throttle((_event) => {
+  const handleScroll = throttle(() => {
     cameraZ = 50 - getScrollPercentage() * 3;
   }, 16); // ~60fps
 
@@ -289,12 +291,16 @@ function _Magic(containerEl: Element | null) {
       if (renderer && typeof renderer._listenersCleanup === "function") {
         try {
           renderer._listenersCleanup();
-        } catch {}
+        } catch {
+          // Best-effort cleanup for legacy listener bookkeeping.
+        }
       } else {
         document.body.removeEventListener("mousemove", onMove);
         document.body.removeEventListener("mouseup", randomizeColors);
       }
-    } catch {}
+    } catch {
+      // Swallow cleanup failures from partially initialized legacy state.
+    }
     if (gl?.canvas?.parentNode) {
       gl.canvas.parentNode.removeChild(gl.canvas);
     }

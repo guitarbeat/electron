@@ -8,7 +8,7 @@ import {
   MediaCardTitle,
 } from '@/ui/MediaCard';
 import { colors } from '@/theme/tokens';
-import { CheckIcon, CrossIcon } from '@/common/icons';
+import { CheckIcon, CrossIcon } from '@/common/Icons';
 import { fetchOmdbMetadata } from '@/services/metadata/omdb';
 
 interface SuggestionCardProps {
