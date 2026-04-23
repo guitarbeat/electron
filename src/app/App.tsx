@@ -99,11 +99,6 @@ const App: React.FC = () => {
     setShowQuizFlow(true);
   }, []);
 
-  const openQuizEditor = useCallback(() => {
-    setShowQuizFlow(false);
-    setShowQuizEditor(true);
-  }, []);
-
   const handleQuizComplete = useCallback(() => {
     updateQuizCompletion(true);
     setShowQuizFlow(false);
@@ -127,10 +122,6 @@ const App: React.FC = () => {
 
   const openSpinMatch = useCallback(() => {
     setShowSpinWheel(true);
-  }, []);
-
-  const openSpinWheelOnly = useCallback(() => {
-    setShowSpinWheelOnly(true);
   }, []);
 
   const featureModals = useMemo(
@@ -246,11 +237,6 @@ const App: React.FC = () => {
                 isMobile={isMobile}
                 activeTab={activeTab}
                 currentUser={currentUser}
-                onOpenQuiz={openQuizExperience}
-                onOpenQuizEditor={openQuizEditor}
-                quizCompleted={quizCompleted}
-                onOpenSpin={openSpinMatch}
-                onOpenSpinOnly={openSpinWheelOnly}
               />
             </React.Suspense>
           </div>
