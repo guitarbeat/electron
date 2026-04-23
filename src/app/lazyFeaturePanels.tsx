@@ -1,0 +1,23 @@
+import React from 'react';
+
+export const MessageBoardPanel = React.lazy(
+  () => import('@/components/messages/MessageBoard')
+);
+export const FloatingMemoriesPanelContent = React.lazy(
+  () => import('@/components/memories/FloatingMemoriesPanel')
+);
+export const SpinSwipeGamePanel = React.lazy(
+  () => import('@/components/spinMatch/SpinSwipeGame')
+);
+export const SpinWheelGamePanel = React.lazy(
+  () => import('@/components/spinWheel/SpinWheelGame')
+);
+export const QuizEditorPanel = React.lazy(
+  () => import('@/components/quiz/QuizEditor')
+);
+export const QuizFlowModalPanel = React.lazy(
+  () => import('@/app/QuizFlowModalContent')
+);
+export const FavoritesPanelContent = React.lazy(
+  () => import('@/components/favorites/FavoritesPanel')
+);
