@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import MapLibreGL, { type StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { colors, spacing, radius, typography, motion } from '@/theme/tokens';
+import { colors, spacing, radius, typography } from '@/theme/tokens';
 import type { Place } from '@/shared/types';
 import { getPlaceMeta } from './lib/placeMeta';
 
@@ -334,11 +334,10 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
           height: '100%',
           borderRadius: radius.xl,
           overflow: 'hidden',
-          border: isDragOver
-            ? `2px solid ${colors.accent}`
-            : `1px solid ${colors.borderSecondary}35`,
+        border: isDragOver
+          ? `2px solid ${colors.accent}`
+          : `1px solid ${colors.borderSecondary}35`,
           background: colors.surface,
-          transition: `border-color ${motion.duration.fast}`,
         }}
         aria-label="Map of saved places"
       />
@@ -407,7 +406,6 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
             fontSize: typography.fontSize.xs,
             fontFamily: typography.fontFamily.heading.join(', '),
             cursor: 'pointer',
-            transition: `all ${motion.duration.fast} ${motion.easing.easeOut}`,
             letterSpacing: '0.04em',
             whiteSpace: 'nowrap',
           }}
@@ -453,7 +451,6 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
                     color: pinMode === m ? '#fff' : colors.textTertiary,
                     border: 'none',
                     cursor: 'pointer',
-                    transition: `background ${motion.duration.fast}`,
                   }}
                 >
                   {m === 'assign' ? 'Existing place' : 'New place'}
@@ -546,7 +543,6 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
                 fontSize: typography.fontSize.sm,
                 fontFamily: typography.fontFamily.heading.join(', '),
                 cursor: canSave ? 'pointer' : 'not-allowed',
-                transition: `all ${motion.duration.fast}`,
               }}
             >
               {isSaving ? 'Saving…' : 'Save pin'}

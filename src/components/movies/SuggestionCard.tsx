@@ -18,7 +18,6 @@ interface SuggestionCardProps {
   canRespond?: boolean;
   disableActions?: boolean;
   isProcessing?: boolean;
-  animationDelay?: string;
 }
 
 const SuggestionPoster: React.FC<{
@@ -78,7 +77,6 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   canRespond = true,
   disableActions = false,
   isProcessing = false,
-  animationDelay = '0s',
 }) => {
   const [posterUrl, setPosterUrl] = React.useState<string | undefined>(undefined);
   const [year, setYear] = React.useState<string | undefined>(undefined);
@@ -108,12 +106,11 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   return (
     <Card
       variant="default"
-      className="movie-item-card suggestion-item-card slide-up"
+      className="movie-item-card suggestion-item-card"
       data-suggestion-id={suggestion.id}
       style={{
         padding: 0,
         marginBottom: 0,
-        animationDelay,
         borderColor: colors.border,
       }}
     >

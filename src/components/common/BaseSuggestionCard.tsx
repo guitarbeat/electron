@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from '@/ui/Card';
 import Button from '@/ui/Button';
-import { colors, motion, spacing, typography } from '@/theme/tokens';
+import { colors, spacing, typography } from '@/theme/tokens';
 import { CheckIcon, CrossIcon } from '@/common/Icons';
 
 export interface BaseSuggestionCardProps {
@@ -14,7 +14,6 @@ export interface BaseSuggestionCardProps {
   canRespond?: boolean;
   disableActions?: boolean;
   isProcessing?: boolean;
-  animationDelay?: string;
   details?: React.ReactNode;
 }
 
@@ -28,7 +27,6 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
   canRespond = true,
   disableActions = false,
   isProcessing = false,
-  animationDelay = '0s',
   details,
 }) => {
   const actionsDisabled = isProcessing || disableActions || !canRespond;
@@ -42,7 +40,6 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.sm,
-        animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut} ${animationDelay} both`,
         position: 'relative',
         overflow: 'hidden',
       }}

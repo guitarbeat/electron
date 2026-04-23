@@ -1,5 +1,4 @@
 import React, {
-  type CSSProperties,
   useCallback,
   useEffect,
   useId,
@@ -11,8 +10,8 @@ import React, {
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
-import { motion } from '@/theme/tokens';
 import { PlusIcon } from '@/common/Icons';
+import WorkspaceSummary from '@/components/ui/WorkspaceSummary';
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
@@ -169,10 +168,7 @@ const MoviesTopControls = React.forwardRef<
           input.focus();
         }
 
-        input.scrollIntoView({
-          block: 'center',
-          behavior: 'smooth',
-        });
+        input.scrollIntoView({ block: 'center' });
       },
     }),
     []
@@ -374,34 +370,15 @@ const MoviesTopControls = React.forwardRef<
   }, [filteredAutocompleteResults.length]);
 
   return (
-    <section
-      className="workspace-control-panel watchlist-top-controls"
-      style={{
-        animation: `slide-in-left ${motion.duration.normal} ${motion.easing.easeOut}`,
-      }}
-    >
+    <section className="workspace-control-panel watchlist-top-controls">
       <div className="watchlist-top-controls__stage">
         <div className="watchlist-top-controls__intro">
-          <div className="watchlist-top-controls__hero">
-            <div className="watchlist-top-controls__hero-copy">
-              <p className="watchlist-top-controls__eyebrow">Aaron and Electra</p>
-              <h2 className="watchlist-top-controls__title">{headline}</h2>
-              <p className="watchlist-top-controls__lead">{lead}</p>
-            </div>
-
-            <div
-              className="watchlist-top-controls__hero-stats"
-              aria-label="Watchlist summary"
-              style={{ '--watchlist-hero-stat-count': stats.length } as CSSProperties}
-            >
-              {stats.map((stat) => (
-                <div key={stat.label} className="watchlist-top-controls__hero-stat">
-                  <span className="watchlist-top-controls__hero-stat-value">{stat.value}</span>
-                  <span className="watchlist-top-controls__hero-stat-label">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <WorkspaceSummary
+            eyebrow="Movies"
+            title={headline}
+            lead={lead}
+            stats={stats}
+          />
         </div>
 
         <div

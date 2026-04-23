@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@/common/Icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
-import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
+import { colors, radius, spacing, typography } from '@/theme/tokens';
 import {
   MediaCardActions,
   MediaCardCover,
@@ -83,11 +83,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       style={{
         cursor: canEdit ? (isDragging ? 'grabbing' : 'grab') : undefined,
         opacity: isDragging ? 0.5 : 1,
-        transition: `opacity 0.15s, transform ${motion.duration.normal} ${motion.easing.easeOut}, box-shadow ${motion.duration.normal} ${motion.easing.easeOut}`,
         position: 'relative',
-        transform: isActive ? 'translateY(-3px) scale(1.03)' : undefined,
       }}
-      className="place-card-hover-lift"
       title={canEdit ? 'Drag onto map to pin location' : undefined}
     >
       {/* Per-user top accent stripe — mirrors movie-item-card[data-added-by] stripe */}
@@ -118,7 +115,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             boxShadow: `0 0 12px ${meta.color}66`,
             zIndex: 3,
             pointerEvents: 'none',
-            animation: 'place-card-pulse 1.5s ease-in-out infinite',
           }}
         />
       )}
@@ -152,6 +148,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       <MediaCard
         variant={isVisited ? 'visited' : 'default'}
         className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
+        hover={false}
       >
         <MediaCardPosterWrap className="place-item-poster-wrap">
           <MediaCardCover className="place-item-cover" aria-hidden="true">
@@ -236,17 +233,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           </MediaCardOverlay>
         </MediaCardPosterWrap>
       </MediaCard>
-
-      <style>{`
-        .place-card-hover-lift:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-        @keyframes place-card-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </div>
   );
 };

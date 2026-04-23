@@ -61,6 +61,11 @@ const PlacesList: React.FC = () => {
   const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
+  const pinnedCount = useMemo(
+    () =>
+      places.filter((place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
+    [places]
+  );
 
   const allPlaces = useMemo(
     () => [...sections.queue, ...sections.visited],
@@ -74,8 +79,6 @@ const PlacesList: React.FC = () => {
     clearTimeout(activeTimerRef.current);
     setActiveCardId(place.id);
     activeTimerRef.current = setTimeout(() => setActiveCardId(null), 2500);
-    const el = document.getElementById(`place-card-${place.id}`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, []);
 
   const handleCardKeyDown = useCallback(
@@ -202,6 +205,9 @@ const PlacesList: React.FC = () => {
 
       {/* Search bar — mirrors movie watchlist bar */}
       <PlacesTopControls
+        queueCount={sections.queue.length}
+        visitedCount={sections.visited.length}
+        pinnedCount={pinnedCount}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onSubmit={handleAddAction}
@@ -211,18 +217,6 @@ const PlacesList: React.FC = () => {
         suggestionError={suggestionError}
         canEdit={Boolean(currentUser)}
       />
-
-      {/* Map — fixed height, rounded */}
-      <React.Suspense fallback={<div className="places-map-placeholder" />}>
-        <PlacesMap
-          ref={mapRef}
-          places={places}
-          canEdit={Boolean(currentUser)}
-          onUpdatePlace={updatePlace}
-          onAddPlace={addPlace}
-          style={{ height: 'var(--places-map-height, 380px)', borderRadius: radius.xl }}
-        />
-      </React.Suspense>
 
       {/* Pending suggestions */}
       {sections.suggestions.length > 0 && (
@@ -275,7 +269,7 @@ const PlacesList: React.FC = () => {
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
           >
-            {sections.queue.map((place, i) => (
+            {sections.queue.map((place) => (
               <div
                 key={place.id}
                 id={`place-card-${place.id}`}
@@ -285,7 +279,6 @@ const PlacesList: React.FC = () => {
                 tabIndex={0}
                 style={{
                   cursor: 'pointer',
-                  animation: `place-card-stagger-in 0.3s ease-out ${i * 0.04}s both`,
                 }}
               >
                 <PlaceCard
@@ -311,7 +304,7 @@ const PlacesList: React.FC = () => {
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
           >
-            {sections.visited.map((place, i) => (
+            {sections.visited.map((place) => (
               <div
                 key={place.id}
                 id={`place-card-${place.id}`}
@@ -321,7 +314,6 @@ const PlacesList: React.FC = () => {
                 tabIndex={0}
                 style={{
                   cursor: 'pointer',
-                  animation: `place-card-stagger-in 0.3s ease-out ${i * 0.04}s both`,
                 }}
               >
                 <PlaceCard
@@ -339,6 +331,21 @@ const PlacesList: React.FC = () => {
           </CollectionGrid>
         </CollectionSection>
       )}
+
+      <CollectionSection heading="Map" className="workspace-section--utility">
+        <div className="workspace-utility-panel places-map-panel">
+          <React.Suspense fallback={<div className="places-map-placeholder" />}>
+            <PlacesMap
+              ref={mapRef}
+              places={places}
+              canEdit={Boolean(currentUser)}
+              onUpdatePlace={updatePlace}
+              onAddPlace={addPlace}
+              style={{ height: 'var(--places-map-height, 380px)', borderRadius: radius.xl }}
+            />
+          </React.Suspense>
+        </div>
+      </CollectionSection>
 
       {/* Modals */}
       {placeToDelete && (
@@ -360,13 +367,6 @@ const PlacesList: React.FC = () => {
           onClose={() => setPlaceToEdit(null)}
         />
       )}
-
-      <style>{`
-        @keyframes place-card-stagger-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 };

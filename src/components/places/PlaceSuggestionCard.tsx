@@ -11,7 +11,6 @@ interface PlaceSuggestionCardProps {
   canRespond?: boolean;
   disableActions?: boolean;
   isProcessing?: boolean;
-  animationDelay?: string;
 }
 
 const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
@@ -21,7 +20,6 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
   canRespond = true,
   disableActions = false,
   isProcessing = false,
-  animationDelay = '0s',
 }) => {
   const icon = getPlaceIcon(suggestion.name);
 
@@ -36,7 +34,6 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
       canRespond={canRespond}
       disableActions={disableActions}
       isProcessing={isProcessing}
-      animationDelay={animationDelay}
       details={
         suggestion.category ? (
           <div
