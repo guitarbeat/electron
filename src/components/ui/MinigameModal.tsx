@@ -53,6 +53,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
   if (!isOpen) return null;
 
   const overlayAlign = isMobileShell ? ('flex-end' as const) : ('center' as const);
+  const dialogEyebrow = title ? 'Quick action' : 'Workspace panel';
   const surfaceStyles: CSSProperties = isMobileShell
     ? {
         position: 'relative',
@@ -65,7 +66,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         flexDirection: 'column',
         overflow: 'clip',
         background:
-          'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
+          'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(48, 30, 45, 0.98) 0%, rgba(24, 16, 25, 0.98) 100%)',
         borderRadius: `${radius.xl} ${radius.xl} 0 0`,
         border: `1px solid ${colors.borderSecondary}55`,
         borderBottom: 'none',
@@ -73,7 +74,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+        animation: `ui-pop ${motion.duration.fast} ${motion.easing.spring} both`,
       }
     : {
         position: 'relative',
@@ -85,13 +86,13 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
         flexDirection: 'column',
         overflow: 'clip',
         background:
-          'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(60, 34, 49, 0.96) 0%, rgba(28, 16, 24, 0.96) 100%)',
+          'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 20%), linear-gradient(180deg, rgba(48, 30, 45, 0.98) 0%, rgba(24, 16, 25, 0.98) 100%)',
         borderRadius: radius.xl,
         border: `1px solid ${colors.borderSecondary}55`,
         boxShadow: `${shadows.floating}, 0 0 0 1px rgba(255,255,255,0.06) inset, 0 0 36px rgba(255,127,198,0.16)`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
+        animation: `ui-pop ${motion.duration.fast} ${motion.easing.spring} both`,
       };
 
   return createPortal(
@@ -144,6 +145,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             style={{
               flex: '0 0 auto',
               display: 'flex',
+              gap: spacing.md,
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: `${spacing.md} ${spacing.lg}`,
@@ -153,18 +155,31 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
                 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 100%)',
             }}
           >
-            <h2
-              style={{
-                margin: 0,
-                fontFamily: typography.fontFamilyValue.heading,
-                fontSize: typography.fontSize.lg,
-                color: 'rgba(255, 245, 249, 0.95)',
-                letterSpacing: typography.letterSpacing.eyebrow,
-                textShadow: shadows.textGlow,
-              }}
-            >
-              {title}
-            </h2>
+            <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+              <span
+                style={{
+                  fontFamily: typography.fontFamilyValue.body,
+                  fontSize: typography.fontSize.xs,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(255, 220, 235, 0.68)',
+                }}
+              >
+                {dialogEyebrow}
+              </span>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: typography.fontFamilyValue.heading,
+                  fontSize: typography.fontSize.lg,
+                  color: 'rgba(255, 245, 249, 0.95)',
+                  letterSpacing: typography.letterSpacing.eyebrow,
+                  textShadow: shadows.textGlow,
+                }}
+              >
+                {title}
+              </h2>
+            </div>
             <button
               ref={closeButtonRef}
               type="button"
@@ -290,6 +305,7 @@ const MinigameModal: React.FC<MinigameModalProps> = ({
             overflowY: 'auto',
             overscrollBehavior: 'contain',
             WebkitOverflowScrolling: 'touch',
+            scrollbarGutter: 'stable both-edges',
           }}
         >
           {children}
