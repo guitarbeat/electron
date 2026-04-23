@@ -162,7 +162,7 @@ const AppHeader: FC<AppHeaderProps> = ({
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: PointerEvent) => {
       if (
         menuRef.current &&
         triggerRef.current &&
@@ -174,8 +174,8 @@ const AppHeader: FC<AppHeaderProps> = ({
     };
 
     if (isProfileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside);
+      return () => document.removeEventListener('pointerdown', handleClickOutside);
     }
   }, [isProfileMenuOpen]);
 
@@ -379,7 +379,11 @@ const AppHeader: FC<AppHeaderProps> = ({
   };
 
   return (
-    <header ref={headerRef} className="app-header" role="banner">
+    <header
+      ref={headerRef}
+      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? ' is-profile-menu-open' : ''}`}
+      role="banner"
+    >
       {/* Left: Theme Toggle + Background Toggle */}
       <div ref={leftRef} className="app-header__left">
         <div className="app-header__status-block" aria-label="Current workspace mode">
