@@ -968,3 +968,57 @@
     padding: 0.875rem 2rem;
   }
 }
+
+/* Queue-specific cohesion */
+.app-workspace-stack--queue .app-header--queue {
+  margin-bottom: -0.05rem;
+  border-color: rgba(192, 149, 94, 0.24);
+  border-radius: 1.7rem;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 226, 0.12) 0%, transparent 28%),
+    radial-gradient(circle at 50% 0%, rgba(209, 160, 101, 0.16) 0%, transparent 40%),
+    linear-gradient(145deg, rgba(84, 58, 34, 0.9) 0%, rgba(43, 29, 19, 0.96) 55%, rgba(23, 15, 10, 0.98) 100%);
+  box-shadow:
+    0 18px 36px rgba(12, 8, 5, 0.22),
+    inset 0 1px 0 rgba(255, 250, 239, 0.1);
+}
+
+.app-workspace-stack--queue .app-header--queue::after {
+  content: '';
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: -0.35rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(114, 77, 42, 0.36) 0%, rgba(114, 77, 42, 0) 100%);
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.app-workspace-stack--queue .app-header--queue .app-header__status-label,
+.app-workspace-stack--queue .app-header--queue .app-header__brand-kicker {
+  color: rgba(226, 199, 157, 0.66);
+}
+
+.app-workspace-stack--queue .app-header--queue .app-header__status-value {
+  color: rgba(255, 246, 230, 0.92);
+}
+
+.app-workspace-stack--queue .app-header--queue .app-header__profile-trigger {
+  border-color: rgba(191, 147, 92, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 230, 0.12) 0%, transparent 34%),
+    rgba(57, 39, 24, 0.88);
+}
+
+@media (max-width: 640px) {
+  .app-workspace-stack--queue .app-header--queue {
+    border-radius: 1.35rem;
+  }
+
+  .app-workspace-stack--queue .app-header--queue::after {
+    left: 1rem;
+    right: 1rem;
+  }
+}
