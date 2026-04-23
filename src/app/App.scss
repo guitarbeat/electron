@@ -13195,12 +13195,55 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
    Queue Cohesion Refresh
    ============================================================================ */
 
+.queue-unified-shell {
+  position: relative;
+  display: grid;
+  gap: clamp(0.75rem, 0.66rem + 0.36vw, 1.05rem);
+  width: 100%;
+  min-width: 0;
+  padding: clamp(1rem, 0.9rem + 0.5vw, 1.4rem);
+  border: 1px solid rgba(192, 149, 94, 0.24);
+  border-radius: 1.8rem;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 226, 0.08) 0%, transparent 18%),
+    radial-gradient(circle at 14% 16%, rgba(232, 195, 141, 0.14) 0%, transparent 26%),
+    radial-gradient(circle at 86% 10%, rgba(118, 77, 38, 0.14) 0%, transparent 24%),
+    linear-gradient(145deg, rgba(84, 58, 34, 0.92) 0%, rgba(42, 28, 18, 0.96) 56%, rgba(23, 15, 10, 0.99) 100%);
+  box-shadow:
+    0 28px 54px rgba(12, 8, 5, 0.32),
+    inset 0 1px 0 rgba(255, 250, 239, 0.12);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.queue-unified-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg, transparent 14%, rgba(255, 247, 231, 0.08) 34%, transparent 52%),
+    radial-gradient(circle at 18% 14%, rgba(255, 247, 231, 0.06) 0%, transparent 22%);
+  pointer-events: none;
+}
+
+.queue-unified-shell > * {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
 .app-workspace-stack--queue {
-  gap: clamp(0.38rem, 0.34rem + 0.22vw, 0.62rem);
+  gap: 0;
 }
 
 .app-workspace-stack--queue .workspace-stage--simplified {
-  gap: clamp(0.65rem, 0.58rem + 0.32vw, 0.95rem);
+  gap: clamp(0.55rem, 0.5rem + 0.22vw, 0.78rem);
+  padding: 0 0 0.2rem;
+}
+
+.app-workspace-stack--queue .workspace-stage--simplified::before {
+  display: none;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls {
@@ -13213,17 +13256,11 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   position: relative;
   display: grid;
   gap: clamp(0.8rem, 0.72rem + 0.35vw, 1.1rem);
-  padding: clamp(1rem, 0.9rem + 0.45vw, 1.35rem);
-  border: 1px solid rgba(192, 149, 94, 0.26);
-  border-radius: 1.7rem;
-  background:
-    linear-gradient(180deg, rgba(255, 246, 226, 0.1) 0%, transparent 18%),
-    radial-gradient(circle at 12% 18%, rgba(232, 195, 141, 0.16) 0%, transparent 28%),
-    radial-gradient(circle at 88% 16%, rgba(118, 77, 38, 0.14) 0%, transparent 24%),
-    linear-gradient(140deg, rgba(82, 56, 33, 0.88) 0%, rgba(42, 28, 18, 0.95) 52%, rgba(23, 15, 10, 0.98) 100%);
-  box-shadow:
-    0 26px 48px rgba(12, 8, 5, 0.3),
-    inset 0 1px 0 rgba(255, 244, 222, 0.12);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -13232,14 +13269,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__stage::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(115deg, transparent 16%, rgba(255, 247, 231, 0.08) 36%, transparent 54%),
-    radial-gradient(circle at 18% 14%, rgba(255, 247, 231, 0.08) 0%, transparent 22%);
-  pointer-events: none;
+  display: none;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__stage > * {
@@ -13346,7 +13376,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
 .app-workspace-stack--queue .watchlist-top-controls__input-block {
   gap: 0.85rem;
-  padding-top: 0.95rem;
+  padding-top: 0.8rem;
   border-top: 1px solid rgba(212, 177, 115, 0.14);
   width: 100%;
   max-width: 100%;
@@ -13354,60 +13384,12 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__search-form {
-  gap: 0.55rem;
-  padding: 0.38rem;
-  border: 1px solid rgba(189, 145, 90, 0.32) !important;
-  border-radius: 1.35rem !important;
-  background:
-    linear-gradient(180deg, rgba(255, 250, 239, 0.94) 0%, rgba(243, 233, 211, 0.92) 100%) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.58),
-    0 14px 26px rgba(11, 7, 4, 0.2) !important;
-  backdrop-filter: blur(0) !important;
-  -webkit-backdrop-filter: blur(0) !important;
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
-.app-workspace-stack--queue .watchlist-top-controls__search-form:focus-within {
-  border-color: rgba(214, 166, 104, 0.5) !important;
-  box-shadow:
-    0 0 0 3px rgba(214, 166, 104, 0.14),
-    0 16px 30px rgba(11, 7, 4, 0.22) !important;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-icon {
-  padding-left: 0.75rem;
-  font-size: 0.98rem;
-  filter: none;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
-  filter: none;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-field {
-  min-height: 4.15rem;
-  padding-inline: 0.8rem 0.7rem !important;
-  background: transparent !important;
-  color: rgba(67, 41, 16, 0.96) !important;
-  font-family: 'Papyrus', var(--font-display), serif !important;
-  font-size: clamp(1.16rem, 1.04rem + 0.34vw, 1.42rem) !important;
-  letter-spacing: 0.03em;
-  border: 0 !important;
-  box-shadow: none !important;
-  text-transform: uppercase;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-field::placeholder {
-  color: rgba(149, 104, 55, 0.76) !important;
-  font-style: italic;
-  letter-spacing: 0.04em;
-}
-
 .app-workspace-stack--queue .watchlist-top-controls__search-actions {
-  grid-template-columns: minmax(7.5rem, 0.95fr) auto;
   align-items: stretch;
   min-width: 0;
   max-width: 100%;
@@ -13421,46 +13403,10 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   min-width: 0;
 }
 
+/* Keep the movie search behavior, but inherit the same visual shell Places uses. */
 .app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button,
 .app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
-  min-height: 4.15rem;
-  border-radius: 1rem !important;
-  font-family: 'Papyrus', var(--font-display), serif !important;
-  font-size: 0.9rem !important;
-  letter-spacing: 0.12em !important;
-  text-transform: uppercase !important;
-  border: 1px solid rgba(173, 123, 69, 0.32) !important;
-  backdrop-filter: blur(0) !important;
-  -webkit-backdrop-filter: blur(0) !important;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease !important;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button {
-  background:
-    radial-gradient(circle at 30% 20%, rgba(255, 245, 228, 0.26) 0%, transparent 32%),
-    linear-gradient(180deg, #c18a51 0%, #8e6036 100%) !important;
-  color: #fff5e7 !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 246, 229, 0.28),
-    0 10px 20px rgba(91, 58, 29, 0.24) !important;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
-  background:
-    linear-gradient(180deg, rgba(255, 248, 234, 0.92) 0%, rgba(240, 224, 195, 0.88) 100%) !important;
-  color: rgba(76, 49, 24, 0.92) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.52),
-    0 10px 18px rgba(91, 58, 29, 0.12) !important;
-}
-
-.app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button:hover,
-.app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button):hover {
-  transform: translateY(-1px);
+  min-width: 0;
 }
 
 .app-workspace-stack--queue .watchlist-top-controls__autocomplete {
@@ -13516,28 +13462,18 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 }
 
 @media (max-width: 640px) {
-  .app-workspace-stack--queue {
-    gap: 0.4rem;
-  }
-
-  .app-workspace-stack--queue .watchlist-top-controls__stage {
+  .queue-unified-shell {
+    gap: 0.6rem;
     padding: 0.85rem;
     border-radius: 1.35rem;
   }
 
+  .app-workspace-stack--queue .watchlist-top-controls__stage {
+    padding: 0;
+    border-radius: 0;
+  }
+
   .app-workspace-stack--queue .watchlist-top-controls__title {
     font-size: clamp(1.55rem, 1.25rem + 1.3vw, 2.05rem);
-  }
-
-  .app-workspace-stack--queue .watchlist-top-controls__search-form {
-    gap: 0.4rem;
-    padding: 0.32rem;
-    border-radius: 1.1rem !important;
-  }
-
-  .app-workspace-stack--queue .watchlist-top-controls__search-field,
-  .app-workspace-stack--queue .watchlist-top-controls__search-button.ui-button,
-  .app-workspace-stack--queue .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
-    min-height: 3.35rem;
   }
 }

@@ -971,29 +971,17 @@
 
 /* Queue-specific cohesion */
 .app-workspace-stack--queue .app-header--queue {
-  margin-bottom: -0.05rem;
-  border-color: rgba(192, 149, 94, 0.24);
-  border-radius: 1.7rem;
-  background:
-    linear-gradient(180deg, rgba(255, 246, 226, 0.12) 0%, transparent 28%),
-    radial-gradient(circle at 50% 0%, rgba(209, 160, 101, 0.16) 0%, transparent 40%),
-    linear-gradient(145deg, rgba(84, 58, 34, 0.9) 0%, rgba(43, 29, 19, 0.96) 55%, rgba(23, 15, 10, 0.98) 100%);
-  box-shadow:
-    0 18px 36px rgba(12, 8, 5, 0.22),
-    inset 0 1px 0 rgba(255, 250, 239, 0.1);
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0 0 0.85rem;
+  border-bottom: 1px solid rgba(212, 177, 115, 0.14);
 }
 
 .app-workspace-stack--queue .app-header--queue::after {
-  content: '';
-  position: absolute;
-  left: 1.5rem;
-  right: 1.5rem;
-  bottom: -0.35rem;
-  height: 0.7rem;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(114, 77, 42, 0.36) 0%, rgba(114, 77, 42, 0) 100%);
-  pointer-events: none;
-  opacity: 0.72;
+  display: none;
 }
 
 .app-workspace-stack--queue .app-header--queue .app-header__status-label,
@@ -1039,11 +1027,6 @@
 
 @media (max-width: 640px) {
   .app-workspace-stack--queue .app-header--queue {
-    border-radius: 1.35rem;
-  }
-
-  .app-workspace-stack--queue .app-header--queue::after {
-    left: 1rem;
-    right: 1rem;
+    padding-bottom: 0.65rem;
   }
 }

@@ -4,7 +4,11 @@ import type { Movie, MovieSuggestion, SharedMemory, WatchlistProps } from '@/sha
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
-import { CollectionEmptyState, CollectionGrid } from '@/ui/CollectionLayout';
+import {
+  CollectionEmptyState,
+  CollectionGrid,
+  CollectionSection,
+} from '@/ui/CollectionLayout';
 import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { colors, motion, spacing, typography } from '@/theme/tokens';
@@ -491,10 +495,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
           <>
             {/* ── Incoming suggestions ── */}
             {(isSuggestionsLoading || sections.suggestions.length > 0) && (
-              <section style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                <h3 className="workspace-section-heading workspace-section-heading--incoming">
-                  Incoming
-                </h3>
+              <CollectionSection title="Incoming" tone="incoming">
                 {isSuggestionsLoading && sections.suggestions.length === 0 ? (
                   <CollectionGrid
                     className="watchlist-content"
@@ -523,13 +524,12 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     ))}
                   </CollectionGrid>
                 )}
-              </section>
+              </CollectionSection>
             )}
 
             {/* ── Up Next queue ── */}
             {sections.queue.length > 0 && (
-              <section style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                <h3 className="workspace-section-heading">Up Next</h3>
+              <CollectionSection title="Up Next">
                 <CollectionGrid
                   className="watchlist-content"
                   minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
@@ -566,17 +566,14 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
                     />
                   ))}
                 </CollectionGrid>
-              </section>
+              </CollectionSection>
             )}
 
             {/* ── Watched ── */}
             {sections.watched.length > 0 && (
-              <section style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                <h3 className="workspace-section-heading workspace-section-heading--completed">
-                  Watched
-                </h3>
+              <CollectionSection title="Watched" tone="completed">
                 {renderMovieGrid(sections.watched, 'No watched movies yet')}
-              </section>
+              </CollectionSection>
             )}
           </>
         )}
@@ -608,8 +605,8 @@ const Watchlist: React.FC<WatchlistProps> = ({ isPaused = false }) => {
 
   return (
     <div
-      className="watchlist-container"
-      style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: spacing.xl }}
+      className="watchlist-container places-container"
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
     >
       <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
 

@@ -63,6 +63,46 @@ const CollectionGrid: React.FC<CollectionGridProps> = ({
 );
 
 // ============================================================================
+// CollectionSection
+// ============================================================================
+
+interface CollectionSectionProps extends React.HTMLAttributes<HTMLElement> {
+  title: React.ReactNode;
+  tone?: 'default' | 'incoming' | 'completed';
+  titleClassName?: string;
+}
+
+const CollectionSection: React.FC<CollectionSectionProps> = ({
+  title,
+  tone = 'default',
+  className = '',
+  titleClassName = '',
+  style,
+  children,
+  ...props
+}) => {
+  const headingClassName = [
+    'workspace-section-heading',
+    tone === 'incoming' ? 'workspace-section-heading--incoming' : '',
+    tone === 'completed' ? 'workspace-section-heading--completed' : '',
+    titleClassName,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <section
+      className={className}
+      style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, ...style }}
+      {...props}
+    >
+      <h3 className={headingClassName}>{title}</h3>
+      {children}
+    </section>
+  );
+};
+
+// ============================================================================
 // WorkspacePanels
 // ============================================================================
 
@@ -127,4 +167,4 @@ const WorkspacePanels: React.FC<WorkspacePanelsProps> = ({
   );
 };
 
-export { CollectionEmptyState, CollectionGrid, WorkspacePanels };
+export { CollectionEmptyState, CollectionGrid, CollectionSection, WorkspacePanels };
