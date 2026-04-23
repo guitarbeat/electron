@@ -1,0 +1,56 @@
+{
+  "name": "collaborative-movie-watchlist",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build",
+    "preview": "vite preview",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node --test src/**/*.test.ts",
+    "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build",
+    "post-merge": "scripts/post-merge.bat"
+  },
+  "dependencies": {
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/three": "^0.184.0",
+    "chroma-js": "^3.2.0",
+    "lucide-react": "^1.7.0",
+    "maplibre-gl": "^5.21.1",
+    "ogl": "^1.0.11",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "three": "^0.184.0",
+    "ts-pattern": "^5.9.0",
+    "zod": "^4.3.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "sass": "^1.98.0",
+    "sass-embedded": "^1.98.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.57.2",
+    "vite": "^8.0.2"
+  }
+}
