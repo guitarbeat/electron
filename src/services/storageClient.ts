@@ -1,3 +1,5 @@
+import { decodeStorageData, encodeStorageData } from '../utils/shared.ts';
+
 interface StoredJsonReadOptions<T> {
   storageKey: string;
   validate: (value: unknown) => value is T;
@@ -28,7 +30,8 @@ export const readStoredJson = <T>({
       return null;
     }
 
-    const parsed = JSON.parse(raw);
+    const decoded = decodeStorageData(raw);
+    const parsed = JSON.parse(decoded);
     if (validate(parsed)) {
       return clone(parsed);
     }
@@ -49,7 +52,8 @@ export const writeStoredJson = <T>({
 
   if (typeof window !== 'undefined') {
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify(nextValue));
+      const encoded = encodeStorageData(JSON.stringify(nextValue));
+      window.localStorage.setItem(storageKey, encoded);
     } catch (error) {
       console.warn(`Failed to persist ${label}.`, error);
     }
