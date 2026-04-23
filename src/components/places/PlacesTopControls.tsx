@@ -53,80 +53,82 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
 
   return (
     <section className="workspace-control-panel watchlist-top-controls">
-      <div className="watchlist-top-controls__intro">
-        <WorkspaceSummary
-          eyebrow="Places"
-          title={title}
-          lead={lead}
-          stats={stats}
-        />
-      </div>
+      <div className="watchlist-top-controls__stage">
+        <div className="watchlist-top-controls__intro">
+          <WorkspaceSummary
+            eyebrow="Places"
+            title={title}
+            lead={lead}
+            stats={stats}
+          />
+        </div>
 
-      <div className="watchlist-top-controls__input-block">
-        <div className="watchlist-top-controls__toolbar">
-          <form
-            className="watchlist-top-controls__search-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              inputRef.current?.blur();
-              if (!canEdit && onSuggest) {
-                void onSuggest();
-                return;
-              }
-              void onSubmit();
-            }}
-          >
-            <div className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon">
-              <span className="watchlist-top-controls__search-icon" aria-hidden="true">📍</span>
-              <Input
-                ref={inputRef}
-                className="watchlist-top-controls__search-field places-add-input"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Add a place or destination"
-                aria-label="Place name"
-                autoComplete="off"
-                fullWidth
-              />
-            </div>
-
-            {(showAddAction || showSuggestAction) && (
-              <div className="watchlist-top-controls__search-actions">
-                {showAddAction && (
-                  <button
-                    type="submit"
-                    className="watchlist-top-controls__search-button ui-button ui-button--primary ui-button--md"
-                    disabled={isBusy}
-                    aria-label="Add place"
-                    title="Add directly to list"
-                  >
-                    {isAdding ? <Spinner size={16} /> : <><PlusIcon size={14} /> Add</>}
-                  </button>
-                )}
-                {showSuggestAction && onSuggest && (
-                  <button
-                    type="button"
-                    className="watchlist-top-controls__search-button ui-button ui-button--ghost ui-button--md"
-                    onClick={() => void onSuggest()}
-                    disabled={isBusy}
-                    aria-label="Suggest place"
-                    title="Suggest for review"
-                    style={{ borderStyle: 'dashed' }}
-                  >
-                    {isSuggesting ? <Spinner size={16} /> : <>💡 Suggest</>}
-                  </button>
-                )}
+        <div className="watchlist-top-controls__input-block">
+          <div className="watchlist-top-controls__toolbar">
+            <form
+              className="watchlist-top-controls__search-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                inputRef.current?.blur();
+                if (!canEdit && onSuggest) {
+                  void onSuggest();
+                  return;
+                }
+                void onSubmit();
+              }}
+            >
+              <div className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon">
+                <span className="watchlist-top-controls__search-icon" aria-hidden="true">📍</span>
+                <Input
+                  ref={inputRef}
+                  className="watchlist-top-controls__search-field places-add-input"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Add a place or destination"
+                  aria-label="Place name"
+                  autoComplete="off"
+                  fullWidth
+                />
               </div>
-            )}
-          </form>
-        </div>
-      </div>
 
-      {suggestionError && (
-        <div className="places-top-controls__error" role="alert">
-          {suggestionError}
+              {(showAddAction || showSuggestAction) && (
+                <div className="watchlist-top-controls__search-actions">
+                  {showAddAction && (
+                    <button
+                      type="submit"
+                      className="watchlist-top-controls__search-button ui-button ui-button--primary ui-button--md"
+                      disabled={isBusy}
+                      aria-label="Add place"
+                      title="Add directly to list"
+                    >
+                      {isAdding ? <Spinner size={16} /> : <><PlusIcon size={14} /> Add</>}
+                    </button>
+                  )}
+                  {showSuggestAction && onSuggest && (
+                    <button
+                      type="button"
+                      className="watchlist-top-controls__search-button ui-button ui-button--ghost ui-button--md"
+                      onClick={() => void onSuggest()}
+                      disabled={isBusy}
+                      aria-label="Suggest place"
+                      title="Suggest for review"
+                      style={{ borderStyle: 'dashed' }}
+                    >
+                      {isSuggesting ? <Spinner size={16} /> : <>💡 Suggest</>}
+                    </button>
+                  )}
+                </div>
+              )}
+            </form>
+          </div>
         </div>
-      )}
+
+        {suggestionError && (
+          <div className="places-top-controls__error" role="alert">
+            {suggestionError}
+          </div>
+        )}
+      </div>
     </section>
   );
 };

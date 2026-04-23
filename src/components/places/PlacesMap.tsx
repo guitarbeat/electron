@@ -50,6 +50,9 @@ interface PendingPin {
   lat: number;
 }
 
+const hasPlaceDragData = (types: readonly string[]) =>
+  types.some((type) => type.toLowerCase() === 'placeid');
+
 const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
   places,
   canEdit = false,
@@ -262,14 +265,14 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(({
 
   // ── Drag-and-drop from cards ──
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    if (!canEdit || !e.dataTransfer.types.includes('placeid')) return;
+    if (!canEdit || !hasPlaceDragData(Array.from(e.dataTransfer.types))) return;
     e.preventDefault();
     dragCounterRef.current += 1;
     if (dragCounterRef.current === 1) setIsDragOver(true);
   }, [canEdit]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    if (!canEdit || !e.dataTransfer.types.includes('placeid')) return;
+    if (!canEdit || !hasPlaceDragData(Array.from(e.dataTransfer.types))) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'link';
   }, [canEdit]);
