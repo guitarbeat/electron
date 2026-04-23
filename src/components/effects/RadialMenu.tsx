@@ -41,6 +41,22 @@ const StarIcon = () => (
   </svg>
 );
 
+const BubbleIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="7.5" fill="currentColor" fillOpacity="0.18" />
+    <path
+      d="M12 5.75a6.25 6.25 0 1 1-5.09 9.87L5.5 19l3.63-1.16A6.25 6.25 0 1 1 12 5.75Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="9.25" cy="11.9" r="1" fill="currentColor" />
+    <circle cx="12" cy="11.9" r="1" fill="currentColor" />
+    <circle cx="14.75" cy="11.9" r="1" fill="currentColor" />
+  </svg>
+);
+
 const STORAGE_KEY = 'radialMenu.position';
 const DISCOVERED_KEY = 'radialMenu.discovered';
 const MOBILE_BREAKPOINT = 600;
@@ -52,6 +68,7 @@ const TOGGLE_OFFSET = 100; // half of container (200/2) â€” used for left/top â†
 const FAN_RADIUS_DESKTOP = 110; // bubbles + halo
 const FAN_RADIUS_MOBILE = 90;
 const SAFE_MARGIN = 10;
+const ITEM_COUNT = 5;
 
 const isMobileViewport = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
@@ -148,8 +165,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const dragStartTimeRef = useRef(0);
+  const dragPointerIdRef = useRef<number | null>(null);
   const dragThreshold = 8;
-  const clickTimeThreshold = 300;
+  const clickTimeThreshold = 260;
 
   const fanQuadrant = getFanQuadrant(menuPos);
 
@@ -172,23 +190,28 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     markDiscovered();
   }, [markDiscovered]);
 
+  const closeMenu = useCallback(() => {
+    setIsActive(false);
+  }, []);
+
   useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
+    const handlePointerDown = (e: PointerEvent) => {
       if (!toggleRef.current?.contains(e.target as Node)) return;
 
       e.preventDefault();
       e.stopPropagation();
 
-      dragStartPosRef.current = { x: e.pageX, y: e.pageY };
+      dragStartPosRef.current = { x: e.clientX, y: e.clientY };
       dragStartTimeRef.current = Date.now();
+      dragPointerIdRef.current = e.pointerId;
       isDraggingRef.current = false;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (dragStartTimeRef.current === 0) return;
+    const handlePointerMove = (e: PointerEvent) => {
+      if (dragStartTimeRef.current === 0 || dragPointerIdRef.current !== e.pointerId) return;
 
-      const deltaX = e.pageX - dragStartPosRef.current.x;
-      const deltaY = e.pageY - dragStartPosRef.current.y;
+      const deltaX = e.clientX - dragStartPosRef.current.x;
+      const deltaY = e.clientY - dragStartPosRef.current.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
       if (distance > dragThreshold && !isDraggingRef.current) {
@@ -196,15 +219,19 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       }
 
       if (isDraggingRef.current && menuRef.current) {
-        const newX = e.pageX - TOGGLE_OFFSET;
-        const newY = e.pageY - TOGGLE_OFFSET;
+        const newX = e.clientX - TOGGLE_OFFSET;
+        const newY = e.clientY - TOGGLE_OFFSET;
         menuRef.current.style.left = `${newX}px`;
         menuRef.current.style.top = `${newY}px`;
         setMenuPos({ x: newX, y: newY });
       }
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
+      if (dragPointerIdRef.current !== null && dragPointerIdRef.current !== e.pointerId) {
+        return;
+      }
+
       if (dragStartTimeRef.current > 0) {
         const clickDuration = Date.now() - dragStartTimeRef.current;
         const wasDragging = isDraggingRef.current;
@@ -238,6 +265,18 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
         isDraggingRef.current = false;
         dragStartTimeRef.current = 0;
+        dragPointerIdRef.current = null;
+      }
+    };
+
+    const handlePointerDownOutside = (e: PointerEvent) => {
+      const target = e.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (!menuRef.current?.contains(target)) {
+        closeMenu();
       }
     };
 
@@ -247,19 +286,32 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         isMobileViewport() ? getDockedPosition() : clampToViewport(prev)
       );
     };
-    window.addEventListener('resize', handleResize);
 
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('keydown', handleKeyDown);
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
+    document.addEventListener('pointerdown', handlePointerDownOutside);
 
     return () => {
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
+      document.removeEventListener('pointerdown', handlePointerDownOutside);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [toggleMenu]);
+  }, [closeMenu, toggleMenu]);
 
   const handleMenuItemClick = (callback?: () => void) => {
     callback?.();
@@ -269,36 +321,41 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const menuItems = [
     {
       index: 0,
-      colorClass: 'green',
-      label: 'Open messages',
+      colorClass: 'teal',
+      label: 'Messages',
+      description: 'Chat and check-ins',
       onClick: () => handleMenuItemClick(onOpenMessages),
       icon: <MessageIcon size={20} style={{ color: 'white' }} />,
     },
     {
       index: 1,
       colorClass: 'blue',
-      label: 'Open memories',
+      label: 'Memories',
+      description: 'Shared notes and moments',
       onClick: () => handleMenuItemClick(onOpenMemories),
       icon: <MemoriesIcon />,
     },
     {
       index: 2,
-      colorClass: 'purple',
-      label: 'Open quiz',
+      colorClass: 'violet',
+      label: 'Quiz',
+      description: 'Personality and couple quiz',
       onClick: () => handleMenuItemClick(onOpenQuiz),
       icon: <QuizIcon />,
     },
     {
       index: 3,
-      colorClass: 'orange',
-      label: 'Spin & Match',
+      colorClass: 'amber',
+      label: 'Spin',
+      description: 'Spin and match a movie',
       onClick: () => handleMenuItemClick(onOpenSpin),
       icon: <SpinIcon />,
     },
     {
       index: 4,
-      colorClass: 'red',
-      label: 'Open favorites',
+      colorClass: 'rose',
+      label: 'Favorites',
+      description: 'Starred picks and places',
       onClick: () => handleMenuItemClick(onOpenFavorites),
       icon: <StarIcon />,
     },
@@ -311,14 +368,16 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       style={{
         left: `${menuPos.x}px`,
         top: `${menuPos.y}px`,
+        ['--item-count' as string]: ITEM_COUNT,
       }}
     >
       <button
         ref={toggleRef}
         type="button"
         className={`toggle ${!hasDiscovered ? 'discover-pulse' : ''}`}
-        aria-label="Toggle menu"
+        aria-label={isActive ? 'Close quick actions' : 'Open quick actions'}
         aria-expanded={isActive}
+        aria-haspopup="menu"
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
@@ -326,10 +385,14 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
           }
         }}
       >
-        <span className="rotate">+</span>
+        <span className="toggle__glow" aria-hidden="true" />
+        <span className="toggle__icon">
+          <BubbleIcon />
+        </span>
+        <span className="toggle__label">{isActive ? 'Close' : 'Quick actions'}</span>
       </button>
 
-      <ul>
+      <ul role="menu" aria-label="Quick actions">
         {menuItems.map((item) => (
           <li
             key={item.index}
@@ -342,8 +405,13 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
               aria-label={item.label}
               title={item.label}
               className="menu-item-button"
+              role="menuitem"
             >
-              {item.icon}
+              <span className="menu-item-button__icon">{item.icon}</span>
+              <span className="menu-item-button__tooltip" aria-hidden="true">
+                <strong>{item.label}</strong>
+                <span>{item.description}</span>
+              </span>
             </button>
           </li>
         ))}
