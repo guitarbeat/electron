@@ -9,6 +9,21 @@ interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
   currentUser: User | null;
+  onTabChange: (tab: MainTab) => void;
+  onOpenMessages: () => void;
+  onOpenMemories: () => void;
+  onOpenQuiz: () => void;
+  onOpenSpin: () => void;
+  onOpenFavorites: () => void;
+}
+
+interface FeatureTile {
+  feature: string;
+  type: string;
+  detail: string;
+  accent: 'primary' | 'support' | 'play';
+  isActive?: boolean;
+  onClick?: () => void;
 }
 
 const SURFACE_COPY: Record<
@@ -41,8 +56,82 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   isMobile,
   activeTab,
   currentUser,
+  onTabChange,
+  onOpenMessages,
+  onOpenMemories,
+  onOpenQuiz,
+  onOpenSpin,
+  onOpenFavorites,
 }) => {
   const surfaceCopy = SURFACE_COPY[activeTab];
+  const featureGroups: Array<{ label: string; items: FeatureTile[] }> = [
+    {
+      label: 'Browse by feature',
+      items: [
+        {
+          feature: 'Movies',
+          type: 'Queue',
+          detail: 'Shared shortlist and posters',
+          accent: 'primary',
+          isActive: activeTab === 'queue',
+          onClick: () => onTabChange('queue'),
+        },
+        {
+          feature: 'Places',
+          type: 'Map',
+          detail: 'Saved destinations and route view',
+          accent: 'primary',
+          isActive: activeTab === 'places',
+          onClick: () => onTabChange('places'),
+        },
+      ],
+    },
+    {
+      label: 'Shared tools by type',
+      items: [
+        {
+          feature: 'Messages',
+          type: 'Conversation',
+          detail: 'Check-ins and quick notes',
+          accent: 'support',
+          onClick: onOpenMessages,
+        },
+        {
+          feature: 'Memories',
+          type: 'Archive',
+          detail: 'Pinned moments and annotations',
+          accent: 'support',
+          onClick: onOpenMemories,
+        },
+        {
+          feature: 'Favorites',
+          type: 'Collection',
+          detail: 'Starred movies and places',
+          accent: 'support',
+          onClick: onOpenFavorites,
+        },
+      ],
+    },
+    {
+      label: 'Play by type',
+      items: [
+        {
+          feature: 'Quiz',
+          type: 'Personality',
+          detail: 'Compatibility and profile flow',
+          accent: 'play',
+          onClick: onOpenQuiz,
+        },
+        {
+          feature: 'Spin',
+          type: 'Chance game',
+          detail: 'Randomize the next pick',
+          accent: 'play',
+          onClick: onOpenSpin,
+        },
+      ],
+    },
+  ];
 
   return (
     <main
@@ -64,6 +153,29 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
             {currentUser ? `${currentUser} is editing the shared board.` : 'Guest mode is read-only until a profile signs in.'}
           </p>
         </div>
+      </section>
+
+      <section className="feature-directory" aria-label="Feature organization">
+        {featureGroups.map((group) => (
+          <div key={group.label} className="feature-directory__group">
+            <p className="feature-directory__label">{group.label}</p>
+            <div className="feature-directory__items">
+              {group.items.map((item) => (
+                <button
+                  key={`${group.label}-${item.feature}`}
+                  type="button"
+                  className={`feature-tile feature-tile--${item.accent}${item.isActive ? ' is-active' : ''}`}
+                  onClick={item.onClick}
+                  aria-pressed={item.isActive ? true : undefined}
+                >
+                  <span className="feature-tile__feature">{item.feature}</span>
+                  <span className="feature-tile__type">{item.type}</span>
+                  <span className="feature-tile__detail">{item.detail}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
 
       <section
