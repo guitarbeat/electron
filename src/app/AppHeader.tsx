@@ -37,6 +37,8 @@ const AppHeader: FC<AppHeaderProps> = ({
   const isDisabled = isLoading || isVerifying;
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
+  const modeLabel = activeTab === 'queue' ? 'Movie queue' : 'Places map';
+  const statusLabel = currentUser ? `${currentUser} online` : 'Guest session';
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -260,6 +262,10 @@ const AppHeader: FC<AppHeaderProps> = ({
     <header ref={headerRef} className="app-header" role="banner">
       {/* Left: Theme Toggle + Background Toggle */}
       <div ref={leftRef} className="app-header__left">
+        <div className="app-header__status-block" aria-label="Current workspace mode">
+          <span className="app-header__status-label">{modeLabel}</span>
+          <span className="app-header__status-value">{statusLabel}</span>
+        </div>
         <ThemeToggle
           activeTab={activeTab}
           onChange={onTabChange}
@@ -271,10 +277,13 @@ const AppHeader: FC<AppHeaderProps> = ({
 
       {/* Center: Brand */}
       <div ref={centerRef} className="app-header__center" aria-label="Electron">
+        <span className="app-header__brand-kicker">Electron</span>
         <span ref={brandRef} className="app-header__brand" aria-hidden="true">
-          Electron
+          {activeTab === 'queue' ? 'Cinematic Queue' : 'Scout Atlas'}
         </span>
-        <span className="app-header__brand-fallback">Electron</span>
+        <span className="app-header__brand-fallback">
+          {activeTab === 'queue' ? 'Cinematic Queue' : 'Scout Atlas'}
+        </span>
       </div>
 
       {/* Right: Profile Selector */}
