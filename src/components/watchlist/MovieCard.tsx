@@ -20,6 +20,13 @@ import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
 import { INITIAL_VISIBLE_COUNT } from '@/memories/lib/memoryUtils';
 
+export interface MovieTransitionOrigin {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 interface MovieCardProps {
   movie: Movie;
   currentUser: User | null;
@@ -136,7 +143,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [showMemories, setShowMemories] = React.useState(false);
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
+  const [detailsOrigin, setDetailsOrigin] = React.useState<MovieTransitionOrigin | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement | null>(null);
+  const posterRef = React.useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
@@ -155,6 +165,15 @@ const MovieCard: React.FC<MovieCardProps> = ({
   };
 
   const handleOpenDetails = () => {
+    const rect = posterRef.current?.getBoundingClientRect() ?? cardRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDetailsOrigin({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      });
+    }
     setIsDetailsOpen(true);
   };
 
@@ -177,11 +196,14 @@ const MovieCard: React.FC<MovieCardProps> = ({
   return (
     <>
       <Card
+        ref={cardRef}
         variant={watchedByBoth ? 'elevated' : 'default'}
         glow={watchedByBoth || isHighlighted}
         className={`movie-item-card slide-up ${
           watchedByBoth ? 'movie-item-card--watched' : ''
-        } ${isHighlighted ? 'movie-item-card--highlighted' : ''}`}
+        } ${isHighlighted ? 'movie-item-card--highlighted' : ''} ${
+          isDetailsOpen ? 'movie-item-card--opening-details' : ''
+        }`}
         data-movie-id={movie.id}
         data-added-by={movie.addedBy}
         style={{
@@ -191,7 +213,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           borderColor: watchedByBoth ? colors.accent : colors.border,
         }}
       >
-        <MediaCardPosterWrap className="movie-item-poster-wrap">
+        <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
           <MoviePoster movie={movie} />
 
           {movie.watchedBy.length > 0 ? (
@@ -284,7 +306,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         />
       ) : null}
 
-      <MovieDetailsModal movie={movie} isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} />
+      <MovieDetailsModal
+        movie={movie}
+        isOpen={isDetailsOpen}
+        origin={detailsOrigin}
+        onClose={() => setIsDetailsOpen(false)}
+      />
     </>
   );
 };

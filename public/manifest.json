@@ -1,14 +1,31 @@
 {
   "name": "Electron — Movie Night",
   "short_name": "Electron",
+  "id": "/",
   "description": "Aaron & Electra's collaborative movie night & date-planning app.",
   "start_url": "/",
   "scope": "/",
+  "display_override": ["window-controls-overlay", "standalone"],
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#1d140e",
   "theme_color": "#1d140e",
+  "prefer_related_applications": false,
   "categories": ["entertainment", "lifestyle", "social"],
+  "shortcuts": [
+    {
+      "name": "Open Notes & Memories",
+      "short_name": "Memories",
+      "description": "Jump back into the shared notes and memories flow.",
+      "url": "/?panel=memories"
+    },
+    {
+      "name": "Open Movies",
+      "short_name": "Movies",
+      "description": "Go straight to the shared movie queue.",
+      "url": "/?tab=movies"
+    }
+  ],
   "icons": [
     {
       "src": "/favicon-32x32.png",

@@ -3,6 +3,14 @@ import ReactDOM from 'react-dom/client';
 import '@total-typescript/ts-reset';
 import App from './app/App';
 
+const isStandalone =
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+if (isStandalone) {
+  document.documentElement.classList.add('app-standalone');
+}
+
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Could not find root element to mount to');

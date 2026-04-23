@@ -4,15 +4,17 @@ interface PosterWrapProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export const MediaCardPosterWrap: React.FC<PosterWrapProps> = ({
+export const MediaCardPosterWrap = React.forwardRef<HTMLDivElement, PosterWrapProps>(({
   children,
   className = '',
   ...props
-}) => (
-  <div className={`media-card__poster-wrap ${className}`.trim()} {...props}>
+}, ref) => (
+  <div ref={ref} className={`media-card__poster-wrap ${className}`.trim()} {...props}>
     {children}
   </div>
-);
+));
+
+MediaCardPosterWrap.displayName = 'MediaCardPosterWrap';
 
 interface CoverProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;

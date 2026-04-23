@@ -9,7 +9,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   glow?: boolean;
 }
 
-const Card: React.FC<CardProps> = ({
+const Card = React.forwardRef<HTMLDivElement, CardProps>(({
   children,
   className = '',
   variant = 'default',
@@ -21,11 +21,12 @@ const Card: React.FC<CardProps> = ({
   tabIndex,
   onKeyDown,
   ...props
-}) => {
+}, ref) => {
   const isInteractive = typeof onClick === 'function' || variant === 'interactive';
 
   return (
     <div
+      ref={ref}
       className={`ui-card ui-card--${variant} ${hover ? 'ui-card--hover' : ''} ${
         glow ? 'ui-card--glow' : ''
       } ${isInteractive ? 'ui-card--interactive' : ''} ${className}`.trim()}
@@ -65,6 +66,8 @@ const Card: React.FC<CardProps> = ({
       {children}
     </div>
   );
-};
+});
+
+Card.displayName = 'Card';
 
 export default Card;

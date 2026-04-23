@@ -7,7 +7,6 @@ interface RadialMenuProps {
   onOpenMemories?: () => void;
   onOpenQuiz?: () => void;
   onOpenSpin?: () => void;
-  onOpenFavorites?: () => void;
 }
 
 // SVG Icons for the menu
@@ -32,12 +31,6 @@ const SpinIcon = () => (
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="2" x2="12" y2="12" />
     <line x1="12" y1="12" x2="20" y2="16" />
-  </svg>
-);
-
-const StarIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
 );
 
@@ -68,7 +61,7 @@ const TOGGLE_OFFSET = 100; // half of container (200/2) â€” used for left/top â†
 const FAN_RADIUS_DESKTOP = 110; // bubbles + halo
 const FAN_RADIUS_MOBILE = 90;
 const SAFE_MARGIN = 10;
-const ITEM_COUNT = 5;
+const ITEM_COUNT = 4;
 
 const isMobileViewport = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
@@ -154,7 +147,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   onOpenMemories,
   onOpenQuiz,
   onOpenSpin,
-  onOpenFavorites,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -350,14 +342,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       description: 'Spin and match a movie',
       onClick: () => handleMenuItemClick(onOpenSpin),
       icon: <SpinIcon />,
-    },
-    {
-      index: 4,
-      colorClass: 'rose',
-      label: 'Favorites',
-      description: 'Starred picks and places',
-      onClick: () => handleMenuItemClick(onOpenFavorites),
-      icon: <StarIcon />,
     },
   ];
 

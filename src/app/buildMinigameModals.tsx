@@ -1,6 +1,5 @@
 import { Suspense, type CSSProperties, type ReactNode } from 'react';
 import {
-  FavoritesPanelContent,
   FloatingMemoriesPanelContent,
   MessageBoardPanel,
   QuizEditorPanel,
@@ -48,7 +47,6 @@ export interface BuildFeatureModalsParams {
   showQuizFlow: boolean;
   showSpinWheel: boolean;
   showSpinWheelOnly: boolean;
-  showFavorites: boolean;
   quizCompleted: boolean;
   isSpinWheelLocked: boolean;
   currentUser: User | null;
@@ -58,7 +56,6 @@ export interface BuildFeatureModalsParams {
   setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
   setShowSpinWheelOnly: (open: boolean) => void;
-  setShowFavorites: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
   onQuizComplete: () => void;
   onQuizRetake: () => void;
@@ -72,7 +69,6 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     showQuizFlow,
     showSpinWheel,
     showSpinWheelOnly,
-    showFavorites,
     quizCompleted,
     isSpinWheelLocked,
     currentUser,
@@ -82,24 +78,12 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
     setShowQuizFlow,
     setShowSpinWheel,
     setShowSpinWheelOnly,
-    setShowFavorites,
     setIsSpinWheelLocked,
     onQuizComplete,
     onQuizRetake,
   } = params;
 
   return [
-    {
-      key: 'favorites',
-      title: 'Favorites · Collection',
-      isOpen: showFavorites,
-      onClose: () => setShowFavorites(false),
-      ariaLabel: 'Your starred movies and places',
-      maxWidth: 920,
-      maxHeight: 820,
-      contentStyle: scrollContentStyle,
-      content: renderSuspended(<FavoritesPanelContent />),
-    },
     {
       key: 'messages',
       title: 'Messages · Conversation',

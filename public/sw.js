@@ -1,5 +1,5 @@
 /* Electron PWA service worker — minimal app-shell cache for installability + basic offline */
-const CACHE = 'electron-shell-v1';
+const CACHE = 'electron-shell-v2';
 const SHELL = ['/', '/index.html', '/favicon.svg', '/favicon-32x32.png', '/apple-touch-icon.png', '/manifest.json'];
 
 self.addEventListener('install', (event) => {

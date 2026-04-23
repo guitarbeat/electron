@@ -58,7 +58,6 @@ const App: React.FC = () => {
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
-  const [showFavorites, setShowFavorites] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () => localStorage.getItem('cursorTrailEnabled') === 'true'
@@ -133,7 +132,6 @@ const App: React.FC = () => {
         showQuizFlow,
         showSpinWheel,
         showSpinWheelOnly,
-        showFavorites,
         quizCompleted,
         isSpinWheelLocked,
         currentUser,
@@ -143,7 +141,6 @@ const App: React.FC = () => {
         setShowQuizFlow,
         setShowSpinWheel,
         setShowSpinWheelOnly,
-        setShowFavorites,
         setIsSpinWheelLocked,
         onQuizComplete: handleQuizComplete,
         onQuizRetake: handleQuizRetake,
@@ -160,7 +157,6 @@ const App: React.FC = () => {
       showQuizFlow,
       showSpinWheel,
       showSpinWheelOnly,
-      showFavorites,
     ]
   );
 
@@ -222,7 +218,6 @@ const App: React.FC = () => {
             onOpenMemories={() => setShowMemoriesPanel(true)}
             onOpenQuiz={openQuizExperience}
             onOpenSpin={openSpinMatch}
-            onOpenFavorites={() => setShowFavorites(true)}
           />
         </React.Suspense>
 
