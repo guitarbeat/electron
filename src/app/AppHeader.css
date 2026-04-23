@@ -55,6 +55,77 @@
   min-width: 0;
 }
 
+.app-header__pwa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.42rem 0.48rem 0.42rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 236, 206, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.app-header__pwa-chip--offline {
+  border-color: rgba(255, 160, 140, 0.3);
+}
+
+.app-header__pwa-chip--warning,
+.app-header__pwa-chip--update {
+  border-color: rgba(255, 208, 132, 0.34);
+}
+
+.app-header__pwa-chip--syncing,
+.app-header__pwa-chip--install,
+.app-header__pwa-chip--ready {
+  border-color: rgba(167, 222, 196, 0.24);
+}
+
+.app-header__pwa-copy {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.app-header__pwa-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 247, 234, 0.88);
+}
+
+.app-header__pwa-detail {
+  font-size: 0.73rem;
+  color: rgba(232, 214, 184, 0.66);
+  white-space: nowrap;
+}
+
+.app-header__pwa-action {
+  flex: 0 0 auto;
+  min-height: 1.9rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(255, 236, 206, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 248, 237, 0.94);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.app-header__pwa-action:hover,
+.app-header__pwa-action:focus-visible {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 236, 206, 0.24);
+}
+
 .app-header__status-label,
 .app-header__brand-kicker {
   font-size: 0.63rem;
@@ -188,6 +259,29 @@
   min-width: 0;
   position: relative;
   z-index: 1;
+}
+
+@media (max-width: 920px) {
+  .app-header__pwa-detail {
+    display: none;
+  }
+
+  .app-header__pwa-chip {
+    padding-inline: 0.55rem 0.42rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-header__left {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .app-header__pwa-chip {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .app-header__profile-container {
