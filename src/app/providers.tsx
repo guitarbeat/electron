@@ -11,7 +11,7 @@ import React, {
   ReactNode,
 } from 'react';
 import type { MainTab, User } from '@/shared/types';
-import { moviesTheme, placesTheme, shellTokens, spacing } from '@/theme/tokens';
+import { moviesTheme, shellTokens, spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
 import type { SessionState } from '@/services/state/stateTypes';
@@ -35,10 +35,10 @@ const debugSession = (...args: unknown[]) => {
 
 export const ThemeProvider: React.FC<{ children: ReactNode; activeTab: MainTab }> = ({
   children,
-  activeTab,
+  activeTab: _activeTab,
 }) => {
-  const currentTheme: 'movies' | 'places' = activeTab === 'places' ? 'places' : 'movies';
-  const themeTokens = currentTheme === 'places' ? placesTheme : moviesTheme;
+  const currentTheme: 'movies' | 'places' = 'movies';
+  const themeTokens = moviesTheme;
 
   useEffect(() => {
     if (typeof document === 'undefined') {

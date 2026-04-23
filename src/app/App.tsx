@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
@@ -53,6 +53,12 @@ const ThemedMoire: React.FC = () => {
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+};
+
+type ViewTransitionCapableDocument = Document & {
+  startViewTransition?: (
+    callback: () => void | Promise<void>
+  ) => { finished: Promise<void> };
 };
 
 const getRequestedTab = (value: string | null): MainTab | null => {
@@ -147,8 +153,8 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', activeTab === 'places' ? 'places' : 'movies');
-  }, [activeTab]);
+    document.body.setAttribute('data-theme', 'movies');
+  }, []);
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -457,9 +463,24 @@ const App: React.FC = () => {
       }
 
       playSwitch();
-      setActiveTab(tab);
+
+      const nextTab = () => {
+        startTransition(() => {
+          setActiveTab(tab);
+        });
+      };
+
+      const transitionDocument = document as ViewTransitionCapableDocument;
+      if (prefersReducedMotion || typeof transitionDocument.startViewTransition !== 'function') {
+        nextTab();
+        return;
+      }
+
+      transitionDocument.startViewTransition(() => {
+        nextTab();
+      });
     },
-    [activeTab, playSwitch]
+    [activeTab, playSwitch, prefersReducedMotion]
   );
 
   const openSpinMatch = useCallback(() => {
@@ -599,27 +620,29 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
-            <AppHeader
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              pwaStatus={{
-                isOnline,
-                isStandalone,
-                canInstall: canInstallApp,
-                hasUpdateReady,
-                pendingSyncCount: outboxStatus.pendingCount,
-                blockedSyncCount: outboxStatus.blockedCount,
-              }}
-              onInstallApp={() => void handleInstallApp()}
-              onApplyUpdate={handleApplyUpdate}
-              onRetrySync={handleRetryPendingSync}
-            />
-            <React.Suspense fallback={null}>
-              <AppWorkspaceShell
-                isMobile={isMobile}
+            <div className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === 'queue' ? ' queue-unified-shell' : ''}`}>
+              <AppHeader
                 activeTab={activeTab}
+                onTabChange={handleTabChange}
+                pwaStatus={{
+                  isOnline,
+                  isStandalone,
+                  canInstall: canInstallApp,
+                  hasUpdateReady,
+                  pendingSyncCount: outboxStatus.pendingCount,
+                  blockedSyncCount: outboxStatus.blockedCount,
+                }}
+                onInstallApp={() => void handleInstallApp()}
+                onApplyUpdate={handleApplyUpdate}
+                onRetrySync={handleRetryPendingSync}
               />
-            </React.Suspense>
+              <React.Suspense fallback={null}>
+                <AppWorkspaceShell
+                  isMobile={isMobile}
+                  activeTab={activeTab}
+                />
+              </React.Suspense>
+            </div>
           </div>
         </div>
 

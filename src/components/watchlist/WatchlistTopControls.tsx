@@ -662,14 +662,13 @@ const WatchlistTopControls = React.forwardRef<
               <Button
                 type="submit"
                 variant="primary"
-                size="lg"
+                size="md"
                 isLoading={isAdding}
                 loadingText="Adding"
                 disabled={isBusy}
                 title={primaryActionTitle}
                 aria-label={primaryActionTitle}
                 className="watchlist-top-controls__search-button"
-                style={{ minWidth: '84px' }}
               >
                 {primaryActionLabel}
               </Button>

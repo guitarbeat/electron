@@ -2,6 +2,11 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import { useUser, useToast } from '@/app/useProviders';
 import { usePlaces } from '@/hooks/places';
 import ConfirmDialog from '@/ui/ConfirmDialog';
+import {
+  CollectionEmptyState,
+  CollectionGrid,
+  CollectionSection,
+} from '@/ui/CollectionLayout';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import { radius } from '../../theme/tokens.ts';
@@ -221,10 +226,11 @@ const PlacesList: React.FC = () => {
 
       {/* Pending suggestions */}
       {sections.suggestions.length > 0 && (
-        <div className="places-suggestions-row">
-          <h3 className="places-section-heading">
-            {sections.suggestions.length} suggestion{sections.suggestions.length === 1 ? '' : 's'} pending
-          </h3>
+        <CollectionSection
+          title={`${sections.suggestions.length} suggestion${sections.suggestions.length === 1 ? '' : 's'} pending`}
+          tone="incoming"
+          className="places-suggestions-row"
+        >
           <div className="places-suggestions-scroll">
             {sections.suggestions.map((suggestion) => (
               <div key={suggestion.id} style={{ flex: '0 0 auto', width: 175 }}>
@@ -238,32 +244,37 @@ const PlacesList: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </CollectionSection>
       )}
 
       {/* Loading skeletons */}
       {isLoading && places.length === 0 && (
-        <div className="places-grid">
+        <CollectionGrid
+          className="watchlist-content places-grid"
+          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+        >
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <MovieCardSkeleton key={i} />
           ))}
-        </div>
+        </CollectionGrid>
       )}
 
       {/* Empty state */}
       {showEmptyState && (
-        <div className="places-empty-state">
+        <CollectionEmptyState className="places-empty-state">
           <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
-          <span className="places-empty-state__title">No places yet</span>
+          <strong className="places-empty-state__title">No places yet</strong>
           <span className="places-empty-state__hint">Search above to add your first spot</span>
-        </div>
+        </CollectionEmptyState>
       )}
 
       {/* TO TRY section */}
       {sections.queue.length > 0 && (
-        <section>
-          <h3 className="places-section-heading">To Try</h3>
-          <div className="places-grid">
+        <CollectionSection title="To Try">
+          <CollectionGrid
+            className="watchlist-content places-grid"
+            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+          >
             {sections.queue.map((place, i) => (
               <div
                 key={place.id}
@@ -289,15 +300,17 @@ const PlacesList: React.FC = () => {
                 />
               </div>
             ))}
-          </div>
-        </section>
+          </CollectionGrid>
+        </CollectionSection>
       )}
 
       {/* VISITED section */}
       {sections.visited.length > 0 && (
-        <section>
-          <h3 className="places-section-heading places-section-heading--visited">Visited</h3>
-          <div className="places-grid">
+        <CollectionSection title="Visited" tone="completed">
+          <CollectionGrid
+            className="watchlist-content places-grid"
+            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+          >
             {sections.visited.map((place, i) => (
               <div
                 key={place.id}
@@ -323,8 +336,8 @@ const PlacesList: React.FC = () => {
                 />
               </div>
             ))}
-          </div>
-        </section>
+          </CollectionGrid>
+        </CollectionSection>
       )}
 
       {/* Modals */}
