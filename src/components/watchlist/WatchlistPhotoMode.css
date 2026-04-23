@@ -116,8 +116,7 @@
   z-index: 7 !important;
 }
 
-/* ── Full-width items (empty state, error, suggestion) — unchanged ── */
-.watchlist-content > .suggestion-item-card,
+/* ── Full-width items (empty state, error) ── */
 .watchlist-content > .watchlist-empty-state,
 .watchlist-content > .watchlist-error {
   grid-column: 1 / -1 !important;
