@@ -2,7 +2,6 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import { useUser } from '@/app/useProviders';
 import type { Movie, MovieSuggestion, SharedMemory, MoviesViewProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import Confetti from '@/effects/Confetti';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import {
   CollectionEmptyState,
@@ -11,7 +10,7 @@ import {
 } from '@/ui/CollectionLayout';
 import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
-import { colors, motion, spacing, typography } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
 import { useMoviesWorkspace } from '@/hooks/movies/useMoviesWorkspace';
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
@@ -45,8 +44,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
-    showConfetti,
-    setShowConfetti,
     previousMoviesRef,
     movies,
     isLoading,
@@ -135,7 +132,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         const prevMovie = previousMoviesRef.current?.find((entry) => entry.id === movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
-          setShowConfetti(true);
           setToast({
             message: `🎉 You both watched "${movie.title}"!`,
             type: 'success',
@@ -145,7 +141,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     });
 
     previousMoviesRef.current = movies;
-  }, [movies, previousMoviesRef, setShowConfetti, setSuccessMovieId, setToast]);
+  }, [movies, previousMoviesRef, setSuccessMovieId, setToast]);
 
   const resetRecommendationComposer = useCallback(() => {
     setIsRecommendationComposerOpen(false);
@@ -357,12 +353,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       <CollectionGrid
         className="watchlist-content"
         minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-        style={{
-          animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-        }}
       >
         {moviesToRender.length > 0 ? (
-          moviesToRender.map((movie, index) => (
+          moviesToRender.map((movie) => (
             <MovieCard
               key={movie.id}
               movie={movie}
@@ -371,7 +364,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
               onToggleError={handleToggleError}
               onRename={(title) => renameMovie(movie.id, title)}
               onDelete={() => setMovieToDelete(movie)}
-              animationDelay={`${index * 0.05}s`}
               isHighlighted={successMovieId === movie.id}
               memories={movieMemories.get(movie.id) ?? []}
               onAddMemory={
@@ -432,21 +424,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         <CollectionGrid
           className="watchlist-content"
           minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-          style={{
-            animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-          }}
         >
           <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
-            <div className="scanning-overlay" style={{ padding: spacing.xl }}>
-              <div style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</div>
-              <div
-                style={{ ...typography.presets.eyebrow, color: colors.accent, animation: 'pulse 1.5s infinite', letterSpacing: '0.12em' }}
-              >
-                Loading your movies
-                <span className="loading-dots" aria-hidden="true" />
-              </div>
-              <div className="scanning-bar" style={{ maxWidth: '200px', margin: '0 auto' }} />
-            </div>
+            <CollectionEmptyState padding={spacing.xl} className="collection-empty-state--tight">
+              <span style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</span>
+              <strong>Loading your movies</strong>
+            </CollectionEmptyState>
             <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
               {skeletonKeys.map((key) => (
                 <MovieCardSkeleton key={key} />
@@ -464,13 +447,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
         {isAllEmpty ? (
-          <CollectionGrid
-            className="watchlist-content"
-            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-            style={{
-              animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}`,
-            }}
-          >
+          <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
             <CollectionEmptyState
               padding={isMobile ? spacing.lg : spacing['3xl']}
               className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
@@ -497,20 +474,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             {(isSuggestionsLoading || sections.suggestions.length > 0) && (
               <CollectionSection heading="Incoming" tone="incoming">
                 {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-                  <CollectionGrid
-                    className="watchlist-content"
-                    minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                    style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
-                  >
+                  <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
                     {skeletonKeys.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
                   </CollectionGrid>
                 ) : (
-                  <CollectionGrid
-                    className="watchlist-content"
-                    minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                    style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
-                  >
-                    {sections.suggestions.map((suggestion, index) => (
+                  <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+                    {sections.suggestions.map((suggestion) => (
                       <SuggestionCard
                         key={suggestion.id}
                         suggestion={suggestion}
@@ -519,7 +488,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
                         canRespond={Boolean(currentUser)}
                         disableActions={!currentUser}
                         isProcessing={processingSuggestionId === suggestion.id}
-                        animationDelay={`${index * 0.05}s`}
                       />
                     ))}
                   </CollectionGrid>
@@ -530,12 +498,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             {/* ── Up Next ── */}
             {sections.upNext.length > 0 && (
               <CollectionSection heading="Up Next">
-                <CollectionGrid
-                  className="watchlist-content"
-                  minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                  style={{ animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut}` }}
-                >
-                  {sections.upNext.map((movie, index) => (
+                <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+                  {sections.upNext.map((movie) => (
                     <MovieCard
                       key={movie.id}
                       movie={movie}
@@ -544,7 +508,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
                       onToggleError={handleToggleError}
                       onRename={(title) => renameMovie(movie.id, title)}
                       onDelete={() => setMovieToDelete(movie)}
-                      animationDelay={`${(sections.suggestions.length + index) * 0.05}s`}
                       isHighlighted={successMovieId === movie.id}
                       memories={movieMemories.get(movie.id) ?? []}
                       onAddMemory={
@@ -608,8 +571,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       className="watchlist-container places-container"
       style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
     >
-      <Confetti isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
-
       {isMoviesWorkspaceDegraded && (
         <SyncBanner
           isBlocked={isMoviesWorkspaceSyncBlocked}

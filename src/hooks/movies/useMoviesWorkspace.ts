@@ -62,7 +62,6 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
   const [isSubmittingRecommendation, setIsSubmittingRecommendation] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showConfetti, setShowConfetti] = useState(false);
 
   // Refs
   const previousMoviesRef = useRef<Movie[] | null>(null);
@@ -328,8 +327,6 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
     isSubmittingRecommendation,
     searchQuery,
     setSearchQuery,
-    showConfetti,
-    setShowConfetti,
     previousMoviesRef,
 
     // Data returns

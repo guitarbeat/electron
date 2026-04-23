@@ -84,106 +84,12 @@
   gap: var(--shell-stack-gap);
   width: 100%;
   min-width: 0;
-  view-transition-name: app-tab-shell;
+  view-transition-name: none;
 }
 
 .workspace-surface {
   min-width: 0;
-  view-transition-name: app-workspace-surface;
-}
-
-::view-transition-old(app-tab-shell),
-::view-transition-new(app-tab-shell) {
-  animation-duration: 420ms;
-  animation-timing-function: cubic-bezier(0.24, 0.9, 0.24, 1);
-  transform-origin: center center;
-  will-change: transform, opacity, filter;
-}
-
-::view-transition-old(app-tab-shell) {
-  animation-name: app-tab-shell-old;
-}
-
-::view-transition-new(app-tab-shell) {
-  animation-name: app-tab-shell-new;
-}
-
-::view-transition-old(app-workspace-surface),
-::view-transition-new(app-workspace-surface) {
-  animation-duration: 460ms;
-  animation-timing-function: cubic-bezier(0.2, 0.88, 0.22, 1);
-  transform-origin: center top;
-  will-change: transform, opacity, filter;
-}
-
-::view-transition-old(app-workspace-surface) {
-  animation-name: app-workspace-surface-old;
-}
-
-::view-transition-new(app-workspace-surface) {
-  animation-name: app-workspace-surface-new;
-}
-
-@keyframes app-tab-shell-old {
-  from {
-    opacity: 1;
-    transform: scale(1);
-    filter: saturate(1);
-  }
-
-  to {
-    opacity: 0.84;
-    transform: scale(0.994);
-    filter: saturate(0.94);
-  }
-}
-
-@keyframes app-tab-shell-new {
-  from {
-    opacity: 0.88;
-    transform: scale(0.994);
-    filter: saturate(0.94);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-    filter: saturate(1);
-  }
-}
-
-@keyframes app-workspace-surface-old {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
-  }
-
-  to {
-    opacity: 0.16;
-    transform: translateX(-30px) scale(0.988);
-    filter: blur(8px);
-  }
-}
-
-@keyframes app-workspace-surface-new {
-  from {
-    opacity: 0.42;
-    transform: translateX(30px) scale(0.988);
-    filter: blur(8px);
-  }
-
-  55% {
-    opacity: 0.92;
-    transform: translateX(-5px) scale(1.002);
-    filter: blur(2px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
-  }
+  view-transition-name: none;
 }
 
 .workspace-stage,

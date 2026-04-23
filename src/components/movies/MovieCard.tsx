@@ -30,7 +30,6 @@ interface MovieCardProps {
   onToggleError?: (message: string) => void;
   onDelete: () => void;
   onRename?: (title: string) => Promise<void>;
-  animationDelay: string;
   memories?: SharedMemory[];
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
@@ -128,7 +127,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   onToggleError,
   onDelete,
   onRename,
-  animationDelay,
   memories = [],
   onAddMemory,
   onUpdateMemory,
@@ -194,7 +192,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         ref={cardRef}
         variant={watchedByBoth ? 'elevated' : 'default'}
         glow={watchedByBoth || isHighlighted}
-        className={`movie-item-card slide-up ${
+        className={`movie-item-card ${
           watchedByBoth ? 'movie-item-card--watched' : ''
         } ${isHighlighted ? 'movie-item-card--highlighted' : ''} ${
           isDetailsOpen ? 'movie-item-card--opening-details' : ''
@@ -204,7 +202,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
         style={{
           padding: 0,
           marginBottom: 0,
-          animationDelay,
           borderColor: watchedByBoth ? colors.accent : colors.border,
         }}
       >
