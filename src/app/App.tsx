@@ -237,12 +237,6 @@ const App: React.FC = () => {
                 isMobile={isMobile}
                 activeTab={activeTab}
                 currentUser={currentUser}
-                onTabChange={handleTabChange}
-                onOpenMessages={() => setShowMessages(true)}
-                onOpenMemories={() => setShowMemoriesPanel(true)}
-                onOpenQuiz={openQuizExperience}
-                onOpenSpin={openSpinMatch}
-                onOpenFavorites={() => setShowFavorites(true)}
               />
             </React.Suspense>
           </div>
