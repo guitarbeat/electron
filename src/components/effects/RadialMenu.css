@@ -1,3 +1,10 @@
+:root {
+  --radial-safe-top: env(safe-area-inset-top, 0px);
+  --radial-safe-right: env(safe-area-inset-right, 0px);
+  --radial-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --radial-safe-left: env(safe-area-inset-left, 0px);
+}
+
 .menu {
   width: 200px;
   height: 200px;

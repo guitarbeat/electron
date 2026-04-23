@@ -319,6 +319,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
       <MovieDetailsModal
         movie={movie}
+        memories={memories}
         isOpen={isDetailsOpen}
         origin={detailsOrigin}
         onClose={() => setIsDetailsOpen(false)}
