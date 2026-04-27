@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { mutateScope, readScope } from './stateClient.ts';
 import type { Movie } from '../../shared/types.ts';
+import { decodeStorageData } from '../../utils/shared.ts';
 
 class MemoryStorage {
   #store = new Map<string, string>();
@@ -32,6 +33,8 @@ test('readScope preserves optimistic queued movie mutations when degraded replay
   const windowStub = {
     localStorage,
     dispatchEvent: () => true,
+    btoa: (s: string) => Buffer.from(s, 'binary').toString('base64'),
+    atob: (s: string) => Buffer.from(s, 'base64').toString('binary'),
   } as unknown as Window & typeof globalThis;
 
   Object.defineProperty(globalThis, 'window', {
@@ -96,7 +99,9 @@ test('readScope preserves optimistic queued movie mutations when degraded replay
     const storedSnapshotRaw = localStorage.getItem('movieList.scopeSnapshot.movies');
     assert.ok(storedSnapshotRaw, 'expected queued snapshot to be stored');
 
-    const storedSnapshot = JSON.parse(storedSnapshotRaw as string) as {
+    // Handle encoded data in test
+    const decoded = decodeStorageData(storedSnapshotRaw as string);
+    const storedSnapshot = JSON.parse(decoded) as {
       data: Movie[];
     };
     assert.deepEqual(storedSnapshot.data, [optimisticMovie]);
