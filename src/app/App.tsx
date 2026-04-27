@@ -220,8 +220,21 @@ const App: React.FC = () => {
       return undefined;
     }
 
+    if (!isMobile) {
+      installPromptRef.current = null;
+      setCanInstallApp(false);
+      if (installToastIdRef.current) {
+        dismissToast(installToastIdRef.current);
+        installToastIdRef.current = null;
+      }
+    }
+
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
+      if (!isMobile) {
+        return;
+      }
+
       installPromptRef.current = event as InstallPromptEvent;
       setCanInstallApp(true);
 
@@ -264,10 +277,12 @@ const App: React.FC = () => {
         dismissToast(installToastIdRef.current);
         installToastIdRef.current = null;
       }
-      showToast({
-        type: 'success',
-        message: 'Electron is installed and ready to launch like an app.',
-      });
+      if (isMobile) {
+        showToast({
+          type: 'success',
+          message: 'Electron is installed and ready to launch like an app.',
+        });
+      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -276,7 +291,7 @@ const App: React.FC = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleInstalled);
     };
-  }, [dismissToast, showToast]);
+  }, [dismissToast, isMobile, showToast]);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) {
