@@ -1337,7 +1337,11 @@ export const createReadHandler =
       let warning: string | undefined;
 
       try {
-        const stored = await readScopeStoredData(scope);
+        // Always bypass the gist snapshot cache so GET returns the same version the
+        // mutate handler uses (mutate already bypasses). Otherwise a 30s cached gist
+        // can lag behind fresh reads on POST and clients send a stale baseVersion,
+        // which breaks sync (409 / blocked outbox), especially for strictVersion scopes.
+        const stored = await readScopeStoredData(scope, { bypassCache: true });
         clientData = stored.clientData;
         version = stored.version;
         if (!isGistConfigured()) {
