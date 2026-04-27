@@ -109,7 +109,6 @@ interface ScopeDefinition<
   parse: (content: string | null) => TStored;
   serialize: (value: TStored) => string;
   toClient: (value: TStored) => TClient;
-  strictVersion?: boolean;
   allowAnonymousMutation?: (op: string, payload: unknown) => boolean;
   mutate?: (
     current: TStored,
@@ -917,7 +916,6 @@ const scopes: {
     parse: parseQuiz,
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['quiz'],
-    strictVersion: true,
     mutate: (_current, op, payload) => {
       if (op !== 'replace_quiz') {
         return { ok: false, conflict: `Unsupported quiz operation: ${op}` };
@@ -940,7 +938,6 @@ const scopes: {
     parse: parseMatchmaker,
     serialize: (value) => (value ? JSON.stringify(value, null, 2) : ''),
     toClient: (value) => value as StateScopeDataMap['matchmaker'],
-    strictVersion: true,
     mutate: (current, op, payload, context) => {
       const game = current as MatchmakerGame | null;
 
@@ -1337,7 +1334,8 @@ export const createReadHandler =
       let warning: string | undefined;
 
       try {
-        const stored = await readScopeStoredData(scope);
+        // Bypass gist snapshot cache so GET version matches mutate (which bypasses).
+        const stored = await readScopeStoredData(scope, { bypassCache: true });
         clientData = stored.clientData;
         version = stored.version;
         if (!isGistConfigured()) {
@@ -1430,16 +1428,10 @@ export const createMutateHandler =
       }
 
       const latest = await readScopeStoredData(scope, { bypassCache: true });
-      const isVersionMismatch =
-        normalizeEtag(mutation.baseVersion) !== normalizeEtag(latest.version);
 
-      if (isVersionMismatch && definition.strictVersion) {
-        return conflictResponse({
-          currentData: latest.clientData,
-          currentVersion: latest.version,
-          conflict: 'State changed remotely. Refresh and retry.',
-        });
-      }
+      // Apply mutations against the latest gist snapshot (last-writer-wins). We do not
+      // reject writes when baseVersion lags: two devices can race; the in-flight op is
+      // validated and merged on current server state instead of forcing a 409 refresh.
 
       const result = definition.mutate(latest.stored, mutation.op, mutation.payload, {
         currentUser,
