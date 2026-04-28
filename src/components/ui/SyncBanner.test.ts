@@ -53,13 +53,13 @@ test('getSyncBannerContent', async (t) => {
     assert.ok(content.whatToDo.length > 0);
   });
 
-  await t.test('classifies GitHub API warnings', () => {
+  await t.test('classifies Upstash API warnings', () => {
     const content = getSyncBannerContent({
       isBlocked: false,
-      label: 'GitHub rejected the Gist read (401/403). Check GITHUB_TOKEN has access to this Gist (required for private Gists).',
+      label: 'Upstash rejected the request (401/403). Check UPSTASH_REDIS_REST_TOKEN matches your database token.',
     });
 
-    assert.ok(content.debugHints.some((h) => /GitHub API/i.test(h)));
-    assert.ok(/token|permission/i.test(content.whatToDo));
+    assert.ok(content.debugHints.some((h) => /Upstash Redis REST/i.test(h)));
+    assert.ok(/token|read-write/i.test(content.whatToDo));
   });
 });

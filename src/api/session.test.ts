@@ -1,83 +1,53 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
+import { invalidateSharedStateCache } from '../../api/_lib/sharedStateStore.ts';
 import { hashPin } from '../../api/_lib/session.ts';
 import profileHandler, {
   computeNextPinAttemptState,
   profilePinRateLimitConfig,
 } from '../../api/session/profile.ts';
 import sessionHandler from '../../api/session.ts';
+import { createUpstashMemoryMock } from './test/upstashMock.ts';
 
-const withUnsetGistId = async (run: () => Promise<void>) => {
-  const previousGistId = process.env.GIST_ID;
-  delete process.env.GIST_ID;
-  invalidateGistCache();
+const withUnsetUpstash = async (run: () => Promise<void>) => {
+  const previousUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const previousToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+  invalidateSharedStateCache();
 
   try {
     await run();
   } finally {
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
+    if (typeof previousUrl === 'string') {
+      process.env.UPSTASH_REDIS_REST_URL = previousUrl;
     } else {
-      delete process.env.GIST_ID;
+      delete process.env.UPSTASH_REDIS_REST_URL;
     }
-    invalidateGistCache();
+    if (typeof previousToken === 'string') {
+      process.env.UPSTASH_REDIS_REST_TOKEN = previousToken;
+    } else {
+      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    }
+    invalidateSharedStateCache();
   }
 };
 
-const withPinsStore = async (
-  pins: Record<string, string>,
-  run: () => Promise<void>
-) => {
-  const previousGistId = process.env.GIST_ID;
-  const previousGitHubToken = process.env.GITHUB_TOKEN;
-  const originalFetch = globalThis.fetch;
-
-  process.env.GIST_ID = 'test-gist-id';
-  process.env.GITHUB_TOKEN = 'ghp_testToken';
-  invalidateGistCache();
-
-  globalThis.fetch = (async () =>
-    new Response(
-      JSON.stringify({
-        files: {
-          'pins.json': {
-            content: JSON.stringify(pins),
-          },
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    )) as typeof fetch;
+const withPinsStore = async (pins: Record<string, string>, run: () => Promise<void>) => {
+  const mock = createUpstashMemoryMock({
+    'pins.json': JSON.stringify(pins),
+  });
 
   try {
     await run();
   } finally {
-    globalThis.fetch = originalFetch;
-
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
-    } else {
-      delete process.env.GIST_ID;
-    }
-
-    if (typeof previousGitHubToken === 'string') {
-      process.env.GITHUB_TOKEN = previousGitHubToken;
-    } else {
-      delete process.env.GITHUB_TOKEN;
-    }
-
-    invalidateGistCache();
+    mock.dispose();
   }
 };
 
 test('session endpoint reports missing PIN coverage when the shared pin store is unavailable', async () => {
-  await withUnsetGistId(async () => {
+  await withUnsetUpstash(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
 
@@ -98,7 +68,7 @@ test('session endpoint reports missing PIN coverage when the shared pin store is
 });
 
 test('profile endpoint allows selecting a user while reporting missing PIN coverage', async () => {
-  await withUnsetGistId(async () => {
+  await withUnsetUpstash(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
 
