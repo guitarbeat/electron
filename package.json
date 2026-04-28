@@ -14,7 +14,7 @@
     "preview": "vite preview",
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test src/**/*.test.ts",
+    "test": "node scripts/run-node-tests.mjs",
     "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build",
     "post-merge": "scripts/post-merge.bat"
   },
