@@ -11,7 +11,6 @@ import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon } from '@/common/Icons';
-import WorkspaceSummary from '@/components/ui/WorkspaceSummary';
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
@@ -76,11 +75,6 @@ const MoviesTopControls = React.forwardRef<
   MoviesTopControlsProps
 >(({
   currentUser,
-  upNextCount,
-  watchedCount,
-  noteCount,
-  latestNoteMovieTitle,
-  latestNoteAuthor,
   searchQuery,
   setSearchQuery,
   selectedAutocompleteResult,
@@ -125,35 +119,6 @@ const MoviesTopControls = React.forwardRef<
   const isGuest = !currentUser;
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to movies';
-  const headline = useMemo(() => {
-    if (upNextCount === 0 && watchedCount === 0) {
-      return 'Start the list';
-    }
-
-    if (upNextCount > 0) {
-      return `${upNextCount} title${upNextCount === 1 ? '' : 's'} up next`;
-    }
-
-    return `${watchedCount} watched together`;
-  }, [upNextCount, watchedCount]);
-  const lead = useMemo(() => {
-    if (latestNoteMovieTitle && latestNoteAuthor) {
-      return `Latest note: ${latestNoteMovieTitle} by ${latestNoteAuthor}.`;
-    }
-
-    if (noteCount > 0) {
-      return `${noteCount} shared note${noteCount === 1 ? '' : 's'} saved.`;
-    }
-
-    return 'Add the next title.';
-  }, [latestNoteAuthor, latestNoteMovieTitle, noteCount]);
-  const stats = useMemo(
-    () => [
-      { label: 'Up Next', value: upNextCount },
-      { label: 'Watched', value: watchedCount },
-    ],
-    [upNextCount, watchedCount]
-  );
 
   useImperativeHandle(
     forwardedRef,
@@ -368,15 +333,6 @@ const MoviesTopControls = React.forwardRef<
   return (
     <section className="workspace-control-panel watchlist-top-controls">
       <div className="watchlist-top-controls__stage">
-        <div className="watchlist-top-controls__intro">
-          <WorkspaceSummary
-            eyebrow="Movies"
-            title={headline}
-            lead={lead}
-            stats={stats}
-          />
-        </div>
-
         <div
           className={`watchlist-top-controls__input-block${
             isAutocompleteElevated ? ' is-autocomplete-active' : ''

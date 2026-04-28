@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon, Spinner } from '@/common/Icons';
-import WorkspaceSummary from '@/components/ui/WorkspaceSummary';
 
 interface PlacesTopControlsProps {
   queueCount: number;
@@ -18,9 +17,6 @@ interface PlacesTopControlsProps {
 }
 
 const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
-  queueCount,
-  visitedCount,
-  pinnedCount,
   searchQuery,
   setSearchQuery,
   onSubmit,
@@ -35,34 +31,10 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   const hasQuery = searchQuery.trim().length > 0;
   const showAddAction = hasQuery && canEdit;
   const showSuggestAction = hasQuery && Boolean(onSuggest);
-  const title =
-    queueCount === 0 && visitedCount === 0
-      ? 'Start the list'
-      : queueCount > 0
-        ? `${queueCount} place${queueCount === 1 ? '' : 's'} to try`
-        : `${visitedCount} place${visitedCount === 1 ? '' : 's'} visited`;
-  const lead =
-    pinnedCount > 0
-      ? `${pinnedCount} place${pinnedCount === 1 ? '' : 's'} pinned on the map.`
-      : 'Add the next place.';
-  const stats = [
-    { label: 'Queue', value: queueCount },
-    { label: 'Visited', value: visitedCount },
-    { label: 'Pinned', value: pinnedCount },
-  ];
 
   return (
     <section className="workspace-control-panel watchlist-top-controls">
       <div className="watchlist-top-controls__stage">
-        <div className="watchlist-top-controls__intro">
-          <WorkspaceSummary
-            eyebrow="Places"
-            title={title}
-            lead={lead}
-            stats={stats}
-          />
-        </div>
-
         <div className="watchlist-top-controls__input-block">
           <div className="watchlist-top-controls__toolbar">
             <form

@@ -5029,7 +5029,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.27.4
       '@esbuild/win32-ia32': 0.27.4
       '@esbuild/win32-x64': 0.27.4
-    optional: true
 
   escalade@3.2.0: {}
 
@@ -6580,7 +6579,7 @@ snapshots:
 
   tsx@4.21.0:
     dependencies:
-      esbuild: 0.27.0
+      esbuild: 0.27.4
       get-tsconfig: 4.14.0
     optionalDependencies:
       fsevents: 2.3.3
