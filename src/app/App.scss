@@ -9196,6 +9196,46 @@ body.grabbing * {
   text-transform: var(--type-badge-transform);
 }
 
+.workspace-card-rail--glass {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.workspace-card-rail__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: rgba(18, 12, 7, 0.45);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(193, 154, 96, 0.18);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 248, 230, 0.08);
+}
+
+.workspace-card-rail__side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+}
+
+.workspace-card-rail__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .workspace-card-actions {
   display: flex;
   flex-direction: column;

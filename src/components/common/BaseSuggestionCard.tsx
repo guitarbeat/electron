@@ -9,6 +9,7 @@ import {
   MediaCardPosterWrap,
   MediaCardTitle,
 } from '@/ui/MediaCard';
+import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 
 export interface BaseSuggestionCardProps {
   suggestedBy: string;
@@ -75,33 +76,28 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
               {details}
             </MediaCardInfo>
           </MediaCardOverlay>
+          <CardActionRail
+            variant="glass"
+            primary={
+              <CardActionButton
+                isCircle
+                variant="primary"
+                onClick={onAccept}
+                disabled={actionsDisabled}
+                leftIcon={<CheckIcon />}
+              />
+            }
+            cluster={
+              <CardActionButton
+                isCircle
+                variant="glass"
+                onClick={onReject}
+                disabled={actionsDisabled}
+                leftIcon={<CrossIcon />}
+              />
+            }
+          />
         </MediaCardPosterWrap>
-
-        <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.sm, flex: 1 }}>
-          <div style={{ display: 'flex', gap: spacing.xs, marginTop: 'auto', paddingTop: spacing.xs }}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onAccept}
-              isLoading={isProcessing}
-              disabled={actionsDisabled}
-              className="suggestion-item-card__button is-accept"
-              style={{ flex: 1 }}
-            >
-              <CheckIcon style={{ width: 14, height: 14 }} />
-              <span>Add</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onReject}
-              disabled={actionsDisabled}
-              className="suggestion-item-card__button is-reject"
-            >
-              <CrossIcon style={{ width: 14, height: 14 }} />
-            </Button>
-          </div>
-        </div>
 
         {isProcessing && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(1px)', zIndex: 1 }} />

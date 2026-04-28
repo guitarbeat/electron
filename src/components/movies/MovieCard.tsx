@@ -13,7 +13,7 @@ import {
 } from '@/ui/MediaCard';
 import Button from '@/ui/Button';
 import { colors } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
+import { CheckIcon, EditIcon, EyeIcon, NoteIcon, PlusIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
@@ -191,12 +191,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
               />
             </MediaCardInfo>
           </MediaCardOverlay>
-        </MediaCardPosterWrap>
 
-        {actionState.showActionRail ? (
-          <div
-            className={`movie-item-action-rail ${actionState.isGuest ? 'movie-item-action-rail--guest' : ''}`.trim()}
-          >
+          {actionState.showActionRail && (
             <MovieActions
               movie={movie}
               actionState={actionState}
@@ -205,8 +201,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
               onToggleNotes={handleOpenDetails}
               onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
             />
-          </div>
-        ) : null}
+          )}
+        </MediaCardPosterWrap>
       </Card>
 
       {onRename ? (
@@ -306,78 +302,50 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   return (
     <CardActionRail
       className="movie-actions"
+      variant="glass"
       primary={
         actionState.showWatchedAction && (
-          <Button
-            type="button"
+          <CardActionButton
+            isCircle
+            variant="primary"
             onClick={handlePrimaryAction}
-            variant={actionState.watchedByCurrentUser ? 'primary' : 'secondary'}
-            size="sm"
-            isLoading={isUpdating}
-            loadingText="Updating..."
             aria-pressed={actionState.watchedByCurrentUser}
             aria-label={actionState.primaryActionAriaLabel ?? undefined}
-            className={`workspace-card-action workspace-card-action--primary movie-item-primary-action ${
+            leftIcon={actionState.watchedByCurrentUser ? <CheckIcon /> : <EyeIcon />}
+            disabled={isUpdating}
+            className={`movie-item-primary-action ${
               actionState.watchedByCurrentUser
                 ? 'movie-item-primary-action--watched'
                 : 'movie-item-primary-action--unwatched'
             }`}
-          >
-            {actionState.watchedByCurrentUser ? (
-              <CheckIcon style={{ width: '15px' }} />
-            ) : (
-              <EyeIcon style={{ width: '15px' }} />
-            )}
-            <span className="movie-item-primary-action-label">
-              <span className="movie-item-primary-action-label--long">
-                {actionState.primaryActionLabel}
-              </span>
-              <span className="movie-item-primary-action-label--short" aria-hidden>
-                {actionState.primaryActionCompactLabel}
-              </span>
-            </span>
-          </Button>
+          />
         )
       }
       secondary={
         actionState.showNotesAction && (
           <CardActionButton
-            isExpansive
+            isCircle
+            variant="glass"
             onClick={handleToggleNotes}
-            leftIcon={<NoteIcon className="movie-item-note-action__icon" style={{ width: '15px', height: '15px' }} />}
+            leftIcon={<PlusIcon />}
             aria-label={actionState.notesButtonAriaLabel ?? undefined}
             disabled={isUpdating}
-            className="movie-item-memory-toggle movie-item-note-action"
-          >
-             <span className="movie-item-note-action__label">
-              <span className="movie-item-note-action__label--long">
-                {actionState.notesButtonLabel}
-              </span>
-              <span className="movie-item-note-action__label--short" aria-hidden>
-                {actionState.notesButtonCompactLabel}
-              </span>
-            </span>
-            {actionState.notesBadgeText ? (
-              <span className="movie-item-note-action__count" aria-hidden>
-                {actionState.notesBadgeText}
-              </span>
-            ) : null}
-          </CardActionButton>
+            className="movie-item-note-action"
+          />
         )
       }
       cluster={
         !actionState.isGuest && onEdit && (
           <CardActionButton
-            isCompact
+            isCircle
+            variant="glass"
             onClick={handleEditAction}
             title={`Edit title for "${movie.title}"`}
             aria-label={`Edit title for "${movie.title}"`}
-            leftIcon={<EditIcon style={{ width: '15px', height: '15px' }} />}
+            leftIcon={<EditIcon />}
             disabled={isUpdating}
             className="movie-icon-action--edit"
-          >
-            Edit
-          </CardActionButton>
+          />
         )
       }
     />
