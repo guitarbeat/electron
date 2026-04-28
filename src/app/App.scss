@@ -7253,6 +7253,21 @@ body.grabbing * {
   -webkit-backdrop-filter: blur(12px) saturate(145%);
 }
 
+.watchlist-top-controls__search-form--stack {
+  gap: 0.85rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(212, 177, 115, 0.14);
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.watchlist-top-controls__search-form--stack.is-autocomplete-active {
+  position: relative;
+  z-index: 300;
+}
+
 .watchlist-top-controls__search-form:focus-within {
   border-color: color-mix(in srgb, var(--color-accent) 72%, transparent);
   box-shadow:
@@ -7295,6 +7310,11 @@ body.grabbing * {
 
 /* Lift the whole input block above the movie grid when the dropdown is active */
 .watchlist-top-controls__input-block:focus-within {
+  position: relative;
+  z-index: 300;
+}
+
+.watchlist-top-controls__search-form--stack:focus-within {
   position: relative;
   z-index: 300;
 }
@@ -13218,15 +13238,6 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   letter-spacing: 0.14em;
 }
 
-.app-workspace-stack--movies .watchlist-top-controls__input-block {
-  gap: 0.85rem;
-  padding-top: 0.8rem;
-  border-top: 1px solid rgba(212, 177, 115, 0.14);
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-
 .app-workspace-stack--movies .watchlist-top-controls__search-form {
   width: 100%;
   max-width: 100%;
@@ -13239,7 +13250,7 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   max-width: 100%;
 }
 
-.app-workspace-stack--movies .watchlist-top-controls__toolbar,
+.app-workspace-stack--movies .watchlist-top-controls__search-form--stack,
 .app-workspace-stack--movies .watchlist-top-controls__search-shell,
 .app-workspace-stack--movies .watchlist-top-controls__search-shell .ui-input {
   width: 100%;
@@ -13333,13 +13344,14 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   align-items: end;
   padding: 1rem 1.05rem 0.95rem;
   border-radius: 1.2rem;
-  border: 1px solid rgba(193, 154, 96, 0.22);
-  background:
-    radial-gradient(circle at top left, rgba(255, 231, 192, 0.18) 0%, transparent 34%),
-    linear-gradient(145deg, rgba(84, 59, 36, 0.78) 0%, rgba(34, 24, 15, 0.92) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 244, 219, 0.08),
-    0 14px 26px rgba(15, 10, 6, 0.16);
+  border-width: 0;
+  border-color: rgba(0, 0, 0, 0);
+  border-style: none;
+  border-image: none;
+  box-shadow: none;
+  background: unset;
+  background-color: unset;
+  background-image: none;
 }
 
 .workspace-summary__copy {
