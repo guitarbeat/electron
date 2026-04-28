@@ -36,10 +36,10 @@ const Skeleton: React.FC<SkeletonProps> = ({
       borderRadius: radius.md,
     },
     poster: {
-      width: width || '70px',
-      height: height || '105px',
-      borderRadius: radius.md,
+      width: width || '100%',
+      height: height || 'auto',
       aspectRatio: '2/3',
+      borderRadius: `${radius.md} ${radius.md} 0 0`,
     },
   };
 
@@ -47,25 +47,15 @@ const Skeleton: React.FC<SkeletonProps> = ({
     <div
       className={`skeleton ${className}`}
       style={{
-        backgroundColor: colors.surfaceElevated,
-        backgroundImage: `linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent)`,
+        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+        backgroundImage: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent)',
         backgroundSize: '200% 100%',
-        boxShadow: `inset 0 0 20px ${colors.accent}05`,
-        animation: `skeleton-shimmer 2s infinite linear`,
+        animation: 'skeleton-shimmer 2.2s infinite ease-in-out',
         ...variantStyles[variant],
         ...style,
       }}
       aria-hidden="true"
-    >
-      <style>
-        {`
-          @keyframes skeleton-shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-          }
-        `}
-      </style>
-    </div>
+    />
   );
 };
 
@@ -75,17 +65,30 @@ const Skeleton: React.FC<SkeletonProps> = ({
 export const MovieCardSkeleton: React.FC = () => (
   <div
     style={{
-      borderRadius: radius.card,
+      borderRadius: '1rem',
       overflow: 'hidden',
-      backgroundColor: colors.surface1,
-      border: `1px solid ${colors.borderSubtle}`,
-      boxShadow: shadows.card,
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      aspectRatio: '2/3',
+      position: 'relative',
     }}
   >
-    <Skeleton variant="poster" width="100%" height="auto" style={{ aspectRatio: '2/3' }} />
-    <div style={{ padding: spacing.sm }}>
-      <Skeleton variant="text" width="80%" style={{ marginBottom: spacing.xs }} />
-      <Skeleton variant="text" width="40%" height="0.75em" />
+    <Skeleton variant="poster" width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} />
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '1.25rem',
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.6rem',
+      }}
+    >
+      <Skeleton variant="text" width="85%" height="1.1rem" />
+      <Skeleton variant="text" width="50%" height="0.7rem" />
     </div>
   </div>
 );

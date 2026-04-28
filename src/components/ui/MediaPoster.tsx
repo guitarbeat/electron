@@ -20,10 +20,12 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   const [hasImageError, setHasImageError] = React.useState(() =>
     posterUrl ? brokenUrls.has(posterUrl) : false
   );
+  const [isLoaded, setIsLoaded] = React.useState(false);
   const [hasCatError, setHasCatError] = React.useState(false);
 
   React.useEffect(() => {
     setHasImageError(posterUrl ? brokenUrls.has(posterUrl) : false);
+    setIsLoaded(false);
     setHasCatError(false);
   }, [posterUrl]);
 
@@ -32,19 +34,25 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       brokenUrls.add(posterUrl);
     }
     setHasImageError(true);
+    setIsLoaded(true);
   };
 
   const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
   const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(id || title || 'cat')}`;
 
   return (
-    <div className={`movie-poster-wrap ${className}`}>
+    <div className={`movie-poster-wrap ${className} ${isLoaded ? 'is-loaded' : 'is-loading'}`}>
+      {!isLoaded && shouldShowPoster && (
+        <div className="movie-poster-skeleton skeleton" />
+      )}
+      
       {shouldShowPoster ? (
         <img
           src={posterUrl}
           alt={`${title} poster`}
           loading="lazy"
-          className="movie-poster"
+          className={`movie-poster ${isLoaded ? 'is-loaded' : ''}`}
+          onLoad={() => setIsLoaded(true)}
           onError={handleImageError}
         />
       ) : !hasCatError ? (
@@ -53,8 +61,12 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
             src={catUrl}
             alt={`A cat representing ${title}`}
             loading="lazy"
-            className="movie-poster movie-poster--cat-fallback"
-            onError={() => setHasCatError(true)}
+            className={`movie-poster movie-poster--cat-fallback ${isLoaded ? 'is-loaded' : ''}`}
+            onLoad={() => setIsLoaded(true)}
+            onError={() => {
+              setHasCatError(true);
+              setIsLoaded(true);
+            }}
           />
           <div className="movie-poster-cat-title" aria-hidden="true">
             {title}
