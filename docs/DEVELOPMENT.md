@@ -40,19 +40,20 @@ Command behavior:
 ## App and API Workflow
 
 - There is no separate local backend process. `vite.config.ts` mounts a custom middleware that executes `api/*.ts` for `/api/*` requests during local development.
-- Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and Gist persistence in `api/_lib/gistStore.ts`.
+- Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and shared persistence in `api/_lib/sharedStateStore.ts` (Upstash Redis REST).
 - Profile selection and PIN login are handled through signed cookies in `api/session.ts`, `api/session/profile.ts`, and `api/_lib/session.ts`.
 - `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
 - In development, `src/services/metadataService.ts` defaults metadata reads to the local `/api/omdb` and `/api/tvmaze` proxies. Set `VITE_OMDB_API_URL` or `VITE_TVMAZE_API_URL` only when intentionally bypassing those proxies.
 - Watchlist autocomplete tries OMDb movie search first, then falls back to TVMaze show search when OMDb has no usable match.
-- In local Vite development, `VITE_GIST_ID` is accepted as a fallback when `GIST_ID` is not set.
-- If Gist configuration is missing or GitHub write auth is unavailable, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
+- In local Vite development, `VITE_UPSTASH_REDIS_REST_URL` and `VITE_UPSTASH_REDIS_REST_TOKEN` are accepted as fallbacks when the non-`VITE_` variables are not set.
+- If Upstash configuration is missing, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
 
 ## Environment Variables
 
 Client-side variables used by the app:
 
-- `VITE_GIST_ID`
+- `VITE_UPSTASH_REDIS_REST_URL`
+- `VITE_UPSTASH_REDIS_REST_TOKEN`
 - `VITE_OMDB_API_URL`
 - `VITE_OMDB_API_KEY` only when `VITE_OMDB_API_URL` points directly to OMDb
 - `VITE_TVMAZE_API_URL`
@@ -60,8 +61,9 @@ Client-side variables used by the app:
 
 Server-side variables used by deployed handlers:
 
-- `GIST_ID`
-- `GITHUB_TOKEN`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `UPSTASH_STATE_KEY_PREFIX` (optional; default `app:state:`)
 - `SESSION_SIGNING_SECRET`
 - `OMDB_API_URL`
 - `OMDB_API_KEY` for the default `/api/omdb` proxy path
@@ -71,8 +73,6 @@ Server-side variables used by deployed handlers:
 Notes:
 
 - `SESSION_SIGNING_SECRET` should be set in any stable shared environment. If it is missing, the server falls back to an ephemeral in-process secret and profile sessions will not survive restarts.
-- `GITHUB_PERSONAL_ACCESS_TOKEN` and `GH_TOKEN` are also accepted as GitHub token fallbacks, but `GITHUB_TOKEN` is the primary supported variable.
-
 ## Validation Expectations
 
 - Add or update `*.test.ts` files when changing service logic, state helpers, or utility behavior.
@@ -87,17 +87,17 @@ Notes:
 - `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
 - Canonical Vercel project for this repo: `guitarbeats-projects / electra-and-aaron-movies`  
   Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`
-- Set the same server env vars as in [Environment Variables](#environment-variables) (`GIST_ID`, `GITHUB_TOKEN`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
+- Set the same server env vars as in [Environment Variables](#environment-variables) (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
 - If a local checkout is missing `.vercel/project.json`, run `vercel link --project electra-and-aaron-movies` before using `vercel env pull`.
 
-**Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling GitHub (use for frequent uptime pings). `GET /api/health?deep=1` performs a cached gist read via `movielist.json` to verify `GIST_ID` and GitHub reachability; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
+**Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling Redis (use for frequent uptime pings). `GET /api/health?deep=1` lists Redis keys and reads PIN coverage; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
 
 **Monitoring:** Use Vercel’s function logs and error rates for `/api/state/*` and related handlers; alert on spikes in 5xx or latency. External uptime tools can target `/api/health` (liveness) and optionally `?deep=1` on a longer interval.
 
 ### Netlify (static build only until `/api` is wired)
 
 - `netlify.toml` runs `npm run build` and publishes `dist/`. The SPA fallback `/* → /index.html` matches Vercel’s client routing.
-- **`/api/*` is not the repo handlers today**: redirects send `/api/*` to `https://your-backend-host.example.com/api/:splat` (placeholder). Gist sync, OMDb proxy, and state routes will **not** work until you either:
+- **`/api/*` is not the repo handlers today**: redirects send `/api/*` to `https://your-backend-host.example.com/api/:splat` (placeholder). Shared state sync, OMDb proxy, and state routes will **not** work until you either:
   - Point that redirect at a real deployment that implements the same routes as `api/*.ts`, or
   - Replace it with [Netlify Functions](https://docs.netlify.com/functions/overview/) (or Edge Functions) that mirror those handlers, or
   - Host the static app on Netlify but configure the client to call a separate API origin (and update CORS / `ALLOWED_ORIGINS` as needed).
