@@ -2,26 +2,34 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { getScopeWarning } from '../../api/_lib/state.ts';
-import { invalidateGistCache } from '../../api/_lib/gistStore.ts';
+import { invalidateSharedStateCache } from '../../api/_lib/sharedStateStore.ts';
 import { buildProfileCookie } from '../../api/_lib/session.ts';
+import { createUpstashMemoryMock } from './test/upstashMock.ts';
 import mutateHandler from '../../api/state/[scope]/mutate.ts';
 import readHandler from '../../api/state/[scope].ts';
 import type { Movie, MovieSuggestion, PlaceSuggestion, SharedMemory } from '../shared/types.ts';
 
-const withUnsetGistId = async (run: () => Promise<void>) => {
-  const previousGistId = process.env.GIST_ID;
-  delete process.env.GIST_ID;
-  invalidateGistCache();
+const withUnsetUpstash = async (run: () => Promise<void>) => {
+  const previousUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const previousToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+  invalidateSharedStateCache();
 
   try {
     await run();
   } finally {
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
+    if (typeof previousUrl === 'string') {
+      process.env.UPSTASH_REDIS_REST_URL = previousUrl;
     } else {
-      delete process.env.GIST_ID;
+      delete process.env.UPSTASH_REDIS_REST_URL;
     }
-    invalidateGistCache();
+    if (typeof previousToken === 'string') {
+      process.env.UPSTASH_REDIS_REST_TOKEN = previousToken;
+    } else {
+      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    }
+    invalidateSharedStateCache();
   }
 };
 
@@ -29,85 +37,17 @@ const withMovieStore = async (
   seedMovies: Movie[],
   run: (context: { getMovies: () => Movie[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const previousGistId = process.env.GIST_ID;
-  const previousGitHubToken = process.env.GITHUB_TOKEN;
-  const originalFetch = globalThis.fetch;
-  const patchBodies: unknown[] = [];
-  let movies = [...seedMovies];
-
-  process.env.GIST_ID = 'test-gist-id';
-  process.env.GITHUB_TOKEN = 'ghp_testToken';
-  invalidateGistCache();
-
-  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(String(input), init);
-
-    if (request.method === 'GET') {
-      return new Response(
-        JSON.stringify({
-          files: {
-            'movielist.json': {
-              content: JSON.stringify(movies),
-            },
-          },
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
-    if (request.method === 'PATCH') {
-      const body = JSON.parse(await request.text()) as {
-        files?: Record<string, { content?: string } | undefined>;
-      };
-      patchBodies.push(body);
-
-      const nextContent = body.files?.['movielist.json']?.content;
-      if (typeof nextContent === 'string') {
-        movies = JSON.parse(nextContent) as Movie[];
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }) as typeof fetch;
+  const mock = createUpstashMemoryMock({
+    'movielist.json': JSON.stringify(seedMovies),
+  });
 
   try {
     await run({
-      getMovies: () => movies,
-      patchBodies,
+      getMovies: () => JSON.parse(mock.getFile('movielist.json') ?? '[]') as Movie[],
+      patchBodies: mock.patchBodies,
     });
   } finally {
-    globalThis.fetch = originalFetch;
-
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
-    } else {
-      delete process.env.GIST_ID;
-    }
-
-    if (typeof previousGitHubToken === 'string') {
-      process.env.GITHUB_TOKEN = previousGitHubToken;
-    } else {
-      delete process.env.GITHUB_TOKEN;
-    }
-
-    invalidateGistCache();
+    mock.dispose();
   }
 };
 
@@ -115,85 +55,18 @@ const withSuggestionStore = async (
   seedSuggestions: MovieSuggestion[],
   run: (context: { getSuggestions: () => MovieSuggestion[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const previousGistId = process.env.GIST_ID;
-  const previousGitHubToken = process.env.GITHUB_TOKEN;
-  const originalFetch = globalThis.fetch;
-  const patchBodies: unknown[] = [];
-  let suggestions = [...seedSuggestions];
-
-  process.env.GIST_ID = 'test-gist-id';
-  process.env.GITHUB_TOKEN = 'ghp_testToken';
-  invalidateGistCache();
-
-  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(String(input), init);
-
-    if (request.method === 'GET') {
-      return new Response(
-        JSON.stringify({
-          files: {
-            'suggestions.json': {
-              content: JSON.stringify(suggestions),
-            },
-          },
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
-    if (request.method === 'PATCH') {
-      const body = JSON.parse(await request.text()) as {
-        files?: Record<string, { content?: string } | undefined>;
-      };
-      patchBodies.push(body);
-
-      const nextContent = body.files?.['suggestions.json']?.content;
-      if (typeof nextContent === 'string') {
-        suggestions = JSON.parse(nextContent) as MovieSuggestion[];
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }) as typeof fetch;
+  const mock = createUpstashMemoryMock({
+    'suggestions.json': JSON.stringify(seedSuggestions),
+  });
 
   try {
     await run({
-      getSuggestions: () => suggestions,
-      patchBodies,
+      getSuggestions: () =>
+        JSON.parse(mock.getFile('suggestions.json') ?? '[]') as MovieSuggestion[],
+      patchBodies: mock.patchBodies,
     });
   } finally {
-    globalThis.fetch = originalFetch;
-
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
-    } else {
-      delete process.env.GIST_ID;
-    }
-
-    if (typeof previousGitHubToken === 'string') {
-      process.env.GITHUB_TOKEN = previousGitHubToken;
-    } else {
-      delete process.env.GITHUB_TOKEN;
-    }
-
-    invalidateGistCache();
+    mock.dispose();
   }
 };
 
@@ -201,85 +74,18 @@ const withPlaceSuggestionStore = async (
   seedSuggestions: PlaceSuggestion[],
   run: (context: { getSuggestions: () => PlaceSuggestion[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const previousGistId = process.env.GIST_ID;
-  const previousGitHubToken = process.env.GITHUB_TOKEN;
-  const originalFetch = globalThis.fetch;
-  const patchBodies: unknown[] = [];
-  let suggestions = [...seedSuggestions];
-
-  process.env.GIST_ID = 'test-gist-id';
-  process.env.GITHUB_TOKEN = 'ghp_testToken';
-  invalidateGistCache();
-
-  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(String(input), init);
-
-    if (request.method === 'GET') {
-      return new Response(
-        JSON.stringify({
-          files: {
-            'placesuggestions.json': {
-              content: JSON.stringify(suggestions),
-            },
-          },
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
-    if (request.method === 'PATCH') {
-      const body = JSON.parse(await request.text()) as {
-        files?: Record<string, { content?: string } | undefined>;
-      };
-      patchBodies.push(body);
-
-      const nextContent = body.files?.['placesuggestions.json']?.content;
-      if (typeof nextContent === 'string') {
-        suggestions = JSON.parse(nextContent) as PlaceSuggestion[];
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }) as typeof fetch;
+  const mock = createUpstashMemoryMock({
+    'placesuggestions.json': JSON.stringify(seedSuggestions),
+  });
 
   try {
     await run({
-      getSuggestions: () => suggestions,
-      patchBodies,
+      getSuggestions: () =>
+        JSON.parse(mock.getFile('placesuggestions.json') ?? '[]') as PlaceSuggestion[],
+      patchBodies: mock.patchBodies,
     });
   } finally {
-    globalThis.fetch = originalFetch;
-
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
-    } else {
-      delete process.env.GIST_ID;
-    }
-
-    if (typeof previousGitHubToken === 'string') {
-      process.env.GITHUB_TOKEN = previousGitHubToken;
-    } else {
-      delete process.env.GITHUB_TOKEN;
-    }
-
-    invalidateGistCache();
+    mock.dispose();
   }
 };
 
@@ -287,85 +93,17 @@ const withMemoryStore = async (
   seedMemories: SharedMemory[],
   run: (context: { getMemories: () => SharedMemory[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const previousGistId = process.env.GIST_ID;
-  const previousGitHubToken = process.env.GITHUB_TOKEN;
-  const originalFetch = globalThis.fetch;
-  const patchBodies: unknown[] = [];
-  let memories = [...seedMemories];
-
-  process.env.GIST_ID = 'test-gist-id';
-  process.env.GITHUB_TOKEN = 'ghp_testToken';
-  invalidateGistCache();
-
-  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(String(input), init);
-
-    if (request.method === 'GET') {
-      return new Response(
-        JSON.stringify({
-          files: {
-            'memories.json': {
-              content: JSON.stringify(memories),
-            },
-          },
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
-    if (request.method === 'PATCH') {
-      const body = JSON.parse(await request.text()) as {
-        files?: Record<string, { content?: string } | undefined>;
-      };
-      patchBodies.push(body);
-
-      const nextContent = body.files?.['memories.json']?.content;
-      if (typeof nextContent === 'string') {
-        memories = JSON.parse(nextContent) as SharedMemory[];
-      }
-
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Unsupported method' }), {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }) as typeof fetch;
+  const mock = createUpstashMemoryMock({
+    'memories.json': JSON.stringify(seedMemories),
+  });
 
   try {
     await run({
-      getMemories: () => memories,
-      patchBodies,
+      getMemories: () => JSON.parse(mock.getFile('memories.json') ?? '[]') as SharedMemory[],
+      patchBodies: mock.patchBodies,
     });
   } finally {
-    globalThis.fetch = originalFetch;
-
-    if (typeof previousGistId === 'string') {
-      process.env.GIST_ID = previousGistId;
-    } else {
-      delete process.env.GIST_ID;
-    }
-
-    if (typeof previousGitHubToken === 'string') {
-      process.env.GITHUB_TOKEN = previousGitHubToken;
-    } else {
-      delete process.env.GITHUB_TOKEN;
-    }
-
-    invalidateGistCache();
+    mock.dispose();
   }
 };
 
@@ -391,20 +129,30 @@ test('dynamic state mutate route returns 404 for unknown scopes', async () => {
   assert.match(await response.text(), /not found/i);
 });
 
-test('getScopeWarning maps gist and config errors to user-safe copy', () => {
+test('getScopeWarning maps shared-store and config errors to user-safe copy', () => {
   assert.ok(
-    (getScopeWarning(new Error('GIST_ID is not configured.')) ?? '').includes('VITE_GIST_ID')
+    (getScopeWarning(new Error('UPSTASH_REDIS_REST_URL is not configured.')) ?? '').includes(
+      'VITE_'
+    )
   );
-  assert.ok((getScopeWarning(new Error('Failed to read gist (404).')) ?? '').includes('cannot find'));
-  assert.ok((getScopeWarning(new Error('Failed to read gist (403).')) ?? '').includes('401/403'));
-  assert.ok((getScopeWarning(new Error('Failed to read gist (429).')) ?? '').includes('rate limit'));
-  assert.ok((getScopeWarning(new Error('Failed to update gist (500).')) ?? '').includes('500'));
+  assert.ok(
+    (getScopeWarning(new Error('Failed to read shared state (404).')) ?? '').includes('404')
+  );
+  assert.ok(
+    (getScopeWarning(new Error('Failed to read shared state (403).')) ?? '').includes('401/403')
+  );
+  assert.ok(
+    (getScopeWarning(new Error('Failed to read shared state (429).')) ?? '').includes('rate limit')
+  );
+  assert.ok(
+    (getScopeWarning(new Error('Failed to update shared state (500).')) ?? '').includes('500')
+  );
   assert.ok((getScopeWarning(new Error('unexpected')) ?? '').includes('could not be loaded'));
   assert.equal(getScopeWarning(null), undefined);
 });
 
-test('dynamic state read route falls back to default state when GIST_ID is missing', async () => {
-  await withUnsetGistId(async () => {
+test('dynamic state read route falls back to default state when Upstash URL is missing', async () => {
+  await withUnsetUpstash(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
 
@@ -417,7 +165,7 @@ test('dynamic state read route falls back to default state when GIST_ID is missi
 
       assert.equal(response.status, 200);
       assert.equal(payload.degraded, true);
-      assert.match(payload.warning ?? '', /missing GIST_ID|VITE_GIST_ID/i);
+      assert.match(payload.warning ?? '', /UPSTASH_REDIS_REST_URL|VITE_UPSTASH/i);
     } finally {
       console.warn = originalWarn;
     }

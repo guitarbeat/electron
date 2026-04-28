@@ -95,8 +95,7 @@ packages = ["gh"]
 [userenv]
 
 [userenv.shared]
-GIST_ID = "ba250f944e3e9e71c0d669060254eab2"
-VITE_GIST_ID = "ba250f944e3e9e71c0d669060254eab2"
+# Shared state: set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN (Replit Secrets) for sync.
 VITE_OMDB_API_KEY = "3850ae42"
 OMDB_API_KEY = "3850ae42"
 

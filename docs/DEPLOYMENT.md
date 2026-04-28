@@ -22,9 +22,9 @@ pnpm preview
 
 - **Frontend**: static build from `pnpm build` (`dist/`)
 - **API**: serverless-style handlers in `api/` (e.g. Vercel: `vercel.json` rewrites `/api/*` to those modules)
-- **Shared sync/auth**: `/api/session` plus `/api/state/:scope`, backed by GitHub Gist storage when configured
+- **Shared sync/auth**: `/api/session` plus `/api/state/:scope`, backed by Upstash Redis (REST) when configured
 
-For **static-only** hosting, omit Gist-related env vars; the app falls back to `localStorage`.
+For **static-only** hosting, omit Upstash-related env vars; the app falls back to `localStorage`.
 
 ## Environment variables
 
@@ -32,7 +32,8 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
 
 | Variable | Purpose |
 | --- | --- |
-| `VITE_GIST_ID` | Local Vite-development fallback for the shared Gist id |
+| `VITE_UPSTASH_REDIS_REST_URL` | Local Vite-development fallback for the Upstash REST base URL |
+| `VITE_UPSTASH_REDIS_REST_TOKEN` | Local Vite-development fallback for the Upstash REST token |
 | `VITE_OMDB_API_URL` | Override default `/api/omdb` only when intentionally bypassing the proxy |
 | `VITE_OMDB_API_KEY` | Optional client OMDb key when `VITE_OMDB_API_URL` points directly at OMDb |
 | `VITE_TVMAZE_API_URL` | Override default `/api/tvmaze` or the public TVMaze API |
@@ -42,8 +43,9 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
 
 | Variable | Purpose |
 | --- | --- |
-| `GIST_ID` | Gist id for shared state |
-| `GITHUB_TOKEN` | GitHub token for Gist API writes (`GITHUB_PERSONAL_ACCESS_TOKEN` and `GH_TOKEN` are fallback names) |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis HTTPS REST endpoint |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token (use the standard token for writes; read-only tokens cannot run `KEYS`) |
+| `UPSTASH_STATE_KEY_PREFIX` | Optional Redis key prefix for state blobs (default `app:state:`) |
 | `SESSION_SIGNING_SECRET` | Session cookies and PIN-related auth (`api/_lib/session.ts`) |
 | `OMDB_API_URL` | Base URL for OMDb proxy |
 | `OMDB_API_KEY` | Required OMDb API key for the default `/api/omdb` proxy |
@@ -53,6 +55,10 @@ For **static-only** hosting, omit Gist-related env vars; the app falls back to `
 `SESSION_SIGNING_SECRET` should always be set for deployed/shared environments; otherwise profile cookies fall back to a process-local secret and will be invalidated on restarts.
 
 Watchlist autocomplete uses OMDb movie search first and falls back to TVMaze show search when OMDb has no usable result.
+
+### Migrating from GitHub Gist
+
+Older deployments stored each scope as a file inside one GitHub Gist. This app no longer reads from Gist. To move data over, copy each JSON file’s **content** (not the Gist wrapper) into a Redis string at key `app:state:<filename>` — for example `app:state:movielist.json` — using your Upstash console, `redis-cli`, or a one-off script. Then set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` on the server.
 
 ## Host notes
 
