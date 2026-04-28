@@ -3,6 +3,12 @@ import Card from '@/ui/Card';
 import Button from '@/ui/Button';
 import { colors, spacing, typography } from '@/theme/tokens';
 import { CheckIcon, CrossIcon } from '@/common/Icons';
+import {
+  MediaCardInfo,
+  MediaCardOverlay,
+  MediaCardPosterWrap,
+  MediaCardTitle,
+} from '@/ui/MediaCard';
 
 export interface BaseSuggestionCardProps {
   suggestedBy: string;
@@ -51,24 +57,27 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
           ...style,
         }}
       >
-        {media}
-        
-        <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.sm, flex: 1 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-             <div className="suggestion-item-card__eyebrow" style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
-              Suggested by {suggestedBy}
-            </div>
-            <h3 style={{ margin: 0, ...typography.presets.bodySm, fontWeight: typography.fontWeight.semibold, color: colors.textPrimary }}>
-              {title}
-            </h3>
-            {subtitle && (
-              <p style={{ margin: 0, ...typography.presets.caption, color: colors.textSecondary, fontStyle: 'italic', lineHeight: 1.4 }}>
-                &quot;{subtitle}&quot;
-              </p>
-            )}
-            {details}
-          </div>
+        <MediaCardPosterWrap className="movie-item-poster-wrap">
+          {media}
+          <MediaCardOverlay>
+            <MediaCardInfo>
+              <div className="suggestion-item-card__eyebrow" style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
+                Suggested by {suggestedBy}
+              </div>
+              <MediaCardTitle className="movie-item-title">
+                {title}
+              </MediaCardTitle>
+              {subtitle && (
+                <p style={{ margin: 0, ...typography.presets.caption, color: colors.textSecondary, fontStyle: 'italic', lineHeight: 1.4 }}>
+                  &quot;{subtitle}&quot;
+                </p>
+              )}
+              {details}
+            </MediaCardInfo>
+          </MediaCardOverlay>
+        </MediaCardPosterWrap>
 
+        <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.sm, flex: 1 }}>
           <div style={{ display: 'flex', gap: spacing.xs, marginTop: 'auto', paddingTop: spacing.xs }}>
             <Button
               variant="secondary"

@@ -119,7 +119,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [movies, pendingSuggestions]
   );
   const latestMemory = memories[0] ?? null;
-  const upNextSummaryCount = sections.upNext.length + sections.suggestions.length;
+  const upNextSummaryCount = sections.queue.length + sections.suggestions.length;
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -440,8 +440,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       );
     }
 
-    const isQueueEmpty = sections.upNext.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
-    const isWatchedEmpty = sections.watched.length === 0;
+    const isQueueEmpty = sections.queue.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
+    const isWatchedEmpty = sections.completed.length === 0;
     const isAllEmpty = isQueueEmpty && isWatchedEmpty;
 
     return (
@@ -496,10 +496,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             )}
 
             {/* ── Up Next ── */}
-            {sections.upNext.length > 0 && (
+            {sections.queue.length > 0 && (
               <CollectionSection heading="Up Next">
                 <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
-                  {sections.upNext.map((movie) => (
+                  {sections.queue.map((movie) => (
                     <MovieCard
                       key={movie.id}
                       movie={movie}
@@ -533,9 +533,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             )}
 
             {/* ── Watched ── */}
-            {sections.watched.length > 0 && (
+            {sections.completed.length > 0 && (
               <CollectionSection heading="Watched" tone="completed">
-                {renderMovieGrid(sections.watched, 'No watched movies yet')}
+                {renderMovieGrid(sections.completed, 'No watched movies yet')}
               </CollectionSection>
             )}
           </>
@@ -588,7 +588,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         ref={moviesTopControlsRef}
         currentUser={currentUser}
         upNextCount={upNextSummaryCount}
-        watchedCount={sections.watched.length}
+        watchedCount={sections.completed.length}
         noteCount={memories.length}
         latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
         latestNoteAuthor={latestMemory?.author ?? null}

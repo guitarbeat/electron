@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { CheckIcon, EditIcon, TrashIcon } from '@/common/Icons';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
+import { radius } from '@/theme/tokens';
 import {
-  MediaCardActions,
   MediaCardCover,
   MediaCardInfo,
   MediaCardOverlay,
@@ -14,6 +13,9 @@ import {
 } from '@/ui/MediaCard';
 import { getPlaceMeta } from './lib/placeMeta';
 import WatcherBadge from '@/common/WatcherBadge';
+import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
+import MediaCardMetadata from '@/ui/MediaCardMetadata';
+import Button from '@/ui/Button';
 
 interface PlaceCardProps {
   place: Place;
@@ -120,32 +122,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         />
       )}
 
-      {/* Drag hint badge */}
-      {canEdit && !hasCoords && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            top: spacing.xs,
-            left: spacing.xs,
-            zIndex: 4,
-            background: 'rgba(18,11,6,0.72)',
-            backdropFilter: 'blur(6px)',
-            border: `1px solid ${colors.border}`,
-            borderRadius: radius.sm,
-            padding: '2px 5px',
-            fontSize: '9px',
-            fontFamily: typography.fontFamily.heading.join(', '),
-            letterSpacing: '0.06em',
-            color: colors.textTertiary,
-            pointerEvents: 'none',
-            lineHeight: 1.4,
-          }}
-        >
-          drag to pin
-        </div>
-      )}
-
       <MediaCard
         variant={isVisited ? 'visited' : 'default'}
         className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
@@ -175,71 +151,63 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             <MediaCardInfo className="place-item-info">
               <MediaCardTitle className="place-item-title">{place.name}</MediaCardTitle>
 
-              {/* Category chip — mirrors movie genre chip */}
-              <div className="place-item-meta-row">
-                <span className="place-item-genre-chip">{meta.label}</span>
-                {hasCoords && (
-                  <span className="place-item-coords-chip">
-                    {place.lat!.toFixed(2)}, {place.lng!.toFixed(2)}
-                  </span>
-                )}
-              </div>
+              <MediaCardMetadata
+                items={hasCoords ? [`${place.lat!.toFixed(2)}, ${place.lng!.toFixed(2)}`] : []}
+                chips={[meta.label]}
+                className="place-item-meta-row"
+              />
 
               {place.notes && <MediaCardSubtext className="place-item-notes">{place.notes}</MediaCardSubtext>}
+              
               {/* Added by */}
               {place.addedBy && (
-                <div className="place-item-added-by-badge-wrap">
+                <div className="place-item-added-by-badge-wrap" style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
                   <WatcherBadge user={place.addedBy} size="sm" showLabel />
                 </div>
               )}
             </MediaCardInfo>
 
             {canEdit && (
-              <MediaCardActions className="workspace-card-actions place-item-actions">
-                <div className="workspace-card-actions__row workspace-card-actions__row--primary">
-                  <button
+              <CardActionRail
+                className="place-item-actions"
+                primary={
+                  <Button
                     type="button"
-                    className={`workspace-card-action workspace-card-action--primary place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
+                    variant={isVisited ? 'secondary' : 'primary'}
+                    size="sm"
                     onClick={handleVisitToggle}
-                    disabled={isSubmitting || isActionLoading}
-                    aria-label={
-                      isVisited
-                        ? `Mark ${place.name} as not visited`
-                        : `Mark ${place.name} as visited`
-                    }
+                    isLoading={isActionLoading}
+                    disabled={isSubmitting}
+                    className={`workspace-card-action workspace-card-action--primary place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
                   >
                     <CheckIcon style={{ width: 15, height: 15 }} />
                     <span className="place-item-action-btn__label">
-                      {isActionLoading ? 'Updating…' : isVisited ? 'Visited' : 'Been here'}
+                      {isVisited ? 'Visited' : 'Been here'}
                     </span>
-                  </button>
-                </div>
-                <div className="workspace-card-actions__row workspace-card-actions__row--secondary">
-                  <button
-                    type="button"
-                    className="workspace-card-action workspace-card-action--secondary workspace-card-action--expansive place-item-edit-btn"
+                  </Button>
+                }
+                secondary={
+                  <CardActionButton
+                    isExpansive
                     onClick={handleEdit}
-                    disabled={isSubmitting}
-                    aria-label={`Edit ${place.name}`}
-                    title="Edit place"
+                    leftIcon={<EditIcon style={{ width: 15, height: 15 }} />}
+                    disabled={isSubmitting || isActionLoading}
+                    className="place-item-edit-btn"
                   >
-                    <EditIcon style={{ width: 15, height: 15 }} />
-                    <span className="workspace-card-action__text">Edit</span>
-                  </button>
-                  <div className="workspace-card-actions__cluster place-secondary-actions">
-                    <button
-                      type="button"
-                      className="workspace-card-action workspace-card-action--secondary workspace-card-action--compact place-item-delete-btn"
-                      onClick={handleDelete}
-                      disabled={isSubmitting}
-                      aria-label={`Remove ${place.name}`}
-                      title="Remove place"
-                    >
-                      <TrashIcon style={{ width: 13, height: 13 }} />
-                    </button>
-                  </div>
-                </div>
-              </MediaCardActions>
+                    Edit
+                  </CardActionButton>
+                }
+                cluster={
+                  <CardActionButton
+                    isCompact
+                    onClick={handleDelete}
+                    leftIcon={<TrashIcon style={{ width: 13, height: 13 }} />}
+                    disabled={isSubmitting || isActionLoading}
+                    className="place-item-delete-btn"
+                    title="Remove place"
+                  />
+                }
+              />
             )}
           </MediaCardOverlay>
         </MediaCardPosterWrap>
