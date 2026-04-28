@@ -13054,16 +13054,15 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   width: 100%;
   min-width: 0;
   padding: clamp(1rem, 0.9rem + 0.5vw, 1.4rem);
-  border: 1px solid rgba(192, 149, 94, 0.24);
+  border-width: 0;
+  border-color: transparent;
+  border-style: none;
+  border-image: none;
   border-radius: 1.8rem;
-  background:
-    linear-gradient(180deg, rgba(255, 246, 226, 0.08) 0%, transparent 18%),
-    radial-gradient(circle at 14% 16%, rgba(232, 195, 141, 0.14) 0%, transparent 26%),
-    radial-gradient(circle at 86% 10%, rgba(118, 77, 38, 0.14) 0%, transparent 24%),
-    linear-gradient(145deg, rgba(84, 58, 34, 0.92) 0%, rgba(42, 28, 18, 0.96) 56%, rgba(23, 15, 10, 0.99) 100%);
-  box-shadow:
-    0 28px 54px rgba(12, 8, 5, 0.32),
-    inset 0 1px 0 rgba(255, 250, 239, 0.12);
+  background-color: unset;
+  background: unset;
+  background-image: none;
+  box-shadow: none;
   overflow: hidden;
   isolation: isolate;
 }
