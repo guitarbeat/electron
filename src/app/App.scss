@@ -9372,19 +9372,36 @@ body.grabbing * {
   white-space: nowrap;
 }
 
-.movie-item-action-rail {
+.movie-item-container {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.78rem;
-  background:
-    linear-gradient(180deg, rgba(255, 247, 228, 0.08) 0%, transparent 24%),
-    linear-gradient(180deg, rgba(29, 19, 11, 0.95) 0%, rgba(12, 8, 5, 0.98) 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.movie-item-action-rail--guest {
-  padding-top: 0.72rem;
+.movie-item-info-external {
+  padding: 0 0.1rem;
+}
+
+.movie-item-title-external {
+  margin: 0 0 0.65rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--type-body-family);
+}
+
+.workspace-card-rail-external {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.workspace-card-rail-external__primary,
+.workspace-card-rail-external__secondary {
+  display: flex;
 }
 
 .movie-item-primary-action {
@@ -13670,4 +13687,56 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
     padding-left: 0;
     border-left: none;
   }
+}
+
+/* External Movie Card Actions */
+.workspace-card-action.movie-action-btn--watch {
+  flex-direction: column;
+  background: #ecc94b; /* Gold/Yellow from image */
+  color: #1a1a1a;
+  border: none;
+  min-height: 4.4rem;
+  width: 100%;
+  border-radius: 0.65rem;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.workspace-card-action.workspace-card-action--outline {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  color: #ecc94b;
+  min-height: 4.4rem;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.workspace-card-action.movie-action-btn--watch:hover {
+  background: #f6e05e;
+  transform: translateY(-2px);
+}
+
+.workspace-card-action.workspace-card-action--outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
