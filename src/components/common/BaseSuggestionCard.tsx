@@ -9,12 +9,15 @@ export interface BaseSuggestionCardProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
+  media?: React.ReactNode;
   onAccept: () => void;
   onReject: () => void;
   canRespond?: boolean;
   disableActions?: boolean;
   isProcessing?: boolean;
   details?: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
@@ -22,19 +25,86 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
   title,
   subtitle,
   icon,
+  media,
   onAccept,
   onReject,
   canRespond = true,
   disableActions = false,
   isProcessing = false,
   details,
+  className = '',
+  style,
 }) => {
   const actionsDisabled = isProcessing || disableActions || !canRespond;
+
+  if (media) {
+    return (
+      <Card
+        variant="default"
+        className={`suggestion-item-card suggestion-item-card--media ${className}`.trim()}
+        style={{
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          overflow: 'hidden',
+          ...style,
+        }}
+      >
+        {media}
+        
+        <div style={{ padding: spacing.md, display: 'flex', flexDirection: 'column', gap: spacing.sm, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+             <div className="suggestion-item-card__eyebrow" style={{ ...typography.presets.eyebrow, color: colors.accent, opacity: 0.8 }}>
+              Suggested by {suggestedBy}
+            </div>
+            <h3 style={{ margin: 0, ...typography.presets.bodySm, fontWeight: typography.fontWeight.semibold, color: colors.textPrimary }}>
+              {title}
+            </h3>
+            {subtitle && (
+              <p style={{ margin: 0, ...typography.presets.caption, color: colors.textSecondary, fontStyle: 'italic', lineHeight: 1.4 }}>
+                &quot;{subtitle}&quot;
+              </p>
+            )}
+            {details}
+          </div>
+
+          <div style={{ display: 'flex', gap: spacing.xs, marginTop: 'auto', paddingTop: spacing.xs }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onAccept}
+              isLoading={isProcessing}
+              disabled={actionsDisabled}
+              className="suggestion-item-card__button is-accept"
+              style={{ flex: 1 }}
+            >
+              <CheckIcon style={{ width: 14, height: 14 }} />
+              <span>Add</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onReject}
+              disabled={actionsDisabled}
+              className="suggestion-item-card__button is-reject"
+            >
+              <CrossIcon style={{ width: 14, height: 14 }} />
+            </Button>
+          </div>
+        </div>
+
+        {isProcessing && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(1px)', zIndex: 1 }} />
+        )}
+      </Card>
+    );
+  }
 
   return (
     <Card
       variant="default"
-      className="suggestion-item-card"
+      className={`suggestion-item-card ${className}`.trim()}
       style={{
         padding: spacing.md,
         display: 'flex',
@@ -42,6 +112,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
         gap: spacing.sm,
         position: 'relative',
         overflow: 'hidden',
+        ...style,
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
