@@ -13,7 +13,7 @@ import {
 } from '@/ui/MediaCard';
 import Button from '@/ui/Button';
 import { colors } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, NoteIcon, PlusIcon, PlayIcon, BookmarkIcon, StarIcon } from '@/common/Icons';
+import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
@@ -280,33 +280,39 @@ const MovieActions: React.FC<MovieActionsProps> = ({
             variant="primary"
             onClick={handlePrimaryAction}
             aria-pressed={actionState.watchedByCurrentUser}
-            leftIcon={<PlayIcon />}
+            aria-label={actionState.primaryActionAriaLabel ?? actionState.primaryActionLabel}
+            leftIcon={actionState.watchedByCurrentUser ? <CheckIcon /> : <PlayIcon />}
             className="movie-action-btn--watch"
             disabled={isUpdating}
           >
-            Watch
+            {actionState.primaryActionCompactLabel}
           </CardActionButton>
         )
       }
       secondary={
-        <CardActionButton
-          variant="outline"
-          onClick={handleToggleNotes}
-          leftIcon={<BookmarkIcon />}
-          className="movie-action-btn--bookmark"
-          disabled={isUpdating}
-          aria-label="Bookmark"
-        />
+        actionState.showNotesAction ? (
+          <CardActionButton
+            variant="outline"
+            onClick={handleToggleNotes}
+            leftIcon={<BookmarkIcon />}
+            className="movie-action-btn--bookmark"
+            disabled={isUpdating}
+            aria-label={actionState.notesButtonAriaLabel ?? actionState.notesButtonLabel}
+            title={actionState.notesButtonLabel}
+          />
+        ) : null
       }
       cluster={
-        <CardActionButton
-          variant="outline"
-          onClick={handleEditAction}
-          leftIcon={<StarIcon />}
-          className="movie-action-btn--star"
-          disabled={isUpdating}
-          aria-label="Rate"
-        />
+        onEdit && !actionState.isGuest ? (
+          <CardActionButton
+            variant="outline"
+            onClick={handleEditAction}
+            leftIcon={<EditIcon />}
+            className="movie-action-btn--star"
+            disabled={isUpdating}
+            aria-label={`Edit "${movie.title}"`}
+          />
+        ) : null
       }
     />
   );

@@ -54,7 +54,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   const isDisabled = isLoading || isVerifying;
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
-  const brandLabel = activeTab === 'movies' ? 'Movies' : 'Places';
+  const brandLabel = 'Electron';
   const pwaChip = (() => {
     if (!pwaStatus) {
       return null;
