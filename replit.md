@@ -5,7 +5,7 @@ A React/TypeScript/Vite SPA for Aaron & Electra to plan movie nights and discove
 ## Architecture
 
 - **Frontend**: React 18 + TypeScript + Vite (port 5000)
-- **Backend**: GitHub Gist (data persistence) + OMDB/TVMaze APIs (movie metadata)
+- **Backend**: Upstash Redis REST (shared state) + OMDB/TVMaze APIs (movie metadata)
 - **State**: React context + localStorage fallback
 - **Theme**: Dual-theme system (Movies: pink/blue, Places: peach/mint)
 - **Font**: Papyrus everywhere — both `--font-heading` and `--font-body` CSS vars + all `tokens.ts` fontFamily presets unified to `['Papyrus', 'serif']`
@@ -96,5 +96,5 @@ A focused "Mobile-friendly polish" block at the bottom of `App.scss` covers:
 ## Known Non-Issues
 
 - **WebGL context error**: Moire background effect silently skips WebGL in sandboxed preview iframes (handled by try/catch in `Moire.tsx`)
-- **404 fetch errors**: OMDB/Gist API calls fail without API keys configured — expected in development without env vars
+- **404 fetch errors**: OMDB/Upstash API calls fail without API keys configured — expected in development without env vars
 - **Vite HMR warning** on `PlaceCard.tsx`: Deprecated `getPlaceIcon` export alongside component export prevents fast refresh (pre-existing, full reload instead)

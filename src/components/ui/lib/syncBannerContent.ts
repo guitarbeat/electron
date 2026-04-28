@@ -22,6 +22,12 @@ interface SyncBannerInput {
   label?: string;
 }
 
+const missingUpstashPattern =
+  /UPSTASH_REDIS_REST_URL is not configured|missing UPSTASH|VITE_UPSTASH.*development/i;
+
+const upstashFailurePattern =
+  /UPSTASH_REDIS_REST_TOKEN|Upstash rejected|rate limit|HTTP (401|403|404|429)|could not be (loaded|saved)|Health check could not list Redis keys/i;
+
 const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
   if (isBlocked) {
     return [
@@ -49,31 +55,27 @@ const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
     ];
   }
 
-  if (/GIST_ID is not configured|missing GIST_ID|VITE_GIST_ID.*development/i.test(text)) {
+  if (missingUpstashPattern.test(text)) {
     return [
       'Cause: shared backend is not configured.',
-      'Verify: set GIST_ID (server) or VITE_GIST_ID (local Vite), then restart dev server.',
+      'Verify: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (server), or VITE_* during local Vite, then restart dev server.',
       'State: writes are currently local-only until config is fixed.',
     ];
   }
 
-  if (
-    /GITHUB_TOKEN|GitHub rejected|rate limit|HTTP (401|403|404|429)|cannot find the configured Gist|could not be (loaded|saved) from GitHub/i.test(
-      text
-    )
-  ) {
+  if (upstashFailurePattern.test(text)) {
     return [
-      'Cause: GitHub API rejected the request, the Gist was not found, or rate limits applied.',
-      'Verify: GITHUB_TOKEN has gist access; GIST_ID matches an existing Gist; retry after cooldown.',
-      'State: writes may be local-only until GitHub accepts requests.',
+      'Cause: Upstash Redis REST rejected the request, the endpoint was wrong, or rate limits applied.',
+      'Verify: use the standard (read-write) REST token; URL matches the console HTTPS endpoint; retry after cooldown.',
+      'State: writes may be local-only until Upstash accepts requests.',
     ];
   }
 
-  if (/GitHub|Gist|gist\.github|shared state could not be loaded/i.test(text)) {
+  if (/Upstash|shared state could not be loaded/i.test(text)) {
     return [
-      'Cause: shared state uses a GitHub Gist.',
-      'Verify: environment variables, server logs, and https://www.githubstatus.com.',
-      'State: writes are local-only until Gist reads succeed.',
+      'Cause: shared state uses Upstash Redis over HTTPS.',
+      'Verify: environment variables, server logs, and https://status.upstash.com.',
+      'State: writes are local-only until reads succeed.',
     ];
   }
 
@@ -114,25 +116,21 @@ const buildFriendlyContent = ({ isBlocked, label }: SyncBannerInput): Pick<SyncB
     };
   }
 
-  if (/GIST_ID is not configured|missing GIST_ID|VITE_GIST_ID.*development/i.test(text)) {
+  if (missingUpstashPattern.test(text)) {
     return {
       title: 'Shared backup not set up',
       description: 'The app is running without a shared storage backend.',
       whatItMeans: 'Changes only save on this device and won\'t appear for the other person.',
-      whatToDo: 'Add a GITHUB_TOKEN and GIST_ID to the environment to enable sharing.',
+      whatToDo: 'Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to the environment to enable sharing.',
     };
   }
 
-  if (
-    /GITHUB_TOKEN|GitHub rejected|rate limit|HTTP (401|403|404|429)|cannot find the configured Gist|could not be (loaded|saved) from GitHub/i.test(
-      text
-    )
-  ) {
+  if (upstashFailurePattern.test(text)) {
     return {
       title: 'Shared backup unavailable',
-      description: 'GitHub declined the connection — possibly a token or permission issue.',
+      description: 'The sync service declined the connection — possibly credentials or permissions.',
       whatItMeans: 'Your changes are safe locally. The other person may not see updates yet.',
-      whatToDo: 'Tap Retry sync to try again. If it keeps failing, the GITHUB_TOKEN may need to be refreshed.',
+      whatToDo: 'Tap Retry sync to try again. If it keeps failing, check the Upstash token (read-write, not read-only).',
     };
   }
 
@@ -153,39 +151,36 @@ const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { 
     return [
       header, appCtx, '',
       `Problem: sync conflict — local and remote edits diverged.`,
-      `The app stores shared data (watchlist, messages, etc.) in a GitHub Gist.`,
+      `The app stores shared data (watchlist, messages, etc.) in Upstash Redis.`,
       `Two devices wrote conflicting changes at the same time.`,
       '', `Fix: reload the page, then retry sync.`,
-      '', `Relevant file: api/_lib/gistStore.ts`,
+      '', `Relevant file: api/_lib/sharedStateStore.ts`,
     ].join('\n');
   }
 
-  if (
-    /GITHUB_TOKEN|GitHub rejected|rate limit|HTTP (401|403|404|429)|cannot find the configured Gist|could not be (loaded|saved) from GitHub/i.test(text)
-  ) {
+  if (upstashFailurePattern.test(text)) {
     return [
       header, appCtx, '',
-      `Problem: GitHub Gist sync failed (401/403 — auth or not-found).`,
+      `Problem: Upstash Redis REST sync failed.`,
       `Raw error: ${text}`,
       '',
       `How sync works:`,
-      `  The server reads/writes shared app data to a private GitHub Gist.`,
-      `  api/_lib/gistStore.ts calls api.github.com/gists/{GIST_ID} with a bearer token.`,
+      `  The server reads/writes shared app data via Upstash REST (GET/POST to your Redis URL).`,
+      `  api/_lib/sharedStateStore.ts issues Redis commands with a bearer token.`,
       '',
-      `Required env vars (set in .env.local or Replit Secrets):`,
-      `  GITHUB_TOKEN  — Personal Access Token with the "gist" OAuth scope`,
-      `  GIST_ID       — ID of an existing Gist the token can access`,
+      `Required env vars (set in .env.local or deploy secrets):`,
+      `  UPSTASH_REDIS_REST_URL   — HTTPS REST URL from the Upstash console`,
+      `  UPSTASH_REDIS_REST_TOKEN — standard (read-write) REST token`,
       '',
       `Likely causes:`,
-      `  1. GITHUB_TOKEN is missing, expired, or revoked`,
-      `  2. Token exists but is missing the "gist" permission scope`,
-      `  3. GIST_ID doesn't match a Gist that token can see`,
-      `  4. GitHub rate limit hit — wait ~60 s and retry`,
+      `  1. Token is missing, expired, or is the read-only token (cannot KEYS/SET)`,
+      `  2. REST URL does not match the database`,
+      `  3. Rate limit hit — wait and retry`,
       '',
       `Relevant files:`,
-      `  api/_lib/gistStore.ts  — Gist read/write logic`,
-      `  api/_lib/state.ts      — state scope handlers`,
-      `  .env.local             — where env vars should be defined`,
+      `  api/_lib/sharedStateStore.ts  — Redis read/write logic`,
+      `  api/_lib/state.ts             — state scope handlers`,
+      `  .env.local                    — where env vars should be defined`,
     ].join('\n');
   }
 
@@ -196,7 +191,7 @@ const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { 
       `Raw error: ${text}`,
       '',
       `How sync works:`,
-      `  The React frontend polls GET /api/state/:scope and writes via PATCH.`,
+      `  The React frontend polls GET /api/state/:scope and writes via POST mutate.`,
       `  These are serverless functions in the api/ directory.`,
       '',
       `Likely causes:`,
@@ -205,34 +200,34 @@ const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { 
       `  3. Browser is offline`,
       '',
       `Relevant files:`,
-      `  src/services/stateClient.ts  — fetch calls to /api/state`,
-      `  api/state.ts                 — API route entry point`,
+      `  src/services/state/stateClient.ts  — fetch calls to /api/state`,
+      `  api/state/[scope].ts               — API route entry point`,
     ].join('\n');
   }
 
-  if (/GIST_ID is not configured|missing GIST_ID|VITE_GIST_ID.*development/i.test(text)) {
+  if (missingUpstashPattern.test(text)) {
     return [
       header, appCtx, '',
-      `Problem: GIST_ID env var is missing — shared backend not configured.`,
+      `Problem: Upstash env vars are missing — shared backend not configured.`,
       `Raw error: ${text}`,
       '',
-      `Required env vars (set in .env.local or Replit Secrets):`,
-      `  GITHUB_TOKEN  — Personal Access Token with "gist" scope`,
-      `  GIST_ID       — ID or full URL of an existing GitHub Gist`,
+      `Required env vars (set in .env.local or deploy secrets):`,
+      `  UPSTASH_REDIS_REST_URL   — HTTPS REST URL`,
+      `  UPSTASH_REDIS_REST_TOKEN — standard REST token`,
       '',
       `Without these, all writes are local-only and won't sync to the other person.`,
       '',
-      `Relevant file: api/_lib/gistStore.ts`,
+      `Relevant file: api/_lib/sharedStateStore.ts`,
     ].join('\n');
   }
 
   return [
     header, appCtx, '',
-    `Problem: shared Gist sync failed.`,
+    `Problem: shared Upstash sync failed.`,
     text ? `Raw error: ${text}` : `No additional error detail available.`,
     '',
-    `The app syncs data via a GitHub Gist (api/_lib/gistStore.ts).`,
-    `Check: GITHUB_TOKEN and GIST_ID env vars, server logs, and network requests to /api/state.`,
+    `The app syncs data via Upstash Redis REST (api/_lib/sharedStateStore.ts).`,
+    `Check: UPSTASH_* env vars, server logs, and network requests to /api/state.`,
   ].join('\n');
 };
 

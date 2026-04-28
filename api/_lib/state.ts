@@ -61,12 +61,12 @@ import {
   unauthorizedResponse,
 } from './http.ts';
 import {
-  isGistConfigured,
-  isGitHubTokenConfigured,
-  listGistFiles,
-  patchGistFile,
-  readGistFileRecord,
-} from './gistStore.ts';
+  isSharedStateConfigured,
+  isSharedStateWriteConfigured,
+  listSharedStateFilenames,
+  patchSharedStateFile,
+  readSharedStateFileRecord,
+} from './sharedStateStore.ts';
 import { hashPin, requireProfileUser, hasAccessSession, verifyStoredPin } from './session.ts';
 
 interface MutationContext {
@@ -1123,12 +1123,12 @@ const repairMissingScopeFile = async <TScope extends StateScope>(
   definition: ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]>,
   stored: unknown
 ): Promise<void> => {
-  if (!isGitHubTokenConfigured()) {
+  if (!isSharedStateWriteConfigured()) {
     return;
   }
 
   try {
-    await patchGistFile(definition.filename, definition.serialize(stored));
+    await patchSharedStateFile(definition.filename, definition.serialize(stored));
   } catch (error) {
     console.warn(`Failed to bootstrap missing ${scope} scope file.`, error);
   }
@@ -1145,8 +1145,8 @@ const readScopeStoredData = async <TScope extends StateScope>(
 }> => {
   const definition = getScopeDefinition(scope);
 
-  // In mock mode (no GIST_ID), return default/empty data without errors
-  if (!isGistConfigured()) {
+  // In mock mode (no Upstash URL/token), return default/empty data without errors
+  if (!isSharedStateConfigured()) {
     const stored = definition.parse(null);
     const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
     const version = computeVersion(clientData);
@@ -1158,7 +1158,9 @@ const readScopeStoredData = async <TScope extends StateScope>(
     };
   }
 
-  const file = await readGistFileRecord(definition.filename, options);
+  const file = await readSharedStateFileRecord(definition.filename, {
+    bypassCache: options.bypassCache,
+  });
   const stored = definition.parse(file.content);
 
   if (!file.exists) {
@@ -1189,7 +1191,7 @@ const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
 };
 
 export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics> => {
-  const files = new Set(await listGistFiles());
+  const files = new Set(await listSharedStateFilenames());
 
   return {
     expectedScopes: [...STATE_SCOPES],
@@ -1198,7 +1200,7 @@ export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics>
 };
 
 /**
- * Maps Gist/API errors to user-safe banner copy (no secrets). Exported for tests.
+ * Maps shared-store/API errors to user-safe banner copy (no secrets). Exported for tests.
  */
 export const getScopeWarning = (error: unknown): string | undefined => {
   if (!(error instanceof Error)) {
@@ -1207,55 +1209,66 @@ export const getScopeWarning = (error: unknown): string | undefined => {
 
   const msg = error.message;
 
-  if (msg === 'GIST_ID is not configured.') {
-    return 'Shared sync is unavailable because the server is missing GIST_ID. Set GIST_ID, or VITE_GIST_ID during local Vite development, to load and share data.';
+  if (msg === 'UPSTASH_REDIS_REST_URL is not configured.') {
+    return 'Shared sync is unavailable because the server is missing UPSTASH_REDIS_REST_URL. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or VITE_* during local Vite development), then restart the dev server.';
   }
 
-  if (msg === 'GITHUB_TOKEN is not configured.') {
-    return 'Shared sync cannot write changes: GITHUB_TOKEN is not set on the server. Set a token with gist scope for updates (reads may still work for public Gists).';
+  if (msg === 'UPSTASH_REDIS_REST_TOKEN is not configured.') {
+    return 'Shared sync cannot write changes: UPSTASH_REDIS_REST_TOKEN is not set on the server. Set the Upstash REST token so the API can save updates.';
   }
 
-  const readMatch = /^Failed to read gist \((\d+)\)\.$/.exec(msg);
+  const readMatch = /^Failed to read shared state \((\d+)\)\.$/.exec(msg);
   if (readMatch) {
     const status = Number(readMatch[1]);
     if (status === 404) {
-      return 'Shared sync cannot find the configured Gist. Verify GIST_ID or VITE_GIST_ID matches a GitHub Gist that exists.';
+      return 'Shared sync could not reach the Upstash REST endpoint (404). Verify UPSTASH_REDIS_REST_URL matches your database HTTPS URL.';
     }
     if (status === 401 || status === 403) {
-      const token = process.env.GITHUB_TOKEN;
-      const gistId = process.env.GIST_ID;
-      const tokenDisplay = token
-        ? `set (${token.slice(0, 4)}...${token.slice(-4)})`
-        : 'NOT SET';
-      const gistDisplay = gistId ?? 'NOT SET';
-      return `GitHub rejected the Gist read (401/403). Check GITHUB_TOKEN has access to this Gist (required for private Gists). [GITHUB_TOKEN: ${tokenDisplay}, GIST_ID: ${gistDisplay}]`;
+      return 'Upstash rejected the request (401/403). Check UPSTASH_REDIS_REST_TOKEN matches your database token.';
     }
     if (status === 429) {
-      return 'GitHub API rate limit reached. Retry after a short wait.';
+      return 'Upstash or upstream rate limit reached. Retry after a short wait.';
     }
-    return `Shared state could not be loaded from GitHub (HTTP ${status}). Check server logs and https://www.githubstatus.com.`;
+    return `Shared state could not be loaded (HTTP ${status}). Check server logs and https://status.upstash.com.`;
   }
 
-  if (msg.includes('invalid JSON')) {
-    return 'GitHub returned an unexpected response when loading the Gist. Check server logs.';
+  if (msg.startsWith('Failed to read shared state:')) {
+    return 'Shared state could not be read from Upstash. Check server logs and your Redis REST credentials.';
   }
 
-  const updateMatch = /^Failed to update gist \((\d+)\)\.$/.exec(msg);
+  if (msg.includes('unexpected value type')) {
+    return 'Upstash returned an unexpected value when loading shared state. Check server logs.';
+  }
+
+  const updateMatch = /^Failed to update shared state \((\d+)\)\.$/.exec(msg);
   if (updateMatch) {
     const status = Number(updateMatch[1]);
     if (status === 404) {
-      return 'Shared sync cannot update the Gist (404). Verify the Gist id and that your token can edit it.';
+      return 'Shared sync could not reach the Upstash REST endpoint while saving (404). Verify UPSTASH_REDIS_REST_URL.';
     }
     if (status === 401 || status === 403) {
-      return 'GitHub rejected the Gist update (401/403). Verify GITHUB_TOKEN has gist write access.';
+      return 'Upstash rejected the save (401/403). Verify UPSTASH_REDIS_REST_TOKEN has write access (not the read-only token).';
     }
     if (status === 429) {
-      return 'GitHub API rate limit reached while saving. Retry after a short wait.';
+      return 'Rate limit reached while saving. Retry after a short wait.';
     }
-    return `Shared state could not be saved to GitHub (HTTP ${status}). Check server logs.`;
+    return `Shared state could not be saved (HTTP ${status}). Check server logs.`;
   }
 
-  return 'Shared state could not be loaded. Check server logs and GitHub connectivity.';
+  if (msg.startsWith('Failed to update shared state:')) {
+    return 'Shared state could not be written to Upstash. Check server logs and your Redis REST credentials.';
+  }
+
+  const listMatch = /^list shared state \((\d+)\)\.$/.exec(msg);
+  if (listMatch) {
+    return `Health check could not list Redis keys (HTTP ${listMatch[1]}). Check Upstash credentials.`;
+  }
+
+  if (msg.startsWith('list shared state:')) {
+    return 'Health check could not list Redis keys. Check server logs and Upstash configuration.';
+  }
+
+  return 'Shared state could not be loaded. Check server logs and Upstash connectivity.';
 };
 
 const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
@@ -1334,17 +1347,15 @@ export const createReadHandler =
       let warning: string | undefined;
 
       try {
-        // Bypass gist snapshot cache so GET version matches mutate (which bypasses).
-        // Always bypass the gist snapshot cache so GET returns the same version the
-        // mutate handler uses (mutate already bypasses). Otherwise a 30s cached gist
-        // can lag behind fresh reads on POST and clients send a stale baseVersion,
-        // which breaks sync (409 / blocked outbox), especially for strictVersion scopes.
+        // Bypass Redis snapshot cache so GET version matches mutate (which bypasses).
+        // Otherwise a 30s cached read can lag behind fresh reads on POST and clients
+        // send a stale baseVersion, which breaks sync (409 / blocked outbox).
         const stored = await readScopeStoredData(scope, { bypassCache: true });
         clientData = stored.clientData;
         version = stored.version;
-        if (!isGistConfigured()) {
+        if (!isSharedStateConfigured()) {
           degraded = true;
-          warning = getScopeWarning(new Error('GIST_ID is not configured.'));
+          warning = getScopeWarning(new Error('UPSTASH_REDIS_REST_URL is not configured.'));
         }
       } catch (error) {
         const fallback = buildFallbackScopeData(scope);
@@ -1433,7 +1444,7 @@ export const createMutateHandler =
 
       const latest = await readScopeStoredData(scope, { bypassCache: true });
 
-      // Apply mutations against the latest gist snapshot (last-writer-wins). We do not
+      // Apply mutations against the latest server snapshot (last-writer-wins). We do not
       // reject writes when baseVersion lags: two devices can race; the in-flight op is
       // validated and merged on current server state instead of forcing a 409 refresh.
 
@@ -1453,7 +1464,7 @@ export const createMutateHandler =
       const clientData = definition.toClient(result.data) as StateScopeDataMap[TScope];
       const nextVersion = computeVersion(clientData);
 
-      await patchGistFile(definition.filename, definition.serialize(result.data));
+      await patchSharedStateFile(definition.filename, definition.serialize(result.data));
 
       return jsonResponse(
         {
