@@ -47,7 +47,7 @@ export interface SpinEntry {
   createdAt: string;
 }
 
-/** All wheel outcomes for the UTC calendar day (Gist: dailyspin.json). */
+/** All wheel outcomes for the UTC calendar day (shared store: dailyspin.json). */
 export interface DailySpinRecord {
   date: string;
   spins: SpinEntry[];

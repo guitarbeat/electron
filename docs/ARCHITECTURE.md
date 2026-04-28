@@ -16,7 +16,7 @@ A two-person collaborative movie watchlist and date-planning SPA titled "electro
 
 **Profile/session UX:** Profile selection (Aaron / Electra / Guest) lives only in the action bubble quick-actions menu. A legacy `app-session-bar` header panel that created a duplicate login UI was removed; the `ActionBubble.tsx` and `ActionFanMenu.tsx` UI components are also gone (replaced by `ActionBubbleLayer.tsx`).
 
-**Persistence model:** defaults to `localStorage`; upgrades to GitHub Gist sync when environment variables are configured. No traditional database.
+**Persistence model:** defaults to `localStorage`; upgrades to Upstash Redis (REST) when environment variables are configured. No traditional database.
 
 **Deploy shape:** static frontend (`dist/`) + serverless-style API handlers in `api/` (Vercel target).
 
@@ -66,20 +66,19 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 |---|---|
 | `api/omdb.ts` | OMDb proxy with in-memory cache (1h TTL, 500 entries), rate limiting (30 req/min/IP), retries |
 | `api/tvmaze.ts` | TVMaze proxy with in-memory cache |
-| `api/gist.ts` | Deprecated generic Gist proxy; returns HTTP 410 |
-| `api/health.ts` | Liveness + optional readiness probe against Gist |
+| `api/health.ts` | Liveness + optional readiness probe against shared Redis state |
 | `api/session.ts` | Returns current session state and PIN-protected user list |
 | `api/session/profile.ts` | POST to set profile, PIN verification with lockout |
-| `api/state/[scope].ts` | GET scoped state from Gist (movies, messages, places, quiz, matchmaker, etc.) |
+| `api/state/[scope].ts` | GET scoped shared state (movies, messages, places, quiz, matchmaker, etc.) |
 | `api/state/[scope]/mutate.ts` | POST mutations to scoped state |
 
 **Shared library (`api/_lib/`):**
 - `config.ts` — Shared `resolveConfig` helper for environment variable resolution
-- `gistStore.ts` — GitHub Gist read/write with 5s TTL cache
+- `sharedStateStore.ts` — Upstash Redis REST read/write with 30s per-key TTL cache
 - `state.ts` — Business logic: normalization, mutation handlers per scope
 - `session.ts` — HMAC-signed cookie sessions, PIN hashing (PBKDF2), lockout
 - `http.ts` — Response helpers (`jsonResponse`, `mergeHeaders`, etc.)
-- `retryFetch.ts` — Exponential backoff with jitter for GitHub API calls
+- `retryFetch.ts` — Exponential backoff with jitter for HTTP API calls
 - `webHandler.ts` — Adapts Node.js request/response to Web API `Request`/`Response`
 
 **Shared UI components:**
@@ -89,14 +88,14 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 **Primary (always available):** `localStorage` — used as fallback and for some client-only state (quiz completion flag, action bubble position, etc.).
 
-**Optional shared sync:** GitHub Gist via `api/_lib/gistStore.ts`. When `GIST_ID` + `GITHUB_TOKEN` are configured, all scoped state is stored as JSON files within a single Gist. The client syncs via polling to `/api/state/:scope`.
+**Optional shared sync:** Upstash Redis via `api/_lib/sharedStateStore.ts`. When `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` are configured, each scope is stored as a JSON string under a Redis key (default prefix `app:state:`). The client syncs via polling to `/api/state/:scope`.
 
-**Scope model:** State is split into named scopes, each mapping to a file in the Gist (e.g., `movielist.json`, `messages.json`, `places.json`, `quiz.json`, `matchmaker.json`, `pins.json`). Mutations are validated server-side before writing.
+**Scope model:** State is split into named scopes, each mapping to a logical filename used as the Redis key suffix (e.g., `movielist.json`, `messages.json`, `places.json`, `quiz.json`, `matchmaker.json`, `pins.json`). Mutations are validated server-side before writing.
 
 ### Authentication
 
 - No traditional auth. Two hardcoded named users: `Aaron` and `Electra`.
-- Optional PIN protection per user, stored in Gist (`pins.json`).
+- Optional PIN protection per user, stored in shared state (`pins.json`).
 - Sessions held in HMAC-signed HTTP cookies (`SESSION_SIGNING_SECRET`).
 - PIN attempts tracked in a separate short-lived cookie; locked out after 5 failures for 5 minutes.
 - Guests can view but write operations check session state.
@@ -105,7 +104,7 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 - Node.js built-in test runner (`node --test`).
 - Test files co-located as `*.test.ts` in `src/`.
-- Tests cover: API handlers, Gist store, state schemas, session logic, UI logic (action bubble math, shell state, shared suggestion parsing, logo lab).
+- Tests cover: API handlers, shared state store, state schemas, session logic, UI logic (action bubble math, shell state, shared suggestion parsing, logo lab).
 
 ### Build & Deploy
 
@@ -121,7 +120,7 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 | Service | Integration point | Purpose |
 |---|---|---|
-| **GitHub Gist API** | `api/_lib/gistStore.ts` | Shared persistence store (optional) |
+| **Upstash Redis REST** | `api/_lib/sharedStateStore.ts` | Shared persistence store (optional) |
 | **OMDb API** | `api/omdb.ts` + `@/services/metadata` | Movie metadata (title, poster, ratings, plot) |
 | **TVMaze API** | `api/tvmaze.ts` | TV show metadata |
 | **Google Places API** | Map/places components, `VITE_GOOGLE_PLACES_API_KEY` | Date spot search and maps |
@@ -142,13 +141,13 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 ### Environment Variables
 
 **Client-side (`VITE_*`):**
-- `VITE_GIST_ID` — enables Gist sync
+- `VITE_UPSTASH_REDIS_REST_URL` / `VITE_UPSTASH_REDIS_REST_TOKEN` — local dev fallbacks for Upstash
 - `VITE_API_SECRET` — must match server `API_SECRET` for authorized writes
 - `VITE_OMDB_API_URL` / `VITE_OMDB_API_KEY` — OMDb override
 - `VITE_GOOGLE_PLACES_API_KEY` — maps/places features
 
 **Server-side (Vercel/serverless):**
-- `GIST_ID` + `GITHUB_TOKEN` — Gist storage
+- `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` — Upstash storage
 - `API_SECRET` — authorizes client mutations
 - `SESSION_SIGNING_SECRET` — signs session cookies (required for PIN auth)
 - `OMDB_API_KEY` / `OMDB_API_URL` — OMDb proxy

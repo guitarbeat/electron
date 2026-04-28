@@ -27,7 +27,7 @@ const sleep = (ms: number): Promise<void> =>
   });
 
 /**
- * Retries transient GitHub API failures (429, 5xx) and network errors.
+ * Retries transient HTTP failures (429, 5xx) and network errors.
  * Returns the last response when retries are exhausted or on non-retryable status.
  * Uses globalThis.fetch (standard in Node 18+).
  */

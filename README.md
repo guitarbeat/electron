@@ -2,7 +2,7 @@
 
 A two-person movie watchlist and shared space built with **React 19**, **TypeScript**, and **Vite**, with a nostalgic Y2K-inspired UI (gel bubbles, dashboard chrome, chat-style surfaces).
 
-Shared state flows through `/api/session` and `/api/state/*`. When `GIST_ID` and `GITHUB_TOKEN` are configured, those handlers persist the watchlist, suggestions, spin state, and profile PIN data to a **GitHub Gist**; otherwise the app degrades to local snapshot/outbox storage so development still works.
+Shared state flows through `/api/session` and `/api/state/*`. When `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are configured, those handlers persist the watchlist, suggestions, spin state, and profile PIN data to **Upstash Redis** over the REST API; otherwise the app degrades to local snapshot/outbox storage so development still works.
 
 ## Quick start
 

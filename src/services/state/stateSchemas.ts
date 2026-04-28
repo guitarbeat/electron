@@ -427,7 +427,7 @@ const spinHistoryTitleFromEntry = (entry: unknown): string | null => {
   return null;
 };
 
-/** Normalize gist JSON: string[], legacy objects, or invalid → string[] (newest-first order preserved). */
+/** Normalize stored JSON: string[], legacy objects, or invalid → string[] (newest-first order preserved). */
 export const normalizeSpinHistoryParsed = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
     return [];
