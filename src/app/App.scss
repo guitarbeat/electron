@@ -7071,6 +7071,7 @@ body.grabbing * {
 
 .watchlist-top-controls__stage {
   position: relative;
+  z-index: 100;
   display: grid;
   gap: clamp(0.8rem, 0.72rem + 0.35vw, 1.1rem);
   padding: clamp(0.75rem, 0.68rem + 0.2vw, 0.95rem);
@@ -7361,7 +7362,7 @@ body.grabbing * {
   top: calc(100% + 0.55rem);
   left: 0;
   right: 0;
-  z-index: 400;
+  z-index: 10000;
   display: flex;
   flex-direction: column;
   max-height: 28rem;

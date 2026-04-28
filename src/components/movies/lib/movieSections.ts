@@ -1,16 +1,21 @@
 import type { Movie, MovieSuggestion } from '@/shared/types';
+import { buildCollectionSections, type CollectionSections } from '@/utils/workspace';
 
-export interface MovieSections {
-  suggestions: MovieSuggestion[];
-  upNext: Movie[];
-  watched: Movie[];
-}
+export type MovieSections = CollectionSections<Movie, MovieSuggestion>;
 
 export const buildMovieSections = (
   movies: Movie[],
   pendingSuggestions: MovieSuggestion[]
-): MovieSections => ({
-  suggestions: pendingSuggestions,
-  upNext: movies.filter((movie) => movie.watchedBy.length < 2),
-  watched: movies.filter((movie) => movie.watchedBy.length === 2),
-});
+): MovieSections => {
+  const sections = buildCollectionSections(
+    movies,
+    pendingSuggestions,
+    (movie) => movie.watchedBy.length === 2
+  );
+
+  return {
+    suggestions: sections.suggestions,
+    queue: sections.queue,
+    completed: sections.completed,
+  };
+};

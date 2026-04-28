@@ -1,16 +1,15 @@
-import type { Place, PlaceSuggestion } from '../../../shared/types.ts';
+import type { Place, PlaceSuggestion } from '@/shared/types';
+import { buildCollectionSections, type CollectionSections } from '@/utils/workspace';
 
-export interface PlaceSections {
-  suggestions: PlaceSuggestion[];
-  queue: Place[];
-  visited: Place[];
-}
+export type PlaceSections = CollectionSections<Place, PlaceSuggestion>;
 
 export const buildPlaceSections = (
   places: Place[],
   pendingSuggestions: PlaceSuggestion[] = []
-): PlaceSections => ({
-  suggestions: pendingSuggestions,
-  queue: places.filter((place) => !place.visitedAt),
-  visited: places.filter((place) => Boolean(place.visitedAt)),
-});
+): PlaceSections => {
+  return buildCollectionSections(
+    places,
+    pendingSuggestions,
+    (place) => Boolean(place.visitedAt)
+  );
+};

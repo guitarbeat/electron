@@ -15,8 +15,10 @@ import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
-import WatcherBadge from '@/common/WatcherBadge';
 import MediaPoster from '@/ui/MediaPoster';
+import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
+import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
+import MediaCardMetadata from '@/ui/MediaCardMetadata';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -133,12 +135,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
             id={movie.id}
           />
 
-          {movie.watchedBy.length > 0 ? (
-            <div className="movie-item-watchers">
-              {movie.watchedBy.includes('Aaron') ? <WatcherBadge user="Aaron" size="md" /> : null}
-              {movie.watchedBy.includes('Electra') ? <WatcherBadge user="Electra" size="md" /> : null}
-            </div>
-          ) : null}
+          <MediaCardWatcherStack
+            watchers={movie.watchedBy}
+            className="movie-item-watchers"
+          />
 
           {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
             <div className="movie-item-imdb-badge" aria-label={`IMDb rating: ${movie.imdbRating}`}>
@@ -184,7 +184,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
               >
                 {movie.title}
               </MediaCardTitle>
-              <MovieMetadata movie={movie} />
+              <MediaCardMetadata
+                items={[movie.year, movie.runtime]}
+                badge={movie.category}
+                chips={movie.genre ? [movie.genre.split(',')[0].trim()] : []}
+                className="movie-metadata"
+              />
             </MediaCardInfo>
           </MediaCardOverlay>
         </MediaCardPosterWrap>
@@ -262,38 +267,6 @@ const MovieMemoryPreview: React.FC<{
   </div>
 );
 
-const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
-  const metadataItems = [
-    movie.year,
-    movie.runtime,
-  ].filter(Boolean) as string[];
-
-  const firstGenre = movie.genre?.split(',')[0]?.trim();
-
-  return (
-    <div className={`movie-metadata ${className}`}>
-      <div className="movie-meta-row">
-        {metadataItems.map((item, index) => (
-          <React.Fragment key={`${movie.id}-meta-${item}`}>
-            {index > 0 ? <span className="movie-meta-separator">&bull;</span> : null}
-            <span className="movie-meta-item">{item}</span>
-          </React.Fragment>
-        ))}
-        {movie.category ? (
-          <span className="movie-category" aria-label={`Category: ${movie.category}`}>
-            {movie.category}
-          </span>
-        ) : null}
-      </div>
-      {firstGenre ? (
-        <div className="movie-meta-genre-row">
-          <span className="movie-item-genre-chip">{firstGenre}</span>
-        </div>
-      ) : null}
-    </div>
-  );
-};
-
 interface MovieActionsProps {
   movie: Movie;
   actionState: MovieActionState;
@@ -311,9 +284,6 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   onToggleNotes,
   onEdit,
 }) => {
-  const iconActionClassName = (modifierClassName: string) =>
-    `workspace-card-action workspace-card-action--secondary workspace-card-action--compact movie-item-icon-action ${modifierClassName}${isUpdating ? ' is-disabled' : ''}`;
-
   const handlePrimaryAction = () => {
     executeAction(onToggle);
   };
@@ -335,9 +305,10 @@ const MovieActions: React.FC<MovieActionsProps> = ({
   }
 
   return (
-    <div className="workspace-card-actions movie-actions">
-      {actionState.showWatchedAction ? (
-        <div className="workspace-card-actions__row movie-actions__row--primary">
+    <CardActionRail
+      className="movie-actions"
+      primary={
+        actionState.showWatchedAction && (
           <Button
             type="button"
             onClick={handlePrimaryAction}
@@ -367,20 +338,19 @@ const MovieActions: React.FC<MovieActionsProps> = ({
               </span>
             </span>
           </Button>
-        </div>
-      ) : null}
-
-      <div className="workspace-card-actions__row movie-actions__row--secondary">
-        {actionState.showNotesAction ? (
-          <button
-            type="button"
+        )
+      }
+      secondary={
+        actionState.showNotesAction && (
+          <CardActionButton
+            isExpansive
             onClick={handleToggleNotes}
-            className="workspace-card-action workspace-card-action--secondary workspace-card-action--expansive movie-item-memory-toggle movie-item-note-action"
+            leftIcon={<NoteIcon className="movie-item-note-action__icon" style={{ width: '15px', height: '15px' }} />}
             aria-label={actionState.notesButtonAriaLabel ?? undefined}
             disabled={isUpdating}
+            className="movie-item-memory-toggle movie-item-note-action"
           >
-            <NoteIcon className="movie-item-note-action__icon" style={{ width: '15px', height: '15px' }} />
-            <span className="movie-item-note-action__label">
+             <span className="movie-item-note-action__label">
               <span className="movie-item-note-action__label--long">
                 {actionState.notesButtonLabel}
               </span>
@@ -393,28 +363,24 @@ const MovieActions: React.FC<MovieActionsProps> = ({
                 {actionState.notesBadgeText}
               </span>
             ) : null}
-          </button>
-        ) : null}
-
-        {!actionState.isGuest ? (
-          <div className="workspace-card-actions__cluster movie-secondary-actions">
-            {onEdit ? (
-              <button
-                type="button"
-                onClick={handleEditAction}
-                title={`Edit title for "${movie.title}"`}
-                aria-label={`Edit title for "${movie.title}"`}
-                className={iconActionClassName('movie-icon-action--edit')}
-                disabled={isUpdating}
-              >
-                <EditIcon style={{ width: '15px', height: '15px' }} />
-                <span className="workspace-card-action__text">Edit</span>
-              </button>
-            ) : null}
-
-          </div>
-        ) : null}
-      </div>
-    </div>
+          </CardActionButton>
+        )
+      }
+      cluster={
+        !actionState.isGuest && onEdit && (
+          <CardActionButton
+            isCompact
+            onClick={handleEditAction}
+            title={`Edit title for "${movie.title}"`}
+            aria-label={`Edit title for "${movie.title}"`}
+            leftIcon={<EditIcon style={{ width: '15px', height: '15px' }} />}
+            disabled={isUpdating}
+            className="movie-icon-action--edit"
+          >
+            Edit
+          </CardActionButton>
+        )
+      }
+    />
   );
 };

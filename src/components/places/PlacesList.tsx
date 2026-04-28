@@ -68,8 +68,8 @@ const PlacesList: React.FC = () => {
   );
 
   const allPlaces = useMemo(
-    () => [...sections.queue, ...sections.visited],
-    [sections.queue, sections.visited]
+    () => [...sections.queue, ...sections.completed],
+    [sections.queue, sections.completed]
   );
 
   const handleCardTap = useCallback((place: Place) => {
@@ -206,7 +206,7 @@ const PlacesList: React.FC = () => {
       {/* Search bar — mirrors movie watchlist bar */}
       <PlacesTopControls
         queueCount={sections.queue.length}
-        visitedCount={sections.visited.length}
+        visitedCount={sections.completed.length}
         pinnedCount={pinnedCount}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -313,13 +313,13 @@ const PlacesList: React.FC = () => {
       )}
 
       {/* VISITED section */}
-      {sections.visited.length > 0 && (
+      {sections.completed.length > 0 && (
         <CollectionSection heading="Visited" tone="completed">
           <CollectionGrid
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
           >
-            {sections.visited.map((place) => (
+            {sections.completed.map((place) => (
               <div
                 key={place.id}
                 id={`place-card-${place.id}`}

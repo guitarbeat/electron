@@ -373,98 +373,135 @@ const MoviesTopControls = React.forwardRef<
             }}
           >
             <span className="watchlist-top-controls__search-icon" aria-hidden="true">🎬</span>
-            <Input
-              ref={internalSearchInputRef}
-              className="watchlist-top-controls__search-field"
-              value={searchQuery}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setSearchQuery(nextValue);
-                if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
-                  setSelectedAutocompleteResult(null);
-                }
-              }}
-              onFocus={() => {
-                if (
-                  hasAutocompleteFeedback
-                ) {
-                  openAutocomplete();
-                }
-              }}
-              onKeyDown={(event) => {
-                if (event.nativeEvent.isComposing) {
-                  return;
-                }
-
-                if (event.key === 'ArrowDown') {
-                  if (filteredAutocompleteResults.length === 0) {
+            <div style={{ position: 'relative', width: '100%', flex: 1 }}>
+              <Input
+                ref={internalSearchInputRef}
+                className="watchlist-top-controls__search-field"
+                value={searchQuery}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  setSearchQuery(nextValue);
+                  if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
+                    setSelectedAutocompleteResult(null);
+                  }
+                }}
+                onFocus={() => {
+                  if (
+                    hasAutocompleteFeedback
+                  ) {
+                    openAutocomplete();
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.nativeEvent.isComposing) {
                     return;
                   }
 
-                  event.preventDefault();
-                  setIsAutocompleteOpen(true);
-                  setActiveAutocompleteIndex((currentIndex) =>
-                    getNextMovieAutocompleteIndex(
-                      currentIndex,
-                      'next',
-                      filteredAutocompleteResults.length
-                    )
-                  );
-                  return;
-                }
+                  if (event.key === 'ArrowDown') {
+                    if (filteredAutocompleteResults.length === 0) {
+                      return;
+                    }
 
-                if (event.key === 'ArrowUp') {
-                  if (filteredAutocompleteResults.length === 0) {
-                    return;
-                  }
-
-                  event.preventDefault();
-                  setIsAutocompleteOpen(true);
-                  setActiveAutocompleteIndex((currentIndex) =>
-                    getNextMovieAutocompleteIndex(
-                      currentIndex,
-                      'previous',
-                      filteredAutocompleteResults.length
-                    )
-                  );
-                  return;
-                }
-
-                if (event.key === 'Escape') {
-                  if (isAutocompleteOpen) {
                     event.preventDefault();
-                    hideAutocomplete();
-                  }
-                  return;
-                }
-
-                if (event.key === 'Enter' && isAutocompleteOpen) {
-                  const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
-                    activeAutocompleteIndex,
-                    filteredAutocompleteResults.length
-                  );
-                  if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) {
+                    setIsAutocompleteOpen(true);
+                    setActiveAutocompleteIndex((currentIndex) =>
+                      getNextMovieAutocompleteIndex(
+                        currentIndex,
+                        'next',
+                        filteredAutocompleteResults.length
+                      )
+                    );
                     return;
                   }
 
-                  event.preventDefault();
-                  selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
+                  if (event.key === 'ArrowUp') {
+                    if (filteredAutocompleteResults.length === 0) {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    setIsAutocompleteOpen(true);
+                    setActiveAutocompleteIndex((currentIndex) =>
+                      getNextMovieAutocompleteIndex(
+                        currentIndex,
+                        'previous',
+                        filteredAutocompleteResults.length
+                      )
+                    );
+                    return;
+                  }
+
+                  if (event.key === 'Escape') {
+                    if (isAutocompleteOpen) {
+                      event.preventDefault();
+                      hideAutocomplete();
+                    }
+                    return;
+                  }
+
+                  if (event.key === 'Enter' && isAutocompleteOpen) {
+                    const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
+                      activeAutocompleteIndex,
+                      filteredAutocompleteResults.length
+                    );
+                    if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
+                  }
+                }}
+                placeholder="Add a movie or show title"
+                aria-label="Movie or show title"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={isAutocompleteOpen}
+                aria-controls={autocompleteListId}
+                aria-activedescendant={
+                  isAutocompleteOpen && activeAutocompleteIndex >= 0
+                    ? `${autocompleteListId}-option-${activeAutocompleteIndex}`
+                    : undefined
                 }
-              }}
-              placeholder="Add a movie or show title"
-              aria-label="Movie or show title"
-              role="combobox"
-              aria-autocomplete="list"
-              aria-expanded={isAutocompleteOpen}
-              aria-controls={autocompleteListId}
-              aria-activedescendant={
-                isAutocompleteOpen && activeAutocompleteIndex >= 0
-                  ? `${autocompleteListId}-option-${activeAutocompleteIndex}`
-                  : undefined
-              }
-              autoComplete="off"
-              fullWidth
-            />
+                autoComplete="off"
+                fullWidth
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="watchlist-top-controls__search-clear"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedAutocompleteResult(null);
+                    resetAutocomplete();
+                    internalSearchInputRef.current?.focus();
+                  }}
+                  aria-label="Clear search"
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-text-secondary)',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px',
+                    opacity: 0.6,
+                    transition: 'opacity 0.2s',
+                    zIndex: 2,
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             {isAutocompleteMounted && hasAutocompleteFeedback && (
               <div
                 id={autocompleteListId}
