@@ -1,4 +1,5 @@
 import React from 'react';
+import { StarIcon } from '@/common/Icons';
 
 interface PosterWrapProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -126,7 +127,7 @@ export const MediaCardRatingBadge: React.FC<{ rating: string; className?: string
   className = '',
 }) => (
   <div className={`media-card__rating-badge ${className}`.trim()} aria-label={`Rating: ${rating}`}>
-    <span className="media-card__rating-badge-star">⭐</span>
+    <StarIcon size={12} fill className="media-card__rating-badge-star" />
     <span className="media-card__rating-badge-score">{rating}</span>
   </div>
 );
