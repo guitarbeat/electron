@@ -54,8 +54,6 @@ const AppHeader: FC<AppHeaderProps> = ({
   const isDisabled = isLoading || isVerifying;
   const selectedNamedUser = currentUser;
   const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
-  const statusEyebrow = 'Session';
-  const statusLabel = currentUser ? `${currentUser} online` : 'Guest session';
   const brandLabel = activeTab === 'movies' ? 'Movies' : 'Places';
   const pwaChip = (() => {
     if (!pwaStatus) {
@@ -387,10 +385,6 @@ const AppHeader: FC<AppHeaderProps> = ({
     >
       {/* Left: Theme Toggle + Background Toggle */}
       <div ref={leftRef} className="app-header__left">
-        <div className="app-header__status-block" aria-label="Current workspace mode">
-          <span className="app-header__status-label">{statusEyebrow}</span>
-          <span className="app-header__status-value">{statusLabel}</span>
-        </div>
         {shouldShowPwaChip && pwaChip ? (
           <div className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}>
             <div className="app-header__pwa-copy">

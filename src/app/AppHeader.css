@@ -54,11 +54,6 @@
   flex-shrink: 0;
 }
 
-.app-header__status-block {
-  display: grid;
-  gap: 0.12rem;
-  min-width: 0;
-}
 
 .app-header__pwa-chip {
   display: none;
@@ -156,21 +151,6 @@
   color: rgba(255, 250, 241, 0.92);
 }
 
-.app-header__status-label,
-.app-header__brand-kicker {
-  font-size: 0.63rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(232, 214, 184, 0.62);
-}
-
-.app-header__status-value {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: rgba(255, 248, 237, 0.94);
-  white-space: nowrap;
-}
 
 .app-header__bg-toggle {
   display: inline-flex;
@@ -462,9 +442,6 @@
     gap: 0.55rem;
   }
 
-  .app-header__status-block {
-    display: none;
-  }
 
   .app-header__brand {
     font-size: clamp(1.2rem, 6vw, 1.6rem);
