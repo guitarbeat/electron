@@ -7270,10 +7270,10 @@ body.grabbing * {
 }
 
 .watchlist-top-controls__search-form:focus-within {
-  border-color: color-mix(in srgb, var(--color-accent) 72%, transparent);
+  border-color: rgba(193, 154, 96, 0.45);
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent),
-    0 12px 24px rgba(0, 0, 0, 0.2);
+    0 0 0 4px rgba(193, 154, 96, 0.12),
+    0 18px 36px rgba(0, 0, 0, 0.28);
 }
 
 .watchlist-top-controls__search-shell {
@@ -7953,6 +7953,14 @@ body.grabbing * {
       0 20px 40px rgba(0, 0, 0, 0.5),
       0 0 0 1px rgba(255, 127, 198, 0.22),
       0 0 28px rgba(255, 127, 198, 0.18);
+
+    .movie-poster {
+      transform: scale(1.08);
+    }
+
+    .movie-item-overlay {
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.45) 50%, rgba(0, 0, 0, 0.12) 100%);
+    }
   }
 
   /* Desktop click: squeeze overrides the hover lift */
@@ -8062,16 +8070,30 @@ body.grabbing * {
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 3;
-  background: #000;
+  background: rgba(255, 255, 255, 0.03);
   overflow: hidden;
+}
+
+.movie-poster-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .movie-poster {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
+  opacity: 0;
+  transition:
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.6s ease-out;
+  will-change: transform, opacity;
+}
+
+.movie-poster.is-loaded {
+  opacity: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
