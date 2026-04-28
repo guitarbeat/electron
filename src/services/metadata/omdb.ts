@@ -3,8 +3,17 @@ import { isValidUrl, sanitizeInput } from '../../utils/shared.ts';
 import { OMDB_BASE, OMDB_API_KEY } from './config.ts';
 import type { MovieAutocompleteResult, MovieMetadata } from './types.ts';
 
+const omdbTitleField = z
+  .union([z.string(), z.number(), z.null(), z.undefined()])
+  .optional()
+  .transform((v) => {
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+    return '';
+  });
+
 const OmdbMovieSchema = z.object({
-  Title: z.string(),
+  Title: omdbTitleField,
   Year: z.string().optional(),
   imdbID: z.string().optional(),
   Type: z.enum(['movie', 'series']).catch('movie' as never),
@@ -16,7 +25,7 @@ const OmdbSearchResultSchema = z.object({
 });
 
 const OmdbMetadataSchema = z.object({
-  Title: z.string(),
+  Title: omdbTitleField,
   Year: z.string().optional(),
   imdbID: z.string().optional(),
   imdbRating: z.string().optional(),
@@ -82,12 +91,14 @@ export const searchOmdbMovies = async (
     }
 
     const data = OmdbSearchResultSchema.parse(json);
-    
+
     if (!data.Search) {
       return [];
     }
 
-    return data.Search.slice(0, 6).map((movie): MovieAutocompleteResult => ({
+    const withTitles = data.Search.filter((movie) => sanitizeInput(movie.Title).length > 0);
+
+    return withTitles.slice(0, 6).map((movie): MovieAutocompleteResult => ({
       title: sanitizeInput(movie.Title),
       year: movie.Year,
       imdbID: movie.imdbID,
@@ -135,9 +146,11 @@ export const fetchOmdbMetadata = async (
     }
 
     const data = OmdbMetadataSchema.parse(json);
-    
+    const requestedTitle = sanitizeInput(title);
+    const resolvedTitle = sanitizeInput(data.Title) || requestedTitle;
+
     return {
-      title: sanitizeInput(data.Title),
+      title: resolvedTitle,
       year: data.Year,
       imdbID: data.imdbID,
       imdbRating: data.imdbRating && data.imdbRating !== 'N/A' ? data.imdbRating : undefined,

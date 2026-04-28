@@ -6,6 +6,7 @@ import {
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   searchMovieAutocomplete,
 } from './metadataService.ts';
+import { fetchOmdbMetadata, searchOmdbMovies } from './omdb.ts';
 
 const originalFetch = globalThis.fetch;
 const globalWithWindow = globalThis as typeof globalThis & { window?: unknown };
@@ -274,4 +275,48 @@ test('searchMovieAutocomplete surfaces a precise error when both providers fail'
     () => searchMovieAutocomplete('Heat'),
     /OMDb key was rejected/i
   );
+});
+
+test('fetchOmdbMetadata falls back to requested title when API omits Title', async () => {
+  setTestWindow('https://app.example');
+
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        Response: 'True',
+        Year: '2024',
+        Plot: 'Synopsis',
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }
+    );
+
+  const meta = await fetchOmdbMetadata('Planet of the Bass');
+  assert.equal(meta.title, 'Planet of the Bass');
+  assert.equal(meta.year, '2024');
+});
+
+test('searchOmdbMovies drops search rows with no usable title', async () => {
+  setTestWindow('https://app.example');
+
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        Response: 'True',
+        Search: [
+          { Year: '1995', imdbID: 'tt0', Type: 'movie', Poster: 'N/A' },
+          { Title: 'Valid', Year: '2000', imdbID: 'tt1', Type: 'movie', Poster: 'N/A' },
+        ],
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }
+    );
+
+  const results = await searchOmdbMovies('x');
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.title, 'Valid');
 });

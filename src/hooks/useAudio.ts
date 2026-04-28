@@ -1,53 +1,117 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 let sharedAudioContext: AudioContext | null = null;
 let audioContextUnavailable = false;
+let userGestureAudioUnlocked = false;
+let unlockListenersInstalled = false;
+let unlockGestureHandler: (() => void) | null = null;
 
 const getAudioContextClass = () =>
   window.AudioContext ||
   (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
-const getSharedAudioContext = (): AudioContext | null => {
-  if (typeof window === 'undefined' || audioContextUnavailable) {
-    return null;
+const removeUnlockListeners = (): void => {
+  if (typeof window === 'undefined') {
+    return;
   }
+  const handler = unlockGestureHandler;
+  if (!handler) {
+    return;
+  }
+  window.removeEventListener('pointerdown', handler, true);
+  window.removeEventListener('keydown', handler, true);
+  window.removeEventListener('touchstart', handler, true);
+  unlockGestureHandler = null;
+  unlockListenersInstalled = false;
+};
 
-  if (sharedAudioContext) {
-    return sharedAudioContext;
+const unlockAudioFromUserGesture = (): void => {
+  if (typeof window === 'undefined' || audioContextUnavailable || userGestureAudioUnlocked) {
+    return;
   }
 
   const AudioContextClass = getAudioContextClass();
   if (!AudioContextClass) {
     audioContextUnavailable = true;
-    return null;
+    return;
   }
 
   try {
-    sharedAudioContext = new AudioContextClass();
-    return sharedAudioContext;
+    if (!sharedAudioContext) {
+      sharedAudioContext = new AudioContextClass();
+    }
+    if (sharedAudioContext.state === 'suspended') {
+      void sharedAudioContext.resume().catch(() => undefined);
+    }
+    userGestureAudioUnlocked = true;
+    removeUnlockListeners();
   } catch {
     audioContextUnavailable = true;
+  }
+};
+
+const installUnlockListeners = (): void => {
+  if (typeof window === 'undefined' || unlockListenersInstalled || userGestureAudioUnlocked) {
+    return;
+  }
+  unlockListenersInstalled = true;
+  const handler = () => {
+    unlockAudioFromUserGesture();
+  };
+  unlockGestureHandler = handler;
+  window.addEventListener('pointerdown', handler, { capture: true, passive: true });
+  window.addEventListener('keydown', handler, { capture: true, passive: true });
+  window.addEventListener('touchstart', handler, { capture: true, passive: true });
+};
+
+const getAudioContextForPlayback = (): AudioContext | null => {
+  if (typeof window === 'undefined' || audioContextUnavailable) {
     return null;
   }
+
+  if (!userGestureAudioUnlocked) {
+    installUnlockListeners();
+    return null;
+  }
+
+  if (!sharedAudioContext) {
+    const AudioContextClass = getAudioContextClass();
+    if (!AudioContextClass) {
+      audioContextUnavailable = true;
+      return null;
+    }
+    try {
+      sharedAudioContext = new AudioContextClass();
+    } catch {
+      audioContextUnavailable = true;
+      return null;
+    }
+  }
+
+  if (sharedAudioContext.state === 'suspended') {
+    void sharedAudioContext.resume().catch(() => undefined);
+  }
+
+  return sharedAudioContext;
 };
 
 /**
  * Shared audio hook — Y2K aesthetic.
- * All sounds use pentatonic/major scale notes, sine waves, and soft envelopes
- * for that warm early-2000s Windows/AIM/Nokia digital chime feel.
+ * Browsers require a user gesture before AudioContext can run; we defer
+ * construction until the first pointer/key/touch, then play UI sounds.
  */
 export const useAudio = () => {
-  const getCtx = useCallback((): AudioContext | null => {
-    const ctx = getSharedAudioContext();
-    if (!ctx) {
-      return null;
-    }
-
-    if (ctx.state === 'suspended') {
-      void ctx.resume();
-    }
-    return ctx;
+  useEffect(() => {
+    installUnlockListeners();
+    return () => {
+      if (userGestureAudioUnlocked) {
+        return;
+      }
+      removeUnlockListeners();
+    };
   }, []);
+
+  const getCtx = useCallback((): AudioContext | null => getAudioContextForPlayback(), []);
 
   /**
    * Play a single synthesized tone with a soft attack and smooth decay.
