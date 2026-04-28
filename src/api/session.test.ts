@@ -8,34 +8,27 @@ import profileHandler, {
   profilePinRateLimitConfig,
 } from '../../api/session/profile.ts';
 import sessionHandler from '../../api/session.ts';
-import { createUpstashMemoryMock } from './test/upstashMock.ts';
+import { createSharedStateMemoryMock } from './test/sharedStateMock.ts';
 
-const withUnsetUpstash = async (run: () => Promise<void>) => {
-  const previousUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const previousToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-  delete process.env.UPSTASH_REDIS_REST_URL;
-  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+const withUnsetDatabase = async (run: () => Promise<void>) => {
+  const previousUrl = process.env.DATABASE_URL;
+  delete process.env.DATABASE_URL;
   invalidateSharedStateCache();
 
   try {
     await run();
   } finally {
     if (typeof previousUrl === 'string') {
-      process.env.UPSTASH_REDIS_REST_URL = previousUrl;
+      process.env.DATABASE_URL = previousUrl;
     } else {
-      delete process.env.UPSTASH_REDIS_REST_URL;
-    }
-    if (typeof previousToken === 'string') {
-      process.env.UPSTASH_REDIS_REST_TOKEN = previousToken;
-    } else {
-      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+      delete process.env.DATABASE_URL;
     }
     invalidateSharedStateCache();
   }
 };
 
 const withPinsStore = async (pins: Record<string, string>, run: () => Promise<void>) => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'pins.json': JSON.stringify(pins),
   });
 
@@ -47,7 +40,7 @@ const withPinsStore = async (pins: Record<string, string>, run: () => Promise<vo
 };
 
 test('session endpoint reports missing PIN coverage when the shared pin store is unavailable', async () => {
-  await withUnsetUpstash(async () => {
+  await withUnsetDatabase(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
 
@@ -68,7 +61,7 @@ test('session endpoint reports missing PIN coverage when the shared pin store is
 });
 
 test('profile endpoint allows selecting a user while reporting missing PIN coverage', async () => {
-  await withUnsetUpstash(async () => {
+  await withUnsetDatabase(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
 

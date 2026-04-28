@@ -1,4 +1,4 @@
-import { fetchWithRetry } from './retryFetch.ts';
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 
 const CACHE_TTL_MS = 30000;
 
@@ -14,6 +14,11 @@ interface CachedEntry {
 }
 
 const fileCache = new Map<string, CachedEntry>();
+let sqlClient: NeonQueryFunction<false, false> | null = null;
+let sqlClientUrl = '';
+let schemaReady: Promise<void> | null = null;
+let testStore: Map<string, string> | null = null;
+let testPatchBodies: string[] | null = null;
 
 const cleanEnvValue = (value: string | undefined): string => {
   let normalized = (value || '').trim();
@@ -29,137 +34,93 @@ const cleanEnvValue = (value: string | undefined): string => {
   return normalized;
 };
 
-const normalizeRestUrl = (value: string | undefined): string => {
-  const raw = cleanEnvValue(value);
-  if (!raw) {
-    return '';
-  }
-  return raw.replace(/\/+$/, '');
-};
-
-const getRestUrl = (): string =>
-  normalizeRestUrl(
-    process.env.UPSTASH_REDIS_REST_URL ||
-      process.env.VITE_UPSTASH_REDIS_REST_URL
-  );
-
-const getRestToken = (): string =>
+const getDatabaseUrl = (): string =>
   cleanEnvValue(
-    process.env.UPSTASH_REDIS_REST_TOKEN ||
-      process.env.VITE_UPSTASH_REDIS_REST_TOKEN
+    process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.POSTGRES_PRISMA_URL ||
+      process.env.VITE_DATABASE_URL
   );
 
-const getKeyPrefix = (): string => {
-  const prefix = cleanEnvValue(process.env.UPSTASH_STATE_KEY_PREFIX);
-  return prefix ? (prefix.endsWith(':') ? prefix : `${prefix}:`) : 'app:state:';
-};
-
-const redisKey = (filename: string): string => `${getKeyPrefix()}${filename}`;
-
-const getAuthHeaders = (): Headers => {
-  const headers = new Headers();
-  const token = getRestToken();
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
+const getSqlClient = (): NeonQueryFunction<false, false> => {
+  const databaseUrl = getDatabaseUrl();
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is not configured.');
   }
-  return headers;
-};
-
-const buildUrl = (pathSegments: string[]): string => {
-  const base = getRestUrl();
-  const encoded = pathSegments.map((segment) => encodeURIComponent(segment)).join('/');
-  return `${base}/${encoded}`;
-};
-
-interface UpstashJsonResult {
-  result?: unknown;
-  error?: string;
-}
-
-const parseUpstashBody = async (response: Response): Promise<UpstashJsonResult> => {
-  try {
-    return (await response.json()) as UpstashJsonResult;
-  } catch {
-    return {};
+  if (!sqlClient || sqlClientUrl !== databaseUrl) {
+    sqlClient = neon(databaseUrl);
+    sqlClientUrl = databaseUrl;
+    schemaReady = null;
   }
+  return sqlClient;
 };
 
-const throwIfUpstashError = (body: UpstashJsonResult, fallback: string): void => {
-  if (typeof body.error === 'string' && body.error.length > 0) {
-    throw new Error(`${fallback}: ${body.error}`);
-  }
+const ensureSchema = async (): Promise<void> => {
+  schemaReady ??= getSqlClient()`
+    CREATE TABLE IF NOT EXISTS shared_state_files (
+      filename text PRIMARY KEY,
+      content text NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `.then(() => undefined);
+  await schemaReady;
 };
 
-const postUpstashCommand = async (
-  command: (string | number)[],
-  context: string
-): Promise<UpstashJsonResult> => {
-  const base = getRestUrl();
-  if (!base) {
-    throw new Error('UPSTASH_REDIS_REST_URL is not configured.');
-  }
+/** Returns true when the server has Neon/Postgres credentials for read/write. */
+export const isSharedStateConfigured = (): boolean => Boolean(testStore || getDatabaseUrl());
 
-  const response = await fetchWithRetry(
-    base,
-    {
-      method: 'POST',
-      headers: new Headers({
-        ...Object.fromEntries(getAuthHeaders()),
-        'Content-Type': 'application/json',
-      }),
-      body: JSON.stringify(command),
-    },
-    context
-  );
-
-  const body = await parseUpstashBody(response);
-
-  if (!response.ok) {
-    throw new Error(`${context} (${response.status}).`);
-  }
-
-  throwIfUpstashError(body, context);
-  return body;
-};
-
-/** Returns true when the server has Upstash credentials for read/write. */
-export const isSharedStateConfigured = (): boolean =>
-  Boolean(getRestUrl() && getRestToken());
-
-/** Same as {@link isSharedStateConfigured}; writes require the same full token. */
+/** Same as {@link isSharedStateConfigured}; writes use the same database URL. */
 export const isSharedStateWriteConfigured = (): boolean => isSharedStateConfigured();
 
 export const invalidateSharedStateCache = (): void => {
   fileCache.clear();
 };
 
-const runGetCommand = async (filename: string): Promise<SharedStateFileRecord> => {
-  const url = buildUrl(['get', redisKey(filename)]);
-  const response = await fetchWithRetry(
-    url,
-    { method: 'GET', headers: getAuthHeaders() },
-    'read shared state'
-  );
-
-  const body = await parseUpstashBody(response);
-
-  if (!response.ok) {
-    throw new Error(`Failed to read shared state (${response.status}).`);
-  }
-
-  throwIfUpstashError(body, 'Failed to read shared state');
-
-  if (body.result === null || typeof body.result === 'undefined') {
-    return { exists: false, content: null };
-  }
-
-  if (typeof body.result !== 'string') {
-    throw new Error('Failed to read shared state (unexpected value type).');
-  }
+export const installSharedStateMemoryStoreForTests = (
+  initialFiles: Record<string, string>
+): { getFile: (filename: string) => string | undefined; patchBodies: string[]; dispose: () => void } => {
+  const previousStore = testStore;
+  const previousPatchBodies = testPatchBodies;
+  const store = new Map(Object.entries(initialFiles));
+  const patchBodies: string[] = [];
+  testStore = store;
+  testPatchBodies = patchBodies;
+  invalidateSharedStateCache();
 
   return {
+    getFile: (filename: string) => store.get(filename),
+    patchBodies,
+    dispose: () => {
+      testStore = previousStore;
+      testPatchBodies = previousPatchBodies;
+      invalidateSharedStateCache();
+    },
+  };
+};
+
+const readFromDatabase = async (filename: string): Promise<SharedStateFileRecord> => {
+  if (testStore) {
+    if (!testStore.has(filename)) {
+      return { exists: false, content: null };
+    }
+    return { exists: true, content: testStore.get(filename) ?? '' };
+  }
+
+  await ensureSchema();
+  const rows = (await getSqlClient()`
+    SELECT content
+    FROM shared_state_files
+    WHERE filename = ${filename}
+    LIMIT 1
+  `) as Array<{ content: string }>;
+
+  const row = rows[0];
+  if (!row) {
+    return { exists: false, content: null };
+  }
+  return {
     exists: true,
-    content: body.result,
+    content: row.content,
   };
 };
 
@@ -176,7 +137,7 @@ export const readSharedStateFileRecord = async (
   options: { bypassCache?: boolean } = {}
 ): Promise<SharedStateFileRecord> => {
   if (!isSharedStateConfigured()) {
-    throw new Error('UPSTASH_REDIS_REST_URL is not configured.');
+    throw new Error('DATABASE_URL is not configured.');
   }
 
   if (!options.bypassCache) {
@@ -186,7 +147,7 @@ export const readSharedStateFileRecord = async (
     }
   }
 
-  const record = await runGetCommand(filename);
+  const record = await readFromDatabase(filename);
 
   fileCache.set(filename, {
     expiresAt: Date.now() + CACHE_TTL_MS,
@@ -199,58 +160,47 @@ export const readSharedStateFileRecord = async (
 
 export const listSharedStateFilenames = async (): Promise<string[]> => {
   if (!isSharedStateConfigured()) {
-    throw new Error('UPSTASH_REDIS_REST_URL is not configured.');
+    throw new Error('DATABASE_URL is not configured.');
   }
 
-  const prefix = getKeyPrefix();
-  const pattern = `${prefix}*`;
-  const body = await postUpstashCommand(['KEYS', pattern], 'list shared state');
-
-  const raw = body.result;
-  if (!Array.isArray(raw)) {
-    return [];
+  if (testStore) {
+    return [...testStore.keys()].sort();
   }
 
-  return raw
-    .filter((k): k is string => typeof k === 'string' && k.startsWith(prefix))
-    .map((k) => k.slice(prefix.length));
+  await ensureSchema();
+  const rows = (await getSqlClient()`
+    SELECT filename
+    FROM shared_state_files
+    ORDER BY filename
+  `) as Array<{ filename: string }>;
+
+  return rows.map((row) => row.filename);
 };
 
 export const patchSharedStateFile = async (
   filename: string,
   content: string
 ): Promise<void> => {
-  if (!getRestUrl()) {
-    throw new Error('UPSTASH_REDIS_REST_URL is not configured.');
+  if (!getDatabaseUrl()) {
+    if (!testStore) {
+      throw new Error('DATABASE_URL is not configured.');
+    }
   }
 
-  if (!getRestToken()) {
-    throw new Error('UPSTASH_REDIS_REST_TOKEN is not configured.');
+  if (testStore) {
+    testStore.set(filename, content);
+    testPatchBodies?.push(content);
+    fileCache.delete(filename);
+    return;
   }
 
-  const key = redisKey(filename);
-  const url = buildUrl(['set', key]);
-
-  const response = await fetchWithRetry(
-    url,
-    {
-      method: 'POST',
-      headers: new Headers({
-        ...Object.fromEntries(getAuthHeaders()),
-        'Content-Type': 'application/octet-stream',
-      }),
-      body: content,
-    },
-    'write shared state'
-  );
-
-  const body = await parseUpstashBody(response);
-
-  if (!response.ok) {
-    throw new Error(`Failed to update shared state (${response.status}).`);
-  }
-
-  throwIfUpstashError(body, 'Failed to update shared state');
+  await ensureSchema();
+  await getSqlClient()`
+    INSERT INTO shared_state_files (filename, content, updated_at)
+    VALUES (${filename}, ${content}, now())
+    ON CONFLICT (filename)
+    DO UPDATE SET content = EXCLUDED.content, updated_at = now()
+  `;
 
   fileCache.delete(filename);
 };

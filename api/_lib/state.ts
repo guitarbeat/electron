@@ -1145,7 +1145,7 @@ const readScopeStoredData = async <TScope extends StateScope>(
 }> => {
   const definition = getScopeDefinition(scope);
 
-  // In mock mode (no Upstash URL/token), return default/empty data without errors
+  // In mock mode (no database URL), return default/empty data without errors.
   if (!isSharedStateConfigured()) {
     const stored = definition.parse(null);
     const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
@@ -1209,45 +1209,41 @@ export const getScopeWarning = (error: unknown): string | undefined => {
 
   const msg = error.message;
 
-  if (msg === 'UPSTASH_REDIS_REST_URL is not configured.') {
-    return 'Shared sync is unavailable because the server is missing UPSTASH_REDIS_REST_URL. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or VITE_* during local Vite development), then restart the dev server.';
-  }
-
-  if (msg === 'UPSTASH_REDIS_REST_TOKEN is not configured.') {
-    return 'Shared sync cannot write changes: UPSTASH_REDIS_REST_TOKEN is not set on the server. Set the Upstash REST token so the API can save updates.';
+  if (msg === 'DATABASE_URL is not configured.') {
+    return 'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL (or VITE_DATABASE_URL during local Vite development), then restart the dev server.';
   }
 
   const readMatch = /^Failed to read shared state \((\d+)\)\.$/.exec(msg);
   if (readMatch) {
     const status = Number(readMatch[1]);
     if (status === 404) {
-      return 'Shared sync could not reach the Upstash REST endpoint (404). Verify UPSTASH_REDIS_REST_URL matches your database HTTPS URL.';
+      return 'Shared sync could not reach the database endpoint (404). Verify DATABASE_URL points to the correct Neon database.';
     }
     if (status === 401 || status === 403) {
-      return 'Upstash rejected the request (401/403). Check UPSTASH_REDIS_REST_TOKEN matches your database token.';
+      return 'Neon rejected the request (401/403). Check DATABASE_URL credentials and permissions.';
     }
     if (status === 429) {
-      return 'Upstash or upstream rate limit reached. Retry after a short wait.';
+      return 'Neon or upstream rate limit reached. Retry after a short wait.';
     }
-    return `Shared state could not be loaded (HTTP ${status}). Check server logs and https://status.upstash.com.`;
+    return `Shared state could not be loaded (HTTP ${status}). Check server logs and https://status.neon.tech.`;
   }
 
   if (msg.startsWith('Failed to read shared state:')) {
-    return 'Shared state could not be read from Upstash. Check server logs and your Redis REST credentials.';
+    return 'Shared state could not be read from Neon Postgres. Check server logs and DATABASE_URL.';
   }
 
   if (msg.includes('unexpected value type')) {
-    return 'Upstash returned an unexpected value when loading shared state. Check server logs.';
+    return 'The database returned an unexpected value when loading shared state. Check server logs.';
   }
 
   const updateMatch = /^Failed to update shared state \((\d+)\)\.$/.exec(msg);
   if (updateMatch) {
     const status = Number(updateMatch[1]);
     if (status === 404) {
-      return 'Shared sync could not reach the Upstash REST endpoint while saving (404). Verify UPSTASH_REDIS_REST_URL.';
+      return 'Shared sync could not reach the database endpoint while saving (404). Verify DATABASE_URL.';
     }
     if (status === 401 || status === 403) {
-      return 'Upstash rejected the save (401/403). Verify UPSTASH_REDIS_REST_TOKEN has write access (not the read-only token).';
+      return 'Neon rejected the save (401/403). Verify DATABASE_URL credentials allow writes.';
     }
     if (status === 429) {
       return 'Rate limit reached while saving. Retry after a short wait.';
@@ -1256,19 +1252,19 @@ export const getScopeWarning = (error: unknown): string | undefined => {
   }
 
   if (msg.startsWith('Failed to update shared state:')) {
-    return 'Shared state could not be written to Upstash. Check server logs and your Redis REST credentials.';
+    return 'Shared state could not be written to Neon Postgres. Check server logs and DATABASE_URL.';
   }
 
   const listMatch = /^list shared state \((\d+)\)\.$/.exec(msg);
   if (listMatch) {
-    return `Health check could not list Redis keys (HTTP ${listMatch[1]}). Check Upstash credentials.`;
+    return `Health check could not list shared state rows (HTTP ${listMatch[1]}). Check database credentials.`;
   }
 
   if (msg.startsWith('list shared state:')) {
-    return 'Health check could not list Redis keys. Check server logs and Upstash configuration.';
+    return 'Health check could not list shared state rows. Check server logs and database configuration.';
   }
 
-  return 'Shared state could not be loaded. Check server logs and Upstash connectivity.';
+  return 'Shared state could not be loaded. Check server logs and Neon connectivity.';
 };
 
 const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
@@ -1347,7 +1343,7 @@ export const createReadHandler =
       let warning: string | undefined;
 
       try {
-        // Bypass Redis snapshot cache so GET version matches mutate (which bypasses).
+        // Bypass shared-state cache so GET version matches mutate (which bypasses).
         // Otherwise a 30s cached read can lag behind fresh reads on POST and clients
         // send a stale baseVersion, which breaks sync (409 / blocked outbox).
         const stored = await readScopeStoredData(scope, { bypassCache: true });
@@ -1355,7 +1351,7 @@ export const createReadHandler =
         version = stored.version;
         if (!isSharedStateConfigured()) {
           degraded = true;
-          warning = getScopeWarning(new Error('UPSTASH_REDIS_REST_URL is not configured.'));
+          warning = getScopeWarning(new Error('DATABASE_URL is not configured.'));
         }
       } catch (error) {
         const fallback = buildFallbackScopeData(scope);

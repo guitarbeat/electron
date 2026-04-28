@@ -40,20 +40,19 @@ Command behavior:
 ## App and API Workflow
 
 - There is no separate local backend process. `vite.config.ts` mounts a custom middleware that executes `api/*.ts` for `/api/*` requests during local development.
-- Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and shared persistence in `api/_lib/sharedStateStore.ts` (Upstash Redis REST).
+- Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and shared persistence in `api/_lib/sharedStateStore.ts` (Neon/Postgres).
 - Profile selection and PIN login are handled through signed cookies in `api/session.ts`, `api/session/profile.ts`, and `api/_lib/session.ts`.
 - `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
 - In development, `src/services/metadataService.ts` defaults metadata reads to the local `/api/omdb` and `/api/tvmaze` proxies. Set `VITE_OMDB_API_URL` or `VITE_TVMAZE_API_URL` only when intentionally bypassing those proxies.
 - Watchlist autocomplete tries OMDb movie search first, then falls back to TVMaze show search when OMDb has no usable match.
-- In local Vite development, `VITE_UPSTASH_REDIS_REST_URL` and `VITE_UPSTASH_REDIS_REST_TOKEN` are accepted as fallbacks when the non-`VITE_` variables are not set.
-- If Upstash configuration is missing, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
+- In local Vite development, `VITE_DATABASE_URL` is accepted as a fallback when `DATABASE_URL` is not set.
+- If database configuration is missing, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
 
 ## Environment Variables
 
 Client-side variables used by the app:
 
-- `VITE_UPSTASH_REDIS_REST_URL`
-- `VITE_UPSTASH_REDIS_REST_TOKEN`
+- `VITE_DATABASE_URL`
 - `VITE_OMDB_API_URL`
 - `VITE_OMDB_API_KEY` only when `VITE_OMDB_API_URL` points directly to OMDb
 - `VITE_TVMAZE_API_URL`
@@ -61,9 +60,9 @@ Client-side variables used by the app:
 
 Server-side variables used by deployed handlers:
 
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-- `UPSTASH_STATE_KEY_PREFIX` (optional; default `app:state:`)
+- `DATABASE_URL`
+- `DATABASE_URL_UNPOOLED` (optional; for tooling that needs a direct Neon connection)
+- `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING` (optional Vercel Postgres-compatible aliases)
 - `SESSION_SIGNING_SECRET`
 - `OMDB_API_URL`
 - `OMDB_API_KEY` for the default `/api/omdb` proxy path
@@ -87,10 +86,10 @@ Notes:
 - `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
 - Canonical Vercel project for this repo: `guitarbeats-projects / electra-and-aaron-movies`  
   Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`
-- Set the same server env vars as in [Environment Variables](#environment-variables) (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
+- Set the same server env vars as in [Environment Variables](#environment-variables) (`DATABASE_URL`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
 - If a local checkout is missing `.vercel/project.json`, run `vercel link --project electra-and-aaron-movies` before using `vercel env pull`.
 
-**Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling Redis (use for frequent uptime pings). `GET /api/health?deep=1` lists Redis keys and reads PIN coverage; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
+**Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling Postgres (use for frequent uptime pings). `GET /api/health?deep=1` verifies shared-state rows and reads PIN coverage; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
 
 **Monitoring:** Use Vercel’s function logs and error rates for `/api/state/*` and related handlers; alert on spikes in 5xx or latency. External uptime tools can target `/api/health` (liveness) and optionally `?deep=1` on a longer interval.
 
