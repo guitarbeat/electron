@@ -498,37 +498,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             {/* ── Up Next ── */}
             {sections.queue.length > 0 && (
               <CollectionSection heading="Up Next">
-                <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
-                  {sections.queue.map((movie) => (
-                    <MovieCard
-                      key={movie.id}
-                      movie={movie}
-                      currentUser={currentUser}
-                      onToggle={() => toggleWatched(movie.id)}
-                      onToggleError={handleToggleError}
-                      onRename={(title) => renameMovie(movie.id, title)}
-                      onDelete={() => setMovieToDelete(movie)}
-                      isHighlighted={successMovieId === movie.id}
-                      memories={movieMemories.get(movie.id) ?? []}
-                      onAddMemory={
-                        currentUser
-                          ? async (note) => {
-                              await addMemory(movie.id, movie.title, currentUser, note);
-                            }
-                          : undefined
-                      }
-                      onUpdateMemory={async (memoryId, note) => {
-                        await updateMemory(memoryId, { note });
-                      }}
-                      onDeleteMemory={async (memoryId) => {
-                        await deleteMemoryRecord(memoryId);
-                      }}
-                      onTogglePin={async (memoryId) => {
-                        await toggleMemoryPin(memoryId);
-                      }}
-                    />
-                  ))}
-                </CollectionGrid>
+                {renderMovieGrid(sections.queue, 'Your movie list is wide open')}
               </CollectionSection>
             )}
 
