@@ -173,38 +173,33 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             {canEdit && (
               <CardActionRail
                 className="place-item-actions"
+                variant="glass"
                 primary={
-                  <Button
-                    type="button"
-                    variant={isVisited ? 'secondary' : 'primary'}
-                    size="sm"
+                  <CardActionButton
+                    isCircle
+                    variant={isVisited ? 'primary' : 'secondary'}
                     onClick={handleVisitToggle}
-                    isLoading={isActionLoading}
-                    disabled={isSubmitting}
-                    className={`workspace-card-action workspace-card-action--primary place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
-                  >
-                    <CheckIcon style={{ width: 15, height: 15 }} />
-                    <span className="place-item-action-btn__label">
-                      {isVisited ? 'Visited' : 'Been here'}
-                    </span>
-                  </Button>
+                    disabled={isSubmitting || isActionLoading}
+                    leftIcon={<CheckIcon />}
+                    className={`place-item-action-btn${isVisited ? ' place-item-action-btn--unmark' : ' place-item-action-btn--visit'}`}
+                  />
                 }
                 secondary={
                   <CardActionButton
-                    isExpansive
+                    isCircle
+                    variant="glass"
                     onClick={handleEdit}
-                    leftIcon={<EditIcon style={{ width: 15, height: 15 }} />}
+                    leftIcon={<EditIcon />}
                     disabled={isSubmitting || isActionLoading}
                     className="place-item-edit-btn"
-                  >
-                    Edit
-                  </CardActionButton>
+                  />
                 }
                 cluster={
                   <CardActionButton
-                    isCompact
+                    isCircle
+                    variant="glass"
                     onClick={handleDelete}
-                    leftIcon={<TrashIcon style={{ width: 13, height: 13 }} />}
+                    leftIcon={<TrashIcon />}
                     disabled={isSubmitting || isActionLoading}
                     className="place-item-delete-btn"
                     title="Remove place"
