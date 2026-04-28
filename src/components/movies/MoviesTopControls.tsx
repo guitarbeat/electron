@@ -333,22 +333,18 @@ const MoviesTopControls = React.forwardRef<
   return (
     <section className="workspace-control-panel watchlist-top-controls">
       <div className="watchlist-top-controls__stage">
-        <div
-          className={`watchlist-top-controls__input-block${
+        <form
+          className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
             isAutocompleteElevated ? ' is-autocomplete-active' : ''
           }`}
+          onSubmit={(event) => {
+            event.preventDefault();
+            clearFocusBoundaryCheck();
+            hideAutocomplete();
+            internalSearchInputRef.current?.blur();
+            void onSubmit();
+          }}
         >
-          <div className="watchlist-top-controls__toolbar">
-            <form
-              className="watchlist-top-controls__search-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                clearFocusBoundaryCheck();
-                hideAutocomplete();
-                internalSearchInputRef.current?.blur();
-                void onSubmit();
-              }}
-            >
           <div
             ref={autocompleteRegionRef}
             className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
@@ -618,10 +614,7 @@ const MoviesTopControls = React.forwardRef<
               </Button>
             </div>
           )}
-            </form>
-          </div>
-
-        </div>
+        </form>
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (
