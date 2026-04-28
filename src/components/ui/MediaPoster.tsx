@@ -8,6 +8,8 @@ interface MediaPosterProps {
   className?: string;
 }
 
+const brokenUrls = new Set<string>();
+
 export const MediaPoster: React.FC<MediaPosterProps> = ({
   title,
   posterUrl,
@@ -15,13 +17,22 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   id,
   className = '',
 }) => {
-  const [hasImageError, setHasImageError] = React.useState(false);
+  const [hasImageError, setHasImageError] = React.useState(() =>
+    posterUrl ? brokenUrls.has(posterUrl) : false
+  );
   const [hasCatError, setHasCatError] = React.useState(false);
 
   React.useEffect(() => {
-    setHasImageError(false);
+    setHasImageError(posterUrl ? brokenUrls.has(posterUrl) : false);
     setHasCatError(false);
   }, [posterUrl]);
+
+  const handleImageError = () => {
+    if (posterUrl) {
+      brokenUrls.add(posterUrl);
+    }
+    setHasImageError(true);
+  };
 
   const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
   const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(id || title || 'cat')}`;
@@ -34,7 +45,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
           alt={`${title} poster`}
           loading="lazy"
           className="movie-poster"
-          onError={() => setHasImageError(true)}
+          onError={handleImageError}
         />
       ) : !hasCatError ? (
         <>
