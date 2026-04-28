@@ -256,7 +256,6 @@ const PlacesList: React.FC = () => {
           {renderPlaceGrid(sections.completed, 'No visited places yet')}
         </CollectionSection>
       )}
-    )}
 
       {/* Modals */}
       {placeToDelete && (
