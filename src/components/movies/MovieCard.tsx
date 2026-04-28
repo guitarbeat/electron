@@ -8,6 +8,8 @@ import {
   MediaCardOverlay,
   MediaCardPosterWrap,
   MediaCardTitle,
+  MediaCardRatingBadge,
+  MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
 import Button from '@/ui/Button';
 import { colors } from '@/theme/tokens';
@@ -141,22 +143,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
           />
 
           {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
-            <div className="movie-item-imdb-badge" aria-label={`IMDb rating: ${movie.imdbRating}`}>
-              <span className="movie-item-imdb-badge__star">⭐</span>
-              <span className="movie-item-imdb-badge__score">{movie.imdbRating}</span>
-            </div>
+            <MediaCardRatingBadge
+              rating={movie.imdbRating}
+              className="movie-item-imdb-badge"
+            />
           ) : null}
 
           {isHighlighted ? (
-            <div className="movie-item-success-badge" aria-hidden>
-              <span className="movie-item-success-badge__icon">
-                <CheckIcon size={12} />
-              </span>
-              <span className="movie-item-success-badge__copy">
-                <span className="movie-item-success-badge__eyebrow">Queued</span>
-                <span className="movie-item-success-badge__title">Just added</span>
-              </span>
-            </div>
+            <MediaCardSuccessBadge
+              eyebrow="Queued"
+              title="Just added"
+              icon={<CheckIcon size={12} />}
+              className="movie-item-success-badge"
+            />
           ) : null}
 
           <button

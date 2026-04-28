@@ -10,6 +10,7 @@ import {
   MediaCardPosterWrap,
   MediaCardSubtext,
   MediaCardTitle,
+  MediaCardStatusBadge,
 } from '@/ui/MediaCard';
 import { getPlaceMeta } from './lib/placeMeta';
 import WatcherBadge from '@/common/WatcherBadge';
@@ -136,10 +137,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 
           {/* Top-left badge: visited state takes priority over category badge */}
           {isVisited ? (
-            <div className="place-item-visited-badge" aria-label="Visited">
-              <CheckIcon style={{ width: 10, height: 10 }} />
-              {visitedDate ?? 'Visited'}
-            </div>
+            <MediaCardStatusBadge
+              label={visitedDate ?? 'Visited'}
+              icon={<CheckIcon style={{ width: 10, height: 10 }} />}
+              className="place-item-visited-badge"
+              aria-label="Visited"
+            />
           ) : (
             <div className="place-item-category-badge" aria-label={meta.label}>
               <span className="place-item-category-badge__icon">{meta.icon}</span>

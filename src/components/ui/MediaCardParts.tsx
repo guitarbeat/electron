@@ -120,3 +120,41 @@ export const MediaCardSubtext: React.FC<SubtextProps> = ({
     {children}
   </p>
 );
+
+export const MediaCardRatingBadge: React.FC<{ rating: string; className?: string }> = ({
+  rating,
+  className = '',
+}) => (
+  <div className={`media-card__rating-badge ${className}`.trim()} aria-label={`Rating: ${rating}`}>
+    <span className="media-card__rating-badge-star">⭐</span>
+    <span className="media-card__rating-badge-score">{rating}</span>
+  </div>
+);
+
+export const MediaCardSuccessBadge: React.FC<{
+  eyebrow: string;
+  title: string;
+  icon?: React.ReactNode;
+  className?: string;
+}> = ({ eyebrow, title, icon, className = '' }) => (
+  <div className={`media-card__success-badge ${className}`.trim()} aria-hidden>
+    <span className="media-card__success-badge-icon">
+      {icon}
+    </span>
+    <span className="media-card__success-badge-copy">
+      <span className="media-card__success-badge-eyebrow">{eyebrow}</span>
+      <span className="media-card__success-badge-title">{title}</span>
+    </span>
+  </div>
+);
+
+export const MediaCardStatusBadge: React.FC<{
+  label: string;
+  icon?: React.ReactNode;
+  className?: string;
+}> = ({ label, icon, className = '' }) => (
+  <div className={`media-card__status-badge ${className}`.trim()}>
+    {icon}
+    {label}
+  </div>
+);
