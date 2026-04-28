@@ -180,6 +180,22 @@ export const StarIcon: React.FC<IconProps & { fill?: boolean }> = ({ fill = fals
   </svg>
 );
 
+export const PlayIcon: React.FC<IconProps> = (props) => (
+  <svg
+    {...props}
+    style={getIconStyles(props.size, props.style)}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M8 5v14l11-7z" />
+  </svg>
+);
+
+export const BookmarkIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>{path('M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z')}</StrokeIcon>
+);
+
 export const Spinner: React.FC<IconProps> = ({ className = 'w-6 h-6', style, size }) => (
   <svg
     className={`animate-spin ${className}`}

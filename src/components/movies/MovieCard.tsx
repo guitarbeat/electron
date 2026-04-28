@@ -13,7 +13,7 @@ import {
 } from '@/ui/MediaCard';
 import Button from '@/ui/Button';
 import { colors } from '@/theme/tokens';
-import { CheckIcon, EditIcon, EyeIcon, NoteIcon, PlusIcon } from '@/common/Icons';
+import { CheckIcon, EditIcon, EyeIcon, NoteIcon, PlusIcon, PlayIcon, BookmarkIcon, StarIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
@@ -112,87 +112,57 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <>
-      <Card
-        ref={cardRef}
-        variant={watchedByBoth ? 'elevated' : 'default'}
-        glow={watchedByBoth || isHighlighted}
-        className={`movie-item-card ${
-          watchedByBoth ? 'movie-item-card--watched' : ''
-        } ${isHighlighted ? 'movie-item-card--highlighted' : ''} ${
-          isDetailsOpen ? 'movie-item-card--opening-details' : ''
-        }`}
+      <div 
+        className={`movie-item-container ${watchedByBoth ? 'movie-item-container--watched' : ''} ${isHighlighted ? 'movie-item-container--highlighted' : ''}`}
         data-movie-id={movie.id}
-        data-added-by={movie.addedBy}
-        style={{
-          padding: 0,
-          marginBottom: 0,
-          borderColor: watchedByBoth ? colors.accent : colors.border,
-        }}
       >
-        <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
-          <MediaPoster
-            title={movie.title}
-            posterUrl={movie.posterUrl}
-            year={movie.year}
-            id={movie.id}
-          />
-
-          <MediaCardWatcherStack
-            watchers={movie.watchedBy}
-            className="movie-item-watchers"
-          />
-
-          {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
-            <MediaCardRatingBadge
-              rating={movie.imdbRating}
-              className="movie-item-imdb-badge"
+        <Card
+          ref={cardRef}
+          variant="default"
+          className="movie-item-card"
+          style={{
+            padding: 0,
+            marginBottom: '0.75rem',
+            overflow: 'hidden',
+          }}
+        >
+          <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
+            <MediaPoster
+              title={movie.title}
+              posterUrl={movie.posterUrl}
+              year={movie.year}
+              id={movie.id}
             />
-          ) : null}
 
-          {isHighlighted ? (
-            <MediaCardSuccessBadge
-              eyebrow="Queued"
-              title="Just added"
-              icon={<CheckIcon size={12} />}
-              className="movie-item-success-badge"
+            <MediaCardWatcherStack
+              watchers={movie.watchedBy}
+              className="movie-item-watchers"
             />
-          ) : null}
 
-          <button
-            type="button"
-            className="movie-item-details-hit-area"
-            onClick={handleOpenDetails}
-            aria-label={`View details for "${movie.title}"`}
-          >
-            <span className="sr-only">{`View details for "${movie.title}"`}</span>
-          </button>
-
-          <MediaCardOverlay
-            className={`movie-item-overlay ${isHighlighted ? 'movie-item-overlay--success' : ''}`.trim()}
-          >
-            {featuredMemory ? (
-              <MovieMemoryPreview
-                memory={featuredMemory}
-                additionalCount={Math.max(memories.length - 1, 0)}
-                isExpanded={false}
+            {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
+              <MediaCardRatingBadge
+                rating={movie.imdbRating}
+                className="movie-item-imdb-badge"
               />
             ) : null}
-            <MediaCardInfo>
-              <MediaCardTitle
-                className={`movie-item-title ${movie.posterUrl ? '' : 'movie-item-title--fallback'}`}
-              >
-                {movie.title}
-              </MediaCardTitle>
-              <MediaCardMetadata
-                items={[movie.year, movie.runtime]}
-                badge={movie.category}
-                chips={movie.genre ? [movie.genre.split(',')[0].trim()] : []}
-                className="movie-metadata"
-              />
-            </MediaCardInfo>
-          </MediaCardOverlay>
 
-          {actionState.showActionRail && (
+            <button
+              type="button"
+              className="movie-item-details-hit-area"
+              onClick={handleOpenDetails}
+              aria-label={`View details for "${movie.title}"`}
+            >
+              <span className="sr-only">{`View details for "${movie.title}"`}</span>
+            </button>
+          </MediaCardPosterWrap>
+        </Card>
+
+        <div className="movie-item-info-external">
+          <MediaCardTitle className="movie-item-title-external">
+            {movie.title}
+          </MediaCardTitle>
+          
+          <div className="movie-item-actions-external">
             <MovieActions
               movie={movie}
               actionState={actionState}
@@ -201,11 +171,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
               onToggleNotes={handleOpenDetails}
               onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
             />
-          )}
-        </MediaCardPosterWrap>
-      </Card>
+          </div>
+        </div>
+      </div>
 
       {onRename ? (
+// ...
         <MovieTitleEditModal
           movie={movie}
           isOpen={isTitleEditorOpen}
@@ -301,52 +272,41 @@ const MovieActions: React.FC<MovieActionsProps> = ({
 
   return (
     <CardActionRail
-      className="movie-actions"
-      variant="glass"
+      className="movie-actions-external"
+      variant="external"
       primary={
         actionState.showWatchedAction && (
           <CardActionButton
-            isCircle
             variant="primary"
             onClick={handlePrimaryAction}
             aria-pressed={actionState.watchedByCurrentUser}
-            aria-label={actionState.primaryActionAriaLabel ?? undefined}
-            leftIcon={actionState.watchedByCurrentUser ? <CheckIcon /> : <EyeIcon />}
+            leftIcon={<PlayIcon />}
+            className="movie-action-btn--watch"
             disabled={isUpdating}
-            className={`movie-item-primary-action ${
-              actionState.watchedByCurrentUser
-                ? 'movie-item-primary-action--watched'
-                : 'movie-item-primary-action--unwatched'
-            }`}
-          />
+          >
+            Watch
+          </CardActionButton>
         )
       }
       secondary={
-        actionState.showNotesAction && (
-          <CardActionButton
-            isCircle
-            variant="glass"
-            onClick={handleToggleNotes}
-            leftIcon={<PlusIcon />}
-            aria-label={actionState.notesButtonAriaLabel ?? undefined}
-            disabled={isUpdating}
-            className="movie-item-note-action"
-          />
-        )
+        <CardActionButton
+          variant="outline"
+          onClick={handleToggleNotes}
+          leftIcon={<BookmarkIcon />}
+          className="movie-action-btn--bookmark"
+          disabled={isUpdating}
+          aria-label="Bookmark"
+        />
       }
       cluster={
-        !actionState.isGuest && onEdit && (
-          <CardActionButton
-            isCircle
-            variant="glass"
-            onClick={handleEditAction}
-            title={`Edit title for "${movie.title}"`}
-            aria-label={`Edit title for "${movie.title}"`}
-            leftIcon={<EditIcon />}
-            disabled={isUpdating}
-            className="movie-icon-action--edit"
-          />
-        )
+        <CardActionButton
+          variant="outline"
+          onClick={handleEditAction}
+          leftIcon={<StarIcon />}
+          className="movie-action-btn--star"
+          disabled={isUpdating}
+          aria-label="Rate"
+        />
       }
     />
   );

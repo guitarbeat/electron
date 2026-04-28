@@ -5,7 +5,7 @@ interface CardActionRailProps {
   secondary?: React.ReactNode;
   cluster?: React.ReactNode;
   className?: string;
-  variant?: 'glass' | 'default';
+  variant?: 'glass' | 'default' | 'external';
 }
 
 export const CardActionRail: React.FC<CardActionRailProps> = ({
@@ -15,6 +15,16 @@ export const CardActionRail: React.FC<CardActionRailProps> = ({
   className = '',
   variant = 'glass',
 }) => {
+  if (variant === 'external') {
+    return (
+      <div className={`workspace-card-rail-external ${className}`.trim()}>
+        <div className="workspace-card-rail-external__primary">{primary}</div>
+        <div className="workspace-card-rail-external__secondary">{secondary}</div>
+        <div className="workspace-card-rail-external__secondary">{cluster}</div>
+      </div>
+    );
+  }
+
   if (variant === 'default') {
     return (
       <div className={`workspace-card-actions ${className}`.trim()}>
@@ -49,7 +59,7 @@ export const CardActionRail: React.FC<CardActionRailProps> = ({
 };
 
 export interface CardActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'glass';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'glass' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   isCompact?: boolean;
   isExpansive?: boolean;
