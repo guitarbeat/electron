@@ -6,7 +6,10 @@ import {
   MediaCardInfo,
   MediaCardOverlay,
   MediaCardPosterWrap,
+  MediaCardRatingBadge,
+  MediaCardStatusBadge,
   MediaCardSubtext,
+  MediaCardSuccessBadge,
   MediaCardTitle,
 } from './MediaCardParts';
 
@@ -49,4 +52,7 @@ export {
   MediaCardActions,
   MediaCardInfo,
   MediaCardSubtext,
+  MediaCardRatingBadge,
+  MediaCardSuccessBadge,
+  MediaCardStatusBadge,
 };
