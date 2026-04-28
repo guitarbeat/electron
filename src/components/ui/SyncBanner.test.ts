@@ -53,13 +53,13 @@ test('getSyncBannerContent', async (t) => {
     assert.ok(content.whatToDo.length > 0);
   });
 
-  await t.test('classifies Upstash API warnings', () => {
+  await t.test('classifies database API warnings', () => {
     const content = getSyncBannerContent({
       isBlocked: false,
-      label: 'Upstash rejected the request (401/403). Check UPSTASH_REDIS_REST_TOKEN matches your database token.',
+      label: 'Shared state could not be read from Neon Postgres. Check server logs and DATABASE_URL.',
     });
 
-    assert.ok(content.debugHints.some((h) => /Upstash Redis REST/i.test(h)));
-    assert.ok(/token|read-write/i.test(content.whatToDo));
+    assert.ok(content.debugHints.some((h) => /Postgres database/i.test(h)));
+    assert.ok(/Neon database URL/i.test(content.whatToDo));
   });
 });

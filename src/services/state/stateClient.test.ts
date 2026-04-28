@@ -61,7 +61,7 @@ test('readScope preserves optimistic queued movie mutations when degraded replay
           version: 'server-version',
           degraded: true,
           warning:
-            'Shared sync is unavailable because the server is missing UPSTASH_REDIS_REST_URL. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or VITE_* during local Vite development), then restart the dev server.',
+            'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL (or VITE_DATABASE_URL during local Vite development), then restart the dev server.',
         }),
         {
           status: 200,

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import handler from '../../api/health.ts';
-import { createUpstashMemoryMock } from './test/upstashMock.ts';
+import { createSharedStateMemoryMock } from './test/sharedStateMock.ts';
 
 test('health liveness works when req.url is a relative path', async () => {
   // Vercel runtime can pass a relative `req.url` (e.g. "/api/health"), which must not
@@ -19,7 +19,7 @@ test('health liveness works when req.url is a relative path', async () => {
 });
 
 test('deep health reports scope and PIN diagnostics without failing readiness', async () => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'movielist.json': '[]',
     'messages.json': '[]',
     'memories.json': '[]',

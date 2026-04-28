@@ -19,6 +19,7 @@
     "post-merge": "scripts/post-merge.bat"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/three": "^0.184.0",
     "chroma-js": "^3.2.0",
@@ -29,6 +30,7 @@
     "react-dom": "^19.2.5",
     "three": "^0.184.0",
     "ts-pattern": "^5.9.0",
+    "vercel": "^52.0.0",
     "zod": "^4.3.6"
   },
   "pnpm": {
