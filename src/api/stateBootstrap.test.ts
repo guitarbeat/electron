@@ -3,10 +3,10 @@ import test from 'node:test';
 
 import sessionHandler from '../../api/session.ts';
 import readHandler from '../../api/state/[scope].ts';
-import { createUpstashMemoryMock } from './test/upstashMock.ts';
+import { createSharedStateMemoryMock } from './test/sharedStateMock.ts';
 
-test('reading a missing placeSuggestions scope bootstraps the default Redis key once', async () => {
-  const mock = createUpstashMemoryMock({
+test('reading a missing placeSuggestions scope bootstraps the default shared-state row once', async () => {
+  const mock = createSharedStateMemoryMock({
     'movielist.json': '[]',
   });
 
@@ -31,8 +31,8 @@ test('reading a missing placeSuggestions scope bootstraps the default Redis key 
   }
 });
 
-test('reading an existing placeSuggestions scope does not rewrite Redis', async () => {
-  const mock = createUpstashMemoryMock({
+test('reading an existing placeSuggestions scope does not rewrite shared-state store', async () => {
+  const mock = createSharedStateMemoryMock({
     'placesuggestions.json': '[]',
   });
 
@@ -49,7 +49,7 @@ test('reading an existing placeSuggestions scope does not rewrite Redis', async 
 });
 
 test('missing pins.json reports both users as missing PINs and bootstraps the key', async () => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'movielist.json': '[]',
   });
 

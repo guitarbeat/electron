@@ -19,6 +19,7 @@
     "post-merge": "scripts/post-merge.bat"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/three": "^0.184.0",
     "chroma-js": "^3.2.0",

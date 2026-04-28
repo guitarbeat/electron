@@ -16,7 +16,7 @@ A two-person collaborative movie watchlist and date-planning SPA titled "electro
 
 **Profile/session UX:** Profile selection (Aaron / Electra / Guest) lives only in the action bubble quick-actions menu. A legacy `app-session-bar` header panel that created a duplicate login UI was removed; the `ActionBubble.tsx` and `ActionFanMenu.tsx` UI components are also gone (replaced by `ActionBubbleLayer.tsx`).
 
-**Persistence model:** defaults to `localStorage`; upgrades to Upstash Redis (REST) when environment variables are configured. No traditional database.
+**Persistence model:** defaults to `localStorage`; upgrades to Neon Postgres when `DATABASE_URL` is configured.
 
 **Deploy shape:** static frontend (`dist/`) + serverless-style API handlers in `api/` (Vercel target).
 
@@ -66,7 +66,7 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 |---|---|
 | `api/omdb.ts` | OMDb proxy with in-memory cache (1h TTL, 500 entries), rate limiting (30 req/min/IP), retries |
 | `api/tvmaze.ts` | TVMaze proxy with in-memory cache |
-| `api/health.ts` | Liveness + optional readiness probe against shared Redis state |
+| `api/health.ts` | Liveness + optional readiness probe against shared database state |
 | `api/session.ts` | Returns current session state and PIN-protected user list |
 | `api/session/profile.ts` | POST to set profile, PIN verification with lockout |
 | `api/state/[scope].ts` | GET scoped shared state (movies, messages, places, quiz, matchmaker, etc.) |
@@ -74,7 +74,7 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 **Shared library (`api/_lib/`):**
 - `config.ts` — Shared `resolveConfig` helper for environment variable resolution
-- `sharedStateStore.ts` — Upstash Redis REST read/write with 30s per-key TTL cache
+- `sharedStateStore.ts` — Neon Postgres read/write with 30s per-file TTL cache
 - `state.ts` — Business logic: normalization, mutation handlers per scope
 - `session.ts` — HMAC-signed cookie sessions, PIN hashing (PBKDF2), lockout
 - `http.ts` — Response helpers (`jsonResponse`, `mergeHeaders`, etc.)
@@ -88,9 +88,9 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 **Primary (always available):** `localStorage` — used as fallback and for some client-only state (quiz completion flag, action bubble position, etc.).
 
-**Optional shared sync:** Upstash Redis via `api/_lib/sharedStateStore.ts`. When `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` are configured, each scope is stored as a JSON string under a Redis key (default prefix `app:state:`). The client syncs via polling to `/api/state/:scope`.
+**Optional shared sync:** Neon Postgres via `api/_lib/sharedStateStore.ts`. When `DATABASE_URL` is configured, each scope is stored as a JSON string row in `shared_state_files`. The client syncs via polling to `/api/state/:scope`.
 
-**Scope model:** State is split into named scopes, each mapping to a logical filename used as the Redis key suffix (e.g., `movielist.json`, `messages.json`, `places.json`, `quiz.json`, `matchmaker.json`, `pins.json`). Mutations are validated server-side before writing.
+**Scope model:** State is split into named scopes, each mapping to a logical filename used as the row key (e.g., `movielist.json`, `messages.json`, `places.json`, `quiz.json`, `matchmaker.json`, `pins.json`). Mutations are validated server-side before writing.
 
 ### Authentication
 
@@ -120,7 +120,7 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 | Service | Integration point | Purpose |
 |---|---|---|
-| **Upstash Redis REST** | `api/_lib/sharedStateStore.ts` | Shared persistence store (optional) |
+| **Neon Postgres** | `api/_lib/sharedStateStore.ts` | Shared persistence store (optional) |
 | **OMDb API** | `api/omdb.ts` + `@/services/metadata` | Movie metadata (title, poster, ratings, plot) |
 | **TVMaze API** | `api/tvmaze.ts` | TV show metadata |
 | **Google Places API** | Map/places components, `VITE_GOOGLE_PLACES_API_KEY` | Date spot search and maps |
@@ -141,13 +141,13 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 ### Environment Variables
 
 **Client-side (`VITE_*`):**
-- `VITE_UPSTASH_REDIS_REST_URL` / `VITE_UPSTASH_REDIS_REST_TOKEN` — local dev fallbacks for Upstash
+- `VITE_DATABASE_URL` — local dev fallback for Neon/Postgres
 - `VITE_API_SECRET` — must match server `API_SECRET` for authorized writes
 - `VITE_OMDB_API_URL` / `VITE_OMDB_API_KEY` — OMDb override
 - `VITE_GOOGLE_PLACES_API_KEY` — maps/places features
 
 **Server-side (Vercel/serverless):**
-- `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` — Upstash storage
+- `DATABASE_URL` — Neon/Postgres storage
 - `API_SECRET` — authorizes client mutations
 - `SESSION_SIGNING_SECRET` — signs session cookies (required for PIN auth)
 - `OMDB_API_KEY` / `OMDB_API_URL` — OMDb proxy

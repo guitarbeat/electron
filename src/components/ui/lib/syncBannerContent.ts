@@ -22,11 +22,11 @@ interface SyncBannerInput {
   label?: string;
 }
 
-const missingUpstashPattern =
-  /UPSTASH_REDIS_REST_URL is not configured|missing UPSTASH|VITE_UPSTASH.*development/i;
+const missingDatabasePattern =
+  /DATABASE_URL is not configured|missing DATABASE_URL|VITE_DATABASE.*development/i;
 
-const upstashFailurePattern =
-  /UPSTASH_REDIS_REST_TOKEN|Upstash rejected|rate limit|HTTP (401|403|404|429)|could not be (loaded|saved)|Health check could not list Redis keys/i;
+const databaseFailurePattern =
+  /Neon|Postgres|database|rate limit|HTTP (401|403|404|429)|could not be (loaded|saved)|Health check could not list shared state/i;
 
 const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
   if (isBlocked) {
@@ -55,26 +55,26 @@ const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
     ];
   }
 
-  if (missingUpstashPattern.test(text)) {
+  if (missingDatabasePattern.test(text)) {
     return [
       'Cause: shared backend is not configured.',
-      'Verify: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (server), or VITE_* during local Vite, then restart dev server.',
+      'Verify: set DATABASE_URL (server), or VITE_DATABASE_URL during local Vite, then restart dev server.',
       'State: writes are currently local-only until config is fixed.',
     ];
   }
 
-  if (upstashFailurePattern.test(text)) {
+  if (databaseFailurePattern.test(text)) {
     return [
-      'Cause: Upstash Redis REST rejected the request, the endpoint was wrong, or rate limits applied.',
-      'Verify: use the standard (read-write) REST token; URL matches the console HTTPS endpoint; retry after cooldown.',
-      'State: writes may be local-only until Upstash accepts requests.',
+      'Cause: the shared Postgres database rejected the request, the URL was wrong, or rate limits applied.',
+      'Verify: DATABASE_URL points to the Neon pooled connection string; retry after cooldown.',
+      'State: writes may be local-only until Neon accepts requests.',
     ];
   }
 
-  if (/Upstash|shared state could not be loaded/i.test(text)) {
+  if (/Neon|Postgres|shared state could not be loaded/i.test(text)) {
     return [
-      'Cause: shared state uses Upstash Redis over HTTPS.',
-      'Verify: environment variables, server logs, and https://status.upstash.com.',
+      'Cause: shared state uses Neon Postgres.',
+      'Verify: environment variables, server logs, and https://status.neon.tech.',
       'State: writes are local-only until reads succeed.',
     ];
   }
@@ -116,21 +116,21 @@ const buildFriendlyContent = ({ isBlocked, label }: SyncBannerInput): Pick<SyncB
     };
   }
 
-  if (missingUpstashPattern.test(text)) {
+  if (missingDatabasePattern.test(text)) {
     return {
       title: 'Shared backup not set up',
       description: 'The app is running without a shared storage backend.',
       whatItMeans: 'Changes only save on this device and won\'t appear for the other person.',
-      whatToDo: 'Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to the environment to enable sharing.',
+      whatToDo: 'Add DATABASE_URL to the environment to enable sharing.',
     };
   }
 
-  if (upstashFailurePattern.test(text)) {
+  if (databaseFailurePattern.test(text)) {
     return {
       title: 'Shared backup unavailable',
       description: 'The sync service declined the connection — possibly credentials or permissions.',
       whatItMeans: 'Your changes are safe locally. The other person may not see updates yet.',
-      whatToDo: 'Tap Retry sync to try again. If it keeps failing, check the Upstash token (read-write, not read-only).',
+      whatToDo: 'Tap Retry sync to try again. If it keeps failing, check the Neon database URL.',
     };
   }
 
@@ -151,34 +151,33 @@ const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { 
     return [
       header, appCtx, '',
       `Problem: sync conflict — local and remote edits diverged.`,
-      `The app stores shared data (watchlist, messages, etc.) in Upstash Redis.`,
+      `The app stores shared data (watchlist, messages, etc.) in Neon Postgres.`,
       `Two devices wrote conflicting changes at the same time.`,
       '', `Fix: reload the page, then retry sync.`,
       '', `Relevant file: api/_lib/sharedStateStore.ts`,
     ].join('\n');
   }
 
-  if (upstashFailurePattern.test(text)) {
+  if (databaseFailurePattern.test(text)) {
     return [
       header, appCtx, '',
-      `Problem: Upstash Redis REST sync failed.`,
+      `Problem: Neon Postgres sync failed.`,
       `Raw error: ${text}`,
       '',
       `How sync works:`,
-      `  The server reads/writes shared app data via Upstash REST (GET/POST to your Redis URL).`,
-      `  api/_lib/sharedStateStore.ts issues Redis commands with a bearer token.`,
+      `  The server reads/writes shared app data via Neon using DATABASE_URL.`,
+      `  api/_lib/sharedStateStore.ts stores one JSON document per state scope.`,
       '',
       `Required env vars (set in .env.local or deploy secrets):`,
-      `  UPSTASH_REDIS_REST_URL   — HTTPS REST URL from the Upstash console`,
-      `  UPSTASH_REDIS_REST_TOKEN — standard (read-write) REST token`,
+      `  DATABASE_URL — Neon pooled Postgres connection string`,
       '',
       `Likely causes:`,
-      `  1. Token is missing, expired, or is the read-only token (cannot KEYS/SET)`,
-      `  2. REST URL does not match the database`,
-      `  3. Rate limit hit — wait and retry`,
+      `  1. DATABASE_URL is missing or expired`,
+      `  2. Connection string points at the wrong database`,
+      `  3. Database limit hit — wait and retry`,
       '',
       `Relevant files:`,
-      `  api/_lib/sharedStateStore.ts  — Redis read/write logic`,
+      `  api/_lib/sharedStateStore.ts  — database read/write logic`,
       `  api/_lib/state.ts             — state scope handlers`,
       `  .env.local                    — where env vars should be defined`,
     ].join('\n');
@@ -205,15 +204,14 @@ const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { 
     ].join('\n');
   }
 
-  if (missingUpstashPattern.test(text)) {
+  if (missingDatabasePattern.test(text)) {
     return [
       header, appCtx, '',
-      `Problem: Upstash env vars are missing — shared backend not configured.`,
+      `Problem: DATABASE_URL is missing — shared backend not configured.`,
       `Raw error: ${text}`,
       '',
       `Required env vars (set in .env.local or deploy secrets):`,
-      `  UPSTASH_REDIS_REST_URL   — HTTPS REST URL`,
-      `  UPSTASH_REDIS_REST_TOKEN — standard REST token`,
+      `  DATABASE_URL — Neon pooled Postgres connection string`,
       '',
       `Without these, all writes are local-only and won't sync to the other person.`,
       '',
@@ -223,11 +221,11 @@ const buildCopyPayload = ({ isBlocked, label, occurredAt }: SyncBannerInput & { 
 
   return [
     header, appCtx, '',
-    `Problem: shared Upstash sync failed.`,
+    `Problem: shared database sync failed.`,
     text ? `Raw error: ${text}` : `No additional error detail available.`,
     '',
-    `The app syncs data via Upstash Redis REST (api/_lib/sharedStateStore.ts).`,
-    `Check: UPSTASH_* env vars, server logs, and network requests to /api/state.`,
+    `The app syncs data via Neon Postgres (api/_lib/sharedStateStore.ts).`,
+    `Check: DATABASE_URL, server logs, and network requests to /api/state.`,
   ].join('\n');
 };
 

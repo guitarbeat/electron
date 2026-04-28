@@ -4,30 +4,37 @@ import test from 'node:test';
 import { getScopeWarning } from '../../api/_lib/state.ts';
 import { invalidateSharedStateCache } from '../../api/_lib/sharedStateStore.ts';
 import { buildProfileCookie } from '../../api/_lib/session.ts';
-import { createUpstashMemoryMock } from './test/upstashMock.ts';
+import { createSharedStateMemoryMock } from './test/sharedStateMock.ts';
 import mutateHandler from '../../api/state/[scope]/mutate.ts';
 import readHandler from '../../api/state/[scope].ts';
 import type { Movie, MovieSuggestion, PlaceSuggestion, SharedMemory } from '../shared/types.ts';
 
-const withUnsetUpstash = async (run: () => Promise<void>) => {
-  const previousUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const previousToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-  delete process.env.UPSTASH_REDIS_REST_URL;
-  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+const withUnsetDatabase = async (run: () => Promise<void>) => {
+  const previousUrl = process.env.DATABASE_URL;
+  const previousPostgresUrl = process.env.POSTGRES_URL;
+  const previousViteUrl = process.env.VITE_DATABASE_URL;
+  delete process.env.DATABASE_URL;
+  delete process.env.POSTGRES_URL;
+  delete process.env.VITE_DATABASE_URL;
   invalidateSharedStateCache();
 
   try {
     await run();
   } finally {
     if (typeof previousUrl === 'string') {
-      process.env.UPSTASH_REDIS_REST_URL = previousUrl;
+      process.env.DATABASE_URL = previousUrl;
     } else {
-      delete process.env.UPSTASH_REDIS_REST_URL;
+      delete process.env.DATABASE_URL;
     }
-    if (typeof previousToken === 'string') {
-      process.env.UPSTASH_REDIS_REST_TOKEN = previousToken;
+    if (typeof previousPostgresUrl === 'string') {
+      process.env.POSTGRES_URL = previousPostgresUrl;
     } else {
-      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+      delete process.env.POSTGRES_URL;
+    }
+    if (typeof previousViteUrl === 'string') {
+      process.env.VITE_DATABASE_URL = previousViteUrl;
+    } else {
+      delete process.env.VITE_DATABASE_URL;
     }
     invalidateSharedStateCache();
   }
@@ -37,7 +44,7 @@ const withMovieStore = async (
   seedMovies: Movie[],
   run: (context: { getMovies: () => Movie[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'movielist.json': JSON.stringify(seedMovies),
   });
 
@@ -55,7 +62,7 @@ const withSuggestionStore = async (
   seedSuggestions: MovieSuggestion[],
   run: (context: { getSuggestions: () => MovieSuggestion[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'suggestions.json': JSON.stringify(seedSuggestions),
   });
 
@@ -74,7 +81,7 @@ const withPlaceSuggestionStore = async (
   seedSuggestions: PlaceSuggestion[],
   run: (context: { getSuggestions: () => PlaceSuggestion[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'placesuggestions.json': JSON.stringify(seedSuggestions),
   });
 
@@ -93,7 +100,7 @@ const withMemoryStore = async (
   seedMemories: SharedMemory[],
   run: (context: { getMemories: () => SharedMemory[]; patchBodies: unknown[] }) => Promise<void>
 ) => {
-  const mock = createUpstashMemoryMock({
+  const mock = createSharedStateMemoryMock({
     'memories.json': JSON.stringify(seedMemories),
   });
 
@@ -131,8 +138,8 @@ test('dynamic state mutate route returns 404 for unknown scopes', async () => {
 
 test('getScopeWarning maps shared-store and config errors to user-safe copy', () => {
   assert.ok(
-    (getScopeWarning(new Error('UPSTASH_REDIS_REST_URL is not configured.')) ?? '').includes(
-      'VITE_'
+    (getScopeWarning(new Error('DATABASE_URL is not configured.')) ?? '').includes(
+      'VITE_DATABASE_URL'
     )
   );
   assert.ok(
@@ -151,8 +158,8 @@ test('getScopeWarning maps shared-store and config errors to user-safe copy', ()
   assert.equal(getScopeWarning(null), undefined);
 });
 
-test('dynamic state read route falls back to default state when Upstash URL is missing', async () => {
-  await withUnsetUpstash(async () => {
+test('dynamic state read route falls back to default state when DATABASE_URL is missing', async () => {
+  await withUnsetDatabase(async () => {
     const originalWarn = console.warn;
     console.warn = () => {};
 
@@ -165,7 +172,7 @@ test('dynamic state read route falls back to default state when Upstash URL is m
 
       assert.equal(response.status, 200);
       assert.equal(payload.degraded, true);
-      assert.match(payload.warning ?? '', /UPSTASH_REDIS_REST_URL|VITE_UPSTASH/i);
+      assert.match(payload.warning ?? '', /DATABASE_URL|VITE_DATABASE/i);
     } finally {
       console.warn = originalWarn;
     }
