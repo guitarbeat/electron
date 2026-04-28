@@ -10,6 +10,7 @@ import {
 import { colors } from '@/theme/tokens';
 import { CheckIcon, CrossIcon } from '@/common/Icons';
 import { fetchOmdbMetadata } from '@/services/metadata/omdb';
+import MediaPoster from '@/ui/MediaPoster';
 
 interface SuggestionCardProps {
   suggestion: MovieSuggestion;
@@ -19,56 +20,6 @@ interface SuggestionCardProps {
   disableActions?: boolean;
   isProcessing?: boolean;
 }
-
-const SuggestionPoster: React.FC<{
-  title: string;
-  posterUrl?: string;
-  suggestionId: string;
-}> = ({ title, posterUrl, suggestionId }) => {
-  const [hasImageError, setHasImageError] = React.useState(false);
-  const [hasCatError, setHasCatError] = React.useState(false);
-
-  React.useEffect(() => {
-    setHasImageError(false);
-    setHasCatError(false);
-  }, [posterUrl]);
-
-  const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
-  const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(suggestionId || title || 'cat')}`;
-
-  return (
-    <div className="movie-poster-wrap">
-      {shouldShowPoster ? (
-        <img
-          src={posterUrl}
-          alt={`${title} poster`}
-          loading="lazy"
-          className="movie-poster"
-          onError={() => setHasImageError(true)}
-        />
-      ) : !hasCatError ? (
-        <>
-          <img
-            src={catUrl}
-            alt={`A cat representing ${title}`}
-            loading="lazy"
-            className="movie-poster movie-poster--cat-fallback"
-            onError={() => setHasCatError(true)}
-          />
-          <div className="movie-poster-cat-title" aria-hidden="true">
-            {title}
-          </div>
-        </>
-      ) : (
-        <div className="movie-poster-fallback">
-          <div className="movie-poster-fallback__inner">
-            <h3 className="movie-poster-fallback__title">{title}</h3>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const SuggestionCard: React.FC<SuggestionCardProps> = ({
   suggestion,
@@ -115,10 +66,11 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       }}
     >
       <MediaCardPosterWrap className="movie-item-poster-wrap">
-        <SuggestionPoster
+        <MediaPoster
           title={suggestion.title}
           posterUrl={posterUrl}
-          suggestionId={suggestion.id}
+          year={year}
+          id={suggestion.id}
         />
 
         {/* "Suggested by" eyebrow chip — top-left, mirrors IMDb badge placement */}

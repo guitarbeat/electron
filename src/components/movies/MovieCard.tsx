@@ -15,6 +15,8 @@ import { CheckIcon, EditIcon, EyeIcon, NoteIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
 import MovieDetailsModal from './MovieDetailsModal';
+import WatcherBadge from '@/common/WatcherBadge';
+import MediaPoster from '@/ui/MediaPoster';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -37,88 +39,6 @@ interface MovieCardProps {
   onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
 }
-
-const USER_PHOTOS: Record<string, string[]> = {
-  Aaron: [
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
-    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
-    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
-  ],
-  Electra: [
-    'https://i.redd.it/vkmos70wqw641.jpg',
-    'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',
-    'https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941',
-  ],
-};
-
-interface WatcherBadgeProps {
-  user: string;
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'text';
-  showLabel?: boolean;
-  className?: string;
-}
-
-const WatcherBadgePhoto: React.FC<{ user: string }> = ({ user }) => {
-  const [index, setIndex] = React.useState(0);
-  const [hasImageError, setHasImageError] = React.useState(false);
-  const sources = USER_PHOTOS[user] ?? [];
-
-  React.useEffect(() => {
-    setIndex(0);
-    setHasImageError(false);
-  }, [user]);
-
-  const handleError = () => {
-    if (index < sources.length - 1) {
-      setIndex((current) => current + 1);
-      return;
-    }
-
-    setHasImageError(true);
-  };
-
-  if (hasImageError || sources.length === 0 || index >= sources.length) {
-    return <span className="watcher-badge__avatar-initial">{user.charAt(0).toUpperCase()}</span>;
-  }
-
-  return (
-    <img
-      src={sources[index]}
-      alt={user}
-      className="watcher-badge__avatar-photo"
-      onError={handleError}
-      draggable={false}
-    />
-  );
-};
-
-const WatcherBadge: React.FC<WatcherBadgeProps> = ({
-  user,
-  size = 'md',
-  variant = 'default',
-  showLabel = false,
-  className = '',
-}) => {
-  const badgeClassName = [
-    'watcher-badge',
-    `watcher-badge--${variant}`,
-    `watcher-badge--${size}`,
-    `watcher-badge--${user.toLowerCase()}`,
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  return (
-    <div className={badgeClassName}>
-      <div className="watcher-badge__avatar">
-        <WatcherBadgePhoto user={user} />
-      </div>
-      {showLabel ? <span className="watcher-badge__label">{user}</span> : null}
-    </div>
-  );
-};
 
 const MovieCard: React.FC<MovieCardProps> = ({
   movie,
@@ -206,7 +126,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
         }}
       >
         <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
-          <MoviePoster movie={movie} />
+          <MediaPoster
+            title={movie.title}
+            posterUrl={movie.posterUrl}
+            year={movie.year}
+            id={movie.id}
+          />
 
           {movie.watchedBy.length > 0 ? (
             <div className="movie-item-watchers">
@@ -336,53 +261,6 @@ const MovieMemoryPreview: React.FC<{
     <p className="movie-item-memory-preview__note">{getMemoryPreviewText(memory.note)}</p>
   </div>
 );
-
-const MoviePoster: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
-  const [hasImageError, setHasImageError] = React.useState(false);
-  const [hasCatError, setHasCatError] = React.useState(false);
-
-  React.useEffect(() => {
-    setHasImageError(false);
-    setHasCatError(false);
-  }, [movie.posterUrl]);
-
-  const shouldShowPoster = Boolean(movie.posterUrl) && !hasImageError;
-  const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(movie.id || movie.title || 'cat')}`;
-
-  return (
-    <div className={`movie-poster-wrap ${className}`}>
-      {shouldShowPoster ? (
-        <img
-          src={movie.posterUrl}
-          alt={`${movie.title} poster`}
-          loading="lazy"
-          className="movie-poster"
-          onError={() => setHasImageError(true)}
-        />
-      ) : !hasCatError ? (
-        <>
-          <img
-            src={catUrl}
-            alt={`A cat representing ${movie.title}`}
-            loading="lazy"
-            className="movie-poster movie-poster--cat-fallback"
-            onError={() => setHasCatError(true)}
-          />
-          <div className="movie-poster-cat-title" aria-hidden="true">
-            {movie.title}
-          </div>
-        </>
-      ) : (
-        <div className="movie-poster-fallback">
-          <div className="movie-poster-fallback__inner">
-            <h3 className="movie-poster-fallback__title">{movie.title}</h3>
-            {movie.year ? <span className="movie-poster-fallback__year">{movie.year}</span> : null}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const MovieMetadata: React.FC<{ movie: Movie; className?: string }> = ({ movie, className = '' }) => {
   const metadataItems = [

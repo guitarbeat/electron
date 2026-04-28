@@ -267,15 +267,6 @@
   border: 0;
 }
 
-.app-header--places .app-header__center {
-  justify-content: center;
-  text-align: center;
-}
-
-.app-header--places .app-header__brand {
-  font-size: clamp(1.7rem, 2.6vw, 2.4rem);
-}
-
 @container (max-width: 7.5rem) {
   .app-header__brand {
     font-size: clamp(0.92rem, 16cqw, 1.12rem);
@@ -978,64 +969,3 @@
   }
 }
 
-/* Queue-specific cohesion */
-.app-workspace-stack--movies .app-header--movies {
-  margin-bottom: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0 0 0.85rem;
-  border-bottom: 1px solid rgba(212, 177, 115, 0.14);
-}
-
-.app-workspace-stack--movies .app-header--movies::after {
-  display: none;
-}
-
-.app-workspace-stack--movies .app-header--movies .app-header__status-label,
-.app-workspace-stack--movies .app-header--movies .app-header__brand-kicker {
-  font-family: 'Papyrus', var(--font-display), serif;
-  color: rgba(226, 199, 157, 0.66);
-  letter-spacing: 0.2em;
-}
-
-.app-workspace-stack--movies .app-header--movies .app-header__status-value {
-  font-family: 'Papyrus', var(--font-display), serif;
-  color: rgba(255, 246, 230, 0.92);
-  letter-spacing: 0.04em;
-}
-
-.app-workspace-stack--movies .app-header--movies .app-header__brand {
-  font-family: 'Papyrus', var(--font-display), serif;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  background: linear-gradient(
-    135deg,
-    rgba(245, 228, 193, 0.98) 0%,
-    rgba(208, 162, 101, 0.98) 42%,
-    rgba(247, 236, 214, 0.98) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
-}
-
-.app-workspace-stack--movies .app-header--movies .app-header__profile-trigger {
-  border-color: rgba(191, 147, 92, 0.28);
-  background:
-    linear-gradient(180deg, rgba(255, 247, 230, 0.12) 0%, transparent 34%),
-    rgba(57, 39, 24, 0.88);
-}
-
-.app-workspace-stack--movies .app-header--movies .app-header__profile-name {
-  font-family: 'Papyrus', var(--font-display), serif;
-  letter-spacing: 0.05em;
-}
-
-@media (max-width: 640px) {
-  .app-workspace-stack--movies .app-header--movies {
-    padding-bottom: 0.65rem;
-  }
-}

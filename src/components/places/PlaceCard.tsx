@@ -13,6 +13,7 @@ import {
   MediaCardTitle,
 } from '@/ui/MediaCard';
 import { getPlaceMeta } from './lib/placeMeta';
+import WatcherBadge from '@/common/WatcherBadge';
 
 interface PlaceCardProps {
   place: Place;
@@ -187,9 +188,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
               {place.notes && <MediaCardSubtext className="place-item-notes">{place.notes}</MediaCardSubtext>}
               {/* Added by */}
               {place.addedBy && (
-                <span className="place-item-added-by">
-                  by {place.addedBy}
-                </span>
+                <div className="place-item-added-by-badge-wrap">
+                  <WatcherBadge user={place.addedBy} size="sm" showLabel />
+                </div>
               )}
             </MediaCardInfo>
 
