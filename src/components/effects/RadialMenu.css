@@ -412,12 +412,13 @@
 
 .toggle {
   position: absolute;
-  width: 166px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   z-index: 10000;
-  border-radius: 999px;
+  border-radius: 50%;
   cursor: grab;
   box-shadow:
     0 18px 34px rgba(0, 0, 0, 0.36),
@@ -436,7 +437,7 @@
   user-select: none;
   border: 1px solid rgba(255, 233, 204, 0.18);
   overflow: hidden;
-  padding: 0.5rem 0.82rem 0.5rem 0.72rem;
+  padding: 0;
 }
 
 .toggle:hover,
@@ -567,25 +568,6 @@
   text-overflow: ellipsis;
 }
 
-@media (max-width: 1080px), (max-height: 760px) {
-  .toggle {
-    width: 148px;
-    height: 60px;
-    padding: 0.48rem 0.72rem 0.48rem 0.64rem;
-  }
-
-  .toggle__eyebrow {
-    display: none;
-  }
-
-  .toggle__title-copy strong {
-    font-size: 0.78rem;
-  }
-
-  .toggle__title-copy span {
-    font-size: 0.52rem;
-  }
-}
 
 @keyframes radial-discover-pulse {
   0% {
@@ -622,33 +604,11 @@
 }
 
 .menu.active .toggle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  padding: 0;
-  justify-content: center;
-  align-items: center;
   box-shadow:
     0 24px 40px rgba(0, 0, 0, 0.42),
     0 0 0 1px rgba(255, 245, 232, 0.07) inset,
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     0 0 30px color-mix(in oklab, var(--moire-accent, #fe8922) 42%, transparent);
-}
-
-.menu.active .toggle__content {
-  flex: none;
-  gap: 0;
-}
-
-.menu.active .toggle__eyebrow,
-.menu.active .toggle__title-copy {
-  opacity: 0;
-  transform: translateY(3px) scale(0.96);
-  pointer-events: none;
-}
-
-.menu.active .toggle__title-row {
-  gap: 0;
 }
 
 .toggle.toggle--active .toggle__icon-shell {
@@ -681,36 +641,13 @@
   }
 
   .toggle {
-    width: 66px;
-    height: 66px;
-    border-radius: 50%;
-    padding: 0;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .toggle__rail,
-  .toggle__eyebrow,
-  .toggle__title-copy span {
-    display: none;
-  }
-
-  .toggle__content {
-    align-items: center;
-    justify-content: center;
-  }
-
-  .toggle__title-row {
-    gap: 0;
+    width: 56px;
+    height: 56px;
   }
 
   .toggle__icon-shell {
-    width: 2.4rem;
-    height: 2.4rem;
-  }
-
-  .toggle__title-copy strong {
-    display: none;
+    width: 2.2rem;
+    height: 2.2rem;
   }
 
   .menu-item-button__tooltip {
