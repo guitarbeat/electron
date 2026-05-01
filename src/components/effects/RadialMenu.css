@@ -461,12 +461,7 @@
 }
 
 .toggle__halo {
-  position: absolute;
-  inset: -36%;
-  background:
-    radial-gradient(circle, rgba(254, 164, 77, 0.2) 0%, rgba(254, 164, 77, 0) 68%);
-  pointer-events: none;
-  opacity: 0.72;
+  display: none;
 }
 
 .toggle__sheen {
