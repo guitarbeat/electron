@@ -120,7 +120,7 @@ const App: React.FC = () => {
   const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
-    () => localStorage.getItem('cursorTrailEnabled') === 'true'
+    () => typeof window !== 'undefined' && localStorage.getItem('cursorTrailEnabled') === 'true'
   );
   const [isOnline, setIsOnline] = useState<boolean>(() =>
     typeof navigator === 'undefined' ? true : navigator.onLine
