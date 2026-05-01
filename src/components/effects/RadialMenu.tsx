@@ -384,7 +384,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
             </span>
             <span className="toggle__title-copy">
               <strong>{isActive ? 'Hide actions' : 'Open actions'}</strong>
-              <span>{isActive ? 'Tap to collapse' : 'Messages, quiz, spin'}</span>
             </span>
           </span>
         </span>
