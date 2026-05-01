@@ -373,13 +373,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
           }
         }}
       >
-        <span className="toggle__halo" aria-hidden="true" />
-        <span className="toggle__sheen" aria-hidden="true" />
-        <span className="toggle__content">
-          <span className="toggle__icon-shell">
-            {isActive ? <CrossIcon size={18} /> : <QuickActionsIcon size={18} />}
-          </span>
-        </span>
+        {isActive ? <CrossIcon size={18} /> : <QuickActionsIcon size={18} />}
       </button>
 
       {isActive ? (
