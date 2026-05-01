@@ -2,6 +2,7 @@ modules = ["nodejs-20"]
 [agent]
 expertMode = true
 integrations = ["javascript_database:1.0.0"]
+stack = "GAMESTACK_JS"
 
 [workflows]
 runButton = "Project"
@@ -28,7 +29,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "pnpm run dev"
 waitForPort = 5000
 
 [[workflows.workflow]]
@@ -41,16 +42,12 @@ isCanvasWorkflow = true
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd artifacts/mockup-sandbox && PORT=3001 BASE_PATH=/__mockup/ npm run dev"
+args = "cd artifacts/mockup-sandbox && PORT=3001 BASE_PATH=/__mockup/ pnpm run dev"
 waitForPort = 3001
 
 [[ports]]
 localPort = 3001
-externalPort = 4200
-
-[[ports]]
-localPort = 3002
-externalPort = 5000
+externalPort = 3001
 
 [[ports]]
 localPort = 3003
@@ -63,10 +60,6 @@ externalPort = 8008
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5002
-externalPort = 3001
 
 [[ports]]
 localPort = 23636

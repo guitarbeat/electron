@@ -1,4 +1,6 @@
-import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 const CACHE_TTL_MS = 30000;
 
@@ -14,8 +16,8 @@ interface CachedEntry {
 }
 
 const fileCache = new Map<string, CachedEntry>();
-let sqlClient: NeonQueryFunction<false, false> | null = null;
-let sqlClientUrl = '';
+let pool: pg.Pool | null = null;
+let poolUrl = '';
 let schemaReady: Promise<void> | null = null;
 let testStore: Map<string, string> | null = null;
 let testPatchBodies: string[] | null = null;
@@ -42,31 +44,47 @@ const getDatabaseUrl = (): string =>
       process.env.VITE_DATABASE_URL
   );
 
-const getSqlClient = (): NeonQueryFunction<false, false> => {
+const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is not configured.');
   }
-  if (!sqlClient || sqlClientUrl !== databaseUrl) {
-    sqlClient = neon(databaseUrl);
-    sqlClientUrl = databaseUrl;
+  if (!pool || poolUrl !== databaseUrl) {
+    if (pool) {
+      void pool.end().catch(() => undefined);
+    }
+    pool = new Pool({ connectionString: databaseUrl });
+    poolUrl = databaseUrl;
     schemaReady = null;
   }
-  return sqlClient;
+  return pool;
+};
+
+const query = async <T extends object>(
+  sql: string,
+  params: unknown[] = []
+): Promise<T[]> => {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(sql, params);
+    return (result.rows ?? []) as T[];
+  } finally {
+    client.release();
+  }
 };
 
 const ensureSchema = async (): Promise<void> => {
-  schemaReady ??= getSqlClient()`
+  schemaReady ??= query(`
     CREATE TABLE IF NOT EXISTS shared_state_files (
       filename text PRIMARY KEY,
       content text NOT NULL,
       updated_at timestamptz NOT NULL DEFAULT now()
     )
-  `.then(() => undefined);
+  `).then(() => undefined);
   await schemaReady;
 };
 
-/** Returns true when the server has Neon/Postgres credentials for read/write. */
+/** Returns true when the server has Postgres credentials for read/write. */
 export const isSharedStateConfigured = (): boolean => Boolean(testStore || getDatabaseUrl());
 
 /** Same as {@link isSharedStateConfigured}; writes use the same database URL. */
@@ -107,12 +125,10 @@ const readFromDatabase = async (filename: string): Promise<SharedStateFileRecord
   }
 
   await ensureSchema();
-  const rows = (await getSqlClient()`
-    SELECT content
-    FROM shared_state_files
-    WHERE filename = ${filename}
-    LIMIT 1
-  `) as Array<{ content: string }>;
+  const rows = await query<{ content: string }>(
+    'SELECT content FROM shared_state_files WHERE filename = $1 LIMIT 1',
+    [filename]
+  );
 
   const row = rows[0];
   if (!row) {
@@ -168,11 +184,9 @@ export const listSharedStateFilenames = async (): Promise<string[]> => {
   }
 
   await ensureSchema();
-  const rows = (await getSqlClient()`
-    SELECT filename
-    FROM shared_state_files
-    ORDER BY filename
-  `) as Array<{ filename: string }>;
+  const rows = await query<{ filename: string }>(
+    'SELECT filename FROM shared_state_files ORDER BY filename'
+  );
 
   return rows.map((row) => row.filename);
 };
@@ -195,12 +209,13 @@ export const patchSharedStateFile = async (
   }
 
   await ensureSchema();
-  await getSqlClient()`
-    INSERT INTO shared_state_files (filename, content, updated_at)
-    VALUES (${filename}, ${content}, now())
-    ON CONFLICT (filename)
-    DO UPDATE SET content = EXCLUDED.content, updated_at = now()
-  `;
+  await query(
+    `INSERT INTO shared_state_files (filename, content, updated_at)
+     VALUES ($1, $2, now())
+     ON CONFLICT (filename)
+     DO UPDATE SET content = EXCLUDED.content, updated_at = now()`,
+    [filename, content]
+  );
 
   fileCache.delete(filename);
 };
