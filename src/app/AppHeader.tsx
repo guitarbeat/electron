@@ -387,10 +387,8 @@ const AppHeader: FC<AppHeaderProps> = ({
       <div ref={leftRef} className="app-header__left">
         {shouldShowPwaChip && pwaChip ? (
           <div className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}>
-            <div className="app-header__pwa-copy">
               <span className="app-header__pwa-label">{pwaChip.label}</span>
-              <span className="app-header__pwa-detail">{pwaChip.detail}</span>
-            </div>
+            <span className="app-header__pwa-detail">{pwaChip.detail}</span>
             {pwaChip.action && pwaChip.actionLabel ? (
               <button
                 type="button"
@@ -421,15 +419,13 @@ const AppHeader: FC<AppHeaderProps> = ({
 
       {/* Center: Brand */}
       <div ref={centerRef} className="app-header__center" aria-label="Electron">
-        <span ref={brandRef} className="app-header__brand" aria-hidden="true">
+        <span ref={brandRef} className="app-header__brand">
           {brandLabel}
         </span>
-        <span className="app-header__brand-fallback">{brandLabel}</span>
       </div>
 
       {/* Right: Profile Selector */}
       <div ref={rightRef} className="app-header__right">
-        <div className="app-header__profile-container">
           <button
             ref={triggerRef}
             type="button"
@@ -495,8 +491,8 @@ const AppHeader: FC<AppHeaderProps> = ({
             )}
           </button>
 
-          {/* Profile Dropdown Menu */}
-          {isProfileMenuOpen && (
+        {/* Profile Dropdown Menu */}
+        {isProfileMenuOpen && (
             <div
               ref={menuRef}
               className="app-header__profile-menu"
@@ -600,7 +596,6 @@ const AppHeader: FC<AppHeaderProps> = ({
               )}
             </div>
           )}
-        </div>
       </div>
 
       {/* PIN Dialogs */}
