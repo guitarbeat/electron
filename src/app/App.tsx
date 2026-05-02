@@ -6,6 +6,7 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
 import { useAppSession, useTheme, useToast, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
+import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
 const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
@@ -629,6 +630,7 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
+            <AppHeaderSlotProvider>
             <div className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === 'movies' ? ' movies-unified-shell' : ''}`}>
               <AppHeader
                 activeTab={activeTab}
@@ -652,6 +654,7 @@ const App: React.FC = () => {
                 />
               </React.Suspense>
             </div>
+            </AppHeaderSlotProvider>
           </div>
         </div>
 
