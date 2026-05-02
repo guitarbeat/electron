@@ -182,6 +182,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
             fontSize: '0.85rem',
           }}
           title={memory.isPinned ? 'Unpin' : 'Pin'}
+          aria-label={memory.isPinned ? 'Unpin' : 'Pin'}
         >
           {memory.isPinned ? '📍' : '📌'}
         </button>
@@ -202,6 +203,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
               fontSize: '0.85rem',
             }}
             title="Delete"
+            aria-label="Delete"
           >
             🗑️
           </button>
