@@ -7,6 +7,7 @@ import { usePins } from '@/hooks/usePins';
 import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
 import ThemeToggle from '@/ui/ThemeToggle';
 import PinDialog from '@/common/PinDialog';
+import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
 import './AppHeader.css';
 
 interface AppHeaderProps {
@@ -48,6 +49,14 @@ const AppHeader: FC<AppHeaderProps> = ({
   const brandRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const slot = useAppHeaderSlot();
+
+  useEffect(() => {
+    if (!slot) return;
+    slot.setCenterNode(centerRef.current);
+    return () => slot.setCenterNode(null);
+  }, [slot]);
 
   const users: User[] = [...USER_OPTIONS];
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -380,7 +389,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   return (
     <header
       ref={headerRef}
-      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? ' is-profile-menu-open' : ''}`}
+      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? ' is-profile-menu-open' : ''}${slot?.hasSearch ? ' app-header--has-search' : ''}`}
       role="banner"
     >
       {/* Left: Theme Toggle + Background Toggle */}
@@ -417,11 +426,17 @@ const AppHeader: FC<AppHeaderProps> = ({
         />
       </div>
 
-      {/* Center: Brand */}
-      <div ref={centerRef} className="app-header__center" aria-label="Electron">
-        <span ref={brandRef} className="app-header__brand">
-          {brandLabel}
-        </span>
+      {/* Center: Brand or Search slot */}
+      <div
+        ref={centerRef}
+        className={`app-header__center${slot?.hasSearch ? ' app-header__center--search' : ''}`}
+        aria-label={slot?.hasSearch ? undefined : 'Electron'}
+      >
+        {!slot?.hasSearch && (
+          <span ref={brandRef} className="app-header__brand">
+            {brandLabel}
+          </span>
+        )}
       </div>
 
       {/* Right: Profile Selector */}

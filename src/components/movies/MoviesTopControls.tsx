@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
@@ -16,6 +17,7 @@ import {
   type MovieAutocompleteResult,
 } from '@/services/metadata';
 import MovieRecommendationComposer from './MovieRecommendationComposer';
+import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
 
 import {
   getNextMovieAutocompleteIndex,
@@ -93,6 +95,14 @@ const MoviesTopControls = React.forwardRef<
   suggestionError,
   canRecommend,
 }, forwardedRef) => {
+  const slot = useAppHeaderSlot();
+
+  useEffect(() => {
+    if (!slot) return;
+    slot.setHasSearch(true);
+    return () => slot.setHasSearch(false);
+  }, [slot]);
+
   const hasSearchQuery = Boolean(searchQuery.trim());
   const isBusy = isAdding || isSubmittingRecommendation;
   const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
@@ -330,21 +340,19 @@ const MoviesTopControls = React.forwardRef<
     });
   }, [filteredAutocompleteResults.length]);
 
-  return (
-    <section className="workspace-control-panel watchlist-top-controls">
-      <div className="watchlist-top-controls__stage">
-        <form
-          className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
-            isAutocompleteElevated ? ' is-autocomplete-active' : ''
-          }`}
-          onSubmit={(event) => {
-            event.preventDefault();
-            clearFocusBoundaryCheck();
-            hideAutocomplete();
-            internalSearchInputRef.current?.blur();
-            void onSubmit();
-          }}
-        >
+  const searchForm = (
+    <form
+      className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--in-header${
+        isAutocompleteElevated ? ' is-autocomplete-active' : ''
+      }`}
+      onSubmit={(event) => {
+        event.preventDefault();
+        clearFocusBoundaryCheck();
+        hideAutocomplete();
+        internalSearchInputRef.current?.blur();
+        void onSubmit();
+      }}
+    >
           <div
             ref={autocompleteRegionRef}
             className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
@@ -567,15 +575,12 @@ const MoviesTopControls = React.forwardRef<
                   <div className="watchlist-top-controls__autocomplete-status" role="alert">
                     {autocompleteError}
                   </div>
-                ) : autocompleteResults.length > 0 ? (() => {
-                  if (filteredAutocompleteResults.length === 0) {
-                    return (
-                      <div className="watchlist-top-controls__autocomplete-status">
-                        No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
-                      </div>
-                    );
-                  }
-                  return filteredAutocompleteResults.map((result, index) => (
+                ) : autocompleteResults.length > 0 ? (
+                  filteredAutocompleteResults.length === 0 ? (
+                    <div className="watchlist-top-controls__autocomplete-status">
+                      No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
+                    </div>
+                  ) : filteredAutocompleteResults.map((result, index) => (
                     <button
                       key={result.imdbID ?? `${result.title}-${index}`}
                       id={`${autocompleteListId}-option-${index}`}
@@ -586,8 +591,6 @@ const MoviesTopControls = React.forwardRef<
                         index === activeAutocompleteIndex ? 'is-active' : ''
                       }`}
                       onPointerDown={(event) => {
-                        // Prevent input blur on all pointer types (mouse, touch, pen).
-                        // Then select immediately so the action fires before any blur.
                         event.preventDefault();
                         selectAutocompleteResult(result);
                       }}
@@ -610,8 +613,8 @@ const MoviesTopControls = React.forwardRef<
                         </span>
                       </span>
                     </button>
-                  ));
-                })() : !isAutocompleteLoading ? (
+                  ))
+                ) : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
                     No titles found for &quot;{trimmedSearchQuery}&quot;
                   </div>
@@ -651,30 +654,38 @@ const MoviesTopControls = React.forwardRef<
               </Button>
             </div>
           )}
-        </form>
-      </div>
+    </form>
+  );
 
-      {showRecommendationComposer && hasSearchQuery && (
-        <MovieRecommendationComposer
-          currentUser={currentUser}
-          movieTitle={searchQuery.trim()}
-          guestName={guestName}
-          reason={recommendationReason}
-          error={suggestionError}
-          isSubmitting={isSubmittingRecommendation}
-          onGuestNameChange={setGuestName}
-          onReasonChange={setRecommendationReason}
-          onSubmit={onSubmitRecommendation}
-          onCancel={onCancelRecommendation}
-        />
-      )}
+  return (
+    <>
+      {slot?.centerNode ? createPortal(searchForm, slot.centerNode) : searchForm}
 
-      {suggestionError && !showRecommendationComposer && (
-        <div className="places-top-controls__error" role="alert">
-          {suggestionError}
-        </div>
-      )}
-    </section>
+      {(showRecommendationComposer && hasSearchQuery) ||
+      (suggestionError && !showRecommendationComposer) ? (
+        <section className="workspace-control-panel watchlist-top-controls">
+          {showRecommendationComposer && hasSearchQuery && (
+            <MovieRecommendationComposer
+              currentUser={currentUser}
+              movieTitle={searchQuery.trim()}
+              guestName={guestName}
+              reason={recommendationReason}
+              error={suggestionError}
+              isSubmitting={isSubmittingRecommendation}
+              onGuestNameChange={setGuestName}
+              onReasonChange={setRecommendationReason}
+              onSubmit={onSubmitRecommendation}
+              onCancel={onCancelRecommendation}
+            />
+          )}
+          {suggestionError && !showRecommendationComposer && (
+            <div className="places-top-controls__error" role="alert">
+              {suggestionError}
+            </div>
+          )}
+        </section>
+      ) : null}
+    </>
   );
 });
 

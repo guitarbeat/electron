@@ -199,6 +199,19 @@
   justify-self: center;
 }
 
+/* When the search bar is portaled into the center slot */
+.app-header--has-search {
+  grid-template-columns: auto 1fr auto;
+}
+
+.app-header__center--search {
+  overflow: visible;
+  container-type: normal;
+  width: 100%;
+  justify-self: stretch;
+  align-items: stretch;
+}
+
 .app-header__brand {
   --electron-scale: 1;
   display: inline-block;
