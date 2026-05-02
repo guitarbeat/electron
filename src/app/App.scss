@@ -5710,11 +5710,19 @@ body.grabbing * {
 
 .places-add-input {
   max-width: none;
-  color: rgba(28, 15, 4, 0.88);
+  color: var(--color-text-primary);
 }
 
 .places-add-input::placeholder {
-  color: rgba(80, 50, 20, 0.48);
+  color: rgba(255, 225, 175, 0.45);
+}
+
+.places-add-input:focus,
+.places-add-input:focus-visible {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: none;
 }
 
 .places-add-button.ui-button {
@@ -7409,11 +7417,19 @@ body.grabbing * {
   padding-right: 0.85rem;
   font-size: var(--font-size-sm);
   box-shadow: none;
-  color: rgba(28, 15, 4, 0.88);
+  color: var(--color-text-primary);
 }
 
 .watchlist-top-controls__search-field::placeholder {
-  color: rgba(80, 50, 20, 0.48);
+  color: rgba(255, 225, 175, 0.45);
+}
+
+.watchlist-top-controls__search-field:focus,
+.watchlist-top-controls__search-field:focus-visible {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: none;
 }
 
 .watchlist-top-controls__search-button.ui-button {
