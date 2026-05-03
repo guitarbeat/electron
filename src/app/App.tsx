@@ -54,6 +54,19 @@ const MIN_LOADING_SCREEN_MS = 600;
  */
 const ThemedMoire: React.FC = () => {
   const { themeTokens } = useTheme();
+  const canUseWebGL =
+    typeof document !== 'undefined' &&
+    (() => {
+      const canvas = document.createElement('canvas');
+      return Boolean(
+        canvas.getContext('webgl') || canvas.getContext('webgl2') || canvas.getContext('experimental-webgl')
+      );
+    })();
+
+  if (!canUseWebGL) {
+    return null;
+  }
+
   return (
     <MagicComponent
       isVisible
