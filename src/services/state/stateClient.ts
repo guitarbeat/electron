@@ -51,6 +51,13 @@ interface StoredSnapshot<T> {
 
 const replayLocks = new Map<StateScope, Promise<ScopeSnapshot<unknown>>>();
 
+/**
+ * Scopes that returned a network error on the last read (server unreachable).
+ * Tracked so flushPendingSync can clear stale degraded warnings even when no
+ * mutations are queued — without requiring the hook's 15-second poll to fire.
+ */
+const degradedReadScopes = new Set<StateScope>();
+
 const isBrowser = (): boolean => typeof window !== 'undefined';
 
 const snapshotKey = (scope: StateScope) => `${SNAPSHOT_PREFIX}${scope}`;
@@ -604,6 +611,9 @@ export const readScope = async <TScope extends StateScope>(
       warning: parsed.warning,
     });
 
+    // Successful read — scope is no longer in a degraded network state.
+    degradedReadScopes.delete(scope);
+
     return {
       data: parsed.data,
       version: parsed.version,
@@ -615,6 +625,11 @@ export const readScope = async <TScope extends StateScope>(
     if (error instanceof StateClientError) {
       throw error;
     }
+
+    // Network read failed — record scope so flushPendingSync can retry it
+    // promptly when the browser comes back online or the tab regains focus,
+    // without waiting for the hook's next polling interval.
+    degradedReadScopes.add(scope);
 
     if (stored) {
       return {
@@ -766,13 +781,22 @@ export const getOutboxStatusSummary = (): OutboxStatusSummary => getOutboxStatus
 export const flushPendingSync = async (): Promise<OutboxStatusSummary> => {
   const summary = getOutboxStatusSummaryInternal();
 
-  if (summary.pendingScopes.length === 0) {
+  // Collect scopes with queued mutations AND scopes that had a network read
+  // failure (degradedReadScopes).  The latter would otherwise linger until the
+  // hook's next 15-second poll, even when the browser just came back online or
+  // the tab regained focus.
+  const pendingScopeSet = new Set(summary.pendingScopes.map((e) => e.scope));
+  const degradedOnlyScopes = [...degradedReadScopes].filter(
+    (s) => !pendingScopeSet.has(s)
+  );
+
+  const allScopesToRetry = [...summary.pendingScopes.map((e) => e.scope), ...degradedOnlyScopes];
+
+  if (allScopesToRetry.length === 0) {
     return summary;
   }
 
-  await Promise.allSettled(
-    summary.pendingScopes.map((entry) => retryScopeSync(entry.scope))
-  );
+  await Promise.allSettled(allScopesToRetry.map((scope) => retryScopeSync(scope)));
 
   return getOutboxStatusSummaryInternal();
 };

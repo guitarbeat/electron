@@ -48,22 +48,29 @@ const isCohesionAuditRoute =
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
 const MIN_LOADING_SCREEN_MS = 600;
 
+/** True once at module load — avoids creating a canvas on every render. */
+const webGLAvailable: boolean = (() => {
+  if (typeof document === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      canvas.getContext('webgl2') ??
+      canvas.getContext('webgl') ??
+      canvas.getContext('experimental-webgl')
+    );
+  } catch {
+    return false;
+  }
+})();
+
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
  * so the background stays color-linked to the rest of the UI.
  */
 const ThemedMoire: React.FC = () => {
   const { themeTokens } = useTheme();
-  const canUseWebGL =
-    typeof document !== 'undefined' &&
-    (() => {
-      const canvas = document.createElement('canvas');
-      return Boolean(
-        canvas.getContext('webgl') || canvas.getContext('webgl2') || canvas.getContext('experimental-webgl')
-      );
-    })();
 
-  if (!canUseWebGL) {
+  if (!webGLAvailable) {
     return null;
   }
 
