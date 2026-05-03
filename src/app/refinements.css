@@ -23,7 +23,6 @@
 ::-webkit-scrollbar-thumb {
   background: rgba(200, 141, 89, 0.22);
   border-radius: 99px;
-  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -69,12 +68,12 @@
   line-height: 1.28 !important;
 }
 
-/* ── Movie container — add subtle card entrance animation ─────────────── */
+/* ── Movie container — subtle card entrance animation ─────────────────── */
 
 @keyframes card-enter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(5px);
   }
   to {
     opacity: 1;
@@ -82,19 +81,19 @@
   }
 }
 
+/* Use forwards (not both) so elements are visible before animation begins */
 .movie-item-container {
-  animation: card-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: card-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* Stagger via nth-child for first visible cards */
-.movie-item-container:nth-child(1)  { animation-delay: 0.03s; }
-.movie-item-container:nth-child(2)  { animation-delay: 0.06s; }
-.movie-item-container:nth-child(3)  { animation-delay: 0.09s; }
-.movie-item-container:nth-child(4)  { animation-delay: 0.12s; }
-.movie-item-container:nth-child(5)  { animation-delay: 0.15s; }
-.movie-item-container:nth-child(6)  { animation-delay: 0.18s; }
-.movie-item-container:nth-child(7)  { animation-delay: 0.20s; }
-.movie-item-container:nth-child(8)  { animation-delay: 0.22s; }
+.movie-item-container:nth-child(1)  { animation-delay: 0.04s; }
+.movie-item-container:nth-child(2)  { animation-delay: 0.07s; }
+.movie-item-container:nth-child(3)  { animation-delay: 0.10s; }
+.movie-item-container:nth-child(4)  { animation-delay: 0.13s; }
+.movie-item-container:nth-child(5)  { animation-delay: 0.16s; }
+.movie-item-container:nth-child(6)  { animation-delay: 0.19s; }
+.movie-item-container:nth-child(7)  { animation-delay: 0.21s; }
+.movie-item-container:nth-child(8)  { animation-delay: 0.23s; }
 
 /* ── Watchlist empty state — floating emoji ───────────────────────────── */
 
@@ -112,14 +111,9 @@
 
 .workspace-section-heading::after {
   opacity: 0.26 !important;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, currentColor 80%, transparent) 0%,
-    transparent 85%
-  ) !important;
 }
 
-/* ── Header brand — tighten the gradient, add micro letter-spacing ─────── */
+/* ── Header brand — refined gradient ──────────────────────────────────── */
 
 .app-header__brand {
   letter-spacing: 0.045em !important;
@@ -135,13 +129,13 @@
   -webkit-text-fill-color: transparent !important;
 }
 
-/* ── Profile trigger — slightly warmer tint when logged in ─────────────── */
+/* ── Profile trigger — warmer tint when logged in ─────────────────────── */
 
 .app-header__profile-trigger.is-logged-in {
   border-color: color-mix(in srgb, #c88d59 35%, rgba(255, 236, 206, 0.1)) !important;
 }
 
-/* ── Avatar initial — slightly richer gradient ────────────────────────── */
+/* ── Avatar initial — richer gradient ─────────────────────────────────── */
 
 .app-header__avatar-initial {
   background: linear-gradient(
@@ -152,7 +146,7 @@
   border-color: rgba(255, 220, 170, 0.28) !important;
 }
 
-/* ── Movie card radius — slightly softer corners on poster wrap ─────────── */
+/* ── Movie card — slightly softer radius ──────────────────────────────── */
 
 .movie-item-card {
   border-radius: 1.1rem !important;
@@ -165,7 +159,7 @@
     0 0 18px rgba(74, 222, 128, 0.08) !important;
 }
 
-/* ── IMDb badge — more refined appearance ────────────────────────────── */
+/* ── IMDb badge — more refined ────────────────────────────────────────── */
 
 .movie-item-imdb-badge {
   backdrop-filter: blur(8px) saturate(140%) !important;
@@ -173,7 +167,7 @@
   border-radius: 0.45rem !important;
 }
 
-/* ── Watcher stack badges — slightly tighter ─────────────────────────── */
+/* ── Watcher badges — tighter ─────────────────────────────────────────── */
 
 .movie-item-watchers {
   backdrop-filter: blur(12px) saturate(145%) !important;
@@ -181,37 +175,39 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.38) !important;
 }
 
-/* ── Collection grid — slightly tighter gap for denser layouts ─────────── */
+/* ── Collection grid — tighter gap ───────────────────────────────────── */
 
 .collection-grid.watchlist-content {
   gap: clamp(0.7rem, 2.5vw, 1rem) !important;
 }
 
-/* ── Focus ring — warm copper ring ───────────────────────────────────── */
+/* ── Focus ring — warm copper ─────────────────────────────────────────── */
 
 :focus-visible {
   outline: 2px solid rgba(200, 141, 89, 0.72) !important;
   outline-offset: 2px !important;
 }
 
-/* ── Reduced motion — kill all decorative animations ──────────────────── */
+/* ── Reduced motion — disable all decorative animations ──────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   .movie-item-container {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .watchlist-empty-state::before {
     animation: none !important;
   }
+}
 
-  @media (hover: hover) and (pointer: fine) {
-    .movie-item-card:hover {
-      transform: none !important;
-    }
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  .movie-item-card:hover {
+    transform: none !important;
+  }
 
-    .movie-item-card:hover .movie-poster {
-      transform: none !important;
-    }
+  .movie-item-card:hover .movie-poster {
+    transform: none !important;
   }
 }
