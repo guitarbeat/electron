@@ -31,6 +31,30 @@
   .collection-empty-state--tight {
     padding: 1.15rem 0.85rem !important;
   }
+
+  .workspace-section-heading {
+    margin-bottom: 0.5rem;
+    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.82rem);
+  }
+
+  /* Ensure subnav tabs in the header (Movies / Places) meet 44 px touch target */
+  .app-header__left .ui-subnav__tab,
+  .app-header__left .ui-subnav__chip {
+    min-height: 2.75rem;
+    padding-block: 0.5rem;
+  }
+
+  /* Two-column movie grid on mid-small phones */
+  .collection-grid.watchlist-content {
+    --collection-grid-min-column-width: clamp(8.5rem, 42vw, 12rem);
+    gap: 0.65rem;
+  }
+
+  /* Give the suggestion card buttons easier tap targets */
+  .suggestion-item-card__button {
+    min-height: 2.5rem;
+    padding: 0 1rem;
+  }
 }
 
 @keyframes shell-light-sweep {
@@ -7346,10 +7370,23 @@ body.grabbing * {
 }
 
 .watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-button.ui-button {
-  min-height: 2.1rem;
+  min-height: 2.4rem;
   font-size: 0.78rem;
   padding: 0 0.9rem;
   border-radius: 999px;
+}
+
+@media (max-width: 600px) {
+  .watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-button.ui-button {
+    min-height: 2.75rem;
+    font-size: 0.8rem;
+    padding: 0 1rem;
+  }
+
+  .watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-actions {
+    gap: 0.3rem;
+    padding-right: 0.35rem;
+  }
 }
 
 .watchlist-top-controls__search-form:focus-within {

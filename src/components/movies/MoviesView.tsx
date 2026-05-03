@@ -445,7 +445,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     const isAllEmpty = isQueueEmpty && isWatchedEmpty;
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.xl : spacing['2xl'] }}>
         {isAllEmpty ? (
           <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
             <CollectionEmptyState
