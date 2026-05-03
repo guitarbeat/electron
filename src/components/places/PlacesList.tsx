@@ -242,23 +242,92 @@ const PlacesList: React.FC = () => {
 
   return (
     <div className="watchlist-container places-container">
-      {/* ... (rest of the file remains same until TO TRY section) */}
-      
-      {/* TO TRY section */}
+      {isDegraded && (
+        <SyncBanner
+          isBlocked={isSyncBlocked}
+          onRetry={() => void retrySync()}
+          label={
+            isSyncBlocked
+              ? 'A shared places change conflicted with local edits. Refresh and retry.'
+              : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
+          }
+        />
+      )}
+      {isSuggestionsDegraded && (
+        <SyncBanner
+          isBlocked={isSuggestionsSyncBlocked}
+          onRetry={() => void retrySuggestionsSync()}
+          label={suggestionsSyncWarning || 'Place suggestion changes are being kept locally.'}
+        />
+      )}
+
+      <PlacesTopControls
+        queueCount={sections.queue.length}
+        visitedCount={sections.completed.length}
+        pinnedCount={pinnedCount}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSubmit={handleAddAction}
+        onSuggest={handleSuggestAction}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+        canEdit={Boolean(currentUser)}
+      />
+
+      {allPlaces.length > 0 && (
+        <React.Suspense fallback={<div className="places-map-placeholder" />}>
+          <PlacesMap
+            ref={mapRef}
+            places={allPlaces}
+            canEdit={Boolean(currentUser)}
+            onUpdatePlace={async (id, updates) => { await updatePlace(id, updates); }}
+          />
+        </React.Suspense>
+      )}
+
+      {pendingSuggestions.length > 0 && (
+        <CollectionSection heading="Incoming" tone="incoming">
+          <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+            {pendingSuggestions.map((suggestion) => (
+              <PlaceSuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                onAccept={() => void handleAcceptSuggestion(suggestion)}
+                onReject={() => void handleRejectSuggestion(suggestion.id, suggestion.name)}
+                canRespond={Boolean(currentUser)}
+                disableActions={!currentUser}
+                isProcessing={processingSuggestionId === suggestion.id}
+              />
+            ))}
+          </CollectionGrid>
+        </CollectionSection>
+      )}
+
       {sections.queue.length > 0 && (
         <CollectionSection heading="To Try">
           {renderPlaceGrid(sections.queue, 'Search above to add your first spot')}
         </CollectionSection>
       )}
 
-      {/* VISITED section */}
       {sections.completed.length > 0 && (
         <CollectionSection heading="Visited" tone="completed">
           {renderPlaceGrid(sections.completed, 'No visited places yet')}
         </CollectionSection>
       )}
 
-      {/* Modals */}
+      {showEmptyState && (
+        <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+          <CollectionEmptyState className="places-empty-state">
+            <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
+            <strong className="places-empty-state__title">No places yet</strong>
+            <span className="places-empty-state__hint">
+              Add a restaurant, café, park, or anywhere else you'd like to visit together.
+            </span>
+          </CollectionEmptyState>
+        </CollectionGrid>
+      )}
+
       {placeToDelete && (
         <ConfirmDialog
           isOpen={Boolean(placeToDelete)}
