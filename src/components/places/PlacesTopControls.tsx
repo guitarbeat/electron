@@ -63,22 +63,33 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
               className="watchlist-top-controls__search-field places-add-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && searchQuery) {
+                  e.preventDefault();
+                  setSearchQuery('');
+                }
+              }}
               placeholder="Add a place or destination"
               aria-label="Place name"
               autoComplete="off"
               fullWidth
             />
             {hasQuery && autocompleteSuggestions.length > 0 && (
-              <div className="watchlist-top-controls__autocomplete is-open" role="listbox" aria-label="Place suggestions">
+              <div
+                className="watchlist-top-controls__autocomplete is-open"
+                role="listbox"
+                aria-label="Place suggestions"
+              >
                 {autocompleteSuggestions.slice(0, 5).map((suggestion) => (
                   <button
                     key={suggestion.id}
                     type="button"
                     role="option"
                     className="watchlist-top-controls__autocomplete-option"
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                       e.preventDefault();
                       setSearchQuery(suggestion.name);
+                      inputRef.current?.focus();
                     }}
                   >
                     <span className="watchlist-top-controls__autocomplete-copy">

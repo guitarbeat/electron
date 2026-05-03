@@ -399,6 +399,11 @@ const MoviesTopControls = React.forwardRef<
                     openAutocomplete();
                   }
                 }}
+                onInputCapture={() => {
+                  if (!isAutocompleteOpen && hasAutocompleteFeedback) {
+                    openAutocomplete();
+                  }
+                }}
                 onKeyDown={(event) => {
                   if (event.nativeEvent.isComposing) {
                     return;
@@ -443,6 +448,11 @@ const MoviesTopControls = React.forwardRef<
                       event.preventDefault();
                       hideAutocomplete();
                     }
+                    return;
+                  }
+
+                  if (event.key === 'Backspace' && !searchQuery && isAutocompleteOpen) {
+                    hideAutocomplete();
                     return;
                   }
 
@@ -592,6 +602,9 @@ const MoviesTopControls = React.forwardRef<
                       onPointerDown={(event) => {
                         event.preventDefault();
                         selectAutocompleteResult(result);
+                      }}
+                      onTouchStart={(event) => {
+                        event.preventDefault();
                       }}
                       onMouseEnter={() => setActiveAutocompleteIndex(index)}
                     >
