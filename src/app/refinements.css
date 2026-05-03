@@ -1,0 +1,217 @@
+/*
+ * refinements.css — Iterative polish layered on top of App.scss.
+ * Dark-minimal direction: tighter hierarchy, smoother motion, warmer scrollbars.
+ * Never changes functionality — purely aesthetic overrides.
+ */
+
+/* ── Scrollbars ────────────────────────────────────────────────────────── */
+
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 141, 89, 0.28) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 141, 89, 0.22);
+  border-radius: 99px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 141, 89, 0.42);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Movie card hover — less aggressive lift ──────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  .movie-item-card:hover {
+    transform: translateY(-4px) scale(1.018) !important;
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.48),
+      0 0 0 1px rgba(255, 127, 198, 0.2),
+      0 0 22px rgba(255, 127, 198, 0.14) !important;
+  }
+
+  .movie-item-card:hover:active {
+    transform: translateY(-1px) scale(0.98) !important;
+  }
+
+  .movie-item-card:hover .movie-poster {
+    transform: scale(1.055) !important;
+  }
+}
+
+/* ── Movie item external info — tighter, better hierarchy ─────────────── */
+
+.movie-item-info-external {
+  padding: 0.45rem 0.15rem 0.15rem;
+}
+
+.movie-item-title-external {
+  font-size: clamp(0.78rem, 8.5cqi, 0.93rem) !important;
+  font-weight: 550 !important;
+  color: rgba(255, 241, 220, 0.93) !important;
+  letter-spacing: 0.008em;
+  margin: 0 0 0.5rem 0 !important;
+  line-height: 1.28 !important;
+}
+
+/* ── Movie container — add subtle card entrance animation ─────────────── */
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.movie-item-container {
+  animation: card-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger via nth-child for first visible cards */
+.movie-item-container:nth-child(1)  { animation-delay: 0.03s; }
+.movie-item-container:nth-child(2)  { animation-delay: 0.06s; }
+.movie-item-container:nth-child(3)  { animation-delay: 0.09s; }
+.movie-item-container:nth-child(4)  { animation-delay: 0.12s; }
+.movie-item-container:nth-child(5)  { animation-delay: 0.15s; }
+.movie-item-container:nth-child(6)  { animation-delay: 0.18s; }
+.movie-item-container:nth-child(7)  { animation-delay: 0.20s; }
+.movie-item-container:nth-child(8)  { animation-delay: 0.22s; }
+
+/* ── Watchlist empty state — floating emoji ───────────────────────────── */
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%       { transform: translateY(-6px) rotate(2deg); }
+}
+
+.watchlist-empty-state::before {
+  animation: gentle-float 4s ease-in-out infinite;
+  display: block;
+}
+
+/* ── Section headings — more visible rule ─────────────────────────────── */
+
+.workspace-section-heading::after {
+  opacity: 0.26 !important;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, currentColor 80%, transparent) 0%,
+    transparent 85%
+  ) !important;
+}
+
+/* ── Header brand — tighten the gradient, add micro letter-spacing ─────── */
+
+.app-header__brand {
+  letter-spacing: 0.045em !important;
+  background: linear-gradient(
+    128deg,
+    #f2d9b6 0%,
+    #c88d59 35%,
+    #e8c090 62%,
+    rgba(255, 251, 242, 0.88) 100%
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ── Profile trigger — slightly warmer tint when logged in ─────────────── */
+
+.app-header__profile-trigger.is-logged-in {
+  border-color: color-mix(in srgb, #c88d59 35%, rgba(255, 236, 206, 0.1)) !important;
+}
+
+/* ── Avatar initial — slightly richer gradient ────────────────────────── */
+
+.app-header__avatar-initial {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, #c88d59 65%, #e2a85c),
+    color-mix(in srgb, #c88d59 38%, #5c3a1e)
+  ) !important;
+  border-color: rgba(255, 220, 170, 0.28) !important;
+}
+
+/* ── Movie card radius — slightly softer corners on poster wrap ─────────── */
+
+.movie-item-card {
+  border-radius: 1.1rem !important;
+}
+
+.movie-item-card--watched {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.38),
+    0 0 0 1.5px rgba(74, 222, 128, 0.28),
+    0 0 18px rgba(74, 222, 128, 0.08) !important;
+}
+
+/* ── IMDb badge — more refined appearance ────────────────────────────── */
+
+.movie-item-imdb-badge {
+  backdrop-filter: blur(8px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
+  border-radius: 0.45rem !important;
+}
+
+/* ── Watcher stack badges — slightly tighter ─────────────────────────── */
+
+.movie-item-watchers {
+  backdrop-filter: blur(12px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(145%) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.38) !important;
+}
+
+/* ── Collection grid — slightly tighter gap for denser layouts ─────────── */
+
+.collection-grid.watchlist-content {
+  gap: clamp(0.7rem, 2.5vw, 1rem) !important;
+}
+
+/* ── Focus ring — warm copper ring ───────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid rgba(200, 141, 89, 0.72) !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Reduced motion — kill all decorative animations ──────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-item-container {
+    animation: none !important;
+  }
+
+  .watchlist-empty-state::before {
+    animation: none !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .movie-item-card:hover {
+      transform: none !important;
+    }
+
+    .movie-item-card:hover .movie-poster {
+      transform: none !important;
+    }
+  }
+}
