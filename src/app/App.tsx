@@ -9,6 +9,7 @@ import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
 import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
+import AppWorkspaceShell from '@/app/AppWorkspaceShell';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
@@ -40,7 +41,6 @@ const RadialMenu = React.lazy(() =>
   )
 );
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
-const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
 const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
 const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
 const isCohesionAuditRoute =
@@ -661,12 +661,10 @@ const App: React.FC = () => {
                 onRetrySync={handleRetryPendingSync}
               />
               <WorkspaceErrorBoundary>
-                <React.Suspense fallback={null}>
-                  <AppWorkspaceShell
-                    isMobile={isMobile}
-                    activeTab={activeTab}
-                  />
-                </React.Suspense>
+                <AppWorkspaceShell
+                  isMobile={isMobile}
+                  activeTab={activeTab}
+                />
               </WorkspaceErrorBoundary>
             </div>
             </AppHeaderSlotProvider>
