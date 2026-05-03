@@ -15,7 +15,8 @@ A React/TypeScript/Vite SPA for Aaron & Electra to plan movie nights and discove
 | File | Purpose |
 |---|---|
 | `src/app/App.tsx` | Root component, tab state, theme switching |
-| `src/app/App.scss` | All CSS (~12k lines). Movie cards ~line 7977, Place cards ~line 9519 |
+| `src/app/App.scss` | All CSS (~13k lines). Movie cards ~line 8070, Place cards ~line 9508 |
+| `src/app/refinements.css` | Iterative polish overrides (scrollbars, card hover, animations, brand gradient) — imported after App.scss |
 | `src/app/AppHeader.css` | Header brand + nav styling |
 | `src/components/ui/MediaCard.tsx` | Shared card primitive (PosterWrap, Cover, Overlay, Title, Badge, Actions, Info, Subtext) |
 | `src/components/movies/MovieCard.tsx` | Movie card component |

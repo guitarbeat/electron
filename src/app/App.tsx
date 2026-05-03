@@ -22,6 +22,7 @@ import {
 } from '@/services/state/stateClient';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
+import './refinements.css';
 
 const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
 const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
