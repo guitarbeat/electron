@@ -267,6 +267,7 @@ const PlacesList: React.FC = () => {
         pinnedCount={pinnedCount}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        suggestionAutocompleteResults={pendingSuggestions}
         onSubmit={handleAddAction}
         onSuggest={handleSuggestAction}
         isAdding={isAdding}

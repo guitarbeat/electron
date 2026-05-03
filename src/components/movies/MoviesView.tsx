@@ -44,6 +44,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
+    suggestionAutocompleteResults,
     previousMoviesRef,
     movies,
     isLoading,
@@ -563,6 +564,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         setSearchQuery={setSearchQuery}
         selectedAutocompleteResult={selectedAutocompleteResult}
         setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+        suggestionAutocompleteResults={suggestionAutocompleteResults}
         guestName={guestName}
         setGuestName={setGuestName}
         onSubmit={handleAddAction}

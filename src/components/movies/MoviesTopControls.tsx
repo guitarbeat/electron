@@ -41,6 +41,7 @@ interface MoviesTopControlsProps {
   setSearchQuery: (value: string) => void;
   selectedAutocompleteResult: MovieAutocompleteResult | null;
   setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
+  suggestionAutocompleteResults?: MovieAutocompleteResult[];
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -81,6 +82,7 @@ const MoviesTopControls = React.forwardRef<
   setSearchQuery,
   selectedAutocompleteResult,
   setSelectedAutocompleteResult,
+  suggestionAutocompleteResults = [],
   guestName,
   setGuestName,
   onSubmit,
@@ -323,9 +325,11 @@ const MoviesTopControls = React.forwardRef<
   const filteredAutocompleteResults = useMemo(
     () =>
       autocompleteTypeFilter === 'all'
-        ? autocompleteResults
-        : autocompleteResults.filter((result) => result.type === autocompleteTypeFilter),
-    [autocompleteResults, autocompleteTypeFilter]
+        ? [...autocompleteResults, ...suggestionAutocompleteResults]
+        : [...autocompleteResults, ...suggestionAutocompleteResults].filter(
+            (result) => result.type === autocompleteTypeFilter
+          ),
+    [autocompleteResults, autocompleteTypeFilter, suggestionAutocompleteResults]
   );
 
   useEffect(() => {

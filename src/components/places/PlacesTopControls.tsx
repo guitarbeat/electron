@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon, Spinner } from '@/common/Icons';
+import type { PlaceSuggestion } from '@/shared/types';
 
 interface PlacesTopControlsProps {
   queueCount: number;
@@ -8,6 +9,7 @@ interface PlacesTopControlsProps {
   pinnedCount: number;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
+  suggestionAutocompleteResults?: PlaceSuggestion[];
   onSubmit: () => Promise<void> | void;
   onSuggest?: () => Promise<void> | void;
   isAdding: boolean;
@@ -19,6 +21,7 @@ interface PlacesTopControlsProps {
 const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   searchQuery,
   setSearchQuery,
+  suggestionAutocompleteResults = [],
   onSubmit,
   onSuggest,
   isAdding,
@@ -29,6 +32,9 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const isBusy = isAdding || Boolean(isSuggesting);
   const hasQuery = searchQuery.trim().length > 0;
+  const autocompleteSuggestions = suggestionAutocompleteResults.filter((suggestion) =>
+    suggestion.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
   const showAddAction = hasQuery && canEdit;
   const showSuggestAction = hasQuery && Boolean(onSuggest);
 
@@ -59,6 +65,27 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
               autoComplete="off"
               fullWidth
             />
+            {hasQuery && autocompleteSuggestions.length > 0 && (
+              <div className="watchlist-top-controls__autocomplete is-open" role="listbox" aria-label="Place suggestions">
+                {autocompleteSuggestions.slice(0, 5).map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    role="option"
+                    className="watchlist-top-controls__autocomplete-option"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setSearchQuery(suggestion.name);
+                    }}
+                  >
+                    <span className="watchlist-top-controls__autocomplete-copy">
+                      <span className="watchlist-top-controls__autocomplete-title">{suggestion.name}</span>
+                      <span className="watchlist-top-controls__autocomplete-meta">Suggested place</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {(showAddAction || showSuggestAction) && (
