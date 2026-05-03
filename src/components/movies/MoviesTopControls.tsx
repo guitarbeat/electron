@@ -110,6 +110,7 @@ const MoviesTopControls = React.forwardRef<
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
   const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
+  const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
