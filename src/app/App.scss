@@ -13904,7 +13904,9 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   border-left: 1px solid rgba(255, 236, 206, 0.1);
   border-right: 1px solid rgba(255, 236, 206, 0.1);
   border-radius: 0;
-  padding: 0;
+  padding: 0 0.7rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .watchlist-top-controls__search-form--in-header .ui-input__field {
@@ -13914,12 +13916,26 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-radius: 0;
-  min-height: unset;
+  min-height: 3.35rem;
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
+  text-align: center;
 }
 
 .watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-field {
   color: rgba(220, 190, 130, 0.88);
+}
+
+.watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-shell {
+  justify-content: center;
+  min-width: min(34rem, 100%);
+}
+
+.watchlist-top-controls__search-form--in-header .ui-input {
+  max-width: min(34rem, 100%);
+  margin: 0 auto;
 }
 
 .watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-field::placeholder {
