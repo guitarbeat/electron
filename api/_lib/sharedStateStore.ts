@@ -44,6 +44,19 @@ const getDatabaseUrl = (): string =>
       process.env.VITE_DATABASE_URL
   );
 
+const needsSsl = (url: string): boolean => {
+  try {
+    const u = new URL(url);
+    const sslmode = u.searchParams.get('sslmode');
+    if (sslmode === 'disable' || sslmode === 'allow') return false;
+    // Neon, Supabase, Railway, and most cloud Postgres hosts require SSL.
+    const cloudHosts = ['neon.tech', 'supabase.co', 'railway.app', 'render.com', 'amazonaws.com'];
+    return cloudHosts.some((h) => u.hostname.includes(h));
+  } catch {
+    return false;
+  }
+};
+
 const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) {
@@ -53,7 +66,11 @@ const getPool = (): pg.Pool => {
     if (pool) {
       void pool.end().catch(() => undefined);
     }
-    pool = new Pool({ connectionString: databaseUrl });
+    const poolConfig: pg.PoolConfig = { connectionString: databaseUrl };
+    if (needsSsl(databaseUrl)) {
+      poolConfig.ssl = { rejectUnauthorized: false };
+    }
+    pool = new Pool(poolConfig);
     poolUrl = databaseUrl;
     schemaReady = null;
   }
