@@ -63,12 +63,6 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
               className="watchlist-top-controls__search-field places-add-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape' && searchQuery) {
-                  e.preventDefault();
-                  setSearchQuery('');
-                }
-              }}
               placeholder="Add a place or destination"
               aria-label="Place name"
               autoComplete="off"

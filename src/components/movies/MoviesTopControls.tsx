@@ -20,8 +20,6 @@ import MovieRecommendationComposer from './MovieRecommendationComposer';
 import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
 
 import {
-  getNextMovieAutocompleteIndex,
-  getMovieAutocompleteEnterSelectionIndex,
   hasStoredMovieAutocompleteFeedback,
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
@@ -116,7 +114,6 @@ const MoviesTopControls = React.forwardRef<
   const autocompleteListId = useId();
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
-  const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
   const autocompleteCloseTimerRef = useRef<number | null>(null);
@@ -161,7 +158,6 @@ const MoviesTopControls = React.forwardRef<
     }
     setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
-    setActiveAutocompleteIndex(-1);
   }, []);
 
   const hideAutocomplete = useCallback(() => {
@@ -170,7 +166,6 @@ const MoviesTopControls = React.forwardRef<
       autocompleteCloseTimerRef.current = null;
     }
     setIsAutocompleteOpen(false);
-    setActiveAutocompleteIndex(-1);
     setIsAutocompleteLoading(false);
     setAutocompleteTypeFilter('all');
     setIsAutocompleteMounted(false);
@@ -180,7 +175,6 @@ const MoviesTopControls = React.forwardRef<
     autocompleteRequestIdRef.current += 1;
     setAutocompleteQuery('');
     setAutocompleteResults([]);
-    setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(false);
     setIsAutocompleteMounted(false);
     setAutocompleteTypeFilter('all');
@@ -268,7 +262,6 @@ const MoviesTopControls = React.forwardRef<
 
         setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults(nextResults);
-        setActiveAutocompleteIndex(-1);
       } catch (error) {
         if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) {
           return;
@@ -276,7 +269,6 @@ const MoviesTopControls = React.forwardRef<
 
         setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults([]);
-        setActiveAutocompleteIndex(-1);
         setAutocompleteError(
           error instanceof Error && error.message
             ? error.message
@@ -327,18 +319,6 @@ const MoviesTopControls = React.forwardRef<
         : autocompleteResults.filter((result) => result.type === autocompleteTypeFilter),
     [autocompleteResults, autocompleteTypeFilter]
   );
-
-  useEffect(() => {
-    setActiveAutocompleteIndex((currentIndex) => {
-      if (filteredAutocompleteResults.length === 0) {
-        return -1;
-      }
-
-      return currentIndex >= 0 && currentIndex < filteredAutocompleteResults.length
-        ? currentIndex
-        : -1;
-    });
-  }, [filteredAutocompleteResults.length]);
 
   const searchForm = (
     <form
@@ -397,76 +377,6 @@ const MoviesTopControls = React.forwardRef<
                     hasAutocompleteFeedback
                   ) {
                     openAutocomplete();
-                  }
-                }}
-                onInputCapture={() => {
-                  if (!isAutocompleteOpen && hasAutocompleteFeedback) {
-                    openAutocomplete();
-                  }
-                }}
-                onKeyDown={(event) => {
-                  if (event.nativeEvent.isComposing) {
-                    return;
-                  }
-
-                  if (event.key === 'ArrowDown') {
-                    if (filteredAutocompleteResults.length === 0) {
-                      return;
-                    }
-
-                    event.preventDefault();
-                    setIsAutocompleteOpen(true);
-                    setActiveAutocompleteIndex((currentIndex) =>
-                      getNextMovieAutocompleteIndex(
-                        currentIndex,
-                        'next',
-                        filteredAutocompleteResults.length
-                      )
-                    );
-                    return;
-                  }
-
-                  if (event.key === 'ArrowUp') {
-                    if (filteredAutocompleteResults.length === 0) {
-                      return;
-                    }
-
-                    event.preventDefault();
-                    setIsAutocompleteOpen(true);
-                    setActiveAutocompleteIndex((currentIndex) =>
-                      getNextMovieAutocompleteIndex(
-                        currentIndex,
-                        'previous',
-                        filteredAutocompleteResults.length
-                      )
-                    );
-                    return;
-                  }
-
-                  if (event.key === 'Escape') {
-                    if (isAutocompleteOpen) {
-                      event.preventDefault();
-                      hideAutocomplete();
-                    }
-                    return;
-                  }
-
-                  if (event.key === 'Backspace' && !searchQuery && isAutocompleteOpen) {
-                    hideAutocomplete();
-                    return;
-                  }
-
-                  if (event.key === 'Enter' && isAutocompleteOpen) {
-                    const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
-                      activeAutocompleteIndex,
-                      filteredAutocompleteResults.length
-                    );
-                    if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) {
-                      return;
-                    }
-
-                    event.preventDefault();
-                    selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
                   }
                 }}
                 placeholder="Add a movie or show title"
