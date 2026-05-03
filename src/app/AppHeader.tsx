@@ -24,6 +24,7 @@ interface AppHeaderProps {
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
+  onOpenSpin?: () => void;
 }
 
 const AppHeader: FC<AppHeaderProps> = ({
@@ -33,6 +34,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
+  onOpenSpin,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } = usePins();
@@ -439,8 +441,24 @@ const AppHeader: FC<AppHeaderProps> = ({
         )}
       </div>
 
-      {/* Right: Profile Selector */}
+      {/* Right: Spin button (movies tab) + Profile Selector */}
       <div ref={rightRef} className="app-header__right">
+        {activeTab === 'movies' && onOpenSpin && (
+          <button
+            type="button"
+            className="app-header__spin-trigger"
+            onClick={onOpenSpin}
+            aria-label="Spin the wheel to pick a movie"
+            title="Spin the wheel"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="2" x2="12" y2="12" />
+              <line x1="12" y1="12" x2="20" y2="16" />
+            </svg>
+            <span className="app-header__spin-label">Spin</span>
+          </button>
+        )}
           <button
             ref={triggerRef}
             type="button"

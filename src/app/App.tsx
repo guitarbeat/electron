@@ -659,6 +659,7 @@ const App: React.FC = () => {
                 onInstallApp={() => void handleInstallApp()}
                 onApplyUpdate={handleApplyUpdate}
                 onRetrySync={handleRetryPendingSync}
+                onOpenSpin={openSpinMatch}
               />
               <WorkspaceErrorBoundary>
                 <AppWorkspaceShell
