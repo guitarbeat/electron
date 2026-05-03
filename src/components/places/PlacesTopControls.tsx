@@ -32,9 +32,12 @@ const PlacesTopControls: React.FC<PlacesTopControlsProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const isBusy = isAdding || Boolean(isSuggesting);
   const hasQuery = searchQuery.trim().length > 0;
-  const autocompleteSuggestions = suggestionAutocompleteResults.filter((suggestion) =>
-    suggestion.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const autocompleteSuggestions = normalizedQuery
+    ? suggestionAutocompleteResults.filter((suggestion) =>
+        suggestion.name.toLowerCase().includes(normalizedQuery)
+      )
+    : [];
   const showAddAction = hasQuery && canEdit;
   const showSuggestAction = hasQuery && Boolean(onSuggest);
 
