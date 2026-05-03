@@ -405,19 +405,43 @@ const replayOutbox = async <TScope extends StateScope>(
         }
 
         if (response.status === 409) {
-          writeOutbox(scope, {
+          // The queued op was rejected by the server (business-logic conflict,
+          // e.g. "Movie already exists" because the other device already wrote it).
+          // Parse the conflict body to learn the current server state, skip this
+          // stale op, and continue replaying the rest of the queue.  Only block the
+          // outbox if the conflict body itself can't be parsed.
+          let conflictVersion = latestVersion;
+          let conflictData = latestData;
+          try {
+            const conflict = await parseJsonResponse<ConflictResponse>(response);
+            conflictVersion = conflict.currentVersion;
+            conflictData = conflict.currentData as StateScopeDataMap[TScope];
+          } catch {
+            writeOutbox(scope, {
+              ...outbox,
+              blocked: true,
+              pendingOps: [nextOp, ...remaining],
+              lastKnownVersion: latestVersion,
+            });
+            return {
+              data: storedSnapshot?.data ?? optimisticSnapshot.data,
+              version: latestVersion,
+              degraded: true,
+              blocked: true,
+              warning: storedSnapshot?.warning ?? optimisticSnapshot.warning,
+            };
+          }
+          latestVersion = conflictVersion;
+          latestData = conflictData;
+          outbox = {
             ...outbox,
-            blocked: true,
-            pendingOps: [nextOp, ...remaining],
+            pendingOps: remaining,
             lastKnownVersion: latestVersion,
-          });
-          return {
-            data: storedSnapshot?.data ?? optimisticSnapshot.data,
-            version: latestVersion,
-            degraded: true,
-            blocked: true,
-            warning: storedSnapshot?.warning ?? optimisticSnapshot.warning,
           };
+          if (remaining.length > 0) {
+            writeOutbox(scope, outbox);
+          }
+          continue;
         }
 
         if (!response.ok) {
