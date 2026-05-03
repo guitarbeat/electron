@@ -7516,6 +7516,17 @@ body.grabbing * {
   pointer-events: none;
 }
 
+.watchlist-top-controls__search-shell,
+.watchlist-top-controls__search-shell > div {
+  position: relative;
+  z-index: 10001;
+}
+
+.watchlist-top-controls__search-form--in-header.is-autocomplete-active {
+  position: relative;
+  z-index: 10001;
+}
+
 .watchlist-top-controls__autocomplete.is-open {
   opacity: 1;
   transform: translateY(0);
