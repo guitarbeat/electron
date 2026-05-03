@@ -1,12 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
@@ -24,8 +16,6 @@ import {
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
   normalizeMovieAutocompleteQuery,
-  shouldClearSelectedMovieResult,
-  shouldFetchMovieAutocomplete,
 } from './lib/movieAutocomplete';
 
 interface MoviesTopControlsProps {
@@ -119,7 +109,6 @@ const MoviesTopControls = React.forwardRef<
   const autocompleteCloseTimerRef = useRef<number | null>(null);
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
-  const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
   const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
@@ -198,20 +187,11 @@ const MoviesTopControls = React.forwardRef<
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (!autocompleteRegionRef.current?.contains(target)) {
-        setIsAutocompleteRegionFocused(false);
-        hideAutocomplete();
-      }
+      if (!(target instanceof Node)) return;
+      if (!autocompleteRegionRef.current?.contains(target)) hideAutocomplete();
     };
-
     document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [hideAutocomplete]);
 
   useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
@@ -223,17 +203,8 @@ const MoviesTopControls = React.forwardRef<
   }, []);
 
   useEffect(() => {
-    if (!isAutocompleteRegionFocused) {
-      hideAutocomplete();
-      return;
-    }
-
     if (normalizedSearchQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
       resetAutocomplete();
-      return;
-    }
-
-    if (!shouldFetchMovieAutocomplete(trimmedSearchQuery, selectedAutocompleteResult)) {
       return;
     }
 
@@ -285,14 +256,7 @@ const MoviesTopControls = React.forwardRef<
       window.clearTimeout(timeoutId);
       abortController.abort();
     };
-  }, [
-    hideAutocomplete,
-    isAutocompleteRegionFocused,
-    normalizedSearchQuery,
-    resetAutocomplete,
-    selectedAutocompleteResult,
-    trimmedSearchQuery,
-  ]);
+  }, [hideAutocomplete, normalizedSearchQuery, resetAutocomplete, trimmedSearchQuery]);
 
   const hasAutocompleteFeedback = useMemo(
     () =>
@@ -311,7 +275,6 @@ const MoviesTopControls = React.forwardRef<
       trimmedSearchQuery,
     ]
   );
-  const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
   const filteredAutocompleteResults = useMemo(
     () =>
       autocompleteTypeFilter === 'all'
@@ -322,9 +285,7 @@ const MoviesTopControls = React.forwardRef<
 
   const searchForm = (
     <form
-      className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--in-header${
-        isAutocompleteElevated ? ' is-autocomplete-active' : ''
-      }`}
+      className="watchlist-top-controls__search-form watchlist-top-controls__search-form--in-header"
       onSubmit={(event) => {
         event.preventDefault();
         clearFocusBoundaryCheck();
@@ -336,27 +297,12 @@ const MoviesTopControls = React.forwardRef<
           <div
             ref={autocompleteRegionRef}
             className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
-            onFocusCapture={() => {
-              clearFocusBoundaryCheck();
-              setIsAutocompleteRegionFocused(true);
-            }}
             onBlurCapture={() => {
               clearFocusBoundaryCheck();
               focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
                 focusBoundaryFrameRef.current = null;
-                // On iOS Safari, buttons don't receive focus on tap, so
-                // document.activeElement is <body> even when the user tapped
-                // inside the dropdown. Check the pending-interaction flag first.
-                if (dropdownInteractionPendingRef.current) {
-                  return;
-                }
-                const nextIsFocused = Boolean(
-                  autocompleteRegionRef.current?.contains(document.activeElement)
-                );
-                setIsAutocompleteRegionFocused(nextIsFocused);
-                if (!nextIsFocused) {
-                  hideAutocomplete();
-                }
+                if (dropdownInteractionPendingRef.current) return;
+                if (!autocompleteRegionRef.current?.contains(document.activeElement)) hideAutocomplete();
               });
             }}
           >
@@ -366,18 +312,11 @@ const MoviesTopControls = React.forwardRef<
                 className="watchlist-top-controls__search-field"
                 value={searchQuery}
                 onChange={(event) => {
-                  const nextValue = event.target.value;
-                  setSearchQuery(nextValue);
-                  if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
-                    setSelectedAutocompleteResult(null);
-                  }
+                  setSearchQuery(event.target.value);
+                  setSelectedAutocompleteResult(null);
                 }}
                 onFocus={() => {
-                  if (
-                    hasAutocompleteFeedback
-                  ) {
-                    openAutocomplete();
-                  }
+                  if (hasAutocompleteFeedback) openAutocomplete();
                 }}
                 placeholder="Add a movie or show title"
                 aria-label="Movie or show title"
@@ -512,9 +451,6 @@ const MoviesTopControls = React.forwardRef<
                       onPointerDown={(event) => {
                         event.preventDefault();
                         selectAutocompleteResult(result);
-                      }}
-                      onTouchStart={(event) => {
-                        event.preventDefault();
                       }}
                       onMouseEnter={() => setActiveAutocompleteIndex(index)}
                     >
