@@ -8,25 +8,25 @@ import { useAppSession, useTheme, useToast, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
-const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
-const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
-
-const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
+import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
-const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
+
 import {
   flushPendingSync,
   getOutboxStatusSummary,
   syncOutboxStatusEvent,
   type OutboxStatusSummary,
 } from '@/services/state/stateClient';
-
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 
+const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
+const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
+const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
+const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
 const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
 const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
@@ -647,12 +647,14 @@ const App: React.FC = () => {
                 onApplyUpdate={handleApplyUpdate}
                 onRetrySync={handleRetryPendingSync}
               />
-              <React.Suspense fallback={null}>
-                <AppWorkspaceShell
-                  isMobile={isMobile}
-                  activeTab={activeTab}
-                />
-              </React.Suspense>
+              <WorkspaceErrorBoundary>
+                <React.Suspense fallback={null}>
+                  <AppWorkspaceShell
+                    isMobile={isMobile}
+                    activeTab={activeTab}
+                  />
+                </React.Suspense>
+              </WorkspaceErrorBoundary>
             </div>
             </AppHeaderSlotProvider>
           </div>
