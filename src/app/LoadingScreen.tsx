@@ -32,38 +32,20 @@ const LoadingScreen: React.FC = () => (
         }
       }
     `}</style>
-    <div
-      role="status"
-      aria-live="polite"
-      aria-label="Loading"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '1.25rem',
-        background: 'var(--color-background, #0f0a14)',
-        zIndex: 5000,
-        padding: '1rem',
-        color: 'var(--color-text, #f7f2ff)',
-      }}
-    >
-      <div style={{ textAlign: 'center', maxWidth: '28rem' }}>
-        <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Loading Electron…</div>
-        <div style={{ marginTop: '0.5rem', opacity: 0.8 }}>If this stays here, the session request is hanging.</div>
+    <div className="session-loading-screen" role="status" aria-live="polite" aria-label="Loading">
+      <div className="session-loading-screen__panel">
+        <p className="session-loading-screen__eyebrow">Electron</p>
+        <h1 className="session-loading-screen__title">Loading your watchlist</h1>
+        <p className="session-loading-screen__subtitle">
+          Preparing the app and restoring your session.
+        </p>
+        <div className="session-loading-screen__dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
       </div>
-      <div
-        className="loading-screen__tank"
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: 'min(560px, 90vw)',
-        }}
-      >
+      <div className="loading-screen__tank" style={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: 'min(560px, 90vw)' }}>
         <FishTank />
       </div>
     </div>
