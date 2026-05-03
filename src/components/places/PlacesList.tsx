@@ -15,7 +15,7 @@ import type { PlacesMapHandle } from './PlacesMap.tsx';
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
-import PlacesTopControls from './PlacesTopControls.tsx';
+import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
 
@@ -23,6 +23,7 @@ const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
+  const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
@@ -93,6 +94,27 @@ const PlacesList: React.FC = () => {
   );
 
   useEffect(() => () => clearTimeout(activeTimerRef.current), []);
+
+  const focusPlacesSearch = useCallback(() => {
+    placesTopControlsRef.current?.focusSearchInput();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === '/' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !event.metaKey &&
+        !event.ctrlKey
+      ) {
+        event.preventDefault();
+        focusPlacesSearch();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [focusPlacesSearch]);
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
@@ -262,6 +284,7 @@ const PlacesList: React.FC = () => {
       )}
 
       <PlacesTopControls
+        ref={placesTopControlsRef}
         queueCount={sections.queue.length}
         visitedCount={sections.completed.length}
         pinnedCount={pinnedCount}
@@ -275,6 +298,22 @@ const PlacesList: React.FC = () => {
         suggestionError={suggestionError}
         canEdit={Boolean(currentUser)}
       />
+
+      {isLoading && allPlaces.length === 0 && (
+        <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <CollectionEmptyState padding="1.5rem" className="collection-empty-state--tight">
+              <span style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🗺️</span>
+              <strong>Loading your places</strong>
+            </CollectionEmptyState>
+            <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
+              {['p1', 'p2', 'p3', 'p4'].map((key) => (
+                <MovieCardSkeleton key={key} />
+              ))}
+            </div>
+          </div>
+        </CollectionGrid>
+      )}
 
       {allPlaces.length > 0 && (
         <React.Suspense fallback={<div className="places-map-placeholder" />}>

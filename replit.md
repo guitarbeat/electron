@@ -50,6 +50,17 @@ Search bar for Places now mirrors the Movies bar exactly:
 - 📍 icon instead of 🎬
 - Add + Suggest buttons appear when query is non-empty
 - Rendered above the map in `PlacesList`; map no longer contains a floating search overlay
+- Converted to `React.forwardRef` exposing `PlacesTopControlsHandle { focusSearchInput() }` so parent can focus the input programmatically
+- Escape key clears search; clear (✕) button shown when query is non-empty
+- ARIA combobox/listbox attributes applied when autocomplete suggestions visible
+
+## Usability / Accessibility Improvements
+
+- **`"/"` keyboard shortcut**: Both `MoviesView` and `PlacesList` add a global `keydown` listener; pressing `/` outside any input focuses the search field immediately.
+- **Autocomplete arrow-key navigation**: `MoviesTopControls` now handles `ArrowDown`, `ArrowUp`, `Escape`, and `Enter` in the autocomplete dropdown via `getNextMovieAutocompleteIndex` (was implemented but never wired up).
+- **Places loading skeleton**: `PlacesList` renders 4 `MovieCardSkeleton` cards + a "Loading your places" message while `isLoading && allPlaces.length === 0`.
+- **Suspense fallback**: `AppWorkspaceShell` replaces `fallback={null}` with a `PlacesTabFallback` component (🗺️ icon + "Loading places…") with `role="status"` and `aria-live="polite"`.
+- **`aria-label` on workspace section**: `<section>` in `AppWorkspaceShell` now carries a descriptive `aria-label` ("Movies workspace" / "Places workspace").
 
 ## Card Parity (Movies ↔ Places)
 

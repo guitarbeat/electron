@@ -16,6 +16,7 @@ import {
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
   normalizeMovieAutocompleteQuery,
+  getNextMovieAutocompleteIndex,
 } from './lib/movieAutocomplete';
 
 interface MoviesTopControlsProps {
@@ -318,6 +319,30 @@ const MoviesTopControls = React.forwardRef<
                 }}
                 onFocus={() => {
                   if (hasAutocompleteFeedback) openAutocomplete();
+                }}
+                onKeyDown={(event) => {
+                  if (!isAutocompleteOpen) return;
+                  if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    setActiveAutocompleteIndex(
+                      getNextMovieAutocompleteIndex(activeAutocompleteIndex, 'next', filteredAutocompleteResults.length)
+                    );
+                  } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    setActiveAutocompleteIndex(
+                      getNextMovieAutocompleteIndex(activeAutocompleteIndex, 'previous', filteredAutocompleteResults.length)
+                    );
+                  } else if (event.key === 'Escape') {
+                    event.preventDefault();
+                    hideAutocomplete();
+                    setActiveAutocompleteIndex(-1);
+                  } else if (event.key === 'Enter' && activeAutocompleteIndex >= 0) {
+                    const result = filteredAutocompleteResults[activeAutocompleteIndex];
+                    if (result) {
+                      event.preventDefault();
+                      selectAutocompleteResult(result);
+                    }
+                  }
                 }}
                 placeholder="Add a movie or show title"
                 aria-label="Movie or show title"

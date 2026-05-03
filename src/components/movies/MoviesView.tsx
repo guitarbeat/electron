@@ -159,6 +159,23 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   }, []);
 
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === '/' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !event.metaKey &&
+        !event.ctrlKey
+      ) {
+        event.preventDefault();
+        focusSearchInput();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [focusSearchInput]);
+
+  useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
