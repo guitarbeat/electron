@@ -47,8 +47,13 @@ const LoadingScreen: React.FC = () => (
         background: 'var(--color-background, #0f0a14)',
         zIndex: 5000,
         padding: '1rem',
+        color: 'var(--color-text, #f7f2ff)',
       }}
     >
+      <div style={{ textAlign: 'center', maxWidth: '28rem' }}>
+        <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Loading Electron…</div>
+        <div style={{ marginTop: '0.5rem', opacity: 0.8 }}>If this stays here, the session request is hanging.</div>
+      </div>
       <div
         className="loading-screen__tank"
         style={{
