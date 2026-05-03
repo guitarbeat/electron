@@ -380,7 +380,6 @@ const MoviesTopControls = React.forwardRef<
               });
             }}
           >
-            <span className="watchlist-top-controls__search-icon" aria-hidden="true">🎬</span>
             <div style={{ position: 'relative', width: '100%', flex: 1 }}>
               <Input
                 ref={internalSearchInputRef}
