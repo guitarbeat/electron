@@ -10869,6 +10869,7 @@ body.grabbing * {
 /* ── Places layout ────────────────────────────────────────────────────────── */
 
 .places-container {
+  position: relative;
   max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 3.5rem;

@@ -537,10 +537,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   ]);
 
   return (
-    <div
-      className="watchlist-container places-container"
-      style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
-    >
+    <div className="watchlist-container places-container">
       {isMoviesWorkspaceDegraded && (
         <SyncBanner
           isBlocked={isMoviesWorkspaceSyncBlocked}
