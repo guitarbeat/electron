@@ -94,8 +94,22 @@ A focused "Mobile-friendly polish" block at the bottom of `App.scss` covers:
 - **Modals dock to the bottom edge** — on phones, modals/sheets become full-width, anchor to the bottom with rounded top corners, and respect the home-indicator safe area.
 - **iOS momentum scrolling** — `-webkit-overflow-scrolling: touch` on the app shell + modal containers.
 
+## State Sync Architecture
+
+- **`stateClient.ts`** — module-level outbox (`Map<StateScope, Outbox>`) + `degradedReadScopes` (`Set<StateScope>`)
+- **`flushPendingSync`** — runs on online/focus/45s interval; retries both scopes with queued mutations AND scopes that had network read failures, so the sync banner clears promptly without waiting for the hook's next poll
+- **`readScope`** — on success removes scope from `degradedReadScopes`; on network catch adds it
+- **`retryScopeSync`** — public retry used by hook `retrySync` buttons; replays outbox then re-reads
+- **`useCollection`** polls every 15s as the long-stop recovery path
+
+## Notable UI
+
+- **Spin button** — promoted to `AppHeader` right side (movies tab only) via `onOpenSpin` prop + `.app-header__spin-trigger` CSS; backed by `showSpinMatch` state in `App.tsx`
+- **WebGL guard** — `webGLAvailable` module-level IIFE const in `App.tsx` gates `ThemedMoire`; avoids blank screens when WebGL is unavailable in sandboxed iframes
+
 ## Known Non-Issues
 
-- **WebGL context error**: Moire background effect silently skips WebGL in sandboxed preview iframes (handled by try/catch in `Moire.tsx`)
+- **WebGL context error**: Moire background effect silently skips WebGL in sandboxed preview iframes — guarded by `webGLAvailable` const at module load in `App.tsx`
 - **404 fetch errors**: OMDB/database API calls fail without API keys configured — expected in development without env vars
 - **Vite HMR warning** on `PlaceCard.tsx`: Deprecated `getPlaceIcon` export alongside component export prevents fast refresh (pre-existing, full reload instead)
+- **TS error at App.tsx:29**: Pre-existing lazy import type mismatch (fallback `FC<{}>` vs typed props) — does not affect runtime
