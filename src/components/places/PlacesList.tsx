@@ -12,13 +12,14 @@ import SyncBanner from '../ui/SyncBanner.tsx';
 import { radius } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
-const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
 import PlacesTopControls from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
+
+const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
