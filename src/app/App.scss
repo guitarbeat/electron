@@ -1981,7 +1981,7 @@ body {
 }
 
 .app-session-bar .duo-status-card {
-  min-width: clamp(22rem, 42vw, 34rem);
+  min-width: clamp(30rem, 58vw, 46rem);
 }
 
 .duo-status-card::before {
@@ -2001,9 +2001,9 @@ body {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: clamp(1rem, 0.85rem + 1vw, 1.5rem);
+  gap: clamp(1.1rem, 1rem + 1vw, 1.75rem);
   min-height: 100%;
-  padding: clamp(0.75rem, 0.5rem + 0.8vw, 1.05rem) clamp(0.95rem, 0.7rem + 1vw, 1.35rem);
+  padding: clamp(0.95rem, 0.7rem + 1vw, 1.3rem) clamp(1.1rem, 0.85rem + 1.2vw, 1.7rem);
 }
 
 .duo-status-card__brand--mark-only {
