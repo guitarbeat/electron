@@ -24,9 +24,21 @@ import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 import './refinements.css';
 
-const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
-const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
-const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
+const MagicComponent = React.lazy(() =>
+  import('@/components/effects/moire/Moire').catch(
+    () => ({ default: () => null }) as { default: React.FC }
+  )
+);
+const RetroEffects = React.lazy(() =>
+  import('@/components/effects/RetroEffects').catch(
+    () => ({ default: () => null }) as { default: React.FC }
+  )
+);
+const RadialMenu = React.lazy(() =>
+  import('@/components/effects/RadialMenu').catch(
+    () => ({ default: () => null }) as { default: React.FC }
+  )
+);
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
 const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
