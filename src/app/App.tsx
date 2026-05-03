@@ -25,10 +25,16 @@ import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 import './refinements.css';
 
-const MagicComponent = React.lazy(() =>
-  import('@/components/effects/moire/Moire').catch(
-    () => ({ default: () => null }) as { default: React.FC }
-  )
+const MagicComponent = React.lazy(
+  () =>
+    import('@/components/effects/moire/Moire') as Promise<{
+      default: React.ComponentType<{
+        isVisible?: boolean;
+        opacity?: number;
+        color1?: string;
+        color2?: string;
+      }>;
+    }>
 );
 const RetroEffects = React.lazy(() =>
   import('@/components/effects/RetroEffects').catch(
