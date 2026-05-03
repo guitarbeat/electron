@@ -46,7 +46,7 @@ const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSPropert
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
-const MIN_LOADING_SCREEN_MS = 2200;
+const MIN_LOADING_SCREEN_MS = 600;
 
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
