@@ -34,7 +34,7 @@ const debugSession = (...args: unknown[]) => {
 // ============================================================================
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const currentTheme: 'movies' | 'places' = 'movies';
+  const currentTheme = 'movies' as const;
   const themeTokens = moviesTheme;
 
   useEffect(() => {

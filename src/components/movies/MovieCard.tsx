@@ -176,7 +176,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
       </div>
 
       {onRename ? (
-// ...
         <MovieTitleEditModal
           movie={movie}
           isOpen={isTitleEditorOpen}
@@ -204,34 +203,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 export default MovieCard;
-
-const getMemoryPreviewText = (note: string): string => {
-  const trimmed = note.trim();
-  if (trimmed.length <= 120) {
-    return trimmed;
-  }
-
-  return `${trimmed.slice(0, 117).trimEnd()}...`;
-};
-
-const MovieMemoryPreview: React.FC<{
-  memory: SharedMemory;
-  additionalCount: number;
-  isExpanded: boolean;
-}> = ({ memory, additionalCount, isExpanded }) => (
-  <div
-    className={`movie-item-memory-preview${isExpanded ? ' is-expanded' : ''}`}
-    aria-hidden="true"
-  >
-    <div className="movie-item-memory-preview__topline">
-      <span className="movie-item-memory-preview__author">{memory.author}</span>
-      <span className="movie-item-memory-preview__count">
-        {additionalCount > 0 ? `+${additionalCount} more` : '1 note'}
-      </span>
-    </div>
-    <p className="movie-item-memory-preview__note">{getMemoryPreviewText(memory.note)}</p>
-  </div>
-);
 
 interface MovieActionsProps {
   movie: Movie;
