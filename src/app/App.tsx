@@ -24,6 +24,7 @@ import {
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 import './refinements.css';
+import './minimal.css';
 
 const MagicComponent = React.lazy(
   () =>
