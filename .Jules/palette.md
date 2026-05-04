@@ -1,0 +1,3 @@
+## 2026-05-04 - Adding ARIA labels to icon-only buttons
+**Learning:** Found that the PolaroidMemory component used emojis (📌, 🗑️) as icon-only buttons for 'Pin' and 'Delete' actions without proper `aria-label` attributes, rendering them inaccessible to screen readers. Adding context-aware ARIA labels (e.g., `aria-label={memory.isPinned ? 'Unpin memory' : 'Pin memory'}`) significantly improves accessibility.
+**Action:** When implementing icon-only buttons, especially those using emojis or SVG icons, always ensure a descriptive `aria-label` is present to communicate the button's purpose to assistive technologies.
