@@ -4,15 +4,10 @@ import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import {
-  MediaCardInfo,
-  MediaCardOverlay,
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-  MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
-import Button from '@/ui/Button';
-import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -20,7 +15,6 @@ import MovieDetailsModal from './MovieDetailsModal';
 import MediaPoster from '@/ui/MediaPoster';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
-import MediaCardMetadata from '@/ui/MediaCardMetadata';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -76,11 +70,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }),
     [currentUser, memories.length, movie]
   );
-  const featuredMemory = React.useMemo(
-    () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
-    [memories]
-  );
-
   const handleOpenDetails = () => {
     const rect = posterRef.current?.getBoundingClientRect() ?? cardRef.current?.getBoundingClientRect();
     if (rect) {
