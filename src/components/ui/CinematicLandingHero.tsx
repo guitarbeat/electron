@@ -107,8 +107,9 @@ const STYLES = `
   margin: 0 0 0.3rem;
   color: var(--color-text-primary, #f7efdf);
   text-shadow:
-    0 10px 30px rgba(247,239,223,0.18),
-    0 2px 6px rgba(247,239,223,0.08);
+    0 12px 36px rgba(247,239,223,0.22),
+    0 4px 10px rgba(247,239,223,0.12),
+    0 1px 2px rgba(247,239,223,0.06);
 }
 
 .cl-tagline-2 {
@@ -127,7 +128,9 @@ const STYLES = `
   -webkit-text-fill-color: transparent;
   background-clip: text;
   transform: translateZ(0);
-  filter: drop-shadow(0 8px 20px rgba(200,141,89,0.35));
+  filter:
+    drop-shadow(0 10px 28px rgba(200,141,89,0.42))
+    drop-shadow(0 2px 6px rgba(200,141,89,0.2));
 }
 
 /* ─── CTA overlay ─── */
@@ -172,7 +175,7 @@ const STYLES = `
 
 .cl-cta-btn {
   font-family: 'Papyrus', serif;
-  background: linear-gradient(165deg, var(--color-accent, #c88d59) 0%, #8a5c2e 100%);
+  background: linear-gradient(180deg, #b87e45 0%, #7a4c24 100%);
   color: #fdf8f0;
   border: none;
   border-radius: 3rem;
@@ -184,21 +187,31 @@ const STYLES = `
   cursor: pointer;
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.08),
-    0 4px 14px rgba(0,0,0,0.5),
-    0 18px 36px -4px rgba(0,0,0,0.7),
-    inset 0 1px 1px rgba(255,255,255,0.18),
-    inset 0 -2px 6px rgba(0,0,0,0.6);
+    0 2px 4px rgba(0,0,0,0.5),
+    0 14px 28px -4px rgba(0,0,0,0.72),
+    0 28px 50px -8px rgba(0,0,0,0.6),
+    inset 0 1px 1px rgba(255,255,255,0.24),
+    inset 0 -3px 7px rgba(0,0,0,0.65);
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .cl-cta-btn:hover {
   transform: translateY(-3px);
+  background: linear-gradient(180deg, #c48e52 0%, #8a5c2e 100%);
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.14),
-    0 8px 24px rgba(0,0,0,0.6),
-    0 28px 50px -6px rgba(0,0,0,0.85),
-    inset 0 1px 1px rgba(255,255,255,0.22);
+    0 8px 18px -2px rgba(0,0,0,0.65),
+    0 24px 48px -6px rgba(0,0,0,0.88),
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -3px 7px rgba(0,0,0,0.65);
 }
-.cl-cta-btn:active { transform: translateY(1px); }
+.cl-cta-btn:active {
+  transform: translateY(1px);
+  background: #7a4c24;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05),
+    inset 0 3px 8px rgba(0,0,0,0.8),
+    inset 0 0 0 1px rgba(0,0,0,0.4);
+}
 
 /* ─── Card outer wrapper ─── */
 .cl-card-outer {
@@ -224,11 +237,11 @@ const STYLES = `
   pointer-events: auto;
   background: linear-gradient(145deg, #1c0f06 0%, #0a0503 100%);
   box-shadow:
-    0 50px 120px -20px rgba(0,0,0,0.95),
-    0 24px 48px -20px rgba(0,0,0,0.85),
-    inset 0 1px 2px rgba(255,255,255,0.07),
-    inset 0 -2px 5px rgba(0,0,0,0.85);
-  border: 1px solid rgba(255,255,255,0.035);
+    0 60px 140px -20px rgba(0,0,0,0.98),
+    0 30px 60px -20px rgba(0,0,0,0.88),
+    inset 0 1px 2px rgba(255,255,255,0.14),
+    inset 0 -2px 6px rgba(0,0,0,0.9);
+  border: 1px solid rgba(255,255,255,0.04);
   will-change: transform, width, height, border-radius;
 }
 @media (min-width: 768px) {
@@ -242,8 +255,9 @@ const STYLES = `
   border-radius: inherit;
   pointer-events: none;
   z-index: 50;
-  background: radial-gradient(700px circle at var(--cl-mx, 50%) var(--cl-my, 50%), rgba(200,141,89,0.07) 0%, transparent 40%);
+  background: radial-gradient(900px circle at var(--cl-mx, 50%) var(--cl-my, 50%), rgba(200,141,89,0.08) 0%, transparent 38%);
   mix-blend-mode: screen;
+  transition: opacity 0.4s ease;
 }
 
 /* card inner grain */
@@ -300,14 +314,15 @@ const STYLES = `
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: linear-gradient(170deg, #ffffff 0%, #c8b89a 55%, #8a6a48 100%);
+  background: linear-gradient(170deg, #ffffff 0%, #e8d5b8 30%, #c8b89a 55%, #8a6a48 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   transform: translateZ(0);
   filter:
-    drop-shadow(0 14px 28px rgba(0,0,0,0.85))
-    drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+    drop-shadow(0 18px 36px rgba(0,0,0,0.92))
+    drop-shadow(0 6px 14px rgba(0,0,0,0.75))
+    drop-shadow(0 2px 4px rgba(0,0,0,0.6));
   margin: 0;
   text-align: center;
 }
@@ -344,10 +359,11 @@ const STYLES = `
   border-radius: 1.75rem;
   background: #100804;
   box-shadow:
-    inset 0 0 0 2px rgba(200,141,89,0.35),
-    inset 0 0 0 8px rgba(0,0,0,0.75),
-    0 44px 88px -15px rgba(0,0,0,0.95),
-    0 18px 28px -6px rgba(0,0,0,0.7);
+    inset 0 0 0 2px rgba(200,141,89,0.4),
+    inset 0 0 0 8px rgba(0,0,0,0.8),
+    inset 0 1px 2px rgba(255,255,255,0.04),
+    0 52px 100px -15px rgba(0,0,0,0.98),
+    0 22px 36px -8px rgba(0,0,0,0.75);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -440,12 +456,12 @@ const STYLES = `
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.01) 100%);
   box-shadow:
-    0 8px 18px rgba(0,0,0,0.35),
-    inset 0 1px 1px rgba(255,255,255,0.04),
-    inset 0 -1px 1px rgba(0,0,0,0.6);
-  border: 1px solid rgba(255,255,255,0.04);
+    0 10px 22px rgba(0,0,0,0.42),
+    inset 0 1px 1px rgba(255,255,255,0.07),
+    inset 0 -1px 2px rgba(0,0,0,0.65);
+  border: 1px solid rgba(255,255,255,0.05);
   border-radius: 0.75rem;
   padding: 0.55rem 0.7rem;
 }
@@ -475,7 +491,7 @@ const STYLES = `
 .cl-screen-glare {
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0) 48%);
+  background: linear-gradient(112deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 22%, rgba(255,255,255,0) 48%);
   pointer-events: none;
   z-index: 40;
   border-radius: inherit;
@@ -487,14 +503,14 @@ const STYLES = `
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  background: linear-gradient(135deg, rgba(255,255,255,0.075) 0%, rgba(255,255,255,0.015) 100%);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.02) 100%);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.09),
-    0 24px 48px -12px rgba(0,0,0,0.85),
-    inset 0 1px 1px rgba(255,255,255,0.14),
-    inset 0 -1px 1px rgba(0,0,0,0.55);
+    0 0 0 1px rgba(255,255,255,0.1),
+    0 28px 56px -12px rgba(0,0,0,0.9),
+    inset 0 1px 1px rgba(255,255,255,0.22),
+    inset 0 -1px 2px rgba(0,0,0,0.6);
   border-radius: 1rem;
   padding: 0.75rem 1.1rem;
   z-index: 30;
