@@ -414,7 +414,6 @@ function ResultScreen({
       <button
         type="button"
         onClick={onReset}
-        aria-label="Play again"
         style={{
           padding: '0.6rem 1.6rem',
           background: 'transparent',
@@ -821,7 +820,6 @@ function DoneCard({ kept, onReset }: { kept: number; onReset: () => void }) {
         <button
           type="button"
           onClick={onReset}
-          aria-label="Try again"
           style={{
             padding: '0.45rem 1.1rem',
             borderRadius: 999,
