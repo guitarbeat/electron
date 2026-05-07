@@ -45,6 +45,7 @@ const FishTank: React.FC = () => {
           data-on={isOn ? 'true' : 'false'}
           onClick={handlePowerClick}
           aria-label={isOn ? 'Turn off fish tank' : 'Turn on fish tank'}
+          aria-pressed={isOn}
         />
       </div>
     </div>
