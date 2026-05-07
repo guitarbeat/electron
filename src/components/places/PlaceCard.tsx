@@ -16,7 +16,7 @@ import { getPlaceMeta } from './lib/placeMeta';
 import WatcherBadge from '@/common/WatcherBadge';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardMetadata from '@/ui/MediaCardMetadata';
-
+import Button from '@/ui/Button';
 
 interface PlaceCardProps {
   place: Place;
