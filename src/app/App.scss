@@ -32,11 +32,6 @@
     padding: 1.15rem 0.85rem !important;
   }
 
-  .workspace-section-heading {
-    margin-bottom: 0.5rem;
-    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.82rem);
-  }
-
   /* Ensure subnav tabs in the header (Movies / Places) meet 44 px touch target */
   .app-header__left .ui-subnav__tab,
   .app-header__left .ui-subnav__chip {
@@ -10970,6 +10965,11 @@ body.grabbing * {
     background: linear-gradient(90deg, currentColor 0%, transparent 100%);
     opacity: 0.18;
     border-radius: 1px;
+  }
+
+  @media (max-width: 640px) {
+    margin-bottom: 0.5rem;
+    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.82rem);
   }
 }
 
