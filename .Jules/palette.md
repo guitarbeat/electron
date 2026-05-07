@@ -1,1 +1,0 @@
-## 2026-05-07 - Adding aria attributes to missing elements\n**Learning:** Added `aria-pressed` to `FishTank` component power button and `aria-label` to `SpinSwipeGame` reset buttons for screen reader support.\n**Action:** Always verify icon-only buttons or state-toggling buttons have appropriate ARIA attributes for accessibility.
