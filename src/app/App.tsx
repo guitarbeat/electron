@@ -25,8 +25,7 @@ import MinigameModal from '@/ui/MinigameModal';
 import { CinematicFooter } from '@/components/ui/motion-footer';
 import { CinematicLandingHero } from '@/components/ui/CinematicLandingHero';
 import './App.scss';
-import './refinements.css';
-import './minimal.css';
+import './overrides.css';
 
 const MagicComponent = React.lazy(
   () =>
