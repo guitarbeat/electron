@@ -2,6 +2,7 @@ import React from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
+import { useCardTilt } from '@/hooks/useCardTilt';
 import Card from '@/ui/Card';
 import {
   MediaCardInfo,
@@ -65,6 +66,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const tilt = useCardTilt();
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
   const actionState = React.useMemo(
@@ -116,6 +118,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-container ${watchedByBoth ? 'movie-item-container--watched' : ''} ${isHighlighted ? 'movie-item-container--highlighted' : ''}`}
         data-movie-id={movie.id}
       >
+        <div
+          ref={tilt.ref}
+          className="card-tilt-wrap"
+          onMouseEnter={tilt.onMouseEnter}
+          onMouseMove={tilt.onMouseMove}
+          onMouseLeave={tilt.onMouseLeave}
+        >
         <Card
           ref={cardRef}
           variant="default"
@@ -126,6 +135,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
             overflow: 'hidden',
           }}
         >
+          <div className="card-tilt-sheen" aria-hidden="true" />
           <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
             <MediaPoster
               title={movie.title}
@@ -156,6 +166,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
             </button>
           </MediaCardPosterWrap>
         </Card>
+        </div>{/* card-tilt-wrap */}
 
         <div className="movie-item-info-external">
           <MediaCardTitle className="movie-item-title-external">
