@@ -150,7 +150,13 @@ const App: React.FC = () => {
   const [hasInitialLoadingScreenElapsed, setHasInitialLoadingScreenElapsed] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
-  const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'movies');
+  const [activeTab, setActiveTab] = useState<MainTab>(() => {
+    if (typeof window !== 'undefined') {
+      const fromHash = getRequestedTab(window.location.hash.replace(/^#/, ''));
+      if (fromHash) return fromHash;
+    }
+    return persistedViewState?.activeTab ?? 'movies';
+  });
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser)
   );
@@ -547,6 +553,24 @@ const App: React.FC = () => {
     },
     [activeTab, playSwitch, prefersReducedMotion]
   );
+
+  // Keep URL hash in sync with active tab
+  useEffect(() => {
+    const current = window.location.hash.replace(/^#/, '');
+    if (current !== activeTab) {
+      window.history.replaceState(null, '', `#${activeTab}`);
+    }
+  }, [activeTab]);
+
+  // Respond to back/forward navigation and direct hash links
+  useEffect(() => {
+    const onHashChange = () => {
+      const tab = getRequestedTab(window.location.hash.replace(/^#/, ''));
+      if (tab) handleTabChange(tab);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [handleTabChange]);
 
   const openSpinMatch = useCallback(() => {
     setShowSpinWheel(true);
