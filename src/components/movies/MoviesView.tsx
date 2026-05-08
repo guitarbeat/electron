@@ -583,8 +583,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         latestNoteAuthor={latestMemory?.author ?? null}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        selectedAutocompleteResult={selectedAutocompleteResult}
-        setSelectedAutocompleteResult={setSelectedAutocompleteResult}
         guestName={guestName}
         setGuestName={setGuestName}
         onSubmit={handleAddAction}
