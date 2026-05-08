@@ -649,10 +649,51 @@ const STYLES = `
   50%       { opacity: 0.9; transform: scaleY(1.2); }
 }
 
+/* ─── Ghost watermark brand text (behind CTA) ─── */
+.cl-cta-ghost {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Papyrus', serif;
+  font-size: clamp(14vw, 22vw, 28vw);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.8;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(200,141,89,0.07);
+  background: linear-gradient(180deg, rgba(200,141,89,0.11) 0%, transparent 65%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ─── Heartbeat animation ─── */
+@keyframes cl-heartbeat {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px rgba(255,90,120,0.45));
+  }
+  15%, 45% {
+    transform: scale(1.28);
+    filter: drop-shadow(0 0 10px rgba(255,90,120,0.88));
+  }
+  30% { transform: scale(1.08); }
+}
+.cl-badge-heartbeat {
+  display: inline-block;
+  animation: cl-heartbeat 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  font-style: normal;
+}
+
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .cl-aurora { animation: none; }
   .cl-scroll-hint-arrow { animation: none; }
+  .cl-badge-heartbeat { animation: none; }
 }
 `;
 
@@ -665,6 +706,7 @@ export function CinematicLandingHero({ onEnter }: Props) {
   const heroRef    = useRef<HTMLDivElement>(null);
   const cardRef    = useRef<HTMLDivElement>(null);
   const mockupInnerRef = useRef<HTMLDivElement>(null);
+  const ctaBtnRef  = useRef<HTMLButtonElement>(null);
   const rafRef     = useRef<number>(0);
   const [hintVisible, setHintVisible] = useState(true);
 
@@ -695,6 +737,41 @@ export function CinematicLandingHero({ onEnter }: Props) {
       window.removeEventListener("mousemove", handleMove);
       cancelAnimationFrame(rafRef.current);
     };
+  }, []);
+
+  // ── Magnetic CTA button ──────────────────────────────────────────────────
+  useEffect(() => {
+    const btn = ctaBtnRef.current;
+    if (!btn) return;
+    const ctx = gsap.context(() => {
+      const onMove = (e: MouseEvent) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width  / 2);
+        const y = e.clientY - (r.top  + r.height / 2);
+        gsap.to(btn, {
+          x: x * 0.38, y: y * 0.38,
+          rotationY:  x * 0.12,
+          rotationX: -y * 0.12,
+          scale: 1.06,
+          ease: "power2.out",
+          duration: 0.4,
+        });
+      };
+      const onLeave = () => {
+        gsap.to(btn, {
+          x: 0, y: 0, rotationX: 0, rotationY: 0, scale: 1,
+          ease: "elastic.out(1, 0.35)",
+          duration: 1.1,
+        });
+      };
+      btn.addEventListener("mousemove", onMove);
+      btn.addEventListener("mouseleave", onLeave);
+      return () => {
+        btn.removeEventListener("mousemove", onMove);
+        btn.removeEventListener("mouseleave", onLeave);
+      };
+    }, btn);
+    return () => ctx.revert();
   }, []);
 
   // ── Hide scroll hint once user scrolls ──────────────────────────────────
@@ -867,12 +944,13 @@ export function CinematicLandingHero({ onEnter }: Props) {
 
         {/* CTA */}
         <div className="cl-cta">
+          <div className="cl-cta-ghost" aria-hidden="true">ELECTRON</div>
           <h2 className="cl-cta-heading">Your movie awaits.</h2>
           <p className="cl-cta-desc">
             Discover films, build a shared watchlist, and find the perfect place
             — every date night, crafted just for the two of you.
           </p>
-          <button className="cl-cta-btn" onClick={onEnter}>
+          <button ref={ctaBtnRef} className="cl-cta-btn" onClick={onEnter}>
             Start planning
           </button>
         </div>
@@ -945,7 +1023,7 @@ export function CinematicLandingHero({ onEnter }: Props) {
                 </div>
 
                 <div className="cl-badge cl-badge--br">
-                  <div className="cl-badge-icon">🍿</div>
+                  <div className="cl-badge-icon"><span className="cl-badge-heartbeat">❤</span></div>
                   <div className="cl-badge-body">
                     <p className="cl-badge-title">Perfect Match</p>
                     <p className="cl-badge-sub">Both love it</p>
