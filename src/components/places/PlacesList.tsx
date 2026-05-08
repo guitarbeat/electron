@@ -18,12 +18,14 @@ import PlaceEditModal from './PlaceEditModal.tsx';
 import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
+import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
 
 const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
+  const placesBodyRef = useRef<HTMLDivElement | null>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
@@ -262,8 +264,11 @@ const PlacesList: React.FC = () => {
   const hasPlaces = allPlaces.length > 0;
   const showEmptyState = !isLoading && !hasPlaces;
 
+  const placeCardsReady = !isLoading && (hasPlaces || pendingSuggestions.length > 0);
+  useCinematicEntrance(placesBodyRef, placeCardsReady, '.card-tilt-wrap');
+
   return (
-    <div className="watchlist-container places-container">
+    <div ref={placesBodyRef} className="watchlist-container places-container">
       {isDegraded && (
         <SyncBanner
           isBlocked={isSyncBlocked}

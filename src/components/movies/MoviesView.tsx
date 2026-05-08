@@ -12,6 +12,7 @@ import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { spacing } from '@/theme/tokens';
 import { useMoviesWorkspace } from '@/hooks/movies/useMoviesWorkspace';
+import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from './MoviesTopControls';
@@ -30,6 +31,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
+  const moviesBodyRef = useRef<HTMLDivElement | null>(null);
 
   const {
     isMobile,
@@ -435,6 +437,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movies.length === 0 &&
     pendingSuggestions.length === 0;
 
+  const cardsReady = !showInitialLoading && (movies.length > 0 || pendingSuggestions.length > 0);
+  useCinematicEntrance(moviesBodyRef, cardsReady, '.movie-item-container');
+
   const moviesBody = useMemo(() => {
     if (showInitialLoading) {
       return (
@@ -594,7 +599,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         suggestionError={suggestionError}
         canRecommend={true}
       />
-      {moviesBody}
+      <div ref={moviesBodyRef}>{moviesBody}</div>
 
       {movieToDelete && (
         <ConfirmDialog
