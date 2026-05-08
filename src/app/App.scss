@@ -9571,21 +9571,12 @@ body.grabbing * {
   50%       { transform: translateY(-6px) rotate(2deg); }
 }
 
-/* GSAP handles entrance — start invisible so there's no flash before animation fires */
+/* GSAP sets initial hidden state synchronously via gsap.set() — no CSS hiding needed */
 .movie-item-container {
   display: flex;
   flex-direction: column;
   min-width: 0;
   container-type: inline-size;
-  opacity: 0;
-  visibility: hidden;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .movie-item-container {
-    opacity: 1;
-    visibility: visible;
-  }
 }
 
 .movie-item-info-external {
@@ -12981,20 +12972,15 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
 /* ── Mobile-friendly polish ─────────────────────────────────── */
 
-/* Y2K ticker: scrolling marquee, edge-faded, diagonal band */
+/* Y2K ticker: scrolling marquee — diagonal band via inner rotation */
 .y2k-ticker {
   position: relative;
   margin-top: 0.5rem;
   overflow: hidden;
-  width: 110%;
-  margin-left: -5%;
   border-top: 1px solid rgba(196, 154, 80, 0.28);
   border-bottom: 1px solid rgba(196, 154, 80, 0.28);
-  background: rgba(10, 6, 3, 0.58);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  padding: 0.4rem 0;
-  transform: rotate(-1.5deg);
+  background: rgba(10, 6, 3, 0.62);
+  padding: 0.55rem 0;
   box-shadow:
     0 4px 18px -4px rgba(0,0,0,0.72),
     inset 0 1px 0 rgba(196,154,80,0.12),

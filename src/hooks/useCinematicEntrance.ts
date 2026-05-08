@@ -7,13 +7,14 @@ const prefersReducedMotion = () =>
 
 /**
  * Cinematic card drop-in entrance — mirrors the hero's Phase 1 technique.
- * Cards start buried below the viewport and shoot up into place with a
- * staggered expo.out, matching the CinematicLandingHero animation style.
  *
- * @param containerRef  Ref to the section/list wrapper that contains the cards
- * @param ready         When this flips to `true` the animation fires (once only)
- * @param selector      CSS selector for card elements inside the container
- * @param delay         Optional delay before the stagger begins (seconds)
+ * Robustness notes:
+ * - Does NOT rely on CSS to pre-hide elements. GSAP.set() runs synchronously
+ *   before the first paint, so there is no flash of visible content.
+ * - If the first effect run finds no targets (DOM not yet committed), a
+ *   MutationObserver watches the container and fires the animation once
+ *   the selector matches, then disconnects.
+ * - hasAnimated ref prevents double-fires.
  */
 export function useCinematicEntrance(
   containerRef: React.RefObject<HTMLElement | null>,
@@ -25,49 +26,70 @@ export function useCinematicEntrance(
 
   useEffect(() => {
     if (!ready || hasAnimated.current) return;
+
+    function run() {
+      const container = containerRef.current;
+      if (!container || hasAnimated.current) return;
+
+      const targets = Array.from(container.querySelectorAll<HTMLElement>(selector));
+      if (targets.length === 0) return false; // signal: not ready yet
+
+      hasAnimated.current = true;
+
+      if (prefersReducedMotion()) {
+        gsap.set(targets, { clearProps: 'all' });
+        return true;
+      }
+
+      // Set initial hidden state synchronously (before browser paints)
+      gsap.set(targets, {
+        y: 110,
+        autoAlpha: 0,
+        scale: 0.91,
+        rotationX: -18,
+        transformOrigin: '50% 100%',
+        filter: 'blur(12px)',
+      });
+
+      gsap.to(targets, {
+        y: 0,
+        autoAlpha: 1,
+        scale: 1,
+        rotationX: 0,
+        filter: 'blur(0px)',
+        ease: 'expo.out',
+        duration: 1.05,
+        delay,
+        stagger: {
+          amount: Math.min(0.65, targets.length * 0.08),
+          ease: 'power1.in',
+        },
+        clearProps: 'filter,rotationX,scale',
+        overwrite: true,
+      });
+
+      return true;
+    }
+
+    // Try immediately (DOM may already be committed)
+    if (run()) return;
+
+    // DOM not ready yet — observe until selector matches, then fire once
     const container = containerRef.current;
     if (!container) return;
 
-    const targets = container.querySelectorAll(selector);
-    if (targets.length === 0) return;
+    const observer = new MutationObserver(() => {
+      if (run()) observer.disconnect();
+    });
+    observer.observe(container, { childList: true, subtree: true });
 
-    hasAnimated.current = true;
-
-    if (prefersReducedMotion()) {
-      gsap.set(targets, { autoAlpha: 1, clearProps: 'all' });
-      return;
-    }
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        targets,
-        {
-          y: 110,
-          autoAlpha: 0,
-          scale: 0.91,
-          rotationX: -18,
-          transformOrigin: '50% 100%',
-          filter: 'blur(12px)',
-        },
-        {
-          y: 0,
-          autoAlpha: 1,
-          scale: 1,
-          rotationX: 0,
-          filter: 'blur(0px)',
-          ease: 'expo.out',
-          duration: 1.05,
-          delay,
-          stagger: {
-            amount: Math.min(0.6, targets.length * 0.08),
-            ease: 'power1.in',
-          },
-          clearProps: 'filter,rotationX,scale',
-          overwrite: true,
-        },
-      );
-    }, container);
-
-    return () => ctx.revert();
+    return () => {
+      observer.disconnect();
+      // Safety: if animation never fired, ensure elements are visible
+      if (!hasAnimated.current) {
+        const stuck = container.querySelectorAll<HTMLElement>(selector);
+        if (stuck.length > 0) gsap.set(stuck, { clearProps: 'all' });
+      }
+    };
   }, [ready, containerRef, selector, delay]);
 }
