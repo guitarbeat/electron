@@ -28,8 +28,6 @@ interface MoviesTopControlsProps {
   latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-  selectedAutocompleteResult: MovieAutocompleteResult | null;
-  setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -68,8 +66,6 @@ const MoviesTopControls = React.forwardRef<
   currentUser,
   searchQuery,
   setSearchQuery,
-  selectedAutocompleteResult,
-  setSelectedAutocompleteResult,
   guestName,
   setGuestName,
   onSubmit,
@@ -179,11 +175,11 @@ const MoviesTopControls = React.forwardRef<
 
   const selectAutocompleteResult = useCallback(
     (result: MovieAutocompleteResult) => {
-      setSelectedAutocompleteResult(result);
+
       setSearchQuery(result.title);
       hideAutocomplete();
     },
-    [hideAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
+    [hideAutocomplete, setSearchQuery]
   );
 
   useEffect(() => {
@@ -315,7 +311,7 @@ const MoviesTopControls = React.forwardRef<
                 value={searchQuery}
                 onChange={(event) => {
                   setSearchQuery(event.target.value);
-                  setSelectedAutocompleteResult(null);
+
                 }}
                 onFocus={() => {
                   if (hasAutocompleteFeedback) openAutocomplete();
@@ -364,7 +360,7 @@ const MoviesTopControls = React.forwardRef<
                   className="watchlist-top-controls__search-clear"
                   onClick={() => {
                     setSearchQuery('');
-                    setSelectedAutocompleteResult(null);
+
                     resetAutocomplete();
                     internalSearchInputRef.current?.focus();
                   }}
