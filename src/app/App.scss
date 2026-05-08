@@ -12981,15 +12981,24 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 
 /* ── Mobile-friendly polish ─────────────────────────────────── */
 
-/* Y2K ticker: scrolling marquee, edge-faded, single line */
+/* Y2K ticker: scrolling marquee, edge-faded, diagonal band */
 .y2k-ticker {
   position: relative;
   margin-top: 0.5rem;
   overflow: hidden;
-  border-top: 1px solid rgba(196, 154, 80, 0.22);
-  border-bottom: 1px solid rgba(196, 154, 80, 0.22);
-  background: rgba(10, 6, 3, 0.45);
+  width: 110%;
+  margin-left: -5%;
+  border-top: 1px solid rgba(196, 154, 80, 0.28);
+  border-bottom: 1px solid rgba(196, 154, 80, 0.28);
+  background: rgba(10, 6, 3, 0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   padding: 0.4rem 0;
+  transform: rotate(-1.5deg);
+  box-shadow:
+    0 4px 18px -4px rgba(0,0,0,0.72),
+    inset 0 1px 0 rgba(196,154,80,0.12),
+    inset 0 -1px 0 rgba(0,0,0,0.5);
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
 }
