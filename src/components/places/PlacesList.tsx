@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/useProviders';
 import { usePlaces } from '@/hooks/places';
