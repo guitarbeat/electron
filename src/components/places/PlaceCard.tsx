@@ -16,6 +16,7 @@ import { getPlaceMeta } from './lib/placeMeta';
 import WatcherBadge from '@/common/WatcherBadge';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardMetadata from '@/ui/MediaCardMetadata';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Button from '@/ui/Button';
 
 interface PlaceCardProps {

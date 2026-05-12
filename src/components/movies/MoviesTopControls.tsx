@@ -68,6 +68,7 @@ function AutocompletePosterImage({ src }: { src: string }) {
       onLoad={() => setLoaded(true)}
     />
   );
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 }
 
 const MoviesTopControls = React.forwardRef<
