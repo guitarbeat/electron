@@ -1,0 +1,3 @@
+## 2024-05-12 - Added ARIA Labels to PolaroidMemory Buttons
+**Learning:** Found that custom Polaroid memory components used plain emojis (📍/📌 and 🗑️) inside buttons. They had `title` attributes for hover text but lacked `aria-label` attributes, which meant screen readers would read out the raw unicode characters instead of the action ("Pin", "Unpin", "Delete memory"). When dealing with highly customized UI components (like Polaroid styling) that replace standard icons with emojis for a specific aesthetic, accessibility metadata is easily forgotten but crucial.
+**Action:** Always verify that buttons containing only icons or emojis have explicitly defined `aria-label`s, especially in custom UI component sets.
