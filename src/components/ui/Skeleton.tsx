@@ -1,4 +1,4 @@
-import { radius } from '../../theme/tokens.ts';
+import { radius } from '@/theme/tokens';
 import React from 'react';
 
 interface SkeletonProps {
