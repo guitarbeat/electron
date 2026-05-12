@@ -1,12 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
@@ -16,16 +9,14 @@ import {
   type MovieAutocompleteResult,
 } from '@/services/metadata';
 import MovieRecommendationComposer from './MovieRecommendationComposer';
+import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
 
 import {
-  getNextMovieAutocompleteIndex,
-  getMovieAutocompleteEnterSelectionIndex,
   hasStoredMovieAutocompleteFeedback,
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
   normalizeMovieAutocompleteQuery,
-  shouldClearSelectedMovieResult,
-  shouldFetchMovieAutocomplete,
+  getNextMovieAutocompleteIndex,
 } from './lib/movieAutocomplete';
 
 interface MoviesTopControlsProps {
@@ -77,7 +68,7 @@ const MoviesTopControls = React.forwardRef<
   currentUser,
   searchQuery,
   setSearchQuery,
-  selectedAutocompleteResult,
+
   setSelectedAutocompleteResult,
   guestName,
   setGuestName,
@@ -93,6 +84,14 @@ const MoviesTopControls = React.forwardRef<
   suggestionError,
   canRecommend,
 }, forwardedRef) => {
+  const slot = useAppHeaderSlot();
+
+  useEffect(() => {
+    if (!slot) return;
+    slot.setHasSearch(true);
+    return () => slot.setHasSearch(false);
+  }, [slot]);
+
   const hasSearchQuery = Boolean(searchQuery.trim());
   const isBusy = isAdding || isSubmittingRecommendation;
   const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
@@ -106,14 +105,13 @@ const MoviesTopControls = React.forwardRef<
   const autocompleteListId = useId();
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
-  const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
   const autocompleteCloseTimerRef = useRef<number | null>(null);
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
-  const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
   const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
+  const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
@@ -151,7 +149,6 @@ const MoviesTopControls = React.forwardRef<
     }
     setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
-    setActiveAutocompleteIndex(-1);
   }, []);
 
   const hideAutocomplete = useCallback(() => {
@@ -160,7 +157,6 @@ const MoviesTopControls = React.forwardRef<
       autocompleteCloseTimerRef.current = null;
     }
     setIsAutocompleteOpen(false);
-    setActiveAutocompleteIndex(-1);
     setIsAutocompleteLoading(false);
     setAutocompleteTypeFilter('all');
     setIsAutocompleteMounted(false);
@@ -170,7 +166,6 @@ const MoviesTopControls = React.forwardRef<
     autocompleteRequestIdRef.current += 1;
     setAutocompleteQuery('');
     setAutocompleteResults([]);
-    setActiveAutocompleteIndex(-1);
     setIsAutocompleteOpen(false);
     setIsAutocompleteMounted(false);
     setAutocompleteTypeFilter('all');
@@ -194,20 +189,11 @@ const MoviesTopControls = React.forwardRef<
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (!autocompleteRegionRef.current?.contains(target)) {
-        setIsAutocompleteRegionFocused(false);
-        hideAutocomplete();
-      }
+      if (!(target instanceof Node)) return;
+      if (!autocompleteRegionRef.current?.contains(target)) hideAutocomplete();
     };
-
     document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [hideAutocomplete]);
 
   useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
@@ -219,17 +205,8 @@ const MoviesTopControls = React.forwardRef<
   }, []);
 
   useEffect(() => {
-    if (!isAutocompleteRegionFocused) {
-      hideAutocomplete();
-      return;
-    }
-
     if (normalizedSearchQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
       resetAutocomplete();
-      return;
-    }
-
-    if (!shouldFetchMovieAutocomplete(trimmedSearchQuery, selectedAutocompleteResult)) {
       return;
     }
 
@@ -258,7 +235,6 @@ const MoviesTopControls = React.forwardRef<
 
         setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults(nextResults);
-        setActiveAutocompleteIndex(-1);
       } catch (error) {
         if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) {
           return;
@@ -266,7 +242,6 @@ const MoviesTopControls = React.forwardRef<
 
         setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults([]);
-        setActiveAutocompleteIndex(-1);
         setAutocompleteError(
           error instanceof Error && error.message
             ? error.message
@@ -283,14 +258,7 @@ const MoviesTopControls = React.forwardRef<
       window.clearTimeout(timeoutId);
       abortController.abort();
     };
-  }, [
-    hideAutocomplete,
-    isAutocompleteRegionFocused,
-    normalizedSearchQuery,
-    resetAutocomplete,
-    selectedAutocompleteResult,
-    trimmedSearchQuery,
-  ]);
+  }, [hideAutocomplete, normalizedSearchQuery, resetAutocomplete, trimmedSearchQuery]);
 
   const hasAutocompleteFeedback = useMemo(
     () =>
@@ -309,7 +277,6 @@ const MoviesTopControls = React.forwardRef<
       trimmedSearchQuery,
     ]
   );
-  const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
   const filteredAutocompleteResults = useMemo(
     () =>
       autocompleteTypeFilter === 'all'
@@ -318,138 +285,63 @@ const MoviesTopControls = React.forwardRef<
     [autocompleteResults, autocompleteTypeFilter]
   );
 
-  useEffect(() => {
-    setActiveAutocompleteIndex((currentIndex) => {
-      if (filteredAutocompleteResults.length === 0) {
-        return -1;
-      }
-
-      return currentIndex >= 0 && currentIndex < filteredAutocompleteResults.length
-        ? currentIndex
-        : -1;
-    });
-  }, [filteredAutocompleteResults.length]);
-
-  return (
-    <section className="workspace-control-panel watchlist-top-controls">
-      <div className="watchlist-top-controls__stage">
-        <form
-          className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
-            isAutocompleteElevated ? ' is-autocomplete-active' : ''
-          }`}
-          onSubmit={(event) => {
-            event.preventDefault();
-            clearFocusBoundaryCheck();
-            hideAutocomplete();
-            internalSearchInputRef.current?.blur();
-            void onSubmit();
-          }}
-        >
+  const searchForm = (
+    <form
+      className="watchlist-top-controls__search-form watchlist-top-controls__search-form--in-header"
+      onSubmit={(event) => {
+        event.preventDefault();
+        clearFocusBoundaryCheck();
+        hideAutocomplete();
+        internalSearchInputRef.current?.blur();
+        void onSubmit();
+      }}
+    >
           <div
             ref={autocompleteRegionRef}
             className="watchlist-top-controls__search-shell watchlist-top-controls__search-shell--with-icon"
-            onFocusCapture={() => {
-              clearFocusBoundaryCheck();
-              setIsAutocompleteRegionFocused(true);
-            }}
             onBlurCapture={() => {
               clearFocusBoundaryCheck();
               focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
                 focusBoundaryFrameRef.current = null;
-                // On iOS Safari, buttons don't receive focus on tap, so
-                // document.activeElement is <body> even when the user tapped
-                // inside the dropdown. Check the pending-interaction flag first.
-                if (dropdownInteractionPendingRef.current) {
-                  return;
-                }
-                const nextIsFocused = Boolean(
-                  autocompleteRegionRef.current?.contains(document.activeElement)
-                );
-                setIsAutocompleteRegionFocused(nextIsFocused);
-                if (!nextIsFocused) {
-                  hideAutocomplete();
-                }
+                if (dropdownInteractionPendingRef.current) return;
+                if (!autocompleteRegionRef.current?.contains(document.activeElement)) hideAutocomplete();
               });
             }}
           >
-            <span className="watchlist-top-controls__search-icon" aria-hidden="true">🎬</span>
             <div style={{ position: 'relative', width: '100%', flex: 1 }}>
               <Input
                 ref={internalSearchInputRef}
                 className="watchlist-top-controls__search-field"
                 value={searchQuery}
                 onChange={(event) => {
-                  const nextValue = event.target.value;
-                  setSearchQuery(nextValue);
-                  if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
-                    setSelectedAutocompleteResult(null);
-                  }
+                  setSearchQuery(event.target.value);
+                  setSelectedAutocompleteResult(null);
                 }}
                 onFocus={() => {
-                  if (
-                    hasAutocompleteFeedback
-                  ) {
-                    openAutocomplete();
-                  }
+                  if (hasAutocompleteFeedback) openAutocomplete();
                 }}
                 onKeyDown={(event) => {
-                  if (event.nativeEvent.isComposing) {
-                    return;
-                  }
-
+                  if (!isAutocompleteOpen) return;
                   if (event.key === 'ArrowDown') {
-                    if (filteredAutocompleteResults.length === 0) {
-                      return;
-                    }
-
                     event.preventDefault();
-                    setIsAutocompleteOpen(true);
-                    setActiveAutocompleteIndex((currentIndex) =>
-                      getNextMovieAutocompleteIndex(
-                        currentIndex,
-                        'next',
-                        filteredAutocompleteResults.length
-                      )
+                    setActiveAutocompleteIndex(
+                      getNextMovieAutocompleteIndex(activeAutocompleteIndex, 'next', filteredAutocompleteResults.length)
                     );
-                    return;
-                  }
-
-                  if (event.key === 'ArrowUp') {
-                    if (filteredAutocompleteResults.length === 0) {
-                      return;
-                    }
-
+                  } else if (event.key === 'ArrowUp') {
                     event.preventDefault();
-                    setIsAutocompleteOpen(true);
-                    setActiveAutocompleteIndex((currentIndex) =>
-                      getNextMovieAutocompleteIndex(
-                        currentIndex,
-                        'previous',
-                        filteredAutocompleteResults.length
-                      )
+                    setActiveAutocompleteIndex(
+                      getNextMovieAutocompleteIndex(activeAutocompleteIndex, 'previous', filteredAutocompleteResults.length)
                     );
-                    return;
-                  }
-
-                  if (event.key === 'Escape') {
-                    if (isAutocompleteOpen) {
+                  } else if (event.key === 'Escape') {
+                    event.preventDefault();
+                    hideAutocomplete();
+                    setActiveAutocompleteIndex(-1);
+                  } else if (event.key === 'Enter' && activeAutocompleteIndex >= 0) {
+                    const result = filteredAutocompleteResults[activeAutocompleteIndex];
+                    if (result) {
                       event.preventDefault();
-                      hideAutocomplete();
+                      selectAutocompleteResult(result);
                     }
-                    return;
-                  }
-
-                  if (event.key === 'Enter' && isAutocompleteOpen) {
-                    const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
-                      activeAutocompleteIndex,
-                      filteredAutocompleteResults.length
-                    );
-                    if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) {
-                      return;
-                    }
-
-                    event.preventDefault();
-                    selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
                   }
                 }}
                 placeholder="Add a movie or show title"
@@ -567,15 +459,12 @@ const MoviesTopControls = React.forwardRef<
                   <div className="watchlist-top-controls__autocomplete-status" role="alert">
                     {autocompleteError}
                   </div>
-                ) : autocompleteResults.length > 0 ? (() => {
-                  if (filteredAutocompleteResults.length === 0) {
-                    return (
-                      <div className="watchlist-top-controls__autocomplete-status">
-                        No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
-                      </div>
-                    );
-                  }
-                  return filteredAutocompleteResults.map((result, index) => (
+                ) : autocompleteResults.length > 0 ? (
+                  filteredAutocompleteResults.length === 0 ? (
+                    <div className="watchlist-top-controls__autocomplete-status">
+                      No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
+                    </div>
+                  ) : filteredAutocompleteResults.map((result, index) => (
                     <button
                       key={result.imdbID ?? `${result.title}-${index}`}
                       id={`${autocompleteListId}-option-${index}`}
@@ -586,8 +475,6 @@ const MoviesTopControls = React.forwardRef<
                         index === activeAutocompleteIndex ? 'is-active' : ''
                       }`}
                       onPointerDown={(event) => {
-                        // Prevent input blur on all pointer types (mouse, touch, pen).
-                        // Then select immediately so the action fires before any blur.
                         event.preventDefault();
                         selectAutocompleteResult(result);
                       }}
@@ -610,8 +497,8 @@ const MoviesTopControls = React.forwardRef<
                         </span>
                       </span>
                     </button>
-                  ));
-                })() : !isAutocompleteLoading ? (
+                  ))
+                ) : !isAutocompleteLoading ? (
                   <div className="watchlist-top-controls__autocomplete-status">
                     No titles found for &quot;{trimmedSearchQuery}&quot;
                   </div>
@@ -651,30 +538,38 @@ const MoviesTopControls = React.forwardRef<
               </Button>
             </div>
           )}
-        </form>
-      </div>
+    </form>
+  );
 
-      {showRecommendationComposer && hasSearchQuery && (
-        <MovieRecommendationComposer
-          currentUser={currentUser}
-          movieTitle={searchQuery.trim()}
-          guestName={guestName}
-          reason={recommendationReason}
-          error={suggestionError}
-          isSubmitting={isSubmittingRecommendation}
-          onGuestNameChange={setGuestName}
-          onReasonChange={setRecommendationReason}
-          onSubmit={onSubmitRecommendation}
-          onCancel={onCancelRecommendation}
-        />
-      )}
+  return (
+    <>
+      {slot?.centerNode ? createPortal(searchForm, slot.centerNode) : searchForm}
 
-      {suggestionError && !showRecommendationComposer && (
-        <div className="places-top-controls__error" role="alert">
-          {suggestionError}
-        </div>
-      )}
-    </section>
+      {(showRecommendationComposer && hasSearchQuery) ||
+      (suggestionError && !showRecommendationComposer) ? (
+        <section className="workspace-control-panel watchlist-top-controls">
+          {showRecommendationComposer && hasSearchQuery && (
+            <MovieRecommendationComposer
+              currentUser={currentUser}
+              movieTitle={searchQuery.trim()}
+              guestName={guestName}
+              reason={recommendationReason}
+              error={suggestionError}
+              isSubmitting={isSubmittingRecommendation}
+              onGuestNameChange={setGuestName}
+              onReasonChange={setRecommendationReason}
+              onSubmit={onSubmitRecommendation}
+              onCancel={onCancelRecommendation}
+            />
+          )}
+          {suggestionError && !showRecommendationComposer && (
+            <div className="places-top-controls__error" role="alert">
+              {suggestionError}
+            </div>
+          )}
+        </section>
+      ) : null}
+    </>
   );
 });
 
