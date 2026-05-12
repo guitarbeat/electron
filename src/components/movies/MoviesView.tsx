@@ -12,6 +12,7 @@ import Button from '@/ui/Button';
 import SyncBanner from '@/components/ui/SyncBanner';
 import { spacing } from '@/theme/tokens';
 import { useMoviesWorkspace } from '@/hooks/movies/useMoviesWorkspace';
+import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from './MoviesTopControls';
@@ -30,6 +31,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
+  const moviesBodyRef = useRef<HTMLDivElement | null>(null);
 
   const {
     isMobile,
@@ -157,6 +159,23 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === '/' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !event.metaKey &&
+        !event.ctrlKey
+      ) {
+        event.preventDefault();
+        focusSearchInput();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [focusSearchInput]);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -418,6 +437,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movies.length === 0 &&
     pendingSuggestions.length === 0;
 
+  const cardsReady = !showInitialLoading && (movies.length > 0 || pendingSuggestions.length > 0);
+  useCinematicEntrance(moviesBodyRef, cardsReady, '.movie-item-container');
+
   const moviesBody = useMemo(() => {
     if (showInitialLoading) {
       return (
@@ -445,7 +467,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     const isAllEmpty = isQueueEmpty && isWatchedEmpty;
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.xl : spacing['2xl'] }}>
         {isAllEmpty ? (
           <CollectionGrid className="watchlist-content" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
             <CollectionEmptyState
@@ -537,10 +559,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   ]);
 
   return (
-    <div
-      className="watchlist-container places-container"
-      style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
-    >
+    <div className="watchlist-container places-container">
       {isMoviesWorkspaceDegraded && (
         <SyncBanner
           isBlocked={isMoviesWorkspaceSyncBlocked}
@@ -580,7 +599,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         suggestionError={suggestionError}
         canRecommend={true}
       />
-      {moviesBody}
+      <div ref={moviesBodyRef}>{moviesBody}</div>
 
       {movieToDelete && (
         <ConfirmDialog

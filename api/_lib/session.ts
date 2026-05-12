@@ -41,7 +41,7 @@ const getFallbackSecret = (): string => {
 };
 
 const getSessionSigningSecret = (): string => {
-  const configured = clean(process.env.SESSION_SIGNING_SECRET);
+  const configured = clean(process.env.SESSION_SIGNING_SECRET || process.env.SESSION_SECRET);
   return configured || getFallbackSecret();
 };
 
