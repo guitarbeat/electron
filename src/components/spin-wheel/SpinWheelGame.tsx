@@ -277,8 +277,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         </div>
 
         <div className="spin-wheel-panel">
-          {selectedMovie ? (
-            <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
+          {selectedMovie ? (() => {
+            const isWatchedByCurrentUser = currentUser ? selectedMovie.watchedBy.includes(currentUser) : false;
+            return (
+              <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
               <p className="spin-wheel-panel__eyebrow">Tonight&apos;s Pick</p>
               <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
               <p className="spin-wheel-panel__meta">
@@ -289,24 +291,25 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               {selectedMovie.plot ? <p className="spin-wheel-panel__copy">{selectedMovie.plot}</p> : null}
               {currentUser ? (
                 <Button
-                  variant={selectedMovie.watchedBy.includes(currentUser) ? 'danger' : 'primary'}
+                  variant={isWatchedByCurrentUser ? 'danger' : 'primary'}
                   size="sm"
                   isLoading={isTogglingWatched}
                   disabled={isTogglingWatched}
                   onClick={toggleWatchedForCurrentUser}
                   className={`spin-result-action ${
-                    selectedMovie.watchedBy.includes(currentUser)
+                    isWatchedByCurrentUser
                       ? 'spin-result-action--undo'
                       : 'spin-result-action--mark'
                   }`}
                 >
-                  {selectedMovie.watchedBy.includes(currentUser)
+                  {isWatchedByCurrentUser
                     ? `Undo watched for ${currentUser}`
                     : `Mark watched by ${currentUser}`}
                 </Button>
               ) : null}
             </div>
-          ) : (
+            );
+          })() : (
             <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
               <p className="spin-wheel-panel__eyebrow">
                 {isSpinning ? 'Spinning Now' : 'Wheel Loaded'}
