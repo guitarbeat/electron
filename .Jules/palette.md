@@ -1,0 +1,3 @@
+## 2026-05-12 - [Add ARIA labels to icon-only Delete buttons in Quiz Editor]
+**Learning:** Interactive UI elements, like the "✕" delete buttons in the quiz option editors, can be entirely stripped of accessible context when they rely solely on symbols (e.g., Unicode crosses) instead of descriptive text or SVGs with explicit alt strings. This is a common pattern in map/option builder components that value density.
+**Action:** Always scan for generic textual icons (like ✕, +, -) used as content inside action buttons, and explicitly wrap them with `aria-label` or visually hidden text to guarantee screen readers interpret their action correctly.
