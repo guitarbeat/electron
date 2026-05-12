@@ -36,6 +36,6 @@ test('buildMovieSections groups suggestions, up-next, and watched titles for inl
   const sections = buildMovieSections(MOVIES, PENDING_SUGGESTIONS);
 
   assert.deepEqual(sections.suggestions.map((suggestion) => suggestion.title), ['Perfect Blue']);
-  assert.deepEqual(sections.upNext.map((movie) => movie.title), ['Arrival']);
-  assert.deepEqual(sections.watched.map((movie) => movie.title), ['Moonlight']);
+  assert.deepEqual(sections.queue.map((movie) => movie.title), ['Arrival']);
+  assert.deepEqual(sections.completed.map((movie) => movie.title), ['Moonlight']);
 });
