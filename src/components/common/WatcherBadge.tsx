@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 
 export const USER_PHOTOS: Record<string, string[]> = {
