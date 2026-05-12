@@ -11,8 +11,6 @@ import {
   MediaCardRatingBadge,
   MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
-import Button from '@/ui/Button';
-import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
