@@ -82,6 +82,8 @@ const trimCache = (cache: Map<string, CachedResponse>) => {
   for (const [key, value] of cache.entries()) {
     if (value.expiresAt <= now) {
       cache.delete(key);
+    } else {
+      break;
     }
   }
 
@@ -96,6 +98,7 @@ const trimCache = (cache: Map<string, CachedResponse>) => {
 
 const cacheResponse = (cacheKey: string, response: CachedResponse) => {
   trimCache(omdbCache);
+  omdbCache.delete(cacheKey); // Ensure it's moved to the end of insertion order
   omdbCache.set(cacheKey, response);
 };
 
@@ -108,13 +111,20 @@ const isRateLimited = (ip: string): boolean => {
       for (const [key, value] of ipRequestCounts.entries()) {
         if (now > value.resetTime) {
           ipRequestCounts.delete(key);
+        } else {
+          break;
         }
       }
-      if (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
-        ipRequestCounts.clear();
+      while (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
+        const next = ipRequestCounts.keys().next();
+        if (next.done) break;
+        ipRequestCounts.delete(next.value);
       }
     }
 
+    if (record) {
+      ipRequestCounts.delete(ip); // Ensure it's moved to the end of insertion order
+    }
     ipRequestCounts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
     return false;
   }
