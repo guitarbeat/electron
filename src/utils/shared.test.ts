@@ -1,6 +1,8 @@
+import { spacing } from '../theme/tokens.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  layouts,
   areDeeplyEqual,
   createValidator,
   executeAction,
@@ -311,5 +313,83 @@ test('createValidator', async (t) => {
     assert.equal(result.isValid, false);
     assert.equal(Object.keys(result.errors).length, 2);
     assert.equal(result.fieldErrors.length, 2);
+  });
+});
+
+test('layouts', async (t) => {
+  await t.test('centeredContainer returns expected static object', () => {
+    assert.deepEqual(layouts.centeredContainer, {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: `0 ${spacing.md}`
+    });
+  });
+
+  await t.test('grid returns correct styles with default params', () => {
+    assert.deepEqual(layouts.grid(), {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(1, 1fr)',
+      gap: spacing.md,
+    });
+  });
+
+  await t.test('grid returns correct styles with custom params', () => {
+    assert.deepEqual(layouts.grid(3, '24px'), {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '24px',
+    });
+  });
+
+  await t.test('stack returns correct styles with default gap', () => {
+    assert.deepEqual(layouts.stack(), {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.md,
+    });
+  });
+
+  await t.test('stack returns correct styles with custom gap', () => {
+    assert.deepEqual(layouts.stack('8px'), {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    });
+  });
+
+  await t.test('inlineStack returns correct styles with default gap', () => {
+    assert.deepEqual(layouts.inlineStack(), {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.md,
+    });
+  });
+
+  await t.test('inlineStack returns correct styles with custom gap', () => {
+    assert.deepEqual(layouts.inlineStack('32px'), {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '32px',
+    });
+  });
+
+  await t.test('flexRow returns correct styles with default params', () => {
+    assert.deepEqual(layouts.flexRow(), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      gap: spacing.md,
+    });
+  });
+
+  await t.test('flexRow returns correct styles with custom params', () => {
+    assert.deepEqual(layouts.flexRow('space-between', 'flex-start', '10px'), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: '10px',
+    });
   });
 });
