@@ -76,10 +76,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }),
     [currentUser, memories.length, movie]
   );
-  const featuredMemory = React.useMemo(
-    () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
-    [memories]
-  );
+
 
   const handleOpenDetails = () => {
     const rect = posterRef.current?.getBoundingClientRect() ?? cardRef.current?.getBoundingClientRect();
