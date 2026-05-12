@@ -34,7 +34,7 @@ const debugSession = (...args: unknown[]) => {
 // ============================================================================
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const currentTheme: 'movies' | 'places' = 'movies';
+  const currentTheme = 'movies' as const;
   const themeTokens = moviesTheme;
 
   useEffect(() => {
@@ -213,11 +213,21 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     debugSession('[session] Refreshing session…');
     setIsSessionLoading(true);
     try {
-      const response = await fetch('/api/session', {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store',
-      });
+      let response: Response;
+      try {
+        response = await fetch('/api/session', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+      } catch (error) {
+        debugSession('[session] Refresh network error — clearing state', error);
+        setHasAccess(false);
+        setCurrentUserState(null);
+        setPinProtectedUsers([]);
+        setUsersMissingPins([]);
+        return;
+      }
 
       if (!response.ok) {
         debugSession('[session] Refresh failed — status', response.status, '— clearing state');

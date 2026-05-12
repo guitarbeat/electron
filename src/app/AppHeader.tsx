@@ -7,6 +7,7 @@ import { usePins } from '@/hooks/usePins';
 import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
 import ThemeToggle from '@/ui/ThemeToggle';
 import PinDialog from '@/common/PinDialog';
+import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
 import './AppHeader.css';
 
 interface AppHeaderProps {
@@ -23,6 +24,7 @@ interface AppHeaderProps {
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
+  onOpenSpin?: () => void;
 }
 
 const AppHeader: FC<AppHeaderProps> = ({
@@ -32,6 +34,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
+  onOpenSpin,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } = usePins();
@@ -48,6 +51,14 @@ const AppHeader: FC<AppHeaderProps> = ({
   const brandRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const slot = useAppHeaderSlot();
+
+  useEffect(() => {
+    if (!slot) return;
+    slot.setCenterNode(centerRef.current);
+    return () => slot.setCenterNode(null);
+  }, [slot]);
 
   const users: User[] = [...USER_OPTIONS];
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -380,17 +391,15 @@ const AppHeader: FC<AppHeaderProps> = ({
   return (
     <header
       ref={headerRef}
-      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? ' is-profile-menu-open' : ''}`}
+      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? ' is-profile-menu-open' : ''}${slot?.hasSearch ? ' app-header--has-search' : ''}`}
       role="banner"
     >
       {/* Left: Theme Toggle + Background Toggle */}
       <div ref={leftRef} className="app-header__left">
         {shouldShowPwaChip && pwaChip ? (
           <div className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}>
-            <div className="app-header__pwa-copy">
               <span className="app-header__pwa-label">{pwaChip.label}</span>
-              <span className="app-header__pwa-detail">{pwaChip.detail}</span>
-            </div>
+            <span className="app-header__pwa-detail">{pwaChip.detail}</span>
             {pwaChip.action && pwaChip.actionLabel ? (
               <button
                 type="button"
@@ -419,17 +428,37 @@ const AppHeader: FC<AppHeaderProps> = ({
         />
       </div>
 
-      {/* Center: Brand */}
-      <div ref={centerRef} className="app-header__center" aria-label="Electron">
-        <span ref={brandRef} className="app-header__brand" aria-hidden="true">
-          {brandLabel}
-        </span>
-        <span className="app-header__brand-fallback">{brandLabel}</span>
+      {/* Center: Brand or Search slot */}
+      <div
+        ref={centerRef}
+        className={`app-header__center${slot?.hasSearch ? ' app-header__center--search' : ''}`}
+        aria-label={slot?.hasSearch ? undefined : 'Electron'}
+      >
+        {!slot?.hasSearch && (
+          <span ref={brandRef} className="app-header__brand">
+            {brandLabel}
+          </span>
+        )}
       </div>
 
-      {/* Right: Profile Selector */}
+      {/* Right: Spin button (movies tab) + Profile Selector */}
       <div ref={rightRef} className="app-header__right">
-        <div className="app-header__profile-container">
+        {activeTab === 'movies' && onOpenSpin && (
+          <button
+            type="button"
+            className="app-header__spin-trigger"
+            onClick={onOpenSpin}
+            aria-label="Spin the wheel to pick a movie"
+            title="Spin the wheel"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="2" x2="12" y2="12" />
+              <line x1="12" y1="12" x2="20" y2="16" />
+            </svg>
+            <span className="app-header__spin-label">Spin</span>
+          </button>
+        )}
           <button
             ref={triggerRef}
             type="button"
@@ -495,8 +524,8 @@ const AppHeader: FC<AppHeaderProps> = ({
             )}
           </button>
 
-          {/* Profile Dropdown Menu */}
-          {isProfileMenuOpen && (
+        {/* Profile Dropdown Menu */}
+        {isProfileMenuOpen && (
             <div
               ref={menuRef}
               className="app-header__profile-menu"
@@ -600,7 +629,6 @@ const AppHeader: FC<AppHeaderProps> = ({
               )}
             </div>
           )}
-        </div>
       </div>
 
       {/* PIN Dialogs */}
