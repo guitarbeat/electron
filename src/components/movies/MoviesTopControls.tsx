@@ -9,7 +9,7 @@ import {
   type MovieAutocompleteResult,
 } from '@/services/metadata';
 import MovieRecommendationComposer from './MovieRecommendationComposer';
-import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
+import { useAppHeaderSlot } from '@/app/AppHeaderContext';
 
 import {
   hasStoredMovieAutocompleteFeedback,
@@ -68,7 +68,6 @@ const MoviesTopControls = React.forwardRef<
   currentUser,
   searchQuery,
   setSearchQuery,
-  selectedAutocompleteResult,
   setSelectedAutocompleteResult,
   guestName,
   setGuestName,
