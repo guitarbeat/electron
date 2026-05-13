@@ -1,23 +1,9 @@
 import {
-  createContext,
-  useContext,
   useState,
   type ReactNode,
 } from 'react';
 
-interface AppHeaderSlotContextValue {
-  centerNode: HTMLDivElement | null;
-  setCenterNode: (node: HTMLDivElement | null) => void;
-  hasSearch: boolean;
-  setHasSearch: (v: boolean) => void;
-}
-
-export const AppHeaderSlotContext =
-  createContext<AppHeaderSlotContextValue | null>(null);
-
-export function useAppHeaderSlot() {
-  return useContext(AppHeaderSlotContext);
-}
+import { AppHeaderSlotContext } from './AppHeaderSlotContext.ts';
 
 export function AppHeaderSlotProvider({ children }: { children: ReactNode }) {
   const [centerNode, setCenterNode] = useState<HTMLDivElement | null>(null);
