@@ -1,13 +1,8 @@
 import {
-  useContext,
   useState,
   type ReactNode,
 } from 'react';
 import { AppHeaderSlotContext } from './AppHeaderContexts';
-
-export function useAppHeaderSlot() {
-  return useContext(AppHeaderSlotContext);
-}
 
 export function AppHeaderSlotProvider({ children }: { children: ReactNode }) {
   const [centerNode, setCenterNode] = useState<HTMLDivElement | null>(null);
