@@ -5,15 +5,10 @@ import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import { useCardTilt } from '@/hooks/useCardTilt';
 import Card from '@/ui/Card';
 import {
-  MediaCardInfo,
-  MediaCardOverlay,
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-  MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
-import Button from '@/ui/Button';
-import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -21,7 +16,6 @@ import MovieDetailsModal from './MovieDetailsModal';
 import MediaPoster from '@/ui/MediaPoster';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
-import MediaCardMetadata from '@/ui/MediaCardMetadata';
 
 export interface MovieTransitionOrigin {
   top: number;
