@@ -1,6 +1,0 @@
-🧹 fix(places): remove unused Button import from PlaceCard
-
-🎯 What: Removed the unused `Button` import from `@/ui/Button` in `PlaceCard.tsx`.
-💡 Why: Improves code cleanliness, removes dead code, and resolves linting warnings by eliminating a component import that was never utilized in the file.
-✅ Verification: Ran `pnpm check-types` and the full test suite (`pnpm test`), both of which passed with no regressions. Prettier formatting was also run automatically on the file.
-✨ Result: `PlaceCard.tsx` is cleaner and free of unused dependencies.
