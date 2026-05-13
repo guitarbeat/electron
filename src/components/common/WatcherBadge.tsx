@@ -1,5 +1,6 @@
 import React from 'react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const USER_PHOTOS: Record<string, string[]> = {
   Aaron: [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
