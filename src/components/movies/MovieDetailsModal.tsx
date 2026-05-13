@@ -1,14 +1,15 @@
-import React from 'react';
-import { createPortal } from 'react-dom';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useModalBase } from '@/ui/ModalSystem';
-import MemoryComposer from '@/memories/MemoryComposer';
-import MemoryList from '@/memories/MemoryList';
-import { INITIAL_VISIBLE_COUNT } from '@/memories/lib/memoryUtils';
-import type { Movie, SharedMemory, User } from '@/shared/types';
-import { formatMemoryTimestamp } from '@/utils';
-import { MAX_MOVIE_NOTE_LENGTH } from './lib/movieConstants';
-import type { MovieTransitionOrigin } from './MovieCard';
+import React from "react";
+import { createPortal } from "react-dom";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useModalBase } from "@/ui/ModalSystem";
+import MemoryComposer from "@/memories/MemoryComposer";
+import MemoryList from "@/memories/MemoryList";
+import { INITIAL_VISIBLE_COUNT } from "@/memories/lib/memoryUtils";
+import type { Movie, SharedMemory, User } from "@/shared/types";
+import { formatMemoryTimestamp } from "@/utils";
+import { MAX_MOVIE_NOTE_LENGTH } from "./lib/movieConstants";
+import { submitMemory } from "./lib/memorySubmit";
+import type { MovieTransitionOrigin } from "./MovieCard";
 
 interface MovieDetailsModalProps {
   movie: Movie;
@@ -23,15 +24,15 @@ interface MovieDetailsModalProps {
   onClose: () => void;
 }
 
-const ALL_USERS: User[] = ['Aaron', 'Electra'];
+const ALL_USERS: User[] = ["Aaron", "Electra"];
 
 const clampOrigin = (origin: MovieTransitionOrigin | null) => {
   if (!origin) {
     return {
-      top: '50dvh',
-      left: '50vw',
-      width: '18rem',
-      height: '27rem',
+      top: "50dvh",
+      left: "50vw",
+      width: "18rem",
+      height: "27rem",
     };
   }
 
@@ -44,8 +45,10 @@ const clampOrigin = (origin: MovieTransitionOrigin | null) => {
 };
 
 const getDialogMetrics = (isMobile: boolean) => {
-  const viewportWidth = typeof window === 'undefined' ? 1280 : window.innerWidth;
-  const viewportHeight = typeof window === 'undefined' ? 800 : window.innerHeight;
+  const viewportWidth =
+    typeof window === "undefined" ? 1280 : window.innerWidth;
+  const viewportHeight =
+    typeof window === "undefined" ? 800 : window.innerHeight;
   const targetWidth = Math.min(viewportWidth - 32, isMobile ? 544 : 1216);
   const targetHeight = Math.min(viewportHeight - 32, isMobile ? 768 : 672);
   return { targetWidth, targetHeight };
@@ -54,12 +57,12 @@ const getDialogMetrics = (isMobile: boolean) => {
 const getWatchStatus = (movie: Movie, memoryCount: number) => {
   if (movie.watchedBy.length === ALL_USERS.length) {
     return {
-      label: 'Seen together',
-      title: 'Already a shared watch',
+      label: "Seen together",
+      title: "Already a shared watch",
       detail:
         memoryCount > 0
-          ? 'You both finished this one, and the poster is already carrying your notes.'
-          : 'You both marked this watched already.',
+          ? "You both finished this one, and the poster is already carrying your notes."
+          : "You both marked this watched already.",
     };
   }
 
@@ -71,13 +74,13 @@ const getWatchStatus = (movie: Movie, memoryCount: number) => {
       title: `${watcher} is ahead on this one`,
       detail: remaining
         ? `${remaining} still has this waiting in the queue.`
-        : 'One watch logged so far.',
+        : "One watch logged so far.",
     };
   }
 
   return {
-    label: 'Still queued',
-    title: 'Still sitting in the lineup',
+    label: "Still queued",
+    title: "Still sitting in the lineup",
     detail:
       memoryCount > 0
         ? `${movie.addedBy} queued it, and there is already a note attached to the poster.`
@@ -112,15 +115,19 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const [isVisible, setIsVisible] = React.useState(false);
   const [isEntering, setIsEntering] = React.useState(false);
   const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
-  const [draftNote, setDraftNote] = React.useState('');
+  const [draftNote, setDraftNote] = React.useState("");
   const [submitSuccess, setSubmitSuccess] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [visibleCount, setVisibleCount] = React.useState(() =>
-    Math.min(INITIAL_VISIBLE_COUNT, memories.length)
+    Math.min(INITIAL_VISIBLE_COUNT, memories.length),
   );
   const closeTimeoutRef = React.useRef<number | null>(null);
   const successTimeoutRef = React.useRef<number | null>(null);
   const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
-  const { dialogRef, closeButtonRef, playPop } = useModalBase(isVisible, onClose);
+  const { dialogRef, closeButtonRef, playPop } = useModalBase(
+    isVisible,
+    onClose,
+  );
 
   React.useEffect(() => {
     setHasPosterError(false);
@@ -132,7 +139,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   }, [memories.length, movie.id]);
 
   React.useEffect(() => {
-    setDraftNote('');
+    setDraftNote("");
     setSubmitSuccess(false);
     if (successTimeoutRef.current !== null) {
       window.clearTimeout(successTimeoutRef.current);
@@ -172,7 +179,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         window.clearTimeout(successTimeoutRef.current);
       }
     },
-    []
+    [],
   );
 
   React.useEffect(() => {
@@ -184,8 +191,8 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       setIsEntering((current) => current);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isVisible]);
 
   if (!isVisible) {
@@ -193,16 +200,19 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   }
 
   const shouldShowPoster = Boolean(movie.posterUrl) && !hasPosterError;
-  const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || 'No Poster')}?fontSize=18&width=400&height=600`;
+  const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || "No Poster")}?fontSize=18&width=400&height=600`;
   const metadataItems = [
     movie.year,
     movie.runtime,
-    movie.genre?.split(',')[0]?.trim(),
+    movie.genre?.split(",")[0]?.trim(),
     movie.category,
     movie.director ? `Dir. ${movie.director}` : null,
   ].filter(Boolean) as string[];
-  const canManageMemories = Boolean(onUpdateMemory && onDeleteMemory && onTogglePin);
-  const featuredMemory = memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
+  const canManageMemories = Boolean(
+    onUpdateMemory && onDeleteMemory && onTogglePin,
+  );
+  const featuredMemory =
+    memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
   const secondaryMemories = canManageMemories
     ? []
     : memories.filter((memory) => memory.id !== featuredMemory?.id).slice(0, 2);
@@ -213,9 +223,13 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const canSubmitNote =
     !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
   const scaleX =
-    origin && targetWidth > 0 ? Math.min(Math.max(origin.width / targetWidth, 0.18), 1) : 0.32;
+    origin && targetWidth > 0
+      ? Math.min(Math.max(origin.width / targetWidth, 0.18), 1)
+      : 0.32;
   const scaleY =
-    origin && targetHeight > 0 ? Math.min(Math.max(origin.height / targetHeight, 0.18), 1) : 0.32;
+    origin && targetHeight > 0
+      ? Math.min(Math.max(origin.height / targetHeight, 0.18), 1)
+      : 0.32;
 
   const handleMemorySubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -223,38 +237,34 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       return;
     }
 
-    const trimmedNote = draftNote.trim();
-    if (!trimmedNote) {
-      return;
-    }
-
-    setIsSubmittingMemory(true);
-    try {
-      await onAddMemory(trimmedNote);
-      setDraftNote('');
-      setSubmitSuccess(true);
-      if (successTimeoutRef.current !== null) {
-        window.clearTimeout(successTimeoutRef.current);
-      }
-      successTimeoutRef.current = window.setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 1200);
-    } finally {
-      setIsSubmittingMemory(false);
-    }
+    await submitMemory(draftNote, onAddMemory, {
+      setIsSubmittingMemory,
+      setDraftNote,
+      setSubmitSuccess,
+      setSubmitError,
+      clearSuccessTimeout: () => {
+        if (successTimeoutRef.current !== null) {
+          window.clearTimeout(successTimeoutRef.current);
+          successTimeoutRef.current = null;
+        }
+      },
+      setSuccessTimeout: (callback, delay) => {
+        successTimeoutRef.current = window.setTimeout(callback, delay);
+      },
+    });
   };
 
   return createPortal(
     <div
-      className={`movie-details-modal${isEntering ? ' is-open' : ''}`}
+      className={`movie-details-modal${isEntering ? " is-open" : ""}`}
       style={
         {
-          '--movie-origin-top': source.top,
-          '--movie-origin-left': source.left,
-          '--movie-origin-width': source.width,
-          '--movie-origin-height': source.height,
-          '--movie-origin-scale-x': String(scaleX),
-          '--movie-origin-scale-y': String(scaleY),
+          "--movie-origin-top": source.top,
+          "--movie-origin-left": source.left,
+          "--movie-origin-width": source.width,
+          "--movie-origin-height": source.height,
+          "--movie-origin-scale-x": String(scaleX),
+          "--movie-origin-scale-y": String(scaleY),
         } as React.CSSProperties
       }
       role="dialog"
@@ -270,7 +280,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
       <div
         ref={dialogRef}
-        className={`movie-details-modal__dialog${isMobile ? ' movie-details-modal__dialog--mobile' : ''}`}
+        className={`movie-details-modal__dialog${isMobile ? " movie-details-modal__dialog--mobile" : ""}`}
       >
         <div className="movie-details-modal__surface">
           <button
@@ -306,22 +316,27 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 No Poster Available
               </div>
             )}
-            <div className="movie-details-modal__poster-gradient" aria-hidden="true" />
+            <div
+              className="movie-details-modal__poster-gradient"
+              aria-hidden="true"
+            />
             <div className="movie-details-modal__poster-badges">
               <span className="movie-details-modal__poster-pill movie-details-modal__poster-pill--status">
                 {watchStatus.label}
               </span>
               {memories.length > 0 ? (
                 <span className="movie-details-modal__poster-pill">
-                  {memories.length} {memories.length === 1 ? 'note' : 'notes'}
+                  {memories.length} {memories.length === 1 ? "note" : "notes"}
                 </span>
               ) : null}
             </div>
             <div className="movie-details-modal__poster-footer">
-              <span className="movie-details-modal__poster-caption">Queued by {movie.addedBy}</span>
+              <span className="movie-details-modal__poster-caption">
+                Queued by {movie.addedBy}
+              </span>
               {movie.watchedBy.length > 0 ? (
                 <span className="movie-details-modal__poster-caption">
-                  Watched by {movie.watchedBy.join(' & ')}
+                  Watched by {movie.watchedBy.join(" & ")}
                 </span>
               ) : null}
             </div>
@@ -333,11 +348,17 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
               <div className="movie-details-modal__title-row">
                 <h2 className="movie-details-modal__title">{movie.title}</h2>
                 {movie.imdbRating && /^\d/.test(movie.imdbRating) ? (
-                  <span className="movie-details-modal__score-pill">{movie.imdbRating} IMDb</span>
+                  <span className="movie-details-modal__score-pill">
+                    {movie.imdbRating} IMDb
+                  </span>
                 ) : null}
               </div>
-              <p className="movie-details-modal__relationship">{watchStatus.title}</p>
-              <p className="movie-details-modal__supporting-copy">{watchStatus.detail}</p>
+              <p className="movie-details-modal__relationship">
+                {watchStatus.title}
+              </p>
+              <p className="movie-details-modal__supporting-copy">
+                {watchStatus.detail}
+              </p>
               {metadataItems.length > 0 ? (
                 <div className="movie-details-modal__fact-row">
                   {metadataItems.map((item) => (
@@ -351,24 +372,38 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
             <div className="movie-details-modal__summary-band">
               <div className="movie-details-modal__summary-item">
-                <span className="movie-details-modal__meta-label">Queued by</span>
-                <span className="movie-details-modal__summary-value">{movie.addedBy}</span>
-              </div>
-              <div className="movie-details-modal__summary-item">
-                <span className="movie-details-modal__meta-label">Watch status</span>
-                <span className="movie-details-modal__summary-value">{watchStatus.label}</span>
-              </div>
-              <div className="movie-details-modal__summary-item">
-                <span className="movie-details-modal__meta-label">Poster notes</span>
+                <span className="movie-details-modal__meta-label">
+                  Queued by
+                </span>
                 <span className="movie-details-modal__summary-value">
-                  {memories.length > 0 ? `${memories.length} saved` : 'None yet'}
+                  {movie.addedBy}
+                </span>
+              </div>
+              <div className="movie-details-modal__summary-item">
+                <span className="movie-details-modal__meta-label">
+                  Watch status
+                </span>
+                <span className="movie-details-modal__summary-value">
+                  {watchStatus.label}
+                </span>
+              </div>
+              <div className="movie-details-modal__summary-item">
+                <span className="movie-details-modal__meta-label">
+                  Poster notes
+                </span>
+                <span className="movie-details-modal__summary-value">
+                  {memories.length > 0
+                    ? `${memories.length} saved`
+                    : "None yet"}
                 </span>
               </div>
             </div>
 
             {movie.plot ? (
               <div className="movie-details-modal__section">
-                <p className="movie-details-modal__section-label">Story setup</p>
+                <p className="movie-details-modal__section-label">
+                  Story setup
+                </p>
                 <p className="movie-details-modal__plot">{movie.plot}</p>
               </div>
             ) : null}
@@ -400,12 +435,14 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                     canSubmit={canSubmitNote}
                     isMobile={isMobile}
                     note={draftNote}
-                    onNoteChange={(nextNote) => setDraftNote(nextNote.slice(0, MAX_MOVIE_NOTE_LENGTH))}
+                    onNoteChange={(nextNote) =>
+                      setDraftNote(nextNote.slice(0, MAX_MOVIE_NOTE_LENGTH))
+                    }
                     isComposerOpen
                     onComposerToggle={() => {}}
                     remainingChars={remainingChars}
-                    error={null}
-                    successMessage={submitSuccess ? 'Saved!' : null}
+                    error={submitError}
+                    successMessage={submitSuccess ? "Saved!" : null}
                     noteInputRef={noteInputRef}
                   />
                 </div>
@@ -437,11 +474,16 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                       onSortModeChange={() => {}}
                       onShowMore={() => {
                         setVisibleCount((current) =>
-                          Math.min(current + INITIAL_VISIBLE_COUNT, memories.length)
+                          Math.min(
+                            current + INITIAL_VISIBLE_COUNT,
+                            memories.length,
+                          ),
                         );
                       }}
                       onShowLess={() => {
-                        setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+                        setVisibleCount(
+                          Math.min(INITIAL_VISIBLE_COUNT, memories.length),
+                        );
                       }}
                       visibleCount={visibleCount}
                       isLoading={false}
@@ -451,33 +493,47 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                   </div>
                 ) : (
                   <div className="movie-details-modal__memory-empty">
-                    No notes on this poster yet. The first one will show up right here.
+                    No notes on this poster yet. The first one will show up
+                    right here.
                   </div>
                 )
               ) : featuredMemory ? (
                 <>
                   <article className="movie-details-modal__memory-card">
                     <div className="movie-details-modal__memory-card-header">
-                      <span className="movie-details-modal__memory-author">{featuredMemory.author}</span>
+                      <span className="movie-details-modal__memory-author">
+                        {featuredMemory.author}
+                      </span>
                       <span className="movie-details-modal__memory-date">
-                        {formatMemoryTimestamp(featuredMemory.updatedAt || featuredMemory.createdAt)}
+                        {formatMemoryTimestamp(
+                          featuredMemory.updatedAt || featuredMemory.createdAt,
+                        )}
                       </span>
                     </div>
-                    <p className="movie-details-modal__memory-note">{featuredMemory.note}</p>
+                    <p className="movie-details-modal__memory-note">
+                      {featuredMemory.note}
+                    </p>
                   </article>
 
                   {secondaryMemories.length > 0 ? (
                     <div className="movie-details-modal__memory-list">
                       {secondaryMemories.map((memory) => (
-                        <div key={memory.id} className="movie-details-modal__memory-row">
+                        <div
+                          key={memory.id}
+                          className="movie-details-modal__memory-row"
+                        >
                           <div className="movie-details-modal__memory-row-copy">
-                            <span className="movie-details-modal__memory-row-author">{memory.author}</span>
+                            <span className="movie-details-modal__memory-row-author">
+                              {memory.author}
+                            </span>
                             <p className="movie-details-modal__memory-row-note">
                               {getNotePreview(memory.note)}
                             </p>
                           </div>
                           <span className="movie-details-modal__memory-row-date">
-                            {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
+                            {formatMemoryTimestamp(
+                              memory.updatedAt || memory.createdAt,
+                            )}
                           </span>
                         </div>
                       ))}
@@ -486,7 +542,8 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 </>
               ) : (
                 <div className="movie-details-modal__memory-empty">
-                  No notes on this poster yet. The first one will show up right here.
+                  No notes on this poster yet. The first one will show up right
+                  here.
                 </div>
               )}
             </div>
@@ -494,7 +551,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             <div className="movie-details-modal__footer">
               <span>Added {formatMemoryTimestamp(movie.createdAt)}</span>
               {movie.watchedBy.length > 0 ? (
-                <span>Shared progress: {movie.watchedBy.join(' & ')}</span>
+                <span>Shared progress: {movie.watchedBy.join(" & ")}</span>
               ) : (
                 <span>Shared progress: no watches logged yet</span>
               )}
@@ -503,7 +560,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 
