@@ -1143,7 +1143,7 @@ export function CinematicLandingHero({ onEnter }: Props) {
                   <div className="cl-badge-icon">🎬</div>
                   <div className="cl-badge-body">
                     <p className="cl-badge-title">Added to Queue</p>
-                    <p className="cl-badge-sub">Electra's pick ✨</p>
+                    <p className="cl-badge-sub">Electra&apos;s pick ✨</p>
                   </div>
                 </div>
 
@@ -1163,7 +1163,7 @@ export function CinematicLandingHero({ onEnter }: Props) {
                 <h3 className="cl-card-heading">Movie nights, reinvented.</h3>
                 <p className="cl-card-desc">
                   A shared watchlist built for two. Discover together, decide
-                  together, and remember every film you've seen.
+                  together, and remember every film you&apos;ve seen.
                 </p>
               </div>
             </div>
