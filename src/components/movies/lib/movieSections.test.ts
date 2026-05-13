@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { Movie, MovieSuggestion } from '@/shared/types';
+import type { Movie, MovieSuggestion } from '../../../shared/types.ts';
 import { buildMovieSections } from './movieSections.ts';
 
 const MOVIES: Movie[] = [
