@@ -534,6 +534,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         )}
       </div>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     addMemory,
     currentUser,
