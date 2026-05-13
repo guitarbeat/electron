@@ -535,29 +535,19 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </div>
     );
   }, [
-    addMemory,
     currentUser,
-    deleteMemoryRecord,
     focusSearchInput,
     handleAcceptSuggestion,
     handleRejectSuggestion,
-    handleToggleError,
     isMobile,
     isSuggestionsLoading,
-    movieMemories,
     renameMovie,
-    renderMovieGrid,
     sections,
-    showInitialLoading,
     skeletonKeys,
     successMovieId,
-    toggleMemoryPin,
     toggleWatched,
-    updateMemory,
     setMovieToDelete,
-    processingSuggestionId,
   ]);
-
   return (
     <div className="watchlist-container places-container">
       {isMoviesWorkspaceDegraded && (
