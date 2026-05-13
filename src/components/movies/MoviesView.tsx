@@ -40,9 +40,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isAdding,
     setIsAdding,
     movieToDelete,
-    setMovieToDelete,
     setToast,
-    successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
@@ -50,8 +48,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movies,
     isLoading,
     addMovie,
-    renameMovie,
-    toggleWatched,
     deleteMovie,
     pendingSuggestions,
     submitRecommendation,
@@ -59,10 +55,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     rejectPendingSuggestion,
     isSuggestionsLoading,
     memories,
-    addMemory,
-    updateMemory,
-    deleteMemoryRecord,
-    toggleMemoryPin,
     isMoviesWorkspaceDegraded,
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
@@ -358,7 +350,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     } finally {
       setMovieToDelete(null);
     }
-  }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
+  }, [deleteMovie, movieToDelete, setToast]);
 
   const handleToggleError = useCallback(
     (message: string) => {
@@ -415,18 +407,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </CollectionGrid>
     ),
     [
-      addMemory,
       currentUser,
-      deleteMemoryRecord,
       isMobile,
       movieMemories,
-      renameMovie,
-      setMovieToDelete,
-      successMovieId,
       handleToggleError,
-      toggleMemoryPin,
-      toggleWatched,
-      updateMemory,
     ]
   );
 
@@ -535,26 +519,16 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </div>
     );
   }, [
-    addMemory,
     currentUser,
-    deleteMemoryRecord,
     focusSearchInput,
     handleAcceptSuggestion,
     handleRejectSuggestion,
-    handleToggleError,
     isMobile,
     isSuggestionsLoading,
-    movieMemories,
-    renameMovie,
     renderMovieGrid,
     sections,
     showInitialLoading,
     skeletonKeys,
-    successMovieId,
-    toggleMemoryPin,
-    toggleWatched,
-    updateMemory,
-    setMovieToDelete,
     processingSuggestionId,
   ]);
 
