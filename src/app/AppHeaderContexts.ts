@@ -1,4 +1,8 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
+
+export function useAppHeaderSlot() {
+  return useContext(AppHeaderSlotContext);
+}
 
 export interface AppHeaderSlotContextValue {
   centerNode: HTMLDivElement | null;

@@ -9,7 +9,7 @@ import {
   type MovieAutocompleteResult,
 } from '@/services/metadata';
 import MovieRecommendationComposer from './MovieRecommendationComposer';
-import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
+import { useAppHeaderSlot } from '@/app/AppHeaderContexts';
 
 import {
   hasStoredMovieAutocompleteFeedback,
