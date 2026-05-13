@@ -40,7 +40,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isAdding,
     setIsAdding,
     movieToDelete,
+    setMovieToDelete,
     setToast,
+    successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
@@ -48,6 +50,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movies,
     isLoading,
     addMovie,
+    renameMovie,
+    toggleWatched,
     deleteMovie,
     pendingSuggestions,
     submitRecommendation,
@@ -55,6 +59,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     rejectPendingSuggestion,
     isSuggestionsLoading,
     memories,
+    addMemory,
+    updateMemory,
+    deleteMemoryRecord,
+    toggleMemoryPin,
     isMoviesWorkspaceDegraded,
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
@@ -407,9 +415,19 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </CollectionGrid>
     ),
     [
-        currentUser,
-        isMobile,
-                    ]
+      addMemory,
+      currentUser,
+      deleteMemoryRecord,
+      isMobile,
+      movieMemories,
+      renameMovie,
+      setMovieToDelete,
+      successMovieId,
+      handleToggleError,
+      toggleMemoryPin,
+      toggleWatched,
+      updateMemory,
+    ]
   );
 
 
@@ -517,26 +535,16 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </div>
     );
   }, [
-
     currentUser,
-
     focusSearchInput,
     handleAcceptSuggestion,
     handleRejectSuggestion,
-
     isMobile,
     isSuggestionsLoading,
-
-
     renderMovieGrid,
     sections,
     showInitialLoading,
     skeletonKeys,
-
-
-
-
-
     processingSuggestionId,
   ]);
 
