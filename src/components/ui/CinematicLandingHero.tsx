@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -703,11 +703,11 @@ interface Props {
 
 export function CinematicLandingHero({ onEnter }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const heroRef    = useRef<HTMLDivElement>(null);
-  const cardRef    = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const mockupInnerRef = useRef<HTMLDivElement>(null);
-  const ctaBtnRef  = useRef<HTMLButtonElement>(null);
-  const rafRef     = useRef<number>(0);
+  const ctaBtnRef = useRef<HTMLButtonElement>(null);
+  const rafRef = useRef<number>(0);
   const [hintVisible, setHintVisible] = useState(true);
 
   // ── Mouse parallax on card + sheen ──────────────────────────────────────
@@ -717,11 +717,17 @@ export function CinematicLandingHero({ onEnter }: Props) {
       rafRef.current = requestAnimationFrame(() => {
         if (!cardRef.current) return;
         const rect = cardRef.current.getBoundingClientRect();
-        cardRef.current.style.setProperty("--cl-mx", `${e.clientX - rect.left}px`);
-        cardRef.current.style.setProperty("--cl-my", `${e.clientY - rect.top}px`);
+        cardRef.current.style.setProperty(
+          "--cl-mx",
+          `${e.clientX - rect.left}px`,
+        );
+        cardRef.current.style.setProperty(
+          "--cl-my",
+          `${e.clientY - rect.top}px`,
+        );
 
         if (mockupInnerRef.current) {
-          const xVal = (e.clientX / window.innerWidth  - 0.5) * 2;
+          const xVal = (e.clientX / window.innerWidth - 0.5) * 2;
           const yVal = (e.clientY / window.innerHeight - 0.5) * 2;
           gsap.to(mockupInnerRef.current, {
             rotationY: xVal * 10,
@@ -746,11 +752,12 @@ export function CinematicLandingHero({ onEnter }: Props) {
     const ctx = gsap.context(() => {
       const onMove = (e: MouseEvent) => {
         const r = btn.getBoundingClientRect();
-        const x = e.clientX - (r.left + r.width  / 2);
-        const y = e.clientY - (r.top  + r.height / 2);
+        const x = e.clientX - (r.left + r.width / 2);
+        const y = e.clientY - (r.top + r.height / 2);
         gsap.to(btn, {
-          x: x * 0.38, y: y * 0.38,
-          rotationY:  x * 0.12,
+          x: x * 0.38,
+          y: y * 0.38,
+          rotationY: x * 0.12,
           rotationX: -y * 0.12,
           scale: 1.06,
           ease: "power2.out",
@@ -759,7 +766,11 @@ export function CinematicLandingHero({ onEnter }: Props) {
       };
       const onLeave = () => {
         gsap.to(btn, {
-          x: 0, y: 0, rotationX: 0, rotationY: 0, scale: 1,
+          x: 0,
+          y: 0,
+          rotationX: 0,
+          rotationY: 0,
+          scale: 1,
           ease: "elastic.out(1, 0.35)",
           duration: 1.1,
         });
@@ -778,7 +789,9 @@ export function CinematicLandingHero({ onEnter }: Props) {
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    const onScroll = () => { if (el.scrollTop > 40) setHintVisible(false); };
+    const onScroll = () => {
+      if (el.scrollTop > 40) setHintVisible(false);
+    };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
@@ -786,7 +799,7 @@ export function CinematicLandingHero({ onEnter }: Props) {
   // ── GSAP scroll-driven cinematic timeline ────────────────────────────────
   useEffect(() => {
     const scroller = scrollerRef.current;
-    const hero     = heroRef.current;
+    const hero = heroRef.current;
     if (!scroller || !hero) return;
 
     // Register custom scroll proxy (GSAP needs this to read a non-window scroller)
@@ -796,36 +809,59 @@ export function CinematicLandingHero({ onEnter }: Props) {
         return scroller.scrollTop;
       },
       getBoundingClientRect() {
-        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
       },
     });
 
     const isMobile = window.innerWidth < 768;
 
     const ctx = gsap.context(() => {
-
       // ── Initial states ─────────────────────────────────────────────────
       gsap.set(".cl-tagline-1", {
-        autoAlpha: 0, y: 70, scale: 0.88,
-        filter: "blur(22px)", rotationX: -22,
+        autoAlpha: 0,
+        y: 70,
+        scale: 0.88,
+        filter: "blur(22px)",
+        rotationX: -22,
       });
       gsap.set(".cl-tagline-2", {
-        autoAlpha: 1, clipPath: "inset(0 100% 0 0)",
+        autoAlpha: 1,
+        clipPath: "inset(0 100% 0 0)",
       });
       gsap.set(".cl-card", { y: window.innerHeight + 260, autoAlpha: 1 });
-      gsap.set([".cl-card-left", ".cl-card-right", ".cl-mockup-wrap", ".cl-badge"], { autoAlpha: 0 });
+      gsap.set(
+        [".cl-card-left", ".cl-card-right", ".cl-mockup-wrap", ".cl-badge"],
+        { autoAlpha: 0 },
+      );
       gsap.set(".cl-widget", { autoAlpha: 0 });
       gsap.set(".cl-cta", { autoAlpha: 0, scale: 0.82, filter: "blur(32px)" });
 
       // ── Intro (time-based, plays on mount) ─────────────────────────────
-      gsap.timeline({ delay: 0.4 })
+      gsap
+        .timeline({ delay: 0.4 })
         .to(".cl-tagline-1", {
-          duration: 1.9, autoAlpha: 1, y: 0, scale: 1,
-          filter: "blur(0px)", rotationX: 0, ease: "expo.out",
+          duration: 1.9,
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          rotationX: 0,
+          ease: "expo.out",
         })
-        .to(".cl-tagline-2", {
-          duration: 1.5, clipPath: "inset(0 0% 0 0)", ease: "power4.inOut",
-        }, "-=1.1");
+        .to(
+          ".cl-tagline-2",
+          {
+            duration: 1.5,
+            clipPath: "inset(0 0% 0 0)",
+            ease: "power4.inOut",
+          },
+          "-=1.1",
+        );
 
       // ── Scroll timeline ────────────────────────────────────────────────
       // Hero is `position:sticky` so CSS pins it; we only need scrub-driven anim
@@ -842,43 +878,89 @@ export function CinematicLandingHero({ onEnter }: Props) {
 
       tl
         // Phase 1 (0–2): hero text blurs away + card rises
-        .to([".cl-hero-text", ".cl-grid", ".cl-aurora"], {
-          scale: 1.14, filter: "blur(22px)", opacity: 0.15,
-          ease: "power2.inOut", duration: 2,
-        }, 0)
+        .to(
+          [".cl-hero-text", ".cl-grid", ".cl-aurora"],
+          {
+            scale: 1.14,
+            filter: "blur(22px)",
+            opacity: 0.15,
+            ease: "power2.inOut",
+            duration: 2,
+          },
+          0,
+        )
         .to(".cl-card", { y: 0, ease: "power3.inOut", duration: 2 }, 0)
 
         // Phase 2 (2–3.5): card expands full-bleed
         .to(".cl-card", {
-          width: "100%", height: "100%", borderRadius: "0px",
-          ease: "power3.inOut", duration: 1.5,
+          width: "100%",
+          height: "100%",
+          borderRadius: "0px",
+          ease: "power3.inOut",
+          duration: 1.5,
         })
 
         // Phase 3 (3.5–6): mockup flies in
-        .fromTo(".cl-mockup-wrap",
-          { y: 280, z: -480, rotationX: 48, rotationY: -28, autoAlpha: 0, scale: 0.62 },
-          { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 2.5 },
-          "-=0.8"
+        .fromTo(
+          ".cl-mockup-wrap",
+          {
+            y: 280,
+            z: -480,
+            rotationX: 48,
+            rotationY: -28,
+            autoAlpha: 0,
+            scale: 0.62,
+          },
+          {
+            y: 0,
+            z: 0,
+            rotationX: 0,
+            rotationY: 0,
+            autoAlpha: 1,
+            scale: 1,
+            ease: "expo.out",
+            duration: 2.5,
+          },
+          "-=0.8",
         )
-        .fromTo(".cl-widget",
+        .fromTo(
+          ".cl-widget",
           { y: 38, autoAlpha: 0, scale: 0.94 },
-          { y: 0, autoAlpha: 1, scale: 1, stagger: 0.14, ease: "back.out(1.2)", duration: 1.5 },
-          "-=1.6"
+          {
+            y: 0,
+            autoAlpha: 1,
+            scale: 1,
+            stagger: 0.14,
+            ease: "back.out(1.2)",
+            duration: 1.5,
+          },
+          "-=1.6",
         )
-        .fromTo(".cl-badge",
+        .fromTo(
+          ".cl-badge",
           { y: 90, autoAlpha: 0, scale: 0.72, rotationZ: -10 },
-          { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.18 },
-          "-=2.0"
+          {
+            y: 0,
+            autoAlpha: 1,
+            scale: 1,
+            rotationZ: 0,
+            ease: "back.out(1.5)",
+            duration: 1.5,
+            stagger: 0.18,
+          },
+          "-=2.0",
         )
-        .fromTo(".cl-card-left",
+        .fromTo(
+          ".cl-card-left",
           { x: -55, autoAlpha: 0 },
           { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 },
-          "-=1.6"
+          "-=1.6",
         )
-        .fromTo(".cl-card-right",
+        .fromTo(
+          ".cl-card-right",
           { x: 55, autoAlpha: 0, scale: 0.82 },
           { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 },
-          "<"
+          "<",
         )
 
         // Phase 4 (hold)
@@ -890,26 +972,47 @@ export function CinematicLandingHero({ onEnter }: Props) {
         .to({}, { duration: 1.2 })
 
         // Phase 6: card contents exit, pullback
-        .to([".cl-mockup-wrap", ".cl-badge", ".cl-card-left", ".cl-card-right"], {
-          scale: 0.88, y: -44, z: -180, autoAlpha: 0,
-          ease: "power3.in", duration: 1.2, stagger: 0.04,
-        })
-        .to(".cl-card", {
-          width:  isMobile ? "92vw" : "85vw",
-          height: isMobile ? "92vh" : "85vh",
-          borderRadius: isMobile ? "28px" : "36px",
-          ease: "expo.inOut", duration: 1.8,
-        }, "pullback")
-        .to(".cl-cta", {
-          scale: 1, filter: "blur(0px)", ease: "expo.inOut", duration: 1.8,
-        }, "pullback")
+        .to(
+          [".cl-mockup-wrap", ".cl-badge", ".cl-card-left", ".cl-card-right"],
+          {
+            scale: 0.88,
+            y: -44,
+            z: -180,
+            autoAlpha: 0,
+            ease: "power3.in",
+            duration: 1.2,
+            stagger: 0.04,
+          },
+        )
+        .to(
+          ".cl-card",
+          {
+            width: isMobile ? "92vw" : "85vw",
+            height: isMobile ? "92vh" : "85vh",
+            borderRadius: isMobile ? "28px" : "36px",
+            ease: "expo.inOut",
+            duration: 1.8,
+          },
+          "pullback",
+        )
+        .to(
+          ".cl-cta",
+          {
+            scale: 1,
+            filter: "blur(0px)",
+            ease: "expo.inOut",
+            duration: 1.8,
+          },
+          "pullback",
+        )
 
         // Phase 7: card shoots up → reveal
         .to(".cl-card", {
-          y: -(window.innerHeight + 350), ease: "power3.in", duration: 1.5,
+          y: -(window.innerHeight + 350),
+          ease: "power3.in",
+          duration: 1.5,
           onComplete: onEnter,
         });
-
     }, hero);
 
     ScrollTrigger.addEventListener("refresh", () => ScrollTrigger.update());
@@ -932,9 +1035,9 @@ export function CinematicLandingHero({ onEnter }: Props) {
 
       {/* ── Sticky hero stage ── */}
       <div ref={heroRef} className="cl-hero">
-        <div className="cl-grain"  aria-hidden="true" />
+        <div className="cl-grain" aria-hidden="true" />
         <div className="cl-aurora" aria-hidden="true" />
-        <div className="cl-grid"   aria-hidden="true" />
+        <div className="cl-grid" aria-hidden="true" />
 
         {/* Taglines */}
         <div className="cl-hero-text" aria-live="polite">
@@ -944,7 +1047,9 @@ export function CinematicLandingHero({ onEnter }: Props) {
 
         {/* CTA */}
         <div className="cl-cta">
-          <div className="cl-cta-ghost" aria-hidden="true">ELECTRON</div>
+          <div className="cl-cta-ghost" aria-hidden="true">
+            ELECTRON
+          </div>
           <h2 className="cl-cta-heading">Your movie awaits.</h2>
           <p className="cl-cta-desc">
             Discover films, build a shared watchlist, and find the perfect place
@@ -958,11 +1063,10 @@ export function CinematicLandingHero({ onEnter }: Props) {
         {/* Deep card */}
         <div className="cl-card-outer">
           <div ref={cardRef} className="cl-card">
-            <div className="cl-sheen"      aria-hidden="true" />
+            <div className="cl-sheen" aria-hidden="true" />
             <div className="cl-card-grain" aria-hidden="true" />
 
             <div className="cl-card-grid">
-
               {/* Right — brand name */}
               <div className="cl-card-right">
                 <h2 className="cl-brand-name">Electron</h2>
@@ -970,7 +1074,11 @@ export function CinematicLandingHero({ onEnter }: Props) {
 
               {/* Center — movie mockup */}
               <div className="cl-mockup-wrap" style={{ perspective: "1000px" }}>
-                <div ref={mockupInnerRef} className="cl-mockup-inner" style={{ transformStyle: "preserve-3d" }}>
+                <div
+                  ref={mockupInnerRef}
+                  className="cl-mockup-inner"
+                  style={{ transformStyle: "preserve-3d" }}
+                >
                   <div className="cl-mockup-frame">
                     <div className="cl-screen-glare" aria-hidden="true" />
                     <div className="cl-poster-stripe" aria-hidden="true" />
@@ -978,7 +1086,9 @@ export function CinematicLandingHero({ onEnter }: Props) {
                     {/* Poster */}
                     <div className="cl-poster">
                       <div className="cl-poster-glow" aria-hidden="true" />
-                      <span className="cl-poster-emoji" aria-hidden="true">🎬</span>
+                      <span className="cl-poster-emoji" aria-hidden="true">
+                        🎬
+                      </span>
                       <div className="cl-poster-gradient" aria-hidden="true" />
                     </div>
 
@@ -991,7 +1101,13 @@ export function CinematicLandingHero({ onEnter }: Props) {
                       </div>
 
                       <div className="cl-widget">
-                        <div className="cl-widget-icon" style={{ background: "rgba(200,141,89,0.14)", border: "1px solid rgba(200,141,89,0.25)" }}>
+                        <div
+                          className="cl-widget-icon"
+                          style={{
+                            background: "rgba(200,141,89,0.14)",
+                            border: "1px solid rgba(200,141,89,0.25)",
+                          }}
+                        >
                           ⭐
                         </div>
                         <div className="cl-widget-lines">
@@ -1001,11 +1117,20 @@ export function CinematicLandingHero({ onEnter }: Props) {
                       </div>
 
                       <div className="cl-widget">
-                        <div className="cl-widget-icon" style={{ background: "rgba(100,210,140,0.12)", border: "1px solid rgba(100,210,140,0.22)" }}>
+                        <div
+                          className="cl-widget-icon"
+                          style={{
+                            background: "rgba(100,210,140,0.12)",
+                            border: "1px solid rgba(100,210,140,0.22)",
+                          }}
+                        >
                           ✓
                         </div>
                         <div className="cl-widget-lines">
-                          <div className="cl-wline cl-wline--wide" style={{ background: "rgba(100,210,140,0.28)" }} />
+                          <div
+                            className="cl-wline cl-wline--wide"
+                            style={{ background: "rgba(100,210,140,0.28)" }}
+                          />
                           <div className="cl-wline cl-wline--short" />
                         </div>
                       </div>
@@ -1018,12 +1143,14 @@ export function CinematicLandingHero({ onEnter }: Props) {
                   <div className="cl-badge-icon">🎬</div>
                   <div className="cl-badge-body">
                     <p className="cl-badge-title">Added to Queue</p>
-                    <p className="cl-badge-sub">Electra's pick ✨</p>
+                    <p className="cl-badge-sub">Electra&apos;s pick ✨</p>
                   </div>
                 </div>
 
                 <div className="cl-badge cl-badge--br">
-                  <div className="cl-badge-icon"><span className="cl-badge-heartbeat">❤</span></div>
+                  <div className="cl-badge-icon">
+                    <span className="cl-badge-heartbeat">❤</span>
+                  </div>
                   <div className="cl-badge-body">
                     <p className="cl-badge-title">Perfect Match</p>
                     <p className="cl-badge-sub">Both love it</p>
@@ -1036,10 +1163,9 @@ export function CinematicLandingHero({ onEnter }: Props) {
                 <h3 className="cl-card-heading">Movie nights, reinvented.</h3>
                 <p className="cl-card-desc">
                   A shared watchlist built for two. Discover together, decide
-                  together, and remember every film you've seen.
+                  together, and remember every film you&apos;ve seen.
                 </p>
               </div>
-
             </div>
           </div>
         </div>
