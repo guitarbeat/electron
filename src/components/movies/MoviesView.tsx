@@ -541,12 +541,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     handleRejectSuggestion,
     isMobile,
     isSuggestionsLoading,
-    renameMovie,
+    processingSuggestionId,
+    renderMovieGrid,
     sections,
+    showInitialLoading,
     skeletonKeys,
-    successMovieId,
-    toggleWatched,
-    setMovieToDelete,
   ]);
   return (
     <div className="watchlist-container places-container">
