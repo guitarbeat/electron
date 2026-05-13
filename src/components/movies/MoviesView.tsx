@@ -535,27 +535,17 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </div>
     );
   }, [
-    addMemory,
     currentUser,
-    deleteMemoryRecord,
     focusSearchInput,
     handleAcceptSuggestion,
     handleRejectSuggestion,
-    handleToggleError,
     isMobile,
     isSuggestionsLoading,
-    movieMemories,
-    renameMovie,
+    processingSuggestionId,
     renderMovieGrid,
     sections,
     showInitialLoading,
     skeletonKeys,
-    successMovieId,
-    toggleMemoryPin,
-    toggleWatched,
-    updateMemory,
-    setMovieToDelete,
-    processingSuggestionId,
   ]);
 
   return (
