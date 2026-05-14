@@ -4,19 +4,14 @@ import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import {
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   MediaCardInfo,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   MediaCardOverlay,
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Button from '@/ui/Button';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
@@ -25,7 +20,6 @@ import MovieDetailsModal from './MovieDetailsModal';
 import MediaPoster from '@/ui/MediaPoster';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import MediaCardMetadata from '@/ui/MediaCardMetadata';
 
 export interface MovieTransitionOrigin {
@@ -82,7 +76,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }),
     [currentUser, memories.length, movie]
   );
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const featuredMemory = React.useMemo(
     () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
     [memories]
@@ -221,7 +214,6 @@ const getMemoryPreviewText = (note: string): string => {
   return `${trimmed.slice(0, 117).trimEnd()}...`;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MovieMemoryPreview: React.FC<{
   memory: SharedMemory;
   additionalCount: number;

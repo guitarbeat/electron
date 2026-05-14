@@ -1,7 +1,4 @@
 import React from 'react';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { colors, radius, spacing, shadows } from '@/theme/tokens';
 
 interface SkeletonProps {

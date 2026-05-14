@@ -7,21 +7,15 @@ import {
   CollectionGrid,
   CollectionSection,
 } from '@/ui/CollectionLayout';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { MovieCardSkeleton } from '@/ui/Skeleton';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SyncBanner from '../ui/SyncBanner.tsx';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { radius } from '../../theme/tokens.ts';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 import PlaceCard from './PlaceCard.tsx';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PlacesTopControls from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
@@ -34,18 +28,14 @@ const PlacesList: React.FC = () => {
     places,
     isLoading,
     isSubmitting,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     isDegraded,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     isSyncBlocked,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     syncWarning,
     addPlace,
     removePlace,
     updatePlace,
     markVisited,
     markUnvisited,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     retrySync,
   } = usePlaces(currentUser);
 
@@ -54,22 +44,16 @@ const PlacesList: React.FC = () => {
     addPlaceSuggestion,
     acceptPlaceSuggestion,
     rejectPlaceSuggestion,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     isDegraded: isSuggestionsDegraded,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     isSyncBlocked: isSuggestionsSyncBlocked,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     syncWarning: suggestionsSyncWarning,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
     retrySync: retrySuggestionsSync,
   } = usePlaceSuggestions(isLoading);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
   const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
@@ -77,7 +61,6 @@ const PlacesList: React.FC = () => {
   const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pinnedCount = useMemo(
     () =>
       places.filter((place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
@@ -110,7 +93,6 @@ const PlacesList: React.FC = () => {
 
   useEffect(() => () => clearTimeout(activeTimerRef.current), []);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
       if (!currentUser) return;
@@ -131,7 +113,6 @@ const PlacesList: React.FC = () => {
     [acceptPlaceSuggestion, addPlace, currentUser, showToast]
   );
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRejectSuggestion = useCallback(
     async (suggestionId: string, name: string) => {
       if (!currentUser) return;
@@ -151,7 +132,6 @@ const PlacesList: React.FC = () => {
     [currentUser, rejectPlaceSuggestion, showToast]
   );
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAddAction = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query || isAdding) return;
@@ -173,7 +153,6 @@ const PlacesList: React.FC = () => {
     }
   }, [addPlace, currentUser, isAdding, searchQuery, showToast]);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSuggestAction = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query || isSuggesting) return;
@@ -258,7 +237,6 @@ const PlacesList: React.FC = () => {
   );
 
   const hasPlaces = allPlaces.length > 0;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const showEmptyState = !isLoading && !hasPlaces;
 
   return (

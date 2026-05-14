@@ -10,63 +10,71 @@ import {
 } from './shared.ts';
 
 test('areDeeplyEqual', async (t) => {
-  const cases = [
-    // Primitives
-    { desc: 'identical numbers', left: 1, right: 1, expected: true },
-    { desc: 'identical strings', left: 'hello', right: 'hello', expected: true },
-    { desc: 'identical booleans', left: true, right: true, expected: true },
-    { desc: 'nulls', left: null, right: null, expected: true },
-    { desc: 'undefineds', left: undefined, right: undefined, expected: true },
-    { desc: 'different numbers', left: 1, right: 2, expected: false },
-    { desc: 'different strings', left: 'hello', right: 'world', expected: false },
-    { desc: 'different booleans', left: true, right: false, expected: false },
-    { desc: 'null and undefined', left: null, right: undefined, expected: false },
-    { desc: 'number and string', left: 1, right: '1' as unknown, expected: false },
+  await t.test('returns true for identical primitives', () => {
+    assert.strictEqual(areDeeplyEqual(1, 1), true);
+    assert.strictEqual(areDeeplyEqual('hello', 'hello'), true);
+    assert.strictEqual(areDeeplyEqual(true, true), true);
+    assert.strictEqual(areDeeplyEqual(null, null), true);
+    assert.strictEqual(areDeeplyEqual(undefined, undefined), true);
+  });
 
-    // Objects
-    { desc: 'empty objects', left: {}, right: {}, expected: true },
-    { desc: 'identical objects', left: { a: 1, b: 2 }, right: { a: 1, b: 2 }, expected: true },
-    { desc: 'objects with different key order', left: { a: 1, b: 2 }, right: { b: 2, a: 1 }, expected: true },
-    { desc: 'nested objects', left: { a: { b: 1 } }, right: { a: { b: 1 } }, expected: true },
-    { desc: 'objects with different values', left: { a: 1 }, right: { a: 2 }, expected: false },
-    { desc: 'objects with different keys', left: { a: 1 }, right: { b: 1 }, expected: false },
-    { desc: 'objects with missing keys', left: { a: 1 }, right: { a: 1, b: 2 }, expected: false },
-    { desc: 'nested objects with different values', left: { a: { b: 1 } }, right: { a: { b: 2 } }, expected: false },
+  await t.test('returns false for different primitives', () => {
+    assert.strictEqual(areDeeplyEqual(1, 2), false);
+    assert.strictEqual(areDeeplyEqual('hello', 'world'), false);
+    assert.strictEqual(areDeeplyEqual(true, false), false);
+    assert.strictEqual(areDeeplyEqual(null, undefined), false);
+    assert.strictEqual(areDeeplyEqual(1, '1' as unknown as number), false);
+  });
 
-    // Arrays
-    { desc: 'empty arrays', left: [], right: [], expected: true },
-    { desc: 'identical arrays', left: [1, 2, 3], right: [1, 2, 3], expected: true },
-    { desc: 'arrays of objects', left: [{ a: 1 }], right: [{ a: 1 }], expected: true },
-    { desc: 'nested arrays', left: [[1]], right: [[1]], expected: true },
-    { desc: 'arrays of different lengths', left: [1, 2], right: [1, 2, 3], expected: false },
-    { desc: 'arrays with different order', left: [1, 2], right: [2, 1], expected: false },
-    { desc: 'arrays of objects with different values', left: [{ a: 1 }], right: [{ a: 2 }], expected: false },
+  await t.test('returns true for deeply equal objects', () => {
+    assert.strictEqual(areDeeplyEqual({}, {}), true);
+    assert.strictEqual(areDeeplyEqual({ a: 1, b: 2 }, { a: 1, b: 2 }), true);
+    assert.strictEqual(areDeeplyEqual({ a: 1, b: 2 }, { b: 2, a: 1 }), true);
+    assert.strictEqual(areDeeplyEqual({ a: { b: 1 } }, { a: { b: 1 } }), true);
+  });
 
-    // Mixed structures
-    {
-      desc: 'mixed structures',
-      left: { a: [1, { b: 2 }], c: 'hello', d: null },
-      right: { a: [1, { b: 2 }], c: 'hello', d: null },
-      expected: true
-    },
-    {
-      desc: 'mixed structures with different nested values',
-      left: { a: [1, { b: 2 }], c: 'hello', d: null },
-      right: { a: [1, { b: 2 }], c: 'hello', d: undefined as unknown },
-      expected: false
-    },
+  await t.test('returns false for different objects', () => {
+    assert.strictEqual(areDeeplyEqual({ a: 1 }, { a: 2 }), false);
+    assert.strictEqual(areDeeplyEqual({ a: 1 }, { b: 1 }), false);
+    assert.strictEqual(areDeeplyEqual({ a: 1 }, { a: 1, b: 2 }), false);
+    assert.strictEqual(areDeeplyEqual({ a: { b: 1 } }, { a: { b: 2 } }), false);
+  });
 
-    // Type mismatches
-    { desc: 'object and array', left: {} as unknown, right: [] as unknown, expected: false },
-    { desc: 'null and object', left: null as unknown, right: {} as unknown, expected: false },
-    { desc: 'number and object', left: 1 as unknown, right: { a: 1 } as unknown, expected: false },
-  ];
+  await t.test('returns true for deeply equal arrays', () => {
+    assert.strictEqual(areDeeplyEqual([], []), true);
+    assert.strictEqual(areDeeplyEqual([1, 2, 3], [1, 2, 3]), true);
+    assert.strictEqual(areDeeplyEqual([{ a: 1 }], [{ a: 1 }]), true);
+    assert.strictEqual(areDeeplyEqual([[1]], [[1]]), true);
+  });
 
-  for (const { desc, left, right, expected } of cases) {
-    await t.test(desc, () => {
-      assert.strictEqual(areDeeplyEqual(left, right), expected);
-    });
-  }
+  await t.test('returns false for different arrays', () => {
+    assert.strictEqual(areDeeplyEqual([1, 2], [1, 2, 3]), false);
+    assert.strictEqual(areDeeplyEqual([1, 2], [2, 1]), false);
+    assert.strictEqual(areDeeplyEqual([{ a: 1 }], [{ a: 2 }]), false);
+  });
+
+  await t.test('handles mixed structures', () => {
+    const left = {
+      a: [1, { b: 2 }],
+      c: 'hello',
+      d: null
+    };
+    const right = {
+      a: [1, { b: 2 }],
+      c: 'hello',
+      d: null
+    };
+    assert.strictEqual(areDeeplyEqual(left, right), true);
+
+    const different = { ...right, d: undefined as unknown as null };
+    assert.strictEqual(areDeeplyEqual(left, different), false);
+  });
+
+  await t.test('handles type mismatches', () => {
+    assert.strictEqual(areDeeplyEqual({} as unknown, [] as unknown), false);
+    assert.strictEqual(areDeeplyEqual(null as unknown, {} as unknown), false);
+    assert.strictEqual(areDeeplyEqual(1 as unknown, { a: 1 } as unknown), false);
+  });
 });
 
 test('executeAction', async (t) => {
