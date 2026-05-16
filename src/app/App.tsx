@@ -24,6 +24,7 @@ import {
 import MinigameModal from '@/ui/MinigameModal';
 import { CinematicFooter } from '@/components/ui/motion-footer';
 import { CinematicLandingHero } from '@/components/ui/CinematicLandingHero';
+import { Analytics } from '@vercel/analytics/react';
 import './App.scss';
 
 const MagicComponent = React.lazy(
@@ -755,6 +756,7 @@ const App: React.FC = () => {
 
         <CinematicFooter />
       </div>
+      <Analytics />
     </ThemeProvider>
   );
 };
