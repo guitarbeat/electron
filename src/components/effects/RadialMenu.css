@@ -412,12 +412,13 @@
 
 .toggle {
   position: absolute;
-  width: 166px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
   z-index: 10000;
-  border-radius: 999px;
+  border-radius: 50%;
   cursor: grab;
   box-shadow:
     0 18px 34px rgba(0, 0, 0, 0.36),
@@ -436,7 +437,7 @@
   user-select: none;
   border: 1px solid rgba(255, 233, 204, 0.18);
   overflow: hidden;
-  padding: 0.5rem 0.82rem 0.5rem 0.72rem;
+  padding: 0;
 }
 
 .toggle:hover,
@@ -459,133 +460,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.toggle__halo {
-  position: absolute;
-  inset: -36%;
-  background:
-    radial-gradient(circle, rgba(254, 164, 77, 0.2) 0%, rgba(254, 164, 77, 0) 68%);
-  pointer-events: none;
-  opacity: 0.72;
-}
 
-.toggle__sheen {
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 34%, rgba(255,255,255,0) 64%);
-  pointer-events: none;
-}
-
-.toggle__rail {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 8px;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255, 203, 146, 0), rgba(255, 203, 146, 0.26), rgba(255, 203, 146, 0));
-  pointer-events: none;
-}
-
-.toggle__content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.14rem;
-  transition: gap 180ms ease;
-}
-
-.toggle__eyebrow {
-  font-size: 0.44rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 211, 164, 0.76);
-  transition: opacity 160ms ease, transform 180ms ease;
-}
-
-.toggle__title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.62rem;
-  min-width: 0;
-  transition: gap 180ms ease;
-}
-
-.toggle__icon-shell {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 54%),
-    linear-gradient(180deg, rgba(255, 183, 109, 0.3) 0%, rgba(105, 67, 34, 0.18) 100%);
-  border: 1px solid rgba(255, 214, 170, 0.18);
-  color: #ffe0b8;
-  flex-shrink: 0;
-  transition:
-    width 180ms ease,
-    height 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease,
-    transform 180ms ease;
-}
-
-.toggle__title-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.08rem;
-  min-width: 0;
-  overflow: hidden;
-  transition: opacity 160ms ease, transform 180ms ease;
-}
-
-.toggle__title-copy strong,
-.toggle__title-copy span {
-  display: block;
-}
-
-.toggle__title-copy strong {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  line-height: 1.02;
-  white-space: nowrap;
-}
-
-.toggle__title-copy span {
-  font-size: 0.56rem;
-  line-height: 1.1;
-  color: rgba(255, 227, 198, 0.72);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 1080px), (max-height: 760px) {
-  .toggle {
-    width: 148px;
-    height: 60px;
-    padding: 0.48rem 0.72rem 0.48rem 0.64rem;
-  }
-
-  .toggle__eyebrow {
-    display: none;
-  }
-
-  .toggle__title-copy strong {
-    font-size: 0.78rem;
-  }
-
-  .toggle__title-copy span {
-    font-size: 0.52rem;
-  }
-}
 
 @keyframes radial-discover-pulse {
   0% {
@@ -622,33 +497,11 @@
 }
 
 .menu.active .toggle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  padding: 0;
-  justify-content: center;
-  align-items: center;
   box-shadow:
     0 24px 40px rgba(0, 0, 0, 0.42),
     0 0 0 1px rgba(255, 245, 232, 0.07) inset,
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     0 0 30px color-mix(in oklab, var(--moire-accent, #fe8922) 42%, transparent);
-}
-
-.menu.active .toggle__content {
-  flex: none;
-  gap: 0;
-}
-
-.menu.active .toggle__eyebrow,
-.menu.active .toggle__title-copy {
-  opacity: 0;
-  transform: translateY(3px) scale(0.96);
-  pointer-events: none;
-}
-
-.menu.active .toggle__title-row {
-  gap: 0;
 }
 
 .toggle.toggle--active .toggle__icon-shell {
@@ -681,36 +534,13 @@
   }
 
   .toggle {
-    width: 66px;
-    height: 66px;
-    border-radius: 50%;
-    padding: 0;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .toggle__rail,
-  .toggle__eyebrow,
-  .toggle__title-copy span {
-    display: none;
-  }
-
-  .toggle__content {
-    align-items: center;
-    justify-content: center;
-  }
-
-  .toggle__title-row {
-    gap: 0;
+    width: 56px;
+    height: 56px;
   }
 
   .toggle__icon-shell {
-    width: 2.4rem;
-    height: 2.4rem;
-  }
-
-  .toggle__title-copy strong {
-    display: none;
+    width: 2.2rem;
+    height: 2.2rem;
   }
 
   .menu-item-button__tooltip {
