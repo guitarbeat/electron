@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckIcon, EditIcon, TrashIcon } from '@/common/Icons';
+import { useCardTilt } from '@/hooks/useCardTilt';
 import MediaCard from '@/ui/MediaCard';
 import type { Place } from '@/shared/types';
 import { radius } from '@/theme/tokens';
@@ -40,6 +41,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const tilt = useCardTilt();
   const isVisited = Boolean(place.visitedAt);
   const meta = getPlaceMeta(place.name);
   const hasCoords = typeof place.lat === 'number' && typeof place.lng === 'number';
@@ -122,11 +124,19 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         />
       )}
 
+      <div
+        ref={tilt.ref}
+        className="card-tilt-wrap"
+        onMouseEnter={tilt.onMouseEnter}
+        onMouseMove={tilt.onMouseMove}
+        onMouseLeave={tilt.onMouseLeave}
+      >
       <MediaCard
         variant={isVisited ? 'visited' : 'default'}
         className={`place-item-card${isVisited ? ' place-item-card--visited' : ''}`}
         hover={false}
       >
+        <div className="card-tilt-sheen" aria-hidden="true" />
         <MediaCardPosterWrap className="place-item-poster-wrap">
           <MediaCardCover className="place-item-cover" aria-hidden="true">
             {/* Large decorative emoji — acts like a poster focal element */}
@@ -209,6 +219,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           </MediaCardOverlay>
         </MediaCardPosterWrap>
       </MediaCard>
+      </div>{/* card-tilt-wrap */}
     </div>
   );
 };
