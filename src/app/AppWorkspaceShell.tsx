@@ -4,32 +4,6 @@ import MoviesView from '@/components/movies/MoviesView';
 
 const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
 
-const PlacesTabFallback: FC = () => (
-  <div
-    className="watchlist-container places-container"
-    role="status"
-    aria-label="Loading places"
-    aria-live="polite"
-  >
-    <div
-      style={{
-        padding: '2rem 1rem',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.75rem',
-        opacity: 0.65,
-        color: 'var(--color-text-secondary)',
-        fontFamily: 'var(--font-interface)',
-        fontSize: '0.9rem',
-      }}
-    >
-      <span style={{ fontSize: '1.75rem', lineHeight: 1 }} aria-hidden="true">🗺️</span>
-      <span>Loading places…</span>
-    </div>
-  </div>
-);
-
 interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
@@ -48,12 +22,11 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       <section
         className={`workspace-surface workspace-surface--${activeTab}`}
         style={{ minWidth: 0 }}
-        aria-label={activeTab === 'movies' ? 'Movies workspace' : 'Places workspace'}
       >
         {activeTab === 'movies' ? (
           <MoviesView isMobile={isMobile} />
         ) : (
-          <React.Suspense fallback={<PlacesTabFallback />}>
+          <React.Suspense fallback={null}>
             <PlacesList />
           </React.Suspense>
         )}

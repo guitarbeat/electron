@@ -17,23 +17,6 @@ import { trackMetric } from '../../services/analyticsService';
 import { readScope, retryScopeSync } from '../../services/state';
 
 const POLLING_INTERVAL = 30000;
-const buildAutocompleteSuggestions = (titles: string[], query: string): MovieAutocompleteResult[] => {
-  const normalizedQuery = sanitizeInput(query).trim().toLowerCase();
-  if (!normalizedQuery) {
-    return [];
-  }
-
-  return [...new Set(titles)]
-    .map((title) => sanitizeInput(title))
-    .filter((title) => title && title.toLowerCase().includes(normalizedQuery))
-    .slice(0, 6)
-    .map((title, index) => ({
-      title,
-      type: 'movie' as const,
-      imdbID: `suggestion-${index}-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-      poster: undefined,
-    }));
-};
 interface UseMoviesWorkspaceProps {
   currentUser: User | null;
   isPaused: boolean;
@@ -144,13 +127,6 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [memoriesSnapshot]);
-  const suggestionAutocompleteResults = useMemo(() => {
-    const titles = pendingSuggestions
-      .filter((suggestion) => suggestion.status === 'pending')
-      .map((suggestion) => suggestion.title);
-
-    return buildAutocompleteSuggestions(titles, searchQuery);
-  }, [pendingSuggestions, searchQuery]);
   const addMemory = useCallback(
     async (movieId: string | undefined, movieTitle: string, author: string, note: string) => {
       const result = await addMemoryService(movieId, movieTitle, author, note);
@@ -372,7 +348,6 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
     acceptSuggestionToWatchlist,
     rejectPendingSuggestion,
     isSuggestionsLoading,
-    suggestionAutocompleteResults,
     memories,
     addMemory,
     updateMemory,
