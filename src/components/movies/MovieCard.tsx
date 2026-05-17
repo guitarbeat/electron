@@ -3,13 +3,17 @@ import React from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
-import { useCardTilt } from '@/hooks/useCardTilt';
 import Card from '@/ui/Card';
 import {
-    MediaCardPosterWrap,
+  MediaCardInfo,
+  MediaCardOverlay,
+  MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
+  MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
+import Button from '@/ui/Button';
+import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -17,6 +21,7 @@ import MovieDetailsModal from './MovieDetailsModal';
 import MediaPoster from '@/ui/MediaPoster';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
+import MediaCardMetadata from '@/ui/MediaCardMetadata';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -61,7 +66,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
-  const tilt = useCardTilt();
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
   const actionState = React.useMemo(
@@ -73,7 +77,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }),
     [currentUser, memories.length, movie]
   );
-
+  const featuredMemory = React.useMemo(
+    () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
+    [memories]
+  );
 
   const handleOpenDetails = () => {
     const rect = posterRef.current?.getBoundingClientRect() ?? cardRef.current?.getBoundingClientRect();
@@ -110,13 +117,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-container ${watchedByBoth ? 'movie-item-container--watched' : ''} ${isHighlighted ? 'movie-item-container--highlighted' : ''}`}
         data-movie-id={movie.id}
       >
-        <div
-          ref={tilt.ref}
-          className="card-tilt-wrap"
-          onMouseEnter={tilt.onMouseEnter}
-          onMouseMove={tilt.onMouseMove}
-          onMouseLeave={tilt.onMouseLeave}
-        >
         <Card
           ref={cardRef}
           variant="default"
@@ -127,7 +127,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
             overflow: 'hidden',
           }}
         >
-          <div className="card-tilt-sheen" aria-hidden="true" />
           <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
             <MediaPoster
               title={movie.title}
@@ -158,7 +157,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
             </button>
           </MediaCardPosterWrap>
         </Card>
-        </div>{/* card-tilt-wrap */}
 
         <div className="movie-item-info-external">
           <MediaCardTitle className="movie-item-title-external">
@@ -179,6 +177,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
       </div>
 
       {onRename ? (
+// ...
         <MovieTitleEditModal
           movie={movie}
           isOpen={isTitleEditorOpen}
@@ -206,6 +205,34 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 export default MovieCard;
+
+const getMemoryPreviewText = (note: string): string => {
+  const trimmed = note.trim();
+  if (trimmed.length <= 120) {
+    return trimmed;
+  }
+
+  return `${trimmed.slice(0, 117).trimEnd()}...`;
+};
+
+const MovieMemoryPreview: React.FC<{
+  memory: SharedMemory;
+  additionalCount: number;
+  isExpanded: boolean;
+}> = ({ memory, additionalCount, isExpanded }) => (
+  <div
+    className={`movie-item-memory-preview${isExpanded ? ' is-expanded' : ''}`}
+    aria-hidden="true"
+  >
+    <div className="movie-item-memory-preview__topline">
+      <span className="movie-item-memory-preview__author">{memory.author}</span>
+      <span className="movie-item-memory-preview__count">
+        {additionalCount > 0 ? `+${additionalCount} more` : '1 note'}
+      </span>
+    </div>
+    <p className="movie-item-memory-preview__note">{getMemoryPreviewText(memory.note)}</p>
+  </div>
+);
 
 interface MovieActionsProps {
   movie: Movie;

@@ -6,69 +6,33 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
 import { useAppSession, useTheme, useToast, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
-import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
-import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
-import AppWorkspaceShell from '@/app/AppWorkspaceShell';
+const MagicComponent = React.lazy(() => import('@/components/effects/moire/Moire'));
+const RetroEffects = React.lazy(() => import('@/components/effects/RetroEffects'));
+
+const RadialMenu = React.lazy(() => import('@/components/effects/RadialMenu'));
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
+const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
-
 import {
   flushPendingSync,
   getOutboxStatusSummary,
   syncOutboxStatusEvent,
   type OutboxStatusSummary,
 } from '@/services/state/stateClient';
+
 import MinigameModal from '@/ui/MinigameModal';
-import { CinematicFooter } from '@/components/ui/motion-footer';
-import { CinematicLandingHero } from '@/components/ui/CinematicLandingHero';
 import './App.scss';
 
-const MagicComponent = React.lazy(
-  () =>
-    import('@/components/effects/moire/Moire') as Promise<{
-      default: React.ComponentType<{
-        isVisible?: boolean;
-        opacity?: number;
-        color1?: string;
-        color2?: string;
-      }>;
-    }>
-);
-const RetroEffects = React.lazy(() =>
-  import('@/components/effects/RetroEffects').catch(
-    () => ({ default: () => null }) as { default: React.FC }
-  )
-);
-const RadialMenu = React.lazy(() =>
-  import('@/components/effects/RadialMenu').catch(
-    () => ({ default: () => null }) as { default: React.FC }
-  )
-);
-const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
+const AppWorkspaceShell = React.lazy(() => import('@/app/AppWorkspaceShell'));
 const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
 const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
-const MIN_LOADING_SCREEN_MS = 600;
-
-/** True once at module load — avoids creating a canvas on every render. */
-const webGLAvailable: boolean = (() => {
-  if (typeof document === 'undefined') return false;
-  try {
-    const canvas = document.createElement('canvas');
-    return Boolean(
-      canvas.getContext('webgl2') ??
-      canvas.getContext('webgl') ??
-      canvas.getContext('experimental-webgl')
-    );
-  } catch {
-    return false;
-  }
-})();
+const MIN_LOADING_SCREEN_MS = 2200;
 
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
@@ -76,11 +40,6 @@ const webGLAvailable: boolean = (() => {
  */
 const ThemedMoire: React.FC = () => {
   const { themeTokens } = useTheme();
-
-  if (!webGLAvailable) {
-    return null;
-  }
-
   return (
     <MagicComponent
       isVisible
@@ -150,13 +109,7 @@ const App: React.FC = () => {
   const [hasInitialLoadingScreenElapsed, setHasInitialLoadingScreenElapsed] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
-  const [activeTab, setActiveTab] = useState<MainTab>(() => {
-    if (typeof window !== 'undefined') {
-      const fromHash = getRequestedTab(window.location.hash.replace(/^#/, ''));
-      if (fromHash) return fromHash;
-    }
-    return persistedViewState?.activeTab ?? 'movies';
-  });
+  const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'movies');
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser)
   );
@@ -166,17 +119,8 @@ const App: React.FC = () => {
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
-  const [showLanding, setShowLanding] = useState<boolean>(
-    () => typeof window !== 'undefined' && localStorage.getItem('electron_landing_seen') !== 'true'
-  );
-  const handleLandingEnter = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('electron_landing_seen', 'true');
-    }
-    setShowLanding(false);
-  }, []);
   const [cursorTrailEnabled] = useState<boolean>(
-    () => typeof window !== 'undefined' && localStorage.getItem('cursorTrailEnabled') === 'true'
+    () => localStorage.getItem('cursorTrailEnabled') === 'true'
   );
   const [isOnline, setIsOnline] = useState<boolean>(() =>
     typeof navigator === 'undefined' ? true : navigator.onLine
@@ -554,24 +498,6 @@ const App: React.FC = () => {
     [activeTab, playSwitch, prefersReducedMotion]
   );
 
-  // Keep URL hash in sync with active tab
-  useEffect(() => {
-    const current = window.location.hash.replace(/^#/, '');
-    if (current !== activeTab) {
-      window.history.replaceState(null, '', `#${activeTab}`);
-    }
-  }, [activeTab]);
-
-  // Respond to back/forward navigation and direct hash links
-  useEffect(() => {
-    const onHashChange = () => {
-      const tab = getRequestedTab(window.location.hash.replace(/^#/, ''));
-      if (tab) handleTabChange(tab);
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, [handleTabChange]);
-
   const openSpinMatch = useCallback(() => {
     setShowSpinWheel(true);
   }, []);
@@ -680,9 +606,6 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      {showLanding && (
-        <CinematicLandingHero onEnter={handleLandingEnter} />
-      )}
       <React.Suspense fallback={null}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
@@ -706,7 +629,6 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
-            <AppHeaderSlotProvider>
             <div className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === 'movies' ? ' movies-unified-shell' : ''}`}>
               <AppHeader
                 activeTab={activeTab}
@@ -722,16 +644,14 @@ const App: React.FC = () => {
                 onInstallApp={() => void handleInstallApp()}
                 onApplyUpdate={handleApplyUpdate}
                 onRetrySync={handleRetryPendingSync}
-                onOpenSpin={openSpinMatch}
               />
-              <WorkspaceErrorBoundary>
+              <React.Suspense fallback={null}>
                 <AppWorkspaceShell
                   isMobile={isMobile}
                   activeTab={activeTab}
                 />
-              </WorkspaceErrorBoundary>
+              </React.Suspense>
             </div>
-            </AppHeaderSlotProvider>
           </div>
         </div>
 
@@ -753,7 +673,6 @@ const App: React.FC = () => {
           </MinigameModal>
         ))}
 
-        <CinematicFooter />
       </div>
     </ThemeProvider>
   );
