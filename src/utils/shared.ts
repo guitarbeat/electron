@@ -261,7 +261,7 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
 
-    if (callNow) func.apply(this, args);
+  if (callNow) func.apply(this, args);
   };
 };
 

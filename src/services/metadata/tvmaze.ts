@@ -26,10 +26,7 @@ export const searchTvMazeShows = async (
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), METADATA_REQUEST_TIMEOUT_MS);
-    const mergedSignal =
-      signal && typeof AbortSignal.any === 'function'
-        ? AbortSignal.any([signal, controller.signal])
-        : signal ?? controller.signal;
+    const mergedSignal = signal ?? controller.signal;
 
     const response = await fetch(url.toString(), {
       signal: mergedSignal,
