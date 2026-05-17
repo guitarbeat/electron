@@ -26,20 +26,12 @@ const MessageBoard: React.FC = () => {
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
 
   const handleSend = async (content: string) => {
-    try {
-      await addMessage(content);
-      showToast({
-        message: 'Message sent.',
-        type: 'success',
-        duration: 2500,
-      });
-    } catch (sendError) {
-      showToast({
-        message: sendError instanceof Error ? sendError.message : 'Failed to send message.',
-        type: 'error',
-        duration: 3000,
-      });
-    }
+    await addMessage(content);
+    showToast({
+      message: 'Message sent.',
+      type: 'success',
+      duration: 2500,
+    });
   };
 
   const confirmDelete = async () => {

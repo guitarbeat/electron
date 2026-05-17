@@ -1,8 +1,7 @@
-// @ts-nocheck
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type { Movie, MovieSuggestion } from '@/shared/types';
+import type { Movie, MovieSuggestion } from '../../../shared/types.ts';
 import { buildMovieSections } from './movieSections.ts';
 
 const MOVIES: Movie[] = [
@@ -37,6 +36,6 @@ test('buildMovieSections groups suggestions, up-next, and watched titles for inl
   const sections = buildMovieSections(MOVIES, PENDING_SUGGESTIONS);
 
   assert.deepEqual(sections.suggestions.map((suggestion) => suggestion.title), ['Perfect Blue']);
-  assert.deepEqual(sections.queue.map((movie) => movie.title), ['Arrival']);
-  assert.deepEqual(sections.completed.map((movie) => movie.title), ['Moonlight']);
+  assert.deepEqual(sections.queue.map((movie: Movie) => movie.title), ['Arrival']);
+  assert.deepEqual(sections.completed.map((movie: Movie) => movie.title), ['Moonlight']);
 });

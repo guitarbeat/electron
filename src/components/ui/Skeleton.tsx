@@ -1,5 +1,6 @@
-import { radius } from '@/theme/tokens';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
+import { colors, radius, spacing, shadows } from '@/theme/tokens';
 
 interface SkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'poster';
