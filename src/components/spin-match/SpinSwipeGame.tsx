@@ -16,6 +16,7 @@ interface SpinSwipeGameProps {
 }
 
 const SWIPE_THRESHOLD = 75;
+const SWIPE_VELOCITY_THRESHOLD = 0.4;
 const SPIN_DURATION_MS = 4200;
 
 function MovieCard({
@@ -431,30 +432,6 @@ function ResultScreen({
   );
 }
 
-function SpinGameAdHeader() {
-  return (
-    <div className="spin-game-ad-header">
-      <div className="spin-game-ad-header__marquee-wrap" aria-hidden="true">
-        <span className="spin-game-ad-header__marquee">
-          {'🎰 WHEEL OF MOVIE DESTINY!!! 🎰 '}
-          {'★ SWIPE TO KEEP · SPIN TO DECIDE!!! ★ '}
-          {'🎬 TONIGHT\'S WINNER CHOSEN BY FATE!!! 🎬 '}
-          {'🎰 WHEEL OF MOVIE DESTINY!!! 🎰 '}
-          {'★ SWIPE TO KEEP · SPIN TO DECIDE!!! ★ '}
-          {'🎬 TONIGHT\'S WINNER CHOSEN BY FATE!!! 🎬 '}
-        </span>
-      </div>
-      <div className="spin-game-ad-header__body">
-        <span className="spin-game-ad-header__icon" aria-hidden="true">🎰</span>
-        <p className="spin-game-ad-header__title">SPIN &amp; MATCH — WHEEL OF MOVIE DESTINY!!!</p>
-        <span className="spin-game-ad-header__icon" aria-hidden="true">🎰</span>
-      </div>
-      <p className="spin-game-ad-header__sub">
-        SPONSORED BY MOVIE NIGHT INC. ™ · EST. 1999 · ALL RESULTS FINAL!!!
-      </p>
-    </div>
-  );
-}
 
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
@@ -471,6 +448,9 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef<number | null>(null);
+  const dragLastX = useRef<number | null>(null);
+  const dragLastTime = useRef<number | null>(null);
+  const dragVelocity = useRef<number>(0);
   const spinTimeoutRef = useRef<number | null>(null);
 
   const candidates = useMemo(() => {
@@ -506,12 +486,22 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const handlePointerDown = (e: React.PointerEvent) => {
     if (isSpinning) return;
     dragStartX.current = e.clientX;
+    dragLastX.current = e.clientX;
+    dragLastTime.current = e.timeStamp;
+    dragVelocity.current = 0;
     setIsDragging(true);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging || dragStartX.current === null) return;
+    const now = e.timeStamp;
+    const dt = dragLastTime.current !== null ? now - dragLastTime.current : 16;
+    if (dt > 0 && dragLastX.current !== null) {
+      dragVelocity.current = (e.clientX - dragLastX.current) / dt;
+    }
+    dragLastX.current = e.clientX;
+    dragLastTime.current = now;
     setDragX(e.clientX - dragStartX.current);
   };
 
@@ -519,10 +509,14 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     if (!isDragging) return;
     setIsDragging(false);
     dragStartX.current = null;
+    dragLastX.current = null;
+    dragLastTime.current = null;
     const finalX = dragX;
+    const velocity = dragVelocity.current;
+    dragVelocity.current = 0;
     setDragX(0);
-    if (finalX > SWIPE_THRESHOLD) advance(true);
-    else if (finalX < -SWIPE_THRESHOLD) advance(false);
+    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD) advance(true);
+    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD) advance(false);
   };
 
   const handleSpin = useCallback(() => {
@@ -559,8 +553,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === 'result' && winner) {
     return (
-      <div className="spin-game-ad-wrapper">
-        <SpinGameAdHeader />
+      <div className="spin-game-wrapper">
         <ResultScreen
           winner={winner}
           onReset={handleReset}
@@ -579,8 +572,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === 'spin') {
     return (
-      <div className="spin-game-ad-wrapper">
-        <SpinGameAdHeader />
+      <div className="spin-game-wrapper">
         <SpinWheel
           kept={kept}
           rotation={rotation}
@@ -592,8 +584,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   }
 
   return (
-    <div className="spin-game-ad-wrapper">
-    <SpinGameAdHeader />
+    <div className="spin-game-wrapper">
     <div
       style={{
         display: 'flex',
