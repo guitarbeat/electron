@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { radius } from '@/theme/tokens';
 import React from 'react';
-import { colors, radius, spacing, shadows } from '@/theme/tokens';
 
 interface SkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'poster';
@@ -95,4 +94,3 @@ export const MovieCardSkeleton: React.FC = () => (
 );
 
 export default Skeleton;
-
