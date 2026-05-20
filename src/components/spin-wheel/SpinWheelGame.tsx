@@ -160,6 +160,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         ? `Watched by ${selectedMovie.watchedBy[0]}`
         : 'Unwatched';
 
+  const isWatchedByCurrentUser = Boolean(currentUser && selectedMovie?.watchedBy.includes(currentUser));
+
   const emptyStateMessage = isLoading
     ? 'Loading movies...'
     : movies.length === 0
@@ -289,18 +291,18 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               {selectedMovie.plot ? <p className="spin-wheel-panel__copy">{selectedMovie.plot}</p> : null}
               {currentUser ? (
                 <Button
-                  variant={selectedMovie.watchedBy.includes(currentUser) ? 'danger' : 'primary'}
+                  variant={isWatchedByCurrentUser ? 'danger' : 'primary'}
                   size="sm"
                   isLoading={isTogglingWatched}
                   disabled={isTogglingWatched}
                   onClick={toggleWatchedForCurrentUser}
                   className={`spin-result-action ${
-                    selectedMovie.watchedBy.includes(currentUser)
+                    isWatchedByCurrentUser
                       ? 'spin-result-action--undo'
                       : 'spin-result-action--mark'
                   }`}
                 >
-                  {selectedMovie.watchedBy.includes(currentUser)
+                  {isWatchedByCurrentUser
                     ? `Undo watched for ${currentUser}`
                     : `Mark watched by ${currentUser}`}
                 </Button>
