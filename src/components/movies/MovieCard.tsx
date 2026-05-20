@@ -5,15 +5,10 @@ import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import {
-  MediaCardInfo,
-  MediaCardOverlay,
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-  MediaCardSuccessBadge,
 } from '@/ui/MediaCard';
-import Button from '@/ui/Button';
-import { colors } from '@/theme/tokens';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -21,7 +16,6 @@ import MovieDetailsModal from './MovieDetailsModal';
 import MediaPoster from '@/ui/MediaPoster';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
-import MediaCardMetadata from '@/ui/MediaCardMetadata';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -76,10 +70,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
         memoriesCount: memories.length,
       }),
     [currentUser, memories.length, movie]
-  );
-  const featuredMemory = React.useMemo(
-    () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
-    [memories]
   );
 
   const handleOpenDetails = () => {
@@ -206,33 +196,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
 export default MovieCard;
 
-const getMemoryPreviewText = (note: string): string => {
-  const trimmed = note.trim();
-  if (trimmed.length <= 120) {
-    return trimmed;
-  }
-
-  return `${trimmed.slice(0, 117).trimEnd()}...`;
-};
-
-const MovieMemoryPreview: React.FC<{
-  memory: SharedMemory;
-  additionalCount: number;
-  isExpanded: boolean;
-}> = ({ memory, additionalCount, isExpanded }) => (
-  <div
-    className={`movie-item-memory-preview${isExpanded ? ' is-expanded' : ''}`}
-    aria-hidden="true"
-  >
-    <div className="movie-item-memory-preview__topline">
-      <span className="movie-item-memory-preview__author">{memory.author}</span>
-      <span className="movie-item-memory-preview__count">
-        {additionalCount > 0 ? `+${additionalCount} more` : '1 note'}
-      </span>
-    </div>
-    <p className="movie-item-memory-preview__note">{getMemoryPreviewText(memory.note)}</p>
-  </div>
-);
 
 interface MovieActionsProps {
   movie: Movie;
