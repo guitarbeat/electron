@@ -384,3 +384,48 @@ test('concurrentMap', async (t) => {
     );
   });
 });
+
+test('layouts', async (t) => {
+  const { spacing } = await import('../theme/tokens.ts');
+  const { layouts } = await import('./shared.ts');
+
+  await t.test('centeredContainer returns expected static object', () => {
+    assert.deepEqual(layouts.centeredContainer, {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: `0 ${spacing.md}`,
+    });
+  });
+
+  await t.test('grid returns correct styles with default params', () => {
+    assert.deepEqual(layouts.grid(), {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(1, 1fr)',
+      gap: spacing.md,
+    });
+  });
+
+  await t.test('grid returns correct styles with custom params', () => {
+    assert.deepEqual(layouts.grid(3, '24px'), {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '24px',
+    });
+  });
+
+  await t.test('stack returns correct styles with default gap', () => {
+    assert.deepEqual(layouts.stack(), {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.md,
+    });
+  });
+
+  await t.test('stack returns correct styles with custom gap', () => {
+    assert.deepEqual(layouts.stack('8px'), {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    });
+  });
+});

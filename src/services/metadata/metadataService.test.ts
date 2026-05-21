@@ -326,16 +326,16 @@ test('normalizePosterUrl returns undefined when URL constructor throws in the ca
   const OriginalURL = globalThis.URL;
   let calls = 0;
 
-  (globalThis as any).URL = class MockURL {
+  globalThis.URL = class MockURL {
     protocol = 'http:';
-    constructor(url: string) {
+    constructor() {
       calls++;
       if (calls === 2) {
         throw new Error('simulated url error');
       }
-      return { protocol: 'http:' } as any;
+      return { protocol: 'http:' } as URL;
     }
-  } as any;
+  } as unknown as typeof URL;
 
   try {
     const result = normalizePosterUrl('http://example.com/poster.jpg');

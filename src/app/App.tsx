@@ -16,6 +16,7 @@ const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
+import { Analytics } from '@vercel/analytics/react';
 import {
   flushPendingSync,
   getOutboxStatusSummary,
@@ -674,6 +675,7 @@ const App: React.FC = () => {
         ))}
 
       </div>
+      <Analytics />
     </ThemeProvider>
   );
 };

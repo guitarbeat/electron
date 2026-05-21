@@ -284,6 +284,8 @@ const ImageChoiceEditor: React.FC<{
               onClick={() => removeOption(idx)}
               disabled={question.options.length <= 2}
               style={{ flexShrink: 0 }}
+              aria-label="Remove option"
+              title="Remove option"
             >
               ✕
             </Button>

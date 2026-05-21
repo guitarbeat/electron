@@ -44,6 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           isDisabled ? 'ui-button--disabled' : ''
         } ${fullWidth ? 'ui-button--full-width' : ''} ${className}`}
         disabled={isDisabled}
+        aria-busy={isLoading}
         onClick={(event) => {
           if (!isDisabled) {
             playClick();
