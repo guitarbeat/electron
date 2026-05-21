@@ -160,7 +160,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         ? `Watched by ${selectedMovie.watchedBy[0]}`
         : 'Unwatched';
 
-  const isWatchedByCurrentUser = Boolean(currentUser && selectedMovie?.watchedBy.includes(currentUser));
 
   const emptyStateMessage = isLoading
     ? 'Loading movies...'
@@ -279,7 +278,11 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         </div>
 
         <div className="spin-wheel-panel">
-          {selectedMovie ? (
+          {selectedMovie ? (() => {
+            const isWatchedByCurrentUser = currentUser
+              ? selectedMovie.watchedBy.includes(currentUser)
+              : false;
+            return (
             <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
               <p className="spin-wheel-panel__eyebrow">Tonight&apos;s Pick</p>
               <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
@@ -308,7 +311,8 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                 </Button>
               ) : null}
             </div>
-          ) : (
+            );
+          })() : (
             <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
               <p className="spin-wheel-panel__eyebrow">
                 {isSpinning ? 'Spinning Now' : 'Wheel Loaded'}

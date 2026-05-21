@@ -108,13 +108,20 @@ const isRateLimited = (ip: string): boolean => {
       for (const [key, value] of ipRequestCounts.entries()) {
         if (now > value.resetTime) {
           ipRequestCounts.delete(key);
+        } else {
+          break;
         }
       }
-      if (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
-        ipRequestCounts.clear();
+      while (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
+        const next = ipRequestCounts.keys().next();
+        if (next.done) break;
+        ipRequestCounts.delete(next.value);
       }
     }
 
+    if (record) {
+      ipRequestCounts.delete(ip);
+    }
     ipRequestCounts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
     return false;
   }

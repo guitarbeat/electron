@@ -41,11 +41,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={id}
-            className="ui-input__label"
             style={{
               ...typography.presets.eyebrow,
               color: colors.textSecondary,
-              marginLeft: spacing.xs,
+              fontSize: typography.fontSize['3xs'],
             }}
           >
             {label}
@@ -68,10 +67,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <div
+          <span
             id={errorId}
-            role="alert"
-            className="ui-input__error"
             style={{
               ...typography.presets.caption,
               color: colors.error,
@@ -80,7 +77,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }}
           >
             {error}
-          </div>
+          </span>
         )}
       </div>
     );
@@ -98,7 +95,10 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, fullWidth = true, onFocus, onBlur, style, ...props }, ref) => {
+  ({ label, error, fullWidth = true, onFocus, onBlur, style, id: providedId, ...props }, ref) => {
+    const generatedId = useId();
+    const id = providedId || generatedId;
+    const errorId = `${id}-error`;
     const [isFocused, setIsFocused] = useState(false);
 
     const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -115,6 +115,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <div style={{ display: 'flex', flexDirection: 'column', width: fullWidth ? '100%' : 'auto' }}>
         {label && (
           <label
+            htmlFor={id}
             style={{
               ...typography.presets.eyebrow,
               marginBottom: spacing.xs,
@@ -128,6 +129,9 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         <textarea
           ref={ref}
+          id={id}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
           onFocus={handleFocus}
           onBlur={handleBlur}
           className="ui-textarea"
@@ -153,11 +157,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               : 'inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 14px rgba(0,0,0,0.18)',
             ...style,
           }}
-          aria-invalid={!!error}
           {...props}
         />
         {error && (
           <span
+            id={errorId}
             style={{
               color: colors.error,
               fontSize: typography.fontSize['3xs'],
