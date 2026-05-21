@@ -3,6 +3,7 @@ import { buildFeatureModals } from '@/app/buildMinigameModals';
 import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
+import { PwaInstallProvider, usePwaInstall } from '@/app/PwaInstallProvider';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
 import { useAppSession, useTheme, useToast, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
@@ -53,11 +54,6 @@ const ThemedMoire: React.FC = () => {
   );
 };
 
-type InstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-};
-
 type ViewTransitionCapableDocument = Document & {
   startViewTransition?: (
     callback: () => void | Promise<void>
@@ -97,15 +93,11 @@ const readStoredAppViewState = (): StoredAppViewState | null => {
   }
 };
 
-const isStandaloneDisplayMode = (): boolean =>
-  typeof window !== 'undefined' &&
-  (window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
-
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
   const { showToast, dismissToast } = useToast();
+  const { canInstall: canInstallApp, isStandalone, openInstallDialog } = usePwaInstall();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -128,14 +120,10 @@ const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(() =>
     typeof navigator === 'undefined' ? true : navigator.onLine
   );
-  const [isStandalone, setIsStandalone] = useState<boolean>(isStandaloneDisplayMode);
-  const [canInstallApp, setCanInstallApp] = useState(false);
   const [hasUpdateReady, setHasUpdateReady] = useState(false);
   const [outboxStatus, setOutboxStatus] = useState<OutboxStatusSummary>(() =>
     getOutboxStatusSummary()
   );
-  const installPromptRef = React.useRef<InstallPromptEvent | null>(null);
-  const installToastIdRef = React.useRef<string | null>(null);
   const updateToastIdRef = React.useRef<string | null>(null);
   const updateRegistrationRef = React.useRef<ServiceWorkerRegistration | null>(null);
   const shortcutHandledRef = React.useRef(false);
@@ -227,84 +215,6 @@ const App: React.FC = () => {
       window.history.replaceState({}, '', next);
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    if (!isMobile) {
-      installPromptRef.current = null;
-      setCanInstallApp(false);
-      if (installToastIdRef.current) {
-        dismissToast(installToastIdRef.current);
-        installToastIdRef.current = null;
-      }
-    }
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      if (!isMobile) {
-        return;
-      }
-
-      installPromptRef.current = event as InstallPromptEvent;
-      setCanInstallApp(true);
-
-      if (installToastIdRef.current) {
-        dismissToast(installToastIdRef.current);
-      }
-
-      installToastIdRef.current = showToast({
-        type: 'info',
-        message: 'Install Electron for a quicker launch.',
-        persistent: true,
-        actionLabel: 'Install',
-        onAction: async () => {
-          const promptEvent = installPromptRef.current;
-          if (!promptEvent) return;
-
-          await promptEvent.prompt();
-          const choice = await promptEvent.userChoice;
-          if (choice.outcome === 'accepted') {
-            showToast({
-              type: 'success',
-              message: 'Electron added to your device.',
-            });
-          }
-          installPromptRef.current = null;
-          setCanInstallApp(false);
-          if (installToastIdRef.current) {
-            dismissToast(installToastIdRef.current);
-            installToastIdRef.current = null;
-          }
-        },
-      });
-    };
-
-    const handleInstalled = () => {
-      installPromptRef.current = null;
-      setCanInstallApp(false);
-      setIsStandalone(true);
-      if (installToastIdRef.current) {
-        dismissToast(installToastIdRef.current);
-        installToastIdRef.current = null;
-      }
-      if (isMobile) {
-        showToast({
-          type: 'success',
-          message: 'Electron is installed and ready to launch like an app.',
-        });
-      }
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleInstalled);
-    };
-  }, [dismissToast, isMobile, showToast]);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) {
@@ -435,7 +345,6 @@ const App: React.FC = () => {
     };
 
     const handleVisibilitySync = () => {
-      setIsStandalone(isStandaloneDisplayMode());
       if (document.visibilityState === 'visible' && navigator.onLine) {
         void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
         updateRegistrationRef.current?.update().catch(() => undefined);
@@ -515,27 +424,9 @@ const App: React.FC = () => {
     setShowSpinWheel(true);
   }, []);
 
-  const handleInstallApp = useCallback(async () => {
-    const promptEvent = installPromptRef.current;
-    if (!promptEvent) {
-      return;
-    }
-
-    await promptEvent.prompt();
-    const choice = await promptEvent.userChoice;
-    if (choice.outcome === 'accepted') {
-      showToast({
-        type: 'success',
-        message: 'Electron added to your device.',
-      });
-    }
-    installPromptRef.current = null;
-    setCanInstallApp(false);
-    if (installToastIdRef.current) {
-      dismissToast(installToastIdRef.current);
-      installToastIdRef.current = null;
-    }
-  }, [dismissToast, showToast]);
+  const handleInstallApp = useCallback(() => {
+    openInstallDialog();
+  }, [openInstallDialog]);
 
   const handleApplyUpdate = useCallback(() => {
     setHasUpdateReady(false);
@@ -695,7 +586,9 @@ const App: React.FC = () => {
 const AppWithProviders: React.FC = () => (
   <UserProvider>
     <ToastProvider>
-      <App />
+      <PwaInstallProvider>
+        <App />
+      </PwaInstallProvider>
     </ToastProvider>
   </UserProvider>
 );

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '@total-typescript/ts-reset';
+import '@/shared/pwaInstallWindow';
 import { applyTheme } from '@/theme/applyTheme';
 import App from './app/App';
 
