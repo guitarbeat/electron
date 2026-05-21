@@ -39,6 +39,18 @@
     </svg>
     <div id="root"></div>
 
+    <script>
+      window.__electronDeferredInstallPrompt = null;
+      window.addEventListener(
+        'beforeinstallprompt',
+        function (event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          window.__electronDeferredInstallPrompt = event;
+        },
+        { capture: true }
+      );
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -15,7 +15,7 @@
     var(--shell-header-surface);
   box-shadow:
     var(--shell-panel-shadow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 6%, transparent);
   backdrop-filter: blur(22px) saturate(130%);
   -webkit-backdrop-filter: blur(22px) saturate(130%);
   position: relative;
@@ -34,8 +34,17 @@
   inset: 0;
   border-radius: inherit;
   background:
-    linear-gradient(115deg, transparent 16%, rgba(255, 255, 255, 0.08) 34%, transparent 52%),
-    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.06) 0%, transparent 24%);
+    linear-gradient(
+      115deg,
+      transparent 16%,
+      color-mix(in srgb, var(--color-text-primary) 7%, transparent) 34%,
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 16% 18%,
+      color-mix(in srgb, var(--color-accent-light) 8%, transparent) 0%,
+      transparent 24%
+    );
   pointer-events: none;
 }
 
@@ -205,24 +214,18 @@
 }
 
 .app-header__brand {
-  --electron-scale: 1;
-  display: inline-block;
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-family: Papyrus, 'Papyrus', 'Marker Felt', 'Comic Sans MS', cursive;
-  font-size: clamp(1.45rem, 2.2vw, 2.1rem);
+  font-size: clamp(0.92rem, 4.2vw, 2.1rem);
   font-weight: 400;
   letter-spacing: 0.03em;
   color: var(--color-text-primary, rgba(255, 255, 255, 0.9));
   white-space: nowrap;
   line-height: 1;
-  transform: scaleX(var(--electron-scale));
-  transform-origin: center;
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-light, #efd2af) 0%,
-    var(--color-accent, #c88d59) 40%,
-    var(--color-accent-light, #efd2af) 70%,
-    var(--color-text-primary, rgba(255, 255, 255, 0.9)) 100%
-  );
+  background: var(--gradient-primary, linear-gradient(135deg, #c88d59 0%, #d4b173 100%));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -234,29 +237,15 @@
   margin-bottom: 0.18rem;
 }
 
-.app-header__brand-fallback {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
 @container (max-width: 7.5rem) {
   .app-header__brand {
-    font-size: clamp(0.92rem, 16cqw, 1.12rem);
-    letter-spacing: 0.03em;
+    font-size: clamp(0.82rem, 16cqw, 1.12rem);
   }
 }
 
 @container (max-width: 6.25rem) {
   .app-header__brand {
-    font-size: clamp(0.82rem, 15cqw, 1rem);
+    font-size: clamp(0.76rem, 15cqw, 1rem);
     letter-spacing: 0.01em;
   }
 }

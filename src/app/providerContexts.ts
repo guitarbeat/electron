@@ -1,10 +1,12 @@
 import { createContext } from 'react';
 import type { User } from '@/shared/types';
-import { moviesTheme, placesTheme } from '@/theme/tokens';
+import type { AppThemeDefinition, ThemeName } from '@/theme/themes';
 
 export interface ThemeContextValue {
-  currentTheme: 'movies' | 'places';
-  themeTokens: typeof moviesTheme | typeof placesTheme;
+  currentTheme: ThemeName;
+  theme: AppThemeDefinition;
+  /** @deprecated Use `theme.tokens` */
+  themeTokens: AppThemeDefinition['tokens'];
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
