@@ -24,6 +24,7 @@ import {
   type OutboxStatusSummary,
 } from '@/services/state/stateClient';
 
+import LazyBoundary from '@/app/LazyBoundary';
 import MinigameModal from '@/ui/MinigameModal';
 import './App.scss';
 
@@ -33,7 +34,8 @@ const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSPropert
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
-const MIN_LOADING_SCREEN_MS = 2200;
+/** Short floor so the boot screen does not flash away before chunks paint. */
+const BOOT_SCREEN_MIN_MS = 420;
 
 /**
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
@@ -107,7 +109,7 @@ const App: React.FC = () => {
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const [hasInitialLoadingScreenElapsed, setHasInitialLoadingScreenElapsed] = useState(false);
+  const [isBootReady, setIsBootReady] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
   const [activeTab, setActiveTab] = useState<MainTab>(persistedViewState?.activeTab ?? 'movies');
@@ -158,14 +160,28 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const timerId = window.setTimeout(() => {
-      setHasInitialLoadingScreenElapsed(true);
-    }, MIN_LOADING_SCREEN_MS);
+    let cancelled = false;
+    const startedAt = performance.now();
+    let timerId: number | undefined;
 
-    void preloadAppModules();
+    void preloadAppModules().finally(() => {
+      if (cancelled) {
+        return;
+      }
+
+      const remaining = Math.max(0, BOOT_SCREEN_MIN_MS - (performance.now() - startedAt));
+      timerId = window.setTimeout(() => {
+        if (!cancelled) {
+          setIsBootReady(true);
+        }
+      }, remaining);
+    });
 
     return () => {
-      window.clearTimeout(timerId);
+      cancelled = true;
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
+      }
     };
   }, []);
 
@@ -571,9 +587,9 @@ const App: React.FC = () => {
   if (isCohesionAuditRoute) {
     return (
       <ThemeProvider>
-        <React.Suspense fallback={null}>
+        <LazyBoundary label="Loading design audit">
           <CohesionAudit />
-        </React.Suspense>
+        </LazyBoundary>
       </ThemeProvider>
     );
   }
@@ -581,23 +597,23 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider>
-        <React.Suspense fallback={null}>
+        <LazyBoundary label="Loading effects">
           <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-        </React.Suspense>
+        </LazyBoundary>
         <div className="app-shell app-shell--viewport bg-main">
-          <React.Suspense fallback={null}>
+          <LazyBoundary label="Loading background">
             {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
-          </React.Suspense>
+          </LazyBoundary>
           <VignetteOverlay />
-          <React.Suspense fallback={null}>
+          <LazyBoundary label="Loading logo lab">
             <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
-          </React.Suspense>
+          </LazyBoundary>
         </div>
       </ThemeProvider>
     );
   }
 
-  if (isSessionLoading || !hasInitialLoadingScreenElapsed) {
+  if (isSessionLoading || !isBootReady) {
     return (
       <ThemeProvider>
         <LoadingScreen />
@@ -607,26 +623,26 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <React.Suspense fallback={null}>
+      <LazyBoundary label="Loading effects">
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-      </React.Suspense>
+      </LazyBoundary>
       <div className="app-shell app-shell--viewport bg-main">
-        <React.Suspense fallback={null}>
+        <LazyBoundary label="Loading background">
           {!prefersReducedMotion ? <ThemedMoire /> : null}
-        </React.Suspense>
+        </LazyBoundary>
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
 
 
-        <React.Suspense fallback={null}>
+        <LazyBoundary label="Loading menu">
           <RadialMenu
             onOpenMessages={() => setShowMessages(true)}
             onOpenQuiz={openQuizExperience}
             onOpenSpin={openSpinMatch}
           />
-        </React.Suspense>
+        </LazyBoundary>
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
@@ -646,12 +662,12 @@ const App: React.FC = () => {
                 onApplyUpdate={handleApplyUpdate}
                 onRetrySync={handleRetryPendingSync}
               />
-              <React.Suspense fallback={null}>
+              <LazyBoundary label="Loading workspace">
                 <AppWorkspaceShell
                   isMobile={isMobile}
                   activeTab={activeTab}
                 />
-              </React.Suspense>
+              </LazyBoundary>
             </div>
           </div>
         </div>

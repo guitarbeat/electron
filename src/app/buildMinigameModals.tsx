@@ -1,4 +1,5 @@
-import { Suspense, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
+import LazyBoundary from '@/app/LazyBoundary';
 import {
   MessageBoardPanel,
   QuizEditorPanel,
@@ -35,8 +36,8 @@ const paddedScrollContentStyle: CSSProperties = {
   padding: spacing.lg,
 };
 
-const renderSuspended = (content: ReactNode) => (
-  <Suspense fallback={null}>{content}</Suspense>
+const renderSuspended = (content: ReactNode, label: string) => (
+  <LazyBoundary label={label}>{content}</LazyBoundary>
 );
 
 export interface BuildFeatureModalsParams {
@@ -88,7 +89,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxWidth: 820,
       maxHeight: 920,
       contentStyle: scrollContentStyle,
-      content: renderSuspended(<MessageBoardPanel />),
+      content: renderSuspended(<MessageBoardPanel />, 'Loading messages'),
     },
     {
       key: 'quiz-editor',
@@ -98,7 +99,10 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Personality quiz',
       maxWidth: 1200,
       maxHeight: 900,
-      content: renderSuspended(<QuizEditorPanel onClose={() => setShowQuizEditor(false)} />),
+      content: renderSuspended(
+        <QuizEditorPanel onClose={() => setShowQuizEditor(false)} />,
+        'Loading quiz editor'
+      ),
     },
     {
       key: 'spin-match',
@@ -110,7 +114,10 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       maxHeight: 820,
       closeDisabled: isSpinWheelLocked,
       closeDisabledLabel: 'Finish the current spin before closing.',
-      content: renderSuspended(<SpinSwipeGamePanel onSpinningChange={setIsSpinWheelLocked} />),
+      content: renderSuspended(
+        <SpinSwipeGamePanel onSpinningChange={setIsSpinWheelLocked} />,
+        'Loading spin match'
+      ),
       contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
@@ -121,7 +128,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
       ariaLabel: 'Spin the wheel to pick a movie',
       maxWidth: 520,
       maxHeight: 700,
-      content: renderSuspended(<SpinWheelGamePanel />),
+      content: renderSuspended(<SpinWheelGamePanel />, 'Loading spin wheel'),
       contentStyle: { flex: 1, overflowY: 'auto' },
     },
     {
@@ -143,7 +150,8 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
             setShowQuizFlow(false);
             setShowQuizEditor(true);
           }}
-        />
+        />,
+        'Loading quiz'
       ),
     },
   ];
