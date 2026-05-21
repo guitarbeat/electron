@@ -42,13 +42,13 @@ const BOOT_SCREEN_MIN_MS = 420;
  * so the background stays color-linked to the rest of the UI.
  */
 const ThemedMoire: React.FC = () => {
-  const { themeTokens } = useTheme();
+  const { theme } = useTheme();
   return (
     <MagicComponent
       isVisible
       opacity={0.2}
-      color1={themeTokens.accent}
-      color2={themeTokens.secondary}
+      color1={theme.moire.color1}
+      color2={theme.moire.color2}
     />
   );
 };
@@ -153,10 +153,6 @@ const App: React.FC = () => {
       enabled: isLogoLabEnabled(window.location.search),
       initialVariant: getRequestedLogoVariant(window.location.search),
     };
-  }, []);
-
-  useEffect(() => {
-    document.body.setAttribute('data-theme', 'movies');
   }, []);
 
   useEffect(() => {
@@ -586,7 +582,7 @@ const App: React.FC = () => {
 
   if (isCohesionAuditRoute) {
     return (
-      <ThemeProvider>
+      <ThemeProvider theme={activeTab}>
         <LazyBoundary label="Loading design audit">
           <CohesionAudit />
         </LazyBoundary>
@@ -596,7 +592,7 @@ const App: React.FC = () => {
 
   if (logoLabState.enabled) {
     return (
-      <ThemeProvider>
+      <ThemeProvider theme={activeTab}>
         <LazyBoundary label="Loading effects">
           <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
         </LazyBoundary>
@@ -615,14 +611,14 @@ const App: React.FC = () => {
 
   if (isSessionLoading || !isBootReady) {
     return (
-      <ThemeProvider>
+      <ThemeProvider theme={activeTab}>
         <LoadingScreen />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider>
+    <ThemeProvider theme={activeTab}>
       <LazyBoundary label="Loading effects">
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </LazyBoundary>
