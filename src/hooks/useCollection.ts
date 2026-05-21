@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePolling } from '@/services/polling';
+import { pollingManager, usePolling } from '@/services/polling';
 import { mutateScope, readScope, retryScopeSync } from '@/services/state';
 import type { StateScope, StateScopeDataMap } from '@/services/state/stateTypes';
 import { areDeeplyEqual } from '@/utils';
@@ -13,6 +13,23 @@ interface CollectionOptions {
 type CollectionScope = {
   [K in StateScope]: StateScopeDataMap[K] extends Array<unknown> ? K : never;
 }[StateScope];
+
+const getCollectionItemId = (item: unknown): string | undefined => {
+  if (typeof item !== 'object' || item === null || !('id' in item)) {
+    return undefined;
+  }
+
+  const { id } = item as { id: unknown };
+  return typeof id === 'string' ? id : undefined;
+};
+
+const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
+  const polledIds = new Set(polled.map(getCollectionItemId).filter(Boolean));
+  return current.some((item) => {
+    const id = getCollectionItemId(item);
+    return Boolean(id && !polledIds.has(id));
+  });
+};
 
 export const useCollection = <T>(
   scope: CollectionScope,
@@ -39,10 +56,25 @@ export const useCollection = <T>(
   const mutationsInFlightRef = useRef(0);
 
   useEffect(() => {
-    if (mutationsInFlightRef.current === 0) {
-      setData(polledData);
+    if (mutationsInFlightRef.current > 0) {
+      return;
     }
-  }, [polledData]);
+
+    setData((current) => {
+      if (areDeeplyEqual(current, polledData)) {
+        return current;
+      }
+
+      // Avoid overwriting optimistic rows with a stale poll that finished before refresh().
+      if (snapshot?.degraded || snapshot?.blocked) {
+        if (hasLocalOnlyRows(current, polledData)) {
+          return current;
+        }
+      }
+
+      return polledData;
+    });
+  }, [polledData, snapshot?.blocked, snapshot?.degraded]);
 
   const performMutation = useCallback(
     async (op: string, payload: unknown, optimisticData: T[]) => {
@@ -60,7 +92,13 @@ export const useCollection = <T>(
           optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
         });
         setData(nextSnapshot.data as T[]);
-        refresh();
+        await pollingManager.refresh(scope);
+        if (nextSnapshot.degraded) {
+          throw new Error(
+            nextSnapshot.warning ??
+              'Change was kept locally because shared sync is unavailable. Retry sync when you are back online.'
+          );
+        }
         return true;
       } finally {
         mutationsInFlightRef.current -= 1;
