@@ -6,7 +6,7 @@ import {
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   searchMovieAutocomplete,
 } from './metadataService.ts';
-import { fetchOmdbMetadata, searchOmdbMovies } from './omdb.ts';
+import { fetchOmdbMetadata, searchOmdbMovies, normalizePosterUrl } from './omdb.ts';
 
 const originalFetch = globalThis.fetch;
 const globalWithWindow = globalThis as typeof globalThis & { window?: unknown };
@@ -319,4 +319,28 @@ test('searchOmdbMovies drops search rows with no usable title', async () => {
   const results = await searchOmdbMovies('x');
   assert.equal(results.length, 1);
   assert.equal(results[0]?.title, 'Valid');
+});
+
+
+test('normalizePosterUrl returns undefined when URL constructor throws in the catch block', () => {
+  const OriginalURL = globalThis.URL;
+  let calls = 0;
+
+  (globalThis as any).URL = class MockURL {
+    protocol = 'http:';
+    constructor(url: string) {
+      calls++;
+      if (calls === 2) {
+        throw new Error('simulated url error');
+      }
+      return { protocol: 'http:' } as any;
+    }
+  } as any;
+
+  try {
+    const result = normalizePosterUrl('http://example.com/poster.jpg');
+    assert.equal(result, undefined);
+  } finally {
+    globalThis.URL = OriginalURL;
+  }
 });
