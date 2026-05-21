@@ -1,7 +1,15 @@
-import { shuffleArray } from '../../utils/index.ts';
 import type { MatchmakerGame, Movie, User } from '@/shared/types';
 
 const MATCHMAKER_POOL_SIZE = 10;
+
+const shuffleWithSource = <T>(array: T[], randomSource: () => number): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(randomSource() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 export const SHORT_AND_SWEET_VIBE = 'Short & Sweet';
 
 const normalizeTag = (value: string): string => value.trim().toLowerCase();
@@ -71,8 +79,9 @@ export const getAvailableMatchmakerVibes = (movies: Movie[], limit: number = 8):
 export const createMatchmakerPool = (
   movies: Movie[],
   selectedVibe: string | null,
+  randomSource: () => number = Math.random
 ): string[] =>
-  shuffleArray(filterMoviesByVibe(movies, selectedVibe))
+  shuffleWithSource(filterMoviesByVibe(movies, selectedVibe), randomSource)
     .slice(0, MATCHMAKER_POOL_SIZE)
     .map((movie) => movie.id);
 
