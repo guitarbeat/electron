@@ -20,10 +20,11 @@
     "post-merge": "scripts/post-merge.bat"
   },
   "dependencies": {
+    "@khmyznikov/pwa-install": "^0.6.3",
     "@neondatabase/serverless": "^1.1.0",
     "@total-typescript/ts-reset": "^0.6.1",
-    "@vercel/analytics": "^2.0.1",
     "@types/three": "^0.184.0",
+    "@vercel/analytics": "^2.0.1",
     "chroma-js": "^3.2.0",
     "lucide-react": "^1.11.0",
     "maplibre-gl": "^5.24.0",
@@ -42,9 +43,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@types/dom-chromium-installation-events": "^101.0.4",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/web-app-manifest": "^1.0.9",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.4",
     "eslint-plugin-jsx-a11y": "^6.10.2",

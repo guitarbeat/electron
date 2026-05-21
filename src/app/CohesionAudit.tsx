@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { applyTheme } from '@/theme/applyTheme';
+import type { ThemeName } from '@/theme/themes';
 import { radius, spacing } from '@/theme/tokens';
 import './CohesionAudit.css';
-
-type ThemeName = 'movies' | 'places';
 
 const colorVars = [
   '--color-accent',
@@ -158,7 +158,7 @@ const CohesionAudit: React.FC = () => {
   const radii = useMemo(() => radiusEntries, []);
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', theme);
+    applyTheme(theme);
   }, [theme]);
 
   return (

@@ -1,80 +1,19 @@
 /**
  * Design System Tokens
  *
- * Centralized design tokens for consistent spacing, colors, typography, and motion.
- * Modernized: cohesive display/interface font stack, improved contrast, surface layering system.
- * Now supports theme switching between Movies and Places modes.
+ * Spacing, typography, motion, and structural tokens. Theme palettes live in
+ * `themes.ts` and are applied at runtime via `applyTheme()`.
  */
 
-// Y2K Aesthetic Theme - Bubblegum Pink & Baby Blue
-export const moviesTheme = {
-  accent: '#ff6eb4',           // Hot pink
-  accentHover: '#ff8ec4',
-  accentMuted: '#ff6eb440',
-  accentLight: '#ffd4e8',
-  secondary: '#7dd3fc',        // Baby blue
-  secondaryHover: '#a5e1fe',
-  secondaryMuted: '#7dd3fc40',
-  tertiary: '#c4b5fd',         // Lavender
-  tertiaryHover: '#d8ccfe',
-  background: '#1a1625',       // Deep purple-black
-  surface: 'rgba(60, 45, 80, 0.72)',
-  surfaceElevated: 'rgba(80, 60, 100, 0.84)',
-  surface0: '#12101a',
-  surface1: 'rgba(55, 40, 75, 0.78)',
-  surface2: 'rgba(75, 55, 95, 0.9)',
-  surface3: 'rgba(95, 70, 115, 0.95)',
-  glow: '0 0 16px rgba(255, 110, 180, 0.35), 0 0 32px rgba(125, 211, 252, 0.2)',
-  glowStrong: '0 0 24px rgba(255, 110, 180, 0.5), 0 0 40px rgba(196, 181, 253, 0.25)',
-  textGlow: '0 1px 2px rgba(15, 10, 20, 0.4), 0 0 8px rgba(255, 110, 180, 0.25)',
-  gradientPrimary: 'linear-gradient(135deg, #ff6eb4 0%, #7dd3fc 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(80, 55, 100, 0.96) 0%, rgba(45, 30, 65, 0.92) 100%)',
-  textGradient: 'linear-gradient(135deg, #ffd4e8 0%, #c4b5fd 52%, #a5e1fe 100%)',
-} as const;
+import { moviesThemeDefinition, placesThemeDefinition } from './themes.ts';
 
-// Y2K Aesthetic Theme - Mint & Peach (Places variant)
-export const placesTheme = {
-  accent: '#ffb86c',           // Peachy orange
-  accentHover: '#ffc98a',
-  accentMuted: '#ffb86c40',
-  accentLight: '#ffe4c4',
-  secondary: '#86efac',        // Mint green
-  secondaryHover: '#a7f3c9',
-  secondaryMuted: '#86efac40',
-  tertiary: '#fcd34d',         // Sunny yellow
-  tertiaryHover: '#fde68a',
-  background: '#1a1a25',       // Deep blue-black
-  surface: 'rgba(45, 55, 80, 0.72)',
-  surfaceElevated: 'rgba(60, 70, 100, 0.84)',
-  surface0: '#101018',
-  surface1: 'rgba(40, 50, 75, 0.78)',
-  surface2: 'rgba(55, 65, 95, 0.9)',
-  surface3: 'rgba(70, 80, 115, 0.95)',
-  glow: '0 0 16px rgba(255, 184, 108, 0.35), 0 0 32px rgba(134, 239, 172, 0.2)',
-  glowStrong: '0 0 24px rgba(255, 184, 108, 0.5), 0 0 40px rgba(252, 211, 77, 0.25)',
-  textGlow: '0 1px 2px rgba(15, 15, 20, 0.4), 0 0 8px rgba(255, 184, 108, 0.25)',
-  gradientPrimary: 'linear-gradient(135deg, #ffb86c 0%, #86efac 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(55, 65, 100, 0.96) 0%, rgba(30, 38, 65, 0.92) 100%)',
-  textGradient: 'linear-gradient(135deg, #ffe4c4 0%, #fcd34d 52%, #a7f3c9 100%)',
-} as const;
+/** @deprecated Prefer `useTheme().theme` — kept for gradual migration of inline styles. */
+export const moviesTheme = moviesThemeDefinition.tokens;
 
-export const shellTokens = {
-  canvasGap: 'clamp(0.7rem, 0.38rem + 0.8vw, 1.15rem)',
-  canvasPaddingBlock: 'clamp(0.3rem, 0.18rem + 0.4vw, 0.7rem)',
-  stackGap: 'clamp(0.85rem, 0.68rem + 0.55vw, 1.3rem)',
-  stackPaddingTop: 'clamp(0.55rem, 0.42rem + 0.55vw, 0.95rem)',
-  stackPaddingBottom: 'clamp(0.8rem, 0.6rem + 0.8vw, 1.35rem)',
-  panelBorderStrong: 'rgba(255, 236, 206, 0.22)',
-  panelBorderSoft: 'rgba(255, 236, 206, 0.12)',
-  panelHighlight: 'rgba(255, 255, 255, 0.08)',
-  panelGlass: 'rgba(255, 255, 255, 0.04)',
-  panelShadow: '0 24px 56px rgba(0, 0, 0, 0.24)',
-  panelShadowSoft: '0 14px 28px rgba(0, 0, 0, 0.16)',
-  headerSurface:
-    'linear-gradient(155deg, rgba(38, 28, 20, 0.9) 0%, rgba(20, 14, 11, 0.94) 100%)',
-  panelSurface:
-    'linear-gradient(160deg, rgba(46, 33, 24, 0.88) 0%, rgba(22, 17, 13, 0.92) 100%)',
-} as const;
+/** @deprecated Prefer `useTheme().theme` */
+export const placesTheme = placesThemeDefinition.tokens;
+
+export const shellTokens = moviesThemeDefinition.shell;
 
 // * Spacing scale (Tight but balanced)
 export const spacing = {
@@ -87,69 +26,27 @@ export const spacing = {
   '3xl': '3.5rem', // 56px
 } as const;
 
-// * Color palette (Modernized -- retro accents, modern foundations)
-// Default colors (Movies theme - backward compatibility)
+/**
+ * Default semantic colors (Movies). For tab-aware inline styles, use `useThemeColors()`.
+ */
 export const colors = {
-  // Base
-  background: '#1d140e',
-  surface: 'rgba(73, 51, 32, 0.72)',
-  surfaceElevated: 'rgba(92, 64, 40, 0.84)',
-
-  // Surface layering system (for consistent depth hierarchy)
-  surface0: '#130d08', // deepest -- page background
-  surface1: 'rgba(69, 48, 29, 0.78)', // card level
-  surface2: 'rgba(90, 63, 39, 0.9)', // elevated / floating elements
-  surface3: 'rgba(113, 81, 52, 0.95)', // popovers / modals
-
-  // Text (improved contrast for WCAG AA compliance)
-  textPrimary: '#f7efdf',
-  textSecondary: '#e0d2b6',
-  textTertiary: '#b9a489', // Meets WCAG AA on the warm dark surfaces above
-
-  // Interactive (for links and clickable elements)
-  interactive: '#c88d59',
-  interactiveHover: '#d9a170',
-
-  // Accent (aged copper)
-  accent: '#c88d59',
-  accentHover: '#d9a170',
-  accentMuted: '#c88d5940',
-  accentLight: '#efd2af',
-
-  // Secondary accent (sage)
-  secondary: '#8e9f82',
-  secondaryHover: '#a3b497',
-  secondaryMuted: '#8e9f8240',
-
-  // Tertiary (clay)
-  tertiary: '#9a6554',
-  tertiaryHover: '#af7b68',
-
-  // Status
-  success: '#8ca26d',
-  warning: '#d1a15c',
-  error: '#bb705f',
-
-  // Border
-  border: 'rgba(180, 142, 92, 0.4)',
+  ...moviesThemeDefinition.semantic,
+  interactive: moviesThemeDefinition.semantic.accent,
+  interactiveHover: moviesThemeDefinition.semantic.accentHover,
   borderSecondary: 'rgba(200, 141, 89, 0.28)',
   borderTertiary: 'rgba(142, 159, 130, 0.24)',
   borderInset: '#7d5f3a',
-  borderSubtle: 'rgba(193, 154, 96, 0.18)',
-
-  // Overlay
-  overlay: 'rgba(18, 11, 7, 0.78)',
-
-  // Special retro colors
   yellow: '#d4b173',
   khaki: '#e8d3ac',
-
-  // Gradients
   gradientPink: 'linear-gradient(135deg, #c88d59 0%, #d9a170 100%)',
   gradientBlue: 'linear-gradient(135deg, #8e9f82 0%, #a3b497 100%)',
   gradientPurple: 'linear-gradient(135deg, #9a6554 0%, #af7b68 100%)',
-  gradientCard: 'linear-gradient(180deg, rgba(102, 75, 49, 0.96) 0%, rgba(58, 39, 24, 0.92) 100%)',
+  gradientCard: moviesThemeDefinition.tokens.gradientCard,
 } as const;
+
+export type { ThemeName, AppThemeDefinition } from './themes.ts';
+export { appThemes, getAppTheme, moviesThemeDefinition, placesThemeDefinition } from './themes.ts';
+export { applyTheme, clearAppliedTheme } from './applyTheme.ts';
 
 // * Typography scale
 const fontFamily = {

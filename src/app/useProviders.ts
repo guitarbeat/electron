@@ -10,6 +10,12 @@ export const useTheme = (): ThemeContextValue => {
   return context;
 };
 
+/** Semantic palette for the active Movies / Places tab (inline styles). */
+export const useThemeColors = () => {
+  const { theme } = useTheme();
+  return theme.semantic;
+};
+
 export const useToast = (): ToastContextType => {
   const context = useContext(ToastContext);
   if (!context) {

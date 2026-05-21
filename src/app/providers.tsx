@@ -11,7 +11,9 @@ import React, {
   ReactNode,
 } from 'react';
 import type { User } from '@/shared/types';
-import { moviesTheme, shellTokens, spacing } from '@/theme/tokens';
+import { applyTheme } from '@/theme/applyTheme';
+import { getAppTheme, type ThemeName } from '@/theme/themes';
+import { spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
 import type { SessionState } from '@/services/state/stateTypes';
@@ -33,57 +35,23 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const currentTheme: 'movies' | 'places' = 'movies';
-  const themeTokens = moviesTheme;
+export const ThemeProvider: React.FC<{
+  theme: ThemeName;
+  children: ReactNode;
+}> = ({ theme: themeName, children }) => {
+  const theme = getAppTheme(themeName);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    const root = document.documentElement;
-    const cssVars: Record<string, string> = {
-      '--shell-canvas-gap': shellTokens.canvasGap,
-      '--shell-canvas-padding-block': shellTokens.canvasPaddingBlock,
-      '--shell-stack-gap': shellTokens.stackGap,
-      '--shell-stack-padding-top': shellTokens.stackPaddingTop,
-      '--shell-stack-padding-bottom': shellTokens.stackPaddingBottom,
-      '--shell-panel-border-strong': shellTokens.panelBorderStrong,
-      '--shell-panel-border-soft': shellTokens.panelBorderSoft,
-      '--shell-panel-highlight': shellTokens.panelHighlight,
-      '--shell-panel-glass': shellTokens.panelGlass,
-      '--shell-panel-shadow': shellTokens.panelShadow,
-      '--shell-panel-shadow-soft': shellTokens.panelShadowSoft,
-      '--shell-header-surface': shellTokens.headerSurface,
-      '--shell-panel-surface': shellTokens.panelSurface,
-      '--color-accent': themeTokens.accent,
-      '--color-accent-hover': themeTokens.accentHover,
-      '--color-accent-light': themeTokens.accentLight,
-      '--color-secondary': themeTokens.secondary,
-      '--color-tertiary': themeTokens.tertiary,
-      '--color-background': themeTokens.background,
-      '--color-surface-0': themeTokens.surface0,
-      '--color-surface-1': themeTokens.surface1,
-      '--color-surface-2': themeTokens.surface2,
-      '--color-surface-3': themeTokens.surface3,
-      '--gradient-card': themeTokens.gradientCard,
-    };
-
-    Object.entries(cssVars).forEach(([name, value]) => {
-      root.style.setProperty(name, value);
-    });
-
-    const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-    themeMeta?.setAttribute('content', themeTokens.background);
-  }, [themeTokens]);
+    applyTheme(themeName);
+  }, [themeName]);
 
   const value = useMemo(
     () => ({
-      currentTheme,
-      themeTokens,
+      currentTheme: themeName,
+      theme,
+      themeTokens: theme.tokens,
     }),
-    [currentTheme, themeTokens]
+    [theme, themeName]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

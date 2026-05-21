@@ -1,4 +1,5 @@
 import React, { type FC } from 'react';
+import LazyBoundary from '@/app/LazyBoundary';
 import type { MainTab } from '@/shared/types';
 import MoviesView from '@/components/movies/MoviesView';
 
@@ -26,9 +27,9 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         {activeTab === 'movies' ? (
           <MoviesView isMobile={isMobile} />
         ) : (
-          <React.Suspense fallback={null}>
+          <LazyBoundary label="Loading places">
             <PlacesList />
-          </React.Suspense>
+          </LazyBoundary>
         )}
       </section>
     </main>
