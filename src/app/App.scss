@@ -1,4 +1,5 @@
 @use './styles/shell-layout';
+@use './styles/human-textures';
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
 
 /*
@@ -10850,22 +10851,22 @@ body.grabbing * {
 
 body[data-theme='movies'] {
   background-image:
-    radial-gradient(circle at 14% 18%, rgba(212, 177, 115, 0.16) 0%, transparent 26%),
-    radial-gradient(circle at 84% 12%, rgba(142, 159, 130, 0.14) 0%, transparent 22%),
-    radial-gradient(circle at 52% 0%, rgba(255, 245, 218, 0.08) 0%, transparent 24%),
-    radial-gradient(circle at 48% 100%, rgba(125, 65, 50, 0.12) 0%, transparent 34%),
-    linear-gradient(180deg, rgba(255, 241, 211, 0.06) 0%, transparent 12%),
-    linear-gradient(180deg, #25180f 0%, #1a120c 32%, #120c08 100%);
+    radial-gradient(circle at 14% 18%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 26%),
+    radial-gradient(circle at 84% 12%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0%, transparent 22%),
+    radial-gradient(circle at 52% 0%, color-mix(in srgb, var(--color-accent-light) 10%, transparent) 0%, transparent 24%),
+    radial-gradient(circle at 48% 100%, color-mix(in srgb, var(--color-tertiary) 14%, transparent) 0%, transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 5%, transparent) 0%, transparent 12%),
+    var(--gradient-shell);
 }
 
 body[data-theme='places'] {
   background-image:
-    radial-gradient(circle at 16% 16%, rgba(205, 165, 93, 0.15) 0%, transparent 24%),
-    radial-gradient(circle at 82% 10%, rgba(152, 160, 106, 0.14) 0%, transparent 22%),
-    radial-gradient(circle at 78% 82%, rgba(111, 143, 142, 0.14) 0%, transparent 24%),
-    radial-gradient(circle at 50% 0%, rgba(255, 245, 218, 0.08) 0%, transparent 22%),
-    linear-gradient(180deg, rgba(255, 241, 211, 0.06) 0%, transparent 12%),
-    linear-gradient(180deg, #24180f 0%, #19120c 32%, #120c08 100%);
+    radial-gradient(circle at 16% 16%, color-mix(in srgb, var(--color-accent) 17%, transparent) 0%, transparent 24%),
+    radial-gradient(circle at 82% 10%, color-mix(in srgb, var(--color-secondary) 15%, transparent) 0%, transparent 22%),
+    radial-gradient(circle at 78% 82%, color-mix(in srgb, var(--color-tertiary) 14%, transparent) 0%, transparent 24%),
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-accent-light) 9%, transparent) 0%, transparent 22%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 5%, transparent) 0%, transparent 12%),
+    var(--gradient-shell);
 }
 
 body {
@@ -10878,34 +10879,9 @@ body {
 
 .app-shell {
   background:
-    radial-gradient(ellipse at top, rgba(255, 244, 220, 0.08) 0%, transparent 34%),
-    linear-gradient(180deg, rgba(255, 241, 211, 0.03) 0%, transparent 12%),
+    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-accent-light) 9%, transparent) 0%, transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 4%, transparent) 0%, transparent 12%),
     var(--gradient-shell);
-}
-
-.app-shell::before {
-  background:
-    radial-gradient(circle at 18% 14%, rgba(255, 237, 196, 0.12) 0%, transparent 20%),
-    radial-gradient(circle at 82% 18%, rgba(212, 177, 115, 0.1) 0%, transparent 18%),
-    linear-gradient(180deg, rgba(255, 244, 220, 0.06) 0%, transparent 18%),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.018) 0,
-      rgba(255, 255, 255, 0.018) 1px,
-      transparent 1px,
-      transparent 4px
-    );
-  mix-blend-mode: screen;
-  opacity: 0.36;
-}
-
-.app-shell::after {
-  background:
-    radial-gradient(ellipse at 50% 18%, transparent 0%, transparent 52%, rgba(10, 7, 4, 0.58) 100%),
-    linear-gradient(90deg, rgba(25, 17, 10, 0.48) 0%, transparent 15%, transparent 85%, rgba(25, 17, 10, 0.48) 100%);
-  opacity: 0.78;
-  transform: none;
-  animation: none;
 }
 
 .duo-status-card,
@@ -10914,15 +10890,15 @@ body {
 .ui-control-surface,
 .places-map-card,
 .ui-card {
-  border-color: rgba(184, 148, 95, 0.28) !important;
+  border-color: var(--color-border) !important;
   background:
-    linear-gradient(180deg, rgba(255, 247, 229, 0.1) 0%, transparent 16%),
-    radial-gradient(circle at 12% 10%, rgba(242, 217, 175, 0.12) 0%, transparent 26%),
-    linear-gradient(165deg, rgba(106, 79, 49, 0.92) 0%, rgba(66, 47, 28, 0.95) 34%, rgba(35, 25, 16, 0.98) 100%) !important;
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 8%, transparent) 0%, transparent 16%),
+    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--color-accent-light) 14%, transparent) 0%, transparent 26%),
+    var(--gradient-card) !important;
   box-shadow:
-    0 18px 36px rgba(19, 12, 8, 0.34),
-    inset 0 1px 0 rgba(255, 245, 220, 0.08),
-    inset 0 0 0 1px rgba(92, 67, 42, 0.18) !important;
+    var(--shell-panel-shadow),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 6%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-tertiary) 22%, transparent) !important;
   backdrop-filter: blur(8px) saturate(120%) !important;
   -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
 }
@@ -10943,12 +10919,16 @@ body {
 }
 
 body .app-session-bar .duo-status-card.duo-status-card--portal {
-  border: 1px solid rgba(193, 154, 96, 0.18) !important;
-  border-color: rgba(193, 154, 96, 0.18) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-color: var(--color-border-subtle) !important;
 }
 
 .ui-card__shine {
-  background: linear-gradient(125deg, rgba(255, 247, 228, 0.12) 0%, transparent 64%) !important;
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, var(--color-text-primary) 10%, transparent) 0%,
+    transparent 64%
+  ) !important;
   opacity: 0.7 !important;
 }
 
@@ -10998,8 +10978,13 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
 .workspace-header--simplified::before,
 .workspace-surface::before {
   background:
-    linear-gradient(118deg, transparent 0%, rgba(255, 245, 220, 0.12) 30%, transparent 42%),
-    linear-gradient(180deg, rgba(255, 247, 228, 0.04) 0%, transparent 100%);
+    linear-gradient(
+      118deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-text-primary) 10%, transparent) 30%,
+      transparent 42%
+    ),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 4%, transparent) 0%, transparent 100%);
 }
 
 .duo-status-card__mark-shell,
