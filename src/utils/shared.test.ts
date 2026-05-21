@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   areDeeplyEqual,
+  concurrentMap,
   createValidator,
   executeAction,
   isValidUrl,
@@ -311,5 +312,75 @@ test('createValidator', async (t) => {
     assert.equal(result.isValid, false);
     assert.equal(Object.keys(result.errors).length, 2);
     assert.equal(result.fieldErrors.length, 2);
+  });
+});
+
+test('concurrentMap', async (t) => {
+  await t.test('returns empty array when given empty items list', async () => {
+    const results = await concurrentMap([], 2, async (val) => val);
+    assert.deepEqual(results, []);
+  });
+
+  await t.test('maps items correctly', async () => {
+    const items = [1, 2, 3, 4, 5];
+    const results = await concurrentMap(items, 2, async (item) => item * 2);
+    assert.deepEqual(results, [2, 4, 6, 8, 10]);
+  });
+
+  await t.test('respects concurrency limit', async () => {
+    const items = Array.from({ length: 10 }, (_, i) => i);
+    let activeTasks = 0;
+    let maxActiveTasks = 0;
+
+    const fn = async (item: number) => {
+      activeTasks++;
+      if (activeTasks > maxActiveTasks) {
+        maxActiveTasks = activeTasks;
+      }
+      // Small delay to allow overlap
+      await new Promise(resolve => setTimeout(resolve, 10));
+      activeTasks--;
+      return item * 2;
+    };
+
+    const results = await concurrentMap(items, 3, fn);
+
+    assert.deepEqual(results, items.map(i => i * 2));
+    assert.ok(maxActiveTasks <= 3, `Max active tasks (\${maxActiveTasks}) exceeded concurrency limit (3)`);
+    assert.equal(activeTasks, 0, 'All tasks should have finished');
+  });
+
+  await t.test('handles concurrency larger than items length', async () => {
+    const items = [1, 2];
+    let activeTasks = 0;
+    let maxActiveTasks = 0;
+
+    const fn = async (item: number) => {
+      activeTasks++;
+      if (activeTasks > maxActiveTasks) {
+        maxActiveTasks = activeTasks;
+      }
+      await new Promise(resolve => setTimeout(resolve, 5));
+      activeTasks--;
+      return item * 2;
+    };
+
+    const results = await concurrentMap(items, 10, fn);
+    assert.deepEqual(results, [2, 4]);
+    assert.ok(maxActiveTasks <= 2, 'Should not start more tasks than items');
+  });
+
+  await t.test('rejects if a task fails', async () => {
+    const items = [1, 2, 3, 4, 5];
+
+    await assert.rejects(
+      async () => {
+        await concurrentMap(items, 2, async (item) => {
+          if (item === 3) throw new Error('Task failed');
+          return item;
+        });
+      },
+      (err) => err instanceof Error && err.message === 'Task failed'
+    );
   });
 });
