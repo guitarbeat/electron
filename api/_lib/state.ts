@@ -61,6 +61,10 @@ import {
   unauthorizedResponse,
 } from './http.ts';
 import {
+  importSharedStateFileFromGist,
+  shouldAttemptGistBackfill,
+} from './gistMigration.ts';
+import {
   isSharedStateConfigured,
   isSharedStateWriteConfigured,
   listSharedStateFilenames,
@@ -1158,10 +1162,20 @@ const readScopeStoredData = async <TScope extends StateScope>(
     };
   }
 
-  const file = await readSharedStateFileRecord(definition.filename, {
+  let file = await readSharedStateFileRecord(definition.filename, {
     bypassCache: options.bypassCache,
   });
-  const stored = definition.parse(file.content);
+  let stored = definition.parse(file.content);
+
+  if (shouldAttemptGistBackfill(scope, file.exists, stored)) {
+    const imported = await importSharedStateFileFromGist(definition.filename);
+    if (imported) {
+      file = await readSharedStateFileRecord(definition.filename, {
+        bypassCache: true,
+      });
+      stored = definition.parse(file.content);
+    }
+  }
 
   if (!file.exists) {
     await repairMissingScopeFile(scope, definition, stored);
