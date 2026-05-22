@@ -1,3 +1,4 @@
+import { mock } from 'node:test';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -427,5 +428,109 @@ test('layouts', async (t) => {
       flexDirection: 'column',
       gap: '8px',
     });
+  });
+});
+
+
+test('randomUtils', async (t) => {
+  const { randomUtils } = await import('./shared.ts');
+
+  await t.test('randomItem', () => {
+    const array = ['a', 'b', 'c', 'd'];
+    const randomMock = mock.method(Math, 'random', () => 0); // 0 * 4 = 0 -> 'a'
+    assert.equal(randomUtils.randomItem(array), 'a');
+    randomMock.mock.restore();
+
+    const randomMock2 = mock.method(Math, 'random', () => 0.5); // 0.5 * 4 = 2 -> 'c'
+    assert.equal(randomUtils.randomItem(array), 'c');
+    randomMock2.mock.restore();
+
+    const randomMock3 = mock.method(Math, 'random', () => 0.999); // 0.999 * 4 = 3.996 -> 'd'
+    assert.equal(randomUtils.randomItem(array), 'd');
+    randomMock3.mock.restore();
+  });
+
+  await t.test('randomRange', () => {
+    const randomMock = mock.method(Math, 'random', () => 0);
+    assert.equal(randomUtils.randomRange(5, 10), 5);
+    randomMock.mock.restore();
+
+    const randomMock2 = mock.method(Math, 'random', () => 0.5);
+    assert.equal(randomUtils.randomRange(5, 10), 7.5);
+    randomMock2.mock.restore();
+
+    const randomMock3 = mock.method(Math, 'random', () => 1);
+    assert.equal(randomUtils.randomRange(5, 10), 10);
+    randomMock3.mock.restore();
+  });
+
+  await t.test('randomInt', () => {
+    const randomMock = mock.method(Math, 'random', () => 0);
+    assert.equal(randomUtils.randomInt(5, 10), 5);
+    randomMock.mock.restore();
+
+    const randomMock2 = mock.method(Math, 'random', () => 0.5);
+    assert.equal(randomUtils.randomInt(5, 10), 7);
+    randomMock2.mock.restore();
+
+    const randomMock3 = mock.method(Math, 'random', () => 0.999);
+    assert.equal(randomUtils.randomInt(5, 10), 9); // Math.floor(5 + 0.999 * 5) = Math.floor(9.995) = 9
+    randomMock3.mock.restore();
+  });
+
+  await t.test('randomBool', () => {
+    const randomMock = mock.method(Math, 'random', () => 0.49);
+    assert.equal(randomUtils.randomBool(), false);
+    randomMock.mock.restore();
+
+    const randomMock2 = mock.method(Math, 'random', () => 0.51);
+    assert.equal(randomUtils.randomBool(), true);
+    randomMock2.mock.restore();
+  });
+
+  await t.test('generateConfettiParticle', () => {
+    const randomMock = mock.method(Math, 'random', () => 0.5); // Fixed random
+    const particle = randomUtils.generateConfettiParticle(1, ['red', 'blue', 'green']);
+    assert.deepEqual(particle, {
+      id: 1,
+      x: 50, // 0.5 * 100
+      color: 'blue', // ['red', 'blue', 'green'][Math.floor(0.5 * 3)] = [1] = 'blue'
+      delay: 0.25, // 0.5 * 0.5
+      rotation: 180, // 0.5 * 360
+      scale: 0.75, // 0.5 + 0.5 * 0.5
+      isRounded: false // 0.5 > 0.5 -> false
+    });
+    randomMock.mock.restore();
+  });
+
+  await t.test('generateCursorStar', () => {
+    const randomMock = mock.method(Math, 'random', () => 0.5);
+    const star = randomUtils.generateCursorStar(100, 200, 1);
+    assert.deepEqual(star, {
+      id: 1,
+      x: 100,
+      y: 200,
+      opacity: 1,
+      scale: 1 // 0.5 + 0.5
+    });
+    randomMock.mock.restore();
+  });
+
+  await t.test('generateFoodSpawn', () => {
+    // Math.random for: x (0.5), speed (0.5), fruit (0.5)
+    const randomMock = mock.method(Math, 'random', () => 0.5);
+    const cryptoMock = mock.method(global.crypto, 'randomUUID', () => 'mock-uuid');
+
+    const spawn = randomUtils.generateFoodSpawn(100, 10, ['apple', 'banana', 'cherry', 'date'], 4);
+    assert.deepEqual(spawn, {
+      id: 'mock-uuid',
+      x: 45, // 0.5 * (100 - 10)
+      y: -10,
+      speed: 3, // 2 + 0.5 * 2
+      fruit: 'cherry' // ['apple', 'banana', 'cherry', 'date'][Math.floor(0.5 * 4)] = [2] = 'cherry'
+    });
+
+    randomMock.mock.restore();
+    cryptoMock.mock.restore();
   });
 });
