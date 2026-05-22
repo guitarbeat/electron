@@ -1,3 +1,0 @@
-🎯 **What:** The `encodeStorageData` and `decodeStorageData` functions in `src/utils/shared.ts` were completely untested. This gap is being addressed by adding extensive tests for both utility functions.
-📊 **Coverage:** Covered normal baseline cases for both (encoding valid strings to Base64 with a `v1:` prefix, decoding backwards), empty strings, legacy plaintext backwards compatibility for `decodeStorageData`, handling invalid Base64 padding/characters, and validating graceful fallback for encoding errors.
-✨ **Result:** Enhanced the reliability and test coverage of the state storage security functions. These utilities safely manage user storage encode/decode, preventing failures gracefully.
