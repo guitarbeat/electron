@@ -71,5 +71,50 @@ test('storageClient read and write operations', async (t) => {
     assert.equal(read, null, 'Should remove the item from local storage');
   });
 
+
+  await t.test('handles localStorage errors gracefully', async (t) => {
+    const errorStorage = new MemoryStorage();
+    errorStorage.getItem = () => { throw new Error('getItem error'); };
+    errorStorage.setItem = () => { throw new Error('setItem error'); };
+    errorStorage.removeItem = () => { throw new Error('removeItem error'); };
+
+    // @ts-expect-error - overriding global for tests
+    global.window = { localStorage: errorStorage };
+
+    await t.test('readStoredJson catches errors', () => {
+      const consoleWarnMock = t.mock.method(console, 'warn', () => {});
+      const read = readStoredJson({
+        storageKey: 'errorKey',
+        validate: (v: unknown): v is unknown => typeof v !== "undefined",
+        clone: (v) => v,
+        label: 'error test data'
+      });
+      assert.equal(read, null, 'Should return null on read error');
+      assert.equal(consoleWarnMock.mock.callCount(), 1, 'Should log a warning');
+      consoleWarnMock.mock.restore();
+    });
+
+    await t.test('writeStoredJson catches errors', () => {
+      const consoleWarnMock = t.mock.method(console, 'warn', () => {});
+      const data = { test: 'value' };
+      const written = writeStoredJson({
+        storageKey: 'errorKey',
+        value: data,
+        clone: (v) => ({ ...v }),
+        label: 'error test data'
+      });
+      assert.deepEqual(written, data, 'Should return the value even if persist fails');
+      assert.equal(consoleWarnMock.mock.callCount(), 1, 'Should log a warning');
+      consoleWarnMock.mock.restore();
+    });
+
+    await t.test('removeStoredJson catches errors', () => {
+      const consoleWarnMock = t.mock.method(console, 'warn', () => {});
+      removeStoredJson('errorKey', 'error test data');
+      assert.equal(consoleWarnMock.mock.callCount(), 1, 'Should log a warning');
+      consoleWarnMock.mock.restore();
+    });
+  });
+
   global.window = originalWindow;
 });
