@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const USER_PHOTOS: Record<string, string[]> = {
+const USER_PHOTOS: Record<string, string[]> = {
   Aaron: [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s',
     'https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg',

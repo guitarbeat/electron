@@ -20,6 +20,7 @@ interface PwaInstallContextValue {
 
 const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePwaInstall = (): PwaInstallContextValue => {
   const context = useContext(PwaInstallContext);
   if (!context) {
