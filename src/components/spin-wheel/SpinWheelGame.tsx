@@ -26,7 +26,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
   const [mode, setMode] = useState<SpinMode>('all');
-  const [selectedPoolIds, setSelectedPoolIds] = useState<string[]>([]);
+  const [selectedPoolIdSet, setSelectedPoolIdSet] = useState<Set<string>>(new Set());
   const spinTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   }, [movies, selectedMovieId]);
 
   const candidates = useMemo(() => getSpinCandidates(movies, mode), [mode, movies]);
-  const selectedPoolIdSet = useMemo(() => new Set(selectedPoolIds), [selectedPoolIds]);
   const spinPool = useMemo(
     () => getSpinPool(movies, mode, selectedPoolIdSet),
     [mode, movies, selectedPoolIdSet]
@@ -63,7 +62,15 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
   useEffect(() => {
     const candidateIds = new Set(candidates.map((movie) => movie.id));
-    setSelectedPoolIds((current) => current.filter((id) => candidateIds.has(id)));
+    setSelectedPoolIdSet((current) => {
+      const next = new Set<string>();
+      let changed = false;
+      current.forEach((id) => {
+        if (candidateIds.has(id)) next.add(id);
+        else changed = true;
+      });
+      return changed ? next : current;
+    });
   }, [candidates]);
 
   const selectedMovie = useMemo(
@@ -98,9 +105,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   };
 
   const togglePoolSelection = (movieId: string) => {
-    setSelectedPoolIds((current) =>
-      current.includes(movieId) ? current.filter((id) => id !== movieId) : [...current, movieId]
-    );
+    setSelectedPoolIdSet((current) => {
+      const next = new Set(current);
+      if (next.has(movieId)) next.delete(movieId);
+      else next.add(movieId);
+      return next;
+    });
   };
 
   const toggleWatchedForCurrentUser = async () => {
