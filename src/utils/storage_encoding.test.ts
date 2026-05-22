@@ -37,4 +37,24 @@ test('encodeStorageData and decodeStorageData', async (t) => {
     const decoded = decodeStorageData(malformed);
     assert.equal(malformed, decoded);
   });
+
+
+  await t.test('handles empty data', () => {
+    assert.equal(decodeStorageData(''), '');
+  });
+
+  await t.test('returns original data if atob throws an error', (t) => {
+    // Mock atob specifically for this test to throw an error
+    const mockedAtob = t.mock.method(globalThis, 'atob', () => {
+      throw new Error('atob error');
+    });
+
+    try {
+      const validRegexButThrows = 'v1:validBase64Chars';
+      const decoded = decodeStorageData(validRegexButThrows);
+      assert.equal(validRegexButThrows, decoded);
+    } finally {
+      mockedAtob.mock.restore();
+    }
+  });
 });
