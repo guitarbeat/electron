@@ -85,7 +85,7 @@ test('storageClient read and write operations', async (t) => {
       const consoleWarnMock = t.mock.method(console, 'warn', () => {});
       const read = readStoredJson({
         storageKey: 'errorKey',
-        validate: (v: unknown): v is unknown => typeof v !== "undefined" || true,
+        validate: (v: unknown): v is unknown => typeof v !== "undefined" || v === undefined,
         clone: (v) => v,
         label: 'error test data'
       });
