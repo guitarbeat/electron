@@ -315,32 +315,28 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       });
 
       let optimisticMovies = latestMovies;
-      for (const update of refreshed) {
-        if (Object.keys(update.metadata).length === 0) {
-          continue;
-        }
+      const validUpdates = refreshed.filter(
+        (update) =>
+          Object.keys(update.metadata).length > 0 &&
+          moviesRef.current.some((m) => m.id === update.movieId)
+      );
 
-        if (!moviesRef.current.some((m) => m.id === update.movieId)) {
-          continue;
-        }
-
+      for (const update of validUpdates) {
         optimisticMovies = optimisticMovies.map((movie) =>
           movie.id === update.movieId ? { ...movie, ...update.metadata } : movie
         );
-
-        const applied = await performMutationIfMoviePresent(
-          update.movieId,
-          'update_metadata',
-          {
-            movieId: update.movieId,
-            metadata: update.metadata,
-          },
-          () => optimisticMovies
-        );
-        if (!applied) {
-          break;
-        }
       }
+
+      await Promise.all(
+        validUpdates.map((update) =>
+          performMutationIfMoviePresent(
+            update.movieId,
+            'update_metadata',
+            { movieId: update.movieId, metadata: update.metadata },
+            () => optimisticMovies
+          )
+        )
+      );
 
       refresh();
       return true;
