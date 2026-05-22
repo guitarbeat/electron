@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React, { useState } from 'react';
 import { CheckIcon, EditIcon, TrashIcon } from '@/common/Icons';
 import MediaCard from '@/ui/MediaCard';
