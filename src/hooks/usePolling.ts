@@ -1,6 +1,6 @@
 // FIX: Implemented the usePolling custom hook to resolve compilation errors.
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { pollingManager } from '@/services/PollingManager';
+import { pollingManager } from '@/services/polling';
 
 
 export const usePolling = <T>(
@@ -92,7 +92,7 @@ export const usePolling = <T>(
         key,
         proxyFetch,
         interval,
-        (newData, newError) => {
+        (newData: any, newError: any) => {
           if (newError) {
             setError(newError instanceof Error ? newError : new Error(String(newError)));
             setIsLoading(false);
@@ -129,7 +129,7 @@ export const usePolling = <T>(
     if (key && interval !== null) {
       setIsLoading(true);
       setError(null);
-      pollingManager.refresh(key).catch((error) => {
+      pollingManager.refresh(key).catch((error: any) => {
         console.error(`Polling refresh failed for ${key}:`, error);
         setError(error instanceof Error ? error : new Error(String(error)));
         setIsLoading(false);
