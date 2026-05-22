@@ -92,7 +92,7 @@ export const usePolling = <T>(
         key,
         proxyFetch,
         interval,
-        (newData: any, newError: any) => {
+        (newData: unknown, newError: unknown) => {
           if (newError) {
             setError(newError instanceof Error ? newError : new Error(String(newError)));
             setIsLoading(false);
@@ -106,7 +106,7 @@ export const usePolling = <T>(
               ) {
                 return prev;
               }
-              return newData;
+              return newData as T;
             });
             setIsLoading(false);
           }
@@ -129,7 +129,7 @@ export const usePolling = <T>(
     if (key && interval !== null) {
       setIsLoading(true);
       setError(null);
-      pollingManager.refresh(key).catch((error: any) => {
+      pollingManager.refresh(key).catch((error: unknown) => {
         console.error(`Polling refresh failed for ${key}:`, error);
         setError(error instanceof Error ? error : new Error(String(error)));
         setIsLoading(false);
