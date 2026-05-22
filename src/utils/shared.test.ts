@@ -7,6 +7,7 @@ import {
   executeAction,
   isValidUrl,
   parseJsonContent,
+  readApiErrorMessage,
   sanitizeInput,
 } from './shared.ts';
 
@@ -427,5 +428,41 @@ test('layouts', async (t) => {
       flexDirection: 'column',
       gap: '8px',
     });
+  });
+});
+
+test('readApiErrorMessage', async (t) => {
+  await t.test('returns message from JSON payload', async () => {
+    const response = new Response(JSON.stringify({ error: 'Custom error message' }));
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Custom error message');
+  });
+
+  await t.test('returns fallback if JSON parsing fails', async () => {
+    const response = new Response('Invalid JSON');
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
+  });
+
+  await t.test('returns fallback if error field is not a string', async () => {
+    const response = new Response(JSON.stringify({ error: 123 }));
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
+  });
+
+  await t.test('returns fallback if error message is empty after sanitization', async () => {
+    const response = new Response(JSON.stringify({ error: '   ' }));
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
+  });
+
+  await t.test('returns fallback if response.clone().json() throws', async () => {
+    const response = new Response('{}');
+    // Mock clone to throw
+    response.clone = () => {
+      throw new Error('Clone failed');
+    };
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
   });
 });
