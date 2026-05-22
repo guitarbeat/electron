@@ -383,6 +383,29 @@ test('concurrentMap', async (t) => {
       (err) => err instanceof Error && err.message === 'Task failed'
     );
   });
+
+  await t.test('stops processing remaining items if a task fails', async () => {
+    const items = [1, 2, 3, 4, 5, 6, 7];
+    let processedCount = 0;
+
+    await assert.rejects(
+      async () => {
+        await concurrentMap(items, 2, async (item) => {
+          processedCount++;
+          // A tiny delay to let workers pick up items correctly
+          await new Promise(resolve => setTimeout(resolve, 5));
+          if (item === 3) throw new Error('Task failed');
+          return item;
+        });
+      },
+      (err) => err instanceof Error && err.message === 'Task failed'
+    );
+
+    // If concurrency is 2, items 1 and 2 start. 1 finishes, 3 starts. 2 finishes, 4 starts.
+    // 3 throws 'Task failed'. No more items should be picked up (5, 6, 7 should not process).
+    // processedCount should be around 4, definitely less than 7.
+    assert.ok(processedCount < items.length, 'Should stop processing remaining items after a failure');
+  });
 });
 
 test('layouts', async (t) => {
