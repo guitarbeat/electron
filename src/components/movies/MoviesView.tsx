@@ -20,7 +20,6 @@ import MovieCard from './MovieCard';
 import { buildMovieSections } from './lib/movieSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
 import './MoviesPhotoMode.css';
-
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
@@ -30,7 +29,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
     useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
-
   const {
     isMobile,
     searchQuery,
@@ -66,7 +64,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
   } = useMoviesWorkspace({ currentUser, isPaused });
-
   const skeletonKeys = useMemo(
     () =>
       isMobile
@@ -83,7 +80,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           ],
     [isMobile]
   );
-
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
     const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
@@ -91,7 +87,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movies.forEach((movie) => {
       movieLookupByTitle.set(movie.title.trim().toLowerCase(), movie.id);
     });
-
     memories.forEach((memory) => {
       let targetMovieId: string | undefined;
       
@@ -110,23 +105,19 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         movieGroup.push(memory);
       }
     });
-
     return memoriesByMovieId;
   }, [memories, movies]);
-
   const sections = useMemo(
     () => buildMovieSections(movies, pendingSuggestions),
     [movies, pendingSuggestions]
   );
   const latestMemory = memories[0] ?? null;
   const upNextSummaryCount = sections.queue.length + sections.suggestions.length;
-
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
       previousMoviesRef.current = movies || null;
       return;
     }
-
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
         const prevMovie = previousMoviesRef.current?.find((entry) => entry.id === movie.id);
@@ -139,51 +130,41 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         }
       }
     });
-
     previousMoviesRef.current = movies;
   }, [movies, previousMoviesRef, setSuccessMovieId, setToast]);
-
   const resetRecommendationComposer = useCallback(() => {
     setIsRecommendationComposerOpen(false);
     setRecommendationReason('');
     setSuggestionError(null);
   }, []);
-
   const handleRecommendationReasonChange = useCallback((value: string) => {
     setSuggestionError(null);
     setRecommendationReason(value);
   }, []);
-
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
-
   useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
     }
   }, [resetRecommendationComposer, searchQuery]);
-
   const openRecommendationComposer = useCallback(() => {
     if (!searchQuery.trim()) {
       return;
     }
-
     setSuggestionError(null);
     setIsRecommendationComposerOpen(true);
   }, [searchQuery]);
-
   const handleAddAction = useCallback(async () => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
-
     const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
       return;
     }
-
     if (!currentUser) {
       setIsAdding(true);
       try {
@@ -209,7 +190,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       }
       return;
     }
-
     setIsAdding(true);
     try {
       const addedMovie = await addMovie(title, selectedAutocompleteResult ?? undefined);
@@ -246,19 +226,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setToast,
     submitRecommendation,
   ]);
-
   const handleSubmitRecommendation = useCallback(async () => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
-
     const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
       return;
     }
-
     setSuggestionError(null);
-
     try {
       await submitRecommendation({
         title,
@@ -295,7 +271,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setToast,
     submitRecommendation,
   ]);
-
   const handleAcceptSuggestion = useCallback(
     async (suggestion: MovieSuggestion) => {
       try {
@@ -310,7 +285,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     },
     [acceptSuggestionToWatchlist, setToast]
   );
-
   const handleRejectSuggestion = useCallback(
     async (suggestion: MovieSuggestion) => {
       try {
@@ -325,12 +299,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     },
     [rejectPendingSuggestion, setToast]
   );
-
   const confirmDelete = useCallback(async () => {
     if (!movieToDelete) {
       return;
     }
-
     try {
       await deleteMovie(movieToDelete.id);
       setToast({ message: `"${movieToDelete.title}" removed!`, type: 'info' });
@@ -340,14 +312,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       setMovieToDelete(null);
     }
   }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
-
   const handleToggleError = useCallback(
     (message: string) => {
       setToast({ message, type: 'error' });
     },
     [setToast]
   );
-
   const renderMovieGrid = useCallback(
     (moviesToRender: Movie[], emptyState: string) => (
       <CollectionGrid
@@ -410,14 +380,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       updateMemory,
     ]
   );
-
-
   const showInitialLoading =
     isLoading &&
     isSuggestionsLoading &&
     movies.length === 0 &&
     pendingSuggestions.length === 0;
-
   const moviesBody = useMemo(() => {
     if (showInitialLoading) {
       return (
@@ -439,11 +406,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         </CollectionGrid>
       );
     }
-
     const isQueueEmpty = sections.queue.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
     const isWatchedEmpty = sections.completed.length === 0;
     const isAllEmpty = isQueueEmpty && isWatchedEmpty;
-
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing['2xl'] }}>
         {isAllEmpty ? (
@@ -494,14 +459,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
                 )}
               </CollectionSection>
             )}
-
             {/* ── Up Next ── */}
             {sections.queue.length > 0 && (
               <CollectionSection heading="Up Next">
                 {renderMovieGrid(sections.queue, 'Your movie list is wide open')}
               </CollectionSection>
             )}
-
             {/* ── Watched ── */}
             {sections.completed.length > 0 && (
               <CollectionSection heading="Watched" tone="completed">
@@ -513,29 +476,18 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </div>
     );
   }, [
-    addMemory,
     currentUser,
-    deleteMemoryRecord,
     focusSearchInput,
     handleAcceptSuggestion,
     handleRejectSuggestion,
-    handleToggleError,
     isMobile,
     isSuggestionsLoading,
-    movieMemories,
-    renameMovie,
     renderMovieGrid,
     sections,
     showInitialLoading,
     skeletonKeys,
-    successMovieId,
-    toggleMemoryPin,
-    toggleWatched,
-    updateMemory,
-    setMovieToDelete,
     processingSuggestionId,
   ]);
-
   return (
     <div
       className="watchlist-container places-container"
@@ -553,7 +505,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           }
         />
       )}
-
       <MoviesTopControls
         ref={moviesTopControlsRef}
         currentUser={currentUser}
@@ -581,7 +532,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         canRecommend={true}
       />
       {moviesBody}
-
       {movieToDelete && (
         <ConfirmDialog
           isOpen={Boolean(movieToDelete)}
@@ -596,5 +546,4 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     </div>
   );
 };
-
 export default memo(MoviesView);
