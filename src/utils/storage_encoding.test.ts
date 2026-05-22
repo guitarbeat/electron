@@ -3,9 +3,6 @@ import test from 'node:test';
 import { encodeStorageData, decodeStorageData } from './shared.ts';
 
 test('encodeStorageData and decodeStorageData', async (t) => {
-  // Mock btoa/atob for Node environment
-  globalThis.btoa = (s: string) => Buffer.from(s, 'binary').toString('base64');
-  globalThis.atob = (s: string) => Buffer.from(s, 'base64').toString('binary');
 
   await t.test('encodes and decodes data correctly', () => {
     const original = JSON.stringify({ foo: 'bar', secret: 123 });
@@ -43,18 +40,20 @@ test('encodeStorageData and decodeStorageData', async (t) => {
     assert.equal(decodeStorageData(''), '');
   });
 
-  await t.test('returns original data if atob throws an error', (t) => {
-    // Mock atob specifically for this test to throw an error
-    const mockedAtob = t.mock.method(globalThis, 'atob', () => {
-      throw new Error('atob error');
-    });
 
-    try {
-      const validRegexButThrows = 'v1:validBase64Chars';
-      const decoded = decodeStorageData(validRegexButThrows);
-      assert.equal(validRegexButThrows, decoded);
-    } finally {
-      mockedAtob.mock.restore();
-    }
+
+  await t.test('gracefully handles natively invalid base64 (e.g. throws DOMException)', () => {
+    // atob natively throws if string length is not valid for base64 or has other invalid traits
+    // like 'a' which is length 1. It matches regex but throws InvalidCharacterError.
+    const invalidBase64 = 'v1:a';
+    const decoded = decodeStorageData(invalidBase64);
+    assert.equal(invalidBase64, decoded);
+  });
+
+  await t.test('encodeStorageData gracefully handles natively invalid string (e.g. throws DOMException)', () => {
+    // btoa natively throws if string contains characters outside the Latin1 range.
+    const invalidLatin1 = '\uD800\uDC00';
+    const encoded = encodeStorageData(invalidLatin1);
+    assert.equal(invalidLatin1, encoded);
   });
 });
