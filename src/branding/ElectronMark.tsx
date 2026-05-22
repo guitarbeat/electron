@@ -1,4 +1,5 @@
 import React, { useId } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   getElectronMarkSvgMarkup,
@@ -47,7 +48,7 @@ const ElectronMark: React.FC<ElectronMarkProps> = ({
         flex: '0 0 auto',
         ...style,
       }}
-      dangerouslySetInnerHTML={{ __html: markup }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markup) }}
     />
   );
 };
