@@ -196,14 +196,20 @@ export const concurrentMap = async <T, R>(
 
   const results = new Array<R>(items.length);
   let currentIndex = 0;
+  let hasError = false;
 
   const worker = async () => {
-    while (true) {
+    while (!hasError) {
       const index = currentIndex++;
       if (index >= items.length) {
         break;
       }
-      results[index] = await fn(items[index]);
+      try {
+        results[index] = await fn(items[index]);
+      } catch (error) {
+        hasError = true;
+        throw error;
+      }
     }
   };
 
