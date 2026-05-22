@@ -133,7 +133,7 @@ export const readApiErrorMessage = async (
  */
 export const sanitizeInput = (input: string): string => {
   if (!input) return "";
-  // eslint-disable-next-line no-control-regex
+  /* eslint-disable no-control-regex */
   return input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
 };
 
@@ -581,10 +581,11 @@ export const createValidator = (rules: ValidationRules) => {
         return;
       }
 
-      // eslint-disable-next-line no-control-regex
+      /* eslint-disable no-control-regex */
       const cleanValue = value
         .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "")
         .trim();
+      /* eslint-enable no-control-regex */
 
       if (rule.maxLength && cleanValue.length > rule.maxLength) {
         const error =
