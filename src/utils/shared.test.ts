@@ -5,6 +5,7 @@ import {
   concurrentMap,
   createValidator,
   executeAction,
+  getErrorMessage,
   isValidUrl,
   parseJsonContent,
   sanitizeInput,
@@ -450,5 +451,35 @@ test('layouts', async (t) => {
       flexDirection: 'column',
       gap: '8px',
     });
+  });
+});
+
+test('getErrorMessage', async (t) => {
+  await t.test('returns error message for Error instance', () => {
+    const error = new Error('Database connection failed');
+    assert.strictEqual(getErrorMessage(error), 'Database connection failed');
+  });
+
+  await t.test('sanitizes the error message', () => {
+    const error = new Error('Error <script>alert(1)</script>');
+    assert.strictEqual(getErrorMessage(error), 'Error <script>alert(1)</script>');
+  });
+
+  await t.test('returns default fallback when sanitized message is empty', () => {
+    const error = new Error('   \n\t');
+    assert.strictEqual(getErrorMessage(error), 'Something went wrong.');
+  });
+
+  await t.test('returns default fallback for non-Error object', () => {
+    assert.strictEqual(getErrorMessage({ message: 'failed' }), 'Something went wrong.');
+  });
+
+  await t.test('returns custom fallback for non-Error object', () => {
+    assert.strictEqual(getErrorMessage(null, 'Custom error occurred'), 'Custom error occurred');
+  });
+
+  await t.test('returns custom fallback when sanitized message is empty', () => {
+    const error = new Error('');
+    assert.strictEqual(getErrorMessage(error, 'Custom empty error'), 'Custom empty error');
   });
 });
