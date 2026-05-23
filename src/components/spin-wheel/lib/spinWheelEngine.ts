@@ -1,10 +1,17 @@
-import type { Movie } from '@/shared/types';
+import type { Movie } from "@/shared/types";
 
-const SEGMENT_COLORS = ['#ff7ea8', '#6ad6ff', '#ffd166', '#7ee08c', '#c7a0ff', '#ff9f68'];
+const SEGMENT_COLORS = [
+  "#ff7ea8",
+  "#6ad6ff",
+  "#ffd166",
+  "#7ee08c",
+  "#c7a0ff",
+  "#ff9f68",
+];
 export const SPIN_HISTORY_MAX = 10;
 const SPIN_TURNS = 6;
 
-export type SpinMode = 'queue' | 'all';
+export type SpinMode = "queue" | "all";
 
 export interface SpinOutcome {
   targetIndex: number;
@@ -13,7 +20,7 @@ export interface SpinOutcome {
 }
 
 export const getSpinCandidates = (movies: Movie[], mode: SpinMode): Movie[] => {
-  if (mode === 'all') {
+  if (mode === "all") {
     return movies;
   }
 
@@ -24,7 +31,7 @@ export const getSpinCandidates = (movies: Movie[], mode: SpinMode): Movie[] => {
 export const getSpinPool = (
   movies: Movie[],
   mode: SpinMode,
-  selectedMovieIds: ReadonlySet<string> = new Set<string>()
+  selectedMovieIds: ReadonlySet<string> = new Set<string>(),
 ): Movie[] => {
   const candidates = getSpinCandidates(movies, mode);
   if (selectedMovieIds.size === 0) {
@@ -37,10 +44,10 @@ export const getSpinPool = (
 
 export const buildSpinWheelGradient = (
   segmentCount: number,
-  segmentColors: readonly string[] = SEGMENT_COLORS
+  segmentColors: readonly string[] = SEGMENT_COLORS,
 ): string => {
   if (segmentCount <= 0) {
-    return 'conic-gradient(#444, #222)';
+    return "conic-gradient(#444, #222)";
   }
 
   const step = 360 / segmentCount;
@@ -50,19 +57,37 @@ export const buildSpinWheelGradient = (
     return `${segmentColors[index % segmentColors.length]} ${start}deg ${end}deg`;
   });
 
-  return `conic-gradient(${parts.join(', ')})`;
+  return `conic-gradient(${parts.join(", ")})`;
 };
 
 export const appendSpinHistory = (
   history: string[],
   title: string,
-  maxEntries: number = SPIN_HISTORY_MAX
+  maxEntries: number = SPIN_HISTORY_MAX,
 ): string[] => [title, ...history].slice(0, maxEntries);
+
+const secureRandom = () => {
+  if (
+    typeof window !== "undefined" &&
+    window.crypto &&
+    window.crypto.getRandomValues
+  ) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / 4294967296;
+  }
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    return array[0] / 4294967296;
+  }
+  return Math.random();
+};
 
 export const computeSpinOutcome = (
   candidates: Movie[],
   currentRotation: number,
-  randomSource: () => number = Math.random
+  randomSource: () => number = secureRandom,
 ): SpinOutcome | null => {
   if (candidates.length === 0) {
     return null;
@@ -70,7 +95,7 @@ export const computeSpinOutcome = (
 
   const targetIndex = Math.min(
     candidates.length - 1,
-    Math.max(0, Math.floor(randomSource() * candidates.length))
+    Math.max(0, Math.floor(randomSource() * candidates.length)),
   );
   const step = 360 / candidates.length;
   const targetCenterDeg = targetIndex * step + step / 2;
