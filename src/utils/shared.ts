@@ -1,5 +1,5 @@
-import type { User } from '../shared/types.ts';
-import { spacing } from '../theme/tokens.ts';
+import type { User } from "../shared/types.ts";
+import { spacing } from "../theme/tokens.ts";
 
 /**
  * Consolidated Utilities
@@ -28,7 +28,7 @@ export const parseJsonContent = (content: string, context: string): unknown => {
 };
 
 export const deepClone = <T>(value: T): T => {
-  if (typeof structuredClone === 'function') {
+  if (typeof structuredClone === "function") {
     return structuredClone(value);
   }
   return JSON.parse(JSON.stringify(value)) as T;
@@ -37,12 +37,14 @@ export const deepClone = <T>(value: T): T => {
 export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
   if (left === right) return true;
   if (left === null || right === null) return left === right;
-  if (typeof left !== 'object' || typeof right !== 'object') return false;
+  if (typeof left !== "object" || typeof right !== "object") return false;
   if (Array.isArray(left) !== Array.isArray(right)) return false;
 
   if (Array.isArray(left) && Array.isArray(right)) {
     if (left.length !== right.length) return false;
-    return left.every((item, index) => areDeeplyEqual(item, (right as unknown[])[index]));
+    return left.every((item, index) =>
+      areDeeplyEqual(item, (right as unknown[])[index]),
+    );
   }
 
   const leftObj = left as Record<string, unknown>;
@@ -50,10 +52,17 @@ export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
   const leftKeys = Object.keys(leftObj);
   const rightKeys = Object.keys(rightObj);
   if (leftKeys.length !== rightKeys.length) return false;
-  return leftKeys.every((key) => Object.prototype.hasOwnProperty.call(rightObj, key) && areDeeplyEqual(leftObj[key], rightObj[key]));
+  return leftKeys.every(
+    (key) =>
+      Object.prototype.hasOwnProperty.call(rightObj, key) &&
+      areDeeplyEqual(leftObj[key], rightObj[key]),
+  );
 };
 
-export const executeAction = (action?: () => void, onComplete?: () => void): void => {
+export const executeAction = (
+  action?: () => void,
+  onComplete?: () => void,
+): void => {
   action?.();
   onComplete?.();
 };
@@ -124,7 +133,7 @@ export const readApiErrorMessage = async (
  */
 export const sanitizeInput = (input: string): string => {
   if (!input) return "";
-  // eslint-disable-next-line no-control-regex
+  /* eslint-disable no-control-regex */
   return input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
 };
 
@@ -234,9 +243,13 @@ export const buildGoogleMapsUrl = (
 // Utility Functions
 // ============================================================================
 
-export const normalizeMovieTitle = (title: string): string => title.trim().toLowerCase();
+export const normalizeMovieTitle = (title: string): string =>
+  title.trim().toLowerCase();
 
-export const throttle = <T extends (...args: unknown[]) => unknown>(func: T, limit: number) => {
+export const throttle = <T extends (...args: unknown[]) => unknown>(
+  func: T,
+  limit: number,
+) => {
   let inThrottle = false;
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
@@ -267,7 +280,7 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
 
-  if (callNow) func.apply(this, args);
+    if (callNow) func.apply(this, args);
   };
 };
 
@@ -277,22 +290,22 @@ export const copyTextToClipboard = async (value: string): Promise<void> => {
     return;
   }
 
-  const fallbackField = document.createElement('textarea');
+  const fallbackField = document.createElement("textarea");
   fallbackField.value = value;
-  fallbackField.setAttribute('readonly', 'true');
-  fallbackField.style.position = 'fixed';
-  fallbackField.style.opacity = '0';
-  fallbackField.style.pointerEvents = 'none';
+  fallbackField.setAttribute("readonly", "true");
+  fallbackField.style.position = "fixed";
+  fallbackField.style.opacity = "0";
+  fallbackField.style.pointerEvents = "none";
 
   document.body.appendChild(fallbackField);
   fallbackField.focus();
   fallbackField.select();
 
-  const didCopy = document.execCommand('copy');
+  const didCopy = document.execCommand("copy");
   document.body.removeChild(fallbackField);
 
   if (!didCopy) {
-    throw new Error('Clipboard unavailable');
+    throw new Error("Clipboard unavailable");
   }
 };
 
@@ -305,7 +318,7 @@ export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
 export const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(getSecureRandom() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
@@ -325,26 +338,31 @@ export const formatMessageTimestamp = (date: string): string => {
     const now = new Date();
 
     if (Number.isNaN(timestamp.getTime()) || Number.isNaN(now.getTime())) {
-      return '';
+      return "";
     }
 
-    const diffSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+    const diffSeconds = Math.floor(
+      (now.getTime() - timestamp.getTime()) / 1000,
+    );
 
     if (diffSeconds < 0) {
-      return '';
+      return "";
     }
 
     if (diffSeconds < 86400) {
       const hours = timestamp.getHours();
       const minutes = timestamp.getMinutes();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const ampm = hours >= 12 ? "PM" : "AM";
       const displayHours = hours % 12 || 12;
-      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+      return `${displayHours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
     }
 
-    return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return timestamp.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   } catch {
-    return '';
+    return "";
   }
 };
 
@@ -355,15 +373,15 @@ export const formatMessageTimestamp = (date: string): string => {
 export const formatMemoryTimestamp = (createdAt: string): string => {
   const parsedDate = new Date(createdAt);
   if (Number.isNaN(parsedDate.getTime())) {
-    return 'Unknown date';
+    return "Unknown date";
   }
 
   return parsedDate.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 };
 
@@ -374,43 +392,54 @@ export const formatMemoryTimestamp = (createdAt: string): string => {
 /**
  * Utility functions for common random patterns
  */
+
+/**
+ * Cryptographically secure pseudo-random number generator
+ * Returns a floating-point, pseudo-random number between 0 (inclusive) and 1 (exclusive).
+ */
+export const getSecureRandom = (): number => {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return array[0] / (0xffffffff + 1);
+};
+
 export const randomUtils = {
   /**
    * Get random item from array using seeded random for animations
    */
   randomItem: <T>(array: T[]): T => {
-    return array[Math.floor(Math.random() * array.length)];
+    return array[Math.floor(getSecureRandom() * array.length)];
   },
 
   /**
    * Get random number in range
    */
   randomRange: (min: number, max: number): number => {
-    return min + Math.random() * (max - min);
+    return min + getSecureRandom() * (max - min);
   },
 
   /**
    * Get random integer in range
    */
   randomInt: (min: number, max: number): number => {
-    return Math.floor(min + Math.random() * (max - min));
+    return Math.floor(min + getSecureRandom() * (max - min));
   },
 
   /**
    * Get random boolean
    */
-  randomBool: (): boolean => Math.random() > 0.5,
+  randomBool: (): boolean => getSecureRandom() > 0.5,
 
   /**
    * Generate confetti particle properties
    */
   generateConfettiParticle: (id: number, colors: string[]) => ({
     id,
-    x: Math.random() * 100,
+    x: getSecureRandom() * 100,
     color: randomUtils.randomItem(colors),
-    delay: Math.random() * 0.5,
-    rotation: Math.random() * 360,
-    scale: 0.5 + Math.random() * 0.5,
+    delay: getSecureRandom() * 0.5,
+    rotation: getSecureRandom() * 360,
+    scale: 0.5 + getSecureRandom() * 0.5,
     isRounded: randomUtils.randomBool(),
   }),
 
@@ -422,17 +451,22 @@ export const randomUtils = {
     x,
     y,
     opacity: 1,
-    scale: 0.5 + Math.random(),
+    scale: 0.5 + getSecureRandom(),
   }),
 
   /**
    * Generate food spawn properties
    */
-  generateFoodSpawn: (boardWidth: number, foodSize: number, fruitList: string[], maxIndex: number) => ({
+  generateFoodSpawn: (
+    boardWidth: number,
+    foodSize: number,
+    fruitList: string[],
+    maxIndex: number,
+  ) => ({
     id: crypto.randomUUID(),
-    x: Math.random() * (boardWidth - foodSize),
+    x: getSecureRandom() * (boardWidth - foodSize),
     y: -foodSize,
-    speed: 2 + Math.random() * 2,
+    speed: 2 + getSecureRandom() * 2,
     fruit: randomUtils.randomItem(fruitList.slice(0, maxIndex)),
   }),
 };
@@ -443,44 +477,55 @@ export const randomUtils = {
 
 export const layouts = {
   centeredContainer: {
-    maxWidth: '1200px',
-    margin: '0 auto',
+    maxWidth: "1200px",
+    margin: "0 auto",
     padding: `0 ${spacing.md}`,
   },
   grid: (columns: number = 1, gap: string = spacing.md) => ({
-    display: 'grid',
+    display: "grid",
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
     gap,
   }),
   stack: (gap: string = spacing.md) => ({
-    display: 'flex',
-    flexDirection: 'column' as const,
+    display: "flex",
+    flexDirection: "column" as const,
     gap,
   }),
   inlineStack: (gap: string = spacing.md) => ({
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     gap,
   }),
-  flexRow: (justifyContent: string = 'flex-start', alignItems: string = 'center', gap: string = spacing.md) => ({
-    display: 'flex',
-    flexDirection: 'row' as const,
+  flexRow: (
+    justifyContent: string = "flex-start",
+    alignItems: string = "center",
+    gap: string = spacing.md,
+  ) => ({
+    display: "flex",
+    flexDirection: "row" as const,
     justifyContent,
     alignItems,
     gap,
   }),
-  flexColumn: (justifyContent: string = 'flex-start', alignItems: string = 'stretch', gap: string = spacing.md) => ({
-    display: 'flex',
-    flexDirection: 'column' as const,
+  flexColumn: (
+    justifyContent: string = "flex-start",
+    alignItems: string = "stretch",
+    gap: string = spacing.md,
+  ) => ({
+    display: "flex",
+    flexDirection: "column" as const,
     justifyContent,
     alignItems,
     gap,
   }),
-  spaceBetween: (direction: 'row' | 'column' = 'row', gap: string = spacing.md) => ({
-    display: 'flex',
+  spaceBetween: (
+    direction: "row" | "column" = "row",
+    gap: string = spacing.md,
+  ) => ({
+    display: "flex",
     flexDirection: direction,
-    justifyContent: 'space-between',
-    alignItems: direction === 'row' ? 'center' : 'stretch',
+    justifyContent: "space-between",
+    alignItems: direction === "row" ? "center" : "stretch",
     gap,
   }),
 };
@@ -527,7 +572,8 @@ export const createValidator = (rules: ValidationRules) => {
 
     Object.entries(rules).forEach(([field, rule]) => {
       const rawValue = data[field];
-      const value = typeof rawValue === 'string' ? rawValue : String(rawValue || '');
+      const value =
+        typeof rawValue === "string" ? rawValue : String(rawValue || "");
       const trimmedValue = value.trim();
 
       if (rule.required && !trimmedValue) {
@@ -541,17 +587,24 @@ export const createValidator = (rules: ValidationRules) => {
         return;
       }
 
-      // eslint-disable-next-line no-control-regex
-      const cleanValue = value.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
+      /* eslint-disable no-control-regex */
+      const cleanValue = value
+        .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "")
+        .trim();
+      /* eslint-enable no-control-regex */
 
       if (rule.maxLength && cleanValue.length > rule.maxLength) {
-        const error = rule.message || `${field} exceeds maximum length of ${rule.maxLength} characters`;
+        const error =
+          rule.message ||
+          `${field} exceeds maximum length of ${rule.maxLength} characters`;
         errors[field] = error;
         fieldErrors.push(error);
       }
 
       if (rule.minLength && cleanValue.length < rule.minLength) {
-        const error = rule.message || `${field} must be at least ${rule.minLength} characters`;
+        const error =
+          rule.message ||
+          `${field} must be at least ${rule.minLength} characters`;
         errors[field] = error;
         fieldErrors.push(error);
       }
@@ -601,23 +654,23 @@ export const CommonRules = {
   email: {
     required: true,
     pattern: ValidationPatterns.email,
-    message: 'Please enter a valid email address',
+    message: "Please enter a valid email address",
   },
   url: {
     pattern: ValidationPatterns.url,
-    message: 'Please enter a valid URL starting with http:// or https://',
+    message: "Please enter a valid URL starting with http:// or https://",
   },
   username: {
     required: true,
     minLength: 3,
     maxLength: 20,
     pattern: ValidationPatterns.alphanumeric,
-    message: 'Username must be 3-20 alphanumeric characters',
+    message: "Username must be 3-20 alphanumeric characters",
   },
   password: {
     required: true,
     minLength: 8,
-    message: 'Password must be at least 8 characters long',
+    message: "Password must be at least 8 characters long",
   },
   movieTitle: {
     required: true,
@@ -637,12 +690,12 @@ export const CommonRules = {
   placeName: {
     required: true,
     maxLength: 100,
-    message: 'Place name must be 100 characters or less',
+    message: "Place name must be 100 characters or less",
   },
   notes: {
     required: false,
     maxLength: 500,
-    message: 'Notes must be 500 characters or less',
+    message: "Notes must be 500 characters or less",
   },
 } as const;
 
@@ -662,11 +715,11 @@ export const validateMemory = createValidator({
     custom: (value) => {
       const mentions = value.match(/(@\w+)/g);
       if (mentions) {
-        const invalidMentions = mentions.filter(mention =>
-          !['@aaron', '@electra'].includes(mention.toLowerCase())
+        const invalidMentions = mentions.filter(
+          (mention) => !["@aaron", "@electra"].includes(mention.toLowerCase()),
         );
         if (invalidMentions.length > 0) {
-          return `Invalid mentions: ${invalidMentions.join(', ')}. Only @aaron and @electra are allowed.`;
+          return `Invalid mentions: ${invalidMentions.join(", ")}. Only @aaron and @electra are allowed.`;
         }
       }
       return null;
