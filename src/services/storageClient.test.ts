@@ -65,6 +65,26 @@ test('storageClient read and write operations', async (t) => {
     assert.deepEqual(read, legacyData, 'Should fallback and parse legacy plaintext data properly');
   });
 
+
+  await t.test('handles invalid JSON gracefully', (t) => {
+    const warnMock = t.mock.method(console, 'warn', () => {});
+
+    storage.setItem('invalidKey', 'not-valid-json');
+
+    const read = readStoredJson({
+      storageKey: 'invalidKey',
+      validate: (v: unknown): v is { test: string } => !!v,
+      clone: (v) => ({ ...v }),
+      label: 'invalid data'
+    });
+
+    assert.equal(read, null, 'Should return null on parse error');
+    assert.equal(warnMock.mock.calls.length, 1, 'Should log a warning');
+    assert.ok(warnMock.mock.calls[0].arguments[0].includes('Failed to read invalid data.'), 'Warning should contain label');
+
+    warnMock.mock.restore();
+  });
+
   await t.test('removes data', () => {
     removeStoredJson('testKey', 'test data');
     const read = storage.getItem('testKey');
