@@ -37,4 +37,19 @@ test('encodeStorageData and decodeStorageData', async (t) => {
     const decoded = decodeStorageData(malformed);
     assert.equal(malformed, decoded);
   });
+
+  await t.test('returns unencoded data when btoa throws an error', (t) => {
+    const original = 'test data';
+    const mockedBtoa = t.mock.method(globalThis, 'btoa', () => {
+      throw new Error('mock exception');
+    });
+
+    try {
+      const encoded = encodeStorageData(original);
+      assert.equal(encoded, original);
+    } finally {
+      mockedBtoa.mock.restore();
+    }
+  });
+
 });
