@@ -620,11 +620,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     handleRejectSuggestion,
     isMobile,
     isSuggestionsLoading,
-    processingSuggestionId,
     renderMovieGrid,
     sections,
     showInitialLoading,
     skeletonKeys,
+    processingSuggestionId,
   ]);
 
   return (

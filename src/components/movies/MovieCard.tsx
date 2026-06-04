@@ -8,7 +8,7 @@ import {
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-} from '@/ui/MediaCard';
+  } from '@/ui/MediaCard';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
