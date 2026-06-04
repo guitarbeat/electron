@@ -36,10 +36,7 @@ interface MoviesTopControlsProps {
   latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-  selectedAutocompleteResult: MovieAutocompleteResult | null;
-  setSelectedAutocompleteResult: (
-    value: MovieAutocompleteResult | null,
-  ) => void;
+  setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -74,12 +71,26 @@ function AutocompletePosterImage({ src }: { src: string }) {
 const MoviesTopControls = React.forwardRef<
   MoviesTopControlsHandle,
   MoviesTopControlsProps
->(
-  (
-    {
-      currentUser,
-      searchQuery,
-      setSearchQuery,
+>(({
+  currentUser,
+  searchQuery,
+  setSearchQuery,
+  setSelectedAutocompleteResult,
+  guestName,
+  setGuestName,
+  onSubmit,
+  onRecommend,
+  onSubmitRecommendation,
+  onCancelRecommendation,
+  recommendationReason,
+  setRecommendationReason,
+  showRecommendationComposer,
+  isAdding,
+  isSubmittingRecommendation,
+  suggestionError,
+  canRecommend,
+}, forwardedRef) => {
+  const slot = useAppHeaderSlot();
 
       setSelectedAutocompleteResult,
       guestName,
