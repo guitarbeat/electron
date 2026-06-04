@@ -103,6 +103,7 @@ const PlacesTopControls = React.forwardRef<PlacesTopControlsHandle, PlacesTopCon
                   inputRef.current?.focus();
                 }}
                 aria-label="Clear search"
+                title="Clear search"
                 style={{
                   position: 'absolute',
                   right: autocompleteSuggestions.length > 0 ? '12px' : '12px',
