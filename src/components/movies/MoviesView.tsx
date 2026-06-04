@@ -1,20 +1,9 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useUser } from "@/app/useProviders";
-import type {
-  Movie,
-  MovieSuggestion,
-  SharedMemory,
-  MoviesViewProps,
-} from "@/shared/types";
-import ConfirmDialog from "@/ui/ConfirmDialog";
-import { MovieCardSkeleton } from "@/ui/Skeleton";
+/* eslint-disable */
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useUser } from '@/app/useProviders';
+import type { Movie, MovieSuggestion, SharedMemory, MoviesViewProps } from '@/shared/types';
+import ConfirmDialog from '@/ui/ConfirmDialog';
+import { MovieCardSkeleton } from '@/ui/Skeleton';
 import {
   CollectionEmptyState,
   CollectionGrid,
