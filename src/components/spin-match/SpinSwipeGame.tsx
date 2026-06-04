@@ -22,6 +22,7 @@ interface SpinSwipeGameProps {
 }
 
 const SWIPE_THRESHOLD = 75;
+const SWIPE_VELOCITY_THRESHOLD = 0.4;
 const SPIN_DURATION_MS = 4200;
 
 function MovieCard({
@@ -465,6 +466,7 @@ function ResultScreen({
   );
 }
 
+
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
@@ -480,6 +482,9 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef<number | null>(null);
+  const dragLastX = useRef<number | null>(null);
+  const dragLastTime = useRef<number | null>(null);
+  const dragVelocity = useRef<number>(0);
   const spinTimeoutRef = useRef<number | null>(null);
 
   const candidates = useMemo(() => {
@@ -515,12 +520,22 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const handlePointerDown = (e: React.PointerEvent) => {
     if (isSpinning) return;
     dragStartX.current = e.clientX;
+    dragLastX.current = e.clientX;
+    dragLastTime.current = e.timeStamp;
+    dragVelocity.current = 0;
     setIsDragging(true);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging || dragStartX.current === null) return;
+    const now = e.timeStamp;
+    const dt = dragLastTime.current !== null ? now - dragLastTime.current : 16;
+    if (dt > 0 && dragLastX.current !== null) {
+      dragVelocity.current = (e.clientX - dragLastX.current) / dt;
+    }
+    dragLastX.current = e.clientX;
+    dragLastTime.current = now;
     setDragX(e.clientX - dragStartX.current);
   };
 
@@ -528,12 +543,14 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     if (!isDragging) return;
     setIsDragging(false);
     dragStartX.current = null;
+    dragLastX.current = null;
+    dragLastTime.current = null;
     const finalX = dragX;
+    const velocity = dragVelocity.current;
+    dragVelocity.current = 0;
     setDragX(0);
-    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD)
-      advance(true);
-    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD)
-      advance(false);
+    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD) advance(true);
+    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD) advance(false);
   };
 
   const handleSpin = useCallback(() => {
@@ -570,8 +587,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === "result" && winner) {
     return (
-      <div className="spin-game-ad-wrapper">
-        <SpinGameAdHeader />
+      <div className="spin-game-wrapper">
         <ResultScreen
           winner={winner}
           onReset={handleReset}
@@ -590,8 +606,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === "spin") {
     return (
-      <div className="spin-game-ad-wrapper">
-        <SpinGameAdHeader />
+      <div className="spin-game-wrapper">
         <SpinWheel
           kept={kept}
           rotation={rotation}
@@ -604,6 +619,23 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   return (
     <div className="spin-game-wrapper">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.85rem',
+        padding: '0.75rem 1rem 1rem',
+        userSelect: 'none',
+        position: 'relative'
+      }}
+    >
+      <ProgressBar
+        current={currentIndex}
+        total={candidates.length}
+        kept={kept.length}
+      />
+
       <div
         style={{
           display: "flex",
