@@ -96,10 +96,10 @@ test('getAvailableMatchmakerVibes', async (t) => {
 });
 
 test('createMatchmakerPool', async (t) => {
-  await t.test('creates a deterministic pool from the filtered movies', () => {
-    const pool = createMatchmakerPool(movies, 'Comedy', () => 0);
-
-    assert.deepEqual(pool, ['m-3', 'm-1']);
+  await t.test('creates a deterministic pool from the filtered movies', (t) => {
+    t.mock.method(Math, 'random', () => 0.5);
+    const pool = createMatchmakerPool(movies, 'Comedy');
+    assert.deepEqual(pool, ['m-1', 'm-3']);
   });
 });
 
