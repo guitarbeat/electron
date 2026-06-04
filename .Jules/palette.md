@@ -1,3 +1,3 @@
-## 2026-05-12 - [Add ARIA labels to icon-only Delete buttons in Quiz Editor]
-**Learning:** Interactive UI elements, like the "✕" delete buttons in the quiz option editors, can be entirely stripped of accessible context when they rely solely on symbols (e.g., Unicode crosses) instead of descriptive text or SVGs with explicit alt strings. This is a common pattern in map/option builder components that value density.
-**Action:** Always scan for generic textual icons (like ✕, +, -) used as content inside action buttons, and explicitly wrap them with `aria-label` or visually hidden text to guarantee screen readers interpret their action correctly.
+## 2024-05-12 - Added ARIA Labels to PolaroidMemory Buttons
+**Learning:** Found that custom Polaroid memory components used plain emojis (📍/📌 and 🗑️) inside buttons. They had `title` attributes for hover text but lacked `aria-label` attributes, which meant screen readers would read out the raw unicode characters instead of the action ("Pin", "Unpin", "Delete memory"). When dealing with highly customized UI components (like Polaroid styling) that replace standard icons with emojis for a specific aesthetic, accessibility metadata is easily forgotten but crucial.
+**Action:** Always verify that buttons containing only icons or emojis have explicitly defined `aria-label`s, especially in custom UI component sets.
