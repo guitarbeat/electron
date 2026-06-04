@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 
 import { USER_PHOTOS } from './userPhotos.ts';
