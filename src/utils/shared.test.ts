@@ -10,8 +10,7 @@ import {
   isValidUrl,
   normalizeMovieTitle,
   parseJsonContent,
-  encodeStorageData,
-  decodeStorageData,
+  readApiErrorMessage,
   sanitizeInput,
 } from "./shared.ts";
 
@@ -502,56 +501,38 @@ test("layouts", async (t) => {
   });
 });
 
-test('encodeStorageData', async (t) => {
-  await t.test('encodes a basic string to v1:base64 format', () => {
-    const input = 'hello world';
-    const result = encodeStorageData(input);
-    assert.strictEqual(result, 'v1:aGVsbG8gd29ybGQ=');
+test('readApiErrorMessage', async (t) => {
+  await t.test('returns message from JSON payload', async () => {
+    const response = new Response(JSON.stringify({ error: 'Custom error message' }));
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Custom error message');
   });
 
-  await t.test('encodes an empty string', () => {
-    const input = '';
-    const result = encodeStorageData(input);
-    assert.strictEqual(result, 'v1:');
+  await t.test('returns fallback if JSON parsing fails', async () => {
+    const response = new Response('Invalid JSON');
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
   });
 
-  await t.test('gracefully falls back to original string when btoa fails', () => {
-    const input = 'hello 😊';
-    const result = encodeStorageData(input);
-    assert.strictEqual(result, input);
-  });
-});
-
-test('decodeStorageData', async (t) => {
-  await t.test('decodes a valid v1: encoded string', () => {
-    const encoded = 'v1:aGVsbG8gd29ybGQ=';
-    const result = decodeStorageData(encoded);
-    assert.strictEqual(result, 'hello world');
+  await t.test('returns fallback if error field is not a string', async () => {
+    const response = new Response(JSON.stringify({ error: 123 }));
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
   });
 
-  await t.test('gracefully handles legacy plaintext strings', () => {
-    const input = 'legacy string';
-    const result = decodeStorageData(input);
-    assert.strictEqual(result, 'legacy string');
+  await t.test('returns fallback if error message is empty after sanitization', async () => {
+    const response = new Response(JSON.stringify({ error: '   ' }));
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
   });
 
-  await t.test('gracefully handles empty strings', () => {
-    const input = '';
-    const result = decodeStorageData(input);
-    assert.strictEqual(result, '');
-  });
-
-  await t.test('gracefully handles invalid Base64 formats after v1: prefix', () => {
-    const encoded = 'v1:invalid!base64';
-    const result = decodeStorageData(encoded);
-    assert.strictEqual(result, encoded);
-  });
-
-  await t.test('gracefully handles atob decoding failures', () => {
-    try {
-      decodeStorageData('v1:a');
-    } catch {
-      // In case it throws
-    }
+  await t.test('returns fallback if response.clone().json() throws', async () => {
+    const response = new Response('{}');
+    // Mock clone to throw
+    response.clone = () => {
+      throw new Error('Clone failed');
+    };
+    const result = await readApiErrorMessage(response, 'Fallback message');
+    assert.equal(result, 'Fallback message');
   });
 });
