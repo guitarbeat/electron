@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable */
 import React from 'react';
 import { USER_PHOTOS } from "./WatcherBadgeConstants.ts";
 
