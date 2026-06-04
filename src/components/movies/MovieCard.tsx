@@ -5,12 +5,9 @@ import { executeAction, getErrorMessage, consoleError } from "@/utils";
 import { useCardTilt } from "@/hooks/useCardTilt";
 import Card from "@/ui/Card";
 import {
-
-
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-
 } from '@/ui/MediaCard';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
