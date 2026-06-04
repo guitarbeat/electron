@@ -1,14 +1,14 @@
-import type { FC } from 'react';
-import { useState, useRef, useEffect } from 'react';
-import { useUser } from '@/app/useProviders';
-import { USER_PHOTOS, type MainTab, type User } from '@/shared/types';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { usePins } from '@/hooks/usePins';
-import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
-import ThemeToggle from '@/ui/ThemeToggle';
-import PinDialog from '@/common/PinDialog';
-import { useAppHeaderSlot } from '@/app/AppHeaderSlot';
-import './AppHeader.css';
+import type { FC } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useUser } from "@/app/useProviders";
+import { USER_PHOTOS, type MainTab, type User } from "@/shared/types";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePins } from "@/hooks/usePins";
+import { USER_OPTIONS, consoleError, getErrorMessage } from "@/utils";
+import ThemeToggle from "@/ui/ThemeToggle";
+import PinDialog from "@/common/PinDialog";
+import { useAppHeaderSlot } from "@/app/AppHeaderSlotContext";
+import "./AppHeader.css";
 
 interface AppHeaderProps {
   activeTab: MainTab;
@@ -37,7 +37,8 @@ const AppHeader: FC<AppHeaderProps> = ({
   onOpenSpin,
 }) => {
   const { currentUser, setCurrentUser } = useUser();
-  const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } = usePins();
+  const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } =
+    usePins();
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPinSettings, setIsSavingPinSettings] = useState(false);
@@ -59,8 +60,9 @@ const AppHeader: FC<AppHeaderProps> = ({
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isDisabled = isLoading || isVerifying;
   const selectedNamedUser = currentUser;
-  const pinSettingsMode = selectedNamedUser && userHasPin(selectedNamedUser) ? 'change' : 'set';
-  const brandLabel = 'Electron';
+  const pinSettingsMode =
+    selectedNamedUser && userHasPin(selectedNamedUser) ? "change" : "set";
+  const brandLabel = "Electron";
   const pwaChip = (() => {
     if (!pwaStatus) {
       return null;
@@ -68,9 +70,9 @@ const AppHeader: FC<AppHeaderProps> = ({
 
     if (!pwaStatus.isOnline) {
       return {
-        tone: 'offline' as const,
-        label: 'Offline',
-        detail: 'Local cache only',
+        tone: "offline" as const,
+        label: "Offline",
+        detail: "Local cache only",
         action: undefined,
         actionLabel: undefined,
       };
@@ -78,66 +80,68 @@ const AppHeader: FC<AppHeaderProps> = ({
 
     if (pwaStatus.hasUpdateReady) {
       return {
-        tone: 'update' as const,
-        label: 'Update ready',
-        detail: 'Refresh app shell',
+        tone: "update" as const,
+        label: "Update ready",
+        detail: "Refresh app shell",
         action: onApplyUpdate,
-        actionLabel: 'Refresh',
+        actionLabel: "Refresh",
       };
     }
 
     if (pwaStatus.blockedSyncCount > 0) {
       return {
-        tone: 'warning' as const,
-        label: 'Sync blocked',
-        detail: `${pwaStatus.blockedSyncCount} section${pwaStatus.blockedSyncCount === 1 ? '' : 's'} need attention`,
+        tone: "warning" as const,
+        label: "Sync blocked",
+        detail: `${pwaStatus.blockedSyncCount} section${pwaStatus.blockedSyncCount === 1 ? "" : "s"} need attention`,
         action: onRetrySync,
-        actionLabel: 'Retry',
+        actionLabel: "Retry",
       };
     }
 
     if (pwaStatus.pendingSyncCount > 0) {
       return {
-        tone: 'syncing' as const,
-        label: 'Syncing',
-        detail: `${pwaStatus.pendingSyncCount} pending change${pwaStatus.pendingSyncCount === 1 ? '' : 's'}`,
+        tone: "syncing" as const,
+        label: "Syncing",
+        detail: `${pwaStatus.pendingSyncCount} pending change${pwaStatus.pendingSyncCount === 1 ? "" : "s"}`,
         action: onRetrySync,
-        actionLabel: 'Sync now',
+        actionLabel: "Sync now",
       };
     }
 
     if (pwaStatus.canInstall && !pwaStatus.isStandalone) {
       return {
-        tone: 'install' as const,
-        label: 'Install app',
-        detail: 'Open like native',
+        tone: "install" as const,
+        label: "Install app",
+        detail: "Open like native",
         action: onInstallApp,
-        actionLabel: 'Install',
+        actionLabel: "Install",
       };
     }
 
     if (pwaStatus.isStandalone) {
       return {
-        tone: 'ready' as const,
-        label: 'Installed',
-        detail: 'Standalone mode',
+        tone: "ready" as const,
+        label: "Installed",
+        detail: "Standalone mode",
         action: undefined,
         actionLabel: undefined,
       };
     }
 
     return {
-      tone: 'ready' as const,
-      label: 'Live sync',
-      detail: 'App connected',
+      tone: "ready" as const,
+      label: "Live sync",
+      detail: "App connected",
       action: undefined,
       actionLabel: undefined,
     };
   })();
-  const pwaChipDismissKey = pwaChip ? `electron:pwa-chip:${pwaChip.tone}:${pwaChip.detail}` : null;
+  const pwaChipDismissKey = pwaChip
+    ? `electron:pwa-chip:${pwaChip.tone}:${pwaChip.detail}`
+    : null;
   const [isPwaChipDismissed, setIsPwaChipDismissed] = useState(false);
   const shouldShowPwaChip = Boolean(
-    isMobile && pwaChip && pwaChip.tone !== 'ready' && !isPwaChipDismissed
+    isMobile && pwaChip && pwaChip.tone !== "ready" && !isPwaChipDismissed,
   );
 
   useEffect(() => {
@@ -147,7 +151,9 @@ const AppHeader: FC<AppHeaderProps> = ({
     }
 
     try {
-      setIsPwaChipDismissed(window.localStorage.getItem(pwaChipDismissKey) === '1');
+      setIsPwaChipDismissed(
+        window.localStorage.getItem(pwaChipDismissKey) === "1",
+      );
     } catch {
       setIsPwaChipDismissed(false);
     }
@@ -156,7 +162,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   const dismissPwaChip = () => {
     if (pwaChipDismissKey) {
       try {
-        window.localStorage.setItem(pwaChipDismissKey, '1');
+        window.localStorage.setItem(pwaChipDismissKey, "1");
       } catch {
         // Ignore storage failures and still dismiss in-memory.
       }
@@ -179,23 +185,89 @@ const AppHeader: FC<AppHeaderProps> = ({
     };
 
     if (isProfileMenuOpen) {
-      document.addEventListener('pointerdown', handleClickOutside);
-      return () => document.removeEventListener('pointerdown', handleClickOutside);
+      document.addEventListener("pointerdown", handleClickOutside);
+      return () =>
+        document.removeEventListener("pointerdown", handleClickOutside);
     }
   }, [isProfileMenuOpen]);
 
   // Close menu on escape
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isProfileMenuOpen) {
+      if (event.key === "Escape" && isProfileMenuOpen) {
         setIsProfileMenuOpen(false);
         triggerRef.current?.focus();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isProfileMenuOpen]);
+
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    const left = leftRef.current;
+    const center = centerRef.current;
+    const right = rightRef.current;
+    const brand = brandRef.current;
+
+    if (!header || !left || !center || !right || !brand) {
+      return;
+    }
+
+    let frameId = 0;
+    const deferredIds: number[] = [];
+
+    const fitBrand = () => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        brand.style.setProperty("--electron-scale", "1");
+        const naturalWidth = brand.scrollWidth;
+        const availableWidth = center.clientWidth;
+        const scale =
+          naturalWidth > 0
+            ? Math.min(1, Math.max(0.56, (availableWidth - 2) / naturalWidth))
+            : 1;
+        brand.style.setProperty("--electron-scale", scale.toFixed(3));
+      });
+    };
+
+    fitBrand();
+    deferredIds.push(
+      window.setTimeout(fitBrand, 80),
+      window.setTimeout(fitBrand, 300),
+    );
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(fitBrand)
+        : null;
+    [header, left, center, right, brand].forEach((element) =>
+      resizeObserver?.observe(element),
+    );
+
+    window.addEventListener("resize", fitBrand);
+    window.addEventListener("orientationchange", fitBrand);
+    window.visualViewport?.addEventListener("resize", fitBrand);
+    document.addEventListener("visibilitychange", fitBrand);
+
+    const fontSet = document.fonts;
+    void fontSet?.ready.then(fitBrand);
+    fontSet?.addEventListener("loadingdone", fitBrand);
+    fontSet?.addEventListener("loadingerror", fitBrand);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      deferredIds.forEach((id) => window.clearTimeout(id));
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", fitBrand);
+      window.removeEventListener("orientationchange", fitBrand);
+      window.visualViewport?.removeEventListener("resize", fitBrand);
+      document.removeEventListener("visibilitychange", fitBrand);
+      fontSet?.removeEventListener("loadingdone", fitBrand);
+      fontSet?.removeEventListener("loadingerror", fitBrand);
+    };
+  }, [activeTab, currentUser]);
 
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
@@ -219,8 +291,10 @@ const AppHeader: FC<AppHeaderProps> = ({
             }
           }
         } catch (error) {
-          consoleError('Profile selection failed:', error);
-          setSelectionError(getErrorMessage(error, 'Profile login is unavailable right now.'));
+          consoleError("Profile selection failed:", error);
+          setSelectionError(
+            getErrorMessage(error, "Profile login is unavailable right now."),
+          );
         }
       })();
     }
@@ -237,8 +311,10 @@ const AppHeader: FC<AppHeaderProps> = ({
           setIsProfileMenuOpen(false);
         }
       } catch (error) {
-        consoleError('Profile logout failed:', error);
-        setSelectionError(getErrorMessage(error, 'Unable to update the profile session.'));
+        consoleError("Profile logout failed:", error);
+        setSelectionError(
+          getErrorMessage(error, "Unable to update the profile session."),
+        );
       }
     })();
   };
@@ -266,7 +342,8 @@ const AppHeader: FC<AppHeaderProps> = ({
   };
 
   const handlePinSettingsCancel = () => {
-    const requiredSetupUser = pinSettingsUser && userNeedsPin(pinSettingsUser) ? pinSettingsUser : null;
+    const requiredSetupUser =
+      pinSettingsUser && userNeedsPin(pinSettingsUser) ? pinSettingsUser : null;
     setPinSettingsUser(null);
     setSelectionError(null);
 
@@ -275,12 +352,15 @@ const AppHeader: FC<AppHeaderProps> = ({
     }
   };
 
-  const handlePinSettingsSubmit = async (pin: string, newPin?: string): Promise<boolean> => {
+  const handlePinSettingsSubmit = async (
+    pin: string,
+    newPin?: string,
+  ): Promise<boolean> => {
     if (!pinSettingsUser) return false;
 
     setIsSavingPinSettings(true);
     try {
-      if (pinSettingsMode === 'set') {
+      if (pinSettingsMode === "set") {
         const saved = await setUserPin(pinSettingsUser, pin);
         if (saved) setPinSettingsUser(null);
         return saved;
@@ -313,12 +393,17 @@ const AppHeader: FC<AppHeaderProps> = ({
             draggable="false"
             onError={(e) => {
               const target = e.currentTarget;
-              target.style.display = 'none';
+              target.style.display = "none";
               const sibling = target.nextElementSibling as HTMLElement | null;
-              if (sibling) sibling.style.display = '';
+              if (sibling) sibling.style.display = "";
             }}
           />
-          <span className="app-header__avatar-initial" style={{ display: 'none' }}>{user.charAt(0)}</span>
+          <span
+            className="app-header__avatar-initial"
+            style={{ display: "none" }}
+          >
+            {user.charAt(0)}
+          </span>
         </>
       );
     }
@@ -328,14 +413,16 @@ const AppHeader: FC<AppHeaderProps> = ({
   return (
     <header
       ref={headerRef}
-      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? ' is-profile-menu-open' : ''}${slot?.hasSearch ? ' app-header--has-search' : ''}`}
+      className={`app-header app-header--${activeTab}${isProfileMenuOpen ? " is-profile-menu-open" : ""}${slot?.hasSearch ? " app-header--has-search" : ""}`}
       role="banner"
     >
       {/* Left: Theme Toggle + Background Toggle */}
       <div className="app-header__left">
         {shouldShowPwaChip && pwaChip ? (
-          <div className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}>
-              <span className="app-header__pwa-label">{pwaChip.label}</span>
+          <div
+            className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}
+          >
+            <span className="app-header__pwa-label">{pwaChip.label}</span>
             <span className="app-header__pwa-detail">{pwaChip.detail}</span>
             {pwaChip.action && pwaChip.actionLabel ? (
               <button
@@ -368,8 +455,8 @@ const AppHeader: FC<AppHeaderProps> = ({
       {/* Center: Brand or Search slot */}
       <div
         ref={centerRef}
-        className={`app-header__center${slot?.hasSearch ? ' app-header__center--search' : ''}`}
-        aria-label={slot?.hasSearch ? undefined : 'Electron'}
+        className={`app-header__center${slot?.hasSearch ? " app-header__center--search" : ""}`}
+        aria-label={slot?.hasSearch ? undefined : "Electron"}
       >
         {!slot?.hasSearch && (
           <span ref={brandRef} className="app-header__brand">
@@ -380,7 +467,7 @@ const AppHeader: FC<AppHeaderProps> = ({
 
       {/* Right: Spin button (movies tab) + Profile Selector */}
       <div ref={rightRef} className="app-header__right">
-        {activeTab === 'movies' && onOpenSpin && (
+        {activeTab === "movies" && onOpenSpin && (
           <button
             type="button"
             className="app-header__spin-trigger"
@@ -388,7 +475,17 @@ const AppHeader: FC<AppHeaderProps> = ({
             aria-label="Spin the wheel to pick a movie"
             title="Spin the wheel"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="2" x2="12" y2="12" />
               <line x1="12" y1="12" x2="20" y2="16" />
@@ -396,176 +493,249 @@ const AppHeader: FC<AppHeaderProps> = ({
             <span className="app-header__spin-label">Spin</span>
           </button>
         )}
-          <button
-            ref={triggerRef}
-            type="button"
-            className={`app-header__profile-trigger${currentUser ? ' is-logged-in' : ''}${isProfileMenuOpen ? ' is-open' : ''}`}
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            aria-expanded={isProfileMenuOpen}
-            aria-haspopup="menu"
-            aria-label={currentUser ? `Profile: ${currentUser}` : 'Select profile'}
-            disabled={isDisabled}
-          >
-            {currentUser ? (
-              <>
-                {getAvatarContent(currentUser)}
-                <span className="app-header__profile-name">{currentUser}</span>
+        <button
+          ref={triggerRef}
+          type="button"
+          className={`app-header__profile-trigger${currentUser ? " is-logged-in" : ""}${isProfileMenuOpen ? " is-open" : ""}`}
+          onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+          aria-expanded={isProfileMenuOpen}
+          aria-haspopup="menu"
+          aria-label={
+            currentUser ? `Profile: ${currentUser}` : "Select profile"
+          }
+          disabled={isDisabled}
+        >
+          {currentUser ? (
+            <>
+              {getAvatarContent(currentUser)}
+              <span className="app-header__profile-name">{currentUser}</span>
+              <svg
+                className="app-header__chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 4.5L6 7.5L9 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </>
+          ) : (
+            <>
+              <span className="app-header__avatar-placeholder">
                 <svg
-                  className="app-header__chevron"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
                   fill="none"
                   aria-hidden="true"
                 >
-                  <path
-                    d="M3 4.5L6 7.5L9 4.5"
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="4"
                     stroke="currentColor"
-                    strokeWidth="1.5"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M4 20c0-4 4-6 8-6s8 2 8 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
                   />
                 </svg>
-              </>
-            ) : (
-              <>
-                <span className="app-header__avatar-placeholder">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+              </span>
+              <span className="app-header__profile-name">Sign in</span>
+              <svg
+                className="app-header__chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 4.5L6 7.5L9 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </>
+          )}
+        </button>
+
+        {/* Profile Dropdown Menu */}
+        {isProfileMenuOpen && (
+          <div
+            ref={menuRef}
+            className="app-header__profile-menu"
+            role="menu"
+            aria-label="Profile selection"
+          >
+            <div className="app-header__menu-section">
+              <span className="app-header__menu-label">Switch profile</span>
+              <div className="app-header__profile-list" role="group">
+                {users.map((profile) => {
+                  const isActive = currentUser === profile;
+                  const hasPin = userHasPin(profile);
+                  const needsPin = userNeedsPin(profile);
+
+                  return (
+                    <button
+                      key={profile}
+                      type="button"
+                      role="menuitem"
+                      className={`app-header__profile-option${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
+                      onClick={() => selectProfile(profile)}
+                      disabled={isDisabled}
+                      aria-label={
+                        isActive
+                          ? `${profile} (active) - click to log out`
+                          : needsPin
+                            ? `Select ${profile} (PIN required)`
+                            : hasPin
+                              ? `Select ${profile} (PIN protected)`
+                              : `Select ${profile}`
+                      }
+                    >
+                      <span className="app-header__option-avatar">
+                        {getAvatarContent(profile)}
+                      </span>
+                      <span className="app-header__option-name">{profile}</span>
+                      {isActive && (
+                        <span className="app-header__option-badge app-header__option-badge--active">
+                          Active
+                        </span>
+                      )}
+                      {hasPin && !isActive && (
+                        <svg
+                          className="app-header__option-lock"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="5"
+                            y="11"
+                            width="14"
+                            height="10"
+                            rx="2"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M8 11V7a4 4 0 018 0v4"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {currentUser && (
+              <div className="app-header__menu-section app-header__menu-section--actions">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="app-header__menu-action"
+                  onClick={openPinSettings}
+                  disabled={isDisabled || isSavingPinSettings}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <rect
+                      x="5"
+                      y="11"
+                      width="14"
+                      height="10"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
                     <path
-                      d="M4 20c0-4 4-6 8-6s8 2 8 6"
+                      d="M8 11V7a4 4 0 018 0v4"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                     />
                   </svg>
-                </span>
-                <span className="app-header__profile-name">Sign in</span>
-                <svg
-                  className="app-header__chevron"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  aria-hidden="true"
+                  {userNeedsPin(currentUser)
+                    ? "Finish PIN Setup"
+                    : userHasPin(currentUser)
+                      ? "Change PIN"
+                      : "Set PIN"}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="app-header__menu-action app-header__menu-action--logout"
+                  onClick={handleLogout}
+                  disabled={isDisabled}
                 >
-                  <path
-                    d="M3 4.5L6 7.5L9 4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </>
-            )}
-          </button>
-
-        {/* Profile Dropdown Menu */}
-        {isProfileMenuOpen && (
-            <div
-              ref={menuRef}
-              className="app-header__profile-menu"
-              role="menu"
-              aria-label="Profile selection"
-            >
-              <div className="app-header__menu-section">
-                <span className="app-header__menu-label">Switch profile</span>
-                <div className="app-header__profile-list" role="group">
-                  {users.map((profile) => {
-                    const isActive = currentUser === profile;
-                    const hasPin = userHasPin(profile);
-                    const needsPin = userNeedsPin(profile);
-
-                    return (
-                      <button
-                        key={profile}
-                        type="button"
-                        role="menuitem"
-                        className={`app-header__profile-option${isActive ? ' is-active' : ''}${hasPin ? ' has-pin' : ''}`}
-                        onClick={() => selectProfile(profile)}
-                        disabled={isDisabled}
-                        aria-label={
-                          isActive
-                            ? `${profile} (active) - click to log out`
-                            : needsPin
-                              ? `Select ${profile} (PIN required)`
-                              : hasPin
-                                ? `Select ${profile} (PIN protected)`
-                                : `Select ${profile}`
-                        }
-                      >
-                        <span className="app-header__option-avatar">
-                          {getAvatarContent(profile)}
-                        </span>
-                        <span className="app-header__option-name">{profile}</span>
-                        {isActive && (
-                          <span className="app-header__option-badge app-header__option-badge--active">
-                            Active
-                          </span>
-                        )}
-                        {hasPin && !isActive && (
-                          <svg
-                            className="app-header__option-lock"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            aria-hidden="true"
-                          >
-                            <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
-                            <path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          </svg>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <polyline
+                      points="16,17 21,12 16,7"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <line
+                      x1="21"
+                      y1="12"
+                      x2="9"
+                      y2="12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Log out
+                </button>
               </div>
+            )}
 
-              {currentUser && (
-                <div className="app-header__menu-section app-header__menu-section--actions">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="app-header__menu-action"
-                    onClick={openPinSettings}
-                    disabled={isDisabled || isSavingPinSettings}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
-                      <path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                    {userNeedsPin(currentUser)
-                      ? 'Finish PIN Setup'
-                      : userHasPin(currentUser)
-                        ? 'Change PIN'
-                        : 'Set PIN'}
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="app-header__menu-action app-header__menu-action--logout"
-                    onClick={handleLogout}
-                    disabled={isDisabled}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Log out
-                  </button>
-                </div>
-              )}
-
-              {selectionError && (
-                <p className="app-header__menu-error" role="alert">
-                  {selectionError}
-                </p>
-              )}
-            </div>
-          )}
+            {selectionError && (
+              <p className="app-header__menu-error" role="alert">
+                {selectionError}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* PIN Dialogs */}
@@ -591,7 +761,10 @@ const AppHeader: FC<AppHeaderProps> = ({
           onSubmit={handlePinSettingsSubmit}
           mode={pinSettingsMode}
           isLoading={isSavingPinSettings}
-          isRequiredSetup={pinSettingsMode === 'set' && (pinSettingsUser ? userNeedsPin(pinSettingsUser) : false)}
+          isRequiredSetup={
+            pinSettingsMode === "set" &&
+            (pinSettingsUser ? userNeedsPin(pinSettingsUser) : false)
+          }
         />
       )}
     </header>
