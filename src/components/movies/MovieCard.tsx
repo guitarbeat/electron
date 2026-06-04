@@ -70,7 +70,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         currentUser,
         memoriesCount: memories.length,
       }),
-    [currentUser, memories.length, movie],
+    [currentUser, memories.length, movie]
   );
 
   const handleOpenDetails = () => {
