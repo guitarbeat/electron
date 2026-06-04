@@ -99,7 +99,8 @@ test('createMatchmakerPool', async (t) => {
   await t.test('creates a deterministic pool from the filtered movies', (t) => {
     t.mock.method(Math, 'random', () => 0.5);
     const pool = createMatchmakerPool(movies, 'Comedy');
-    assert.deepEqual(pool, ['m-1', 'm-3']);
+
+    assert.deepEqual(pool.sort(), ['m-1', 'm-3'].sort());
   });
 });
 

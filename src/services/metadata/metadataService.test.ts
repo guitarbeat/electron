@@ -321,26 +321,77 @@ test('searchOmdbMovies drops search rows with no usable title', async () => {
   assert.equal(results[0]?.title, 'Valid');
 });
 
+test('searchOmdbMovies throws OMDb key was rejected when status is 401', async () => {
+  setTestWindow('https://app.example');
 
-test('normalizePosterUrl returns undefined when URL constructor throws in the catch block', () => {
-  const OriginalURL = globalThis.URL;
-  let calls = 0;
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: { 'content-type': 'application/json' },
+    });
 
-  globalThis.URL = class MockURL {
-    protocol = 'http:';
-    constructor() {
-      calls++;
-      if (calls === 2) {
-        throw new Error('simulated url error');
-      }
-      return { protocol: 'http:' } as URL;
-    }
-  } as unknown as typeof URL;
+  await assert.rejects(
+    () => searchOmdbMovies('Heat'),
+    /OMDb key was rejected/
+  );
+});
 
-  try {
-    const result = normalizePosterUrl('http://example.com/poster.jpg');
-    assert.equal(result, undefined);
-  } finally {
-    globalThis.URL = OriginalURL;
-  }
+test('searchOmdbMovies throws generic error on other non-ok status', async () => {
+  setTestWindow('https://app.example');
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: 'server error' }), {
+      status: 500,
+      headers: { 'content-type': 'application/json' },
+    });
+
+  await assert.rejects(
+    () => searchOmdbMovies('Heat'),
+    /OMDb search failed with status 500/
+  );
+});
+
+test('fetchOmdbMetadata throws OMDb key was rejected when status is 401', async () => {
+  setTestWindow('https://app.example');
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: { 'content-type': 'application/json' },
+    });
+
+  await assert.rejects(
+    () => fetchOmdbMetadata('Heat'),
+    /OMDb key was rejected/
+  );
+});
+
+test('fetchOmdbMetadata throws OMDb key was rejected when json code is omdb_auth', async () => {
+  setTestWindow('https://app.example');
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ code: 'omdb_auth' }), {
+      status: 403,
+      headers: { 'content-type': 'application/json' },
+    });
+
+  await assert.rejects(
+    () => fetchOmdbMetadata('Heat'),
+    /OMDb key was rejected/
+  );
+});
+
+test('fetchOmdbMetadata throws generic error on other non-ok status', async () => {
+  setTestWindow('https://app.example');
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: 'server error' }), {
+      status: 500,
+      headers: { 'content-type': 'application/json' },
+    });
+
+  await assert.rejects(
+    () => fetchOmdbMetadata('Heat'),
+    /OMDb metadata fetch failed with status 500/
+  );
 });

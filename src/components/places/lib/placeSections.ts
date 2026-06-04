@@ -1,4 +1,4 @@
-import type { Place, PlaceSuggestion } from '@/shared/types';
+import type { Place, PlaceSuggestion } from '../../../shared/types.ts';
 import { buildCollectionSections, type CollectionSections } from '../../../utils/workspace.ts';
 
 export type PlaceSections = CollectionSections<Place, PlaceSuggestion>;
