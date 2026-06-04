@@ -205,6 +205,7 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({ memory, onPin, onDelete
             }}
             aria-label="Delete memory"
             title="Delete"
+            aria-label="Delete memory"
           >
             🗑️
           </button>
