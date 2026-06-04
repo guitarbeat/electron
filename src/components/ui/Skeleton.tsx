@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable */
 import React from 'react';
 import { radius } from '@/theme/tokens';
 

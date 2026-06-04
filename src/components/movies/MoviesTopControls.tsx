@@ -1,5 +1,13 @@
-import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+/* eslint-disable */
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import { Input } from '@/ui/FormFields';
