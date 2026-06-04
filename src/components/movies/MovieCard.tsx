@@ -1,9 +1,8 @@
-import React from "react";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import type { Movie, SharedMemory, User } from "@/shared/types";
-import { executeAction, getErrorMessage, consoleError } from "@/utils";
-import { useCardTilt } from "@/hooks/useCardTilt";
-import Card from "@/ui/Card";
+import React from 'react';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import type { Movie, SharedMemory, User } from '@/shared/types';
+import { executeAction, getErrorMessage, consoleError } from '@/utils';
+import Card from '@/ui/Card';
 import {
   MediaCardPosterWrap,
   MediaCardTitle,
