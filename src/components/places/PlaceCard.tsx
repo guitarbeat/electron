@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import { CheckIcon, EditIcon, TrashIcon } from "@/common/Icons";
-import { useCardTilt } from "@/hooks/useCardTilt";
-import MediaCard from "@/ui/MediaCard";
-import type { Place } from "@/shared/types";
-import { radius } from "@/theme/tokens";
+import React, { useState } from 'react';
+import { CheckIcon, EditIcon, TrashIcon } from '@/common/Icons';
+import MediaCard from '@/ui/MediaCard';
+import type { Place } from '@/shared/types';
+import { radius } from '@/theme/tokens';
 import {
   MediaCardCover,
   MediaCardInfo,

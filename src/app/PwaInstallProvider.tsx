@@ -11,6 +11,22 @@ import React, {
 import { PwaInstallContext } from './PwaInstallContext.ts';
 import { useToast } from '@/app/useProviders';
 
+interface PwaInstallContextValue {
+  canInstall: boolean;
+  isStandalone: boolean;
+  openInstallDialog: () => void;
+}
+
+const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const usePwaInstall = (): PwaInstallContextValue => {
+  const context = useContext(PwaInstallContext);
+  if (!context) {
+    throw new Error('usePwaInstall must be used within PwaInstallProvider');
+  }
+  return context;
+};
 
 const readStandaloneMode = (): boolean =>
   typeof window !== 'undefined' &&
