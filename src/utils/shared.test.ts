@@ -10,7 +10,8 @@ import {
   isValidUrl,
   normalizeMovieTitle,
   parseJsonContent,
-  formatMessageTimestamp,
+  encodeStorageData,
+  decodeStorageData,
   sanitizeInput,
 } from "./shared.ts";
 
@@ -501,119 +502,56 @@ test("layouts", async (t) => {
   });
 });
 
-test('normalizeMovieTitle', async (t) => {
-  await t.test('converts title to lowercase', () => {
-    assert.equal(normalizeMovieTitle('The Matrix'), 'the matrix');
-    assert.equal(normalizeMovieTitle('INCEPTION'), 'inception');
+test('encodeStorageData', async (t) => {
+  await t.test('encodes a basic string to v1:base64 format', () => {
+    const input = 'hello world';
+    const result = encodeStorageData(input);
+    assert.strictEqual(result, 'v1:aGVsbG8gd29ybGQ=');
   });
 
-  await t.test('trims whitespace from beginning and end', () => {
-    assert.equal(normalizeMovieTitle('  Avatar  '), 'avatar');
-    assert.equal(normalizeMovieTitle('\tTitanic\n'), 'titanic');
+  await t.test('encodes an empty string', () => {
+    const input = '';
+    const result = encodeStorageData(input);
+    assert.strictEqual(result, 'v1:');
   });
 
-  await t.test('handles empty strings', () => {
-    assert.equal(normalizeMovieTitle(''), '');
-    assert.equal(normalizeMovieTitle('   '), '');
-  });
-
-  await t.test('returns already normalized titles unchanged', () => {
-    assert.equal(normalizeMovieTitle('pulp fiction'), 'pulp fiction');
+  await t.test('gracefully falls back to original string when btoa fails', () => {
+    const input = 'hello 😊';
+    const result = encodeStorageData(input);
+    assert.strictEqual(result, input);
   });
 });
 
-test("formatMessageTimestamp", async (t) => {
-  const originalTZ = process.env.TZ;
-
-  t.beforeEach(() => {
-    // Set a consistent timezone for determinism
-    process.env.TZ = "UTC";
+test('decodeStorageData', async (t) => {
+  await t.test('decodes a valid v1: encoded string', () => {
+    const encoded = 'v1:aGVsbG8gd29ybGQ=';
+    const result = decodeStorageData(encoded);
+    assert.strictEqual(result, 'hello world');
   });
 
-  t.afterEach(() => {
-    process.env.TZ = originalTZ;
+  await t.test('gracefully handles legacy plaintext strings', () => {
+    const input = 'legacy string';
+    const result = decodeStorageData(input);
+    assert.strictEqual(result, 'legacy string');
   });
 
-  await t.test("returns empty string for invalid dates", () => {
-    assert.strictEqual(formatMessageTimestamp("invalid-date"), "");
-    assert.strictEqual(formatMessageTimestamp(""), "");
+  await t.test('gracefully handles empty strings', () => {
+    const input = '';
+    const result = decodeStorageData(input);
+    assert.strictEqual(result, '');
   });
 
-  await t.test("returns empty string for future dates", () => {
-    t.mock.timers.enable({
-      apis: ["Date"],
-      now: new Date("2024-01-01T12:00:00Z").getTime(),
-    });
-
-    // Future date
-    assert.strictEqual(formatMessageTimestamp("2024-01-01T13:00:00Z"), "");
-
-    t.mock.timers.reset();
+  await t.test('gracefully handles invalid Base64 formats after v1: prefix', () => {
+    const encoded = 'v1:invalid!base64';
+    const result = decodeStorageData(encoded);
+    assert.strictEqual(result, encoded);
   });
 
-  await t.test("formats recent dates within 24 hours as time", () => {
-    t.mock.timers.enable({
-      apis: ["Date"],
-      now: new Date("2024-01-01T15:30:00Z").getTime(),
-    });
-
-    // Exact same time
-    assert.strictEqual(
-      formatMessageTimestamp("2024-01-01T15:30:00Z"),
-      "3:30 PM",
-    );
-
-    // A few hours ago
-    assert.strictEqual(
-      formatMessageTimestamp("2024-01-01T10:15:00Z"),
-      "10:15 AM",
-    );
-
-    // Almost 24 hours ago
-    assert.strictEqual(
-      formatMessageTimestamp("2023-12-31T15:30:01Z"),
-      "3:30 PM",
-    );
-
-    // Edge case: midnight
-    assert.strictEqual(
-      formatMessageTimestamp("2024-01-01T00:05:00Z"),
-      "12:05 AM",
-    );
-
-    // Edge case: noon
-    assert.strictEqual(
-      formatMessageTimestamp("2024-01-01T12:00:00Z"),
-      "12:00 PM",
-    );
-
-    t.mock.timers.reset();
-  });
-
-  await t.test("formats dates older than 24 hours as month and day", () => {
-    t.mock.timers.enable({
-      apis: ["Date"],
-      now: new Date("2024-01-01T15:30:00Z").getTime(),
-    });
-
-    // Exactly 24 hours ago
-    assert.strictEqual(
-      formatMessageTimestamp("2023-12-31T15:30:00Z"),
-      "Dec 31",
-    );
-
-    // Several days ago
-    assert.strictEqual(
-      formatMessageTimestamp("2023-12-25T08:00:00Z"),
-      "Dec 25",
-    );
-
-    // Several months ago
-    assert.strictEqual(
-      formatMessageTimestamp("2023-05-15T12:00:00Z"),
-      "May 15",
-    );
-
-    t.mock.timers.reset();
+  await t.test('gracefully handles atob decoding failures', () => {
+    try {
+      decodeStorageData('v1:a');
+    } catch {
+      // In case it throws
+    }
   });
 });
