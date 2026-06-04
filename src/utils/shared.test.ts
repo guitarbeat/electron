@@ -9,6 +9,7 @@ import {
   executeAction,
   getErrorMessage,
   isValidUrl,
+  normalizeMovieTitle,
   parseJsonContent,
   sanitizeInput,
 } from './shared.ts';
@@ -385,5 +386,26 @@ test('layouts', async (t) => {
       alignItems: 'flex-start',
       gap: '10px',
     });
+  });
+});
+
+test('normalizeMovieTitle', async (t) => {
+  await t.test('converts title to lowercase', () => {
+    assert.equal(normalizeMovieTitle('The Matrix'), 'the matrix');
+    assert.equal(normalizeMovieTitle('INCEPTION'), 'inception');
+  });
+
+  await t.test('trims whitespace from beginning and end', () => {
+    assert.equal(normalizeMovieTitle('  Avatar  '), 'avatar');
+    assert.equal(normalizeMovieTitle('\tTitanic\n'), 'titanic');
+  });
+
+  await t.test('handles empty strings', () => {
+    assert.equal(normalizeMovieTitle(''), '');
+    assert.equal(normalizeMovieTitle('   '), '');
+  });
+
+  await t.test('returns already normalized titles unchanged', () => {
+    assert.equal(normalizeMovieTitle('pulp fiction'), 'pulp fiction');
   });
 });
