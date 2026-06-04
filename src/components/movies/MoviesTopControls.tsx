@@ -75,7 +75,8 @@ const MoviesTopControls = React.forwardRef<
   currentUser,
   searchQuery,
   setSearchQuery,
-    setSelectedAutocompleteResult,
+
+  setSelectedAutocompleteResult,
   guestName,
   setGuestName,
   onSubmit,
