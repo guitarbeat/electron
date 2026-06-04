@@ -5,13 +5,10 @@ import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import {
-
-
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-
-} from '@/ui/MediaCard';
+  } from '@/ui/MediaCard';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
 import MovieTitleEditModal from './MovieTitleEditModal';
@@ -73,10 +70,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
         memoriesCount: memories.length,
       }),
     [currentUser, memories.length, movie]
-  );
-  React.useMemo(
-    () => memories.find((memory) => memory.isPinned) ?? memories[0] ?? null,
-    [memories]
   );
 
   const handleOpenDetails = () => {

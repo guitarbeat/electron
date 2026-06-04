@@ -1,4 +1,4 @@
-import type { Movie, MovieSuggestion } from '../../../shared/types.ts';
+import type { Movie, MovieSuggestion } from '@/shared/types';
 import { buildCollectionSections, type CollectionSections } from '../../../utils/workspace.ts';
 
 export type MovieSections = CollectionSections<Movie, MovieSuggestion>;
