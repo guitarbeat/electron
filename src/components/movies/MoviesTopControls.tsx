@@ -25,8 +25,8 @@ import {
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
   normalizeMovieAutocompleteQuery,
-  shouldClearSelectedMovieResult,
-  shouldFetchMovieAutocomplete,
+
+
 } from './lib/movieAutocomplete';
 
 interface MoviesTopControlsProps {
@@ -38,6 +38,7 @@ interface MoviesTopControlsProps {
   latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
+    setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -76,8 +77,7 @@ const MoviesTopControls = React.forwardRef<
   currentUser,
   searchQuery,
   setSearchQuery,
-
-  setSelectedAutocompleteResult,
+    setSelectedAutocompleteResult,
   guestName,
   setGuestName,
   onSubmit,
@@ -228,9 +228,6 @@ const MoviesTopControls = React.forwardRef<
       return;
     }
 
-    if (!shouldFetchMovieAutocomplete(trimmedSearchQuery, selectedAutocompleteResult)) {
-      return;
-    }
 
     const abortController = new AbortController();
     const requestId = autocompleteRequestIdRef.current + 1;
@@ -287,8 +284,7 @@ const MoviesTopControls = React.forwardRef<
     isAutocompleteRegionFocused,
     normalizedSearchQuery,
     resetAutocomplete,
-    selectedAutocompleteResult,
-    trimmedSearchQuery,
+        trimmedSearchQuery,
   ]);
 
   const hasAutocompleteFeedback = useMemo(
@@ -378,9 +374,9 @@ const MoviesTopControls = React.forwardRef<
                 className="watchlist-top-controls__search-field"
                 value={searchQuery}
                 onChange={(event) => {
-                  setSearchQuery(event.target.value);
-
-                }}
+                  const nextValue = event.target.value;
+                  setSearchQuery(nextValue);
+                                  }}
                 onFocus={() => {
                   if (
                     hasAutocompleteFeedback
