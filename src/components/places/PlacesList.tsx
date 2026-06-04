@@ -1,23 +1,35 @@
-/* eslint-disable */
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useUser, useToast } from '@/app/useProviders';
-import { usePlaces } from '@/hooks/places';
-import ConfirmDialog from '@/ui/ConfirmDialog';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useUser, useToast } from "@/app/useProviders";
+import { usePlaces } from "@/hooks/places";
+import ConfirmDialog from "@/ui/ConfirmDialog";
 import {
   CollectionEmptyState,
   CollectionGrid,
   CollectionSection,
-} from '@/ui/CollectionLayout';
-import { MovieCardSkeleton } from '@/ui/Skeleton';
-import SyncBanner from '../ui/SyncBanner.tsx';
-import type { Place, PlaceSuggestion } from '../../shared/types.ts';
-import type { PlacesMapHandle } from './PlacesMap.tsx';
-const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
-import PlaceCard from './PlaceCard.tsx';
-import PlaceEditModal from './PlaceEditModal.tsx';
-import PlacesTopControls from './PlacesTopControls.tsx';
-import { buildPlaceSections } from './lib/placeSections.ts';
-import { usePlaceSuggestions } from '@/hooks/places';
+} from "@/ui/CollectionLayout";
+import { MovieCardSkeleton } from "@/ui/Skeleton";
+import SyncBanner from "../ui/SyncBanner.tsx";
+
+import type { Place, PlaceSuggestion } from "../../shared/types.ts";
+import type { PlacesMapHandle } from "./PlacesMap.tsx";
+import PlaceCard from "./PlaceCard.tsx";
+import PlaceSuggestionCard from "./PlaceSuggestionCard.tsx";
+import PlaceEditModal from "./PlaceEditModal.tsx";
+import PlacesTopControls, {
+  type PlacesTopControlsHandle,
+} from "./PlacesTopControls.tsx";
+import { buildPlaceSections } from "./lib/placeSections.ts";
+import { usePlaceSuggestions } from "@/hooks/places";
+import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
+
+const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
@@ -49,30 +61,38 @@ const PlacesList: React.FC = () => {
     retrySync: retrySuggestionsSync,
   } = usePlaceSuggestions(isLoading);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const [processingSuggestionId, setProcessingSuggestionId] = useState<string | null>(null);
+  const [processingSuggestionId, setProcessingSuggestionId] = useState<
+    string | null
+  >(null);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [placeToDelete, setPlaceToDelete] = useState<Place | null>(null);
   const [placeToEdit, setPlaceToEdit] = useState<Place | null>(null);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const sections = useMemo(() => buildPlaceSections(places, pendingSuggestions), [places, pendingSuggestions]);
+  const sections = useMemo(
+    () => buildPlaceSections(places, pendingSuggestions),
+    [places, pendingSuggestions],
+  );
   const pinnedCount = useMemo(
     () =>
-      places.filter((place) => typeof place.lat === 'number' && typeof place.lng === 'number').length,
-    [places]
+      places.filter(
+        (place) =>
+          typeof place.lat === "number" && typeof place.lng === "number",
+      ).length,
+    [places],
   );
 
   const allPlaces = useMemo(
     () => [...sections.queue, ...sections.completed],
-    [sections.queue, sections.completed]
+    [sections.queue, sections.completed],
   );
 
   const handleCardTap = useCallback((place: Place) => {
-    if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+    if (typeof place.lat === "number" && typeof place.lng === "number") {
       mapRef.current?.flyTo(place.lng, place.lat);
     }
     clearTimeout(activeTimerRef.current);
@@ -82,15 +102,36 @@ const PlacesList: React.FC = () => {
 
   const handleCardKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>, place: Place) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+      if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         handleCardTap(place);
       }
     },
-    [handleCardTap]
+    [handleCardTap],
   );
 
   useEffect(() => () => clearTimeout(activeTimerRef.current), []);
+
+  const focusPlacesSearch = useCallback(() => {
+    placesTopControlsRef.current?.focusSearchInput();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === "/" &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !event.metaKey &&
+        !event.ctrlKey
+      ) {
+        event.preventDefault();
+        focusPlacesSearch();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [focusPlacesSearch]);
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
@@ -99,17 +140,23 @@ const PlacesList: React.FC = () => {
       try {
         await addPlace(suggestion.name, suggestion.notes);
         await acceptPlaceSuggestion(suggestion.id, currentUser);
-        showToast({ message: `"${suggestion.name}" added to places!`, type: 'success' });
+        showToast({
+          message: `"${suggestion.name}" added to places!`,
+          type: "success",
+        });
       } catch (error) {
         showToast({
-          message: error instanceof Error ? error.message : 'Failed to accept suggestion',
-          type: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to accept suggestion",
+          type: "error",
         });
       } finally {
         setProcessingSuggestionId(null);
       }
     },
-    [acceptPlaceSuggestion, addPlace, currentUser, showToast]
+    [acceptPlaceSuggestion, addPlace, currentUser, showToast],
   );
 
   const handleRejectSuggestion = useCallback(
@@ -118,35 +165,43 @@ const PlacesList: React.FC = () => {
       setProcessingSuggestionId(suggestionId);
       try {
         await rejectPlaceSuggestion(suggestionId, currentUser);
-        showToast({ message: `"${name}" rejected.`, type: 'info' });
+        showToast({ message: `"${name}" rejected.`, type: "info" });
       } catch (error) {
         showToast({
-          message: error instanceof Error ? error.message : 'Failed to reject suggestion',
-          type: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to reject suggestion",
+          type: "error",
         });
       } finally {
         setProcessingSuggestionId(null);
       }
     },
-    [currentUser, rejectPlaceSuggestion, showToast]
+    [currentUser, rejectPlaceSuggestion, showToast],
   );
 
   const handleAddAction = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query || isAdding) return;
     if (!currentUser) {
-      showToast({ message: 'Pick Aaron or Electra to edit shared places.', type: 'info' });
+      showToast({
+        message: "Pick Aaron or Electra to edit shared places.",
+        type: "info",
+      });
       return;
     }
     setIsAdding(true);
     setSuggestionError(null);
     try {
       await addPlace(query);
-      setSearchQuery('');
-      showToast({ message: `"${query}" added!`, type: 'success' });
+      setSearchQuery("");
+      showToast({ message: `"${query}" added!`, type: "success" });
     } catch (error) {
-      setSuggestionError(error instanceof Error ? error.message : 'Failed to add place');
-      showToast({ message: 'Failed to add place', type: 'error' });
+      setSuggestionError(
+        error instanceof Error ? error.message : "Failed to add place",
+      );
+      showToast({ message: "Failed to add place", type: "error" });
     } finally {
       setIsAdding(false);
     }
@@ -159,11 +214,16 @@ const PlacesList: React.FC = () => {
     setSuggestionError(null);
     try {
       await addPlaceSuggestion(query);
-      setSearchQuery('');
-      showToast({ message: `"${query}" suggested for review!`, type: 'success' });
+      setSearchQuery("");
+      showToast({
+        message: `"${query}" suggested for review!`,
+        type: "success",
+      });
     } catch (error) {
-      setSuggestionError(error instanceof Error ? error.message : 'Failed to suggest place');
-      showToast({ message: 'Failed to suggest place', type: 'error' });
+      setSuggestionError(
+        error instanceof Error ? error.message : "Failed to suggest place",
+      );
+      showToast({ message: "Failed to suggest place", type: "error" });
     } finally {
       setIsSuggesting(false);
     }
@@ -174,9 +234,9 @@ const PlacesList: React.FC = () => {
     const deleted = placeToDelete;
     try {
       await removePlace(deleted.id);
-      showToast({ message: `"${deleted.name}" removed!`, type: 'info' });
+      showToast({ message: `"${deleted.name}" removed!`, type: "info" });
     } catch {
-      showToast({ message: 'Failed to remove place', type: 'error' });
+      showToast({ message: "Failed to remove place", type: "error" });
     } finally {
       setPlaceToDelete(null);
     }
@@ -198,7 +258,7 @@ const PlacesList: React.FC = () => {
               role="button"
               tabIndex={0}
               style={{
-                cursor: 'pointer',
+                cursor: "pointer",
               }}
             >
               <PlaceCard
@@ -215,7 +275,7 @@ const PlacesList: React.FC = () => {
           ))
         ) : (
           <CollectionEmptyState className="places-empty-state">
-            <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
+            <span style={{ fontSize: "2.5rem", lineHeight: 1 }}>🗺️</span>
             <strong className="places-empty-state__title">No places yet</strong>
             <span className="places-empty-state__hint">{emptyState}</span>
           </CollectionEmptyState>
@@ -232,37 +292,160 @@ const PlacesList: React.FC = () => {
       markVisited,
       setPlaceToDelete,
       setPlaceToEdit,
-    ]
+    ],
   );
 
   const hasPlaces = allPlaces.length > 0;
   const showEmptyState = !isLoading && !hasPlaces;
 
+  const placeCardsReady =
+    !isLoading && (hasPlaces || pendingSuggestions.length > 0);
+  useCinematicEntrance(placesBodyRef, placeCardsReady, ".card-tilt-wrap");
+
   return (
-    <div className="watchlist-container places-container">
-      {/* ... (rest of the file remains same until TO TRY section) */}
-      
-      {/* TO TRY section */}
+    <div ref={placesBodyRef} className="watchlist-container places-container">
+      {isDegraded && (
+        <SyncBanner
+          isBlocked={isSyncBlocked}
+          onRetry={() => void retrySync()}
+          label={
+            isSyncBlocked
+              ? "A shared places change conflicted with local edits. Refresh and retry."
+              : syncWarning ||
+                "Places changes are being kept locally until shared sync recovers."
+          }
+        />
+      )}
+      {isSuggestionsDegraded && (
+        <SyncBanner
+          isBlocked={isSuggestionsSyncBlocked}
+          onRetry={() => void retrySuggestionsSync()}
+          label={
+            suggestionsSyncWarning ||
+            "Place suggestion changes are being kept locally."
+          }
+        />
+      )}
+
+      <PlacesTopControls
+        ref={placesTopControlsRef}
+        queueCount={sections.queue.length}
+        visitedCount={sections.completed.length}
+        pinnedCount={pinnedCount}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        suggestionAutocompleteResults={pendingSuggestions}
+        onSubmit={handleAddAction}
+        onSuggest={handleSuggestAction}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+        canEdit={Boolean(currentUser)}
+      />
+
+      {isLoading && allPlaces.length === 0 && (
+        <CollectionGrid
+          className="watchlist-content places-grid"
+          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+        >
+          <div
+            style={{
+              gridColumn: "1 / -1",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.5rem",
+            }}
+          >
+            <CollectionEmptyState
+              padding="1.5rem"
+              className="collection-empty-state--tight"
+            >
+              <span
+                style={{ fontSize: "1.75rem", lineHeight: 1, opacity: 0.7 }}
+                aria-hidden="true"
+              >
+                🗺️
+              </span>
+              <strong>Loading your places</strong>
+            </CollectionEmptyState>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "inherit",
+                gap: "inherit",
+              }}
+            >
+              {["p1", "p2", "p3", "p4"].map((key) => (
+                <MovieCardSkeleton key={key} />
+              ))}
+            </div>
+          </div>
+        </CollectionGrid>
+      )}
+
+      {allPlaces.length > 0 && (
+        <React.Suspense fallback={<div className="places-map-placeholder" />}>
+          <PlacesMap
+            ref={mapRef}
+            places={allPlaces}
+            canEdit={Boolean(currentUser)}
+            onUpdatePlace={async (id, updates) => {
+              await updatePlace(id, updates);
+            }}
+          />
+        </React.Suspense>
+      )}
+
+      {pendingSuggestions.length > 0 && (
+        <CollectionSection heading="Incoming" tone="incoming">
+          <CollectionGrid
+            className="watchlist-content places-grid"
+            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+          >
+            {pendingSuggestions.map((suggestion) => (
+              <PlaceSuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                onAccept={() => void handleAcceptSuggestion(suggestion)}
+                onReject={() =>
+                  void handleRejectSuggestion(suggestion.id, suggestion.name)
+                }
+                canRespond={Boolean(currentUser)}
+                disableActions={!currentUser}
+                isProcessing={processingSuggestionId === suggestion.id}
+              />
+            ))}
+          </CollectionGrid>
+        </CollectionSection>
+      )}
+
       {sections.queue.length > 0 && (
         <CollectionSection heading="To Try">
-          {renderPlaceGrid(sections.queue, 'Search above to add your first spot')}
+          {renderPlaceGrid(
+            sections.queue,
+            "Search above to add your first spot",
+          )}
         </CollectionSection>
       )}
 
       {/* VISITED section */}
       {sections.completed.length > 0 && (
         <CollectionSection heading="Visited" tone="completed">
-          {renderPlaceGrid(sections.completed, 'No visited places yet')}
+          {renderPlaceGrid(sections.completed, "No visited places yet")}
         </CollectionSection>
       )}
 
       {showEmptyState && (
-        <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+        <CollectionGrid
+          className="watchlist-content places-grid"
+          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+        >
           <CollectionEmptyState className="places-empty-state">
-            <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
+            <span style={{ fontSize: "2.5rem", lineHeight: 1 }}>🗺️</span>
             <strong className="places-empty-state__title">No places yet</strong>
             <span className="places-empty-state__hint">
-              Add a restaurant, café, park, or anywhere else you&apos;d like to visit together.
+              Add a restaurant, café, park, or anywhere else you&apos;d like to
+              visit together.
             </span>
           </CollectionEmptyState>
         </CollectionGrid>
@@ -283,7 +466,9 @@ const PlacesList: React.FC = () => {
       {placeToEdit && (
         <PlaceEditModal
           place={placeToEdit}
-          onSave={async (id, updates) => { await updatePlace(id, updates); }}
+          onSave={async (id, updates) => {
+            await updatePlace(id, updates);
+          }}
           onClose={() => setPlaceToEdit(null)}
         />
       )}

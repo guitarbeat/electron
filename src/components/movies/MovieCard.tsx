@@ -1,21 +1,25 @@
-/* eslint-disable */
-import React from 'react';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage, consoleError } from '@/utils';
-import Card from '@/ui/Card';
+import React from "react";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import type { Movie, SharedMemory, User } from "@/shared/types";
+import { executeAction, getErrorMessage, consoleError } from "@/utils";
+import { useCardTilt } from "@/hooks/useCardTilt";
+import Card from "@/ui/Card";
 import {
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-} from '@/ui/MediaCard';
-import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
-import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
-import MovieTitleEditModal from './MovieTitleEditModal';
-import MovieDetailsModal from './MovieDetailsModal';
-import MediaPoster from '@/ui/MediaPoster';
-import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
-import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
+} from "@/ui/MediaCard";
+
+import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from "@/common/Icons";
+import {
+  getMovieActionState,
+  type MovieActionState,
+} from "./lib/movieActionState";
+import MovieTitleEditModal from "./MovieTitleEditModal";
+import MovieDetailsModal from "./MovieDetailsModal";
+import MediaPoster from "@/ui/MediaPoster";
+import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
+import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -55,7 +59,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
-  const [detailsOrigin, setDetailsOrigin] = React.useState<MovieTransitionOrigin | null>(null);
+  const [detailsOrigin, setDetailsOrigin] =
+    React.useState<MovieTransitionOrigin | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
@@ -69,11 +74,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
         currentUser,
         memoriesCount: memories.length,
       }),
-    [currentUser, memories.length, movie]
+    [currentUser, memories.length, movie],
   );
 
   const handleOpenDetails = () => {
-    const rect = posterRef.current?.getBoundingClientRect() ?? cardRef.current?.getBoundingClientRect();
+    const rect =
+      posterRef.current?.getBoundingClientRect() ??
+      cardRef.current?.getBoundingClientRect();
     if (rect) {
       setDetailsOrigin({
         top: rect.top,
@@ -94,8 +101,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
     try {
       await onToggle();
     } catch (error) {
-      consoleError('Failed to toggle watched status', error);
-      onToggleError?.(getErrorMessage(error, 'Failed to update watched status.'));
+      consoleError("Failed to toggle watched status", error);
+      onToggleError?.(
+        getErrorMessage(error, "Failed to update watched status."),
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -103,56 +112,71 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <>
-      <div 
-        className={`movie-item-container ${watchedByBoth ? 'movie-item-container--watched' : ''} ${isHighlighted ? 'movie-item-container--highlighted' : ''}`}
+      <div
+        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""}`}
         data-movie-id={movie.id}
       >
-        <Card
-          ref={cardRef}
-          variant="default"
-          className="movie-item-card"
-          style={{
-            padding: 0,
-            marginBottom: '0.75rem',
-            overflow: 'hidden',
-          }}
+        <div
+          ref={tilt.ref}
+          className="card-tilt-wrap"
+          onMouseEnter={tilt.onMouseEnter}
+          onMouseMove={tilt.onMouseMove}
+          onMouseLeave={tilt.onMouseLeave}
         >
-          <MediaCardPosterWrap ref={posterRef} className="movie-item-poster-wrap">
-            <MediaPoster
-              title={movie.title}
-              posterUrl={movie.posterUrl}
-              year={movie.year}
-              id={movie.id}
-            />
-
-            <MediaCardWatcherStack
-              watchers={movie.watchedBy}
-              className="movie-item-watchers"
-            />
-
-            {movie.imdbRating && !isHighlighted && /^\d/.test(movie.imdbRating) ? (
-              <MediaCardRatingBadge
-                rating={movie.imdbRating}
-                className="movie-item-imdb-badge"
-              />
-            ) : null}
-
-            <button
-              type="button"
-              className="movie-item-details-hit-area"
-              onClick={handleOpenDetails}
-              aria-label={`View details for "${movie.title}"`}
+          <Card
+            ref={cardRef}
+            variant="default"
+            className="movie-item-card"
+            style={{
+              padding: 0,
+              marginBottom: "0.75rem",
+              overflow: "hidden",
+            }}
+          >
+            <div className="card-tilt-sheen" aria-hidden="true" />
+            <MediaCardPosterWrap
+              ref={posterRef}
+              className="movie-item-poster-wrap"
             >
-              <span className="sr-only">{`View details for "${movie.title}"`}</span>
-            </button>
-          </MediaCardPosterWrap>
-        </Card>
+              <MediaPoster
+                title={movie.title}
+                posterUrl={movie.posterUrl}
+                year={movie.year}
+                id={movie.id}
+              />
+
+              <MediaCardWatcherStack
+                watchers={movie.watchedBy}
+                className="movie-item-watchers"
+              />
+
+              {movie.imdbRating &&
+              !isHighlighted &&
+              /^\d/.test(movie.imdbRating) ? (
+                <MediaCardRatingBadge
+                  rating={movie.imdbRating}
+                  className="movie-item-imdb-badge"
+                />
+              ) : null}
+
+              <button
+                type="button"
+                className="movie-item-details-hit-area"
+                onClick={handleOpenDetails}
+                aria-label={`View details for "${movie.title}"`}
+              >
+                <span className="sr-only">{`View details for "${movie.title}"`}</span>
+              </button>
+            </MediaCardPosterWrap>
+          </Card>
+        </div>
+        {/* card-tilt-wrap */}
 
         <div className="movie-item-info-external">
           <MediaCardTitle className="movie-item-title-external">
             {movie.title}
           </MediaCardTitle>
-          
+
           <div className="movie-item-actions-external">
             <MovieActions
               movie={movie}
@@ -245,8 +269,13 @@ const MovieActions: React.FC<MovieActionsProps> = ({
             variant="primary"
             onClick={handlePrimaryAction}
             aria-pressed={actionState.watchedByCurrentUser}
-            aria-label={actionState.primaryActionAriaLabel ?? actionState.primaryActionLabel}
-            leftIcon={actionState.watchedByCurrentUser ? <CheckIcon /> : <PlayIcon />}
+            aria-label={
+              actionState.primaryActionAriaLabel ??
+              actionState.primaryActionLabel
+            }
+            leftIcon={
+              actionState.watchedByCurrentUser ? <CheckIcon /> : <PlayIcon />
+            }
             className="movie-action-btn--watch"
             disabled={isUpdating}
           >
@@ -262,7 +291,9 @@ const MovieActions: React.FC<MovieActionsProps> = ({
             leftIcon={<BookmarkIcon />}
             className="movie-action-btn--bookmark"
             disabled={isUpdating}
-            aria-label={actionState.notesButtonAriaLabel ?? actionState.notesButtonLabel}
+            aria-label={
+              actionState.notesButtonAriaLabel ?? actionState.notesButtonLabel
+            }
             title={actionState.notesButtonLabel}
           />
         ) : null
