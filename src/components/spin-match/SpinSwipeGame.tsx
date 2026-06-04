@@ -1,15 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMovies } from '@/hooks/movies/useMovies';
-import { useUser } from '@/app/useProviders';
-import type { Movie } from '@/shared/types';
-import MovieDetailsModal from '@/components/movies/MovieDetailsModal';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useMovies } from "@/hooks/movies/useMovies";
+import { useUser } from "@/app/useProviders";
+import type { Movie } from "@/shared/types";
+import MovieDetailsModal from "@/components/movies/MovieDetailsModal";
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
-} from '@/components/spin-wheel/lib/spinWheelEngine';
-import './SpinSwipeGame.css';
+} from "@/components/spin-wheel/lib/spinWheelEngine";
+import "./SpinSwipeGame.css";
 
-type Phase = 'swipe' | 'spin' | 'result';
+type Phase = "swipe" | "spin" | "result";
 
 interface SpinSwipeGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
@@ -53,7 +59,7 @@ function MovieCard({
       onPointerCancel={onPointerUp}
       onClick={handleDetailsClick}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           handleDetailsClick();
         }
@@ -62,32 +68,34 @@ function MovieCard({
       tabIndex={0}
       aria-label={`Open details for ${movie.title}`}
       style={{
-        position: 'absolute',
+        position: "absolute",
         width: 220,
         height: 310,
         borderRadius: 16,
-        overflow: 'hidden',
+        overflow: "hidden",
         background: movie.posterUrl
           ? `url(${movie.posterUrl}) center / cover`
-          : 'var(--color-surface-2)',
-        boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+          : "var(--color-surface-2)",
+        boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
         transform: `translateX(${dragX}px) rotate(${tilt}deg)`,
-        transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-        cursor: isDragging ? 'grabbing' : 'pointer',
-        touchAction: 'none',
-        userSelect: 'none',
+        transition: isDragging
+          ? "none"
+          : "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+        cursor: isDragging ? "grabbing" : "pointer",
+        touchAction: "none",
+        userSelect: "none",
       }}
       title={`Click for details or swipe to choose`}
     >
       {!movie.posterUrl && (
         <span
           style={{
-            position: 'absolute',
+            position: "absolute",
             inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '4rem',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "4rem",
           }}
         >
           🎬
@@ -96,28 +104,35 @@ function MovieCard({
 
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)',
-          padding: '2.5rem 1rem 1rem',
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%)",
+          padding: "2.5rem 1rem 1rem",
         }}
       >
         <p
           style={{
-            color: '#fff',
+            color: "#fff",
             fontWeight: 700,
-            fontSize: '0.95rem',
+            fontSize: "0.95rem",
             lineHeight: 1.3,
-            textShadow: '0 1px 8px rgba(0,0,0,0.8)',
+            textShadow: "0 1px 8px rgba(0,0,0,0.8)",
             margin: 0,
           }}
         >
           {movie.title}
         </p>
         {movie.year && (
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.72rem', margin: '2px 0 0' }}>
+          <p
+            style={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: "0.72rem",
+              margin: "2px 0 0",
+            }}
+          >
             {movie.year}
           </p>
         )}
@@ -126,20 +141,20 @@ function MovieCard({
       <div
         aria-hidden
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 18,
           right: 14,
-          background: '#22c55e',
-          color: '#fff',
+          background: "#22c55e",
+          color: "#fff",
           borderRadius: 8,
-          padding: '4px 10px',
+          padding: "4px 10px",
           fontWeight: 800,
-          fontSize: '0.78rem',
-          letterSpacing: '0.06em',
+          fontSize: "0.78rem",
+          letterSpacing: "0.06em",
           opacity: keepOpacity,
           transform: `rotate(${-tilt + 4}deg)`,
-          border: '2px solid rgba(255,255,255,0.8)',
-          pointerEvents: 'none',
+          border: "2px solid rgba(255,255,255,0.8)",
+          pointerEvents: "none",
         }}
       >
         KEEP ✅
@@ -148,20 +163,20 @@ function MovieCard({
       <div
         aria-hidden
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 18,
           left: 14,
-          background: '#ef4444',
-          color: '#fff',
+          background: "#ef4444",
+          color: "#fff",
           borderRadius: 8,
-          padding: '4px 10px',
+          padding: "4px 10px",
           fontWeight: 800,
-          fontSize: '0.78rem',
-          letterSpacing: '0.06em',
+          fontSize: "0.78rem",
+          letterSpacing: "0.06em",
           opacity: skipOpacity,
           transform: `rotate(${-tilt - 4}deg)`,
-          border: '2px solid rgba(255,255,255,0.8)',
-          pointerEvents: 'none',
+          border: "2px solid rgba(255,255,255,0.8)",
+          pointerEvents: "none",
         }}
       >
         SKIP ❌
@@ -181,46 +196,49 @@ function SpinWheel({
   isSpinning: boolean;
   onSpin: () => void;
 }) {
-  const gradient = useMemo(() => buildSpinWheelGradient(kept.length), [kept.length]);
+  const gradient = useMemo(
+    () => buildSpinWheelGradient(kept.length),
+    [kept.length],
+  );
   const segmentAngle = kept.length > 0 ? 360 / kept.length : 0;
 
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '1.25rem',
-        padding: '1rem',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "1.25rem",
+        padding: "1rem",
       }}
     >
       <p
         style={{
-          color: 'var(--color-text-secondary)',
-          fontSize: '0.72rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
+          color: "var(--color-text-secondary)",
+          fontSize: "0.72rem",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
           margin: 0,
         }}
       >
-        {kept.length} movie{kept.length !== 1 ? 's' : ''} in the wheel
+        {kept.length} movie{kept.length !== 1 ? "s" : ""} in the wheel
       </p>
 
-      <div style={{ position: 'relative', width: 270, height: 270 }}>
+      <div style={{ position: "relative", width: 270, height: 270 }}>
         <div
           aria-hidden
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: -14,
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: "50%",
+            transform: "translateX(-50%)",
             width: 0,
             height: 0,
-            borderLeft: '11px solid transparent',
-            borderRight: '11px solid transparent',
-            borderTop: '24px solid var(--color-accent)',
+            borderLeft: "11px solid transparent",
+            borderRight: "11px solid transparent",
+            borderTop: "24px solid var(--color-accent)",
             zIndex: 10,
-            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4))",
           }}
         />
 
@@ -228,15 +246,15 @@ function SpinWheel({
           style={{
             width: 270,
             height: 270,
-            borderRadius: '50%',
+            borderRadius: "50%",
             background: gradient,
             transform: `rotate(${rotation}deg)`,
             transition: isSpinning
               ? `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.17,0.67,0.12,1)`
-              : 'none',
+              : "none",
             boxShadow:
-              '0 8px 32px rgba(0,0,0,0.45), inset 0 0 0 3px rgba(255,255,255,0.12)',
-            position: 'relative',
+              "0 8px 32px rgba(0,0,0,0.45), inset 0 0 0 3px rgba(255,255,255,0.12)",
+            position: "relative",
           }}
         >
           {kept.map((movie, i) => {
@@ -246,23 +264,25 @@ function SpinWheel({
             const x = 135 + r * Math.cos(rad);
             const y = 135 + r * Math.sin(rad);
             const label =
-              movie.title.length > 11 ? `${movie.title.slice(0, 10)}…` : movie.title;
+              movie.title.length > 11
+                ? `${movie.title.slice(0, 10)}…`
+                : movie.title;
 
             return (
               <span
                 key={movie.id}
                 aria-hidden
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   left: x,
                   top: y,
                   transform: `translate(-50%,-50%) rotate(${angle}deg)`,
-                  fontSize: '0.52rem',
+                  fontSize: "0.52rem",
                   fontWeight: 700,
-                  color: '#fff',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.9)',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '0.02em',
+                  color: "#fff",
+                  textShadow: "0 1px 4px rgba(0,0,0,0.9)",
+                  whiteSpace: "nowrap",
+                  letterSpacing: "0.02em",
                 }}
               >
                 {label}
@@ -274,15 +294,15 @@ function SpinWheel({
         <div
           aria-hidden
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%,-50%)',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
             width: 22,
             height: 22,
-            borderRadius: '50%',
-            background: 'var(--color-surface-0)',
-            border: '3px solid rgba(255,255,255,0.3)',
+            borderRadius: "50%",
+            background: "var(--color-surface-0)",
+            border: "3px solid rgba(255,255,255,0.3)",
             zIndex: 5,
           }}
         />
@@ -293,49 +313,51 @@ function SpinWheel({
         onClick={onSpin}
         disabled={isSpinning || kept.length < 1}
         style={{
-          padding: '0.75rem 2.5rem',
-          background: isSpinning ? 'rgba(255,255,255,0.1)' : 'var(--color-accent)',
-          border: 'none',
+          padding: "0.75rem 2.5rem",
+          background: isSpinning
+            ? "rgba(255,255,255,0.1)"
+            : "var(--color-accent)",
+          border: "none",
           borderRadius: 999,
-          color: '#fff',
+          color: "#fff",
           fontWeight: 700,
-          cursor: isSpinning ? 'not-allowed' : 'pointer',
-          fontSize: '1rem',
-          letterSpacing: '0.04em',
-          transition: 'all 0.2s ease',
+          cursor: isSpinning ? "not-allowed" : "pointer",
+          fontSize: "1rem",
+          letterSpacing: "0.04em",
+          transition: "all 0.2s ease",
         }}
       >
-        {isSpinning ? '🌀 Spinning…' : '🎰 Spin!'}
+        {isSpinning ? "🌀 Spinning…" : "🎰 Spin!"}
       </button>
     </div>
   );
 }
 
-function ResultScreen({ 
-  winner, 
-  onReset, 
+function ResultScreen({
+  winner,
+  onReset,
   onWinnerClick,
-}: { 
-  winner: Movie; 
+}: {
+  winner: Movie;
   onReset: () => void;
   onWinnerClick?: (movie: Movie) => void;
 }) {
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '1.25rem',
-        padding: '1.5rem 1rem',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "1.25rem",
+        padding: "1.5rem 1rem",
       }}
     >
       <p
         style={{
-          color: 'var(--color-text-secondary)',
-          fontSize: '0.72rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
+          color: "var(--color-text-secondary)",
+          fontSize: "0.72rem",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
           margin: 0,
         }}
       >
@@ -348,19 +370,23 @@ function ResultScreen({
           width: 190,
           height: 270,
           borderRadius: 14,
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: '0 20px 52px rgba(0,0,0,0.55)',
+          position: "relative",
+          overflow: "hidden",
+          boxShadow: "0 20px 52px rgba(0,0,0,0.55)",
           background: winner.posterUrl
             ? `url(${winner.posterUrl}) center / cover`
-            : 'var(--color-surface-2)',
-          cursor: onWinnerClick ? 'pointer' : 'default'
+            : "var(--color-surface-2)",
+          cursor: onWinnerClick ? "pointer" : "default",
         }}
-        title={onWinnerClick ? `Click for more details about "${winner.title}"` : undefined}
+        title={
+          onWinnerClick
+            ? `Click for more details about "${winner.title}"`
+            : undefined
+        }
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onWinnerClick?.(winner);
           }
@@ -369,12 +395,12 @@ function ResultScreen({
         {!winner.posterUrl && (
           <span
             style={{
-              position: 'absolute',
+              position: "absolute",
               inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '4rem',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "4rem",
             }}
           >
             🎬
@@ -382,28 +408,35 @@ function ResultScreen({
         )}
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%)',
-            padding: '2rem 0.85rem 0.85rem',
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%)",
+            padding: "2rem 0.85rem 0.85rem",
           }}
         >
           <p
             style={{
-              color: '#fff',
+              color: "#fff",
               fontWeight: 700,
-              fontSize: '0.9rem',
+              fontSize: "0.9rem",
               lineHeight: 1.3,
               margin: 0,
-              textShadow: '0 1px 8px rgba(0,0,0,0.8)',
+              textShadow: "0 1px 8px rgba(0,0,0,0.8)",
             }}
           >
             {winner.title}
           </p>
           {winner.year && (
-            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.7rem', margin: '2px 0 0' }}>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.55)",
+                fontSize: "0.7rem",
+                margin: "2px 0 0",
+              }}
+            >
               {winner.year}
             </p>
           )}
@@ -413,16 +446,17 @@ function ResultScreen({
       <button
         type="button"
         onClick={onReset}
+        aria-label="Play again"
         style={{
-          padding: '0.6rem 1.6rem',
-          background: 'transparent',
-          border: '1.5px solid var(--color-accent)',
+          padding: "0.6rem 1.6rem",
+          background: "transparent",
+          border: "1.5px solid var(--color-accent)",
           borderRadius: 999,
-          color: 'var(--color-accent)',
+          color: "var(--color-accent)",
           fontWeight: 700,
-          cursor: 'pointer',
-          fontSize: '0.85rem',
-          transition: 'all 0.18s ease',
+          cursor: "pointer",
+          fontSize: "0.85rem",
+          transition: "all 0.18s ease",
         }}
       >
         Play Again
@@ -431,36 +465,11 @@ function ResultScreen({
   );
 }
 
-function SpinGameAdHeader() {
-  return (
-    <div className="spin-game-ad-header">
-      <div className="spin-game-ad-header__marquee-wrap" aria-hidden="true">
-        <span className="spin-game-ad-header__marquee">
-          {'🎰 WHEEL OF MOVIE DESTINY!!! 🎰 '}
-          {'★ SWIPE TO KEEP · SPIN TO DECIDE!!! ★ '}
-          {'🎬 TONIGHT\'S WINNER CHOSEN BY FATE!!! 🎬 '}
-          {'🎰 WHEEL OF MOVIE DESTINY!!! 🎰 '}
-          {'★ SWIPE TO KEEP · SPIN TO DECIDE!!! ★ '}
-          {'🎬 TONIGHT\'S WINNER CHOSEN BY FATE!!! 🎬 '}
-        </span>
-      </div>
-      <div className="spin-game-ad-header__body">
-        <span className="spin-game-ad-header__icon" aria-hidden="true">🎰</span>
-        <p className="spin-game-ad-header__title">SPIN &amp; MATCH — WHEEL OF MOVIE DESTINY!!!</p>
-        <span className="spin-game-ad-header__icon" aria-hidden="true">🎰</span>
-      </div>
-      <p className="spin-game-ad-header__sub">
-        SPONSORED BY MOVIE NIGHT INC. ™ · EST. 1999 · ALL RESULTS FINAL!!!
-      </p>
-    </div>
-  );
-}
-
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
 
-  const [phase, setPhase] = useState<Phase>('swipe');
+  const [phase, setPhase] = useState<Phase>("swipe");
   const [kept, setKept] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [winner, setWinner] = useState<Movie | null>(null);
@@ -490,7 +499,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
       if (spinTimeoutRef.current !== null) clearTimeout(spinTimeoutRef.current);
       onSpinningChange?.(false);
     },
-    [onSpinningChange]
+    [onSpinningChange],
   );
 
   const advance = useCallback(
@@ -500,7 +509,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
       setCurrentIndex((i) => i + 1);
       setDragX(0);
     },
-    [currentMovie]
+    [currentMovie],
   );
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -521,8 +530,10 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     dragStartX.current = null;
     const finalX = dragX;
     setDragX(0);
-    if (finalX > SWIPE_THRESHOLD) advance(true);
-    else if (finalX < -SWIPE_THRESHOLD) advance(false);
+    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD)
+      advance(true);
+    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD)
+      advance(false);
   };
 
   const handleSpin = useCallback(() => {
@@ -534,13 +545,13 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     spinTimeoutRef.current = window.setTimeout(() => {
       setWinner(outcome.winner);
       setIsSpinning(false);
-      setPhase('result');
+      setPhase("result");
       spinTimeoutRef.current = null;
     }, SPIN_DURATION_MS);
   }, [isSpinning, kept, rotation]);
 
   const handleReset = useCallback(() => {
-    setPhase('swipe');
+    setPhase("swipe");
     setKept([]);
     setCurrentIndex(0);
     setWinner(null);
@@ -557,7 +568,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     return <EmptyState>Add movies to your watchlist to play.</EmptyState>;
   }
 
-  if (phase === 'result' && winner) {
+  if (phase === "result" && winner) {
     return (
       <div className="spin-game-ad-wrapper">
         <SpinGameAdHeader />
@@ -577,7 +588,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     );
   }
 
-  if (phase === 'spin') {
+  if (phase === "spin") {
     return (
       <div className="spin-game-ad-wrapper">
         <SpinGameAdHeader />
@@ -592,107 +603,116 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   }
 
   return (
-    <div className="spin-game-ad-wrapper">
-    <SpinGameAdHeader />
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.85rem',
-        padding: '0.75rem 1rem 1rem',
-        userSelect: 'none',
-        position: 'relative'
-      }}
-    >
-      <ProgressBar
-        current={currentIndex}
-        total={candidates.length}
-        kept={kept.length}
-      />
-
+    <div className="spin-game-wrapper">
       <div
         style={{
-          position: 'relative',
-          width: '100%',
-          height: 330,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "0.85rem",
+          padding: "0.75rem 1rem 1rem",
+          userSelect: "none",
+          position: "relative",
         }}
       >
-        {isDone ? (
-          <DoneCard kept={kept.length} onReset={handleReset} />
-        ) : (
-          <>
-            {nextMovie && (
-              <div
-                aria-hidden
-                style={{
-                  position: 'absolute',
-                  width: 220,
-                  height: 310,
-                  borderRadius: 16,
-                  background: nextMovie.posterUrl
-                    ? `url(${nextMovie.posterUrl}) center / cover`
-                    : 'var(--color-surface-2)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                  transform: 'scale(0.93) translateY(12px)',
-                  opacity: 0.55,
-                }}
-              />
-            )}
+        <ProgressBar
+          current={currentIndex}
+          total={candidates.length}
+          kept={kept.length}
+        />
 
-            {currentMovie && (
-              <MovieCard
-                movie={currentMovie}
-                dragX={dragX}
-                isDragging={isDragging}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onDetailsClick={setModalMovie}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {!isDone && (
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <ActionButton color="#ef4444" onClick={() => advance(false)} label="Skip" icon="❌" />
-          <ActionButton color="#22c55e" onClick={() => advance(true)} label="Keep" icon="✅" />
-        </div>
-      )}
-
-      {kept.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setPhase('spin')}
+        <div
           style={{
-            padding: '0.7rem 1.7rem',
-            background: 'var(--color-accent)',
-            border: 'none',
-            borderRadius: 999,
-            color: '#fff',
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontSize: '0.88rem',
-            letterSpacing: '0.03em',
+            position: "relative",
+            width: "100%",
+            height: 330,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          🎰 Spin
-        </button>
-      )}
+          {isDone ? (
+            <DoneCard kept={kept.length} onReset={handleReset} />
+          ) : (
+            <>
+              {nextMovie && (
+                <div
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    width: 220,
+                    height: 310,
+                    borderRadius: 16,
+                    background: nextMovie.posterUrl
+                      ? `url(${nextMovie.posterUrl}) center / cover`
+                      : "var(--color-surface-2)",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                    transform: "scale(0.93) translateY(12px)",
+                    opacity: 0.55,
+                  }}
+                />
+              )}
 
-      {modalMovie && (
-        <MovieDetailsModal
-          movie={modalMovie}
-          isOpen={!!modalMovie}
-          onClose={() => setModalMovie(null)}
-        />
-      )}
-    </div>
+              {currentMovie && (
+                <MovieCard
+                  movie={currentMovie}
+                  dragX={dragX}
+                  isDragging={isDragging}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onDetailsClick={setModalMovie}
+                />
+              )}
+            </>
+          )}
+        </div>
+
+        {!isDone && (
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+            <ActionButton
+              color="#ef4444"
+              onClick={() => advance(false)}
+              label="Skip"
+              icon="❌"
+            />
+            <ActionButton
+              color="#22c55e"
+              onClick={() => advance(true)}
+              label="Keep"
+              icon="✅"
+            />
+          </div>
+        )}
+
+        {kept.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setPhase("spin")}
+            style={{
+              padding: "0.7rem 1.7rem",
+              background: "var(--color-accent)",
+              border: "none",
+              borderRadius: 999,
+              color: "#fff",
+              fontWeight: 700,
+              cursor: "pointer",
+              fontSize: "0.88rem",
+              letterSpacing: "0.03em",
+            }}
+          >
+            🎰 Spin
+          </button>
+        )}
+
+        {modalMovie && (
+          <MovieDetailsModal
+            movie={modalMovie}
+            isOpen={!!modalMovie}
+            onClose={() => setModalMovie(null)}
+          />
+        )}
+      </div>
     </div>
   );
 };
@@ -709,21 +729,23 @@ function ProgressBar({
   const pct = total > 0 ? (current / total) * 100 : 0;
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: "100%" }}>
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '0.3rem',
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "0.3rem",
         }}
       >
-        <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.7rem' }}>
+        <span
+          style={{ color: "var(--color-text-secondary)", fontSize: "0.7rem" }}
+        >
           {current} / {total}
         </span>
         <span
           style={{
-            color: '#22c55e',
-            fontSize: '0.7rem',
+            color: "#22c55e",
+            fontSize: "0.7rem",
             fontWeight: 700,
           }}
         >
@@ -732,20 +754,20 @@ function ProgressBar({
       </div>
       <div
         style={{
-          width: '100%',
+          width: "100%",
           height: 4,
-          background: 'rgba(255,255,255,0.08)',
+          background: "rgba(255,255,255,0.08)",
           borderRadius: 999,
-          overflow: 'hidden',
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            height: '100%',
+            height: "100%",
             width: `${pct}%`,
-            background: 'var(--color-accent)',
+            background: "var(--color-accent)",
             borderRadius: 999,
-            transition: 'width 0.3s ease',
+            transition: "width 0.3s ease",
           }}
         />
       </div>
@@ -772,24 +794,24 @@ function ActionButton({
       style={{
         width: 62,
         height: 62,
-        borderRadius: '50%',
+        borderRadius: "50%",
         background: `${color}1a`,
         border: `2px solid ${color}55`,
         color,
-        fontSize: '1.35rem',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'transform 0.12s ease, background 0.12s ease',
+        fontSize: "1.35rem",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "transform 0.12s ease, background 0.12s ease",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = `${color}30`;
-        e.currentTarget.style.transform = 'scale(1.08)';
+        e.currentTarget.style.transform = "scale(1.08)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = `${color}1a`;
-        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.transform = "scale(1)";
       }}
     >
       {icon}
@@ -801,43 +823,46 @@ function DoneCard({ kept, onReset }: { kept: number; onReset: () => void }) {
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '0.85rem',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "0.85rem",
         width: 220,
         height: 310,
-        background: 'var(--color-surface-1)',
+        background: "var(--color-surface-1)",
         borderRadius: 16,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
       }}
     >
-      <span style={{ fontSize: '2.5rem' }}>{kept === 0 ? '😅' : '🎬'}</span>
+      <span style={{ fontSize: "2.5rem" }}>{kept === 0 ? "😅" : "🎬"}</span>
       <p
         style={{
-          color: 'var(--color-text-primary)',
+          color: "var(--color-text-primary)",
           fontWeight: 700,
-          textAlign: 'center',
-          fontSize: '1rem',
+          textAlign: "center",
+          fontSize: "1rem",
           margin: 0,
         }}
       >
-        {kept === 0 ? 'Nothing kept!' : `${kept} movie${kept !== 1 ? 's' : ''} in the pool`}
+        {kept === 0
+          ? "Nothing kept!"
+          : `${kept} movie${kept !== 1 ? "s" : ""} in the pool`}
       </p>
       {kept === 0 && (
         <button
           type="button"
           onClick={onReset}
+          aria-label="Try again"
           style={{
-            padding: '0.45rem 1.1rem',
+            padding: "0.45rem 1.1rem",
             borderRadius: 999,
-            border: 'none',
-            background: 'var(--color-accent)',
-            color: '#fff',
+            border: "none",
+            background: "var(--color-accent)",
+            color: "#fff",
             fontWeight: 700,
-            cursor: 'pointer',
-            fontSize: '0.82rem',
+            cursor: "pointer",
+            fontSize: "0.82rem",
           }}
         >
           Try Again
@@ -851,10 +876,10 @@ function EmptyState({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        padding: '2rem',
-        textAlign: 'center',
-        color: 'var(--color-text-secondary)',
-        fontSize: '0.9rem',
+        padding: "2rem",
+        textAlign: "center",
+        color: "var(--color-text-secondary)",
+        fontSize: "0.9rem",
       }}
     >
       {children}
