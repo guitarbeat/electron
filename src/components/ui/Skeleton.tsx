@@ -1,8 +1,5 @@
 import React from 'react';
-<<<<<<< HEAD
 import { radius } from '@/theme/tokens';
-=======
->>>>>>> origin/main
 
 interface SkeletonProps {
   variant?: "text" | "circular" | "rectangular" | "poster";

@@ -31,7 +31,7 @@ const PENDING_SUGGESTIONS: PlaceSuggestion[] = [
 test('buildPlaceSections groups queue, visited, and suggestions for inline rendering', () => {
   const sections = buildPlaceSections(PLACES, PENDING_SUGGESTIONS);
 
-  assert.deepEqual(sections.queue.map((place) => place.name), ['Museum Cafe']);
+  assert.deepEqual(sections.queue.map((place: Place) => place.name), ['Museum Cafe']);
   assert.deepEqual(sections.completed.map((place: Place) => place.name), ['Sunset Pier']);
-  assert.deepEqual(sections.suggestions.map((ps) => ps.name), ['New Restaurant']);
+  assert.deepEqual(sections.suggestions.map((ps: PlaceSuggestion) => ps.name), ['New Restaurant']);
 });

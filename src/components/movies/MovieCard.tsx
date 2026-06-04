@@ -7,7 +7,6 @@ import {
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-
 } from '@/ui/MediaCard';
 import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
 import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
@@ -72,7 +71,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }),
     [currentUser, memories.length, movie]
   );
-
   const handleOpenDetails = () => {
     const rect =
       posterRef.current?.getBoundingClientRect() ??
