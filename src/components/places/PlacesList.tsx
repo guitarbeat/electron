@@ -10,6 +10,7 @@ import {
 } from '@/ui/CollectionLayout';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
+
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
 const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
