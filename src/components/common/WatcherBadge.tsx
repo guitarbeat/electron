@@ -1,4 +1,4 @@
-import { USER_PHOTOS } from './WatcherBadgePhotos';
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 
 const USER_PHOTOS: Record<string, string[]> = {
