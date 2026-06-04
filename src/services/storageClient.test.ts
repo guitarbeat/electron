@@ -43,7 +43,7 @@ test('storageClient read and write operations', async (t) => {
   await t.test('reads encoded data correctly', () => {
     const read = readStoredJson({
       storageKey: 'testKey',
-      validate: (v: unknown): v is { test: string } => !!(v as { test: string }).test,
+      validate: (v: unknown): v is { test: string } => typeof v === "object" && v !== null && "test" in v,
       clone: (v) => ({ ...v }),
       label: 'test data'
     });
@@ -57,7 +57,7 @@ test('storageClient read and write operations', async (t) => {
 
     const read = readStoredJson({
       storageKey: 'legacyKey',
-      validate: (v: unknown): v is { legacy: string } => !!(v as { legacy: string }).legacy,
+      validate: (v: unknown): v is { legacy: string } => typeof v === "object" && v !== null && "legacy" in v,
       clone: (v) => ({ ...v }),
       label: 'legacy test data'
     });
