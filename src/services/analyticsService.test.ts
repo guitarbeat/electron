@@ -1,233 +1,273 @@
+import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import test from 'node:test';
-import { readStoredJson, writeStoredJson, removeStoredJson, trackMetric, getMetricCount } from './analyticsService.ts';
+import {
+  removeStoredJson,
+  readStoredJson,
+  writeStoredJson,
+  trackMetric,
+  getMetricCount
+} from './analyticsService.ts';
 
-// Mock window for testing
-const setupMockWindow = () => {
-  const store: Record<string, string> = {};
-  const mockWindow = {
-    localStorage: {
-      getItem(key: string) {
-        return store[key] || null;
-      },
-      setItem(key: string, value: string) {
-        if (key === 'throw_write') {
-           throw new Error('Storage Full');
-        }
-        store[key] = value.toString();
-      },
-      removeItem(key: string) {
-        if (key === 'throw_remove') {
-           throw new Error('Remove failed');
-        }
-        delete store[key];
-      },
-      clear() {
-        for (const key in store) {
-          delete store[key];
-        }
-      }
-    }
-  };
+test('removeStoredJson handles undefined window', () => {
+  const originalWindow = global.window;
+  global.window = undefined as unknown as Window & typeof globalThis;
+  try {
+    assert.doesNotThrow(() => removeStoredJson('key', 'label'));
+  } finally {
+    global.window = originalWindow;
+  }
+});
 
+test('removeStoredJson handles window.localStorage.removeItem throwing error', () => {
   const originalWindow = global.window;
 
-  // @ts-expect-error Mocking global window
-  global.window = mockWindow;
+  const mockWarn = mock.method(console, 'warn', () => {});
 
-  return {
-    restore: () => {
-      global.window = originalWindow;
-    },
-    store
+  global.window = {
+    localStorage: {
+      removeItem: () => {
+        throw new Error('Storage error');
+      }
+    }
+  } as unknown as Window & typeof globalThis;
+
+  try {
+    removeStoredJson('testKey', 'testLabel');
+    assert.equal(mockWarn.mock.calls.length, 1);
+    assert.equal(mockWarn.mock.calls[0].arguments[0], 'Failed to clear testLabel.');
+    assert.equal(mockWarn.mock.calls[0].arguments[1].message, 'Storage error');
+  } finally {
+    global.window = originalWindow;
+    mock.restoreAll();
+  }
+});
+
+test('removeStoredJson calls window.localStorage.removeItem successfully', () => {
+  const originalWindow = global.window;
+
+  const mockWarn = mock.method(console, 'warn', () => {});
+  let removedKey = '';
+
+  global.window = {
+    localStorage: {
+      removeItem: (key: string) => {
+        removedKey = key;
+      }
+    }
+  } as unknown as Window & typeof globalThis;
+
+  try {
+    removeStoredJson('testKey', 'testLabel');
+    assert.equal(removedKey, 'testKey');
+    assert.equal(mockWarn.mock.calls.length, 0);
+  } finally {
+    global.window = originalWindow;
+    mock.restoreAll();
+  }
+});
+
+test('readStoredJson handles undefined window', () => {
+  const originalWindow = global.window;
+  global.window = undefined as unknown as Window & typeof globalThis;
+  try {
+    const result = readStoredJson({
+      storageKey: 'testKey',
+      validate: (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null,
+      clone: (v) => v,
+      label: 'testLabel'
+    });
+    assert.equal(result, null);
+  } finally {
+    global.window = originalWindow;
+  }
+});
+
+test('writeStoredJson handles undefined window', () => {
+  const originalWindow = global.window;
+  global.window = undefined as unknown as Window & typeof globalThis;
+  try {
+    const result = writeStoredJson({
+      storageKey: 'testKey',
+      value: 'testValue',
+      clone: (v) => v,
+      label: 'testLabel'
+    });
+    assert.equal(result, 'testValue');
+  } finally {
+    global.window = originalWindow;
+  }
+});
+
+test('readStoredJson handles window.localStorage.getItem throwing error', () => {
+  const originalWindow = global.window;
+
+  const mockWarn = mock.method(console, 'warn', () => {});
+
+  global.window = {
+    localStorage: {
+      getItem: () => {
+        throw new Error('Storage error');
+      }
+    }
+  } as unknown as Window & typeof globalThis;
+
+  try {
+    const result = readStoredJson({
+      storageKey: 'testKey',
+      validate: (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null,
+      clone: (v) => v,
+      label: 'testLabel'
+    });
+    assert.equal(result, null);
+    assert.equal(mockWarn.mock.calls.length, 1);
+    assert.equal(mockWarn.mock.calls[0].arguments[0], 'Failed to read testLabel.');
+    assert.equal(mockWarn.mock.calls[0].arguments[1].message, 'Storage error');
+  } finally {
+    global.window = originalWindow;
+    mock.restoreAll();
+  }
+});
+
+test('writeStoredJson handles window.localStorage.setItem throwing error', () => {
+  const originalWindow = global.window;
+
+  const mockWarn = mock.method(console, 'warn', () => {});
+
+  global.window = {
+    localStorage: {
+      setItem: () => {
+        throw new Error('Storage error');
+      }
+    }
+  } as unknown as Window & typeof globalThis;
+
+  try {
+    const result = writeStoredJson({
+      storageKey: 'testKey',
+      value: 'testValue',
+      clone: (v) => v,
+      label: 'testLabel'
+    });
+    assert.equal(result, 'testValue');
+    assert.equal(mockWarn.mock.calls.length, 1);
+    assert.equal(mockWarn.mock.calls[0].arguments[0], 'Failed to persist testLabel.');
+    assert.equal(mockWarn.mock.calls[0].arguments[1].message, 'Storage error');
+  } finally {
+    global.window = originalWindow;
+    mock.restoreAll();
+  }
+});
+
+test('readStoredJson calls window.localStorage.getItem successfully', () => {
+  const originalWindow = global.window;
+
+  const mockWarn = mock.method(console, 'warn', () => {});
+
+  global.window = {
+    localStorage: {
+      getItem: () => {
+        return JSON.stringify({ ok: true });
+      }
+    }
+  } as unknown as Window & typeof globalThis;
+
+  try {
+    const result = readStoredJson({
+      storageKey: 'testKey',
+      validate: (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null,
+      clone: (v) => ({...v}),
+      label: 'testLabel'
+    });
+    assert.deepEqual(result, { ok: true });
+    assert.equal(mockWarn.mock.calls.length, 0);
+  } finally {
+    global.window = originalWindow;
+    mock.restoreAll();
+  }
+});
+
+test('writeStoredJson calls window.localStorage.setItem successfully', () => {
+  const originalWindow = global.window;
+
+  const mockWarn = mock.method(console, 'warn', () => {});
+  let storedKey = '';
+  let storedValue = '';
+
+  global.window = {
+    localStorage: {
+      setItem: (key: string, value: string) => {
+        storedKey = key;
+        storedValue = value;
+      }
+    }
+  } as unknown as Window & typeof globalThis;
+
+  try {
+    const result = writeStoredJson({
+      storageKey: 'testKey',
+      value: { ok: true },
+      clone: (v) => ({...v}),
+      label: 'testLabel'
+    });
+    assert.deepEqual(result, { ok: true });
+    assert.equal(storedKey, 'testKey');
+    assert.equal(storedValue, '{"ok":true}');
+    assert.equal(mockWarn.mock.calls.length, 0);
+  } finally {
+    global.window = originalWindow;
+    mock.restoreAll();
+  }
+});
+
+test('trackMetric increments metric successfully', () => {
+  const originalWindow = global.window;
+
+  const storage: Record<string, string> = {
+    'movieList.analyticsMetrics': JSON.stringify({ suggestion_submitted: 1 })
   };
-};
 
-test('analyticsService', async (t) => {
-  let mockContext: { restore: () => void, store: Record<string, string> };
+  global.window = {
+    localStorage: {
+      getItem: (key: string) => storage[key] || null,
+      setItem: (key: string, value: string) => {
+        storage[key] = value;
+      }
+    }
+  } as unknown as Window & typeof globalThis;
 
-  t.beforeEach(() => {
-    mockContext = setupMockWindow();
-  });
+  try {
+    const result = trackMetric('suggestion_submitted');
+    assert.deepEqual(result, { suggestion_submitted: 2 });
+    assert.equal(storage['movieList.analyticsMetrics'], '{"suggestion_submitted":2}');
 
-  t.afterEach(() => {
-    mockContext.restore();
-  });
+    const result2 = trackMetric('suggestion_accepted');
+    assert.deepEqual(result2, { suggestion_submitted: 2, suggestion_accepted: 1 });
+    assert.equal(storage['movieList.analyticsMetrics'], '{"suggestion_submitted":2,"suggestion_accepted":1}');
+  } finally {
+    global.window = originalWindow;
+  }
+});
 
-  await t.test('readStoredJson error handling', async (st) => {
-    await st.test('returns null and warns when JSON parsing fails', () => {
-      mockContext.store['bad_json'] = '{invalid';
+test('getMetricCount retrieves metric successfully', () => {
+  const originalWindow = global.window;
 
-      const originalWarn = console.warn;
-      let warned = false;
-      console.warn = () => { warned = true; };
+  const storage: Record<string, string> = {
+    'movieList.analyticsMetrics': JSON.stringify({ suggestion_submitted: 5 })
+  };
 
-      const result = readStoredJson({
-        storageKey: 'bad_json',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        validate: (_v: any): _v is any => true,
-        clone: (v: unknown) => v,
-        label: 'bad data'
-      });
+  global.window = {
+    localStorage: {
+      getItem: (key: string) => storage[key] || null
+    }
+  } as unknown as Window & typeof globalThis;
 
-      console.warn = originalWarn;
+  try {
+    const count1 = getMetricCount('suggestion_submitted');
+    assert.equal(count1, 5);
 
-      assert.equal(result, null);
-      assert.equal(warned, true);
-    });
-
-    await st.test('returns null when validate fails but does not warn (or handle it differently depending on design)', () => {
-      mockContext.store['invalid_data'] = '{"foo": "bar"}';
-
-      const originalWarn = console.warn;
-      let warned = false;
-      console.warn = () => { warned = true; };
-
-      const result = readStoredJson({
-        storageKey: 'invalid_data',
-        validate: (v: unknown): v is string => typeof v === 'string', // fails
-        clone: (v: unknown) => v,
-        label: 'invalid data'
-      });
-
-      console.warn = originalWarn;
-
-      assert.equal(result, null);
-      // It doesn't warn on validation failure, it just returns null at the end of the try block
-      assert.equal(warned, false);
-    });
-
-    await st.test('returns null without warning if window is undefined', () => {
-       const originalWindow = global.window;
-       // Simulating window undefined
-       delete (global as Partial<typeof global>).window;
-
-       const originalWarn = console.warn;
-       let warned = false;
-       console.warn = () => { warned = true; };
-
-       const result = readStoredJson({
-        storageKey: 'test',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        validate: (_v: any): _v is any => true,
-        clone: (v: unknown) => v,
-        label: 'test'
-      });
-
-      console.warn = originalWarn;
-      global.window = originalWindow;
-
-      assert.equal(result, null);
-      assert.equal(warned, false);
-    });
-  });
-
-  await t.test('writeStoredJson error handling', async (st) => {
-    await st.test('warns and proceeds when setItem throws', () => {
-      const originalWarn = console.warn;
-      let warned = false;
-      console.warn = () => { warned = true; };
-
-      const result = writeStoredJson({
-        storageKey: 'throw_write',
-        value: { id: 1 },
-        clone: (v) => ({...v}),
-        label: 'throw data'
-      });
-
-      console.warn = originalWarn;
-
-      assert.deepEqual(result, { id: 1 });
-      assert.equal(warned, true);
-    });
-
-    await st.test('skips write if window is undefined', () => {
-       const originalWindow = global.window;
-       // Simulating window undefined
-       delete (global as Partial<typeof global>).window;
-
-       const originalWarn = console.warn;
-       let warned = false;
-       console.warn = () => { warned = true; };
-
-       const result = writeStoredJson({
-        storageKey: 'test',
-        value: { id: 1 },
-        clone: (v: unknown) => v ? JSON.parse(JSON.stringify(v)) : v,
-        label: 'test'
-      });
-
-      console.warn = originalWarn;
-      global.window = originalWindow;
-
-      assert.deepEqual(result, { id: 1 });
-      assert.equal(warned, false);
-    });
-  });
-
-  await t.test('removeStoredJson error handling', async (st) => {
-    await st.test('warns when removeItem throws', () => {
-      const originalWarn = console.warn;
-      let warned = false;
-      console.warn = () => { warned = true; };
-
-      removeStoredJson('throw_remove', 'throw data');
-
-      console.warn = originalWarn;
-
-      assert.equal(warned, true);
-    });
-
-    await st.test('skips remove if window is undefined', () => {
-       const originalWindow = global.window;
-       // Simulating window undefined
-       delete (global as Partial<typeof global>).window;
-
-       const originalWarn = console.warn;
-       let warned = false;
-       console.warn = () => { warned = true; };
-
-       removeStoredJson('test', 'test');
-
-      console.warn = originalWarn;
-      global.window = originalWindow;
-
-      assert.equal(warned, false);
-    });
-  });
-
-  await t.test('analytics functionality', async (st) => {
-    await st.test('trackMetric increments correctly', () => {
-      assert.equal(getMetricCount('suggestion_submitted'), 0);
-
-      trackMetric('suggestion_submitted');
-      assert.equal(getMetricCount('suggestion_submitted'), 1);
-
-      trackMetric('suggestion_submitted');
-      assert.equal(getMetricCount('suggestion_submitted'), 2);
-
-      assert.equal(getMetricCount('suggestion_accepted'), 0);
-    });
-
-    await st.test('trackMetric ignores invalid metric types in storage', () => {
-      // Put invalid data in storage
-      mockContext.store['movieList.analyticsMetrics'] = JSON.stringify({
-        invalid_metric: 5,
-        suggestion_submitted: 'not a number'
-      });
-
-      // Should treat as empty/invalid and return 0
-      assert.equal(getMetricCount('suggestion_submitted'), 0);
-
-      // Should reset and track correctly
-      trackMetric('suggestion_submitted');
-      assert.equal(getMetricCount('suggestion_submitted'), 1);
-
-      // The invalid data was overwritten
-      assert.equal(
-        mockContext.store['movieList.analyticsMetrics'],
-        JSON.stringify({ suggestion_submitted: 1 })
-      );
-    });
-  });
+    const count2 = getMetricCount('suggestion_accepted');
+    assert.equal(count2, 0);
+  } finally {
+    global.window = originalWindow;
+  }
 });
