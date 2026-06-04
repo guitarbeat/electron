@@ -10,7 +10,6 @@ import {
 } from '@/ui/CollectionLayout';
 import { MovieCardSkeleton } from '@/ui/Skeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
-
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
 const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
@@ -257,7 +256,18 @@ const PlacesList: React.FC = () => {
         </CollectionSection>
       )}
 
-      {/* Modals */}
+      {showEmptyState && (
+        <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+          <CollectionEmptyState className="places-empty-state">
+            <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
+            <strong className="places-empty-state__title">No places yet</strong>
+            <span className="places-empty-state__hint">
+              Add a restaurant, café, park, or anywhere else you&apos;d like to visit together.
+            </span>
+          </CollectionEmptyState>
+        </CollectionGrid>
+      )}
+
       {placeToDelete && (
         <ConfirmDialog
           isOpen={Boolean(placeToDelete)}

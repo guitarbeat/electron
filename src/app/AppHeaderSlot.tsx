@@ -12,9 +12,11 @@ interface AppHeaderSlotContextValue {
   setHasSearch: (v: boolean) => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AppHeaderSlotContext =
   createContext<AppHeaderSlotContextValue | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAppHeaderSlot() {
   return useContext(AppHeaderSlotContext);
 }
