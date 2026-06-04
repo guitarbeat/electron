@@ -122,6 +122,8 @@ const MultipleChoiceEditor: React.FC<{
               size="sm"
               onClick={() => removeOption(idx)}
               disabled={question.options.length <= 2}
+              aria-label="Remove option"
+              title="Remove option"
             >
               ✕
             </Button>
