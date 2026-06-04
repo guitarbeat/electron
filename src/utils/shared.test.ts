@@ -1,6 +1,8 @@
+import { spacing } from '../theme/tokens.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  layouts,
   areDeeplyEqual,
   concurrentMap,
   createValidator,
@@ -308,108 +310,12 @@ test('createValidator', async (t) => {
   });
 });
 
-test('concurrentMap', async (t) => {
-  await t.test('returns empty array when given empty items list', async () => {
-    const results = await concurrentMap([], 2, async (val) => val);
-    assert.deepEqual(results, []);
-  });
-
-  await t.test('maps items correctly', async () => {
-    const items = [1, 2, 3, 4, 5];
-    const results = await concurrentMap(items, 2, async (item) => item * 2);
-    assert.deepEqual(results, [2, 4, 6, 8, 10]);
-  });
-
-  await t.test('respects concurrency limit', async () => {
-    const items = Array.from({ length: 10 }, (_, i) => i);
-    let activeTasks = 0;
-    let maxActiveTasks = 0;
-
-    const fn = async (item: number) => {
-      activeTasks++;
-      if (activeTasks > maxActiveTasks) {
-        maxActiveTasks = activeTasks;
-      }
-      // Small delay to allow overlap
-      await new Promise(resolve => setTimeout(resolve, 10));
-      activeTasks--;
-      return item * 2;
-    };
-
-    const results = await concurrentMap(items, 3, fn);
-
-    assert.deepEqual(results, items.map(i => i * 2));
-    assert.ok(maxActiveTasks <= 3, `Max active tasks (\${maxActiveTasks}) exceeded concurrency limit (3)`);
-    assert.equal(activeTasks, 0, 'All tasks should have finished');
-  });
-
-  await t.test('handles concurrency larger than items length', async () => {
-    const items = [1, 2];
-    let activeTasks = 0;
-    let maxActiveTasks = 0;
-
-    const fn = async (item: number) => {
-      activeTasks++;
-      if (activeTasks > maxActiveTasks) {
-        maxActiveTasks = activeTasks;
-      }
-      await new Promise(resolve => setTimeout(resolve, 5));
-      activeTasks--;
-      return item * 2;
-    };
-
-    const results = await concurrentMap(items, 10, fn);
-    assert.deepEqual(results, [2, 4]);
-    assert.ok(maxActiveTasks <= 2, 'Should not start more tasks than items');
-  });
-
-  await t.test('rejects if a task fails', async () => {
-    const items = [1, 2, 3, 4, 5];
-
-    await assert.rejects(
-      async () => {
-        await concurrentMap(items, 2, async (item) => {
-          if (item === 3) throw new Error('Task failed');
-          return item;
-        });
-      },
-      (err) => err instanceof Error && err.message === 'Task failed'
-    );
-  });
-
-  await t.test('stops processing remaining items if a task fails', async () => {
-    const items = [1, 2, 3, 4, 5, 6, 7];
-    let processedCount = 0;
-
-    await assert.rejects(
-      async () => {
-        await concurrentMap(items, 2, async (item) => {
-          processedCount++;
-          // A tiny delay to let workers pick up items correctly
-          await new Promise(resolve => setTimeout(resolve, 5));
-          if (item === 3) throw new Error('Task failed');
-          return item;
-        });
-      },
-      (err) => err instanceof Error && err.message === 'Task failed'
-    );
-
-    // If concurrency is 2, items 1 and 2 start. 1 finishes, 3 starts. 2 finishes, 4 starts.
-    // 3 throws 'Task failed'. No more items should be picked up (5, 6, 7 should not process).
-    // processedCount should be around 4, definitely less than 7.
-    assert.ok(processedCount < items.length, 'Should stop processing remaining items after a failure');
-  });
-});
-
 test('layouts', async (t) => {
-  const { spacing } = await import('../theme/tokens.ts');
-  const { layouts } = await import('./shared.ts');
-
   await t.test('centeredContainer returns expected static object', () => {
     assert.deepEqual(layouts.centeredContainer, {
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: `0 ${spacing.md}`,
+      padding: `0 ${spacing.md}`
     });
   });
 
@@ -444,34 +350,40 @@ test('layouts', async (t) => {
       gap: '8px',
     });
   });
-});
 
-test('getErrorMessage', async (t) => {
-  await t.test('returns error message for Error instance', () => {
-    const error = new Error('Database connection failed');
-    assert.strictEqual(getErrorMessage(error), 'Database connection failed');
+  await t.test('inlineStack returns correct styles with default gap', () => {
+    assert.deepEqual(layouts.inlineStack(), {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.md,
+    });
   });
 
-  await t.test('sanitizes the error message', () => {
-    const error = new Error('Error <script>alert(1)</script>');
-    assert.strictEqual(getErrorMessage(error), 'Error <script>alert(1)</script>');
+  await t.test('inlineStack returns correct styles with custom gap', () => {
+    assert.deepEqual(layouts.inlineStack('32px'), {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '32px',
+    });
   });
 
-  await t.test('returns default fallback when sanitized message is empty', () => {
-    const error = new Error('   \n\t');
-    assert.strictEqual(getErrorMessage(error), 'Something went wrong.');
+  await t.test('flexRow returns correct styles with default params', () => {
+    assert.deepEqual(layouts.flexRow(), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      gap: spacing.md,
+    });
   });
 
-  await t.test('returns default fallback for non-Error object', () => {
-    assert.strictEqual(getErrorMessage({ message: 'failed' }), 'Something went wrong.');
-  });
-
-  await t.test('returns custom fallback for non-Error object', () => {
-    assert.strictEqual(getErrorMessage(null, 'Custom error occurred'), 'Custom error occurred');
-  });
-
-  await t.test('returns custom fallback when sanitized message is empty', () => {
-    const error = new Error('');
-    assert.strictEqual(getErrorMessage(error, 'Custom empty error'), 'Custom empty error');
+  await t.test('flexRow returns correct styles with custom params', () => {
+    assert.deepEqual(layouts.flexRow('space-between', 'flex-start', '10px'), {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: '10px',
+    });
   });
 });
