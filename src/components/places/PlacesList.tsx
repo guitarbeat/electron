@@ -13,19 +13,9 @@ import {
   CollectionEmptyState,
   CollectionGrid,
   CollectionSection,
-} from '@/ui/CollectionLayout';
-import { MovieCardSkeleton } from '@/ui/Skeleton';
-import SyncBanner from '../ui/SyncBanner.tsx';
-import type { Place, PlaceSuggestion } from '../../shared/types.ts';
-import type { PlacesMapHandle } from './PlacesMap.tsx';
-import PlaceCard from './PlaceCard.tsx';
-import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
-import PlaceEditModal from './PlaceEditModal.tsx';
-import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopControls.tsx';
-import { buildPlaceSections } from './lib/placeSections.ts';
-import { usePlaceSuggestions } from '@/hooks/places';
-import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
-
+} from "@/ui/CollectionLayout";
+import { MovieCardSkeleton } from "@/ui/Skeleton";
+import SyncBanner from "../ui/SyncBanner.tsx";
 import type { Place, PlaceSuggestion } from "../../shared/types.ts";
 import type { PlacesMapHandle } from "./PlacesMap.tsx";
 import PlaceCard from "./PlaceCard.tsx";
@@ -453,7 +443,8 @@ const PlacesList: React.FC = () => {
             <span style={{ fontSize: "2.5rem", lineHeight: 1 }}>🗺️</span>
             <strong className="places-empty-state__title">No places yet</strong>
             <span className="places-empty-state__hint">
-              Add a restaurant, café, park, or anywhere else you&apos;d like to visit together.
+              Add a restaurant, café, park, or anywhere else you&apos;d like to
+              visit together.
             </span>
           </CollectionEmptyState>
         </CollectionGrid>
