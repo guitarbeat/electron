@@ -1,54 +1,71 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
-import { isStateScope, StateClientError } from "./stateTypes.ts";
+import { test, describe } from "node:test";
+import assert from "node:assert";
+
+import { isStateScope, STATE_SCOPES, StateClientError } from "./stateTypes.ts";
 
 describe("stateTypes", () => {
   describe("isStateScope", () => {
-    it("should return true for valid state scopes", () => {
-      assert.equal(isStateScope("movies"), true);
-      assert.equal(isStateScope("messages"), true);
-      assert.equal(isStateScope("memories"), true);
-      assert.equal(isStateScope("dailySpin"), true);
+    test("returns true for all valid STATE_SCOPES", () => {
+      for (const scope of STATE_SCOPES) {
+        assert.strictEqual(
+          isStateScope(scope),
+          true,
+          `Expected scope "${scope}" to be valid`,
+        );
+      }
     });
 
-    it("should return false for invalid state scopes", () => {
-      assert.equal(isStateScope("invalid"), false);
-      assert.equal(isStateScope(""), false);
-      assert.equal(isStateScope("movies_"), false);
+    test("returns false for invalid scopes", () => {
+      const invalidScopes = [
+        "",
+        "foo",
+        "movies_invalid",
+        null,
+        undefined,
+        123,
+        {},
+      ];
+      for (const invalid of invalidScopes) {
+        assert.strictEqual(
+          isStateScope(invalid as string),
+          false,
+          `Expected scope "${invalid}" to be invalid`,
+        );
+      }
     });
   });
 
   describe("StateClientError", () => {
-    it("should correctly instantiate with required parameters", () => {
-      const error = new StateClientError(
-        "Unauthorized access",
-        401,
-        "unauthorized",
-      );
-      assert.equal(error.message, "Unauthorized access");
-      assert.equal(error.status, 401);
-      assert.equal(error.code, "unauthorized");
-      assert.equal(error.name, "StateClientError");
-      assert.equal(error.conflict, undefined);
+    test("constructs an error with message, status, code, and default properties", () => {
+      const error = new StateClientError("Test error message", 404, "invalid");
+
+      assert.strictEqual(error instanceof Error, true);
+      assert.strictEqual(error.name, "StateClientError");
+      assert.strictEqual(error.message, "Test error message");
+      assert.strictEqual(error.status, 404);
+      assert.strictEqual(error.code, "invalid");
+      assert.strictEqual(error.conflict, undefined);
     });
 
-    it("should correctly instantiate with optional conflict parameter", () => {
-      const conflictData = {
-        currentData: { id: 1 },
-        currentVersion: "v1",
+    test("constructs an error with a conflict payload", () => {
+      const conflictPayload = {
+        currentData: { foo: "bar" },
+        currentVersion: "v2",
         conflict: "Version mismatch",
       };
       const error = new StateClientError(
-        "Conflict occurred",
+        "Conflict detected",
         409,
         "conflict",
-        conflictData,
+        conflictPayload,
       );
-      assert.equal(error.message, "Conflict occurred");
-      assert.equal(error.status, 409);
-      assert.equal(error.code, "conflict");
-      assert.equal(error.name, "StateClientError");
-      assert.deepEqual(error.conflict, conflictData);
+
+      assert.strictEqual(error instanceof Error, true);
+      assert.strictEqual(error.name, "StateClientError");
+      assert.strictEqual(error.message, "Conflict detected");
+      assert.strictEqual(error.status, 409);
+      assert.strictEqual(error.code, "conflict");
+      assert.deepStrictEqual(error.conflict, conflictPayload);
     });
   });
 });
