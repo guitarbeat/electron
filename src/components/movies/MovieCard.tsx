@@ -5,8 +5,6 @@ import { executeAction, getErrorMessage, consoleError } from "@/utils";
 import { useCardTilt } from "@/hooks/useCardTilt";
 import Card from "@/ui/Card";
 import {
-
-
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
