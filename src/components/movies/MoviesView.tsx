@@ -368,7 +368,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     } finally {
       setMovieToDelete(null);
     }
-  }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
+  }, [deleteMovie, movieToDelete, setToast]);
+
   const handleToggleError = useCallback(
     (message: string) => {
       setToast({ message, type: "error" });
@@ -432,12 +433,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [
       currentUser,
       isMobile,
-      movieMemories,
       handleToggleError,
-      toggleMemoryPin,
-      toggleWatched,
-      updateMemory,
-    ],
+      movieMemories,
+    ]
   );
 
   const showInitialLoading =
@@ -601,11 +599,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     handleRejectSuggestion,
     isMobile,
     isSuggestionsLoading,
-    processingSuggestionId,
     renderMovieGrid,
     sections,
     showInitialLoading,
     skeletonKeys,
+    processingSuggestionId,
   ]);
   return (
     <div className="watchlist-container places-container">

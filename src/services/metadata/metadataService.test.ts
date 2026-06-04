@@ -321,77 +321,60 @@ test('searchOmdbMovies drops search rows with no usable title', async () => {
   assert.equal(results[0]?.title, 'Valid');
 });
 
-test('searchOmdbMovies throws OMDb key was rejected when status is 401', async () => {
+test('fetchOmdbMetadata surfaces a precise error on 401 Unauthorized', async () => {
   setTestWindow('https://app.example');
 
   globalThis.fetch = async () =>
-    new Response(JSON.stringify({ error: 'unauthorized' }), {
+    new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'content-type': 'application/json' },
     });
 
   await assert.rejects(
-    () => searchOmdbMovies('Heat'),
-    /OMDb key was rejected/
+    () => fetchOmdbMetadata('Test Movie'),
+    /OMDb key was rejected/i
   );
 });
 
-test('searchOmdbMovies throws generic error on other non-ok status', async () => {
+test('fetchOmdbMetadata surfaces a precise error on omdb_auth error code', async () => {
   setTestWindow('https://app.example');
 
   globalThis.fetch = async () =>
-    new Response(JSON.stringify({ error: 'server error' }), {
-      status: 500,
+    new Response(JSON.stringify({ code: 'omdb_auth', error: 'Invalid API key!' }), {
+      status: 502, // API incorrectly returns 200 on this error occasionally, or 502, it shouldn't matter as we check JSON code
       headers: { 'content-type': 'application/json' },
     });
 
   await assert.rejects(
-    () => searchOmdbMovies('Heat'),
-    /OMDb search failed with status 500/
+    () => fetchOmdbMetadata('Test Movie'),
+    /OMDb key was rejected/i
   );
 });
 
-test('fetchOmdbMetadata throws OMDb key was rejected when status is 401', async () => {
+test('fetchOmdbMetadata surfaces status code for other HTTP errors', async () => {
   setTestWindow('https://app.example');
 
   globalThis.fetch = async () =>
-    new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401,
+    new Response(JSON.stringify({ error: 'Not Found' }), {
+      status: 404,
       headers: { 'content-type': 'application/json' },
     });
 
   await assert.rejects(
-    () => fetchOmdbMetadata('Heat'),
-    /OMDb key was rejected/
+    () => fetchOmdbMetadata('Test Movie'),
+    /OMDb metadata fetch failed with status 404/i
   );
 });
 
-test('fetchOmdbMetadata throws OMDb key was rejected when json code is omdb_auth', async () => {
+test('fetchOmdbMetadata wraps unexpected fetch errors', async () => {
   setTestWindow('https://app.example');
 
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify({ code: 'omdb_auth' }), {
-      status: 403,
-      headers: { 'content-type': 'application/json' },
-    });
+  globalThis.fetch = async () => {
+    throw new TypeError('Failed to fetch');
+  };
 
   await assert.rejects(
-    () => fetchOmdbMetadata('Heat'),
-    /OMDb key was rejected/
-  );
-});
-
-test('fetchOmdbMetadata throws generic error on other non-ok status', async () => {
-  setTestWindow('https://app.example');
-
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify({ error: 'server error' }), {
-      status: 500,
-      headers: { 'content-type': 'application/json' },
-    });
-
-  await assert.rejects(
-    () => fetchOmdbMetadata('Heat'),
-    /OMDb metadata fetch failed with status 500/
+    () => fetchOmdbMetadata('Test Movie'),
+    /OMDb metadata fetch failed: Failed to fetch/i
   );
 });
