@@ -15,9 +15,9 @@ import { PlusIcon } from "@/common/Icons";
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
-} from "@/services/metadata";
-import MovieRecommendationComposer from "./MovieRecommendationComposer";
-import { useAppHeaderSlot } from "@/app/AppHeaderSlotContext";
+} from '@/services/metadata';
+import MovieRecommendationComposer from './MovieRecommendationComposer';
+import { useAppHeaderSlot } from '@/app/AppHeaderContexts';
 
 import {
   hasStoredMovieAutocompleteFeedback,

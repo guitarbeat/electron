@@ -582,7 +582,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         )}
       </div>
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentUser,
     focusSearchInput,
