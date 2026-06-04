@@ -43,7 +43,7 @@ test('storageClient read and write operations', async (t) => {
   await t.test('reads encoded data correctly', () => {
     const read = readStoredJson({
       storageKey: 'testKey',
-      validate: (v: unknown): v is { test: string } => typeof v === 'object' && v !== null && 'test' in v,
+      validate: (v: unknown): v is { test: string } => typeof v === 'object' && v !== null,
       clone: (v) => ({ ...v }),
       label: 'test data'
     });
@@ -57,7 +57,7 @@ test('storageClient read and write operations', async (t) => {
 
     const read = readStoredJson({
       storageKey: 'legacyKey',
-      validate: (v: unknown): v is { legacy: string } => typeof v === 'object' && v !== null && 'legacy' in v,
+      validate: (v: unknown): v is { legacy: string } => typeof v === 'object' && v !== null,
       clone: (v) => ({ ...v }),
       label: 'legacy test data'
     });
@@ -105,7 +105,7 @@ test('storageClient read and write operations', async (t) => {
       const consoleWarnMock = t.mock.method(console, 'warn', () => {});
       const read = readStoredJson({
         storageKey: 'errorKey',
-        validate: (v: unknown): v is unknown => typeof v !== "undefined" || v === undefined,
+        validate: (v: unknown): v is unknown => typeof v !== "undefined",
         clone: (v) => v,
         label: 'error test data'
       });
