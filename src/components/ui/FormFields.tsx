@@ -1,5 +1,12 @@
-import React, { useId, useState } from 'react';
-import { colors, radius, spacing, typography, motion, shadows } from '@/theme/tokens';
+import React, { useId, useState } from "react";
+import {
+  colors,
+  radius,
+  spacing,
+  typography,
+  motion,
+  shadows,
+} from "@/theme/tokens";
 
 // ─── Input ────────────────────────────────────────────────────────────────────
 
@@ -14,7 +21,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     {
       label,
       error,
-      className = '',
+      className = "",
       style,
       id: providedId,
       fullWidth = true,
@@ -22,7 +29,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onBlur,
       ...props
     },
-    ref
+    ref,
   ) => {
     const generatedId = useId();
     const id = providedId || generatedId;
@@ -30,12 +37,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div
-        className={`ui-input ${fullWidth ? 'ui-input--full-width' : ''}`}
+        className={`ui-input ${fullWidth ? "ui-input--full-width" : ""}`}
         style={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           gap: spacing.xs,
-          width: fullWidth ? '100%' : 'auto',
+          width: fullWidth ? "100%" : "auto",
         }}
       >
         {label && (
@@ -50,15 +57,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: "relative" }}>
           <input
             ref={ref}
             id={id}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
-            className={`ui-input__field ${error ? 'ui-input__field--error' : ''} ${className}`.trim()}
+            className={`ui-input__field ${error ? "ui-input__field--error" : ""} ${className}`.trim()}
             style={{
-              width: '100%',
+              width: "100%",
               ...style,
             }}
             onFocus={onFocus}
@@ -73,7 +80,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               ...typography.presets.caption,
               color: colors.error,
               marginLeft: spacing.xs,
-              marginTop: '1px',
+              marginTop: "1px",
             }}
           >
             {error}
@@ -81,10 +88,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 // ─── Textarea ─────────────────────────────────────────────────────────────────
 
@@ -95,7 +102,19 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, fullWidth = true, onFocus, onBlur, style, id: providedId, ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      fullWidth = true,
+      onFocus,
+      onBlur,
+      style,
+      id: providedId,
+      ...props
+    },
+    ref,
+  ) => {
     const generatedId = useId();
     const id = providedId || generatedId;
     const errorId = `${id}-error`;
@@ -112,7 +131,13 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     };
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', width: fullWidth ? '100%' : 'auto' }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: fullWidth ? "100%" : "auto",
+        }}
+      >
         {label && (
           <label
             htmlFor={id}
@@ -120,7 +145,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               ...typography.presets.eyebrow,
               marginBottom: spacing.xs,
               color: isFocused ? colors.accent : colors.textSecondary,
-              fontSize: typography.fontSize['3xs'],
+              fontSize: typography.fontSize["3xs"],
               transition: `color ${motion.duration.fast} ${motion.easing.ease}`,
             }}
           >
@@ -130,31 +155,29 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           id={id}
-          aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
           onFocus={handleFocus}
           onBlur={handleBlur}
           className="ui-textarea"
           style={{
-            width: '100%',
-            minHeight: '100px',
+            width: "100%",
+            minHeight: "100px",
             padding: `${spacing.sm} ${spacing.md}`,
-            background:
-              isFocused
-                ? `linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 42%), ${colors.surface1}`
-                : `linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 42%), ${colors.surface0}`,
+            background: isFocused
+              ? `linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 42%), ${colors.surface1}`
+              : `linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 42%), ${colors.surface0}`,
             color: colors.textPrimary,
             border: `1px solid ${error ? colors.error : isFocused ? colors.accent : colors.borderSubtle}`,
             borderRadius: radius.lg,
             fontSize: typography.fontSize.base,
             fontFamily: typography.fontFamilyValue.body,
             lineHeight: typography.lineHeight.normal,
-            outline: 'none',
-            resize: 'vertical',
+            outline: "none",
+            resize: "vertical",
             transition: `all ${motion.duration.fast} ${motion.easing.ease}`,
             boxShadow: isFocused
               ? shadows.buttonActive
-              : 'inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 14px rgba(0,0,0,0.18)',
+              : "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 14px rgba(0,0,0,0.18)",
             ...style,
           }}
           {...props}
@@ -162,9 +185,10 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {error && (
           <span
             id={errorId}
+            role="alert"
             style={{
               color: colors.error,
-              fontSize: typography.fontSize['3xs'],
+              fontSize: typography.fontSize["3xs"],
               marginTop: spacing.xs,
               fontWeight: typography.fontWeight.medium,
               fontFamily: typography.fontFamilyValue.body,
@@ -175,7 +199,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
-Textarea.displayName = 'Textarea';
+Textarea.displayName = "Textarea";
