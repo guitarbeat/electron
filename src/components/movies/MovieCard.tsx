@@ -8,18 +8,14 @@ import {
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-} from "@/ui/MediaCard";
-
-import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from "@/common/Icons";
-import {
-  getMovieActionState,
-  type MovieActionState,
-} from "./lib/movieActionState";
-import MovieTitleEditModal from "./MovieTitleEditModal";
-import MovieDetailsModal from "./MovieDetailsModal";
-import MediaPoster from "@/ui/MediaPoster";
-import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
-import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
+} from '@/ui/MediaCard';
+import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
+import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
+import MovieTitleEditModal from './MovieTitleEditModal';
+import MovieDetailsModal from './MovieDetailsModal';
+import MediaPoster from '@/ui/MediaPoster';
+import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
+import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -74,7 +70,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         currentUser,
         memoriesCount: memories.length,
       }),
-    [currentUser, memories.length, movie],
+    [currentUser, memories.length, movie]
   );
 
   const handleOpenDetails = () => {

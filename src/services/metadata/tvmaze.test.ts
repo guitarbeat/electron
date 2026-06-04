@@ -1,66 +1,97 @@
 import assert from "node:assert/strict";
-import test, { mock } from "node:test";
+import test from "node:test";
 
 import { searchTvMazeShows } from "./tvmaze.ts";
 
 const originalFetch = globalThis.fetch;
 
-test("searchTvMazeShows error paths", async (t) => {
-  t.afterEach(() => {
-    globalThis.fetch = originalFetch;
-    mock.restoreAll();
-  });
+test.afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
 
-  await t.test("throws wrapped error on generic fetch failure", async () => {
-    globalThis.fetch = mock.fn(async () => {
-      throw new Error("Network failure");
-    });
+test("searchTvMazeShows throws an error on non-ok response", async () => {
+  globalThis.fetch = async () => new Response(null, { status: 500 });
+  await assert.rejects(
+    () => searchTvMazeShows("The Bear"),
+    /TVMaze search failed: TVMaze search failed with status 500/,
+  );
+});
 
-    await assert.rejects(searchTvMazeShows("test"), (err: Error) => {
-      assert.strictEqual(err.message, "TVMaze search failed: Network failure");
-      assert.ok(err.cause instanceof Error);
-      assert.strictEqual(err.cause.message, "Network failure");
-      return true;
+test("searchTvMazeShows returns empty array if data is not an array", async () => {
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: "Not an array" }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
     });
-  });
+  const results = await searchTvMazeShows("The Bear");
+  assert.deepEqual(results, []);
+});
 
-  await t.test("throws wrapped error on non-Error failure", async () => {
-    globalThis.fetch = mock.fn(async () => {
-      throw "String error";
-    });
+test("searchTvMazeShows throws an error on network failure", async () => {
+  globalThis.fetch = async () => {
+    throw new Error("Network failure");
+  };
+  await assert.rejects(
+    () => searchTvMazeShows("The Bear"),
+    /TVMaze search failed: Network failure/,
+  );
+});
 
-    await assert.rejects(searchTvMazeShows("test"), (err: Error) => {
-      assert.strictEqual(err.message, "TVMaze search failed: Unknown error");
-      assert.strictEqual(err.cause, "String error");
-      return true;
-    });
-  });
+test("searchTvMazeShows passes AbortError through without wrapping", async () => {
+  globalThis.fetch = async () => {
+    const error = new Error("The operation was aborted");
+    error.name = "AbortError";
+    throw error;
+  };
+  await assert.rejects(
+    () => searchTvMazeShows("The Bear"),
+    (error: unknown) =>
+      error instanceof Error &&
+      error.name === "AbortError" &&
+      error.message === "The operation was aborted",
+  );
+});
 
-  await t.test("re-throws AbortError without wrapping", async () => {
-    globalThis.fetch = mock.fn(async () => {
-      const err = new Error("The operation was aborted");
-      err.name = "AbortError";
-      throw err;
-    });
+test("searchTvMazeShows handles unknown errors in catch block", async () => {
+  globalThis.fetch = async () => {
+    throw "String error";
+  };
+  await assert.rejects(
+    () => searchTvMazeShows("The Bear"),
+    /TVMaze search failed: Unknown error/,
+  );
+});
 
-    await assert.rejects(searchTvMazeShows("test"), (err: Error) => {
-      assert.strictEqual(err.name, "AbortError");
-      assert.strictEqual(err.message, "The operation was aborted");
-      return true;
-    });
-  });
-
-  await t.test("throws error on non-OK response", async () => {
-    globalThis.fetch = mock.fn(async () => {
-      return new Response(null, { status: 404, statusText: "Not Found" });
-    });
-
-    await assert.rejects(searchTvMazeShows("test"), (err: Error) => {
-      assert.strictEqual(
-        err.message,
-        "TVMaze search failed: TVMaze search failed with status 404",
-      );
-      return true;
-    });
-  });
+test("searchTvMazeShows successfully maps valid data", async () => {
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify([
+        {
+          score: 1,
+          show: {
+            id: 11,
+            name: "The Bear",
+            premiered: "2022-06-23",
+            image: {
+              medium: "http://images.example/the-bear.jpg",
+              original: "http://images.example/the-bear-large.jpg",
+            },
+          },
+        },
+      ]),
+      {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      },
+    );
+  const results = await searchTvMazeShows("The Bear");
+  assert.deepEqual(results, [
+    {
+      imdbID: "tv-11",
+      poster: "https://images.example/the-bear.jpg",
+      title: "The Bear",
+      type: "series",
+      year: "2022",
+    },
+  ]);
 });
