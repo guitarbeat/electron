@@ -1,5 +1,5 @@
-import React from 'react';
-import { radius } from '@/theme/tokens';
+import { radius } from "@/theme/tokens";
+import React from "react";
 
 interface SkeletonProps {
   variant?: "text" | "circular" | "rectangular" | "poster";

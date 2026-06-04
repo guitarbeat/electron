@@ -15,9 +15,9 @@ import { PlusIcon } from "@/common/Icons";
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
-} from '@/services/metadata';
-import MovieRecommendationComposer from './MovieRecommendationComposer';
-import { useAppHeaderSlot } from '@/app/AppHeaderContexts';
+} from "@/services/metadata";
+import MovieRecommendationComposer from "./MovieRecommendationComposer";
+import { useAppHeaderSlot } from "@/app/AppHeaderSlot";
 
 import {
   hasStoredMovieAutocompleteFeedback,
@@ -36,7 +36,9 @@ interface MoviesTopControlsProps {
   latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-  setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
+  setSelectedAutocompleteResult: (
+    value: MovieAutocompleteResult | null,
+  ) => void;
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -71,27 +73,12 @@ function AutocompletePosterImage({ src }: { src: string }) {
 const MoviesTopControls = React.forwardRef<
   MoviesTopControlsHandle,
   MoviesTopControlsProps
->(({
-  currentUser,
-  searchQuery,
-  setSearchQuery,
-  setSelectedAutocompleteResult,
-  guestName,
-  setGuestName,
-  onSubmit,
-  onRecommend,
-  onSubmitRecommendation,
-  onCancelRecommendation,
-  recommendationReason,
-  setRecommendationReason,
-  showRecommendationComposer,
-  isAdding,
-  isSubmittingRecommendation,
-  suggestionError,
-  canRecommend,
-}, forwardedRef) => {
-  const slot = useAppHeaderSlot();
-
+>(
+  (
+    {
+      currentUser,
+      searchQuery,
+      setSearchQuery,
       setSelectedAutocompleteResult,
       guestName,
       setGuestName,

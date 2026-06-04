@@ -33,6 +33,7 @@ import MovieCard from "./MovieCard";
 import { buildMovieSections } from "./lib/movieSections";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import "./MoviesPhotoMode.css";
+
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
@@ -90,11 +91,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
     const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
+
     movies.forEach((movie) => {
       movieLookupByTitle.set(movie.title.trim().toLowerCase(), movie.id);
     });
     memories.forEach((memory) => {
       let targetMovieId: string | undefined;
+
       if (memory.movieId) {
         targetMovieId = memory.movieId;
       } else {
@@ -102,6 +105,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           memory.movieTitle.trim().toLowerCase(),
         );
       }
+
       if (targetMovieId) {
         let movieGroup = memoriesByMovieId.get(targetMovieId);
         if (!movieGroup) {
@@ -120,6 +124,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const latestMemory = memories[0] ?? null;
   const upNextSummaryCount =
     sections.queue.length + sections.suggestions.length;
+
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
       previousMoviesRef.current = movies || null;
@@ -186,6 +191,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
+
     const title =
       selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
@@ -268,6 +274,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
+
     const title =
       selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
@@ -432,14 +439,17 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       updateMemory,
     ],
   );
+
   const showInitialLoading =
     isLoading &&
     isSuggestionsLoading &&
     movies.length === 0 &&
     pendingSuggestions.length === 0;
+
   const cardsReady =
     !showInitialLoading && (movies.length > 0 || pendingSuggestions.length > 0);
   useCinematicEntrance(moviesBodyRef, cardsReady, ".movie-item-container");
+
   const moviesBody = useMemo(() => {
     if (showInitialLoading) {
       return (
@@ -482,6 +492,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         </CollectionGrid>
       );
     }
+
     const isQueueEmpty =
       sections.queue.length === 0 &&
       sections.suggestions.length === 0 &&
