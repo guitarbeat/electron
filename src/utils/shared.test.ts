@@ -1,17 +1,18 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import {
-  layouts,
+
   areDeeplyEqual,
   concurrentMap,
   createValidator,
   executeAction,
-  getErrorMessage,
+
   isValidUrl,
   consoleError,
   parseJsonContent,
-  readApiErrorMessage,
+
   sanitizeInput,
+  shuffleArray,
 } from "./shared.ts";
 
 test('areDeeplyEqual', async (t) => {
@@ -511,5 +512,57 @@ test("consoleError", async (t) => {
     } finally {
       m.mock.restore();
     }
+  });
+});
+
+test("shuffleArray", async (t) => {
+  await t.test("returns an empty array when given an empty array", () => {
+    const arr: number[] = [];
+    const result = shuffleArray(arr);
+    assert.deepEqual(result, []);
+    assert.notEqual(result, arr);
+  });
+
+  await t.test("returns an array with the same single element", () => {
+    const arr = [42];
+    const result = shuffleArray(arr);
+    assert.deepEqual(result, [42]);
+    assert.notEqual(result, arr);
+  });
+
+  await t.test("returns a new array and does not mutate the original", () => {
+    const arr = [1, 2, 3, 4, 5];
+    const arrCopy = [...arr];
+    const result = shuffleArray(arr);
+
+    assert.notEqual(result, arr);
+    assert.deepEqual(arr, arrCopy, "Original array was mutated");
+  });
+
+  await t.test("retains all original elements", () => {
+    const arr = [1, 2, 3, 4, 5];
+    const result = shuffleArray(arr);
+
+    assert.equal(result.length, arr.length);
+    for (const item of arr) {
+      assert.equal(result.includes(item), true);
+    }
+  });
+
+  await t.test("produces different permutations over multiple runs", () => {
+    // There is a tiny chance that shuffling a large array yields the exact same order.
+    // So we'll shuffle it a few times and ensure at least one result differs from the original.
+    const arr = Array.from({ length: 20 }, (_, i) => i);
+    let allSame = true;
+
+    for (let i = 0; i < 5; i++) {
+      const result = shuffleArray(arr);
+      if (JSON.stringify(result) !== JSON.stringify(arr)) {
+        allSame = false;
+        break;
+      }
+    }
+
+    assert.equal(allSame, false, "shuffleArray returned the exact same order 5 times in a row for a 20-element array");
   });
 });
