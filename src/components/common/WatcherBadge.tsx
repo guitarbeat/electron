@@ -1,5 +1,7 @@
-import { USER_PHOTOS } from "./WatcherBadgeData";
-import React from "react";
+import { USER_PHOTOS } from './WatcherBadgePhotos';
+import React from 'react';
+
+
 
 interface WatcherBadgePhotoProps {
   user: string;

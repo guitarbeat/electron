@@ -73,6 +73,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
     [currentUser, memories.length, movie]
   );
 
+
   const handleOpenDetails = () => {
     const rect =
       posterRef.current?.getBoundingClientRect() ??

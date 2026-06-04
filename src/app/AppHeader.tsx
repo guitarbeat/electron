@@ -1,14 +1,14 @@
-import type { FC } from "react";
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
-import { useUser } from "@/app/useProviders";
-import { USER_PHOTOS, type MainTab, type User } from "@/shared/types";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import { usePins } from "@/hooks/usePins";
-import { USER_OPTIONS, consoleError, getErrorMessage } from "@/utils";
-import ThemeToggle from "@/ui/ThemeToggle";
-import PinDialog from "@/common/PinDialog";
-import { useAppHeaderSlot } from "@/app/AppHeaderSlotContext";
-import "./AppHeader.css";
+import type { FC } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useUser } from '@/app/useProviders';
+import { USER_PHOTOS, type MainTab, type User } from '@/shared/types';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import { usePins } from '@/hooks/usePins';
+import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
+import ThemeToggle from '@/ui/ThemeToggle';
+import PinDialog from '@/common/PinDialog';
+import { useAppHeaderSlot } from '@/app/AppHeaderContexts';
+import './AppHeader.css';
 
 interface AppHeaderProps {
   activeTab: MainTab;
