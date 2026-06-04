@@ -36,7 +36,8 @@ interface MoviesTopControlsProps {
   latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-    setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
+
+  setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
