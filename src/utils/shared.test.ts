@@ -12,71 +12,63 @@ import {
 } from './shared.ts';
 
 test('areDeeplyEqual', async (t) => {
-  await t.test('returns true for identical primitives', () => {
-    assert.strictEqual(areDeeplyEqual(1, 1), true);
-    assert.strictEqual(areDeeplyEqual('hello', 'hello'), true);
-    assert.strictEqual(areDeeplyEqual(true, true), true);
-    assert.strictEqual(areDeeplyEqual(null, null), true);
-    assert.strictEqual(areDeeplyEqual(undefined, undefined), true);
-  });
+  const testCases = [
+    // Primitives
+    { left: 1, right: 1, expected: true, desc: 'identical numbers' },
+    { left: 'hello', right: 'hello', expected: true, desc: 'identical strings' },
+    { left: true, right: true, expected: true, desc: 'identical booleans' },
+    { left: null, right: null, expected: true, desc: 'identical nulls' },
+    { left: undefined, right: undefined, expected: true, desc: 'identical undefined' },
 
-  await t.test('returns false for different primitives', () => {
-    assert.strictEqual(areDeeplyEqual(1, 2), false);
-    assert.strictEqual(areDeeplyEqual('hello', 'world'), false);
-    assert.strictEqual(areDeeplyEqual(true, false), false);
-    assert.strictEqual(areDeeplyEqual(null, undefined), false);
-    assert.strictEqual(areDeeplyEqual(1, '1' as unknown as number), false);
-  });
+    // Different Primitives
+    { left: 1, right: 2, expected: false, desc: 'different numbers' },
+    { left: 'hello', right: 'world', expected: false, desc: 'different strings' },
+    { left: true, right: false, expected: false, desc: 'different booleans' },
+    { left: null, right: undefined, expected: false, desc: 'null vs undefined' },
+    { left: 1, right: '1', expected: false, desc: 'number vs string' },
 
-  await t.test('returns true for deeply equal objects', () => {
-    assert.strictEqual(areDeeplyEqual({}, {}), true);
-    assert.strictEqual(areDeeplyEqual({ a: 1, b: 2 }, { a: 1, b: 2 }), true);
-    assert.strictEqual(areDeeplyEqual({ a: 1, b: 2 }, { b: 2, a: 1 }), true);
-    assert.strictEqual(areDeeplyEqual({ a: { b: 1 } }, { a: { b: 1 } }), true);
-  });
+    // Objects
+    { left: {}, right: {}, expected: true, desc: 'empty objects' },
+    { left: { a: 1, b: 2 }, right: { a: 1, b: 2 }, expected: true, desc: 'shallow objects, same order' },
+    { left: { a: 1, b: 2 }, right: { b: 2, a: 1 }, expected: true, desc: 'shallow objects, different order' },
+    { left: { a: { b: 1 } }, right: { a: { b: 1 } }, expected: true, desc: 'nested objects' },
+    { left: { a: 1 }, right: { a: 2 }, expected: false, desc: 'objects with different values' },
+    { left: { a: 1 }, right: { b: 1 }, expected: false, desc: 'objects with different keys' },
+    { left: { a: 1 }, right: { a: 1, b: 2 }, expected: false, desc: 'objects with different number of keys' },
+    { left: { a: { b: 1 } }, right: { a: { b: 2 } }, expected: false, desc: 'nested objects with different values' },
 
-  await t.test('returns false for different objects', () => {
-    assert.strictEqual(areDeeplyEqual({ a: 1 }, { a: 2 }), false);
-    assert.strictEqual(areDeeplyEqual({ a: 1 }, { b: 1 }), false);
-    assert.strictEqual(areDeeplyEqual({ a: 1 }, { a: 1, b: 2 }), false);
-    assert.strictEqual(areDeeplyEqual({ a: { b: 1 } }, { a: { b: 2 } }), false);
-  });
+    // Arrays
+    { left: [], right: [], expected: true, desc: 'empty arrays' },
+    { left: [1, 2, 3], right: [1, 2, 3], expected: true, desc: 'shallow arrays' },
+    { left: [{ a: 1 }], right: [{ a: 1 }], expected: true, desc: 'arrays with objects' },
+    { left: [[1]], right: [[1]], expected: true, desc: 'nested arrays' },
+    { left: [1, 2], right: [1, 2, 3], expected: false, desc: 'arrays with different lengths' },
+    { left: [1, 2], right: [2, 1], expected: false, desc: 'arrays with different order' },
+    { left: [{ a: 1 }], right: [{ a: 2 }], expected: false, desc: 'arrays with different object values' },
 
-  await t.test('returns true for deeply equal arrays', () => {
-    assert.strictEqual(areDeeplyEqual([], []), true);
-    assert.strictEqual(areDeeplyEqual([1, 2, 3], [1, 2, 3]), true);
-    assert.strictEqual(areDeeplyEqual([{ a: 1 }], [{ a: 1 }]), true);
-    assert.strictEqual(areDeeplyEqual([[1]], [[1]]), true);
-  });
+    // Mixed & Type mismatches
+    {
+      left: { a: [1, { b: 2 }], c: 'hello', d: null },
+      right: { a: [1, { b: 2 }], c: 'hello', d: null },
+      expected: true,
+      desc: 'complex mixed structures'
+    },
+    {
+      left: { a: [1, { b: 2 }], c: 'hello', d: null },
+      right: { a: [1, { b: 2 }], c: 'hello', d: undefined },
+      expected: false,
+      desc: 'complex mixed structures with subtle difference'
+    },
+    { left: {}, right: [], expected: false, desc: 'object vs array' },
+    { left: null, right: {}, expected: false, desc: 'null vs object' },
+    { left: 1, right: { a: 1 }, expected: false, desc: 'primitive vs object' },
+  ];
 
-  await t.test('returns false for different arrays', () => {
-    assert.strictEqual(areDeeplyEqual([1, 2], [1, 2, 3]), false);
-    assert.strictEqual(areDeeplyEqual([1, 2], [2, 1]), false);
-    assert.strictEqual(areDeeplyEqual([{ a: 1 }], [{ a: 2 }]), false);
-  });
-
-  await t.test('handles mixed structures', () => {
-    const left = {
-      a: [1, { b: 2 }],
-      c: 'hello',
-      d: null
-    };
-    const right = {
-      a: [1, { b: 2 }],
-      c: 'hello',
-      d: null
-    };
-    assert.strictEqual(areDeeplyEqual(left, right), true);
-
-    const different = { ...right, d: undefined as unknown as null };
-    assert.strictEqual(areDeeplyEqual(left, different), false);
-  });
-
-  await t.test('handles type mismatches', () => {
-    assert.strictEqual(areDeeplyEqual({} as unknown, [] as unknown), false);
-    assert.strictEqual(areDeeplyEqual(null as unknown, {} as unknown), false);
-    assert.strictEqual(areDeeplyEqual(1 as unknown, { a: 1 } as unknown), false);
-  });
+  for (const { left, right, expected, desc } of testCases) {
+    await t.test(`${desc}`, () => {
+      assert.strictEqual(areDeeplyEqual(left, right), expected);
+    });
+  }
 });
 
 test('executeAction', async (t) => {

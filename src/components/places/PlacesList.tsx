@@ -12,11 +12,17 @@ import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
 import PlaceCard from './PlaceCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
+import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
+import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
+
+const PlacesMap = React.lazy(() => import('./PlacesMap.tsx'));
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
+  const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
+  const placesBodyRef = useRef<HTMLDivElement | null>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
@@ -87,6 +93,27 @@ const PlacesList: React.FC = () => {
   );
 
   useEffect(() => () => clearTimeout(activeTimerRef.current), []);
+
+  const focusPlacesSearch = useCallback(() => {
+    placesTopControlsRef.current?.focusSearchInput();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === '/' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !event.metaKey &&
+        !event.ctrlKey
+      ) {
+        event.preventDefault();
+        focusPlacesSearch();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [focusPlacesSearch]);
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
@@ -234,18 +261,97 @@ const PlacesList: React.FC = () => {
   const hasPlaces = allPlaces.length > 0;
   const showEmptyState = !isLoading && !hasPlaces;
 
-  return (
-    <div className="watchlist-container places-container">
-      {/* ... (rest of the file remains same until TO TRY section) */}
+  const placeCardsReady = !isLoading && (hasPlaces || pendingSuggestions.length > 0);
+  useCinematicEntrance(placesBodyRef, placeCardsReady, '.card-tilt-wrap');
 
-      {/* TO TRY section */}
+  return (
+    <div ref={placesBodyRef} className="watchlist-container places-container">
+      {isDegraded && (
+        <SyncBanner
+          isBlocked={isSyncBlocked}
+          onRetry={() => void retrySync()}
+          label={
+            isSyncBlocked
+              ? 'A shared places change conflicted with local edits. Refresh and retry.'
+              : syncWarning || 'Places changes are being kept locally until shared sync recovers.'
+          }
+        />
+      )}
+      {isSuggestionsDegraded && (
+        <SyncBanner
+          isBlocked={isSuggestionsSyncBlocked}
+          onRetry={() => void retrySuggestionsSync()}
+          label={suggestionsSyncWarning || 'Place suggestion changes are being kept locally.'}
+        />
+      )}
+
+      <PlacesTopControls
+        ref={placesTopControlsRef}
+        queueCount={sections.queue.length}
+        visitedCount={sections.completed.length}
+        pinnedCount={pinnedCount}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        suggestionAutocompleteResults={pendingSuggestions}
+        onSubmit={handleAddAction}
+        onSuggest={handleSuggestAction}
+        isAdding={isAdding}
+        isSuggesting={isSuggesting}
+        suggestionError={suggestionError}
+        canEdit={Boolean(currentUser)}
+      />
+
+      {isLoading && allPlaces.length === 0 && (
+        <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <CollectionEmptyState padding="1.5rem" className="collection-empty-state--tight">
+              <span style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🗺️</span>
+              <strong>Loading your places</strong>
+            </CollectionEmptyState>
+            <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
+              {['p1', 'p2', 'p3', 'p4'].map((key) => (
+                <MovieCardSkeleton key={key} />
+              ))}
+            </div>
+          </div>
+        </CollectionGrid>
+      )}
+
+      {allPlaces.length > 0 && (
+        <React.Suspense fallback={<div className="places-map-placeholder" />}>
+          <PlacesMap
+            ref={mapRef}
+            places={allPlaces}
+            canEdit={Boolean(currentUser)}
+            onUpdatePlace={async (id, updates) => { await updatePlace(id, updates); }}
+          />
+        </React.Suspense>
+      )}
+
+      {pendingSuggestions.length > 0 && (
+        <CollectionSection heading="Incoming" tone="incoming">
+          <CollectionGrid className="watchlist-content places-grid" minColumnWidth="clamp(10.5rem, 24vw, 13rem)">
+            {pendingSuggestions.map((suggestion) => (
+              <PlaceSuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                onAccept={() => void handleAcceptSuggestion(suggestion)}
+                onReject={() => void handleRejectSuggestion(suggestion.id, suggestion.name)}
+                canRespond={Boolean(currentUser)}
+                disableActions={!currentUser}
+                isProcessing={processingSuggestionId === suggestion.id}
+              />
+            ))}
+          </CollectionGrid>
+        </CollectionSection>
+      )}
+
       {sections.queue.length > 0 && (
         <CollectionSection heading="To Try">
           {renderPlaceGrid(sections.queue, 'Search above to add your first spot')}
         </CollectionSection>
       )}
 
-      {/* VISITED section */}
       {sections.completed.length > 0 && (
         <CollectionSection heading="Visited" tone="completed">
           {renderPlaceGrid(sections.completed, 'No visited places yet')}
@@ -258,7 +364,7 @@ const PlacesList: React.FC = () => {
             <span style={{ fontSize: '2.5rem', lineHeight: 1 }}>🗺️</span>
             <strong className="places-empty-state__title">No places yet</strong>
             <span className="places-empty-state__hint">
-              Add a restaurant, café, park, or anywhere else you&apos;d like to visit together.
+              Add a restaurant, café, park, or anywhere else you'd like to visit together.
             </span>
           </CollectionEmptyState>
         </CollectionGrid>
