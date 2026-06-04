@@ -289,11 +289,9 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
         <div className="spin-wheel-panel">
           {selectedMovie ? (() => {
-            const isWatchedByCurrentUser = currentUser
-              ? selectedMovie.watchedBy.includes(currentUser)
-              : false;
+            const isWatchedByCurrentUser = currentUser ? selectedMovie.watchedBy.includes(currentUser) : false;
             return (
-            <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
+              <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
               <p className="spin-wheel-panel__eyebrow">Tonight&apos;s Pick</p>
               <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
               <p className="spin-wheel-panel__meta">
