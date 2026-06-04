@@ -1,6 +1,5 @@
-import { spacing } from '../theme/tokens.ts';
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import test from "node:test";
+import assert from "node:assert/strict";
 import {
   layouts,
   areDeeplyEqual,
@@ -11,297 +10,331 @@ import {
   isValidUrl,
   normalizeMovieTitle,
   parseJsonContent,
+  formatMessageTimestamp,
   sanitizeInput,
-} from './shared.ts';
+} from "./shared.ts";
 
-test('areDeeplyEqual', async (t) => {
-  const testCases = [
-    // Primitives
-    { left: 1, right: 1, expected: true, desc: 'identical numbers' },
-    { left: 'hello', right: 'hello', expected: true, desc: 'identical strings' },
-    { left: true, right: true, expected: true, desc: 'identical booleans' },
-    { left: null, right: null, expected: true, desc: 'identical nulls' },
-    { left: undefined, right: undefined, expected: true, desc: 'identical undefined' },
+test("areDeeplyEqual", async (t) => {
+  await t.test("returns true for identical primitives", () => {
+    assert.strictEqual(areDeeplyEqual(1, 1), true);
+    assert.strictEqual(areDeeplyEqual("hello", "hello"), true);
+    assert.strictEqual(areDeeplyEqual(true, true), true);
+    assert.strictEqual(areDeeplyEqual(null, null), true);
+    assert.strictEqual(areDeeplyEqual(undefined, undefined), true);
+  });
 
-    // Different Primitives
-    { left: 1, right: 2, expected: false, desc: 'different numbers' },
-    { left: 'hello', right: 'world', expected: false, desc: 'different strings' },
-    { left: true, right: false, expected: false, desc: 'different booleans' },
-    { left: null, right: undefined, expected: false, desc: 'null vs undefined' },
-    { left: 1, right: '1', expected: false, desc: 'number vs string' },
+  await t.test("returns false for different primitives", () => {
+    assert.strictEqual(areDeeplyEqual(1, 2), false);
+    assert.strictEqual(areDeeplyEqual("hello", "world"), false);
+    assert.strictEqual(areDeeplyEqual(true, false), false);
+    assert.strictEqual(areDeeplyEqual(null, undefined), false);
+    assert.strictEqual(areDeeplyEqual(1, "1" as unknown as number), false);
+  });
 
-    // Objects
-    { left: {}, right: {}, expected: true, desc: 'empty objects' },
-    { left: { a: 1, b: 2 }, right: { a: 1, b: 2 }, expected: true, desc: 'shallow objects, same order' },
-    { left: { a: 1, b: 2 }, right: { b: 2, a: 1 }, expected: true, desc: 'shallow objects, different order' },
-    { left: { a: { b: 1 } }, right: { a: { b: 1 } }, expected: true, desc: 'nested objects' },
-    { left: { a: 1 }, right: { a: 2 }, expected: false, desc: 'objects with different values' },
-    { left: { a: 1 }, right: { b: 1 }, expected: false, desc: 'objects with different keys' },
-    { left: { a: 1 }, right: { a: 1, b: 2 }, expected: false, desc: 'objects with different number of keys' },
-    { left: { a: { b: 1 } }, right: { a: { b: 2 } }, expected: false, desc: 'nested objects with different values' },
+  await t.test("returns true for deeply equal objects", () => {
+    assert.strictEqual(areDeeplyEqual({}, {}), true);
+    assert.strictEqual(areDeeplyEqual({ a: 1, b: 2 }, { a: 1, b: 2 }), true);
+    assert.strictEqual(areDeeplyEqual({ a: 1, b: 2 }, { b: 2, a: 1 }), true);
+    assert.strictEqual(areDeeplyEqual({ a: { b: 1 } }, { a: { b: 1 } }), true);
+  });
 
-    // Arrays
-    { left: [], right: [], expected: true, desc: 'empty arrays' },
-    { left: [1, 2, 3], right: [1, 2, 3], expected: true, desc: 'shallow arrays' },
-    { left: [{ a: 1 }], right: [{ a: 1 }], expected: true, desc: 'arrays with objects' },
-    { left: [[1]], right: [[1]], expected: true, desc: 'nested arrays' },
-    { left: [1, 2], right: [1, 2, 3], expected: false, desc: 'arrays with different lengths' },
-    { left: [1, 2], right: [2, 1], expected: false, desc: 'arrays with different order' },
-    { left: [{ a: 1 }], right: [{ a: 2 }], expected: false, desc: 'arrays with different object values' },
+  await t.test("returns false for different objects", () => {
+    assert.strictEqual(areDeeplyEqual({ a: 1 }, { a: 2 }), false);
+    assert.strictEqual(areDeeplyEqual({ a: 1 }, { b: 1 }), false);
+    assert.strictEqual(areDeeplyEqual({ a: 1 }, { a: 1, b: 2 }), false);
+    assert.strictEqual(areDeeplyEqual({ a: { b: 1 } }, { a: { b: 2 } }), false);
+  });
 
-    // Mixed & Type mismatches
-    {
-      left: { a: [1, { b: 2 }], c: 'hello', d: null },
-      right: { a: [1, { b: 2 }], c: 'hello', d: null },
-      expected: true,
-      desc: 'complex mixed structures'
-    },
-    {
-      left: { a: [1, { b: 2 }], c: 'hello', d: null },
-      right: { a: [1, { b: 2 }], c: 'hello', d: undefined },
-      expected: false,
-      desc: 'complex mixed structures with subtle difference'
-    },
-    { left: {}, right: [], expected: false, desc: 'object vs array' },
-    { left: null, right: {}, expected: false, desc: 'null vs object' },
-    { left: 1, right: { a: 1 }, expected: false, desc: 'primitive vs object' },
-  ];
+  await t.test("returns true for deeply equal arrays", () => {
+    assert.strictEqual(areDeeplyEqual([], []), true);
+    assert.strictEqual(areDeeplyEqual([1, 2, 3], [1, 2, 3]), true);
+    assert.strictEqual(areDeeplyEqual([{ a: 1 }], [{ a: 1 }]), true);
+    assert.strictEqual(areDeeplyEqual([[1]], [[1]]), true);
+  });
 
-  for (const { left, right, expected, desc } of testCases) {
-    await t.test(`${desc}`, () => {
-      assert.strictEqual(areDeeplyEqual(left, right), expected);
-    });
-  }
+  await t.test("returns false for different arrays", () => {
+    assert.strictEqual(areDeeplyEqual([1, 2], [1, 2, 3]), false);
+    assert.strictEqual(areDeeplyEqual([1, 2], [2, 1]), false);
+    assert.strictEqual(areDeeplyEqual([{ a: 1 }], [{ a: 2 }]), false);
+  });
+
+  await t.test("handles mixed structures", () => {
+    const left = {
+      a: [1, { b: 2 }],
+      c: "hello",
+      d: null,
+    };
+    const right = {
+      a: [1, { b: 2 }],
+      c: "hello",
+      d: null,
+    };
+    assert.strictEqual(areDeeplyEqual(left, right), true);
+
+    const different = { ...right, d: undefined as unknown as null };
+    assert.strictEqual(areDeeplyEqual(left, different), false);
+  });
+
+  await t.test("handles type mismatches", () => {
+    assert.strictEqual(areDeeplyEqual({} as unknown, [] as unknown), false);
+    assert.strictEqual(areDeeplyEqual(null as unknown, {} as unknown), false);
+    assert.strictEqual(
+      areDeeplyEqual(1 as unknown, { a: 1 } as unknown),
+      false,
+    );
+  });
 });
 
-test('executeAction', async (t) => {
-  await t.test('runs action and completion in order', () => {
+test("executeAction", async (t) => {
+  await t.test("runs action and completion in order", () => {
     const calls: string[] = [];
 
     executeAction(
       () => {
-        calls.push('action');
+        calls.push("action");
       },
       () => {
-        calls.push('complete');
-      }
+        calls.push("complete");
+      },
     );
 
-    assert.deepEqual(calls, ['action', 'complete']);
+    assert.deepEqual(calls, ["action", "complete"]);
   });
 
-  await t.test('still runs completion when action is missing', () => {
+  await t.test("still runs completion when action is missing", () => {
     const calls: string[] = [];
 
     executeAction(undefined, () => {
-      calls.push('complete');
+      calls.push("complete");
     });
 
-    assert.deepEqual(calls, ['complete']);
+    assert.deepEqual(calls, ["complete"]);
   });
 });
 
-test('isValidUrl', async (t) => {
-  await t.test('returns true for valid HTTP URLs', () => {
-    assert.equal(isValidUrl('http://example.com'), true);
-    assert.equal(isValidUrl('http://www.example.com'), true);
-    assert.equal(isValidUrl('http://example.com/path?query=1#fragment'), true);
+test("isValidUrl", async (t) => {
+  await t.test("returns true for valid HTTP URLs", () => {
+    assert.equal(isValidUrl("http://example.com"), true);
+    assert.equal(isValidUrl("http://www.example.com"), true);
+    assert.equal(isValidUrl("http://example.com/path?query=1#fragment"), true);
   });
 
-  await t.test('returns true for valid HTTPS URLs', () => {
-    assert.equal(isValidUrl('https://example.com'), true);
-    assert.equal(isValidUrl('https://www.example.com'), true);
-    assert.equal(isValidUrl('https://example.com/path?query=1#fragment'), true);
+  await t.test("returns true for valid HTTPS URLs", () => {
+    assert.equal(isValidUrl("https://example.com"), true);
+    assert.equal(isValidUrl("https://www.example.com"), true);
+    assert.equal(isValidUrl("https://example.com/path?query=1#fragment"), true);
   });
 
-  await t.test('returns false for empty or missing input', () => {
-    assert.equal(isValidUrl(''), false);
+  await t.test("returns false for empty or missing input", () => {
+    assert.equal(isValidUrl(""), false);
     // @ts-expect-error Testing invalid runtime input
     assert.equal(isValidUrl(null), false);
     // @ts-expect-error Testing invalid runtime input
     assert.equal(isValidUrl(undefined), false);
   });
 
-  await t.test('returns false for malformed URLs', () => {
-    assert.equal(isValidUrl('not-a-url'), false);
-    assert.equal(isValidUrl('http://'), false);
-    assert.equal(isValidUrl('https://'), false);
+  await t.test("returns false for malformed URLs", () => {
+    assert.equal(isValidUrl("not-a-url"), false);
+    assert.equal(isValidUrl("http://"), false);
+    assert.equal(isValidUrl("https://"), false);
   });
 
-  await t.test('returns false for unsafe or unsupported protocols', () => {
-    assert.equal(isValidUrl('java' + 'script:alert(1)'), false);
-    assert.equal(isValidUrl('javascript:void(0)'), false);
-    assert.equal(isValidUrl('data:text/plain,hello'), false);
-    assert.equal(isValidUrl('ftp://example.com'), false);
-    assert.equal(isValidUrl('file:///local/file.txt'), false);
+  await t.test("returns false for unsafe or unsupported protocols", () => {
+    assert.equal(isValidUrl("java" + "script:alert(1)"), false);
+    assert.equal(isValidUrl("javascript:void(0)"), false);
+    assert.equal(isValidUrl("data:text/plain,hello"), false);
+    assert.equal(isValidUrl("ftp://example.com"), false);
+    assert.equal(isValidUrl("file:///local/file.txt"), false);
     assert.equal(
-      isValidUrl(['w', 's', ':', '/', '/', 'example.com'].join('')),
-      false
+      isValidUrl(["w", "s", ":", "/", "/", "example.com"].join("")),
+      false,
     );
-    assert.equal(isValidUrl('wss://example.com'), false);
+    assert.equal(isValidUrl("wss://example.com"), false);
   });
 
-  await t.test('returns false for protocol-relative URLs (missing protocol)', () => {
-    // URL constructor throws for protocol-relative unless base is provided
-    assert.equal(isValidUrl('/' + '/example.com'), false);
-  });
+  await t.test(
+    "returns false for protocol-relative URLs (missing protocol)",
+    () => {
+      // URL constructor throws for protocol-relative unless base is provided
+      assert.equal(isValidUrl("/" + "/example.com"), false);
+    },
+  );
 });
 
-test('sanitizeInput', async (t) => {
-  await t.test('returns empty string for empty inputs', () => {
-    assert.equal(sanitizeInput(''), '');
+test("sanitizeInput", async (t) => {
+  await t.test("returns empty string for empty inputs", () => {
+    assert.equal(sanitizeInput(""), "");
     // @ts-expect-error Testing invalid runtime input
-    assert.equal(sanitizeInput(null), '');
+    assert.equal(sanitizeInput(null), "");
     // @ts-expect-error Testing invalid runtime input
-    assert.equal(sanitizeInput(undefined), '');
+    assert.equal(sanitizeInput(undefined), "");
   });
 
-  await t.test('trims leading and trailing whitespace', () => {
-    assert.equal(sanitizeInput('  hello world  '), 'hello world');
-    assert.equal(sanitizeInput('\t\n hello \t\n'), 'hello');
+  await t.test("trims leading and trailing whitespace", () => {
+    assert.equal(sanitizeInput("  hello world  "), "hello world");
+    assert.equal(sanitizeInput("\t\n hello \t\n"), "hello");
   });
 
-  await t.test('removes control characters', () => {
-    assert.equal(sanitizeInput('hello\x00world'), 'helloworld');
-    assert.equal(sanitizeInput('test\x0B\x0Cdata'), 'testdata');
-    assert.equal(sanitizeInput('abc\x1Fdef\x7Fghi'), 'abcdefghi');
+  await t.test("removes control characters", () => {
+    assert.equal(sanitizeInput("hello\x00world"), "helloworld");
+    assert.equal(sanitizeInput("test\x0B\x0Cdata"), "testdata");
+    assert.equal(sanitizeInput("abc\x1Fdef\x7Fghi"), "abcdefghi");
   });
 
-  await t.test('keeps normal characters aside from trimming', () => {
+  await t.test("keeps normal characters aside from trimming", () => {
     assert.equal(
-      sanitizeInput('regular string with numbers 123 and symbols !@#'),
-      'regular string with numbers 123 and symbols !@#'
+      sanitizeInput("regular string with numbers 123 and symbols !@#"),
+      "regular string with numbers 123 and symbols !@#",
     );
   });
 
-  await t.test('returns empty string for control characters and whitespace only', () => {
-    assert.equal(sanitizeInput('\x00\x08 \t\n\x7F'), '');
-  });
+  await t.test(
+    "returns empty string for control characters and whitespace only",
+    () => {
+      assert.equal(sanitizeInput("\x00\x08 \t\n\x7F"), "");
+    },
+  );
 });
 
-test('parseJsonContent', async (t) => {
-  await t.test('parses valid JSON string correctly', () => {
+test("parseJsonContent", async (t) => {
+  await t.test("parses valid JSON string correctly", () => {
     const json = '{"key": "value", "number": 42}';
-    assert.deepEqual(parseJsonContent(json, 'TestContext'), { key: 'value', number: 42 });
+    assert.deepEqual(parseJsonContent(json, "TestContext"), {
+      key: "value",
+      number: 42,
+    });
   });
 
-  await t.test('throws an error with context for invalid JSON', () => {
+  await t.test("throws an error with context for invalid JSON", () => {
     const invalidJson = '{key: "value"}';
     assert.throws(
-      () => parseJsonContent(invalidJson, 'TestContext'),
+      () => parseJsonContent(invalidJson, "TestContext"),
       (err) => {
-        return err instanceof Error && err.message === 'Failed to parse TestContext JSON.' && err.cause instanceof SyntaxError;
-      }
+        return (
+          err instanceof Error &&
+          err.message === "Failed to parse TestContext JSON." &&
+          err.cause instanceof SyntaxError
+        );
+      },
     );
   });
 });
 
-test('createValidator', async (t) => {
-  await t.test('validates valid data successfully', () => {
+test("createValidator", async (t) => {
+  await t.test("validates valid data successfully", () => {
     const validator = createValidator({
       name: { required: true, maxLength: 50 },
-      age: { custom: (val) => Number.isNaN(Number(val)) ? 'Must be a number' : null }
+      age: {
+        custom: (val) =>
+          Number.isNaN(Number(val)) ? "Must be a number" : null,
+      },
     });
 
-    const result = validator({ name: 'John Doe', age: '30' });
+    const result = validator({ name: "John Doe", age: "30" });
     assert.equal(result.isValid, true);
     assert.deepEqual(result.errors, {});
     assert.deepEqual(result.fieldErrors, []);
   });
 
-  await t.test('enforces required rule', () => {
+  await t.test("enforces required rule", () => {
     const validator = createValidator({
-      name: { required: true, message: 'Name is mandatory' },
-      optional: { required: false }
+      name: { required: true, message: "Name is mandatory" },
+      optional: { required: false },
     });
 
-    const result = validator({ optional: 'present' });
+    const result = validator({ optional: "present" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { name: 'Name is mandatory' });
-    assert.deepEqual(result.fieldErrors, ['Name is mandatory']);
+    assert.deepEqual(result.errors, { name: "Name is mandatory" });
+    assert.deepEqual(result.fieldErrors, ["Name is mandatory"]);
   });
 
-  await t.test('enforces maxLength rule', () => {
+  await t.test("enforces maxLength rule", () => {
     const validator = createValidator({
-      code: { maxLength: 3 }
+      code: { maxLength: 3 },
     });
 
-    const result = validator({ code: 'ABCD' });
+    const result = validator({ code: "ABCD" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { code: 'code exceeds maximum length of 3 characters' });
+    assert.deepEqual(result.errors, {
+      code: "code exceeds maximum length of 3 characters",
+    });
   });
 
-  await t.test('enforces minLength rule', () => {
+  await t.test("enforces minLength rule", () => {
     const validator = createValidator({
-      pin: { minLength: 4 }
+      pin: { minLength: 4 },
     });
 
-    const result = validator({ pin: '123' });
+    const result = validator({ pin: "123" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { pin: 'pin must be at least 4 characters' });
+    assert.deepEqual(result.errors, {
+      pin: "pin must be at least 4 characters",
+    });
   });
 
-  await t.test('enforces pattern rule', () => {
+  await t.test("enforces pattern rule", () => {
     const validator = createValidator({
-      email: { pattern: /^[^@]+@[^@]+\.[^@]+$/ }
+      email: { pattern: /^[^@]+@[^@]+\.[^@]+$/ },
     });
 
-    const result = validator({ email: 'invalid-email' });
+    const result = validator({ email: "invalid-email" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { email: 'email format is invalid' });
+    assert.deepEqual(result.errors, { email: "email format is invalid" });
   });
 
-  await t.test('enforces custom rule', () => {
+  await t.test("enforces custom rule", () => {
     const validator = createValidator({
-      username: { custom: (val) => val === 'admin' ? 'Reserved username' : null }
+      username: {
+        custom: (val) => (val === "admin" ? "Reserved username" : null),
+      },
     });
 
-    const result = validator({ username: 'admin' });
+    const result = validator({ username: "admin" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { username: 'Reserved username' });
+    assert.deepEqual(result.errors, { username: "Reserved username" });
   });
 
-  await t.test('trims whitespace before validation', () => {
+  await t.test("trims whitespace before validation", () => {
     const validator = createValidator({
       name: { required: true },
-      code: { maxLength: 3 }
+      code: { maxLength: 3 },
     });
 
-    const resultEmpty = validator({ name: '   ' });
+    const resultEmpty = validator({ name: "   " });
     assert.equal(resultEmpty.isValid, false);
-    assert.equal(resultEmpty.errors.name, 'name is required');
+    assert.equal(resultEmpty.errors.name, "name is required");
 
-    const resultLength = validator({ name: 'Valid', code: '  AB  ' });
+    const resultLength = validator({ name: "Valid", code: "  AB  " });
     assert.equal(resultLength.isValid, true);
   });
 
-  await t.test('ignores missing non-required fields', () => {
+  await t.test("ignores missing non-required fields", () => {
     const validator = createValidator({
-      bio: { maxLength: 10 } // Not required
+      bio: { maxLength: 10 }, // Not required
     });
 
     const result = validator({}); // Missing
     assert.equal(result.isValid, true);
 
-    const resultEmpty = validator({ bio: '' }); // Empty
+    const resultEmpty = validator({ bio: "" }); // Empty
     assert.equal(resultEmpty.isValid, true);
   });
 
-  await t.test('coerces non-string values to string', () => {
+  await t.test("coerces non-string values to string", () => {
     const validator = createValidator({
-      count: { minLength: 2 }
+      count: { minLength: 2 },
     });
 
     // Number 5 will be coerced to "5", which is 1 char (less than minLength 2)
     const result = validator({ count: 5 });
     assert.equal(result.isValid, false);
-    assert.equal(result.errors.count, 'count must be at least 2 characters');
+    assert.equal(result.errors.count, "count must be at least 2 characters");
   });
 
-  await t.test('accumulates multiple errors across different fields', () => {
+  await t.test("accumulates multiple errors across different fields", () => {
     const validator = createValidator({
       name: { required: true },
-      age: { required: true }
+      age: { required: true },
     });
 
     const result = validator({});
@@ -311,44 +344,123 @@ test('createValidator', async (t) => {
   });
 });
 
-test('layouts', async (t) => {
-  await t.test('centeredContainer returns expected static object', () => {
+test("concurrentMap", async (t) => {
+  await t.test("returns empty array when given empty items list", async () => {
+    const results = await concurrentMap([], 2, async (val) => val);
+    assert.deepEqual(results, []);
+  });
+
+  await t.test("maps items correctly", async () => {
+    const items = [1, 2, 3, 4, 5];
+    const results = await concurrentMap(items, 2, async (item) => item * 2);
+    assert.deepEqual(results, [2, 4, 6, 8, 10]);
+  });
+
+  await t.test("respects concurrency limit", async () => {
+    const items = Array.from({ length: 10 }, (_, i) => i);
+    let activeTasks = 0;
+    let maxActiveTasks = 0;
+
+    const fn = async (item: number) => {
+      activeTasks++;
+      if (activeTasks > maxActiveTasks) {
+        maxActiveTasks = activeTasks;
+      }
+      // Small delay to allow overlap
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      activeTasks--;
+      return item * 2;
+    };
+
+    const results = await concurrentMap(items, 3, fn);
+
+    assert.deepEqual(
+      results,
+      items.map((i) => i * 2),
+    );
+    assert.ok(
+      maxActiveTasks <= 3,
+      `Max active tasks (\${maxActiveTasks}) exceeded concurrency limit (3)`,
+    );
+    assert.equal(activeTasks, 0, "All tasks should have finished");
+  });
+
+  await t.test("handles concurrency larger than items length", async () => {
+    const items = [1, 2];
+    let activeTasks = 0;
+    let maxActiveTasks = 0;
+
+    const fn = async (item: number) => {
+      activeTasks++;
+      if (activeTasks > maxActiveTasks) {
+        maxActiveTasks = activeTasks;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      activeTasks--;
+      return item * 2;
+    };
+
+    const results = await concurrentMap(items, 10, fn);
+    assert.deepEqual(results, [2, 4]);
+    assert.ok(maxActiveTasks <= 2, "Should not start more tasks than items");
+  });
+
+  await t.test("rejects if a task fails", async () => {
+    const items = [1, 2, 3, 4, 5];
+
+    await assert.rejects(
+      async () => {
+        await concurrentMap(items, 2, async (item) => {
+          if (item === 3) throw new Error("Task failed");
+          return item;
+        });
+      },
+      (err) => err instanceof Error && err.message === "Task failed",
+    );
+  });
+});
+
+test("layouts", async (t) => {
+  const { spacing } = await import("../theme/tokens.ts");
+  const { layouts } = await import("./shared.ts");
+
+  await t.test("centeredContainer returns expected static object", () => {
     assert.deepEqual(layouts.centeredContainer, {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: `0 ${spacing.md}`
+      maxWidth: "1200px",
+      margin: "0 auto",
+      padding: `0 ${spacing.md}`,
     });
   });
 
-  await t.test('grid returns correct styles with default params', () => {
+  await t.test("grid returns correct styles with default params", () => {
     assert.deepEqual(layouts.grid(), {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(1, 1fr)',
+      display: "grid",
+      gridTemplateColumns: "repeat(1, 1fr)",
       gap: spacing.md,
     });
   });
 
-  await t.test('grid returns correct styles with custom params', () => {
-    assert.deepEqual(layouts.grid(3, '24px'), {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '24px',
+  await t.test("grid returns correct styles with custom params", () => {
+    assert.deepEqual(layouts.grid(3, "24px"), {
+      display: "grid",
+      gridTemplateColumns: "repeat(3, 1fr)",
+      gap: "24px",
     });
   });
 
-  await t.test('stack returns correct styles with default gap', () => {
+  await t.test("stack returns correct styles with default gap", () => {
     assert.deepEqual(layouts.stack(), {
-      display: 'flex',
-      flexDirection: 'column',
+      display: "flex",
+      flexDirection: "column",
       gap: spacing.md,
     });
   });
 
-  await t.test('stack returns correct styles with custom gap', () => {
-    assert.deepEqual(layouts.stack('8px'), {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '8px',
+  await t.test("stack returns correct styles with custom gap", () => {
+    assert.deepEqual(layouts.stack("8px"), {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
     });
   });
 
@@ -407,5 +519,101 @@ test('normalizeMovieTitle', async (t) => {
 
   await t.test('returns already normalized titles unchanged', () => {
     assert.equal(normalizeMovieTitle('pulp fiction'), 'pulp fiction');
+  });
+});
+
+test("formatMessageTimestamp", async (t) => {
+  const originalTZ = process.env.TZ;
+
+  t.beforeEach(() => {
+    // Set a consistent timezone for determinism
+    process.env.TZ = "UTC";
+  });
+
+  t.afterEach(() => {
+    process.env.TZ = originalTZ;
+  });
+
+  await t.test("returns empty string for invalid dates", () => {
+    assert.strictEqual(formatMessageTimestamp("invalid-date"), "");
+    assert.strictEqual(formatMessageTimestamp(""), "");
+  });
+
+  await t.test("returns empty string for future dates", () => {
+    t.mock.timers.enable({
+      apis: ["Date"],
+      now: new Date("2024-01-01T12:00:00Z").getTime(),
+    });
+
+    // Future date
+    assert.strictEqual(formatMessageTimestamp("2024-01-01T13:00:00Z"), "");
+
+    t.mock.timers.reset();
+  });
+
+  await t.test("formats recent dates within 24 hours as time", () => {
+    t.mock.timers.enable({
+      apis: ["Date"],
+      now: new Date("2024-01-01T15:30:00Z").getTime(),
+    });
+
+    // Exact same time
+    assert.strictEqual(
+      formatMessageTimestamp("2024-01-01T15:30:00Z"),
+      "3:30 PM",
+    );
+
+    // A few hours ago
+    assert.strictEqual(
+      formatMessageTimestamp("2024-01-01T10:15:00Z"),
+      "10:15 AM",
+    );
+
+    // Almost 24 hours ago
+    assert.strictEqual(
+      formatMessageTimestamp("2023-12-31T15:30:01Z"),
+      "3:30 PM",
+    );
+
+    // Edge case: midnight
+    assert.strictEqual(
+      formatMessageTimestamp("2024-01-01T00:05:00Z"),
+      "12:05 AM",
+    );
+
+    // Edge case: noon
+    assert.strictEqual(
+      formatMessageTimestamp("2024-01-01T12:00:00Z"),
+      "12:00 PM",
+    );
+
+    t.mock.timers.reset();
+  });
+
+  await t.test("formats dates older than 24 hours as month and day", () => {
+    t.mock.timers.enable({
+      apis: ["Date"],
+      now: new Date("2024-01-01T15:30:00Z").getTime(),
+    });
+
+    // Exactly 24 hours ago
+    assert.strictEqual(
+      formatMessageTimestamp("2023-12-31T15:30:00Z"),
+      "Dec 31",
+    );
+
+    // Several days ago
+    assert.strictEqual(
+      formatMessageTimestamp("2023-12-25T08:00:00Z"),
+      "Dec 25",
+    );
+
+    // Several months ago
+    assert.strictEqual(
+      formatMessageTimestamp("2023-05-15T12:00:00Z"),
+      "May 15",
+    );
+
+    t.mock.timers.reset();
   });
 });
