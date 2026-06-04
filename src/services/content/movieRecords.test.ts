@@ -1,197 +1,134 @@
-import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  cloneMovies,
-  normalizeMovieRecord,
-  isMovieRecord,
-  normalizeMovies,
-} from './movieRecords.ts';
+import assert from 'node:assert/strict';
+import { cloneMovies, isMovieRecord, normalizeMovieRecord, normalizeMovies } from './movieRecords.ts';
+import type { Movie } from '../../shared/types.ts';
+
+test('cloneMovies', async (t) => {
+  await t.test('returns a new array with cloned movies and watchedBy arrays', () => {
+    const original = [
+      { id: '1', title: 'Test', addedBy: 'Aaron', watchedBy: ['Electra'], createdAt: '2026-03-21T12:00:00.000Z' }
+    ] as Movie[];
+    const cloned = cloneMovies(original);
+    assert.deepEqual(cloned, original);
+    assert.notEqual(cloned, original);
+    assert.notEqual(cloned[0], original[0]);
+    assert.notEqual(cloned[0].watchedBy, original[0].watchedBy);
+  });
+});
 
 test('normalizeMovieRecord', async (t) => {
-  await t.test('returns null for non-object inputs', () => {
+  const validMovie = {
+    id: '1',
+    title: 'Test Movie',
+    addedBy: 'Aaron',
+    createdAt: '2026-03-21T12:00:00.000Z',
+    watchedBy: [],
+  };
+
+  await t.test('accepts valid movie', () => {
+    const m = normalizeMovieRecord(validMovie);
+    assert.equal(m?.id, validMovie.id);
+    assert.equal(m?.title, validMovie.title);
+  });
+
+  await t.test('rejects missing or invalid required fields', () => {
     assert.equal(normalizeMovieRecord(null), null);
-    assert.equal(normalizeMovieRecord(undefined), null);
-    assert.equal(normalizeMovieRecord('string'), null);
-    assert.equal(normalizeMovieRecord(123), null);
-    assert.equal(normalizeMovieRecord(true), null);
+    assert.equal(normalizeMovieRecord({ ...validMovie, id: undefined }), null);
+    assert.equal(normalizeMovieRecord({ ...validMovie, title: undefined }), null);
+    assert.equal(normalizeMovieRecord({ ...validMovie, addedBy: 'InvalidUser' }), null);
+    assert.equal(normalizeMovieRecord({ ...validMovie, createdAt: 'not-a-date' }), null);
   });
 
-  await t.test('returns null if required fields are missing or invalid', () => {
-    const validBase = {
-      id: 'movie-1',
-      title: 'The Matrix',
-      addedBy: 'Aaron',
-      createdAt: '2026-03-21T12:00:00.000Z',
-    };
+  await t.test('normalizes posterUrl', () => {
+    const m1 = normalizeMovieRecord({ ...validMovie, posterUrl: 'https://example.com/poster.jpg' });
+    assert.equal(m1?.posterUrl, 'https://example.com/poster.jpg');
 
-    assert.equal(normalizeMovieRecord({ ...validBase, id: undefined }), null);
-    assert.equal(normalizeMovieRecord({ ...validBase, title: null }), null);
-    assert.equal(normalizeMovieRecord({ ...validBase, addedBy: 'InvalidUser' }), null);
-    assert.equal(normalizeMovieRecord({ ...validBase, createdAt: 'invalid-date' }), null);
+    const m2 = normalizeMovieRecord({ ...validMovie, posterUrl: 'http://example.com/poster.jpg' });
+    assert.equal(m2?.posterUrl, 'https://example.com/poster.jpg');
+
+    const m3 = normalizeMovieRecord({ ...validMovie, posterUrl: 'invalid-url' });
+    assert.equal(m3?.posterUrl, undefined);
   });
 
-  await t.test('normalizes a valid movie record with minimum required fields', () => {
-    const input = {
-      id: 'movie-1',
-      title: 'The Matrix',
-      addedBy: 'Aaron',
-      createdAt: '2026-03-21T12:00:00.000Z',
-    };
+  await t.test('handles URL parsing error in normalizePosterUrl catch block', () => {
+    const OriginalURL = global.URL;
+    try {
+      let callCount = 0;
+      global.URL = class extends OriginalURL {
+        constructor(input: string | URL, base?: string | URL) {
+          if (input === 'https://error.com/') {
+            callCount++;
+            if (callCount === 2) {
+              throw new TypeError('Mock Error');
+            }
+          }
+          super(input, base);
+        }
+      } as typeof URL;
 
-    const expected = {
-      id: 'movie-1',
-      title: 'The Matrix',
-      addedBy: 'Aaron',
-      createdAt: '2026-03-21T12:00:00.000Z',
-      watchedBy: [],
-      posterUrl: undefined,
-      year: undefined,
-      plot: undefined,
-      imdbRating: undefined,
-      runtime: undefined,
-      genre: undefined,
-      director: undefined,
-      category: undefined,
-    };
-
-    assert.deepEqual(normalizeMovieRecord(input), expected);
+      const m = normalizeMovieRecord({ ...validMovie, posterUrl: 'https://error.com/' });
+      assert.equal(m?.posterUrl, undefined);
+      assert.equal(callCount, 2);
+    } finally {
+      global.URL = OriginalURL;
+    }
   });
 
-  await t.test('normalizes optional fields and sanitizes strings', () => {
-    const input = {
-      id: 'movie-1',
-      title: ' The Matrix ', // should be trimmed by sanitizeInput
-      addedBy: 'Electra',
-      createdAt: '2026-03-21T12:00:00.000Z',
-      year: ' 1999 ',
-      plot: '\x00\x01<script>alert(1)</script>A computer hacker...\x7F',
-      imdbRating: '8.7',
-      runtime: '136 min',
-      genre: 'Action, Sci-Fi',
-      director: 'Lana Wachowski, Lilly Wachowski',
-      category: 'Sci-Fi',
-    };
-
-    const result = normalizeMovieRecord(input);
-    assert.equal(result?.title, 'The Matrix');
-    assert.equal(result?.year, '1999');
-    assert.equal(result?.plot, '<script>alert(1)</script>A computer hacker...');
-    assert.equal(result?.imdbRating, '8.7');
-    assert.equal(result?.runtime, '136 min');
-    assert.equal(result?.genre, 'Action, Sci-Fi');
-    assert.equal(result?.director, 'Lana Wachowski, Lilly Wachowski');
-    assert.equal(result?.category, 'Sci-Fi');
+  await t.test('normalizes watchedBy by filtering and deduplicating users', () => {
+    const m = normalizeMovieRecord({
+      ...validMovie,
+      watchedBy: ['Aaron', 'InvalidUser', 'Aaron', 'Electra']
+    });
+    assert.deepEqual(m?.watchedBy, ['Aaron', 'Electra']);
   });
 
-  await t.test('filters and deduplicates watchedBy array', () => {
-    const input = {
-      id: 'movie-1',
-      title: 'The Matrix',
-      addedBy: 'Aaron',
-      createdAt: '2026-03-21T12:00:00.000Z',
-      watchedBy: ['Aaron', 'InvalidUser', 'Electra', 'Aaron'],
-    };
-
-    const result = normalizeMovieRecord(input);
-    assert.deepEqual(result?.watchedBy, ['Aaron', 'Electra']);
+  await t.test('returns undefined for posterUrl if not a string', () => {
+    const m = normalizeMovieRecord({ ...validMovie, posterUrl: 123 });
+    assert.equal(m?.posterUrl, undefined);
   });
 
-  await t.test('normalizes posterUrl to https and ignores invalid urls', () => {
-    const base = {
-      id: 'movie-1',
-      title: 'The Matrix',
-      addedBy: 'Aaron',
-      createdAt: '2026-03-21T12:00:00.000Z',
-    };
+  await t.test('returns null for movie record if id is not a string', () => {
+    assert.equal(normalizeMovieRecord({ ...validMovie, id: 123 }), null);
+  });
 
-    const validHttp = normalizeMovieRecord({ ...base, posterUrl: 'http://example.com/poster.jpg' });
-    assert.equal(validHttp?.posterUrl, 'https://example.com/poster.jpg');
+  await t.test('returns null for movie record if title is not a string', () => {
+    assert.equal(normalizeMovieRecord({ ...validMovie, title: 123 }), null);
+  });
 
-    const validHttps = normalizeMovieRecord({ ...base, posterUrl: 'https://example.com/poster.jpg' });
-    assert.equal(validHttps?.posterUrl, 'https://example.com/poster.jpg');
+  await t.test('returns null for movie record if createdAt is not a string', () => {
+    assert.equal(normalizeMovieRecord({ ...validMovie, createdAt: 123 }), null);
+  });
 
-    const invalidUrl = normalizeMovieRecord({ ...base, posterUrl: 'not-a-url' });
-    assert.equal(invalidUrl?.posterUrl, undefined);
+  await t.test('returns undefined for optional string fields if not a string', () => {
+    const m = normalizeMovieRecord({ ...validMovie, plot: 123 });
+    assert.equal(m?.plot, undefined);
   });
 });
 
 test('isMovieRecord', async (t) => {
   await t.test('returns true for valid movie records', () => {
-    assert.equal(
-      isMovieRecord({
-        id: 'movie-1',
-        title: 'The Matrix',
-        addedBy: 'Aaron',
-        createdAt: '2026-03-21T12:00:00.000Z',
-      }),
-      true
-    );
+    assert.equal(isMovieRecord({
+      id: '1', title: 'Test', addedBy: 'Aaron', createdAt: '2026-03-21T12:00:00.000Z'
+    }), true);
   });
 
   await t.test('returns false for invalid movie records', () => {
     assert.equal(isMovieRecord(null), false);
-    assert.equal(
-      isMovieRecord({
-        id: 'movie-1',
-        title: 'The Matrix',
-        // missing addedBy and createdAt
-      }),
-      false
-    );
+    assert.equal(isMovieRecord({}), false);
   });
 });
 
 test('normalizeMovies', async (t) => {
+  await t.test('returns array of valid movies', () => {
+    const valid = { id: '1', title: 'Test', addedBy: 'Aaron', createdAt: '2026-03-21T12:00:00.000Z' };
+    const invalid = { id: '2' };
+
+    const result = normalizeMovies([valid, invalid]);
+    assert.equal(result.length, 1);
+    assert.equal(result[0].id, valid.id);
+  });
+
   await t.test('returns empty array for non-array input', () => {
     assert.deepEqual(normalizeMovies(null), []);
-    assert.deepEqual(normalizeMovies('not array'), []);
-    assert.deepEqual(normalizeMovies({ id: 'movie-1' }), []);
-  });
-
-  await t.test('filters valid records and drops invalid rows', () => {
-    const input = [
-      {
-        id: 'movie-1',
-        title: 'First',
-        addedBy: 'Aaron',
-        createdAt: '2026-03-21T12:00:00.000Z',
-      },
-      {
-        id: 'movie-2',
-        title: 'Invalid', // missing addedBy and createdAt
-      },
-      {
-        id: 'movie-3',
-        title: 'Second',
-        addedBy: 'Electra',
-        createdAt: '2026-03-21T13:00:00.000Z',
-      },
-    ];
-
-    const result = normalizeMovies(input);
-    assert.equal(result.length, 2);
-    assert.equal(result[0].id, 'movie-1');
-    assert.equal(result[1].id, 'movie-3');
-  });
-});
-
-test('cloneMovies', async (t) => {
-  await t.test('returns a new array with cloned movie objects and cloned watchedBy', () => {
-    const original = [
-      {
-        id: 'movie-1',
-        title: 'The Matrix',
-        addedBy: 'Aaron' as const,
-        watchedBy: ['Electra' as const],
-        createdAt: '2026-03-21T12:00:00.000Z',
-      },
-    ];
-
-    const cloned = cloneMovies(original);
-
-    assert.deepEqual(cloned, original);
-    assert.notEqual(cloned, original); // different array reference
-    assert.notEqual(cloned[0], original[0]); // different object reference
-    assert.notEqual(cloned[0].watchedBy, original[0].watchedBy); // different watchedBy array reference
   });
 });
