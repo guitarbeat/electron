@@ -105,8 +105,8 @@ test('storageClient read and write operations', async (t) => {
       const consoleWarnMock = t.mock.method(console, 'warn', () => {});
       const read = readStoredJson({
         storageKey: 'errorKey',
-        validate: (v: unknown): v is unknown => v !== undefined,
-        clone: (val) => val,
+        validate: (): true => true,
+        clone: (v) => v,
         label: 'error test data'
       });
       assert.equal(read, null, 'Should return null on read error');
@@ -120,7 +120,7 @@ test('storageClient read and write operations', async (t) => {
       const written = writeStoredJson({
         storageKey: 'errorKey',
         value: data,
-        clone: (val) => ({ ...val }),
+        clone: (v) => ({ ...v }),
         label: 'error test data'
       });
       assert.deepEqual(written, data, 'Should return the value even if persist fails');
