@@ -31,7 +31,7 @@ test('storageClient read and write operations', async (t) => {
     writeStoredJson({
       storageKey: 'testKey',
       value: data,
-      clone: (v) => ({ ...v }),
+      clone: (val) => ({ ...val }),
       label: 'test data'
     });
 
@@ -43,8 +43,8 @@ test('storageClient read and write operations', async (t) => {
   await t.test('reads encoded data correctly', () => {
     const read = readStoredJson({
       storageKey: 'testKey',
-      validate: (v: unknown): v is { test: string } => typeof v === "object" && v !== null,
-      clone: (v) => ({ ...v }),
+      validate: (val: unknown): val is { test: string } => !!val,
+      clone: (val) => ({ ...val }),
       label: 'test data'
     });
 
@@ -57,8 +57,8 @@ test('storageClient read and write operations', async (t) => {
 
     const read = readStoredJson({
       storageKey: 'legacyKey',
-      validate: (v: unknown): v is { legacy: string } => typeof v === "object" && v !== null,
-      clone: (v) => ({ ...v }),
+      validate: (val: unknown): val is { legacy: string } => !!val,
+      clone: (val) => ({ ...val }),
       label: 'legacy test data'
     });
 
@@ -105,8 +105,8 @@ test('storageClient read and write operations', async (t) => {
       const consoleWarnMock = t.mock.method(console, 'warn', () => {});
       const read = readStoredJson({
         storageKey: 'errorKey',
-        validate: (v: unknown): v is unknown => typeof v !== "undefined",
-        clone: (v) => v,
+        validate: (v: unknown): v is unknown => v !== undefined,
+        clone: (val) => val,
         label: 'error test data'
       });
       assert.equal(read, null, 'Should return null on read error');
@@ -120,7 +120,7 @@ test('storageClient read and write operations', async (t) => {
       const written = writeStoredJson({
         storageKey: 'errorKey',
         value: data,
-        clone: (v) => ({ ...v }),
+        clone: (val) => ({ ...val }),
         label: 'error test data'
       });
       assert.deepEqual(written, data, 'Should return the value even if persist fails');
