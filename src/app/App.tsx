@@ -588,7 +588,7 @@ const App: React.FC = () => {
       )}
       <React.Suspense fallback={null}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-      </LazyBoundary>
+      </React.Suspense>
       <div className="app-shell app-shell--viewport bg-main">
         <LazyBoundary label="Loading background">
           {!prefersReducedMotion ? <ThemedMoire /> : null}
