@@ -56,7 +56,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         ) : (
           <React.Suspense fallback={<PlacesTabFallback />}>
             <PlacesList />
-          </LazyBoundary>
+          </React.Suspense>
         )}
       </section>
     </main>
