@@ -12,7 +12,7 @@ import React, {
 } from 'react';
 import type { User } from '@/shared/types';
 import { applyTheme } from '@/theme/applyTheme';
-import { getAppTheme, type ThemeName } from '@/theme/themes';
+
 import { spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
@@ -36,12 +36,12 @@ const debugSession = (...args: unknown[]) => {
 // ============================================================================
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const currentTheme = 'movies' as const;
-  const themeTokens = moviesTheme;
+
+
 
   useEffect(() => {
     applyTheme(themeName);
-  }, [themeName]);
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -49,7 +49,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       theme,
       themeTokens: theme.tokens,
     }),
-    [theme, themeName]
+    []
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
