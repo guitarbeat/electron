@@ -1,5 +1,8 @@
 @use './styles/shell-layout';
 @use './styles/human-textures';
+@use '../theme/breakpoints' as *;
+@use '../theme/glass-effects' as *;
+@use '../theme/color-utils' as *;
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
 
 /*
@@ -23,7 +26,7 @@
   height: 340px;
 }
 
-@media (max-width: 640px) {
+@include breakpoint-down('lg') {
   .places-map-card--height {
     height: min(38vh, 260px);
     min-height: 200px;
@@ -68,7 +71,7 @@
   --font-display: 'Papyrus', serif;
   --font-interface: var(--font-body);
   /* Palette + moiré bridge: defaults until applyTheme() runs (see src/theme/themes.ts). */
-  --shell-max-width: 1480px;
+  --shell-max-width: #{$container-max-width};
   --shell-border: color-mix(in srgb, var(--color-border-subtle) 80%, transparent);
   --glass-highlight: rgba(255, 255, 255, 0.18);
   --loading-sequence-blend-mode: difference;
@@ -276,8 +279,7 @@
   min-width: 0;
   white-space: nowrap;
   transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  @include glass-blur;
   position: relative;
   overflow: hidden;
 }
@@ -905,8 +907,7 @@
   font-weight: 500;
   letter-spacing: 0.03em;
   text-transform: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  @include glass-blur;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 2px 10px rgba(0, 0, 0, 0.3);
@@ -1084,7 +1085,7 @@
 }
 
 /* Responsive: smaller on mobile */
-@media (max-width: 480px) {
+@include breakpoint-down('md') {
   .user-selection__compact-avatar {
     width: 32px;
     height: 32px;
