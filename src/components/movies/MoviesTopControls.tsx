@@ -121,51 +121,6 @@ const MoviesTopControls = React.forwardRef<
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to movies';
 
   useImperativeHandle(
-    forwardedRef,
-  ) => {
-    const slot = useAppHeaderSlot();
-
-    useEffect(() => {
-      if (!slot) return;
-      slot.setHasSearch(true);
-      return () => slot.setHasSearch(false);
-    }, [slot]);
-
-    const hasSearchQuery = Boolean(searchQuery.trim());
-    const isBusy = isAdding || isSubmittingRecommendation;
-    const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
-    const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
-    const focusBoundaryFrameRef = useRef<number | null>(null);
-    const autocompleteRequestIdRef = useRef(0);
-    // On iOS Safari, buttons don't receive focus on tap, so document.activeElement
-    // stays on <body> when the input blurs. This flag prevents a false "outside click"
-    // dismissal while the user is interacting with the dropdown.
-    const dropdownInteractionPendingRef = useRef(false);
-    const autocompleteListId = useId();
-    const [autocompleteQuery, setAutocompleteQuery] = useState("");
-    const [autocompleteResults, setAutocompleteResults] = useState<
-      MovieAutocompleteResult[]
-    >([]);
-    const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
-    const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
-    const autocompleteCloseTimerRef = useRef<number | null>(null);
-    const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
-    const [autocompleteError, setAutocompleteError] = useState<string | null>(
-      null,
-    );
-    const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<
-      "all" | "movie" | "series"
-    >("all");
-    const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
-    const trimmedSearchQuery = searchQuery.trim();
-    const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
-    const isGuest = !currentUser;
-    const primaryActionLabel = isGuest ? "Suggest" : "Add";
-    const primaryActionTitle = isGuest
-      ? "Send title to suggestions"
-      : "Add title to movies";
-
-    useImperativeHandle(
       forwardedRef,
       () => ({
         focusSearchInput: () => {
