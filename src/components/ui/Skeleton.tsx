@@ -1,6 +1,5 @@
-/* eslint-disable */
 import React from 'react';
-import { colors, radius, spacing, shadows } from '@/theme/tokens';
+import { radius } from '@/theme/tokens';
 
 interface SkeletonProps {
   variant?: "text" | "circular" | "rectangular" | "poster";
