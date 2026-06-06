@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 import React from 'react';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
