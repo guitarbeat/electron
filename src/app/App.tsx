@@ -1,5 +1,6 @@
 import React, { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
+import LazyBoundary from '@/app/LazyBoundary';
 import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
@@ -11,6 +12,7 @@ import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
 import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
+import LazyBoundary from '@/app/LazyBoundary';
 import AppWorkspaceShell from '@/app/AppWorkspaceShell';
 import LazyBoundary from './LazyBoundary';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
@@ -58,6 +60,7 @@ const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
 
+
 /** True once at module load — avoids creating a canvas on every render. */
 const webGLAvailable: boolean = (() => {
   if (typeof document === 'undefined') return false;
@@ -78,6 +81,7 @@ const webGLAvailable: boolean = (() => {
  * so the background stays color-linked to the rest of the UI.
  */
 const ThemedMoire: React.FC = () => {
+
 
   if (!webGLAvailable) {
     return null;
