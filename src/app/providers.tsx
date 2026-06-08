@@ -12,7 +12,6 @@ import React, {
 } from 'react';
 import type { User } from '@/shared/types';
 import { applyTheme } from '@/theme/applyTheme';
-
 import { spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
@@ -35,17 +34,15 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
+import { moviesTheme } from '@/theme/themes';
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-
-
-
   useEffect(() => {
-    applyTheme(themeName);
+    applyTheme('movies');
   }, []);
 
   const value = useMemo(
     () => ({
-      currentTheme: 'movies' as const,
+      currentTheme: 'movies',
       theme: moviesTheme,
       themeTokens: moviesTheme.tokens,
     }),
