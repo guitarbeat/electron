@@ -7,7 +7,7 @@ import { usePins } from '@/hooks/usePins';
 import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
 import ThemeToggle from '@/ui/ThemeToggle';
 import PinDialog from '@/common/PinDialog';
-import { useAppHeaderSlot } from '@/app/AppHeaderContexts';
+import { useAppHeaderSlot } from '@/app/AppHeaderContext';
 import './AppHeader.css';
 
 interface AppHeaderProps {
