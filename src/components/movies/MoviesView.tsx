@@ -115,18 +115,24 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // ⚡ Bolt Optimization: Pre-compute a Set of previously watched-by-1 movies to enable
+    // O(1) lookups inside the loop below, transforming the overall complexity from O(N^2) to O(N).
+    // Using a single pass reduce over .filter().map() avoids intermediate array allocations.
+    const prevWatchedByOneIds = previousMoviesRef.current.reduce((acc, movie) => {
+      if (movie.watchedBy.length === 1) {
+        acc.add(movie.id);
+      }
+      return acc;
+    }, new Set<string>());
+
     movies.forEach((movie) => {
-      if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
-        if (prevMovie && prevMovie.watchedBy.length === 1) {
-          setSuccessMovieId(movie.id);
-          setToast({
-            message: `🎉 You both watched "${movie.title}"!`,
-            type: "success",
-          });
-        }
+      if (movie.watchedBy.length === 2 && prevWatchedByOneIds.has(movie.id)) {
+        setSuccessMovieId(movie.id);
+        setToast({
+          message: `🎉 You both watched "${movie.title}"!`,
+          type: "success",
+        });
       }
     });
     previousMoviesRef.current = movies;
