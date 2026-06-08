@@ -661,6 +661,36 @@ test("consoleError", async (t) => {
       m.mock.restore();
     }
   });
+
+  await t.test("handles null error gracefully", () => {
+    const m = mock.method(console, "error", () => {});
+    try {
+      consoleError("Test message", null, { extra: "data" });
+      assert.equal(m.mock.calls.length, 1);
+      assert.deepEqual(m.mock.calls[0].arguments, [
+        "Test message",
+        null,
+        { extra: "data" },
+      ]);
+    } finally {
+      m.mock.restore();
+    }
+  });
+
+  await t.test("handles undefined error gracefully", () => {
+    const m = mock.method(console, "error", () => {});
+    try {
+      consoleError("Test message", undefined);
+      assert.equal(m.mock.calls.length, 1);
+      assert.deepEqual(m.mock.calls[0].arguments, [
+        "Test message",
+        undefined,
+      ]);
+    } finally {
+      m.mock.restore();
+    }
+  });
+
 });
 
 test("encodeStorageData and decodeStorageData", async (t) => {
