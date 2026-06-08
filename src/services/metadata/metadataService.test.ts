@@ -6,7 +6,7 @@ import {
   MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   searchMovieAutocomplete,
 } from './metadataService.ts';
-import { fetchOmdbMetadata, searchOmdbMovies, normalizePosterUrl } from './omdb.ts';
+import { fetchOmdbMetadata, searchOmdbMovies } from './omdb.ts';
 
 const originalFetch = globalThis.fetch;
 const globalWithWindow = globalThis as typeof globalThis & { window?: unknown };

@@ -6,7 +6,7 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { PwaInstallProvider } from '@/app/PwaInstallProvider';
 import { usePwaInstall } from './usePwaInstall.ts';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
-import { useAppSession, useTheme, useToast, useUser } from '@/app/useProviders';
+import { useAppSession, useToast, useUser } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
@@ -56,7 +56,6 @@ const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSPropert
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
-const MIN_LOADING_SCREEN_MS = 600;
 
 /** True once at module load — avoids creating a canvas on every render. */
 const webGLAvailable: boolean = (() => {
@@ -78,7 +77,6 @@ const webGLAvailable: boolean = (() => {
  * so the background stays color-linked to the rest of the UI.
  */
 const ThemedMoire: React.FC = () => {
-  const { themeTokens } = useTheme();
 
   if (!webGLAvailable) {
     return null;
@@ -547,9 +545,9 @@ const App: React.FC = () => {
   if (isCohesionAuditRoute) {
     return (
       <ThemeProvider theme={activeTab}>
-        <LazyBoundary label="Loading design audit">
+
           <CohesionAudit />
-        </LazyBoundary>
+
       </ThemeProvider>
     );
   }
@@ -557,17 +555,17 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider theme={activeTab}>
-        <LazyBoundary label="Loading effects">
+
           <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-        </LazyBoundary>
+
         <div className="app-shell app-shell--viewport bg-main">
-          <LazyBoundary label="Loading background">
+
             {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
-          </LazyBoundary>
+
           <VignetteOverlay />
-          <LazyBoundary label="Loading logo lab">
+
             <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
-          </LazyBoundary>
+
         </div>
       </ThemeProvider>
     );
@@ -590,22 +588,22 @@ const App: React.FC = () => {
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
       <div className="app-shell app-shell--viewport bg-main">
-        <LazyBoundary label="Loading background">
+
           {!prefersReducedMotion ? <ThemedMoire /> : null}
-        </LazyBoundary>
+
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
 
 
-        <LazyBoundary label="Loading menu">
+
           <RadialMenu
             onOpenMessages={() => setShowMessages(true)}
             onOpenQuiz={openQuizExperience}
             onOpenSpin={openSpinMatch}
           />
-        </LazyBoundary>
+
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
