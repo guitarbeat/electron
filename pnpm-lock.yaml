@@ -123,6 +123,9 @@ importers:
       vite:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.27.4)(sass-embedded@1.99.0)(sass@1.99.0)(tsx@4.21.0)
+      xtend:
+        specifier: 4.0.2
+        version: 4.0.2
 
 packages:
 
