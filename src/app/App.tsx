@@ -12,6 +12,7 @@ import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
 import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
 import AppWorkspaceShell from '@/app/AppWorkspaceShell';
+import LazyBoundary from './LazyBoundary';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
