@@ -1,6 +1,5 @@
 import React, { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
-import LazyBoundary from '@/app/LazyBoundary';
 import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
@@ -12,9 +11,7 @@ import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
 import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
-import LazyBoundary from '@/app/LazyBoundary';
 import AppWorkspaceShell from '@/app/AppWorkspaceShell';
-import LazyBoundary from './LazyBoundary';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
