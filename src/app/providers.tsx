@@ -35,10 +35,9 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-import { moviesTheme } from '@/theme/themes';
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [themeName] = useState<ThemeName>('movies');
-  const theme = useMemo(() => getAppTheme(themeName) || getAppTheme('default')!, [themeName]);
+  useMemo(() => getAppTheme(themeName) || getAppTheme('default')!, [themeName]);
 
   useEffect(() => {
     applyTheme('movies');
