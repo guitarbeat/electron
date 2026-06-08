@@ -1,19 +1,15 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import {
-
   areDeeplyEqual,
   concurrentMap,
   createValidator,
   executeAction,
-
   isValidUrl,
   consoleError,
   parseJsonContent,
-
   sanitizeInput,
-  encodeStorageData,
-  decodeStorageData,
+  formatMemoryTimestamp,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -752,4 +748,38 @@ test("encodeStorageData and decodeStorageData", async (t) => {
       assert.equal(invalidLatin1, encoded);
     },
   );
+});
+
+
+test('formatMemoryTimestamp', async (t) => {
+  const originalTz = process.env.TZ;
+
+  t.beforeEach(() => {
+    process.env.TZ = 'UTC';
+  });
+
+  t.afterEach(() => {
+    process.env.TZ = originalTz;
+  });
+
+  await t.test('formats a valid date string correctly', () => {
+    const result = formatMemoryTimestamp('2025-01-05T15:45:00Z');
+    // In node's UTC locale string it should be "Jan 5, 2025, 3:45 PM"
+    assert.equal(result, 'Jan 5, 2025, 3:45 PM');
+  });
+
+  await t.test('handles different months and days', () => {
+    const result = formatMemoryTimestamp('2024-12-31T08:30:00Z');
+    assert.equal(result, 'Dec 31, 2024, 8:30 AM');
+  });
+
+  await t.test('returns "Unknown date" for invalid date strings', () => {
+    const result = formatMemoryTimestamp('invalid-date');
+    assert.equal(result, 'Unknown date');
+  });
+
+  await t.test('returns "Unknown date" for empty strings', () => {
+    const result = formatMemoryTimestamp('');
+    assert.equal(result, 'Unknown date');
+  });
 });
