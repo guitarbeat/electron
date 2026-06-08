@@ -115,11 +115,14 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // Bolt Optimization: Pre-compute a Map for O(1) lookups instead of O(N) array.find inside the loop
+    // This turns an O(N^2) operation into O(N), significant when watchlist grows large.
+    const prevMoviesMap = new Map(previousMoviesRef.current.map(m => [m.id, m]));
+
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
+        const prevMovie = prevMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
