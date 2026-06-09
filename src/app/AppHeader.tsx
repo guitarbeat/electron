@@ -7,7 +7,7 @@ import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
 import PinDialog from '@/common/PinDialog';
 import { useAppHeaderSlot } from '@/app/AppHeaderContext';
 import HeaderCommandDeck from '@/ui/HeaderCommandDeck';
-import HeaderQuickActions from '@/ui/HeaderQuickActions';
+import FlowNav from '@/ui/FlowNav';
 import './AppHeader.css';
 
 interface AppHeaderProps {
@@ -49,9 +49,6 @@ const AppHeader: FC<AppHeaderProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const centerRef = useRef<HTMLDivElement>(null);
-  const leftRef = useRef<HTMLDivElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
-  const brandRef = useRef<HTMLSpanElement>(null);
 
   const slot = useAppHeaderSlot();
 
@@ -66,7 +63,6 @@ const AppHeader: FC<AppHeaderProps> = ({
   const selectedNamedUser = currentUser;
   const pinSettingsMode =
     selectedNamedUser && userHasPin(selectedNamedUser) ? "change" : "set";
-  const brandLabel = "Electron";
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -101,70 +97,6 @@ const AppHeader: FC<AppHeaderProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isProfileMenuOpen]);
 
-  useLayoutEffect(() => {
-    const header = headerRef.current;
-    const left = leftRef.current;
-    const center = centerRef.current;
-    const right = rightRef.current;
-    const brand = brandRef.current;
-
-    if (!header || !left || !center || !right || !brand) {
-      return;
-    }
-
-    let frameId = 0;
-    const deferredIds: number[] = [];
-
-    const fitBrand = () => {
-      cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        brand.style.setProperty("--electron-scale", "1");
-        const naturalWidth = brand.scrollWidth;
-        const availableWidth = center.clientWidth;
-        const scale =
-          naturalWidth > 0
-            ? Math.min(1, Math.max(0.56, (availableWidth - 2) / naturalWidth))
-            : 1;
-        brand.style.setProperty("--electron-scale", scale.toFixed(3));
-      });
-    };
-
-    fitBrand();
-    deferredIds.push(
-      window.setTimeout(fitBrand, 80),
-      window.setTimeout(fitBrand, 300),
-    );
-
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(fitBrand)
-        : null;
-    [header, left, center, right, brand].forEach((element) =>
-      resizeObserver?.observe(element),
-    );
-
-    window.addEventListener("resize", fitBrand);
-    window.addEventListener("orientationchange", fitBrand);
-    window.visualViewport?.addEventListener("resize", fitBrand);
-    document.addEventListener("visibilitychange", fitBrand);
-
-    const fontSet = document.fonts;
-    void fontSet?.ready.then(fitBrand);
-    fontSet?.addEventListener("loadingdone", fitBrand);
-    fontSet?.addEventListener("loadingerror", fitBrand);
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      deferredIds.forEach((id) => window.clearTimeout(id));
-      resizeObserver?.disconnect();
-      window.removeEventListener("resize", fitBrand);
-      window.removeEventListener("orientationchange", fitBrand);
-      window.visualViewport?.removeEventListener("resize", fitBrand);
-      document.removeEventListener("visibilitychange", fitBrand);
-      fontSet?.removeEventListener("loadingdone", fitBrand);
-      fontSet?.removeEventListener("loadingerror", fitBrand);
-    };
-  }, [activeTab, currentUser]);
 
   const selectProfile = (profile: User) => {
     if (isDisabled) return;
@@ -313,10 +245,9 @@ const AppHeader: FC<AppHeaderProps> = ({
       className={`app-header app-header--${activeTab}${isProfileMenuOpen ? " is-profile-menu-open" : ""}${slot?.hasSearch ? " app-header--has-search" : ""}`}
       role="banner"
     >
-      <div ref={leftRef} className="app-header__left">
+      <div className="app-header__left">
+        <FlowNav activeTab={activeTab} onTabChange={onTabChange} onOpenSpin={onOpenSpin} />
         <HeaderCommandDeck
-          activeTab={activeTab}
-          onTabChange={onTabChange}
           status={pwaStatus}
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}
@@ -324,21 +255,13 @@ const AppHeader: FC<AppHeaderProps> = ({
         />
       </div>
 
-      {/* Center: Brand or Search slot */}
+      {/* Center: Search slot only (empty when no search active) */}
       <div
         ref={centerRef}
         className={`app-header__center${slot?.hasSearch ? " app-header__center--search" : ""}`}
-        aria-label={slot?.hasSearch ? undefined : "Electron"}
-      >
-        {!slot?.hasSearch && (
-          <span ref={brandRef} className="app-header__brand">
-            {brandLabel}
-          </span>
-        )}
-      </div>
+      />
 
-      <div ref={rightRef} className="app-header__right">
-        <HeaderQuickActions activeTab={activeTab} onOpenSpin={onOpenSpin} />
+      <div className="app-header__right">
 
         <button
           ref={triggerRef}

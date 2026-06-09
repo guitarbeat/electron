@@ -1,8 +1,6 @@
 import { useMemo, useState, type FC } from "react";
 import { RefreshCw, SatelliteDish, WifiOff, X } from "lucide-react";
-import type { MainTab } from "@/shared/types";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import ThemeToggle from "@/ui/ThemeToggle";
 import "./HeaderCommandDeck.css";
 
 export interface HeaderCommandDeckStatus {
@@ -15,8 +13,6 @@ export interface HeaderCommandDeckStatus {
 }
 
 interface HeaderCommandDeckProps {
-  activeTab: MainTab;
-  onTabChange: (tab: MainTab) => void;
   status?: HeaderCommandDeckStatus;
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
@@ -27,8 +23,6 @@ const pluralize = (count: number, singular: string, plural = `${singular}s`) =>
   `${count} ${count === 1 ? singular : plural}`;
 
 const HeaderCommandDeck: FC<HeaderCommandDeckProps> = ({
-  activeTab,
-  onTabChange,
   status,
   onInstallApp,
   onApplyUpdate,
@@ -150,15 +144,7 @@ const HeaderCommandDeck: FC<HeaderCommandDeckProps> = ({
   const StatusIcon = statusChip?.icon;
 
   return (
-    <div className="header-command-deck" aria-label="Primary app controls">
-      <ThemeToggle
-        activeTab={activeTab}
-        onChange={onTabChange}
-        compact
-        className="header-command-deck__tabs"
-        label="Switch between Movies and Places"
-      />
-
+    <div className="header-command-deck" aria-label="App status">
       {shouldShowStatus && statusChip && StatusIcon ? (
         <div className={`header-command-deck__status header-command-deck__status--${statusChip.tone}`}>
           <StatusIcon size={14} strokeWidth={2.2} aria-hidden="true" />

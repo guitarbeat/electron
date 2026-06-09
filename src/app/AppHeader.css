@@ -41,71 +41,23 @@
   justify-self: start;
 }
 
-/* Center section: Brand */
+/* Center: search-slot only — invisible when empty, expands on search */
 .app-header__center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-width: 0;
-  width: auto;
+  width: 0;
   overflow: hidden;
-  container-type: inline-size;
-  position: relative;
-  z-index: 1;
-  justify-self: center;
-  min-width: 0;
 }
 
-/* When the search bar is portaled into the center slot */
 .app-header--has-search {
   grid-template-columns: auto 1fr auto;
 }
 
 .app-header__center--search {
   overflow: visible;
-  container-type: normal;
   width: 100%;
   justify-self: stretch;
   align-items: stretch;
-}
-
-.app-header__brand {
-  margin: 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: Papyrus, 'Papyrus', 'Marker Felt', 'Comic Sans MS', cursive;
-  font-size: clamp(1.35rem, 2vw, 1.95rem);
-  font-weight: 400;
-  letter-spacing: 0.03em;
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.9));
-  white-space: nowrap;
-  line-height: 1;
-  background: var(--gradient-primary, linear-gradient(135deg, #c88d59 0%, #d4b173 100%));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
-  text-rendering: geometricPrecision;
-}
-
-.app-header__brand-kicker {
-  margin-bottom: 0.18rem;
-}
-
-
-@container (max-width: 7.5rem) {
-  .app-header__brand {
-    font-size: clamp(0.82rem, 16cqw, 1.12rem);
-  }
-}
-
-@container (max-width: 6.25rem) {
-  .app-header__brand {
-    font-size: clamp(0.76rem, 15cqw, 1rem);
-    letter-spacing: 0.01em;
-  }
+  display: flex;
 }
 
 /* Right section: Profile selector */
