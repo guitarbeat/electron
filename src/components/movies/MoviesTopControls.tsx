@@ -431,16 +431,10 @@ const MoviesTopControls = React.forwardRef<
         autocompleteError,
         autocompleteQuery,
         autocompleteResults.length,
-        autocompleteError
-      ),
-    [
-      autocompleteError,
-      autocompleteQuery,
-      autocompleteResults.length,
-      isAutocompleteLoading,
-      trimmedSearchQuery,
-    ]
-  );
+        isAutocompleteLoading,
+        trimmedSearchQuery,
+      ]
+    );
   const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
   const filteredAutocompleteResults = useMemo(
     () =>
