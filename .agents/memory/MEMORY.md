@@ -1,0 +1,1 @@
+- [AppNavStrip merge](appnavstrip.md) — FlowNav + HeaderCommandDeck collapsed into single `src/components/ui/AppNavStrip.tsx`; all tokens under `--ans-*`; next strike target is `ProfileMenu` + `AppHeader.css` dead selector pruning
