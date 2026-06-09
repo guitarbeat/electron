@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, type FC } from 'react';
 import { useUser } from '@/app/useProviders';
-import { USER_PHOTOS, type User } from '@/shared/types';
+import type { User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
 import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
 import PinDialog from '@/common/PinDialog';
+import UserAvatar from '@/ui/UserAvatar';
 
 interface Props {
   onOpenChange?: (isOpen: boolean) => void;
@@ -135,20 +136,8 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     } finally { setIsSavingPin(false); }
   };
 
-  const avatar = (user: User) => {
-    const url = USER_PHOTOS[user];
-    if (url) return (
-      <>
-        <img src={url} alt="" className="app-header__avatar-image" draggable="false"
-          onError={e => { (e.currentTarget.style.display = 'none'); const sib = e.currentTarget.nextElementSibling as HTMLElement | null; if (sib) sib.style.display = ''; }} />
-        <span className="app-header__avatar-initial" style={{ display: 'none' }}>{user.charAt(0)}</span>
-      </>
-    );
-    return <span className="app-header__avatar-initial">{user.charAt(0)}</span>;
-  };
-
   return (
-    <div className={`app-header__profile-wrap${isOpen ? ' is-open' : ''}`}>
+    <>
       <button
         ref={triggerRef}
         type="button"
@@ -159,20 +148,12 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
         aria-label={currentUser ? `Profile: ${currentUser}` : 'Select profile'}
         disabled={isDisabled}
       >
-        {currentUser ? (
-          <>{avatar(currentUser)}<span className="app-header__profile-name">{currentUser}</span><ChevronIcon /></>
-        ) : (
-          <>
-            <span className="app-header__avatar-placeholder">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </span>
-            <span className="app-header__profile-name">Sign in</span>
-            <ChevronIcon />
-          </>
-        )}
+        <UserAvatar user={currentUser} />
+        {currentUser
+          ? <span className="app-header__profile-name">{currentUser}</span>
+          : <span className="app-header__profile-name">Sign in</span>
+        }
+        <ChevronIcon />
       </button>
 
       {isOpen && (
@@ -184,14 +165,28 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
                 const isActive = currentUser === profile;
                 const hasPin = userHasPin(profile);
                 return (
-                  <button key={profile} type="button" role="menuitem"
+                  <button
+                    key={profile}
+                    type="button"
+                    role="menuitem"
                     className={`app-header__profile-option${isActive ? ' is-active' : ''}${hasPin ? ' has-pin' : ''}`}
-                    onClick={() => selectProfile(profile)} disabled={isDisabled}
-                    aria-label={isActive ? `${profile} (active) - click to log out` : hasPin ? `Select ${profile} (PIN protected)` : `Select ${profile}`}
+                    onClick={() => selectProfile(profile)}
+                    disabled={isDisabled}
+                    aria-label={
+                      isActive
+                        ? `${profile} (active) - click to log out`
+                        : hasPin
+                          ? `Select ${profile} (PIN protected)`
+                          : `Select ${profile}`
+                    }
                   >
-                    <span className="app-header__option-avatar">{avatar(profile)}</span>
+                    <span className="app-header__option-avatar">
+                      <UserAvatar user={profile} />
+                    </span>
                     <span className="app-header__option-name">{profile}</span>
-                    {isActive && <span className="app-header__option-badge app-header__option-badge--active">Active</span>}
+                    {isActive && (
+                      <span className="app-header__option-badge app-header__option-badge--active">Active</span>
+                    )}
                     {hasPin && !isActive && <LockIcon />}
                   </button>
                 );
@@ -201,37 +196,57 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
 
           {currentUser && (
             <div className="app-header__menu-section app-header__menu-section--actions">
-              <button type="button" role="menuitem" className="app-header__menu-action"
-                onClick={openPinSettings} disabled={isDisabled || isSavingPin}
+              <button
+                type="button"
+                role="menuitem"
+                className="app-header__menu-action"
+                onClick={openPinSettings}
+                disabled={isDisabled || isSavingPin}
               >
                 <LockIcon size={16} />
                 {userNeedsPin(currentUser) ? 'Finish PIN Setup' : userHasPin(currentUser) ? 'Change PIN' : 'Set PIN'}
               </button>
-              <button type="button" role="menuitem" className="app-header__menu-action app-header__menu-action--logout"
-                onClick={handleLogout} disabled={isDisabled}
+              <button
+                type="button"
+                role="menuitem"
+                className="app-header__menu-action app-header__menu-action--logout"
+                onClick={handleLogout}
+                disabled={isDisabled}
               >
-                <LogoutIcon />Log out
+                <LogoutIcon />
+                Log out
               </button>
             </div>
           )}
 
-          {selectionError && <p className="app-header__menu-error" role="alert">{selectionError}</p>}
+          {selectionError && (
+            <p className="app-header__menu-error" role="alert">{selectionError}</p>
+          )}
         </div>
       )}
 
       {pendingUser && (
-        <PinDialog isOpen user={pendingUser} mode="enter" isLoading={isVerifying}
+        <PinDialog
+          isOpen
+          user={pendingUser}
+          mode="enter"
+          isLoading={isVerifying}
           onCancel={() => { setPendingUser(null); setSelectionError(null); }}
           onSubmit={handlePinSubmit}
         />
       )}
       {pinSettingsUser && (
-        <PinDialog isOpen user={pinSettingsUser} mode={pinMode} isLoading={isSavingPin}
-          onCancel={handlePinSettingsCancel} onSubmit={handlePinSettingsSubmit}
+        <PinDialog
+          isOpen
+          user={pinSettingsUser}
+          mode={pinMode}
+          isLoading={isSavingPin}
+          onCancel={handlePinSettingsCancel}
+          onSubmit={handlePinSettingsSubmit}
           isRequiredSetup={pinMode === 'set' && userNeedsPin(pinSettingsUser)}
         />
       )}
-    </div>
+    </>
   );
 };
 

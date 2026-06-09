@@ -1,19 +1,30 @@
 ---
-name: AppNavStrip merge
-description: FlowNav and HeaderCommandDeck were merged into AppNavStrip. Token scale and class namespace established.
+name: AppNavStrip + UserAvatar merge
+description: FlowNav and HeaderCommandDeck merged into AppNavStrip; UserAvatar extracted from ProfileMenu.
 ---
 
-## Rule
-`src/components/ui/AppNavStrip.tsx` is the single source for brand wordmark + Movies/Places/Spin nav tabs + PWA status chip. Do not recreate FlowNav or HeaderCommandDeck — they are deleted.
+## Rules
 
-## Token namespace
-All CSS lives in `AppNavStrip.css` under `--ans-*` token scale (accent, fg, bg, border, sep, h, r, pad, font).
+### AppNavStrip
+`src/components/ui/AppNavStrip.tsx` owns: brand wordmark + Movies/Places/Spin nav tabs + inline PWA status chip. Do not recreate FlowNav or HeaderCommandDeck — deleted. CSS in `AppNavStrip.css` under `--ans-*` token namespace.
+
+### UserAvatar
+`src/components/ui/UserAvatar.tsx` is the single avatar primitive: photo (with React useState img-error fallback) → initial letter → null placeholder. No size prop — sizes are controlled by parent CSS context (`.app-header__option-avatar` bumps to 2rem; default is 1.75rem).
+
+### ProfileMenu
+`src/components/ui/ProfileMenu.tsx` (185 lines): uses `<UserAvatar>` in both the trigger button and the profile list. Ghost wrapper div (`app-header__profile-wrap`) removed — component returns a fragment. The dropdown positions correctly because `.app-header__profile-menu` is `position: absolute` relative to `.app-header__right` which is `position: relative`.
+
+### AppHeader.tsx
+Thin 3-child shell: `<AppNavStrip>` (left) / center slot div / `<ProfileMenu>` (right). 71 lines.
 
 ## Why
-Two separate components (FlowNav + HeaderCommandDeck) rendered side-by-side in AppHeader.__left with identical styling contracts. Merging eliminated cross-file token drift and reduced file count by 4.
+Two goals: (1) eliminate cross-file token drift between FlowNav+HeaderCommandDeck, (2) de-duplicate the avatar() inline function which was defined once but called in two distinct render paths inside ProfileMenu (trigger + dropdown list).
 
 ## How to apply
-When modifying header nav (tabs, brand, spin button, sync chip): edit `AppNavStrip.tsx` / `AppNavStrip.css` only. AppHeader.tsx is now a thin shell with 3 children: AppNavStrip, center slot div, ProfileMenu.
+- Nav/tabs/spin/sync chip → AppNavStrip.tsx + AppNavStrip.css
+- Avatar rendering → UserAvatar.tsx
+- Profile dropdown logic (PIN, user select, logout) → ProfileMenu.tsx
+- Header layout/dropdown CSS → AppHeader.css
 
 ## Next strike target
-`ProfileMenu.tsx` + dead selectors in `AppHeader.css` (`.header-command-deck__*` ghost refs, stale `.app-header__spin-trigger` if present).
+`src/app/App.scss` — the monolith (~13k lines). Ghost CSS for deleted components may have accumulated. Safe first pass: grep for `.header-command-deck`, `.flownav`, `.seg-control` references and prune.
