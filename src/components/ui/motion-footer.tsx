@@ -11,13 +11,11 @@ if (typeof window !== "undefined") {
 }
 
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
-
 .cf-wrapper {
   /* Map app CSS variables to shadcn-style tokens used below */
   --background:      var(--color-background, #190f18);
   --foreground:      var(--color-text-primary, #f7efdf);
-  --primary:         var(--color-accent, #ff7da8);
+  --primary:         var(--color-accent, #c88d59);
   --secondary:       var(--color-secondary, #ffd9a0);
   --muted-foreground: var(--color-text-secondary, #e0d2b6);
   --border:          rgba(205, 171, 118, 0.2);
@@ -35,7 +33,7 @@ const STYLES = `
   --pill-shadow-hover:    color-mix(in oklch, var(--background) 70%, transparent);
   --pill-highlight-hover: color-mix(in oklch, var(--foreground) 20%, transparent);
 
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-display, 'Papyrus', serif);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -212,11 +210,6 @@ const STYLES = `
   width: 100%;
 }
 
-.cf-pill-row--secondary {
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
 .cf-glass-pill {
   display: inline-flex;
   align-items: center;
@@ -249,18 +242,6 @@ const STYLES = `
   padding: 1.25rem 2.5rem;
   gap: 0.75rem;
   font-size: 0.875rem;
-}
-
-.cf-glass-pill--sm {
-  padding: 0.75rem 1.5rem;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  font-weight: 500;
-}
-
-.cf-glass-pill--sm:hover {
-  color: var(--foreground);
 }
 
 .cf-pill-icon {
@@ -358,13 +339,11 @@ const STYLES = `
 @media (min-width: 768px) {
   .cf-marquee-track { font-size: 0.875rem; }
   .cf-glass-pill--lg { font-size: 1rem; }
-  .cf-glass-pill--sm { font-size: 0.875rem; }
   .cf-bottom-bar { flex-wrap: nowrap; padding: 0 3rem 2rem; }
   .cf-copyright { order: 1; font-size: 0.75rem; }
   .cf-made-with { order: 2; }
   .cf-made-with__label { font-size: 0.75rem; }
   .cf-made-with__heart { font-size: 1.125rem; }
-  .cf-pill-row--secondary { gap: 1.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -549,18 +528,6 @@ export function CinematicFooter() {
                     <circle cx="12" cy="10" r="3"/>
                   </svg>
                   Find Places
-                </MagneticButton>
-              </div>
-
-              <div className="cf-pill-row cf-pill-row--secondary">
-                <MagneticButton as="a" href="#spin" className="cf-glass-pill cf-glass-pill--sm">
-                  Spin the Wheel
-                </MagneticButton>
-                <MagneticButton as="a" href="#quiz" className="cf-glass-pill cf-glass-pill--sm">
-                  Take the Quiz
-                </MagneticButton>
-                <MagneticButton as="a" href="#memories" className="cf-glass-pill cf-glass-pill--sm">
-                  Memories
                 </MagneticButton>
               </div>
             </div>

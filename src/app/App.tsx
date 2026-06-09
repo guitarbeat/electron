@@ -26,7 +26,6 @@ import {
 } from '@/services/state/stateClient';
 import MinigameModal from '@/ui/MinigameModal';
 import { CinematicFooter } from '@/components/ui/motion-footer';
-import { CinematicLandingHero } from '@/components/ui/CinematicLandingHero';
 import { Analytics } from '@vercel/analytics/react';
 import './App.scss';
 
@@ -162,15 +161,6 @@ const App: React.FC = () => {
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
-  const [showLanding, setShowLanding] = useState<boolean>(
-    () => typeof window !== 'undefined' && localStorage.getItem('electron_landing_seen') !== 'true'
-  );
-  const handleLandingEnter = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('electron_landing_seen', 'true');
-    }
-    setShowLanding(false);
-  }, []);
   const [cursorTrailEnabled] = useState<boolean>(
     () => typeof window !== 'undefined' && localStorage.getItem('cursorTrailEnabled') === 'true'
   );
@@ -585,9 +575,6 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      {showLanding && (
-        <CinematicLandingHero onEnter={handleLandingEnter} />
-      )}
       <React.Suspense fallback={null}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>

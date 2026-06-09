@@ -1,26 +1,7 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  removeStoredJson,
-  readStoredJson,
-  writeStoredJson,
-  trackMetric,
-  getMetricCount
-} from './analyticsService.ts';
-
-import { writeStoredJson } from './storageClient.ts';
+import { removeStoredJson, readStoredJson, writeStoredJson } from './storageClient.ts';
 import { getMetricCount, trackMetric } from './analyticsService.ts';
-
-const originalConsoleWarn = console.warn;
-const globalWithWindow = globalThis as typeof globalThis & { window?: unknown };
-const originalWindow = globalWithWindow.window;
-
-const resetWindow = () => {
-  if (originalWindow === undefined) {
-    Reflect.deleteProperty(globalWithWindow, 'window');
-    return;
-  }
-});
 
 test('removeStoredJson handles window.localStorage.removeItem throwing error', () => {
   const originalWindow = global.window;
