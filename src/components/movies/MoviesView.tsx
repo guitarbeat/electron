@@ -98,11 +98,16 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // Bolt: O(1) Map lookup to replace O(N^2) .find() inside the loop
+    const prevMoviesMap = new Map<string, Movie>();
+    for (const prevMovie of previousMoviesRef.current) {
+      prevMoviesMap.set(prevMovie.id, prevMovie);
+    }
+
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
+        const prevMovie = prevMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
