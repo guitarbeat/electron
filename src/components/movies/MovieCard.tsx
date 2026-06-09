@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useCardTilt } from '@/hooks/useCardTilt';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
@@ -60,6 +61,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isUpdating, setIsUpdating] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
+  const tilt = useCardTilt();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
