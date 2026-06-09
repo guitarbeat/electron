@@ -2,12 +2,11 @@ import type { FC } from 'react';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useUser } from '@/app/useProviders';
 import { USER_PHOTOS, type MainTab, type User } from '@/shared/types';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import { usePins } from '@/hooks/usePins';
 import { USER_OPTIONS, consoleError, getErrorMessage } from '@/utils';
-import ThemeToggle from '@/ui/ThemeToggle';
 import PinDialog from '@/common/PinDialog';
 import { useAppHeaderSlot } from '@/app/AppHeaderContext';
+import HeaderCommandDeck from '@/ui/HeaderCommandDeck';
 import './AppHeader.css';
 
 interface AppHeaderProps {
@@ -62,119 +61,11 @@ const AppHeader: FC<AppHeaderProps> = ({
   }, [slot]);
 
   const users: User[] = [...USER_OPTIONS];
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isDisabled = isLoading || isVerifying;
   const selectedNamedUser = currentUser;
   const pinSettingsMode =
     selectedNamedUser && userHasPin(selectedNamedUser) ? "change" : "set";
   const brandLabel = "Electron";
-  const pwaChip = (() => {
-    if (!pwaStatus) {
-      return null;
-    }
-
-    if (!pwaStatus.isOnline) {
-      return {
-        tone: "offline" as const,
-        label: "Offline",
-        detail: "Local cache only",
-        action: undefined,
-        actionLabel: undefined,
-      };
-    }
-
-    if (pwaStatus.hasUpdateReady) {
-      return {
-        tone: "update" as const,
-        label: "Update ready",
-        detail: "Refresh app shell",
-        action: onApplyUpdate,
-        actionLabel: "Refresh",
-      };
-    }
-
-    if (pwaStatus.blockedSyncCount > 0) {
-      return {
-        tone: "warning" as const,
-        label: "Sync blocked",
-        detail: `${pwaStatus.blockedSyncCount} section${pwaStatus.blockedSyncCount === 1 ? "" : "s"} need attention`,
-        action: onRetrySync,
-        actionLabel: "Retry",
-      };
-    }
-
-    if (pwaStatus.pendingSyncCount > 0) {
-      return {
-        tone: "syncing" as const,
-        label: "Syncing",
-        detail: `${pwaStatus.pendingSyncCount} pending change${pwaStatus.pendingSyncCount === 1 ? "" : "s"}`,
-        action: onRetrySync,
-        actionLabel: "Sync now",
-      };
-    }
-
-    if (pwaStatus.canInstall && !pwaStatus.isStandalone) {
-      return {
-        tone: "install" as const,
-        label: "Install app",
-        detail: "Open like native",
-        action: onInstallApp,
-        actionLabel: "Install",
-      };
-    }
-
-    if (pwaStatus.isStandalone) {
-      return {
-        tone: "ready" as const,
-        label: "Installed",
-        detail: "Standalone mode",
-        action: undefined,
-        actionLabel: undefined,
-      };
-    }
-
-    return {
-      tone: "ready" as const,
-      label: "Live sync",
-      detail: "App connected",
-      action: undefined,
-      actionLabel: undefined,
-    };
-  })();
-  const pwaChipDismissKey = pwaChip
-    ? `electron:pwa-chip:${pwaChip.tone}:${pwaChip.detail}`
-    : null;
-  const [isPwaChipDismissed, setIsPwaChipDismissed] = useState(false);
-  const shouldShowPwaChip = Boolean(
-    isMobile && pwaChip && pwaChip.tone !== "ready" && !isPwaChipDismissed,
-  );
-
-  useEffect(() => {
-    if (!pwaChipDismissKey) {
-      setIsPwaChipDismissed(false);
-      return;
-    }
-
-    try {
-      setIsPwaChipDismissed(
-        window.localStorage.getItem(pwaChipDismissKey) === "1",
-      );
-    } catch {
-      setIsPwaChipDismissed(false);
-    }
-  }, [pwaChipDismissKey]);
-
-  const dismissPwaChip = () => {
-    if (pwaChipDismissKey) {
-      try {
-        window.localStorage.setItem(pwaChipDismissKey, "1");
-      } catch {
-        // Ignore storage failures and still dismiss in-memory.
-      }
-    }
-
-    setIsPwaChipDismissed(true);
-  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -421,39 +312,15 @@ const AppHeader: FC<AppHeaderProps> = ({
       className={`app-header app-header--${activeTab}${isProfileMenuOpen ? " is-profile-menu-open" : ""}${slot?.hasSearch ? " app-header--has-search" : ""}`}
       role="banner"
     >
-      {/* Left: Theme Toggle + Background Toggle */}
       <div ref={leftRef} className="app-header__left">
-        {shouldShowPwaChip && pwaChip ? (
-          <div
-            className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}
-          >
-            <span className="app-header__pwa-label">{pwaChip.label}</span>
-            <span className="app-header__pwa-detail">{pwaChip.detail}</span>
-            {pwaChip.action && pwaChip.actionLabel ? (
-              <button
-                type="button"
-                className="app-header__pwa-action"
-                onClick={pwaChip.action}
-              >
-                {pwaChip.actionLabel}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="app-header__pwa-dismiss"
-              onClick={dismissPwaChip}
-              aria-label={`Dismiss ${pwaChip.label.toLowerCase()} status`}
-            >
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-        ) : null}
-        <ThemeToggle
+        <HeaderCommandDeck
           activeTab={activeTab}
-          onChange={onTabChange}
-          compact
-          className="app-header__theme-toggle"
-          label="Switch between Movies and Places"
+          onTabChange={onTabChange}
+          status={pwaStatus}
+          onInstallApp={onInstallApp}
+          onApplyUpdate={onApplyUpdate}
+          onRetrySync={onRetrySync}
+          onOpenSpin={activeTab === "movies" ? onOpenSpin : undefined}
         />
       </div>
 
@@ -470,34 +337,7 @@ const AppHeader: FC<AppHeaderProps> = ({
         )}
       </div>
 
-      {/* Right: Spin button (movies tab) + Profile Selector */}
       <div ref={rightRef} className="app-header__right">
-        {activeTab === "movies" && onOpenSpin && (
-          <button
-            type="button"
-            className="app-header__spin-trigger"
-            onClick={onOpenSpin}
-            aria-label="Spin the wheel to pick a movie"
-            title="Spin the wheel"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="2" x2="12" y2="12" />
-              <line x1="12" y1="12" x2="20" y2="16" />
-            </svg>
-            <span className="app-header__spin-label">Spin</span>
-          </button>
-        )}
         <button
           ref={triggerRef}
           type="button"
