@@ -35,22 +35,22 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-import { moviesTheme } from '@/theme/themes';
+import { getAppTheme } from '@/theme/themes';
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [themeName] = useState<ThemeName>('movies');
-  const theme = useMemo(() => getAppTheme(themeName) || getAppTheme('default')!, [themeName]);
+  const theme = useMemo(() => getAppTheme(themeName), [themeName]);
 
   useEffect(() => {
-    applyTheme('movies');
-  }, []);
+    applyTheme(themeName);
+  }, [themeName]);
 
   const value = useMemo(
     () => ({
-      currentTheme: 'movies',
-      theme: getAppTheme('movies'),
-      themeTokens: getAppTheme('movies').tokens,
+      currentTheme: themeName,
+      theme,
+      themeTokens: theme.tokens,
     }),
-    []
+    [themeName, theme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
