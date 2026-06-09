@@ -57,6 +57,7 @@ const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSPropert
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
+const BOOT_SCREEN_MIN_MS = 600;
 
 
 /** True once at module load — avoids creating a canvas on every render. */
