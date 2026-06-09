@@ -1,5 +1,5 @@
 import { useMemo, useState, type FC } from "react";
-import { RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from "lucide-react";
+import { RefreshCw, SatelliteDish, WifiOff, X } from "lucide-react";
 import type { MainTab } from "@/shared/types";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import ThemeToggle from "@/ui/ThemeToggle";
@@ -21,7 +21,6 @@ interface HeaderCommandDeckProps {
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
-  onOpenSpin?: () => void;
 }
 
 const pluralize = (count: number, singular: string, plural = `${singular}s`) =>
@@ -34,7 +33,6 @@ const HeaderCommandDeck: FC<HeaderCommandDeckProps> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
-  onOpenSpin,
 }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const [dismissedKeys, setDismissedKeys] = useState<Record<string, true>>({});
@@ -160,19 +158,6 @@ const HeaderCommandDeck: FC<HeaderCommandDeckProps> = ({
         className="header-command-deck__tabs"
         label="Switch between Movies and Places"
       />
-
-      {activeTab === "movies" && onOpenSpin ? (
-        <button
-          type="button"
-          className="header-command-deck__spin"
-          onClick={onOpenSpin}
-          aria-label="Spin the wheel to pick a movie"
-          title="Spin the wheel"
-        >
-          <RotateCw size={15} strokeWidth={2.2} aria-hidden="true" />
-          <span>Spin</span>
-        </button>
-      ) : null}
 
       {shouldShowStatus && statusChip && StatusIcon ? (
         <div className={`header-command-deck__status header-command-deck__status--${statusChip.tone}`}>

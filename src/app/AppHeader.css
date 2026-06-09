@@ -120,67 +120,6 @@
   gap: 0.55rem;
 }
 
-/* Nav pill links (Browse Movies / Find Places) */
-.app-header__nav-links {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.app-header__nav-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.38rem 0.75rem 0.38rem 0.55rem;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.65);
-  font-family: var(--font-interface, var(--font-body, sans-serif));
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  cursor: pointer;
-}
-
-.app-header__nav-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.app-header__nav-icon {
-  width: 0.9rem;
-  height: 0.9rem;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.app-header__nav-pill:hover .app-header__nav-icon {
-  opacity: 1;
-}
-
-@media (max-width: 720px) {
-  .app-header__nav-label {
-    display: none;
-  }
-  .app-header__nav-pill {
-    padding: 0.38rem 0.5rem;
-  }
-  .app-header__nav-icon {
-    width: 1rem;
-    height: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .app-header__nav-links {
-    display: none;
-  }
-}
 
 @media (max-width: 720px) {
   .app-header__left {

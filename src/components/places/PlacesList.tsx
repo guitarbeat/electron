@@ -24,6 +24,7 @@ const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
 const PlacesList: React.FC = () => {
   const mapRef = useRef<PlacesMapHandle>(null);
+  const placesBodyRef = useRef<HTMLDivElement>(null);
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const {
