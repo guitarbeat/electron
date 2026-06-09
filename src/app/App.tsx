@@ -7,7 +7,7 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { PwaInstallProvider } from '@/app/PwaInstallProvider';
 import { usePwaInstall } from './usePwaInstall.ts';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
-import { useAppSession, useToast, useUser } from '@/app/useProviders';
+import { useAppSession, useToast, useUser, useTheme } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
@@ -80,7 +80,7 @@ const webGLAvailable: boolean = (() => {
  * so the background stays color-linked to the rest of the UI.
  */
 const ThemedMoire: React.FC = () => {
-
+  const { theme } = useTheme();
 
   if (!webGLAvailable) {
     return null;
