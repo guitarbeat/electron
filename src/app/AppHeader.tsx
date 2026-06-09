@@ -47,6 +47,11 @@ const AppHeader: FC<AppHeaderProps> = ({
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const centerRef = useRef<HTMLDivElement>(null);
+  const leftRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLSpanElement>(null);
 
   const slot = useAppHeaderSlot();
 
@@ -417,7 +422,7 @@ const AppHeader: FC<AppHeaderProps> = ({
       role="banner"
     >
       {/* Left: Theme Toggle + Background Toggle */}
-      <div className="app-header__left">
+      <div ref={leftRef} className="app-header__left">
         {shouldShowPwaChip && pwaChip ? (
           <div
             className={`app-header__pwa-chip app-header__pwa-chip--${pwaChip.tone}`}
