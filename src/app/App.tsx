@@ -24,7 +24,6 @@ import {
   type OutboxStatusSummary,
 } from '@/services/state/stateClient';
 import MinigameModal from '@/ui/MinigameModal';
-import { CinematicFooter } from '@/components/ui/motion-footer';
 import { Analytics } from '@vercel/analytics/react';
 import './App.scss';
 
@@ -644,7 +643,6 @@ const App: React.FC = () => {
           </MinigameModal>
         ))}
 
-        <CinematicFooter />
       </div>
       <Analytics />
     </ThemeProvider>
