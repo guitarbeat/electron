@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { gsap } from 'gsap';
 import { useUser } from '@/app/useProviders';
 import { USER_PHOTOS, type MainTab, type User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
@@ -53,6 +54,31 @@ const AppHeader: FC<AppHeaderProps> = ({
   const brandRef = useRef<HTMLSpanElement>(null);
 
   const slot = useAppHeaderSlot();
+  const navLinksRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const container = navLinksRef.current;
+    if (!container) return;
+    const pills = Array.from(container.querySelectorAll<HTMLElement>('.app-header__nav-pill'));
+    const cleanups = pills.map((el) => {
+      const onMove = (e: MouseEvent) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        gsap.to(el, { x: x * 0.38, y: y * 0.38, ease: 'power2.out', duration: 0.4 });
+      };
+      const onLeave = () => {
+        gsap.to(el, { x: 0, y: 0, ease: 'elastic.out(1,0.3)', duration: 1.2 });
+      };
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('mouseleave', onLeave);
+      return () => {
+        el.removeEventListener('mousemove', onMove);
+        el.removeEventListener('mouseleave', onLeave);
+      };
+    });
+    return () => cleanups.forEach((fn) => fn());
+  }, []);
 
   useEffect(() => {
     if (!slot) return;
@@ -338,7 +364,7 @@ const AppHeader: FC<AppHeaderProps> = ({
       </div>
 
       <div ref={rightRef} className="app-header__right">
-        <nav className="app-header__nav-links" aria-label="Quick navigation">
+        <nav ref={navLinksRef} className="app-header__nav-links" aria-label="Quick navigation">
           <a href="#movies" className="app-header__nav-pill">
             <svg className="app-header__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
