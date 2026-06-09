@@ -42,10 +42,7 @@ const STYLES = `
   0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.6; }
   100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
 }
-@keyframes cf-marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
+
 @keyframes cf-heartbeat {
   0%, 100% { transform: scale(1);   filter: drop-shadow(0 0 5px  color-mix(in oklch, var(--destructive) 50%, transparent)); }
   15%, 45% { transform: scale(1.2); filter: drop-shadow(0 0 10px color-mix(in oklch, var(--destructive) 80%, transparent)); }
@@ -124,44 +121,6 @@ const STYLES = `
   background-clip: text;
 }
 
-/* ── Marquee band ── */
-.cf-marquee-band {
-  position: absolute;
-  top: 3rem;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
-  border-top: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
-  border-bottom: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
-  background: color-mix(in oklch, var(--background) 60%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 1rem 0;
-  z-index: 10;
-  transform: rotate(-2deg) scale(1.1);
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-}
-
-.cf-marquee-track {
-  display: flex;
-  width: max-content;
-  animation: cf-marquee 40s linear infinite;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-}
-
-.cf-marquee-item {
-  display: flex;
-  align-items: center;
-  gap: 3rem;
-  padding: 0 1.5rem;
-}
-
-.cf-marquee-dot-primary { color: color-mix(in oklch, var(--primary) 60%, transparent); }
-.cf-marquee-dot-secondary { color: color-mix(in oklch, var(--secondary) 60%, transparent); }
 
 /* ── Main center content ── */
 .cf-center {
@@ -420,20 +379,6 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
 );
 MagneticButton.displayName = "MagneticButton";
 
-const MarqueeItem = () => (
-  <div className="cf-marquee-item">
-    <span>Plan Your Night</span>
-    <span className="cf-marquee-dot-primary">✦</span>
-    <span>Discover Together</span>
-    <span className="cf-marquee-dot-secondary">✦</span>
-    <span>Movie Magic</span>
-    <span className="cf-marquee-dot-primary">✦</span>
-    <span>Date Night Ready</span>
-    <span className="cf-marquee-dot-secondary">✦</span>
-    <span>Share &amp; Explore</span>
-    <span className="cf-marquee-dot-primary">✦</span>
-  </div>
-);
 
 export function CinematicFooter() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -484,13 +429,6 @@ export function CinematicFooter() {
 
           <div ref={giantTextRef} className="cf-bg-text">
             ELECTRON
-          </div>
-
-          <div className="cf-marquee-band">
-            <div className="cf-marquee-track">
-              <MarqueeItem />
-              <MarqueeItem />
-            </div>
           </div>
 
           <div className="cf-center">
