@@ -4,9 +4,9 @@ import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { PwaInstallProvider } from '@/app/PwaInstallProvider';
-import { usePwaInstall } from './usePwaInstall.ts';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
-import { useAppSession, useToast, useUser, useTheme } from '@/app/useProviders';
+import { useAppSession, useUser, useTheme } from '@/app/useProviders';
+import { usePwaRuntime } from '@/hooks/usePwaRuntime';
 import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
@@ -17,12 +17,6 @@ import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
 
-import {
-  flushPendingSync,
-  getOutboxStatusSummary,
-  syncOutboxStatusEvent,
-  type OutboxStatusSummary,
-} from '@/services/state/stateClient';
 import MinigameModal from '@/ui/MinigameModal';
 import { Analytics } from '@vercel/analytics/react';
 import './App.scss';
@@ -135,8 +129,7 @@ const readStoredAppViewState = (): StoredAppViewState | null => {
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
-  const { showToast, dismissToast } = useToast();
-  const { canInstall: canInstallApp, isStandalone, openInstallDialog } = usePwaInstall();
+  const { isOnline, isStandalone, canInstallApp, hasUpdateReady, outboxStatus, handleApplyUpdate, handleRetryPendingSync, handleInstallApp } = usePwaRuntime();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -162,17 +155,7 @@ const App: React.FC = () => {
   const [cursorTrailEnabled] = useState<boolean>(
     () => typeof window !== 'undefined' && localStorage.getItem('cursorTrailEnabled') === 'true'
   );
-  const [isOnline, setIsOnline] = useState<boolean>(() =>
-    typeof navigator === 'undefined' ? true : navigator.onLine
-  );
-  const [hasUpdateReady, setHasUpdateReady] = useState(false);
-  const [outboxStatus, setOutboxStatus] = useState<OutboxStatusSummary>(() =>
-    getOutboxStatusSummary()
-  );
-  const updateToastIdRef = React.useRef<string | null>(null);
-  const updateRegistrationRef = React.useRef<ServiceWorkerRegistration | null>(null);
   const shortcutHandledRef = React.useRef(false);
-  const offlineToastIdRef = React.useRef<string | null>(null);
 
   const logoLabState = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -261,161 +244,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) {
-      return undefined;
-    }
-
-    let isMounted = true;
-    let hasReloaded = false;
-
-    const showUpdateToast = (registration: ServiceWorkerRegistration) => {
-      setHasUpdateReady(true);
-      if (updateToastIdRef.current) {
-        dismissToast(updateToastIdRef.current);
-      }
-
-      updateRegistrationRef.current = registration;
-      updateToastIdRef.current = showToast({
-        type: 'info',
-        message: 'A newer app version is ready.',
-        persistent: true,
-        actionLabel: 'Refresh',
-        onAction: () => {
-          registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
-        },
-      });
-    };
-
-    const watchRegistration = (registration: ServiceWorkerRegistration) => {
-      if (registration.waiting) {
-        showUpdateToast(registration);
-      }
-
-      registration.addEventListener('updatefound', () => {
-        const installing = registration.installing;
-        if (!installing) return;
-        installing.addEventListener('statechange', () => {
-          if (
-            installing.state === 'installed' &&
-            navigator.serviceWorker.controller
-          ) {
-            showUpdateToast(registration);
-          }
-        });
-      });
-    };
-
-    navigator.serviceWorker.ready
-      .then((registration) => {
-        if (!isMounted) return;
-        watchRegistration(registration);
-      })
-      .catch(() => undefined);
-
-    const handleControllerChange = () => {
-      if (hasReloaded) return;
-      hasReloaded = true;
-      setHasUpdateReady(false);
-      window.location.reload();
-    };
-
-    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-    return () => {
-      isMounted = false;
-      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-    };
-  }, [dismissToast, showToast]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    const handleOffline = () => {
-      setIsOnline(false);
-      document.documentElement.classList.add('app-offline');
-      if (offlineToastIdRef.current) {
-        dismissToast(offlineToastIdRef.current);
-      }
-      offlineToastIdRef.current = showToast({
-        type: 'error',
-        message: 'You are offline. Saved app screens still work, but sync is paused.',
-        persistent: true,
-      });
-    };
-
-    const handleOnline = () => {
-      setIsOnline(true);
-      document.documentElement.classList.remove('app-offline');
-      if (offlineToastIdRef.current) {
-        dismissToast(offlineToastIdRef.current);
-        offlineToastIdRef.current = null;
-      }
-      void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
-      updateRegistrationRef.current?.update().catch(() => undefined);
-      showToast({
-        type: 'success',
-        message: 'Back online. Sync and update checks have resumed.',
-      });
-    };
-
-    window.addEventListener('offline', handleOffline);
-    window.addEventListener('online', handleOnline);
-
-    if (!navigator.onLine) {
-      handleOffline();
-    } else {
-      document.documentElement.classList.remove('app-offline');
-    }
-
-    return () => {
-      window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('online', handleOnline);
-    };
-  }, [dismissToast, showToast]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    const applyOutboxStatus = () => {
-      setOutboxStatus(getOutboxStatusSummary());
-    };
-
-    const handleOutboxEvent = (event: Event) => {
-      const customEvent = event as CustomEvent<OutboxStatusSummary>;
-      setOutboxStatus(customEvent.detail ?? getOutboxStatusSummary());
-    };
-
-    const handleVisibilitySync = () => {
-      if (document.visibilityState === 'visible' && navigator.onLine) {
-        void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
-        updateRegistrationRef.current?.update().catch(() => undefined);
-      }
-    };
-
-    applyOutboxStatus();
-    window.addEventListener(syncOutboxStatusEvent, handleOutboxEvent as EventListener);
-    window.addEventListener('focus', handleVisibilitySync);
-    document.addEventListener('visibilitychange', handleVisibilitySync);
-
-    const syncInterval = window.setInterval(() => {
-      if (!navigator.onLine) {
-        return;
-      }
-
-      void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
-    }, 45000);
-
-    return () => {
-      window.removeEventListener(syncOutboxStatusEvent, handleOutboxEvent as EventListener);
-      window.removeEventListener('focus', handleVisibilitySync);
-      document.removeEventListener('visibilitychange', handleVisibilitySync);
-      window.clearInterval(syncInterval);
-    };
-  }, []);
 
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {
@@ -487,18 +315,6 @@ const App: React.FC = () => {
     setShowSpinWheel(true);
   }, []);
 
-  const handleInstallApp = useCallback(() => {
-    openInstallDialog();
-  }, [openInstallDialog]);
-
-  const handleApplyUpdate = useCallback(() => {
-    setHasUpdateReady(false);
-    updateRegistrationRef.current?.waiting?.postMessage({ type: 'SKIP_WAITING' });
-  }, []);
-
-  const handleRetryPendingSync = useCallback(() => {
-    void flushPendingSync().then(setOutboxStatus).catch(() => undefined);
-  }, []);
 
   const featureModals = useMemo(
     () =>
