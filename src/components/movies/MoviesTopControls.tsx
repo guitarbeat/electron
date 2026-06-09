@@ -331,7 +331,7 @@ const MoviesTopControls = React.forwardRef<
   }, [filteredAutocompleteResults.length]);
 
   return (
-    <section className="workspace-control-panel watchlist-top-controls">
+    <>
       <div className="watchlist-top-controls__stage">
         <form
           className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
@@ -683,7 +683,7 @@ const MoviesTopControls = React.forwardRef<
           {suggestionError}
         </div>
       )}
-    </section>
+    </>
   );
 });
 

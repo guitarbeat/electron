@@ -57,7 +57,7 @@ const PlacesTopControls = React.forwardRef<PlacesTopControlsHandle, PlacesTopCon
   }), []);
 
   return (
-    <section className="workspace-control-panel watchlist-top-controls">
+    <>
       <div className="watchlist-top-controls__stage">
         <form
           className="watchlist-top-controls__search-form"
@@ -194,7 +194,7 @@ const PlacesTopControls = React.forwardRef<PlacesTopControlsHandle, PlacesTopCon
           </div>
         )}
       </div>
-    </section>
+    </>
   );
 });
 
