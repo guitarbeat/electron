@@ -2,8 +2,7 @@ import type { FC } from 'react';
 import { useState, useRef, useEffect } from 'react';
 import type { MainTab } from '@/shared/types';
 import { useAppHeaderSlot } from '@/app/AppHeaderContext';
-import HeaderCommandDeck from '@/ui/HeaderCommandDeck';
-import FlowNav from '@/ui/FlowNav';
+import AppNavStrip from '@/ui/AppNavStrip';
 import ProfileMenu from '@/ui/ProfileMenu';
 import './AppHeader.css';
 
@@ -51,8 +50,10 @@ const AppHeader: FC<AppHeaderProps> = ({
       role="banner"
     >
       <div className="app-header__left">
-        <FlowNav activeTab={activeTab} onTabChange={onTabChange} onOpenSpin={onOpenSpin} />
-        <HeaderCommandDeck
+        <AppNavStrip
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          onOpenSpin={onOpenSpin}
           status={pwaStatus}
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}
