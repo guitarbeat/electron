@@ -41,8 +41,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     movieToDelete,
     setMovieToDelete,
     setToast,
+    successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
+    toggleWatched,
+    renameMovie,
+    addMemory,
+    updateMemory,
+    deleteMemoryRecord,
+    toggleMemoryPin,
     isSubmittingRecommendation,
     previousMoviesRef,
     movies,
@@ -396,10 +403,18 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       </CollectionGrid>
     ),
     [
+      addMemory,
       currentUser,
-      isMobile,
+      deleteMemoryRecord,
       handleToggleError,
+      isMobile,
       movieMemories,
+      renameMovie,
+      setMovieToDelete,
+      successMovieId,
+      toggleMemoryPin,
+      toggleWatched,
+      updateMemory,
     ]
   );
   const showInitialLoading =
