@@ -338,6 +338,29 @@ const AppHeader: FC<AppHeaderProps> = ({
       </div>
 
       <div ref={rightRef} className="app-header__right">
+        <nav className="app-header__nav-links" aria-label="Quick navigation">
+          <a href="#movies" className="app-header__nav-pill">
+            <svg className="app-header__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+              <line x1="7" y1="2" x2="7" y2="22"/>
+              <line x1="17" y1="2" x2="17" y2="22"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <line x1="2" y1="7" x2="7" y2="7"/>
+              <line x1="2" y1="17" x2="7" y2="17"/>
+              <line x1="17" y1="17" x2="22" y2="17"/>
+              <line x1="17" y1="7" x2="22" y2="7"/>
+            </svg>
+            <span className="app-header__nav-label">Browse Movies</span>
+          </a>
+          <a href="#places" className="app-header__nav-pill">
+            <svg className="app-header__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span className="app-header__nav-label">Find Places</span>
+          </a>
+        </nav>
+
         <button
           ref={triggerRef}
           type="button"

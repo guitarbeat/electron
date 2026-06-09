@@ -384,7 +384,6 @@ export function CinematicFooter() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const giantTextRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const linksRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || !wrapperRef.current) return;
@@ -400,12 +399,6 @@ export function CinematicFooter() {
         headingRef.current,
         { y: 50, opacity: 0 },
         { y: 0, opacity: 1, ease: "power3.out", duration: 1, delay: 0.3 }
-      );
-
-      gsap.fromTo(
-        linksRef.current,
-        { y: 40, opacity: 0 },
-        { y: 0, opacity: 1, ease: "power3.out", duration: 1, delay: 0.5 }
       );
     }, wrapperRef);
 
@@ -436,39 +429,6 @@ export function CinematicFooter() {
               Ready for tonight?
             </h2>
 
-            <div ref={linksRef} className="cf-links">
-              <div className="cf-pill-row">
-                <MagneticButton
-                  as="a"
-                  href="#movies"
-                  className="cf-glass-pill cf-glass-pill--lg"
-                >
-                  <svg className="cf-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-                    <line x1="7" y1="2" x2="7" y2="22"/>
-                    <line x1="17" y1="2" x2="17" y2="22"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/>
-                    <line x1="2" y1="7" x2="7" y2="7"/>
-                    <line x1="2" y1="17" x2="7" y2="17"/>
-                    <line x1="17" y1="17" x2="22" y2="17"/>
-                    <line x1="17" y1="7" x2="22" y2="7"/>
-                  </svg>
-                  Browse Movies
-                </MagneticButton>
-
-                <MagneticButton
-                  as="a"
-                  href="#places"
-                  className="cf-glass-pill cf-glass-pill--lg"
-                >
-                  <svg className="cf-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
-                  Find Places
-                </MagneticButton>
-              </div>
-            </div>
           </div>
 
           <div className="cf-bottom-bar">
