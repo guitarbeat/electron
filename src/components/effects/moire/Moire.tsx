@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck - Legacy OGL implementation with complex third-party types
 import chroma from "chroma-js"; // Import the chroma-js library from the specified CDN
+import * as ogl from "ogl";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 import { debounce, throttle } from '@/utils';
