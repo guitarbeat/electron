@@ -20,6 +20,8 @@ import type { MainTab } from '@/shared/types';
 import MinigameModal from '@/ui/MinigameModal';
 import { Analytics } from '@vercel/analytics/react';
 import './App.scss';
+import './y2k-skin.scss';
+import './workspace-polish.scss';
 
 const MagicComponent = React.lazy(
   () =>
