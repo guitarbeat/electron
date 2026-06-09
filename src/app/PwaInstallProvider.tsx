@@ -2,22 +2,15 @@ import '@khmyznikov/pwa-install';
 import type { PWAInstallElement } from '@khmyznikov/pwa-install';
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
-import { PwaInstallContext } from './PwaInstallContext.ts';
+import { PwaInstallContext, type PwaInstallContextValue } from './PwaInstallContext.ts';
 import { useToast } from '@/app/useProviders';
-
-interface PwaInstallContextValue {
-  canInstall: boolean;
-  isStandalone: boolean;
-  openInstallDialog: () => void;
-}
-
-const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const usePwaInstall = (): PwaInstallContextValue => {

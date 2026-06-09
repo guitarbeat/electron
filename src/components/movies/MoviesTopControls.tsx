@@ -137,80 +137,6 @@ const MoviesTopControls = React.forwardRef<
       [],
     );
 
-    const clearFocusBoundaryCheck = useCallback(() => {
-      if (focusBoundaryFrameRef.current !== null) {
-        window.cancelAnimationFrame(focusBoundaryFrameRef.current);
-        focusBoundaryFrameRef.current = null;
-      }
-    }, []);
-
-    const openAutocomplete = useCallback(() => {
-      if (autocompleteCloseTimerRef.current !== null) {
-        window.clearTimeout(autocompleteCloseTimerRef.current);
-        autocompleteCloseTimerRef.current = null;
-      }
-      setIsAutocompleteMounted(true);
-      setIsAutocompleteOpen(true);
-    }, []);
-
-    const hideAutocomplete = useCallback(() => {
-      if (autocompleteCloseTimerRef.current !== null) {
-        window.clearTimeout(autocompleteCloseTimerRef.current);
-        autocompleteCloseTimerRef.current = null;
-      }
-      setIsAutocompleteOpen(false);
-      setIsAutocompleteLoading(false);
-      setAutocompleteTypeFilter("all");
-      setIsAutocompleteMounted(false);
-    }, []);
-
-    const resetAutocomplete = useCallback(() => {
-      autocompleteRequestIdRef.current += 1;
-      setAutocompleteQuery("");
-      setAutocompleteResults([]);
-      setIsAutocompleteOpen(false);
-      setIsAutocompleteMounted(false);
-      setAutocompleteTypeFilter("all");
-      if (autocompleteCloseTimerRef.current !== null) {
-        window.clearTimeout(autocompleteCloseTimerRef.current);
-        autocompleteCloseTimerRef.current = null;
-      }
-      setIsAutocompleteLoading(false);
-      setAutocompleteError(null);
-    }, []);
-
-    const selectAutocompleteResult = useCallback(
-      (result: MovieAutocompleteResult) => {
-        setSelectedAutocompleteResult(result);
-        setSearchQuery(result.title);
-        hideAutocomplete();
-      },
-      [hideAutocomplete, setSearchQuery, setSelectedAutocompleteResult],
-    );
-
-    useEffect(() => {
-      const handlePointerDown = (event: PointerEvent) => {
-        const target = event.target;
-        if (!(target instanceof Node)) return;
-        if (!autocompleteRegionRef.current?.contains(target))
-          hideAutocomplete();
-      };
-      document.addEventListener("pointerdown", handlePointerDown);
-      return () =>
-        document.removeEventListener("pointerdown", handlePointerDown);
-    }, [hideAutocomplete]);
-
-    useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
-
-    useEffect(
-      () => () => {
-        if (autocompleteCloseTimerRef.current !== null) {
-          window.clearTimeout(autocompleteCloseTimerRef.current);
-        }
-      },
-      [],
-    );
-
   const clearFocusBoundaryCheck = useCallback(() => {
     if (focusBoundaryFrameRef.current !== null) {
       window.cancelAnimationFrame(focusBoundaryFrameRef.current);
@@ -351,6 +277,7 @@ const MoviesTopControls = React.forwardRef<
           setIsAutocompleteLoading(false);
         }
       }
+    }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -365,73 +292,14 @@ const MoviesTopControls = React.forwardRef<
     trimmedSearchQuery,
   ]);
 
-      const timeoutId = window.setTimeout(async () => {
-        try {
-          const nextResults = await searchMovieAutocomplete(
-            trimmedSearchQuery,
-            {
-              signal: abortController.signal,
-            },
-          );
-          if (
-            autocompleteRequestIdRef.current !== requestId ||
-            abortController.signal.aborted
-          ) {
-            return;
-          }
-
-          setAutocompleteQuery(normalizedSearchQuery);
-          setAutocompleteResults(nextResults);
-        } catch (error) {
-          if (
-            autocompleteRequestIdRef.current !== requestId ||
-            abortController.signal.aborted
-          ) {
-            return;
-          }
-
-          setAutocompleteQuery(normalizedSearchQuery);
-          setAutocompleteResults([]);
-          setAutocompleteError(
-            error instanceof Error && error.message
-              ? error.message
-              : "Movie suggestions are unavailable right now.",
-          );
-        } finally {
-          if (
-            autocompleteRequestIdRef.current === requestId &&
-            !abortController.signal.aborted
-          ) {
-            setIsAutocompleteLoading(false);
-          }
-        }
-      }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
-
-      return () => {
-        window.clearTimeout(timeoutId);
-        abortController.abort();
-      };
-    }, [
-      hideAutocomplete,
-      normalizedSearchQuery,
-      resetAutocomplete,
-      trimmedSearchQuery,
-    ]);
-
-    const hasAutocompleteFeedback = useMemo(
-      () =>
-        isAutocompleteLoading ||
-        hasStoredMovieAutocompleteFeedback(
-          trimmedSearchQuery,
-          autocompleteQuery,
-          autocompleteResults.length,
-          autocompleteError,
-        ),
-      [
-        autocompleteError,
+  const hasAutocompleteFeedback = useMemo(
+    () =>
+      isAutocompleteLoading ||
+      hasStoredMovieAutocompleteFeedback(
+        trimmedSearchQuery,
         autocompleteQuery,
         autocompleteResults.length,
-        autocompleteError
+        autocompleteError,
       ),
     [
       autocompleteError,
@@ -583,8 +451,7 @@ const MoviesTopControls = React.forwardRef<
                     event.preventDefault();
                     selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
                   }
-                }
-              }}
+                }}
               placeholder="Add a movie or show title"
               aria-label="Movie or show title"
               role="combobox"
@@ -662,64 +529,6 @@ const MoviesTopControls = React.forwardRef<
                   <span className="watchlist-top-controls__autocomplete-loading-dot" />
                 </div>
               )}
-              {!isAutocompleteLoading && autocompleteResults.length > 0 && (
-                <div
-                  className="watchlist-top-controls__autocomplete-filters"
-                  role="group"
-                  aria-label="Filter by type"
-                >
-                  {(
-                    [
-                      { value: "all", label: "All" },
-                      { value: "movie", label: "Movies" },
-                      { value: "series", label: "TV Series" },
-                    ] as const
-                  ).map(({ value, label }) => {
-                    const count =
-                      value === "all"
-                        ? autocompleteResults.length
-                        : autocompleteResults.filter((r) => r.type === value)
-                            .length;
-                    const isDisabled = count === 0 && value !== "all";
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        className={`watchlist-top-controls__autocomplete-filter-chip${
-                          autocompleteTypeFilter === value ? " is-active" : ""
-                        }${count === 0 ? " is-empty" : ""}`}
-                        disabled={isDisabled}
-                        onPointerDown={(e) => {
-                          e.preventDefault(); // prevents input blur on all pointer types
-                          if (!isDisabled) setAutocompleteTypeFilter(value);
-                        }}
-                      >
-                        {label}
-                        <span className="watchlist-top-controls__autocomplete-filter-count">
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {autocompleteError ? (
-                <div
-                  className="watchlist-top-controls__autocomplete-status"
-                  role="alert"
-                >
-                  {autocompleteError}
-                </div>
-              ) : autocompleteResults.length > 0 ? (
-                filteredAutocompleteResults.length === 0 ? (
-                  <div className="watchlist-top-controls__autocomplete-status">
-                    No{" "}
-                    {autocompleteTypeFilter === "series"
-                      ? "TV series"
-                      : "movies"}{" "}
-                    found
-                  </div>
-                )}
                 {!isAutocompleteLoading && autocompleteResults.length > 0 && (
                   <div
                     className="watchlist-top-controls__autocomplete-filters"

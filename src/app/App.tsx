@@ -7,14 +7,12 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
 import { PwaInstallProvider } from '@/app/PwaInstallProvider';
 import { usePwaInstall } from './usePwaInstall.ts';
 import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
-import { useAppSession, useToast, useUser } from '@/app/useProviders';
+import { useAppSession, useToast, useUser, useTheme } from '@/app/useProviders';
 import AppHeader from '@/app/AppHeader';
 import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
 import LoadingScreen from '@/app/LoadingScreen';
 import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
-import LazyBoundary from '@/app/LazyBoundary';
 import AppWorkspaceShell from '@/app/AppWorkspaceShell';
-import LazyBoundary from './LazyBoundary';
 import VignetteOverlay from '@/components/effects/VignetteOverlay';
 import { useAudio } from '@/hooks/useAudio';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
@@ -59,6 +57,7 @@ const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSPropert
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
+const BOOT_SCREEN_MIN_MS = 600;
 
 
 /** True once at module load — avoids creating a canvas on every render. */
@@ -81,7 +80,7 @@ const webGLAvailable: boolean = (() => {
  * so the background stays color-linked to the rest of the UI.
  */
 const ThemedMoire: React.FC = () => {
-
+  const { theme } = useTheme();
 
   if (!webGLAvailable) {
     return null;
