@@ -1,30 +1,31 @@
 ---
-name: AppNavStrip + UserAvatar merge
-description: FlowNav and HeaderCommandDeck merged into AppNavStrip; UserAvatar extracted from ProfileMenu.
+name: AppNavStrip + UserAvatar + CSS pruning
+description: FlowNav and HeaderCommandDeck merged into AppNavStrip; UserAvatar extracted from ProfileMenu; ghost CSS pruned from AppHeader.css.
 ---
 
-## Rules
+## Component map (post-compression)
 
-### AppNavStrip
-`src/components/ui/AppNavStrip.tsx` owns: brand wordmark + Movies/Places/Spin nav tabs + inline PWA status chip. Do not recreate FlowNav or HeaderCommandDeck — deleted. CSS in `AppNavStrip.css` under `--ans-*` token namespace.
+| File | Owns |
+|---|---|
+| `src/components/ui/AppNavStrip.tsx` + `AppNavStrip.css` | Brand wordmark + Movies/Places/Spin nav tabs + inline PWA status chip. Token namespace `--ans-*`. |
+| `src/components/ui/UserAvatar.tsx` | Avatar primitive: photo → initial-letter fallback (React `useState` error) → null placeholder. No size prop — parent CSS controls dimensions. |
+| `src/components/ui/ProfileMenu.tsx` | PIN/session logic + dropdown. Uses `<UserAvatar>`. Returns a React fragment (no wrapper div). |
+| `src/app/AppHeader.tsx` | Thin 3-child shell: `<AppNavStrip>` / center-slot div / `<ProfileMenu>`. 71 lines. |
+| `src/app/AppHeader.css` | Profile trigger, dropdown, avatars, menu actions. **620 lines** (was 640 — 20 pruned). |
 
-### UserAvatar
-`src/components/ui/UserAvatar.tsx` is the single avatar primitive: photo (with React useState img-error fallback) → initial letter → null placeholder. No size prop — sizes are controlled by parent CSS context (`.app-header__option-avatar` bumps to 2rem; default is 1.75rem).
+## Deleted files
+`FlowNav.tsx`, `FlowNav.css`, `HeaderCommandDeck.tsx`, `HeaderCommandDeck.css` — all gone, zero refs remain.
 
-### ProfileMenu
-`src/components/ui/ProfileMenu.tsx` (185 lines): uses `<UserAvatar>` in both the trigger button and the profile list. Ghost wrapper div (`app-header__profile-wrap`) removed — component returns a fragment. The dropdown positions correctly because `.app-header__profile-menu` is `position: absolute` relative to `.app-header__right` which is `position: relative`.
+## AppHeader.css pruned selectors
+These were styled but never applied in any TSX after the FlowNav migration:
+- `.app-header__brand` (4 responsive overrides across 640px / 600px / 380px / 768px breakpoints)
+- `.app-header__brand-kicker` (2 responsive overrides across 640px / 600px)
+- `.app-header__option-lock` (standalone rule — LockIcon SVG is rendered directly with no class)
 
-### AppHeader.tsx
-Thin 3-child shell: `<AppNavStrip>` (left) / center slot div / `<ProfileMenu>` (right). 71 lines.
-
-## Why
-Two goals: (1) eliminate cross-file token drift between FlowNav+HeaderCommandDeck, (2) de-duplicate the avatar() inline function which was defined once but called in two distinct render paths inside ProfileMenu (trigger + dropdown list).
-
-## How to apply
-- Nav/tabs/spin/sync chip → AppNavStrip.tsx + AppNavStrip.css
-- Avatar rendering → UserAvatar.tsx
-- Profile dropdown logic (PIN, user select, logout) → ProfileMenu.tsx
-- Header layout/dropdown CSS → AppHeader.css
+## Key rules
+- Brand font-size responsive rules now live exclusively in `AppNavStrip.css` under `.ans__brand`
+- Avatar img error-fallback is React-controlled state in `UserAvatar.tsx` (not DOM manipulation)
+- Dropdown `position: absolute; right: 0` anchors to `.app-header__right` (has `position: relative`)
 
 ## Next strike target
-`src/app/App.scss` — the monolith (~13k lines). Ghost CSS for deleted components may have accumulated. Safe first pass: grep for `.header-command-deck`, `.flownav`, `.seg-control` references and prune.
+`src/app/App.scss` deeper audit — the 13k-line monolith. Strategy: grep for component-level selectors that reference patterns from removed features (e.g. old spin-button placement, legacy tab nav patterns pre-AppNavStrip). Also check if `App.scss` has Y2K skin overrides targeting `.app-header__brand` or `.flownav` (confirmed none exist — audit passed clean).
