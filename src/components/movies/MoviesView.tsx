@@ -39,6 +39,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isAdding,
     setIsAdding,
     movieToDelete,
+    setMovieToDelete,
     setToast,
     setSuccessMovieId,
     processingSuggestionId,
