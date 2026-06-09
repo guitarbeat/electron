@@ -21,6 +21,12 @@ export interface MovieBodyActions {
   togglePin: (memoryId: string) => Promise<void>;
 }
 
+export interface MovieSectionIds {
+  incoming?: string;
+  queue?: string;
+  completed?: string;
+}
+
 interface Props {
   sections: MovieSections;
   isLoading: boolean;
@@ -36,6 +42,7 @@ interface Props {
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
+  sectionIds?: MovieSectionIds;
 }
 
 const SK_MOBILE = ['m1', 'm2', 'm3', 'm4'];
@@ -58,6 +65,7 @@ const MovieSectionBody: React.FC<Props> = ({
   onDeleteRequest,
   onToggleError,
   actions,
+  sectionIds,
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
   const isEmpty = (arr: unknown[]) => arr.length === 0;
@@ -152,7 +160,7 @@ const MovieSectionBody: React.FC<Props> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.xl : spacing['2xl'] }}>
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
-        <CollectionSection heading="Incoming" tone="incoming">
+        <CollectionSection heading="Incoming" tone="incoming" id={sectionIds?.incoming}>
           {isSuggestionsLoading && isEmpty(sections.suggestions) ? (
             <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
               {sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
@@ -176,13 +184,13 @@ const MovieSectionBody: React.FC<Props> = ({
       )}
 
       {sections.queue.length > 0 && (
-        <CollectionSection heading="Up Next">
+        <CollectionSection heading="Up Next" id={sectionIds?.queue}>
           {movieGrid(sections.queue, 'Your movie list is wide open')}
         </CollectionSection>
       )}
 
       {sections.completed.length > 0 && (
-        <CollectionSection heading="Watched" tone="completed">
+        <CollectionSection heading="Watched" tone="completed" id={sectionIds?.completed}>
           {movieGrid(sections.completed, 'No watched movies yet')}
         </CollectionSection>
       )}

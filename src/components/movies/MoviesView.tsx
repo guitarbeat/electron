@@ -10,11 +10,30 @@ import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from './MoviesTopControls';
-import { buildMovieSections } from './lib/movieSections';
+import { buildMovieSections, type MovieSortOrder } from './lib/movieSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
+import BentoWorkspaceController, {
+  type BentoStatTileConfig,
+  type BentoSortChipConfig,
+  type SortOrder,
+} from '@/components/ui/BentoWorkspaceController';
 import './MoviesPhotoMode.css';
+
+const MOVIE_SECTION_IDS = {
+  incoming: 'movies-section-incoming',
+  queue: 'movies-section-queue',
+  completed: 'movies-section-watched',
+};
+
+const MOVIE_SORTS: BentoSortChipConfig[] = [
+  { value: 'recent', label: '🕐 Recent' },
+  { value: 'alpha', label: 'A→Z' },
+  { value: 'rating', label: '★ Rating' },
+];
+
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
+  const [sortOrder, setSortOrder] = useState<MovieSortOrder>('recent');
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
     useState(false);
@@ -88,9 +107,36 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     return memoriesByMovieId;
   }, [memories, movies]);
   const sections = useMemo(
-    () => buildMovieSections(movies, pendingSuggestions),
-    [movies, pendingSuggestions],
+    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
+    [movies, pendingSuggestions, sortOrder],
   );
+
+  const movieStats = useMemo((): BentoStatTileConfig[] => [
+    {
+      id: 'incoming',
+      label: 'Incoming',
+      count: sections.suggestions.length,
+      icon: '💌',
+      sectionId: MOVIE_SECTION_IDS.incoming,
+      tone: 'incoming',
+    },
+    {
+      id: 'queue',
+      label: 'Up Next',
+      count: sections.queue.length,
+      icon: '🎞',
+      sectionId: MOVIE_SECTION_IDS.queue,
+      tone: 'default',
+    },
+    {
+      id: 'watched',
+      label: 'Watched',
+      count: sections.completed.length,
+      icon: '✓',
+      sectionId: MOVIE_SECTION_IDS.completed,
+      tone: 'completed',
+    },
+  ], [sections.suggestions.length, sections.queue.length, sections.completed.length]);
   const latestMemory = memories[0] ?? null;
   const upNextSummaryCount = sections.queue.length + sections.suggestions.length;
   useEffect(() => {
@@ -331,31 +377,39 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           }
         />
       )}
-      <MoviesTopControls
-        ref={moviesTopControlsRef}
-        currentUser={currentUser}
-        upNextCount={upNextSummaryCount}
-        watchedCount={sections.completed.length}
-        noteCount={memories.length}
-        latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
-        latestNoteAuthor={latestMemory?.author ?? null}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        setSelectedAutocompleteResult={setSelectedAutocompleteResult}
-        guestName={guestName}
-        setGuestName={setGuestName}
-        onSubmit={handleAddAction}
-        onRecommend={openRecommendationComposer}
-        onSubmitRecommendation={handleSubmitRecommendation}
-        onCancelRecommendation={resetRecommendationComposer}
-        recommendationReason={recommendationReason}
-        setRecommendationReason={handleRecommendationReasonChange}
-        showRecommendationComposer={isRecommendationComposerOpen}
-        isAdding={isAdding}
-        isSubmittingRecommendation={isSubmittingRecommendation}
-        suggestionError={suggestionError}
-        canRecommend={true}
-      />
+      <BentoWorkspaceController
+        stats={movieStats}
+        sorts={MOVIE_SORTS}
+        activeSortOrder={sortOrder}
+        onSortChange={(order) => setSortOrder(order as MovieSortOrder)}
+        ariaLabel="Movies workspace controls"
+      >
+        <MoviesTopControls
+          ref={moviesTopControlsRef}
+          currentUser={currentUser}
+          upNextCount={upNextSummaryCount}
+          watchedCount={sections.completed.length}
+          noteCount={memories.length}
+          latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+          latestNoteAuthor={latestMemory?.author ?? null}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+          guestName={guestName}
+          setGuestName={setGuestName}
+          onSubmit={handleAddAction}
+          onRecommend={openRecommendationComposer}
+          onSubmitRecommendation={handleSubmitRecommendation}
+          onCancelRecommendation={resetRecommendationComposer}
+          recommendationReason={recommendationReason}
+          setRecommendationReason={handleRecommendationReasonChange}
+          showRecommendationComposer={isRecommendationComposerOpen}
+          isAdding={isAdding}
+          isSubmittingRecommendation={isSubmittingRecommendation}
+          suggestionError={suggestionError}
+          canRecommend={true}
+        />
+      </BentoWorkspaceController>
       <MovieSectionBody
         sections={sections}
         isLoading={isLoading}
@@ -371,6 +425,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         onDeleteRequest={setMovieToDelete}
         onToggleError={(message) => setToast({ message, type: 'error' })}
         actions={{ toggleWatched, renameMovie, addMemory, updateMemory, deleteMemory: deleteMemoryRecord, togglePin: toggleMemoryPin }}
+        sectionIds={MOVIE_SECTION_IDS}
       />
       {movieToDelete && (
         <ConfirmDialog

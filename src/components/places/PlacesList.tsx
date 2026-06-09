@@ -16,9 +16,25 @@ import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
 import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopControls.tsx';
-import { buildPlaceSections } from './lib/placeSections.ts';
+import { buildPlaceSections, type PlaceSortOrder } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
 import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
+import BentoWorkspaceController, {
+  type BentoStatTileConfig,
+  type BentoSortChipConfig,
+  type SortOrder,
+} from '@/components/ui/BentoWorkspaceController';
+
+const PLACE_SECTION_IDS = {
+  incoming: 'places-section-incoming',
+  queue: 'places-section-queue',
+  completed: 'places-section-visited',
+};
+
+const PLACE_SORTS: BentoSortChipConfig[] = [
+  { value: 'recent', label: '🕐 Recent' },
+  { value: 'alpha', label: 'A→Z' },
+];
 
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
@@ -54,6 +70,7 @@ const PlacesList: React.FC = () => {
     retrySync: retrySuggestionsSync,
   } = usePlaceSuggestions(isLoading);
 
+  const [sortOrder, setSortOrder] = useState<PlaceSortOrder>('recent');
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -67,9 +84,36 @@ const PlacesList: React.FC = () => {
   const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const sections = useMemo(
-    () => buildPlaceSections(places, pendingSuggestions),
-    [places, pendingSuggestions],
+    () => buildPlaceSections(places, pendingSuggestions, sortOrder),
+    [places, pendingSuggestions, sortOrder],
   );
+
+  const placeStats = useMemo((): BentoStatTileConfig[] => [
+    {
+      id: 'incoming',
+      label: 'Incoming',
+      count: pendingSuggestions.length,
+      icon: '💌',
+      sectionId: PLACE_SECTION_IDS.incoming,
+      tone: 'incoming',
+    },
+    {
+      id: 'queue',
+      label: 'To Try',
+      count: sections.queue.length,
+      icon: '📍',
+      sectionId: PLACE_SECTION_IDS.queue,
+      tone: 'default',
+    },
+    {
+      id: 'visited',
+      label: 'Visited',
+      count: sections.completed.length,
+      icon: '✓',
+      sectionId: PLACE_SECTION_IDS.completed,
+      tone: 'completed',
+    },
+  ], [pendingSuggestions.length, sections.queue.length, sections.completed.length]);
   const pinnedCount = useMemo(
     () =>
       places.filter(
@@ -320,21 +364,29 @@ const PlacesList: React.FC = () => {
         />
       )}
 
-      <PlacesTopControls
-        ref={placesTopControlsRef}
-        queueCount={sections.queue.length}
-        visitedCount={sections.completed.length}
-        pinnedCount={pinnedCount}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        suggestionAutocompleteResults={pendingSuggestions}
-        onSubmit={handleAddAction}
-        onSuggest={handleSuggestAction}
-        isAdding={isAdding}
-        isSuggesting={isSuggesting}
-        suggestionError={suggestionError}
-        canEdit={Boolean(currentUser)}
-      />
+      <BentoWorkspaceController
+        stats={placeStats}
+        sorts={PLACE_SORTS}
+        activeSortOrder={sortOrder}
+        onSortChange={(order) => setSortOrder(order as PlaceSortOrder)}
+        ariaLabel="Places workspace controls"
+      >
+        <PlacesTopControls
+          ref={placesTopControlsRef}
+          queueCount={sections.queue.length}
+          visitedCount={sections.completed.length}
+          pinnedCount={pinnedCount}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          suggestionAutocompleteResults={pendingSuggestions}
+          onSubmit={handleAddAction}
+          onSuggest={handleSuggestAction}
+          isAdding={isAdding}
+          isSuggesting={isSuggesting}
+          suggestionError={suggestionError}
+          canEdit={Boolean(currentUser)}
+        />
+      </BentoWorkspaceController>
 
       {isLoading && allPlaces.length === 0 && (
         <CollectionGrid
@@ -390,7 +442,7 @@ const PlacesList: React.FC = () => {
       )}
 
       {pendingSuggestions.length > 0 && (
-        <CollectionSection heading="Incoming" tone="incoming">
+        <CollectionSection heading="Incoming" tone="incoming" id={PLACE_SECTION_IDS.incoming}>
           <CollectionGrid
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
@@ -413,7 +465,7 @@ const PlacesList: React.FC = () => {
       )}
 
       {sections.queue.length > 0 && (
-        <CollectionSection heading="To Try">
+        <CollectionSection heading="To Try" id={PLACE_SECTION_IDS.queue}>
           {renderPlaceGrid(
             sections.queue,
             "Search above to add your first spot",
@@ -421,9 +473,8 @@ const PlacesList: React.FC = () => {
         </CollectionSection>
       )}
 
-      {/* VISITED section */}
       {sections.completed.length > 0 && (
-        <CollectionSection heading="Visited" tone="completed">
+        <CollectionSection heading="Visited" tone="completed" id={PLACE_SECTION_IDS.completed}>
           {renderPlaceGrid(sections.completed, "No visited places yet")}
         </CollectionSection>
       )}
