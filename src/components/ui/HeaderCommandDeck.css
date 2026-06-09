@@ -20,19 +20,6 @@
   overflow: visible;
 }
 
-.header-command-deck__tabs.seg-control {
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.header-command-deck__tabs .seg-control__pill {
-  box-shadow:
-    0 8px 18px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    0 0 0 1px rgba(255, 236, 206, 0.14);
-}
 
 .header-command-deck__status-action,
 .header-command-deck__status-dismiss {
