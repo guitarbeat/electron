@@ -1,6 +1,5 @@
 import React, { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { buildFeatureModals } from '@/app/buildMinigameModals';
-import LazyBoundary from '@/app/LazyBoundary';
 import { preloadAppModules } from '@/app/preloadAppModules';
 import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
 import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
