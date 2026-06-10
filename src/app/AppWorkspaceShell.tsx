@@ -47,32 +47,6 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       tabIndex={-1}
       style={{ position: 'relative', overflow: 'hidden' }}
     >
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          bottom: '-4vh',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          whiteSpace: 'nowrap',
-          zIndex: 0,
-          pointerEvents: 'none',
-          userSelect: 'none',
-          fontSize: 'clamp(5rem, 26vw, 22rem)',
-          lineHeight: 0.75,
-          fontWeight: 900,
-          fontFamily: "Papyrus, 'Papyrus', serif",
-          letterSpacing: '-0.05em',
-          color: 'transparent',
-          WebkitTextStroke: '1px rgba(255,255,255,0.04)',
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 65%)',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-        }}
-      >
-        ELECTRON
-      </div>
-
       <section
         className={`workspace-surface workspace-surface--${activeTab}`}
         style={{ position: 'relative', zIndex: 1, minWidth: 0 }}

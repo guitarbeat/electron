@@ -7396,7 +7396,7 @@ body.grabbing * {
   align-items: center;
   justify-content: center;
   gap: 1.1rem;
-  padding: 5rem 2rem;
+  padding: clamp(2.5rem, 8vh, 5rem) 2rem;
   text-align: center;
   color: var(--color-text-secondary);
 }
