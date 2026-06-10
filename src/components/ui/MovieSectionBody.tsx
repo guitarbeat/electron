@@ -13,12 +13,12 @@ import MovieCard from '@/components/movies/MovieCard';
 import type { MovieSections } from '@/components/movies/lib/movieSections';
 
 export interface MovieBodyActions {
-  toggleWatched: (id: string) => unknown;
-  renameMovie: (id: string, title: string) => unknown;
-  addMemory: (movieId: string, movieTitle: string, author: User, note: string) => Promise<void>;
-  updateMemory: (memoryId: string, updates: { note: string }) => Promise<void>;
+  toggleWatched: (id: string) => void | unknown;
+  renameMovie: (id: string, title: string) => void | unknown;
+  addMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<unknown>;
+  updateMemory: (memoryId: string, updates: { note?: string; movieId?: string; movieTitle?: string }) => Promise<unknown>;
   deleteMemory: (memoryId: string) => Promise<void>;
-  togglePin: (memoryId: string) => Promise<void>;
+  togglePin: (memoryId: string) => Promise<unknown>;
 }
 
 export interface MovieSectionIds {
@@ -82,9 +82,9 @@ const MovieSectionBody: React.FC<Props> = ({
             key={movie.id}
             movie={movie}
             currentUser={currentUser}
-            onToggle={() => actions.toggleWatched(movie.id)}
+            onToggle={() => { actions.toggleWatched(movie.id); }}
             onToggleError={onToggleError}
-            onRename={(title) => actions.renameMovie(movie.id, title)}
+            onRename={async (title) => { await actions.renameMovie(movie.id, title); }}
             onDelete={() => onDeleteRequest(movie)}
             isHighlighted={successMovieId === movie.id}
             memories={movieMemories.get(movie.id) ?? []}
