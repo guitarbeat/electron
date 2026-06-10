@@ -1,39 +1,51 @@
 /* eslint-disable */
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '@/app/useProviders';
-import type { Movie, MovieSuggestion, SharedMemory, MoviesViewProps } from '@/shared/types';
-import ConfirmDialog from '@/ui/ConfirmDialog';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useUser } from "@/app/useProviders";
+import type {
+  Movie,
+  MovieSuggestion,
+  SharedMemory,
+  MoviesViewProps,
+} from "@/shared/types";
+import ConfirmDialog from "@/ui/ConfirmDialog";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
 import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
 import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
-} from './MoviesTopControls';
-import { buildMovieSections, type MovieSortOrder } from './lib/movieSections';
-import type { MovieAutocompleteResult } from '@/services/metadata';
+} from "./MoviesTopControls";
+import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
+import type { MovieAutocompleteResult } from "@/services/metadata";
 import BentoWorkspaceController, {
   type BentoStatTileConfig,
   type BentoSortChipConfig,
   type SortOrder,
-} from '@/components/ui/BentoWorkspaceController';
-import './MoviesPhotoMode.css';
+} from "@/components/ui/BentoWorkspaceController";
+import "./MoviesPhotoMode.css";
 
 const MOVIE_SECTION_IDS = {
-  incoming: 'movies-section-incoming',
-  queue: 'movies-section-queue',
-  completed: 'movies-section-watched',
+  incoming: "movies-section-incoming",
+  queue: "movies-section-queue",
+  completed: "movies-section-watched",
 };
 
 const MOVIE_SORTS: BentoSortChipConfig[] = [
-  { value: 'recent', label: '🕐 Recent' },
-  { value: 'alpha', label: 'A→Z' },
-  { value: 'rating', label: '★ Rating' },
+  { value: "recent", label: "🕐 Recent" },
+  { value: "alpha", label: "A→Z" },
+  { value: "rating", label: "★ Rating" },
 ];
 
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-  const [sortOrder, setSortOrder] = useState<MovieSortOrder>('recent');
+  const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
     useState(false);
@@ -111,44 +123,56 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [movies, pendingSuggestions, sortOrder],
   );
 
-  const movieStats = useMemo((): BentoStatTileConfig[] => [
-    {
-      id: 'incoming',
-      label: 'Incoming',
-      count: sections.suggestions.length,
-      icon: '💌',
-      sectionId: MOVIE_SECTION_IDS.incoming,
-      tone: 'incoming',
-    },
-    {
-      id: 'queue',
-      label: 'Up Next',
-      count: sections.queue.length,
-      icon: '🎞',
-      sectionId: MOVIE_SECTION_IDS.queue,
-      tone: 'default',
-    },
-    {
-      id: 'watched',
-      label: 'Watched',
-      count: sections.completed.length,
-      icon: '✓',
-      sectionId: MOVIE_SECTION_IDS.completed,
-      tone: 'completed',
-    },
-  ], [sections.suggestions.length, sections.queue.length, sections.completed.length]);
+  const movieStats = useMemo(
+    (): BentoStatTileConfig[] => [
+      {
+        id: "incoming",
+        label: "Incoming",
+        count: sections.suggestions.length,
+        icon: "💌",
+        sectionId: MOVIE_SECTION_IDS.incoming,
+        tone: "incoming",
+      },
+      {
+        id: "queue",
+        label: "Up Next",
+        count: sections.queue.length,
+        icon: "🎞",
+        sectionId: MOVIE_SECTION_IDS.queue,
+        tone: "default",
+      },
+      {
+        id: "watched",
+        label: "Watched",
+        count: sections.completed.length,
+        icon: "✓",
+        sectionId: MOVIE_SECTION_IDS.completed,
+        tone: "completed",
+      },
+    ],
+    [
+      sections.suggestions.length,
+      sections.queue.length,
+      sections.completed.length,
+    ],
+  );
   const latestMemory = memories[0] ?? null;
-  const upNextSummaryCount = sections.queue.length + sections.suggestions.length;
+  const upNextSummaryCount =
+    sections.queue.length + sections.suggestions.length;
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // ⚡ Bolt: Prevent O(N^2) bottleneck by pre-computing a Map for O(1) lookups
+    const prevMoviesMap = new Map(
+      previousMoviesRef.current.map((m) => [m.id, m]),
+    );
+
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
+        const prevMovie = prevMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
@@ -189,7 +213,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
-    const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+    const title =
+      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
       return;
     }
@@ -270,7 +295,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
-    const title = selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+    const title =
+      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
     if (!title) {
       return;
     }
@@ -424,8 +450,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         onAcceptSuggestion={handleAcceptSuggestion}
         onRejectSuggestion={handleRejectSuggestion}
         onDeleteRequest={setMovieToDelete}
-        onToggleError={(message) => setToast({ message, type: 'error' })}
-        actions={{ toggleWatched, renameMovie, addMemory, updateMemory, deleteMemory: deleteMemoryRecord, togglePin: toggleMemoryPin }}
+        onToggleError={(message) => setToast({ message, type: "error" })}
+        actions={{
+          toggleWatched,
+          renameMovie,
+          addMemory,
+          updateMemory,
+          deleteMemory: deleteMemoryRecord,
+          togglePin: toggleMemoryPin,
+        }}
         sectionIds={MOVIE_SECTION_IDS}
       />
       {movieToDelete && (
