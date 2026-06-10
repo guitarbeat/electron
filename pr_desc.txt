@@ -1,5 +1,0 @@
-🎯 **What:** The `randomUtils` logic in `src/utils/shared.ts` was previously untested, leaving a coverage gap for these mathematical utility functions.
-
-📊 **Coverage:** Added comprehensive test coverage for `randomItem`, `randomRange`, `randomInt`, `randomBool`, `generateConfettiParticle`, `generateCursorStar`, and `generateFoodSpawn`. Tests use `mock.method` on `Math.random` and `crypto.randomUUID` to deterministically verify bounds, types, and logic.
-
-✨ **Result:** The `randomUtils` functions are now fully tested. Mocking the RNG makes tests reliable (not flaky), improving confidence in random generation and object bounding logic in the codebase.
