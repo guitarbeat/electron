@@ -17,7 +17,6 @@ import MovieDetailsModal from './MovieDetailsModal';
 import MediaPoster from '@/ui/MediaPoster';
 import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
 import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
-import { useCardTilt } from '@/hooks/useCardTilt';
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -90,7 +89,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
     setIsDetailsOpen(true);
   };
 
-  const tilt = useCardTilt();
   const handleToggle = async () => {
     if (isGuest) {
       return;
