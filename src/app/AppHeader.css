@@ -116,13 +116,13 @@
 .app-header__profile-trigger.is-logged-in {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 100%),
-    color-mix(in srgb, var(--color-accent, #c88d59) 16%, var(--shell-panel-glass));
-  border-color: color-mix(in srgb, var(--color-accent, #c88d59) 30%, var(--shell-panel-border-soft));
+    color-mix(in srgb, var(--color-accent, #f472b6) 16%, var(--shell-panel-glass));
+  border-color: color-mix(in srgb, var(--color-accent, #f472b6) 30%, var(--shell-panel-border-soft));
 }
 
 .app-header__profile-trigger.is-logged-in:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent, #c88d59) 20%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent, #c88d59) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent, #f472b6) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent, #f472b6) 40%, transparent);
 }
 
 .app-header__profile-trigger.is-open {
@@ -156,8 +156,8 @@
   border-radius: 50%;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--color-accent, #c88d59) 50%, transparent),
-    color-mix(in srgb, var(--color-accent, #c88d59) 30%, transparent)
+    color-mix(in srgb, var(--color-accent, #f472b6) 50%, transparent),
+    color-mix(in srgb, var(--color-accent, #f472b6) 30%, transparent)
   );
   border: 2px solid rgba(255, 255, 255, 0.2);
   font-size: 0.75rem;
@@ -242,7 +242,7 @@
   top: calc(100% + 0.5rem);
   right: 0;
   min-width: 220px;
-  background: #1a1410;
+  background: #0a0f2e;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -318,11 +318,11 @@
 }
 
 .app-header__profile-option.is-active {
-  background: color-mix(in srgb, var(--color-accent, #c88d59) 15%, transparent);
+  background: color-mix(in srgb, var(--color-accent, #f472b6) 15%, transparent);
 }
 
 .app-header__profile-option.is-active:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent, #c88d59) 22%, transparent);
+  background: color-mix(in srgb, var(--color-accent, #f472b6) 22%, transparent);
 }
 
 .app-header__profile-option:disabled {

@@ -1,2 +1,3 @@
 - [AppNavStrip merge](appnavstrip.md) — FlowNav + HeaderCommandDeck collapsed into single `src/components/ui/AppNavStrip.tsx`; all tokens under `--ans-*`; next strike target is `ProfileMenu` + `AppHeader.css` dead selector pruning
 - [BentoWorkspaceController](bento-controller.md) — unified search+stats+sort surface; TopControls strip their outer `<section>` wrapper and render as children inside the bento; sort state lives in parent view; section scroll IDs follow `{tab}-section-{name}` pattern
+- [Navy palette migration](navy-palette.md) — full warm-amber→navy/pink/blue repalette; key files changed + Y2K skin exclusion rule
