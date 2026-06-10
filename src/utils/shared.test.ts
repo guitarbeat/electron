@@ -10,7 +10,9 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
+  encodeStorageData,
+  decodeStorageData,
+  formatMemoryTimestamp,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -835,39 +837,12 @@ test("shuffleArray", async (t) => {
 
     assert.equal(allSame, false, "shuffleArray returned the exact same order 5 times in a row for a 20-element array");
   });
-});
-
-
-test('shuffleArray', async (t) => {
-  await t.test('returns empty array when given empty array', () => {
-    assert.deepEqual(shuffleArray([]), []);
-  });
-
-  await t.test('returns same single element for array of length 1', () => {
-    assert.deepEqual(shuffleArray([1]), [1]);
-  });
-
-  await t.test('does not mutate original array', () => {
-    const original = [1, 2, 3];
-    const shuffled = shuffleArray(original);
-    assert.notStrictEqual(shuffled, original);
-    assert.deepEqual(original, [1, 2, 3]);
-  });
-
-  await t.test('contains all original elements', () => {
-    const original = [1, 2, 3, 4, 5];
-    const shuffled = shuffleArray(original);
-    assert.equal(shuffled.length, original.length);
-    for (const item of original) {
-      assert.ok(shuffled.includes(item));
-    }
-  });
 
   await t.test('shuffles array based on pseudo-random values', () => {
     const original = [1, 2, 3, 4, 5];
     let m;
-    if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
-      m = mock.method(globalThis.crypto, 'getRandomValues', (arr) => {
+    if (typeof globalThis.crypto !== 'undefined' && typeof globalThis.crypto.getRandomValues === 'function') {
+      m = mock.method(globalThis.crypto, 'getRandomValues', (arr: Uint32Array) => {
         arr[0] = 0; // Ensures getSecureRandom returns 0
         return arr;
       });
