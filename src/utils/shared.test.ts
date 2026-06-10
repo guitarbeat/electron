@@ -1,6 +1,9 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import {
+  encodeStorageData,
+  decodeStorageData,
+  formatMemoryTimestamp,
   areDeeplyEqual,
   concurrentMap,
   createValidator,
@@ -10,7 +13,6 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -866,8 +868,8 @@ test('shuffleArray', async (t) => {
   await t.test('shuffles array based on pseudo-random values', () => {
     const original = [1, 2, 3, 4, 5];
     let m;
-    if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
-      m = mock.method(globalThis.crypto, 'getRandomValues', (arr) => {
+    if (typeof globalThis.crypto !== 'undefined' && !!globalThis.crypto.getRandomValues) {
+      m = mock.method(globalThis.crypto, 'getRandomValues', (arr: Uint32Array) => {
         arr[0] = 0; // Ensures getSecureRandom returns 0
         return arr;
       });
