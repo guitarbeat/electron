@@ -354,7 +354,7 @@ const App: React.FC = () => {
 
   if (isCohesionAuditRoute) {
     return (
-      <ThemeProvider theme={activeTab}>
+      <ThemeProvider>
 
           <CohesionAudit />
 
@@ -364,7 +364,7 @@ const App: React.FC = () => {
 
   if (logoLabState.enabled) {
     return (
-      <ThemeProvider theme={activeTab}>
+      <ThemeProvider>
 
           <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
 
@@ -383,7 +383,7 @@ const App: React.FC = () => {
 
   if (isSessionLoading || !isBootReady) {
     return (
-      <ThemeProvider theme={activeTab}>
+      <ThemeProvider>
         <LoadingScreen />
       </ThemeProvider>
     );
