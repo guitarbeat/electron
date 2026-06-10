@@ -9,9 +9,9 @@
   --ans-bg-active:   color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 255, 255, 0.08));
   --ans-border:      color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 236, 206, 0.08));
   --ans-sep:         color-mix(in srgb, var(--ans-accent) 15%, rgba(255, 236, 206, 0.06));
-  --ans-h:           2.1rem;
+  --ans-h:           2.75rem;
   --ans-r:           999px;
-  --ans-pad:         0.22rem;
+  --ans-pad:         0.28rem;
   --ans-font:        var(--font-interface, var(--font-body, sans-serif));
   --ans-font-size:   0.72rem;
 
@@ -190,9 +190,9 @@
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 720px) {
-  .ans__btn-label  { display: none; }
-  .ans__btn        { padding: 0 0.5rem; }
-  .ans__brand      { padding: 0 0.55rem; font-size: 0.86rem; }
+  .ans__btn-label  { font-size: 0.65rem; letter-spacing: 0.02em; }
+  .ans__btn        { padding: 0 0.55rem; gap: 0.22rem; }
+  .ans__brand      { padding: 0 0.6rem; font-size: 0.88rem; }
 
   .ans__chip {
     max-width: min(47vw, 13rem);
@@ -201,10 +201,16 @@
   .ans__chip-copy span { display: none; }
 }
 
+@media (max-width: 480px) {
+  .ans__btn-label  { display: none; }
+  .ans__btn        { padding: 0 0.52rem; min-width: 2.75rem; justify-content: center; }
+  .ans__brand      { padding: 0 0.5rem; font-size: 0.84rem; }
+}
+
 @media (max-width: 440px) {
   .ans__brand-glyph,
   .ans__sep:first-of-type { display: none; }
-  .ans__brand              { padding: 0 0.42rem; }
+  .ans__brand              { padding: 0 0.4rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
