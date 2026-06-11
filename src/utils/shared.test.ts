@@ -10,7 +10,6 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
