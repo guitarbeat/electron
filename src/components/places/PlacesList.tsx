@@ -21,9 +21,9 @@ import { usePlaceSuggestions } from '@/hooks/places';
 import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
 import BentoWorkspaceController, {
   type BentoStatTileConfig,
-  type BentoSortChipConfig,
   type SortOrder,
 } from '@/components/ui/BentoWorkspaceController';
+import { type MagicToggleOption } from '@/components/ui/MagicToggle';
 
 const PLACE_SECTION_IDS = {
   incoming: 'places-section-incoming',
@@ -31,7 +31,7 @@ const PLACE_SECTION_IDS = {
   completed: 'places-section-visited',
 };
 
-const PLACE_SORTS: BentoSortChipConfig[] = [
+const PLACE_SORTS: MagicToggleOption<PlaceSortOrder>[] = [
   { value: 'recent', label: '🕐 Recent' },
   { value: 'alpha', label: 'A→Z' },
 ];

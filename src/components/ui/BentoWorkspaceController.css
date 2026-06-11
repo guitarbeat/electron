@@ -185,50 +185,6 @@
   display: block;
 }
 
-/* ── Sort Chips ───────────────────────────────────────────────────── */
-
-.bento-sort-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.28rem;
-  padding: 0.29rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 200, 0.2);
-  background: transparent;
-  color: var(--color-text-secondary, rgba(200, 215, 255, 0.55));
-  font-family: 'Papyrus', serif;
-  font-size: 0.69rem;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition:
-    background 0.14s ease,
-    border-color 0.14s ease,
-    color 0.14s ease,
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.14s ease;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-.bento-sort-chip:hover {
-  background: rgba(244, 114, 182, 0.08);
-  border-color: rgba(244, 114, 182, 0.3);
-  color: rgba(240, 200, 255, 0.88);
-  transform: translateY(-1px);
-}
-
-.bento-sort-chip.is-active {
-  background: rgba(244, 114, 182, 0.15);
-  border-color: rgba(244, 114, 182, 0.5);
-  color: #f9bfe0;
-  box-shadow: 0 2px 10px rgba(244, 114, 182, 0.2);
-}
-
-.bento-sort-chip.is-active:hover {
-  background: rgba(244, 114, 182, 0.22);
-  transform: translateY(-1px);
-}
-
 /* ── Mobile ───────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
@@ -269,12 +225,6 @@
     font-size: 0.55rem;
   }
 
-  /* Sort chips: min 36px touch target */
-  .bento-sort-chip {
-    font-size: 0.68rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 2.25rem;
-  }
 }
 
 /* ── Y2K skin ─────────────────────────────────────────────────────── */
@@ -311,22 +261,4 @@
 
 .theme-y2k .bento-stat-tile--completed .bento-stat-tile__count {
   color: #3d8a52;
-}
-
-.theme-y2k .bento-sort-chip {
-  border-color: rgba(138, 92, 30, 0.24);
-  color: rgba(138, 92, 30, 0.7);
-}
-
-.theme-y2k .bento-sort-chip:hover {
-  background: rgba(138, 92, 30, 0.1);
-  border-color: rgba(138, 92, 30, 0.42);
-  color: #8a5c1e;
-}
-
-.theme-y2k .bento-sort-chip.is-active {
-  background: rgba(138, 92, 30, 0.18);
-  border-color: rgba(138, 92, 30, 0.52);
-  color: #8a5c1e;
-  box-shadow: 0 2px 10px rgba(138, 92, 30, 0.22);
 }
