@@ -11,7 +11,7 @@
   border-radius: 1.55rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%),
-    rgba(14, 11, 9, 0.97);
+    rgba(8, 12, 28, 0.97);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04),
     0 8px 24px rgba(0, 0, 0, 0.28);
@@ -91,7 +91,7 @@
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 245, 230, 0.9);
+  color: rgba(238, 242, 255, 0.9);
   font-family: var(--font-interface, var(--font-body, sans-serif));
   font-size: 0.8125rem;
   font-weight: 500;
@@ -105,7 +105,7 @@
 
 .app-header__profile-trigger:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(200, 141, 89, 0.3);
+  border-color: rgba(148, 163, 200, 0.3);
 }
 
 .app-header__profile-trigger:focus-visible {
@@ -430,7 +430,7 @@
     border-radius: 1rem;
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%),
-      rgba(22, 14, 9, 0.72);
+      rgba(10, 16, 36, 0.72);
     box-shadow:
       0 12px 30px rgba(5, 3, 2, 0.28),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);

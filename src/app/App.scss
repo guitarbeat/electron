@@ -154,7 +154,7 @@
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 1.5rem + 1.3vw, 2.7rem);
   letter-spacing: 0.04em;
-  color: var(--color-text-primary, #f7efdf);
+  color: var(--color-text-primary, #eef2ff);
   text-shadow: 0 0.6rem 1.2rem rgba(0, 0, 0, 0.3);
 }
 
@@ -1907,7 +1907,7 @@
   border-radius: 1.45rem;
   padding: clamp(0.95rem, 0.72rem + 0.8vw, 1.35rem);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(18, 13, 10, 0.85);
+  background: rgba(12, 18, 44, 0.85);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -1956,8 +1956,8 @@
 .workspace-header--places {
   border-color: color-mix(in srgb, var(--color-secondary) 46%, var(--chrome-border-color) 54%);
   background:
-    linear-gradient(180deg, rgba(255, 252, 240, 0.16) 0%, transparent 18%),
-    radial-gradient(circle at 84% 8%, rgba(255, 221, 146, 0.18) 0%, transparent 26%),
+    linear-gradient(180deg, rgba(204, 251, 241, 0.1) 0%, transparent 18%),
+    radial-gradient(circle at 84% 8%, rgba(45, 212, 191, 0.12) 0%, transparent 26%),
     radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--color-secondary) 12%, transparent) 0%, transparent 30%),
     linear-gradient(
       155deg,
@@ -8538,9 +8538,9 @@ body.grabbing * {
   justify-content: center;
   padding: 2rem;
   background:
-    radial-gradient(circle at 20% 20%, rgba(255, 210, 150, 0.18) 0%, transparent 32%),
-    linear-gradient(180deg, rgba(22, 17, 13, 0.9) 0%, rgba(14, 10, 8, 0.96) 100%);
-  color: rgba(247, 239, 223, 0.72);
+    radial-gradient(circle at 20% 20%, rgba(125, 211, 252, 0.14) 0%, transparent 32%),
+    linear-gradient(180deg, rgba(14, 22, 56, 0.9) 0%, rgba(6, 10, 28, 0.96) 100%);
+  color: rgba(238, 242, 255, 0.72);
   text-align: center;
 }
 
@@ -8548,8 +8548,8 @@ body.grabbing * {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(9, 6, 4, 0.16) 0%, transparent 22%, transparent 60%, rgba(9, 6, 4, 0.82) 100%),
-    radial-gradient(circle at 24% 18%, rgba(255, 220, 170, 0.18) 0%, transparent 28%);
+    linear-gradient(180deg, rgba(4, 8, 22, 0.16) 0%, transparent 22%, transparent 60%, rgba(4, 8, 22, 0.82) 100%),
+    radial-gradient(circle at 24% 18%, rgba(125, 211, 252, 0.12) 0%, transparent 28%);
   pointer-events: none;
 }
 
@@ -8635,7 +8635,7 @@ body.grabbing * {
 .movie-details-modal__meta-label,
 .movie-details-modal__section-label {
   margin: 0;
-  color: rgba(224, 210, 182, 0.76);
+  color: rgba(148, 163, 200, 0.76);
   font-family: var(--font-heading);
   font-size: 0.72rem;
   font-weight: var(--font-weight-bold);
@@ -8653,7 +8653,7 @@ body.grabbing * {
 
 .movie-details-modal__title {
   margin: 0;
-  color: rgba(247, 239, 223, 0.98);
+  color: rgba(238, 242, 255, 0.98);
   font-family: 'Cormorant Garamond', var(--font-display);
   font-size: clamp(2rem, 4vw, 3.3rem);
   line-height: 0.94;
@@ -8667,10 +8667,10 @@ body.grabbing * {
   padding: 0.34rem 0.72rem;
   border-radius: 999px;
   background:
-    linear-gradient(180deg, rgba(255, 210, 140, 0.18) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(125, 211, 252, 0.14) 0%, transparent 100%),
     rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 208, 140, 0.2);
-  color: rgba(255, 233, 194, 0.92);
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  color: rgba(186, 230, 253, 0.92);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -8679,7 +8679,7 @@ body.grabbing * {
 
 .movie-details-modal__relationship {
   margin: 0;
-  color: rgba(250, 243, 232, 0.96);
+  color: rgba(238, 242, 255, 0.96);
   font-size: 1.08rem;
   font-weight: 600;
   line-height: 1.35;
@@ -8687,7 +8687,7 @@ body.grabbing * {
 
 .movie-details-modal__supporting-copy {
   margin: 0;
-  color: rgba(224, 210, 182, 0.84);
+  color: rgba(148, 163, 200, 0.84);
   font-size: 0.94rem;
   line-height: 1.65;
   max-width: 34rem;
@@ -8705,9 +8705,9 @@ body.grabbing * {
   min-height: 1.9rem;
   padding: 0.34rem 0.68rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 236, 206, 0.12);
+  border: 1px solid rgba(148, 163, 200, 0.12);
   background: rgba(255, 255, 255, 0.04);
-  color: rgba(240, 228, 209, 0.88);
+  color: rgba(188, 205, 240, 0.88);
   font-size: 0.82rem;
 }
 
@@ -8716,8 +8716,8 @@ body.grabbing * {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.85rem;
   padding: 1rem 0 1.1rem;
-  border-top: 1px solid rgba(255, 236, 206, 0.08);
-  border-bottom: 1px solid rgba(255, 236, 206, 0.08);
+  border-top: 1px solid rgba(148, 163, 200, 0.08);
+  border-bottom: 1px solid rgba(148, 163, 200, 0.08);
 }
 
 .movie-details-modal__summary-item {
@@ -8727,7 +8727,7 @@ body.grabbing * {
 }
 
 .movie-details-modal__summary-value {
-  color: rgba(247, 239, 223, 0.96);
+  color: rgba(238, 242, 255, 0.96);
   font-size: 0.98rem;
   line-height: 1.4;
 }
@@ -8845,7 +8845,7 @@ body.grabbing * {
 
 .movie-details-modal__memory-row-note {
   margin: 0;
-  color: rgba(224, 210, 182, 0.82);
+  color: rgba(148, 163, 200, 0.82);
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -8857,8 +8857,8 @@ body.grabbing * {
 .movie-details-modal__memory-manager > div {
   margin-top: 0;
   background:
-    linear-gradient(165deg, rgba(57, 34, 18, 0.4) 0%, rgba(38, 22, 11, 0.52) 100%);
-  border-color: rgba(255, 228, 177, 0.22);
+    linear-gradient(165deg, rgba(14, 28, 66, 0.4) 0%, rgba(8, 16, 44, 0.52) 100%);
+  border-color: rgba(148, 163, 200, 0.22);
 }
 
 .movie-details-modal__footer {
@@ -8866,8 +8866,8 @@ body.grabbing * {
   flex-wrap: wrap;
   gap: 0.85rem 1rem;
   padding-top: 0.3rem;
-  border-top: 1px solid rgba(255, 236, 206, 0.1);
-  color: rgba(224, 210, 182, 0.78);
+  border-top: 1px solid rgba(148, 163, 200, 0.1);
+  color: rgba(148, 163, 200, 0.78);
   font-size: 0.82rem;
 }
 
@@ -8879,9 +8879,9 @@ body.grabbing * {
   width: 2.3rem;
   height: 2.3rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 236, 206, 0.16);
-  background: rgba(17, 12, 8, 0.72);
-  color: rgba(247, 239, 223, 0.92);
+  border: 1px solid rgba(148, 163, 200, 0.16);
+  background: rgba(8, 12, 30, 0.72);
+  color: rgba(238, 242, 255, 0.92);
   cursor: pointer;
   transition: transform 160ms ease, background-color 160ms ease;
 }
@@ -8889,7 +8889,7 @@ body.grabbing * {
 .movie-details-modal__close:hover,
 .movie-details-modal__close:focus-visible {
   transform: scale(1.05);
-  background: rgba(31, 22, 15, 0.9);
+  background: rgba(14, 22, 48, 0.9);
 }
 
 .movie-item-title--fallback {
@@ -9663,10 +9663,10 @@ body.grabbing * {
   min-height: 1.55rem;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  background: rgba(20, 13, 9, 0.52);
-  border: 1px solid rgba(255, 226, 184, 0.2);
+  background: rgba(10, 16, 38, 0.52);
+  border: 1px solid rgba(125, 211, 252, 0.2);
   backdrop-filter: blur(8px);
-  color: rgba(255, 244, 226, 0.92);
+  color: rgba(186, 230, 253, 0.92);
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -9678,9 +9678,9 @@ body.grabbing * {
   padding: 0.9rem;
   border-radius: 1rem;
   background:
-    linear-gradient(180deg, rgba(14, 9, 7, 0.18) 0%, rgba(14, 9, 7, 0.72) 24%, rgba(14, 9, 7, 0.9) 100%),
-    rgba(10, 8, 12, 0.28);
-  border: 1px solid rgba(255, 226, 184, 0.14);
+    linear-gradient(180deg, rgba(6, 10, 28, 0.18) 0%, rgba(6, 10, 28, 0.72) 24%, rgba(6, 10, 28, 0.9) 100%),
+    rgba(10, 14, 32, 0.28);
+  border: 1px solid rgba(125, 211, 252, 0.14);
   backdrop-filter: blur(14px);
 }
 
@@ -9696,14 +9696,14 @@ body.grabbing * {
   font-family: 'Cormorant Garamond', var(--font-display);
   font-size: 1.3rem;
   letter-spacing: 0.04em;
-  color: rgba(255, 247, 240, 0.96);
+  color: rgba(238, 242, 255, 0.96);
 }
 
 .memory-poster-card__meta {
   margin: 0.18rem 0 0;
   font-size: 0.72rem;
   letter-spacing: 0.02em;
-  color: rgba(241, 225, 203, 0.74);
+  color: rgba(148, 163, 200, 0.74);
 }
 
 .memory-poster-card__note {
