@@ -125,7 +125,7 @@ const AppNavStrip: FC<Props> = ({
         <span className="ans__btn-label">Places</span>
       </button>
 
-      {activeTab === 'movies' && onOpenSpin && (
+      {onOpenSpin && (
         <>
           <span className="ans__sep" aria-hidden="true" />
           <button
