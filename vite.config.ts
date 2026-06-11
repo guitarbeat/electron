@@ -134,7 +134,12 @@ export default defineConfig(({ mode }) => {
       },
     ],
     resolve: {
-      alias: aliasEntries,
+      alias: {
+        ...aliasEntries,
+        // Force motion/react to use the same React instance as the app
+        react: resolveFromRoot('node_modules/react'),
+        'react-dom': resolveFromRoot('node_modules/react-dom'),
+      },
       extensionAlias: {
         '.ts': ['.ts', '.tsx'],
         '.js': ['.js', '.ts', '.tsx'],

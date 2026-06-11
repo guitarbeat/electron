@@ -10,6 +10,7 @@ import Button from '@/ui/Button';
 import { spacing } from '@/theme/tokens';
 import SuggestionCard from '@/components/movies/SuggestionCard';
 import MovieCard from '@/components/movies/MovieCard';
+import MovieDeckStack from '@/components/movies/MovieDeckStack';
 import type { MovieSections } from '@/components/movies/lib/movieSections';
 
 export interface MovieBodyActions {
@@ -185,6 +186,7 @@ const MovieSectionBody: React.FC<Props> = ({
 
       {sections.queue.length > 0 && (
         <CollectionSection heading="Up Next" id={sectionIds?.queue}>
+          <MovieDeckStack movies={sections.queue} />
           {movieGrid(sections.queue, 'Your movie list is wide open')}
         </CollectionSection>
       )}
