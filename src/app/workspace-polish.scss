@@ -62,7 +62,7 @@
   }
 
   .watchlist-suggestion-rail .suggestion-item-card__eyebrow {
-    font-size: 0.54rem !important;
+    font-size: 0.625rem !important;
     letter-spacing: 0.08em;
   }
 
@@ -185,7 +185,7 @@
 
 .suggestion-item-card__suggester-chip-eyebrow {
   font-family: var(--font-heading);
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -644,37 +644,39 @@
   animation: none;
 }
 
-.watchlist-top-controls__search-form,
-.places-top-controls__search-form,
-.ui-control-input-shell,
-.watchlist-top-controls__autocomplete,
-.watchlist-top-controls__autocomplete-option,
-.watchlist-top-controls__autocomplete-filter-chip,
-.watchlist-top-controls__autocomplete-poster-image,
-.media-card,
-.media-card__overlay,
-.movie-poster,
-.movie-item-card,
-.place-item-card,
-.movie-item-title,
-.place-item-title,
-.movie-item-primary-action,
-.movie-item-memory-toggle,
-.movie-item-icon-action,
-.place-item-action-btn,
-.place-item-edit-btn,
-.place-item-delete-btn,
-.ui-card,
-.ui-card__shine {
-  transition: none !important;
-}
+@media (prefers-reduced-motion: reduce) {
+  .watchlist-top-controls__search-form,
+  .places-top-controls__search-form,
+  .ui-control-input-shell,
+  .watchlist-top-controls__autocomplete,
+  .watchlist-top-controls__autocomplete-option,
+  .watchlist-top-controls__autocomplete-filter-chip,
+  .watchlist-top-controls__autocomplete-poster-image,
+  .media-card,
+  .media-card__overlay,
+  .movie-poster,
+  .movie-item-card,
+  .place-item-card,
+  .movie-item-title,
+  .place-item-title,
+  .movie-item-primary-action,
+  .movie-item-memory-toggle,
+  .movie-item-icon-action,
+  .place-item-action-btn,
+  .place-item-edit-btn,
+  .place-item-delete-btn,
+  .ui-card,
+  .ui-card__shine {
+    transition: none !important;
+  }
 
-.watchlist-top-controls__autocomplete,
-.watchlist-top-controls__autocomplete.is-open,
-.movie-item-success-badge,
-.movie-item-imdb-badge,
-.watchlist-top-controls__autocomplete-loading-dot {
-  animation: none !important;
+  .watchlist-top-controls__autocomplete,
+  .watchlist-top-controls__autocomplete.is-open,
+  .movie-item-success-badge,
+  .movie-item-imdb-badge,
+  .watchlist-top-controls__autocomplete-loading-dot {
+    animation: none !important;
+  }
 }
 
 .watchlist-top-controls__autocomplete {
@@ -708,17 +710,31 @@
 }
 
 .movie-item-card:hover,
-.movie-item-card:active,
-.movie-item-card:hover:active,
 .movie-item-card--opening-details,
 .place-item-card:hover,
-.place-item-card:active,
-.place-item-card:hover:active,
 .media-card--hover:hover {
   transform: none !important;
   box-shadow:
-    0 16px 26px rgba(2, 4, 18, 0.24),
-    inset 0 1px 0 rgba(200, 215, 255, 0.06) !important;
+    0 22px 38px rgba(2, 4, 18, 0.38),
+    0 0 0 1px rgba(244, 114, 182, 0.14),
+    inset 0 1px 0 rgba(200, 215, 255, 0.09) !important;
+}
+
+.place-item-card:hover {
+  box-shadow:
+    0 22px 38px rgba(2, 4, 18, 0.38),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 18%, transparent),
+    inset 0 1px 0 rgba(200, 215, 255, 0.09) !important;
+}
+
+.movie-item-card:active,
+.movie-item-card:hover:active,
+.place-item-card:active,
+.place-item-card:hover:active {
+  transform: none !important;
+  box-shadow:
+    0 8px 16px rgba(2, 4, 18, 0.2),
+    inset 0 1px 0 rgba(200, 215, 255, 0.04) !important;
 }
 
 .movie-item-card--highlighted {
@@ -738,12 +754,10 @@
     inset 0 1px 0 rgba(200, 215, 255, 0.06) !important;
 }
 
-.movie-item-card:hover .movie-poster,
 .movie-item-card:hover .movie-item-title,
 .place-item-card:hover .place-item-title {
-  transform: none !important;
-  color: inherit !important;
-  text-shadow: inherit !important;
+  color: inherit;
+  text-shadow: inherit;
 }
 
 .movie-item-success-badge,
