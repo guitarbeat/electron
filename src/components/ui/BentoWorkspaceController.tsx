@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import './BentoWorkspaceController.css';
+import { MagicToggle } from './MagicToggle';
 
 export type SortOrder = 'recent' | 'alpha' | 'rating';
 
@@ -97,22 +98,17 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
         <div
           className="bento-ctrl__sort"
           role="group"
-          aria-label="Sort order"
+          aria-label="Sort order controls"
         >
           <span className="bento-ctrl__sort-label" aria-hidden="true">
             Sort
           </span>
-          {sorts.map((chip) => (
-            <button
-              key={chip.value}
-              type="button"
-              className={`bento-sort-chip${activeSortOrder === chip.value ? ' is-active' : ''}`}
-              onClick={() => onSortChange(chip.value)}
-              aria-pressed={activeSortOrder === chip.value}
-            >
-              {chip.label}
-            </button>
-          ))}
+          <MagicToggle
+            options={sorts}
+            activeValue={activeSortOrder}
+            onChange={onSortChange as (value: string) => void}
+            ariaLabel="Sort order"
+          />
         </div>
       )}
     </section>

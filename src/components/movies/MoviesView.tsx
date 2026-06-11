@@ -14,9 +14,9 @@ import { buildMovieSections, type MovieSortOrder } from './lib/movieSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
 import BentoWorkspaceController, {
   type BentoStatTileConfig,
-  type BentoSortChipConfig,
   type SortOrder,
 } from '@/components/ui/BentoWorkspaceController';
+import { type MagicToggleOption } from '@/components/ui/MagicToggle';
 import './MoviesPhotoMode.css';
 
 const MOVIE_SECTION_IDS = {
@@ -25,7 +25,7 @@ const MOVIE_SECTION_IDS = {
   completed: 'movies-section-watched',
 };
 
-const MOVIE_SORTS: BentoSortChipConfig[] = [
+const MOVIE_SORTS: MagicToggleOption<MovieSortOrder>[] = [
   { value: 'recent', label: '🕐 Recent' },
   { value: 'alpha', label: 'A→Z' },
   { value: 'rating', label: '★ Rating' },
