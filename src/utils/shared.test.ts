@@ -10,7 +10,9 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
+  encodeStorageData,
+  decodeStorageData,
+  formatMemoryTimestamp,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -866,8 +868,8 @@ test('shuffleArray', async (t) => {
   await t.test('shuffles array based on pseudo-random values', () => {
     const original = [1, 2, 3, 4, 5];
     let m;
-    if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
-      m = mock.method(globalThis.crypto, 'getRandomValues', (arr) => {
+    if (typeof globalThis.crypto !== 'undefined' && 'getRandomValues' in globalThis.crypto) {
+      m = mock.method(globalThis.crypto, 'getRandomValues', (arr: Uint32Array) => {
         arr[0] = 0; // Ensures getSecureRandom returns 0
         return arr;
       });
@@ -880,7 +882,7 @@ test('shuffleArray', async (t) => {
       // i=3, j=0: [shuffled[3], shuffled[0]] = [5, 4] -> [4, 2, 3, 5, 1]
       // i=2, j=0: [shuffled[2], shuffled[0]] = [4, 3] -> [3, 2, 4, 5, 1]
       // i=1, j=0: [shuffled[1], shuffled[0]] = [3, 2] -> [2, 3, 4, 5, 1]
-      if (m) {
+      if (m != null) {
         assert.deepEqual(shuffled, [2, 3, 4, 5, 1]);
       }
     } finally {
