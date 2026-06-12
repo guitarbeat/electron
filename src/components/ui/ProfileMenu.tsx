@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FC } from 'react';
+import { useState, useRef, useEffect, useCallback, type FC } from 'react';
 import { useUser } from '@/app/useProviders';
 import type { User } from '@/shared/types';
 import { usePins } from '@/hooks/usePins';
@@ -46,7 +46,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
   const isDisabled = isLoading || isVerifying;
   const pinMode = currentUser && userHasPin(currentUser) ? 'change' : 'set';
 
-  const toggle = (next: boolean) => { setIsOpen(next); onOpenChange?.(next); };
+  const toggle = useCallback((next: boolean) => { setIsOpen(next); onOpenChange?.(next); }, [onOpenChange]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -59,7 +59,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
-  }, [isOpen]);
+  }, [isOpen, toggle]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -67,7 +67,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [isOpen]);
+  }, [isOpen, toggle]);
 
   const handleLogout = () => {
     if (isDisabled) return;
