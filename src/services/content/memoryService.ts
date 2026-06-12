@@ -94,6 +94,42 @@ export const updateMemory = async (
   return nextMemory;
 };
 
+export const updateMemoriesBatch = async (
+  updates: Array<{
+    memoryId: string;
+    updates: {
+      note?: string;
+      movieId?: string;
+      movieTitle?: string;
+    };
+  }>
+): Promise<SharedMemory[]> => {
+  const memories = await getOptimisticMemories();
+
+  const updatesMap = new Map(updates.map((u) => [u.memoryId, u.updates]));
+
+  const nextMemories = memories.map((memory) => {
+    const upd = updatesMap.get(memory.id);
+    if (!upd) return memory;
+
+    return {
+      ...memory,
+      ...upd,
+      note: upd.note ? sanitizeInput(upd.note) : memory.note,
+      movieTitle: upd.movieTitle ? sanitizeInput(upd.movieTitle) : memory.movieTitle,
+      updatedAt: new Date().toISOString(),
+    };
+  });
+
+  await mutateScope('memories', {
+    op: 'update_memories_batch',
+    payload: { updates },
+    optimisticData: nextMemories,
+  });
+
+  return nextMemories;
+};
+
 export const deleteMemory = async (memoryId: string): Promise<void> => {
   const memories = await getOptimisticMemories();
   const nextMemories = memories.filter((memory) => memory.id !== memoryId);

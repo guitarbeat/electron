@@ -5,6 +5,7 @@ import {
   deleteMemory as deleteMemoryService,
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
+  updateMemoriesBatch as updateMemoriesBatchService,
 } from '../../services/content/memoryService';
 import type { MovieAutocompleteResult } from '../../services/metadata/types';
 import { usePolling } from '../../services/polling';
@@ -276,20 +277,29 @@ export const useMoviesWorkspace = ({ currentUser, isPaused }: UseMoviesWorkspace
       }
 
       try {
-        await Promise.all(
-          relatedMemories.map(async (memory) => {
+        const batchUpdates = relatedMemories
+          .map((memory) => {
             const nextMovieId = memory.movieId ?? movieId;
             if (memory.movieTitle === cleanTitle && memory.movieId === nextMovieId) {
-              return;
+              return null;
             }
-
-            await updateMemoryService(memory.id, {
-              movieId: nextMovieId,
-              movieTitle: cleanTitle,
-            });
+            return {
+              memoryId: memory.id,
+              updates: {
+                movieId: nextMovieId,
+                movieTitle: cleanTitle,
+              },
+            };
           })
-        );
-        refreshMemories();
+          .filter(Boolean) as Array<{
+          memoryId: string;
+          updates: { movieId: string; movieTitle: string };
+        }>;
+
+        if (batchUpdates.length > 0) {
+          await updateMemoriesBatchService(batchUpdates);
+          refreshMemories();
+        }
       } catch (error) {
         console.warn('Failed to sync related memory titles after rename:', error);
       }

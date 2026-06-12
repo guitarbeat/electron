@@ -591,6 +591,43 @@ const scopes: {
             ),
           };
         }
+        case 'update_memories_batch': {
+          const nextPayload = payload as {
+            updates?: Array<{ memoryId?: unknown; updates?: { note?: unknown; movieId?: unknown; movieTitle?: unknown } }>;
+          };
+          if (!Array.isArray(nextPayload.updates)) {
+            return { ok: false, conflict: 'Invalid batch payload.' };
+          }
+
+          const updatesMap = new Map(
+            nextPayload.updates.map((u) => [extractString(u.memoryId), u.updates])
+          );
+
+          // Optional: we skip auth check for batch to keep it simple, or implement it if needed:
+          for (const memory of memories) {
+            if (updatesMap.has(memory.id) && memory.author !== context.currentUser!) {
+               return { ok: false, conflict: 'Only the author can edit this memory.' };
+            }
+          }
+
+          const nextData = memories.map((memory) => {
+            const upd = updatesMap.get(memory.id);
+            if (!upd) return memory;
+
+            return {
+              ...memory,
+              note: typeof upd.note === 'string' ? extractString(upd.note) : memory.note,
+              movieId: typeof upd.movieId === 'string' ? extractString(upd.movieId) : memory.movieId,
+              movieTitle: typeof upd.movieTitle === 'string' ? extractString(upd.movieTitle) : memory.movieTitle,
+              updatedAt: context.now,
+            };
+          });
+
+          return {
+            ok: true,
+            data: nextData,
+          };
+        }
         case 'delete_memory': {
           const memoryId = extractString((payload as { memoryId?: unknown }).memoryId);
 
