@@ -1,0 +1,155 @@
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  color: var(--color-text-primary);
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.app-shell--viewport {
+  min-height: 100dvh;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--color-surface-0);
+  --app-shell-gutter: clamp(1.5rem, 3vw, 2.5rem);
+  padding-top: max(env(safe-area-inset-top, 0px), clamp(0.5rem, 1.5vw, 1rem));
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(0.5rem, 1.5vw, 1rem));
+  padding-left: max(env(safe-area-inset-left, 0px), var(--app-shell-gutter));
+  padding-right: max(env(safe-area-inset-right, 0px), var(--app-shell-gutter));
+}
+
+.app-shell__canvas {
+  position: relative;
+  min-height: min(100dvh, 100vh);
+  width: 100%;
+}
+
+.app-shell__canvas--main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--shell-canvas-gap);
+  flex: 1;
+  width: 100%;
+  min-height: min(100dvh, 100vh);
+  padding-block: var(--shell-canvas-padding-block);
+}
+
+.app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 82% 18%, rgba(255, 210, 150, 0.08) 0%, transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 18%);
+  mix-blend-mode: screen;
+  opacity: 0.42;
+}
+
+.app-workspace-stack {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--shell-stack-gap);
+  max-width: min(100%, var(--shell-max-width));
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--shell-stack-padding-top) 0 var(--shell-stack-padding-bottom);
+}
+
+.app-tab-shell {
+  position: relative;
+  display: grid;
+  gap: var(--shell-stack-gap);
+  width: 100%;
+  min-width: 0;
+  view-transition-name: none;
+}
+
+.workspace-surface {
+  min-width: 0;
+  view-transition-name: none;
+}
+
+.workspace-stage,
+.support-rail {
+  min-width: 0;
+}
+
+.workspace-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.8rem, 0.65rem + 0.45vw, 1.15rem);
+  padding: 0 0 1.8rem;
+}
+
+.workspace-stage--simplified {
+  gap: clamp(0.95rem, 0.8rem + 0.55vw, 1.3rem);
+}
+
+.workspace-stage--simplified::before {
+  content: '';
+  position: absolute;
+  inset: 0.2rem 0 0;
+  border-radius: calc(var(--chrome-radius-lg) + 0.65rem);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.04) 0%, transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 14%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.workspace-stage--mobile-shell {
+  gap: 0.65rem;
+  padding-top: 0.25rem;
+  padding-bottom: max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem));
+}
+
+@media (max-width: 640px) {
+  .app-shell--viewport {
+    --app-shell-gutter: clamp(0.75rem, 4vw, 1rem);
+    padding-top: max(env(safe-area-inset-top, 0px), 0.5rem);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.7rem);
+  }
+
+  .app-shell__canvas--main {
+    gap: 0.45rem;
+    min-height: auto;
+  }
+
+  .workspace-stage--mobile-shell {
+    gap: 0.5rem;
+    padding-top: 0.1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-shell--viewport {
+    --app-shell-gutter: 0.75rem;
+    padding-top: max(env(safe-area-inset-top, 0px), 0.35rem);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.35rem);
+  }
+
+  .app-workspace-stack {
+    padding: 0.4rem 0;
+  }
+
+  .workspace-stage {
+    gap: 0.7rem;
+  }
+
+  .workspace-stage--mobile-shell {
+    gap: 0.5rem;
+    padding-top: 0.1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-workspace-stack {
+    padding: 0.65rem 0;
+  }
+}

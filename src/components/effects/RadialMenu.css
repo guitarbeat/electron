@@ -1,0 +1,749 @@
+:root {
+  --radial-safe-top: env(safe-area-inset-top, 0px);
+  --radial-safe-right: env(safe-area-inset-right, 0px);
+  --radial-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --radial-safe-left: env(safe-area-inset-left, 0px);
+}
+
+.menu {
+  width: 200px;
+  height: 200px;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.menu::after {
+  content: '';
+  position: absolute;
+  inset: 54px;
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.82);
+  transition: opacity 220ms ease, transform 260ms ease;
+  pointer-events: none;
+}
+
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  --item-angle: 0deg;
+  width: 54px;
+  height: 54px;
+  position: absolute;
+  left: 0;
+  list-style: none;
+  transform-origin: 100px;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease,
+    filter 180ms ease,
+    scale 180ms ease;
+  transition-delay: calc(0.025s * var(--i));
+  transform: rotate(var(--item-angle)) translateX(60px) translateY(-20px) scale(0.72);
+  display: flex;
+  border-radius: 50%;
+  color: #111;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(6px);
+}
+
+.menu.active li {
+  --item-angle: calc(var(--fan-base, 0deg) + (225deg / var(--item-count) * var(--i)));
+  transform: rotate(var(--item-angle)) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+  filter: blur(0);
+}
+
+/* Quadrant-aware fan direction: bubbles always sweep into open space.
+   --fan-base offsets the starting angle of the arc so the sweep goes
+   into the corner with the most room. */
+
+/* Toggle in bottom-right corner → fan up & left */
+.menu.menu--fan-tl.active li {
+  --fan-base: 180deg;
+}
+
+/* Toggle in bottom-left corner → fan up & right */
+.menu.menu--fan-tr.active li {
+  --fan-base: 270deg;
+}
+
+/* Toggle in top-right corner → fan down & left */
+.menu.menu--fan-bl.active li {
+  --fan-base: 90deg;
+}
+
+/* Toggle in top-left corner → fan down & right (the original default) */
+.menu.menu--fan-br.active li {
+  --fan-base: 0deg;
+}
+
+.blue {
+  --menu-bubble-bg: linear-gradient(135deg, #86d4ff 0%, #3b9dff 100%);
+  --menu-bubble-shadow: rgba(59, 157, 255, 0.38);
+}
+
+.teal {
+  --menu-bubble-accent: #6ee5d8;
+  --menu-bubble-shadow: rgba(67, 209, 197, 0.28);
+}
+
+.violet {
+  --menu-bubble-accent: #cf93ff;
+  --menu-bubble-shadow: rgba(167, 107, 255, 0.28);
+}
+
+.amber {
+  --menu-bubble-accent: #ffbc6c;
+  --menu-bubble-shadow: rgba(255, 167, 76, 0.3);
+}
+
+.menu-item-button {
+  width: 100%;
+  height: 100%;
+  border: 1px solid color-mix(in oklab, var(--menu-bubble-accent, #ffbc6c) 38%, rgba(255, 255, 255, 0.08));
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 42%),
+    linear-gradient(160deg, rgba(34, 24, 18, 0.96) 0%, rgba(18, 12, 10, 0.92) 100%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: white;
+  border-radius: 50%;
+  box-shadow:
+    0 14px 28px var(--menu-bubble-shadow),
+    0 0 0 1px rgba(255, 248, 238, 0.05) inset,
+    inset 0 1px 0 rgba(255,255,255,0.16);
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease,
+    filter 220ms ease;
+  position: relative;
+  pointer-events: auto;
+  overflow: visible;
+  transform: rotate(calc(-1 * var(--item-angle)));
+}
+
+.menu-item-button::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--menu-bubble-accent, #ffbc6c) 45%, transparent);
+  opacity: 0.8;
+}
+
+.menu-item-button::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, color-mix(in oklab, var(--menu-bubble-accent, #ffbc6c) 42%, transparent) 0%, transparent 68%);
+  opacity: 0;
+  transform: scale(0.86);
+  transition: opacity 180ms ease, transform 180ms ease;
+  z-index: -1;
+}
+
+.menu-item-button:hover,
+.menu-item-button:focus-visible {
+  transform: rotate(calc(-1 * var(--item-angle))) translateY(-4px) scale(1.12);
+  box-shadow:
+    0 20px 36px var(--menu-bubble-shadow),
+    0 0 0 1px rgba(255, 248, 238, 0.12) inset,
+    inset 0 1px 0 rgba(255,255,255,0.28);
+  border-color: color-mix(in oklab, var(--menu-bubble-accent, #ffbc6c) 60%, rgba(255, 255, 255, 0.15));
+  filter: brightness(1.1);
+}
+
+.menu-item-button:hover::after,
+.menu-item-button:focus-visible::after,
+.menu.active .menu-item-button::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.menu-item-button:active,
+.menu-item-button:focus-visible:active {
+  transform: rotate(calc(-1 * var(--item-angle))) scale(0.96);
+}
+
+.menu-item-button__icon {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.menu-item-button svg {
+  color: color-mix(in oklab, var(--menu-bubble-accent, #ffbc6c) 68%, white);
+  stroke: currentColor;
+}
+
+.menu-item-button__tooltip {
+  position: absolute;
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: calc(100% + 0.55rem);
+  transform: translate(var(--tooltip-x, -50%), var(--tooltip-y-closed, 6px));
+  min-width: 10.4rem;
+  max-width: 11.6rem;
+  padding: 0.66rem 0.82rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(14, 22, 58, 0.96) 0%, rgba(6, 10, 30, 0.97) 100%);
+  border: 1px solid rgba(148, 163, 200, 0.16);
+  box-shadow:
+    0 22px 40px rgba(2, 4, 18, 0.38),
+    0 0 0 1px rgba(200, 215, 255, 0.04) inset;
+  color: #e8efff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+  text-align: left;
+  backdrop-filter: blur(16px);
+}
+
+.menu.menu--fan-tl .menu-item-button__tooltip {
+  left: auto;
+  right: 0;
+  --tooltip-x: 0;
+}
+
+.menu.menu--fan-tr .menu-item-button__tooltip {
+  left: 0;
+  --tooltip-x: 0;
+}
+
+.menu.menu--fan-bl .menu-item-button__tooltip,
+.menu.menu--fan-br .menu-item-button__tooltip {
+  top: calc(100% + 0.55rem);
+  bottom: auto;
+  --tooltip-y-closed: -6px;
+}
+
+.menu.menu--fan-bl .menu-item-button__tooltip {
+  left: auto;
+  right: 0;
+  --tooltip-x: 0;
+}
+
+.menu.menu--fan-br .menu-item-button__tooltip {
+  left: 0;
+  --tooltip-x: 0;
+}
+
+.menu-item-button__tooltip strong,
+.menu-item-button__tooltip span {
+  display: block;
+}
+
+.menu-item-button__tooltip strong {
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.menu-item-button__tooltip span {
+  margin-top: 0.18rem;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: rgba(255, 235, 214, 0.74);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .menu-item-button:hover .menu-item-button__tooltip,
+  .menu-item-button:focus-visible .menu-item-button__tooltip {
+    opacity: 1;
+    transform: translate(var(--tooltip-x, -50%), var(--tooltip-y-open, 0));
+  }
+}
+
+.menu-context-bubble {
+  position: absolute;
+  width: 170px;
+  min-height: 78px;
+  padding: 0.72rem 0.8rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(148, 163, 200, 0.18);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(200, 215, 255, 0.1) 0%, transparent 36%),
+    linear-gradient(180deg, rgba(14, 22, 58, 0.97) 0%, rgba(6, 10, 30, 0.99) 100%);
+  box-shadow:
+    0 24px 40px rgba(2, 4, 18, 0.38),
+    0 0 0 1px rgba(200, 215, 255, 0.04) inset;
+  color: #e8efff;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  backdrop-filter: blur(16px);
+}
+
+.menu-context-bubble::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  border-right: 1px solid rgba(255, 235, 214, 0.16);
+  border-bottom: 1px solid rgba(255, 235, 214, 0.16);
+  transform: rotate(45deg);
+}
+
+.menu.menu--fan-tl .menu-context-bubble {
+  right: 116px;
+  top: 110px;
+}
+
+.menu.menu--fan-tl .menu-context-bubble::after {
+  right: 14px;
+  top: 14px;
+}
+
+.menu.menu--fan-tr .menu-context-bubble {
+  right: 116px;
+  top: 110px;
+}
+
+.menu.menu--fan-tr .menu-context-bubble::after {
+  right: 14px;
+  top: 14px;
+}
+
+.menu.menu--fan-bl .menu-context-bubble {
+  left: 116px;
+  bottom: 110px;
+}
+
+.menu.menu--fan-bl .menu-context-bubble::after {
+  left: 14px;
+  bottom: 14px;
+}
+
+.menu.menu--fan-br .menu-context-bubble {
+  right: 116px;
+  bottom: 110px;
+}
+
+.menu.menu--fan-br .menu-context-bubble::after {
+  right: 14px;
+  bottom: 14px;
+}
+
+.menu-context-bubble__eyebrow {
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 211, 164, 0.76);
+}
+
+.menu-context-bubble__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.menu-context-bubble__icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 54%),
+    linear-gradient(180deg, rgba(244, 114, 182, 0.22) 0%, rgba(125, 211, 252, 0.12) 100%);
+  border: 1px solid rgba(200, 215, 255, 0.18);
+  color: color-mix(in oklab, var(--menu-bubble-accent, #f472b6) 68%, white);
+}
+
+.menu-context-bubble__title-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  min-width: 0;
+}
+
+.menu-context-bubble__title-copy strong,
+.menu-context-bubble__title-copy span {
+  display: block;
+}
+
+.menu-context-bubble__title-copy strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+
+.menu-context-bubble__title-copy span {
+  font-size: 0.62rem;
+  line-height: 1.22;
+  color: rgba(255, 235, 214, 0.76);
+}
+
+.toggle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.36),
+    0 0 0 1px rgba(200, 215, 255, 0.05) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 22px color-mix(in oklab, var(--moire-accent, #f472b6) 32%, transparent);
+  color: #e8efff;
+  transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+  background: linear-gradient(
+    160deg,
+    rgba(14, 22, 58, 0.97) 0%,
+    rgba(10, 16, 44, 0.97) 45%,
+    rgba(6, 10, 28, 0.99) 100%
+  );
+  pointer-events: auto;
+  user-select: none;
+  border: 1px solid rgba(148, 163, 200, 0.2);
+  overflow: hidden;
+  padding: 0;
+}
+
+.toggle:hover,
+.toggle:focus-visible {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.toggle:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.toggle:focus-visible,
+.menu-item-button:focus-visible {
+  outline: none;
+  border-color: rgba(255, 233, 204, 0.34);
+  box-shadow:
+    0 0 0 3px rgba(255, 197, 120, 0.16),
+    0 18px 34px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+
+
+@keyframes radial-discover-pulse {
+  0% {
+    box-shadow:
+      0 18px 34px rgba(0, 0, 0, 0.36),
+      0 0 0 0 rgba(254, 164, 77, 0.28),
+      0 0 0 1px rgba(255, 245, 232, 0.05) inset,
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  70% {
+    box-shadow:
+      0 18px 34px rgba(0, 0, 0, 0.36),
+      0 0 0 18px rgba(254, 164, 77, 0),
+      0 0 0 1px rgba(255, 245, 232, 0.05) inset,
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  100% {
+    box-shadow:
+      0 18px 34px rgba(0, 0, 0, 0.36),
+      0 0 0 0 rgba(254, 164, 77, 0),
+      0 0 0 1px rgba(255, 245, 232, 0.05) inset,
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+}
+
+.toggle.discover-pulse {
+  animation: radial-discover-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle.discover-pulse {
+    animation: none;
+  }
+}
+
+.menu.active .toggle {
+  box-shadow:
+    0 24px 40px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(255, 245, 232, 0.07) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 30px color-mix(in oklab, var(--moire-accent, #fe8922) 42%, transparent);
+}
+
+.toggle.toggle--active .toggle__icon-shell {
+  width: 2.2rem;
+  height: 2.2rem;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 54%),
+    linear-gradient(180deg, rgba(244, 114, 182, 0.15) 0%, rgba(125, 211, 252, 0.1) 100%);
+  box-shadow:
+    0 0 0 1px rgba(200, 215, 255, 0.08) inset,
+    0 10px 18px rgba(0, 0, 0, 0.24);
+}
+
+.toggle.toggle--active .toggle__title-copy strong {
+  color: #d4e8ff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .menu {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .menu li {
+    width: 48px;
+    height: 48px;
+    transform-origin: 80px;
+    transform: rotate(var(--item-angle)) translateX(52px) translateY(-18px) scale(0.7);
+  }
+
+  .toggle {
+    width: 56px;
+    height: 56px;
+  }
+
+  .toggle__icon-shell {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .menu-item-button__tooltip {
+    display: none;
+  }
+
+  .menu-context-bubble {
+    width: 146px;
+    min-height: 68px;
+    padding: 0.62rem 0.7rem;
+  }
+
+  .menu.menu--fan-tl .menu-context-bubble {
+    right: 94px;
+  }
+
+  .menu.menu--fan-bl .menu-context-bubble {
+    left: 94px;
+  }
+
+  .menu.menu--fan-tr .menu-context-bubble,
+  .menu.menu--fan-br .menu-context-bubble {
+    right: 94px;
+  }
+
+  .menu.menu--fan-tl .menu-context-bubble,
+  .menu.menu--fan-tr .menu-context-bubble {
+    top: 92px;
+  }
+
+  .menu.menu--fan-bl .menu-context-bubble,
+  .menu.menu--fan-br .menu-context-bubble {
+    bottom: 92px;
+  }
+
+  .menu-context-bubble__eyebrow {
+    display: none;
+  }
+
+  .menu-context-bubble__icon {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .menu-context-bubble__title-copy strong {
+    font-size: 0.74rem;
+  }
+
+  .menu-context-bubble__title-copy span {
+    font-size: 0.58rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Desktop command panel  (pointer-device / non-touch layouts)
+   Applied via .menu--desktop class set by JS when shouldUseDockedLayout()=false
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Suppress the radial glow ring on desktop */
+.menu--desktop::after {
+  display: none;
+}
+
+/* Hide the context bubble — the panel items carry their own inline labels */
+.menu--desktop .menu-context-bubble {
+  display: none;
+}
+
+/* ── Panel container ────────────────────────────────────────────────────── */
+.menu--desktop ul {
+  position: absolute;
+  /* Sits above the toggle: toggle top = 70px from container top
+     = 130px from container bottom. Add 10px gap → bottom: 140px */
+  bottom: 140px;
+  right: 0;
+  width: 248px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  list-style: none;
+  margin: 0;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(200, 215, 255, 0.09) 0%, transparent 52%),
+    linear-gradient(180deg, rgba(16, 24, 62, 0.97) 0%, rgba(6, 10, 30, 0.99) 100%);
+  border: 1px solid rgba(148, 163, 200, 0.18);
+  box-shadow:
+    0 28px 52px rgba(2, 4, 18, 0.44),
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(200, 215, 255, 0.05) inset;
+  backdrop-filter: blur(22px);
+  /* Closed */
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 210ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: bottom right;
+}
+
+.menu--desktop.active ul {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* ── List items: block flow instead of absolute fan positions ───────────── */
+.menu--desktop li {
+  --item-angle: 0deg;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  transform-origin: unset !important;
+  border-radius: 0 !important;
+  filter: none !important;
+  opacity: 0;
+  transform: translateX(8px) !important;
+  transition:
+    opacity 170ms ease,
+    transform 170ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(0.04s * var(--i, 0)) !important;
+}
+
+.menu--desktop.active li {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  pointer-events: auto;
+}
+
+/* ── Item button: horizontal row ────────────────────────────────────────── */
+.menu--desktop .menu-item-button {
+  width: 100% !important;
+  height: auto !important;
+  border-radius: 0.875rem !important;
+  padding: 0.58rem 0.72rem !important;
+  display: flex;
+  align-items: center;
+  gap: 0.72rem;
+  text-align: left;
+  transform: none !important;
+  overflow: hidden;
+}
+
+.menu--desktop .menu-item-button:hover,
+.menu--desktop .menu-item-button:focus-visible {
+  transform: none !important;
+}
+
+.menu--desktop .menu-item-button:active {
+  transform: scale(0.97) !important;
+}
+
+/* Keep icon circle, just constrain size */
+.menu--desktop .menu-item-button__icon {
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+  flex-shrink: 0;
+}
+
+/* Inner-ring pseudo hidden on desktop (cleaner in row layout) */
+.menu--desktop .menu-item-button::before {
+  display: none;
+}
+
+/* ── Tooltip becomes inline label ───────────────────────────────────────── */
+.menu--desktop .menu-item-button__tooltip {
+  position: static !important;
+  opacity: 1 !important;
+  transform: none !important;
+  min-width: unset !important;
+  max-width: unset !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  pointer-events: none;
+  transition: none !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.menu--desktop .menu-item-button__tooltip strong {
+  font-size: 0.75rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #dce8ff !important;
+  display: block;
+}
+
+.menu--desktop .menu-item-button__tooltip span {
+  font-size: 0.63rem !important;
+  color: rgba(255, 235, 214, 0.58) !important;
+  margin-top: 0.12rem;
+  line-height: 1.35;
+  display: block;
+  white-space: normal;
+}
+
+/* Suppress the hover tooltip on desktop (label is already inline) */
+@media (hover: hover) and (pointer: fine) {
+  .menu--desktop .menu-item-button:hover .menu-item-button__tooltip,
+  .menu--desktop .menu-item-button:focus-visible .menu-item-button__tooltip {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
